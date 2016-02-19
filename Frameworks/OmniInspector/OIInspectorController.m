@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     NSArray *currentlyInspectedObjects;
     NSString *currentInspectionIdentifier;
-    OIInspector *inspector;
+    OIInspector <OIConcreteInspector> *inspector;
     OIInspectorWindow *window;
     OIInspectorHeaderView *headingButton;
     OIInspectorHeaderBackground *headingBackground;
@@ -63,8 +63,10 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 // Init and dealloc
 
-- (id)initWithInspector:(OIInspector *)anInspector;
+- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector;
 {
+    OBPRECONDITION([anInspector conformsToProtocol:@protocol(OIConcreteInspector)]);
+
     if (!(self = [super init]))
         return nil;
 
@@ -72,8 +74,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     _isExpanded = !anInspector.isCollapsible;
     self.interfaceType = anInspector.preferredInterfaceType;
     
-    if ([inspector respondsToSelector:@selector(setInspectorController:)])
-        [(id)inspector setInspectorController:self];
+    inspector.inspectorController = self;
     
     return self;
 }
@@ -122,9 +123,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     }
 }
 
-- (NSString *)identifier;
+- (NSString *)inspectorIdentifier;
 {
-    return [inspector identifier];
+    return inspector.inspectorIdentifier;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
@@ -284,7 +285,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     
     if (window) {
-        BOOL shouldBeExpandedBeforeDisplay = [OIWorkspace.sharedWorkspace objectForKey:[self identifier]] != nil;
+        BOOL shouldBeExpandedBeforeDisplay = [OIWorkspace.sharedWorkspace objectForKey:self.inspectorIdentifier] != nil;
         if (shouldBeExpandedBeforeDisplay != _isExpanded) {
             /* Expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method. So don't assume that _isExpanded is false because we set it that way in init.
              
@@ -396,7 +397,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     currentlyInspectedObjects = nil;
     currentInspectionIdentifier = nil;
-    [inspector inspectObjects:nil];
+    [inspector inspectObjects:nil]; // nil is handled specially (and differently than an empty array). Not a great API.
 }
 
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
@@ -411,7 +412,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     NSMutableDictionary *result = [super debugDictionary];
     
     
-    [result setObject:[self identifier] forKey:@"identifier"];
+    [result setObject:self.inspectorIdentifier forKey:@"identifier"];
     [result setObject:([window isVisible] ? @"YES" : @"NO") forKey:@"isVisible"];
     [result setObject:[window description] forKey:@"window"];
     if ([window childWindows])
@@ -537,7 +538,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 	NSSize size = [inspectorView frame].size;
 	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth], @"size is %1.2f, inspector registry wants %1.2f", size.width, [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
         if (size.width > [self.inspectorRegistry inspectorWidth]) {
-            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", [self identifier], size.width, [self.inspectorRegistry inspectorWidth]);
+            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", self.inspectorIdentifier, size.width, [self.inspectorRegistry inspectorWidth]);
         }
 	size.width = [self.inspectorRegistry inspectorWidth];
 	[inspectorView setFrameSize:size];
@@ -590,7 +591,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         [window setFrame:windowFrame display:YES animate:animate];
         [view setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
         [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-            [dictionary setObject:@"YES" forKey:[self identifier]];
+            [dictionary setObject:@"YES" forKey:self.inspectorIdentifier];
         }];
     } else {
 	[window makeFirstResponder:window];
@@ -615,7 +616,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             [self inspectNothing];
         
         [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-            [dictionary removeObjectForKey:[self identifier]];
+            [dictionary removeObjectForKey:self.inspectorIdentifier];
         }];
     }
     
@@ -704,7 +705,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     NSSize size = [[self _inspectorView] frame].size;
 
     [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-        [dictionary setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
+        [dictionary setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", self.inspectorIdentifier]];
     }];
 
     [OIWorkspace.sharedWorkspace save];

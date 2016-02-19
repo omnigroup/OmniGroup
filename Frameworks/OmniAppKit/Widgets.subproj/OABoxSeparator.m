@@ -40,14 +40,6 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (void)dealloc;
-{
-    [_lineColor release];
-    [_backgroundColor release];
-    
-    [super dealloc];
-}
-
 #pragma mark - Private methods
 
 - (void)_setDefaultColors;

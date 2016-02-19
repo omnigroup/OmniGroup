@@ -10,6 +10,7 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorPane.h>
 #import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
@@ -58,7 +59,6 @@ RCS_ID("$Id$");
 
 @interface OUIDetailInspectorSlice()
 @property(nonatomic,strong) UITableView *tableView;
-@property(nonatomic) NSLayoutConstraint *heightConstraint;
 @end
 
 @implementation OUIDetailInspectorSlice
@@ -137,17 +137,10 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    OBPRECONDITION(_tableView == nil);
-    
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 44) style:UITableViewStylePlain];
-    _tableView.translatesAutoresizingMaskIntoConstraints = NO;
-
+    [super loadView];
+    self.tableView = (UITableView *)[self viewIfLoaded];
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
     _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
-    
-    _tableView.delegate = self;
-    _tableView.dataSource = self;
-    self.view = _tableView;
 }
 
 - (void)viewDidLoad;
@@ -213,7 +206,6 @@ RCS_ID("$Id$");
         placeholder = YES;
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
-    cell.backgroundColor = [self sliceBackgroundColor];
     cell.textLabel.text = title;
     cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
@@ -311,4 +303,13 @@ RCS_ID("$Id$");
     [_tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+- (UITableViewStyle)tableViewStyle; // The style to use when creating the table view
+{
+    return UITableViewStylePlain;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+{
+    return 0;
+}
 @end

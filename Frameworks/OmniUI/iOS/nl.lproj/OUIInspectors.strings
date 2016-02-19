@@ -36,13 +36,17 @@
 "Color" = "Kleur";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "Lettertype";
 
 /* Increment font size button accessibility label */
-"Font bigger" = "Lettertype groter";
+"Font bigger" = "Groter lettertype";
+
+/* Font size description accessibility label */
+"Font size" = "Tekengrootte";
 
 /* Decrement font size button accessibility label */
-"Font smaller" = "Lettertype kleiner";
+"Font smaller" = "Kleiner lettertype";
 
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "Meervoudige selectie";

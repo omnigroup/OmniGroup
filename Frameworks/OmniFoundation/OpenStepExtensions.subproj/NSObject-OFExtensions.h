@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,3 +38,17 @@ typedef NS_ENUM(NSUInteger, OFRunLoopRunType) {
 };
 
 extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^predicate)(void));
+
+@protocol OFInvokeMethodSignature <NSObject>
+@property (readonly) NSUInteger numberOfArguments;
+- (const char *)getArgumentTypeAtIndex:(NSUInteger)idx;
+@property (readonly) const char *methodReturnType;
+@end
+@protocol OFInvokeMethodInvocation <NSObject>
+- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx;
+- (void)getReturnValue:(void *)retLoc;
+@end
+
+typedef BOOL (^OFInvokeMethodHandler)(id <OFInvokeMethodSignature> methodSignature, id <OFInvokeMethodInvocation> invocation);
+
+extern BOOL OFInvokeMethod(id object, SEL selector, OFInvokeMethodHandler provideArguments, OFInvokeMethodHandler collectResults);

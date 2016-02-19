@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,17 +21,22 @@
 
 @optional
 - (void)prepareToExport;
+- (BOOL)useCompactBarButtonItemsIfApplicable;
 
 @end
 
 /// Create instances using the +exporterForViewController method instead of -init
 @interface OUIDocumentExporter : NSObject <MFMailComposeViewControllerDelegate>
 
-@property (nonatomic, weak) UIViewController <OUIDocumentExporterHost> *hostViewController;
-@property (nonatomic, strong) UIBarButtonItem *barButtonItem;
++ (void)clearOpenInCache;
 
 + (instancetype)exporterForViewController:(UIViewController<OUIDocumentExporterHost> *)hostViewController;
-+ (void)clearOpenInCache;
+
+- (instancetype)initWithHostViewController:(UIViewController <OUIDocumentExporterHost> *)hostViewController NS_DESIGNATED_INITIALIZER; // For subclassing only
+- (instancetype)init NS_UNAVAILABLE;
+
+@property (nonatomic, readonly, weak) UIViewController <OUIDocumentExporterHost> *hostViewController;
+@property (nonatomic, strong) UIBarButtonItem *barButtonItem;
 
 - (BOOL)canExportFileItem:(ODSFileItem *)fileItem;
 - (void)exportItem:(ODSFileItem *)fileItem;

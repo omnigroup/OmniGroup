@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -184,7 +184,7 @@ enum {
 
 + (BOOL)sendAnonymousDeviceInformationEnabled;
 {
-    return [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];
+    return [[OSUPreferences includeHardwareDetails] boolValue];
 }
 
 - init;
@@ -486,12 +486,10 @@ enum {
 
 - (void)_toggleEnabled:(UISwitch *)sender;
 {
-    BOOL enabled = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];
+    BOOL enabled = [[OSUPreferences includeHardwareDetails] boolValue];
     
     enabled = !enabled;
-    [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:enabled];
     [[OSUPreferences includeHardwareDetails] setBoolValue:enabled];
-    [[OSUPreferences checkInterval] restoreDefaultValue];
 }
 
 - (void)_dismissStandaloneViewController:(id)sender;

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -188,7 +188,7 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
-    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
     return item;
@@ -196,7 +196,7 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
 
 + (UIBarButtonItem *)inspectorOUIBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
-    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     UIBarButtonItem *item = [[OUIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
     return item;

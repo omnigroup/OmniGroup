@@ -1,4 +1,4 @@
-// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,8 +84,8 @@ typedef enum _OFControllerTerminateReply {
 - (BOOL)exceptionHandler:(NSExceptionHandler *)sender shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 
 // Support for splitting out ownership of NSUserNotifications across different subsystems.
-- (void)addNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
-- (void)removeNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)addNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
+- (void)removeNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 
 // OFController has concrete implementations of the following NSUserNotificationCenterDelegate methods. If you override these methods, be sure to call super's implementation.
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;

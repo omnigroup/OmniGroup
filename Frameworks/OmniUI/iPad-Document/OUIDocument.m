@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniFileExchange/OmniFileExchange.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFFileEdit.h>
 #import <OmniFoundation/OFPreference.h>
@@ -66,6 +67,8 @@ static int32_t OUIDocumentInstanceCount = 0;
 
     UIViewController <OUIDocumentViewController> *_documentViewController;
     OUIUndoIndicator *_undoIndicator;
+    
+    void (^_savedCloseCompletionBlock)(BOOL success);
     
     BOOL _hasUndoGroupOpen;
     BOOL _isClosing;
@@ -121,6 +124,9 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 + (BOOL)shouldShowAutosaveIndicator;
 {
+#if 0 && defined(DEBUG_shannon)
+    return YES;
+#endif
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
 }
 
@@ -185,6 +191,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     self.undoManager = undoManager;
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateUndoIndicator) name:OFUndoManagerEnablednessDidChangeNotification object:self.undoManager];
 
     return self;
 }
@@ -359,6 +366,14 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     [self.undoManager undo];
     
     [self didUndo];
+}
+
+- (void)forceUndoGroupClosed
+{
+    while (self.undoManager.groupingLevel > 0) {
+        _hasUndoGroupOpen = YES;
+        [self finishUndoGroup];
+    }
 }
 
 - (IBAction)redo:(id)sender;
@@ -576,20 +591,24 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         }
 #endif
         
+        BOOL goingToCloseImmediatelyAnyway = (_savedCloseCompletionBlock != nil);
+
         if (success) {
             
-            OBASSERT(_documentViewController == nil);
-            _documentViewController = [self makeViewController];
-            OBASSERT([_documentViewController conformsToProtocol:@protocol(OUIDocumentViewController)]);
-            OBASSERT(_documentViewController.document == nil); // we'll set it; -makeViewController shouldn't bother
-            _documentViewController.document = self;
-            
-            // Don't provoke loading of views before they are configured for preview generation (also our view controller will never be presented).
-            if (!self.forPreviewGeneration) {
-                [self updateViewControllerToPresent];
+            if (!goingToCloseImmediatelyAnyway) {
+                OBASSERT(_documentViewController == nil);
+                _documentViewController = [self makeViewController];
+                OBASSERT([_documentViewController conformsToProtocol:@protocol(OUIDocumentViewController)]);
+                OBASSERT(_documentViewController.document == nil); // we'll set it; -makeViewController shouldn't bother
+                _documentViewController.document = self;
                 
-                NSString *lastEditedMessage = [self _lastEditedMessage];
-                [self _queueUpdateMessage:lastEditedMessage];
+                // Don't provoke loading of views before they are configured for preview generation (also our view controller will never be presented).
+                if (!self.forPreviewGeneration) {
+                    [self updateViewControllerToPresent];
+                    
+                    NSString *lastEditedMessage = [self _lastEditedMessage];
+                    [self _queueUpdateMessage:lastEditedMessage];
+                }
             }
 
             // clear out any undo actions created during init
@@ -600,13 +619,29 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             _hasUndoGroupOpen = NO;
         }
         
-        completionHandler(success);
+        BOOL reallyReportSuccess = success && !goingToCloseImmediatelyAnyway;
+        completionHandler(reallyReportSuccess);  // if we're just going to close immediately because we were already asked to close before we even finished opening (see <bug:///125526> (Bug: ~10 second freeze after deleting 'Complex' stencil)), then pass NO as the success flag to the open completion handler to avoid doing useless work.
+        
+        if (goingToCloseImmediatelyAnyway) {
+            [self closeWithCompletionHandler:_savedCloseCompletionBlock];
+            _savedCloseCompletionBlock = nil;
+        }
     }];
 }
 
 - (void)closeWithCompletionHandler:(void (^)(BOOL success))completionHandler;
 {
     OBPRECONDITION((self.documentState & UIDocumentStateClosed) == 0);
+    
+    if ((self.documentState & UIDocumentStateClosed) != 0) {
+        // we may be being asked to close before we have finished opening.  note that and save the completion handler for when we can actually close.
+        // we will close if/when we have successfully opened.
+        _savedCloseCompletionBlock = [completionHandler copy];
+        if (!_savedCloseCompletionBlock) {
+            _savedCloseCompletionBlock = ^(BOOL success){};  // we depend on this block being non-nil to know that we need to close as soon as we've opened.
+        }
+        return;
+    }
     
     DEBUG_DOCUMENT(@"%@ %@", [self shortDescription], NSStringFromSelector(_cmd));
 
@@ -1443,11 +1478,16 @@ static OFPreference *LastEditsPreference;
 
 - (void)_updateUndoIndicator;
 {
-    if (!_undoIndicator && [[self class] shouldShowAutosaveIndicator] && [_documentViewController isViewLoaded])
+    if (!_undoIndicator && [[self class] shouldShowAutosaveIndicator] && [_documentViewController isViewLoaded]) {
         _undoIndicator = [[OUIUndoIndicator alloc] initWithParentView:_documentViewController.view];
+        if (_documentViewController.navigationController.isNavigationBarHidden == NO) {
+            _undoIndicator.frameYOffset = CGRectGetMaxY([_documentViewController.navigationController.navigationBar frame]);
+        }
+    }
     
     _undoIndicator.groupingLevel = [self.undoManager groupingLevel];
     _undoIndicator.hasUnsavedChanges = [self hasUnsavedChanges];
+    _undoIndicator.undoIsEnabled = self.undoManager.isUndoRegistrationEnabled;
 }
 
 - (void)_undoManagerDidUndo:(NSNotification *)note;

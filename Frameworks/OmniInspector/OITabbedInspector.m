@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,8 +68,10 @@ RCS_ID("$Id$")
 #endif
 
     float inspectorWidth;
-    if (_weak_inspectorController)
-        inspectorWidth = [_weak_inspectorController.inspectorRegistry inspectorWidth];
+
+    OIInspectorController *inspectorController = self.inspectorController;
+    if (inspectorController)
+        inspectorWidth = [inspectorController.inspectorRegistry inspectorWidth];
     else
         inspectorWidth = [[OIInspectorRegistry inspectorRegistryForMainWindow] inspectorWidth];
 
@@ -123,9 +125,11 @@ RCS_ID("$Id$")
     BOOL addedColon = NO;
     BOOL duringMouseDown = NO;
     
+    OIInspectorController *inspectorController = self.inspectorController;
+
     // If we are the only inspector, don't prefix our window title with the tabbed inspector's name.  Just use the tab names.
     NSString *prefix;
-    BOOL hasSingleInspector = [_weak_inspectorController.inspectorRegistry hasSingleInspector];
+    BOOL hasSingleInspector = [inspectorController.inspectorRegistry hasSingleInspector];
     if (hasSingleInspector)
         prefix = @"";
     else
@@ -183,7 +187,7 @@ RCS_ID("$Id$")
     NSMutableArray *pinnedIdentifiers = [NSMutableArray array];
     
     for (OIInspectorTabController *tab in _tabControllers) {
-        id tabIdentifier = [tab identifier];
+        id tabIdentifier = tab.inspectorIdentifier;
         [tab loadConfiguration:[config objectForKey:tabIdentifier]];
         
         switch ([tab visibilityState]) {
@@ -209,11 +213,12 @@ RCS_ID("$Id$")
     [self _layoutSelectedTabs];
     
     if (!config) {
-        NSRect windowFrame = [[_weak_inspectorController window] frame];
-        [_weak_inspectorController setExpanded:YES withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))];
+        OIInspectorController *inspectorController = self.inspectorController;
+        NSRect windowFrame = [[inspectorController window] frame];
+        [inspectorController setExpanded:YES withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))];
         
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OIShowInspectorsOnFirstLaunch"])
-            [_weak_inspectorController showInspector];
+            [inspectorController showInspector];
     }
 }
 
@@ -222,14 +227,14 @@ RCS_ID("$Id$")
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     for (OIInspectorTabController *tab in _tabControllers) {
 	NSDictionary *config = [tab copyConfiguration];
-        [dict setObject:config forKey:[tab identifier]];
+        [dict setObject:config forKey:tab.inspectorIdentifier];
     }
     return dict;
 }
 
 - (NSArray *)tabIdentifiers;
 {
-    return [_tabControllers arrayByPerformingSelector:@selector(identifier)];
+    return [_tabControllers arrayByPerformingSelector:@selector(inspectorIdentifier)];
 }
 
 // While the code doesn't currently strictly require it, the expectation is that pinnedIdentifiers is a subset of selectedIdentifiers. Pass in nil for the pinnedIdentifiers if you wish to keep the currently-pinned selection (in which case selectedIdentifiers need not include the
@@ -248,7 +253,7 @@ RCS_ID("$Id$")
     
     BOOL needsLayout = NO;
     for (OIInspectorTabController *tab in _tabControllers) {
-        id tabIdentifier = [tab identifier];
+        id tabIdentifier = tab.inspectorIdentifier;
         OIVisibilityState visibilityState;
         if ([pinnedIdentifiersSet member:tabIdentifier]) {
             visibilityState = OIPinnedVisibilityState;
@@ -279,12 +284,12 @@ RCS_ID("$Id$")
 - (OIInspectorTabController *)tabWithIdentifier:(NSString *)identifier;
 {
     for (OIInspectorTabController *tab in _tabControllers)
-        if (OFISEQUAL(identifier, [[tab inspector] identifier]))
+        if (OFISEQUAL(identifier, tab.inspector.inspectorIdentifier))
             return tab;
     return nil;
 }
 
-- (OIInspector *)inspectorWithIdentifier:(NSString *)tabIdentifier;
+- (OIInspector <OIConcreteInspector> *)inspectorWithIdentifier:(NSString *)tabIdentifier;
 {
     return [[self tabWithIdentifier:tabIdentifier] inspector];
 }
@@ -295,7 +300,7 @@ RCS_ID("$Id$")
     
     for (OIInspectorTabController *tab in _tabControllers) {
 	if ([tab isVisible])
-	    [identifiers addObject:[tab identifier]];
+            [identifiers addObject:tab.inspectorIdentifier];
     }
     return identifiers;
 }
@@ -305,7 +310,7 @@ RCS_ID("$Id$")
     NSMutableArray *identifiers = [NSMutableArray array];
     for (OIInspectorTabController *tab in _tabControllers) {
         if ([tab isPinned]) {
-            [identifiers addObject:[tab identifier]];
+            [identifiers addObject:tab.inspectorIdentifier];
         }
     }
     return identifiers;
@@ -330,7 +335,7 @@ RCS_ID("$Id$")
 {
     [self setSelectedTabIdentifiers:[NSArray arrayWithObject:tabIdentifier] pinnedTabIdentifiers:nil];
     
-    [_weak_inspectorController showInspector];
+    [self.inspectorController showInspector];
 }
 
 #pragma mark -
@@ -384,7 +389,7 @@ RCS_ID("$Id$")
 
         NSString *inspectionIdentifier = [tabPlist objectForKey:@"preferredForInspectionIdentifier"];
         if (inspectionIdentifier != nil) {
-            _preferredTabIdentifierForInspectionIdentifier[inspectionIdentifier] = tabController.identifier;
+            _preferredTabIdentifierForInspectionIdentifier[inspectionIdentifier] = tabController.inspectorIdentifier;
         }
 
         [tabControllers addObject:tabController];
@@ -433,10 +438,11 @@ RCS_ID("$Id$")
         [self _createButtonCellForAllTabs];
 }
 
-- (NSArray *)menuItemsForTarget:(id)target action:(SEL)action;
+- (NSArray *)menuItemsForTarget:(nullable id)target action:(SEL)action;
 {
     // If there is a single tabbed inspector; don't wrap up the menu items for the tabs in a higher level menu item.
-    BOOL hasSingleInspector = [_weak_inspectorController.inspectorRegistry hasSingleInspector];
+    OIInspectorController *inspectorController = self.inspectorController;
+    BOOL hasSingleInspector = [inspectorController.inspectorRegistry hasSingleInspector];
 
     NSMutableArray *menuItems = [NSMutableArray array];
 
@@ -448,7 +454,7 @@ RCS_ID("$Id$")
     
     for (OIInspectorTabController *tab in _tabControllers) {
 	NSMenuItem *item = [tab menuItemForTarget:nil action:@selector(revealEmbeddedInspectorFromMenuItem:)];
-        [item setRepresentedObject:tab.identifier];
+        [item setRepresentedObject:tab.inspectorIdentifier];
         if (!hasSingleInspector)
             [item setIndentationLevel:2];
 	[menuItems addObject:item];
@@ -468,6 +474,16 @@ RCS_ID("$Id$")
         [tabInspector inspectorDidResize:resizedInspector];
     }
     [self _layoutSelectedTabs];
+}
+
+- (void)setInspectorController:(OIInspectorController *)aController;
+{
+    [super setInspectorController:aController];
+
+    // Set the controller on all of our child inspectors as well
+    for (OIInspectorTabController *tab in _tabControllers) {
+        tab.inspector.inspectorController = aController;
+    }
 }
 
 #pragma mark -
@@ -497,28 +513,12 @@ RCS_ID("$Id$")
 
 - (void)mouseEntered:(NSEvent *)event;
 {
-    [_weak_inspectorController updateTitle];
+    [self.inspectorController updateTitle];
 }
 
 - (void)mouseExited:(NSEvent *)event;
 {
-    [_weak_inspectorController updateTitle];
-}
-
-#pragma mark -
-#pragma mark NSObject (OIInspectorOptionalMethods)
-
-- (void)setInspectorController:(OIInspectorController *)aController;
-{
-    _weak_inspectorController = aController;
-
-    // Set the controller on all of our child inspectors as well
-    for (OIInspectorTabController *tab in _tabControllers) {
-        OIInspector *inspector = [tab inspector];
-        if ([inspector respondsToSelector:_cmd]) {
-            [inspector setInspectorController:aController];
-        }
-    }
+    [self.inspectorController updateTitle];
 }
 
 #pragma mark -
@@ -526,7 +526,8 @@ RCS_ID("$Id$")
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-    BOOL isVisible = [_weak_inspectorController isExpanded] && [_weak_inspectorController isVisible];
+    OIInspectorController *inspectorController = self.inspectorController;
+    BOOL isVisible = [inspectorController isExpanded] && [inspectorController isVisible];
     
     if  (!isVisible) {
         [item setState:NSOffState];
@@ -540,13 +541,14 @@ RCS_ID("$Id$")
 - (void)_selectTabBasedOnObjects:(NSArray *)objects;
 {
     // Find the 'most relevant' object that has an inspector that directly applies to it.  You can either register a preferred tab identifier for an inspection identifier, or auto-select a tab based on the order in which objects were added to the inspection set.
-    OIInspectionSet *inspectionSet = [_weak_inspectorController.inspectorRegistry inspectionSet];
+    OIInspectorController *inspectorController = self.inspectorController;
+    OIInspectionSet *inspectionSet = [inspectorController.inspectorRegistry inspectionSet];
     NSArray *sortedObjects = [inspectionSet objectsSortedByInsertionOrder:objects];
     
-    NSString *inspectionIdentifier = [_weak_inspectorController.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
+    NSString *inspectionIdentifier = [inspectorController.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
     if (_currentInspectionIdentifier || inspectionIdentifier) {
         // do not change the selected tab if the inspectionIdentifier has not changed.
-        if ([inspectionIdentifier isEqualToString:_currentInspectionIdentifier])
+        if ([inspectionIdentifier isEqual:_currentInspectionIdentifier])
             return;
         _currentInspectionIdentifier = [inspectionIdentifier copy];
     }
@@ -597,7 +599,7 @@ RCS_ID("$Id$")
         OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
         NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
         [cell setImage:[tab image]];
-        [cell setRepresentedObject:[tab identifier]];
+        [cell setRepresentedObject:tab.inspectorIdentifier];
         
         if ([tab isVisible])
             [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
@@ -621,9 +623,10 @@ RCS_ID("$Id$")
 
 - (void)_tabTitleDidChange:(NSNotification *)notification;
 {
+    OIInspectorController *inspectorController = self.inspectorController;
     for (OITabCell *cell in [buttonMatrix cells]) {
         if (cell == [notification object]) {
-            [_weak_inspectorController updateTitle];
+            [inspectorController updateTitle];
             break;
         }
     }
@@ -694,19 +697,21 @@ RCS_ID("$Id$")
     [self _updateButtonsToMatchSelection];
 
     [contentView setNeedsDisplay:YES];
-    [_weak_inspectorController updateTitle];
-    if (_weak_inspectorController.interfaceType == OIInspectorInterfaceTypeFloating) {
-        [_weak_inspectorController containerView];
-        [_weak_inspectorController loadInterface];
-        [_weak_inspectorController prepareWindowForDisplay];
+
+    OIInspectorController *inspectorController = self.inspectorController;
+    [inspectorController updateTitle];
+    if (inspectorController.interfaceType == OIInspectorInterfaceTypeFloating) {
+        [inspectorController containerView];
+        [inspectorController loadInterface];
+        [inspectorController prepareWindowForDisplay];
     }
-    [_weak_inspectorController updateExpandedness:NO];
+    [inspectorController updateExpandedness:NO];
     [self _updateTrackingRects];
     
     // Any newly exposed inspectors should start tracking; any newly hidden should stop
     [self _updateSubInspectorObjects];
 
-    [_weak_inspectorController.inspectorRegistry configurationsChanged];
+    [inspectorController.inspectorRegistry configurationsChanged];
 }
 
 - (void)_updateButtonsToMatchSelection;
@@ -751,6 +756,8 @@ RCS_ID("$Id$")
 
 - (void)viewWillMoveToWindow:(NSWindow *)window;
 {
+    OIInspectorController *inspectorController = self.inspectorController;
+
     if (window && !self.titlebarAccessory && self.placesButtonsInTitlebar) {
         
         NSView *accessory = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 296, 33)];
@@ -761,8 +768,8 @@ RCS_ID("$Id$")
         NSRect rButtonMatrixBackground = buttonMatrix.superview.frame;
         rButtonMatrixBackground.origin = NSZeroPoint;
         buttonMatrix.superview.frame = rButtonMatrixBackground;
-    } else if (window && self.placesButtonsInHeaderView && !_weak_inspectorController.headingButton.accessoryView) {
-        OIInspectorHeaderView *headerView = _weak_inspectorController.headingButton;
+    } else if (window && self.placesButtonsInHeaderView && !inspectorController.headingButton.accessoryView) {
+        OIInspectorHeaderView *headerView = inspectorController.headingButton;
         headerView.accessoryView = buttonMatrix.superview;
         NSRect rButtonMatrixBackground = buttonMatrix.superview.frame;
         rButtonMatrixBackground.origin = CGPointMake(0.0f, headerView.titleContentHeight);

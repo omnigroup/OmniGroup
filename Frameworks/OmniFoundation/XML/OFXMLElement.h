@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,38 +9,31 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
+#import <OmniFoundation/OFXMLBuffer.h>
 
 @class NSArray, NSMutableArray, NSDate, NSData, NSMutableDictionary, NSMutableString, NSError;
 @class OFXMLDocument, OFXMLElement;
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 
 
 @interface OFXMLElement : OFObject
-{
-    NSString *_name;
-    NSMutableArray *_children;
-    NSMutableArray *_attributeOrder;
-    NSMutableDictionary *_attributes;
-    struct {
-        unsigned int ignoreUnlessReferenced : 1;
-        unsigned int markedAsReferenced     : 1;
-    } _flags;
-}
 
-- initWithName:(NSString *)name attributeOrder:(NSMutableArray *)attributeOrder attributes:(NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
+- initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
 - initWithName:(NSString *)name;
 
 
 - (id)deepCopy NS_RETURNS_RETAINED;
 - (OFXMLElement *)deepCopyWithName:(NSString *)name NS_RETURNS_RETAINED;
 
-- (NSString *)name;
-- (NSArray *)children;
-- (NSUInteger)childrenCount;
+@property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) NSArray *children;
+@property(nonatomic,readonly) NSUInteger childrenCount;
 - (id)childAtIndex:(NSUInteger)childIndex;
-- (id)lastChild;
+@property(nonatomic,readonly) id lastChild;
 - (NSUInteger)indexOfChildIdenticalTo:(id)child;
 - (void)insertChild:(id)child atIndex:(NSUInteger)childIndex;
 - (void)appendChild:(id) child;  // Either a OFXMLElement or an NSString
@@ -53,15 +46,14 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (OFXMLElement *)firstChildAtPath:(NSString *)path;
 - (OFXMLElement *)firstChildWithAttribute:(NSString *)attribute value:(NSString *)value;
 
-- (void)setIgnoreUnlessReferenced:(BOOL)yn;
-- (BOOL)ignoreUnlessReferenced;
+@property(nonatomic,assign) BOOL ignoreUnlessReferenced;
 - (void)markAsReferenced;
-- (BOOL)shouldIgnore;
+@property(nonatomic,readonly) BOOL shouldIgnore;
 
-- (NSArray *) attributeNames;
+@property(nonatomic,readonly) NSArray *attributeNames;
 - (NSString *) attributeNamed: (NSString *) name;
-- (void) setAttribute: (NSString *) name string: (NSString *) value;
-- (void) setAttribute: (NSString *) name value: (id) value;
+- (void) setAttribute: (NSString *) name string: (nullable NSString *) value;
+- (void) setAttribute: (NSString *) name value: (nullable id) value;
 - (void) setAttribute: (NSString *) name integer: (int) value;
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
@@ -73,7 +65,7 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (float)realValueForAttributeNamed:(NSString *)name defaultValue:(float)defaultValue;
 - (double)doubleValueForAttributeNamed:(NSString *)name defaultValue:(double)defaultValue;
 
-- (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
+- (OFXMLElement *)appendElement:(NSString *)elementName containingString:(nullable NSString *)contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int)contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents; // "%g"
 - (OFXMLElement *)appendElement:(NSString *)elementName containingReal:(float)contents format:(NSString *)formatString;
@@ -87,7 +79,7 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (void)applyFunction:(OFXMLElementApplier)applier context:(void *)context;
 - (void)applyBlock:(OFXMLElementApplierBlock)applierBlock;
 
-- (NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
+- (nullable NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 
 // Debugging
 - (NSMutableDictionary *)debugDictionary;
@@ -95,9 +87,10 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 
 @end
 
-#import <OmniFoundation/OFXMLBuffer.h>
 @interface NSObject (OFXMLWriting)
 - (BOOL)appendXML:(OFXMLBuffer)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 - (BOOL)xmlRepresentationCanContainChildren;
 - (NSObject *)copyFrozenElement;
 @end
+
+NS_ASSUME_NONNULL_END

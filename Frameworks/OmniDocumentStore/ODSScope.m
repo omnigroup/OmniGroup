@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -810,8 +810,13 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
     OBPRECONDITION(folder);
     
     NSURL *url = self.documentsURL;
-    if (folder != _rootFolder)
+    if (folder != _rootFolder){
+        if (!folder.relativePath) {
+            OBStopInDebugger("Congratulations!  You've reproduced <bug:///120310> (Crasher: -[NSURL URLByAppendingPathComponent:isDirectory:]: component, components, or pathExtension cannot be nil).");
+            return nil;
+        }
         url = [url URLByAppendingPathComponent:folder.relativePath isDirectory:YES];
+    }
     return url;
 }
 
@@ -1025,12 +1030,13 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
         NSString *destinationFolderName = [self _availableFileNameAvoidingUsedFileNames:usedFolderNames withBaseName:folderName extension:nil counter:&counter];
         
         sourceFolderURL = self.documentsURL;
-        if (parentFolder && ![NSString isEmptyString:parentFolder.relativePath])
-            sourceFolderURL = [sourceFolderURL URLByAppendingPathComponent:parentFolder.relativePath isDirectory:YES];
+        NSString *parentRelativePath = parentFolder.relativePath;
+        if (parentRelativePath && ![NSString isEmptyString:parentRelativePath])
+            sourceFolderURL = [sourceFolderURL URLByAppendingPathComponent:parentRelativePath isDirectory:YES];
         destinationFolderURL = [sourceFolderURL URLByAppendingPathComponent:destinationFolderName isDirectory:YES];
 
         destinationRelativePath = OFFileURLRelativePath(self.documentsURL, destinationFolderURL);
-        OBASSERT([destinationRelativePath isEqualToString:[parentFolder.relativePath stringByAppendingPathComponent:destinationFolderName]]);
+        OBASSERT([destinationRelativePath isEqualToString:[parentRelativePath stringByAppendingPathComponent:destinationFolderName]]);
     }
     
     ODSFolderItem *subFolder = [[ODSFolderItem alloc] initWithScope:self];

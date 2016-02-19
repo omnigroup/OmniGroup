@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,7 +121,12 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     return SupportedPackageFormats;
 }
 
-#define UPDATE_STATUS(status) [self.delegate setStatus:(status)]
+#define UPDATE_STATUS(status) \
+    do { \
+        id <OSUInstallerDelegate> delegate = self.delegate; \
+        [delegate setStatus:(status)]; \
+    } \
+    while (0)
 
 - (id)initWithPackagePath:(NSString *)newPackage
 {
@@ -143,8 +148,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     OBPRECONDITION(_terminationObserver == nil);
     
     [_connection invalidate];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
+
+    if (_terminationObserver)
+        [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
 }
 
 @synthesize delegate = _weak_delegate;
@@ -806,6 +812,10 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             }
             
             // This yields a modal alert, but in 10.11 produces a warning. The -presentError: variant doesn't have a recovered/context handler, though.
+            //
+            // Can we use the modal prentation here, and rely on the result for whether recovery took place?
+            // That's synchronous, so we don't need a callback selector - we can do the work serially after -presentError:.
+            
             NSWindow *window = nil;
             
             [presenter presentError:errorToPresent modalForWindow:window delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];

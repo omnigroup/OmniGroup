@@ -1,4 +1,4 @@
-// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
     
     OFPreference *_crashOnAssertionOrUnhandledExceptionPreference;
 
-    NSLock *_noficiationOwnersLock;
+    NSLock *_notificationOwnersLock;
     NSMutableArray *_locked_notificationOwnerReferences;
 }
 
@@ -201,7 +201,7 @@ static void _OFControllerCheckTerminated(void)
     _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
-    _noficiationOwnersLock = [[NSLock alloc] init];
+    _notificationOwnersLock = [[NSLock alloc] init];
     _locked_notificationOwnerReferences = [[NSMutableArray alloc] init];
     
 #ifdef OMNI_ASSERTIONS_ON
@@ -225,7 +225,7 @@ static void _OFControllerCheckTerminated(void)
     [queues release];
     
     [_locked_notificationOwnerReferences release];
-    [_noficiationOwnersLock release];
+    [_notificationOwnersLock release];
 
     [super dealloc];
 }
@@ -750,12 +750,12 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 #pragma mark - Notification owner registration
 
-- (void)addNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)addNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 {
     OBPRECONDITION(notificationOwner != nil);
-    OBPRECONDITION(_noficiationOwnersLock);
+    OBPRECONDITION(_notificationOwnersLock);
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     
     OBASSERT([self _locked_indexOfNotificationOwner:notificationOwner] == NSNotFound, "Adding the same notification owner twice is very likely a bug");
     
@@ -763,15 +763,15 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     [_locked_notificationOwnerReferences addObject:ref];
     [ref release];
     
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
 }
 
-- (void)removeNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)removeNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 {
     OBPRECONDITION(notificationOwner != nil);
-    OBPRECONDITION(_noficiationOwnersLock);
+    OBPRECONDITION(_notificationOwnersLock);
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     
     NSUInteger ownerIndex = [self _locked_indexOfNotificationOwner:notificationOwner];
     
@@ -779,7 +779,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     if (ownerIndex != NSNotFound)
         [_locked_notificationOwnerReferences removeObjectAtIndex:ownerIndex];
     
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
 }
 
 
@@ -930,7 +930,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     NSMutableArray *owners = [[NSMutableArray alloc] init];
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     {
         for (OFControllerStatusObserverReference ref in _locked_notificationOwnerReferences) {
             id object = ref.object;
@@ -938,7 +938,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
                 [owners addObject:object];
         }
     }
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
     
     return [owners autorelease];
 }

@@ -18,4 +18,5 @@
 @property(strong,readonly,nonatomic) UITableView *tableView;
 @property(nonatomic,retain) NSLayoutConstraint *heightConstraint;
 - (UITableViewStyle)tableViewStyle; // The style to use when creating the table view
+- (void)reloadTableAndResize;
 @end

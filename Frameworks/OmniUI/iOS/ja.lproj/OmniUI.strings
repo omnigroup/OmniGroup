@@ -1,13 +1,8 @@
-/* In App Store pricing option format - placeholders are product's price and product's name */
-"%@ %@" = "%1$@ %2$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ を購入しました";
-
 /* Default title for the About menu item */
+
 "About %@" = "%@ について";
 
 /* No purchases found message format */
@@ -16,16 +11,13 @@
 /* Bold button accessibility label */
 "Bold" = "ボールド";
 
-/* Disabled 'Buy' button title string */
-"Buy" = "購入";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "%@ を購入";
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "購入（%@）";
 
 /* button title
    cancel button title
-   Cancel button title
    toolbar item title */
+
 
 
 
@@ -39,6 +31,9 @@
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "'%1$@' 環境設定を '%2$@' から '%3$@' に変更しました";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "無料アップグレードを確認";
 
 /* Certificate trust alert button title */
 "Continue" = "続ける";
@@ -57,11 +52,11 @@
 /* toolbar item title */
 "Edit" = "編集";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "無料アップグレードを受けられます";
+
 /* In app Buy button error title */
 "Error" = "エラー";
-
-/* Alert title for error loading product information */
-"Error Loading Store" = "ストアの読み込み時にエラー";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "このデモでは機能が無効になっています";
@@ -96,8 +91,13 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
 
-/* Buy button title while app store is loading */
-"Loading" = "読み込み中";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "詳しい情報";
+
+/* News menu item
+   News view title */
+
+"News" = "ニュース";
 
 /* empty value cell placeholder */
 "None" = "なし";
@@ -106,10 +106,11 @@
 "Note" = "メモ";
 
 /* button title
-   Dismiss alert
    Dismiss failed purchase alert
    Dismiss failed restore alert
+   OK button label
    Web view error opening URL cancel button. */
+
 
 
 
@@ -121,9 +122,6 @@
 
 /* alert title */
 "Preference changed" = "環境設定が変更されました";
-
-/* title for successful in app purchase - placeholder is product title */
-"Purchase %@" = "%@ を購入";
 
 /* Purchase failed alert title */
 "Purchase Failed" = "購入に失敗";
@@ -161,10 +159,13 @@
 "Strike Through" = "取り消し線";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "App Store からの情報を読み込み中にエラーが発生しました";
+"This device might not be connected to the Internet." = "このデバイスはインターネットに接続していない可能性があります。";
 
 /* Certificate trust alert button title */
 "Trust Always" = "常に信頼する";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "App Store にアクセスできません";
 
 /* Underline button accessibility label */
 "Underline" = "アンダーライン";
@@ -174,9 +175,6 @@
 
 /* placeholder text */
 "username" = "ユーザ名";
-
-/* in app purchase verify button title */
-"Verify" = "検証";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました：\n\n“%@”\n\n変更を承認しますか？";

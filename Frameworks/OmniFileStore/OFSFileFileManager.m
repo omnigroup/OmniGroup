@@ -98,8 +98,15 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     
     if (!fileNames) {
         if (errorIsNonexistenceError) {
+            NSURL *failingURL = url;
+            NSDictionary *uinfo = [*outError userInfo];
+            if ([uinfo objectForKey:NSURLErrorKey])
+                failingURL = [uinfo objectForKey:NSURLErrorKey];
+            else if ([uinfo objectForKey:NSFilePathErrorKey])
+                failingURL = [NSURL fileURLWithPath:[uinfo objectForKey:NSFilePathErrorKey]];
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No document exists at \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason - listing a directory that doesn't exist"), basePath];
-            OFSError(outError, OFSNoSuchDirectory, NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason);
+            OFSErrorWithInfo(outError, OFSNoSuchDirectory, NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniFileStore", OMNI_BUNDLE, @"error description"), reason,
+                             NSURLErrorKey, failingURL, nil);
         }
         return nil;
     }

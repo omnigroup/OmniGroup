@@ -496,7 +496,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					34800E111B19233E0008DC9E = {
 						CreatedOnToolsVersion = 6.3.1;
@@ -635,6 +635,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183B50F44CF990029B4DA /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
@@ -648,6 +649,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183B60F44CF990029B4DA /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				INFOPLIST_FILE = Info.plist;
@@ -675,6 +677,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34800E3D1B1923870008DC9E /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(value)";
@@ -689,6 +692,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34800E3E1B1923870008DC9E /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(value)";

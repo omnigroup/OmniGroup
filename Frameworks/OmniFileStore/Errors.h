@@ -30,6 +30,7 @@ enum {
     // Encryption
     OFSEncryptionBadFormat,       // We don't understand the encryption metadata
     OFSEncryptionNeedAuth,        // Incorrect passphrase given, no passphrase given, key not available, biometric authentication needed, etc.
+    OFSEncryptionConflict,        // Simultaneous modification of encryption info.
 };
 
 extern NSString * const OFSErrorDomain;

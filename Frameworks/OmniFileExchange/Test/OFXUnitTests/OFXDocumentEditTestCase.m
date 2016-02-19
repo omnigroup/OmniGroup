@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -219,7 +219,7 @@ RCS_ID("$Id$")
     }];
     
     // Make sure we got the same contents
-    OFDiffFiles(self, [currentMetadataA.fileURL path], [currentMetadataB.fileURL path], NULL/*pathFilter*/);
+    OFDiffFiles(self, [currentMetadataA.fileURL path], [currentMetadataB.fileURL path], nil/*operations*/);
 }
 
 // This is intended to race vs. updates so that we sometimes have a file in local=normal/remote=edited state. Sometimes it will also hit the updated-while-downloading path.
@@ -245,7 +245,7 @@ RCS_ID("$Id$")
     }];
     
     // Make sure we got the same contents
-    OFDiffFiles(self, [currentMetadataA.fileURL path], [currentMetadataB.fileURL path], NULL/*pathFilter*/);
+    OFDiffFiles(self, [currentMetadataA.fileURL path], [currentMetadataB.fileURL path], nil/*operations*/);
 }
 
 - (void)testDownloadWithStaleMetadata;

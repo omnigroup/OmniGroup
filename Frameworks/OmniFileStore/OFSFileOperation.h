@@ -17,5 +17,6 @@
 
 - initWithFileManager:(OFSFileManager *)fileManager readingURL:(NSURL *)url;
 - initWithFileManager:(OFSFileManager *)fileManager writingData:(NSData *)data atomically:(BOOL)atomically toURL:(NSURL *)url;
+- initWithFileManager:(OFSFileManager *)fileManager deletingURL:(NSURL *)url;
 
 @end

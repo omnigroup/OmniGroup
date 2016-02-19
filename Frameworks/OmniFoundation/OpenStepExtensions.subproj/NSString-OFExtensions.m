@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1177,6 +1177,33 @@ static inline unichar hex(int i)
     }
     
     return [NSString stringWithFormat:@"%@…", [self substringWithRange:chosenRange]];
+}
+
+/// Create a dictionary for use with CSLocalizedString (for example)
+/// Adopted with ever so slight modification from here https://forums.developer.apple.com/thread/15943
+/// Take note of "IMPORTANT This is crazy inefficient.  If you’re doing this for lots of strings, you’ll want to process the dictionaries in bulk and cache the results."
++ (NSDictionary *)localizedStringDictionaryForKey:(NSString *)key table:(NSString *)tableName bundle:(NSBundle *)bundle;
+{
+    NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    for (NSString *readLoc in [bundle localizations]) {
+        NSString *writeLoc = readLoc;
+        if ([readLoc isEqual:@"Base"]) {
+            writeLoc = bundle.developmentLocalization;
+        }
+        
+        NSURL *tableURL = [bundle URLForResource:tableName withExtension:@"strings" subdirectory:nil localization:readLoc];
+        if (tableURL != nil) {
+            NSDictionary *tableDict = [[[NSDictionary alloc] initWithContentsOfURL:tableURL] autorelease];
+            if (tableDict != nil) {
+                NSString *localizedString = tableDict[key];
+                if (tableDict[key] != nil) {
+                    result[writeLoc] = localizedString;
+                }
+            }
+        }
+    }
+    
+    return [result autorelease];
 }
 
 /* Routines for generating non-exponential decimal representations of floats. */

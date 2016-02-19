@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -128,8 +128,31 @@ RCS_ID("$Id$");
 
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];
     
-    self.view = alignBar;
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 46)];
+
+    [containerView addSubview:alignBar];
+
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+    alignBar.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:
+     @[
+       [alignBar.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor],
+       [alignBar.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor],
+       [alignBar.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
+       [containerView.heightAnchor constraintEqualToConstant:46.0],
+       ]
+     ];
+
+    self.view = containerView;
     alignmentControl = alignBar; // Retain moves from our local var to the ivar
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
 }
 
 @end

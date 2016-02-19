@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,13 +62,15 @@ RCS_ID("$Id$")
     _delegateQueue.name = [NSString stringWithFormat:@"com.omnigroup.OmniDAV.connection_session_delegate for %p", self];
     
     _session = [NSURLSession sessionWithConfiguration:_configuration delegate:self delegateQueue:_delegateQueue];
-    DEBUG_TASK(1, @"Created session %@ with delegate queue %@", _session, _delegateQueue);
+    DEBUG_DAV(1, @"Created session %@ with delegate queue %@", _session, _delegateQueue);
     
     return self;
 }
 
 - (void)dealloc;
 {
+    DEBUG_DAV(1, "Destroying connection");
+
     OBFinishPortingLater("Should we let tasks finish or cancel them -- maybe make our caller specify which");
     [_session finishTasksAndInvalidate];
     [_delegateQueue waitUntilAllOperationsAreFinished];

@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -416,7 +416,9 @@ RCS_ID("$Id$");
                 [report removeObjectForKey:platExtKey];
                 
                 [clInfo appendString:@"<tr><td colspan=\"8\">"];
-                [clInfo appendString:platInfo];
+
+                if (platInfo)
+                    [clInfo appendString:platInfo];
                 if (![NSString isEmptyString:platExt]) {
                     NSString *extLabel = NSLocalizedStringFromTableInBundle(@"Extensions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - list of OpenCL platform extensions");
                     [clInfo appendFormat:@"<br>%@: %@", extLabel, platExt];

@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     return self;
 }
 
-- initWithName:(NSString *)name date:(NSDate *)date;
+- initWithName:(NSString *)name date:(NSDate * _Nullable)date;
 {
     OBRejectUnusedImplementation(self, _cmd);
 }

@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,9 +21,7 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    _nonretainedToolbarItem = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 - (void)setCell:(NSCell *)aCell;
@@ -32,16 +30,6 @@ RCS_ID("$Id$");
              
     [(NSButtonCell *)aCell setImageScaling:NSImageScaleProportionallyUpOrDown];
     [super setCell:aCell];
-}
-
-- (NSToolbarItem *)toolbarItem;
-{
-    return [[_nonretainedToolbarItem retain] autorelease];
-}
-
-- (void)setToolbarItem:(NSToolbarItem *)toolbarItem;
-{
-    _nonretainedToolbarItem = toolbarItem;
 }
 
 - (id)delegate;
@@ -79,8 +67,8 @@ RCS_ID("$Id$");
         newSize = NSMakeSize(32.0f, 32.0f);
 
     [self setFrameSize:newSize];
-    [_nonretainedToolbarItem setMinSize:newSize];
-    [_nonretainedToolbarItem setMaxSize:newSize];
+    [self.toolbarItem setMinSize:newSize];
+    [self.toolbarItem setMaxSize:newSize];
 
     NSRect myBounds = [self bounds];
     NSArray *subviews = [self subviews];

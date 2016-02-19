@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
 
-- (instancetype)initWithName:(NSString *)name date:(NSDate *)date; // Assumes that you won't create a duplicate/bad name within a parent (case conflicts, embedded '/', etc.)
+- (instancetype)initWithName:(NSString *)name date:(NSDate * _Nullable)date; // Assumes that you won't create a duplicate/bad name within a parent (case conflicts, embedded '/', etc.)
 
 @property(nonatomic,readonly) NSString *name;
-@property(nonatomic,readonly) NSDate *date;
+@property(nonatomic,nullable,readonly) NSDate *date; // The root directories doesn't have a date
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 

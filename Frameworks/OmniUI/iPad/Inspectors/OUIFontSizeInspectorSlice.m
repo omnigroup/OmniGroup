@@ -1,12 +1,13 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontSizeInspectorSlice.h>
 
+#import "OUIParameters.h"
 #import <OmniUI/OUIImages.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorTextWell.h>
@@ -21,10 +22,7 @@
 
 RCS_ID("$Id$");
 
-@implementation OUIFontInspectorSliceFontDisplay
-@end
-
-@implementation OUIFontInspectorSlice
+@implementation OUIFontSizeInspectorSlice
 {
     NSNumberFormatter *_wholeNumberFormatter;
     NSNumberFormatter *_fractionalNumberFormatter;
@@ -103,12 +101,6 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
     return self;
 }
 
-- (void)dealloc;
-{
-    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
-    _fontFacesPane.parentSlice = nil;
-}
-
 - (IBAction)stepperTouchesEnded:(id)sender;
 {
     [self.inspector didEndChangingInspectedObjects];
@@ -123,69 +115,6 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
 - (IBAction)decreaseFontSize:(id)sender;
 {
     [self _setFontSize:-1];
-}
-
-- (void)showFacesForFamilyBaseFont:(UIFont *)font;
-{
-    _fontFacesPane.showFacesOfFont = font;
-    _fontFacesPane.title = OUIDisplayNameForFont(font, YES/*useFamilyName*/);
-
-    [self.inspector pushPane:_fontFacesPane];
-}
-
-- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
-{
-    OUIFontInspectorSliceFontDisplay *display = [OUIFontInspectorSliceFontDisplay new];
-
-    CGFloat fontSize = [OUIInspectorTextWell fontSize];
-
-    UIFont *font = [fontDescriptor font];
-    OBASSERT(font);
-    
-    if (font) {
-        NSString *familyName = font.familyName;
-        OBASSERT(familyName);
-        
-        NSString *postscriptName = font.fontName;
-        OBASSERT(postscriptName);
-        
-        NSString *displayName = OUIDisplayNameForFont(font, NO/*useFamilyName*/);
-        OBASSERT(displayName);
-        
-        // Using the whole display name gets kinda long in the fixed space we have. Can swap which line is commented below to try it out.
-        display.text = OUIIsBaseFontNameForFamily(postscriptName, familyName) ? familyName : displayName;
-        //display.text = (id)familyName;
-        display.font = postscriptName ? [UIFont fontWithName:postscriptName size:fontSize] : [UIFont systemFontOfSize:fontSize];
-        
-    } else {
-        display.text = @"???";
-        display.font = nil;
-    }
-    
-    return display;
-}
-
-- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
-{
-//    CGFloat fontSize = [OUIInspectorTextWell fontSize];
-    
-    OUIFontInspectorSliceFontDisplay *display = [OUIFontInspectorSliceFontDisplay new];
-    
-    switch ([fontDescriptors count]) {
-        case 0:
-            display.text = NSLocalizedStringFromTableInBundle(@"No Selection", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector label title for no selected objects");
-            display.font = [OUIInspector labelFont];
-            break;
-        case 1:
-            display = [self fontNameDisplayForFontDescriptor:[fontDescriptors objectAtIndex:0]];
-            break;
-        default:
-            display.text = NSLocalizedStringFromTableInBundle(@"Multiple Selection", @"OUIInspectors", OMNI_BUNDLE, @"popover inspector label title for mulitple selection");
-            display.font = [OUIInspector labelFont];
-            break;
-    }
-    
-    return display;
 }
 
 - (UIView *)makeFontSizeControlWithFrame:(CGRect)frame; // Return a new view w/o adding it to the view heirarchy
@@ -240,25 +169,12 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
 
 #pragma mark - OUIInspectorSlice subclass
 
-- (BOOL)isAppropriateForInspectedObject:(id)object;
-{
-    return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIFontInspection)];
-}
-
-static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontInspectorSliceFontDisplay *display)
-{
-    textWell.text = display.text;
-    textWell.font = display.font;
-}
-
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
     OUIFontSelection *selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
-    
-    _configureTextWellDisplay(_fontFamilyTextWell, [self fontNameDisplayForFontDescriptors:selection.fontDescriptors]);
-    
+
     OUIWithoutAnimating(^{
         [self updateFontSizeControl:_fontSizeControl forFontSizes:selection.fontSizes extent:selection.fontSizeExtent];
     });
@@ -266,79 +182,88 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
 
 #pragma mark - UIViewController subclass
 
+static const CGFloat buttonWidth = 30;
+static const CGFloat fontSizeLabelWidth = 125.0f;
+static const CGFloat fontSizeControlWidth = 100.0f;
+
+- (void)loadView;
+{
+    CGRect frame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
+    UIView *containerView = [[UIView alloc] initWithFrame:frame];
+    containerView.preservesSuperviewLayoutMargins = YES;
+    CGRect fontSizeLabelFrame = CGRectMake(frame.origin.x, frame.origin.y, fontSizeLabelWidth, frame.size.height);
+    CGRect fontSizeControlFrame = CGRectMake(CGRectGetMidX(frame) - fontSizeControlWidth / 2, frame.origin.y, fontSizeControlWidth, frame.size.height);
+    CGRect increaseButtonFrame = CGRectMake(CGRectGetMaxX(frame) - buttonWidth, frame.origin.y, buttonWidth, frame.size.height);
+    CGRect decreaseButtonFrame = CGRectMake(CGRectGetMinX(increaseButtonFrame) - buttonWidth, frame.origin.y, buttonWidth, frame.size.height);
+    
+    _fontSizeLabel = [[UILabel alloc] initWithFrame:fontSizeLabelFrame];
+    
+    _fontSizeDecreaseStepperButton = [[OUIInspectorStepperButton alloc] initWithFrame:decreaseButtonFrame];
+    [_fontSizeDecreaseStepperButton addTarget:self action:@selector(decreaseFontSize:) forControlEvents:UIControlEventTouchDown];
+    _fontSizeIncreaseStepperButton = [[OUIInspectorStepperButton alloc] initWithFrame:increaseButtonFrame];
+    [_fontSizeIncreaseStepperButton addTarget:self action:@selector(increaseFontSize:) forControlEvents:UIControlEventTouchDown];
+
+    _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
+    [_fontSizeDecreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
+    _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
+    [_fontSizeIncreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
+    
+    _fontSizeLabel.text = NSLocalizedStringFromTableInBundle(@"Size", @"OUIInspectors", OMNI_BUNDLE, @"Label for font size controls");
+    
+//    // Put the font size control beside the two buttons.
+    _fontSizeControl = [self makeFontSizeControlWithFrame:fontSizeControlFrame];
+    _fontSizeControl.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font size", @"OUIInspectors", OMNI_BUNDLE, @"Font size description accessibility label");
+    
+    [containerView addSubview:_fontSizeLabel];
+    [containerView addSubview:_fontSizeControl];
+    [containerView addSubview:_fontSizeDecreaseStepperButton];
+    [containerView addSubview:_fontSizeIncreaseStepperButton];
+
+    self.view = containerView;
+    self.view.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _fontSizeControl.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fontSizeLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fontSizeIncreaseStepperButton.translatesAutoresizingMaskIntoConstraints = NO;
+    self.fontSizeDecreaseStepperButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // constraint configuration
+    CGFloat buffer = [OUIInspectorSlice sliceAlignmentInsets].left;
+
+    [NSLayoutConstraint activateConstraints:
+     @[
+       [self.fontSizeIncreaseStepperButton.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+       [self.fontSizeIncreaseStepperButton.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeIncreaseStepperButton.widthAnchor constraintEqualToConstant:buttonWidth],
+       [self.fontSizeIncreaseStepperButton.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1],
+       
+       [self.fontSizeDecreaseStepperButton.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+       [self.fontSizeDecreaseStepperButton.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeDecreaseStepperButton.rightAnchor constraintEqualToAnchor:self.fontSizeIncreaseStepperButton.leftAnchor],
+       [self.fontSizeDecreaseStepperButton.widthAnchor constraintEqualToConstant:buttonWidth],
+       
+       [self.fontSizeLabel.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+       [self.fontSizeLabel.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeLabel.widthAnchor constraintEqualToConstant:CGRectGetWidth(self.fontSizeLabel.frame)],
+       [self.fontSizeLabel.leadingAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leadingAnchor],
+       
+       [_fontSizeControl.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+       [_fontSizeControl.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [_fontSizeControl.rightAnchor constraintEqualToAnchor:self.fontSizeDecreaseStepperButton.rightAnchor],
+       [_fontSizeControl.leftAnchor constraintEqualToAnchor:self.fontSizeLabel.rightAnchor],
+       ]
+     ];
+}
+
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
-    
-    CGRect superBounds = _fontFamilyTextWell.superview.bounds;
-    UIEdgeInsets alignmentInsets = self.alignmentInsets;
-    
-    _fontFamilyTextWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
-    _fontFamilyTextWell.backgroundType = OUIInspectorWellBackgroundTypeNormal;
-    _fontFamilyTextWell.label = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
-    _fontFamilyTextWell.labelFont = [[_fontFamilyTextWell class] defaultLabelFont];
-    _fontFamilyTextWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
-    // Fixup the text well's frame so the content aligns with the alignment insets
-    {
-        UIEdgeInsets borderEdgeInsets = _fontFamilyTextWell.borderEdgeInsets;
-        CGRect frame = _fontFamilyTextWell.frame;
-        frame.origin.x = CGRectGetMinX(superBounds) + alignmentInsets.left - borderEdgeInsets.left;
-        frame.size.width = CGRectGetMaxX(superBounds) - CGRectGetMinX(frame) - alignmentInsets.right + borderEdgeInsets.right;
-        _fontFamilyTextWell.frame = frame;
-    }
-    
-    [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
-    [(UIImageView *)_fontFamilyTextWell.rightView setHighlightedImage:[OUIInspectorWell navigationArrowImageHighlighted]];
-    
-    _fontSizeDecreaseStepperButton.image = OUIStepperMinusImage();
-    _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
-    [_fontSizeDecreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
+
     _fontSizeIncreaseStepperButton.image = OUIStepperPlusImage();
-    _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
-    [_fontSizeIncreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
-
-    // Put the font size control beside the two buttons.
-    CGRect decreaseStepperFrame = _fontSizeDecreaseStepperButton.frame;
-    CGRect fontSizeFrame;
-    fontSizeFrame.size.width = 110.0f;
-    fontSizeFrame.size.height = CGRectGetHeight(decreaseStepperFrame);
-    fontSizeFrame.origin.x = CGRectGetMinX(decreaseStepperFrame) - 8.0f - fontSizeFrame.size.width;
-    fontSizeFrame.origin.y = CGRectGetMinY(decreaseStepperFrame);
-    _fontSizeControl = [self makeFontSizeControlWithFrame:fontSizeFrame];
-    _fontSizeControl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
-    [_fontSizeDecreaseStepperButton.superview addSubview:_fontSizeControl];
-    _fontSizeControl.accessibilityLabel = @"Font size";
-    
-    CGRect fontSizeLabelFrame = _fontSizeLabel.frame;
-    fontSizeLabelFrame.origin.x = alignmentInsets.left;
-    fontSizeLabelFrame.size.width = CGRectGetMinX(fontSizeFrame) - 8.0f /* spacing between controls */ - CGRectGetMinX(fontSizeLabelFrame);
-    _fontSizeLabel.frame = fontSizeLabelFrame;
-    _fontSizeLabel.text = NSLocalizedStringFromTableInBundle(@"Size", @"OUIInspectors", OMNI_BUNDLE, @"Label for font size controls");
-    
-    // Add a separator line between the two effective slices we contain
-    superBounds = _fontSizeDecreaseStepperButton.superview.bounds;
-    CGRect separatorFrame = CGRectMake(CGRectGetMinX(superBounds), CGRectGetMinY(_fontFamilyTextWell.frame) - 1.0f, CGRectGetWidth(superBounds), 1.0f);
-    OUIInspectorSliceView *separatorView = [[OUIInspectorSliceView alloc] initWithFrame:separatorFrame];
-    separatorView.inspectorSliceGroupPosition = OUIInspectorSliceGroupPositionCenter;
-    separatorView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [_fontSizeDecreaseStepperButton.superview addSubview:separatorView];
-
-    // Superclass does this for the family detail.
-    _fontFacesPane.parentSlice = self;
+    _fontSizeDecreaseStepperButton.image = OUIStepperMinusImage();
 }
 
 #pragma mark - Private
-
-- (IBAction)_showFontFamilies:(id)sender;
-{
-    OUIFontInspectorPane *familyPane = (OUIFontInspectorPane *)self.detailPane;
-    OBPRECONDITION(familyPane);
-    
-    familyPane.title = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
-    familyPane.showFacesOfFont = nil; // shows families
-    
-    [self.inspector pushPane:familyPane];
-}
 
 - (NSString *)_formatFontSize:(CGFloat)fontSize;
 {

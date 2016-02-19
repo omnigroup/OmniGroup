@@ -17,7 +17,9 @@
 - initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView;
 
 @property(nonatomic,readonly) OUIDocumentPickerItemView *itemView;
-@property(nonatomic) CGRect origFrame;
+@property(nonatomic) CGRect origMetadataFrame;
+@property(nonatomic) CGRect origItemFrame;
+@property(nonatomic) UIColor *origBackgroundColor;
 
 - (void)endRenaming;
 - (void)cancelRenaming;

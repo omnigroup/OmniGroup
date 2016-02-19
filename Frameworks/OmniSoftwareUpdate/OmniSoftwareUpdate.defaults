@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
-        <key>AutomaticSoftwareUpdateCheckEnabled</key>
+        <key>OSUCheckEnabled</key>
         <true/>
         <key>OSUSendSystemInfoEnabled</key>
         <false/>
@@ -11,10 +11,25 @@
         <key>OSUIgnoredUpdates</key>
         <array/>
         <key>OSUIncludeHardwareDetails</key>
-        <true/>
+        <false/>
         <key>OSUVisibleTracks</key>
         <array/>
+        <key>OSULastSuccessfulCheckDate</key>
+        <string>2001-01-01 00:00:00 +0000</string>
+		
+		<!-- Registered here so that using setting URLs can edit/reset them -->
         <key>OSUDebug</key>
         <integer>0</integer>
+        <key>OSUDebugDownload</key>
+        <integer>0</integer>
+        <key>OSUItemDebug</key>
+        <integer>0</integer>
+        <key>OSUDebugQuery</key>
+        <integer>0</integer>
+        <key>OSUProbeDebug</key>
+        <integer>0</integer>
+        <key>OSURuntimeDebug</key>
+        <integer>0</integer>
+		
     </dict>
 </plist>

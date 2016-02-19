@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,6 +59,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(NSURLAuthenticationChallenge *challenge);
 
 - (void)deleteURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(ODAVConnectionBasicCompletionHandler)completionHandler;
+- (ODAVOperation *)asynchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag;
 
 - (void)makeCollectionAtURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 - (void)makeCollectionAtURLIfMissing:(NSURL *)url baseURL:(NSURL *)baseURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
@@ -71,6 +72,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 - (void)getContentsOfURL:(NSURL *)url ETag:(NSString *)ETag completionHandler:(ODAVConnectionOperationCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url; // Returns an unstarted operation
+- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(NSString *)ETag range:(NSString *)range;
 
 - (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 

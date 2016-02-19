@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,6 +50,16 @@ extern NSString *const OAAppearanceValuesDidChangeNotification;
 /// Key for the aliases section within an OAAppearance plist. Has value @"OAAppearanceAliases".
 extern NSString * const OAAppearanceAliasesKey;
 
+typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
+    OAAppearanceValueEncodingRaw, // used for types directly representable in plists
+    OAAppearanceValueEncodingWhiteColor,
+    OAAppearanceValueEncodingRGBColor,
+    OAAppearanceValueEncodingHSBColor,
+    OAAppearanceValueEncodingEdgeInsets,
+    OAAppearanceValueEncodingSize,
+    OAAppearanceValueEncodingCustom, // call back to -customEncodingForKeyPath: on instance to get encoding
+};
+
 /*! Reads values from a plist in a bundle and converts those values into usable constants for implementing user interfaces. +appearance searches in the bundle of the receiver for a plist with a name derived from that of the receiver. (See +appearance for details.)
  *
  * Subclasses can inherit and override appearance attributes from their superclass. If an appearance object is asked for a value that is not in its plist, it will consult its superclass. Thus, it is recommended that each application or framework create a subclass of OAAppearance and use it consitently.
@@ -63,6 +73,9 @@ extern NSString * const OAAppearanceAliasesKey;
 /*! Returns an instance of the receiver whose values come from a plist in the receiver's bundle. This method first looks for a plist named "<ClassName>Appearance.plist", followed by "<ClassName>.plist".
  */
 + (instancetype)appearance;
+
+- (OAAppearanceValueEncoding)valueEncodingForKeyPath:(NSString *)keyPath;
+- (NSObject *)customEncodingForKeyPath:(NSString *)keyPath;
 
 - (NSString *)stringForKeyPath:(NSString * )keyPath;
 - (NSDictionary *)dictionaryForKeyPath:(NSString *)keyPath;
@@ -125,6 +138,9 @@ extern NSString * const OAAppearanceAliasesKey;
 + (instancetype)appearanceForClass:(Class)cls NS_REQUIRES_SUPER;
 
 /// Subclasses may override this method to return a URL in which vended subclass appearance singletons will look for their backing plists. The default implementation returns nil, signifying that the backing plist should be found in the app bundle's resources. It's expected that any vended URL points to a folder to which the app already has sandbox access, typically a folder within the app bundle or container.
+///
+/// N.B., this method is called frequently. OVERRIDES SHOULD TAKE PAINS TO RETURN _THE SAME INSTANCE_ of NSURL if the path hasn't changed. If the instance changes, OAAppearance converts the URL to an absolute path and uses string comparison.
+///
 /// N.B., this method is consulted whenever a client asks for the singleton instance of the subclass. If the returned value is different than the last time the singleton was vended, appearance change notifications for the instance and for all subclasses will be fired. Clients that wish to control the timing of these notifications should request their own singleton instance when the value that will be returned by this method changes.
 + (NSURL *)directoryURLForSwitchablePlist;
 @end

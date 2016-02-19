@@ -52,6 +52,9 @@ RCS_ID("$Id$")
     visibleRect.size.width = topRight.x - topLeft.x;
     visibleRect.size.height = bottomLeft.y - topLeft.y;
     visibleRect = CGRectIntersection(view.bounds, visibleRect);
+    if (CGSizeEqualToSize(visibleRect.size, CGSizeZero)) {
+        visibleRect = CGRectZero;
+    }
     return visibleRect;
 }
 

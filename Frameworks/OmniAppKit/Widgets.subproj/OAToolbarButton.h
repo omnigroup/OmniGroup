@@ -1,4 +1,4 @@
-// Copyright 2002-2004, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,13 +17,10 @@
 {
     IBOutlet id delegate;
     BOOL isShowingMenu;
-    
-    NSToolbarItem *_nonretainedToolbarItem;
 }
 
 // API
-- (NSToolbarItem *)toolbarItem;
-- (void)setToolbarItem:(NSToolbarItem *)toolbarItem;
+@property (weak) NSToolbarItem *toolbarItem;
 
 - (id)delegate;
 - (void)setDelegate:(id)aDelegate;

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="8191" systemVersion="15A284" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8191"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="8191"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9531"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="9531"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OSUAvailableUpdateController">
@@ -16,9 +16,23 @@
                 <outlet property="_releaseNotesWebView" destination="258" id="274"/>
                 <outlet property="_spinner" destination="261" id="275"/>
                 <outlet property="_titleTextField" destination="232" id="276"/>
+                <outlet property="actionButtonsView" destination="gHf-s1-M6k" id="ZDh-W5-9OJ"/>
+                <outlet property="appIconImageView" destination="259" id="qqb-Tu-ymk"/>
+                <outlet property="availableUpdatesView" destination="Lhr-8J-d7a" id="Ifr-Qu-5ee"/>
+                <outlet property="cancelButton" destination="229" id="LFz-K9-Rta"/>
+                <outlet property="installButton" destination="227" id="gAH-Xl-Pgc"/>
+                <outlet property="itemAlertMessage" destination="251" id="Tc8-w3-TLZ"/>
                 <outlet property="itemAlertPane" destination="248" id="1fQ-dv-YaA"/>
                 <outlet property="itemTableView" destination="PR2-X6-Bji" id="Bu3-6s-Y7b"/>
                 <outlet property="itemTableViewHeightConstraint" destination="Ki9-vv-1Zg" id="zhg-es-ZFe"/>
+                <outlet property="messageTextField" destination="234" id="rkz-P8-NDs"/>
+                <outlet property="okButtonView" destination="Wuy-P1-dsf" id="kb7-Cy-sm4"/>
+                <outlet property="releaseNotesView" destination="257" id="LWI-NJ-7N4"/>
+                <outlet property="releaseNotesWebView" destination="258" id="HpS-4C-d05"/>
+                <outlet property="spinner" destination="261" id="OxN-Lk-fl0"/>
+                <outlet property="stackView" destination="hUu-Yc-s2c" id="nJe-Sx-wvd"/>
+                <outlet property="statusView" destination="Pca-T5-ppY" id="GMS-JU-Ofk"/>
+                <outlet property="titleTextField" destination="232" id="Jsc-dL-nOs"/>
                 <outlet property="window" destination="225" id="277"/>
             </connections>
         </customObject>
@@ -46,15 +60,13 @@
                                             <constraint firstAttribute="width" constant="64" id="cAW-NY-07A"/>
                                             <constraint firstAttribute="height" constant="64" id="hES-Pv-mWB"/>
                                         </constraints>
-                                        <animations/>
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="axesIndependently" image="NSApplicationIcon" id="260"/>
                                     </imageView>
-                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="232" customClass="OSUAvailableUpdateControllerMessageTextField">
+                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="1000" preferredMaxLayoutWidth="336" translatesAutoresizingMaskIntoConstraints="NO" id="232" customClass="OSUAvailableUpdateControllerMessageTextField">
                                         <rect key="frame" x="82" y="55" width="340" height="17"/>
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="300" id="9vq-V8-8Xe"/>
                                         </constraints>
-                                        <animations/>
                                         <textFieldCell key="cell" sendsActionOnEndEditing="YES" id="233">
                                             <font key="font" metaFont="systemBold"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -65,12 +77,11 @@
                                             <outlet property="nextKeyView" destination="234" id="281"/>
                                         </connections>
                                     </textField>
-                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="234" customClass="OSUAvailableUpdateControllerMessageTextField">
+                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="308" translatesAutoresizingMaskIntoConstraints="NO" id="234" customClass="OSUAvailableUpdateControllerMessageTextField">
                                         <rect key="frame" x="82" y="9" width="312" height="27"/>
                                         <constraints>
                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="27" id="FhK-Mw-dJf"/>
                                         </constraints>
-                                        <animations/>
                                         <textFieldCell key="cell" controlSize="small" selectable="YES" sendsActionOnEndEditing="YES" allowsEditingTextAttributes="YES" id="235">
                                             <font key="font" metaFont="smallSystemBold"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -83,7 +94,6 @@
                                     </textField>
                                     <progressIndicator wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" minValue="16" maxValue="100" doubleValue="16" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="261">
                                         <rect key="frame" x="400" y="24" width="32" height="32"/>
-                                        <animations/>
                                         <connections>
                                             <binding destination="-2" name="hidden" keyPath="checkInProgress" id="303">
                                                 <dictionary key="options">
@@ -107,7 +117,6 @@
                                     <constraint firstItem="259" firstAttribute="leading" secondItem="Pca-T5-ppY" secondAttribute="leading" id="z27-Xi-Dbe"/>
                                     <constraint firstItem="232" firstAttribute="leading" secondItem="259" secondAttribute="trailing" constant="20" id="zKE-qF-nAL"/>
                                 </constraints>
-                                <animations/>
                             </customView>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="0.0" verticalLineScroll="19" verticalPageScroll="0.0" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lhr-8J-d7a" userLabel="Available Updates View">
                                 <rect key="frame" x="0.0" y="372" width="440" height="66"/>
@@ -116,9 +125,8 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" id="PR2-X6-Bji">
-                                            <rect key="frame" x="0.0" y="0.0" width="438" height="19"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="438" height="64"/>
                                             <autoresizingMask key="autoresizingMask"/>
-                                            <animations/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
@@ -192,32 +200,21 @@
                                             </connections>
                                         </tableView>
                                     </subviews>
-                                    <animations/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="66" id="Ki9-vv-1Zg"/>
+                                    <constraint firstAttribute="height" priority="725" constant="66" identifier="item-tableview-height" id="Ki9-vv-1Zg"/>
                                 </constraints>
-                                <animations/>
                                 <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="odA-Jr-aQL">
                                     <rect key="frame" x="-100" y="-100" width="223" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
-                                    <animations/>
                                 </scroller>
                                 <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="dPc-Yf-2vr">
                                     <rect key="frame" x="-14" y="1" width="15" height="0.0"/>
                                     <autoresizingMask key="autoresizingMask"/>
-                                    <animations/>
                                 </scroller>
-                                <connections>
-                                    <binding destination="-2" name="hidden" keyPath="updatesAreAvailable" id="3qo-jK-jcB">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
                             </scrollView>
-                            <customView horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="248">
+                            <customView horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="248">
                                 <rect key="frame" x="0.0" y="282" width="440" height="90"/>
                                 <subviews>
                                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Kv0-Sz-fmN">
@@ -226,12 +223,10 @@
                                             <constraint firstAttribute="width" constant="64" id="2eo-WK-vUN"/>
                                             <constraint firstAttribute="height" constant="64" id="csw-Ix-K73"/>
                                         </constraints>
-                                        <animations/>
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="NSCaution" id="s9K-Ar-e7f"/>
                                     </imageView>
                                     <button verticalHuggingPriority="750" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="255">
                                         <rect key="frame" x="151" y="30" width="121" height="19"/>
-                                        <animations/>
                                         <buttonCell key="cell" type="roundRect" title="(DNL) Ignore Track" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="256">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="cellTitle"/>
@@ -248,7 +243,6 @@
                                     </button>
                                     <button horizontalHuggingPriority="249" verticalHuggingPriority="750" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="253">
                                         <rect key="frame" x="299" y="30" width="121" height="19"/>
-                                        <animations/>
                                         <buttonCell key="cell" type="roundRect" title="Ignore All but Final" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="254">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="cellTitle"/>
@@ -257,12 +251,11 @@
                                             <action selector="ignoreCertainTracks:" target="-2" id="299"/>
                                         </connections>
                                     </button>
-                                    <textField autoresizesSubviews="NO" horizontalHuggingPriority="249" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="251" customClass="OSUAvailableUpdateControllerMessageTextField">
+                                    <textField autoresizesSubviews="NO" horizontalHuggingPriority="249" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="355" translatesAutoresizingMaskIntoConstraints="NO" id="251" customClass="OSUAvailableUpdateControllerMessageTextField">
                                         <rect key="frame" x="71" y="53" width="359" height="34"/>
                                         <constraints>
                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="34" id="sfq-v4-UVU"/>
                                         </constraints>
-                                        <animations/>
                                         <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="(DO NOT LOCALIZE) Alert message" id="252">
                                             <font key="font" metaFont="system"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -271,8 +264,8 @@
                                     </textField>
                                 </subviews>
                                 <constraints>
-                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="255" secondAttribute="bottom" constant="11" id="3SK-z4-WNT"/>
-                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Kv0-Sz-fmN" secondAttribute="bottom" constant="3" id="Auq-hH-IAf"/>
+                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="255" secondAttribute="bottom" priority="725" constant="11" id="3SK-z4-WNT"/>
+                                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Kv0-Sz-fmN" secondAttribute="bottom" priority="725" constant="3" id="Auq-hH-IAf"/>
                                     <constraint firstAttribute="bottom" secondItem="255" secondAttribute="bottom" priority="250" constant="11" id="KpA-Eq-M6U"/>
                                     <constraint firstItem="251" firstAttribute="leading" secondItem="Kv0-Sz-fmN" secondAttribute="trailing" constant="6" id="NaT-PS-EtS"/>
                                     <constraint firstItem="255" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="251" secondAttribute="leading" constant="12" id="O52-3S-575"/>
@@ -287,14 +280,12 @@
                                     <constraint firstItem="255" firstAttribute="baseline" secondItem="253" secondAttribute="baseline" id="sWF-ZN-755"/>
                                     <constraint firstItem="255" firstAttribute="top" secondItem="251" secondAttribute="bottom" constant="4" id="szE-F1-CLX"/>
                                 </constraints>
-                                <animations/>
                             </customView>
                             <customView placeholderIntrinsicWidth="440" placeholderIntrinsicHeight="176" translatesAutoresizingMaskIntoConstraints="NO" id="257" userLabel="Release Notes View" customClass="OSUThinBorderView">
                                 <rect key="frame" x="0.0" y="82" width="440" height="200"/>
                                 <subviews>
                                     <webView translatesAutoresizingMaskIntoConstraints="NO" id="258">
                                         <rect key="frame" x="1" y="1" width="438" height="198"/>
-                                        <animations/>
                                         <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12">
                                             <nil key="identifier"/>
                                         </webPreferences>
@@ -311,26 +302,17 @@
                                 <constraints>
                                     <constraint firstItem="258" firstAttribute="leading" secondItem="257" secondAttribute="leading" constant="1" id="0n9-cf-ADc"/>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="440" id="3Z3-MG-50L"/>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="200" id="Fh4-ux-WqX"/>
-                                    <constraint firstAttribute="bottom" secondItem="258" secondAttribute="bottom" constant="1" id="cQo-1B-zQs"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" priority="725" constant="200" id="Fh4-ux-WqX"/>
+                                    <constraint firstAttribute="bottom" secondItem="258" secondAttribute="bottom" priority="725" constant="1" id="cQo-1B-zQs"/>
                                     <constraint firstItem="258" firstAttribute="top" secondItem="257" secondAttribute="top" constant="1" id="qIB-6B-hDS"/>
                                     <constraint firstAttribute="trailing" secondItem="258" secondAttribute="trailing" constant="1" id="vbO-tv-G46"/>
                                 </constraints>
-                                <animations/>
-                                <connections>
-                                    <binding destination="-2" name="hidden" keyPath="updatesAreAvailable" id="eY9-zf-ujc">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
                             </customView>
                             <customView translatesAutoresizingMaskIntoConstraints="NO" id="gHf-s1-M6k" userLabel="Action Buttons View">
                                 <rect key="frame" x="0.0" y="41" width="440" height="41"/>
                                 <subviews>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="262">
                                         <rect key="frame" x="-6" y="-7" width="156" height="32"/>
-                                        <animations/>
                                         <buttonCell key="cell" type="push" title="Ignore This Update" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="263">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -347,7 +329,6 @@
                                     </button>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="229">
                                         <rect key="frame" x="256" y="-7" width="95" height="32"/>
-                                        <animations/>
                                         <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="230">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -365,7 +346,6 @@ Gw
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="83" id="f89-EY-6XS"/>
                                         </constraints>
-                                        <animations/>
                                         <buttonCell key="cell" type="push" title="Install" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="228">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -393,20 +373,12 @@ DQ
                                     <constraint firstItem="227" firstAttribute="height" secondItem="262" secondAttribute="height" id="Kj5-xn-HEl"/>
                                     <constraint firstItem="227" firstAttribute="baseline" secondItem="262" secondAttribute="baseline" id="MiB-nE-qfz"/>
                                     <constraint firstItem="262" firstAttribute="leading" secondItem="gHf-s1-M6k" secondAttribute="leading" id="Ud3-ZD-tgL"/>
-                                    <constraint firstAttribute="bottom" secondItem="262" secondAttribute="bottom" id="cKR-Dm-9Un"/>
+                                    <constraint firstAttribute="bottom" secondItem="262" secondAttribute="bottom" priority="725" id="cKR-Dm-9Un"/>
                                     <constraint firstItem="229" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="262" secondAttribute="trailing" constant="40" id="mPX-zT-Ft4"/>
                                     <constraint firstAttribute="trailing" secondItem="227" secondAttribute="trailing" id="ohC-fm-KbD"/>
                                 </constraints>
-                                <animations/>
-                                <connections>
-                                    <binding destination="-2" name="hidden" keyPath="updatesAreAvailable" id="Bmk-6F-LWo">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
-                                        </dictionary>
-                                    </binding>
-                                </connections>
                             </customView>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="Wuy-P1-dsf" userLabel="OK Button View">
+                            <customView verticalCompressionResistancePriority="725" translatesAutoresizingMaskIntoConstraints="NO" id="Wuy-P1-dsf" userLabel="OK Button View">
                                 <rect key="frame" x="0.0" y="0.0" width="440" height="41"/>
                                 <subviews>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nle-bX-KMt">
@@ -414,7 +386,6 @@ DQ
                                         <constraints>
                                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="83" id="6St-bV-fD5"/>
                                         </constraints>
-                                        <animations/>
                                         <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="acA-Bg-d2q">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -430,26 +401,22 @@ Gw
                                 <constraints>
                                     <constraint firstItem="nle-bX-KMt" firstAttribute="top" secondItem="Wuy-P1-dsf" secondAttribute="top" constant="20" id="EfD-jd-pu1"/>
                                     <constraint firstItem="nle-bX-KMt" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="Wuy-P1-dsf" secondAttribute="leading" constant="20" symbolic="YES" id="LVE-H7-x4z"/>
-                                    <constraint firstAttribute="bottom" secondItem="nle-bX-KMt" secondAttribute="bottom" id="geh-9y-Llo"/>
+                                    <constraint firstAttribute="bottom" secondItem="nle-bX-KMt" secondAttribute="bottom" priority="725" id="geh-9y-Llo"/>
                                     <constraint firstAttribute="trailing" secondItem="nle-bX-KMt" secondAttribute="trailing" id="vGT-tk-n8F"/>
                                 </constraints>
-                                <animations/>
-                                <connections>
-                                    <binding destination="-2" name="hidden" keyPath="updatesAreAvailable" id="SqS-wR-EIo"/>
-                                </connections>
                             </customView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="257" firstAttribute="leading" secondItem="hUu-Yc-s2c" secondAttribute="leading" placeholder="YES" id="138-9D-3f1"/>
                             <constraint firstAttribute="trailing" secondItem="gHf-s1-M6k" secondAttribute="trailing" placeholder="YES" id="4d7-4Q-H8a"/>
                             <constraint firstItem="248" firstAttribute="top" secondItem="Lhr-8J-d7a" secondAttribute="bottom" placeholder="YES" id="5cF-rP-RAb"/>
-                            <constraint firstItem="Wuy-P1-dsf" firstAttribute="top" secondItem="gHf-s1-M6k" secondAttribute="bottom" placeholder="YES" id="Dki-J5-hnm"/>
+                            <constraint firstItem="Wuy-P1-dsf" firstAttribute="top" secondItem="gHf-s1-M6k" secondAttribute="bottom" priority="725" placeholder="YES" id="Dki-J5-hnm"/>
                             <constraint firstItem="257" firstAttribute="top" secondItem="248" secondAttribute="bottom" placeholder="YES" id="HoV-6y-SNI"/>
                             <constraint firstAttribute="trailing" secondItem="Lhr-8J-d7a" secondAttribute="trailing" placeholder="YES" id="I8N-Sn-PBb"/>
                             <constraint firstAttribute="trailing" secondItem="257" secondAttribute="trailing" placeholder="YES" id="KPN-RH-ZtO"/>
                             <constraint firstAttribute="trailing" secondItem="Pca-T5-ppY" secondAttribute="trailing" placeholder="YES" id="Oqx-mx-iuu"/>
                             <constraint firstItem="Lhr-8J-d7a" firstAttribute="top" secondItem="Pca-T5-ppY" secondAttribute="bottom" placeholder="YES" id="PFg-Of-htf"/>
-                            <constraint firstItem="gHf-s1-M6k" firstAttribute="top" secondItem="257" secondAttribute="bottom" placeholder="YES" id="QRe-nN-8Th"/>
+                            <constraint firstItem="gHf-s1-M6k" firstAttribute="top" secondItem="257" secondAttribute="bottom" priority="725" placeholder="YES" id="QRe-nN-8Th"/>
                             <constraint firstAttribute="trailing" secondItem="Wuy-P1-dsf" secondAttribute="trailing" placeholder="YES" id="Tmf-fY-Waw"/>
                             <constraint firstItem="Pca-T5-ppY" firstAttribute="leading" secondItem="hUu-Yc-s2c" secondAttribute="leading" placeholder="YES" id="Y4Y-7c-KiX"/>
                             <constraint firstItem="Lhr-8J-d7a" firstAttribute="leading" secondItem="hUu-Yc-s2c" secondAttribute="leading" placeholder="YES" id="YcC-2M-Px2"/>
@@ -460,7 +427,6 @@ Gw
                             <constraint firstAttribute="trailing" secondItem="248" secondAttribute="trailing" placeholder="YES" id="luE-6m-STA"/>
                             <constraint firstItem="gHf-s1-M6k" firstAttribute="leading" secondItem="hUu-Yc-s2c" secondAttribute="leading" placeholder="YES" id="yhF-4J-LW1"/>
                         </constraints>
-                        <animations/>
                     </customView>
                 </subviews>
                 <constraints>
@@ -469,7 +435,6 @@ Gw
                     <constraint firstItem="hUu-Yc-s2c" firstAttribute="leading" secondItem="226" secondAttribute="leading" constant="20" symbolic="YES" id="RvL-Jn-hwj"/>
                     <constraint firstAttribute="trailing" secondItem="hUu-Yc-s2c" secondAttribute="trailing" constant="20" symbolic="YES" id="cLx-Hy-AAN"/>
                 </constraints>
-                <animations/>
             </view>
             <connections>
                 <outlet property="delegate" destination="-2" id="278"/>

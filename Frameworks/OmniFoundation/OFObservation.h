@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,10 +38,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable instancetype)makeObserver:(ObserverType)observer withKeyPath:(NSString *)keyPath ofObject:(nullable ObservedObjectType)observedObject withAction:(void (^)(OFObservationChange<ObserverType, ObservedObjectType> *change))action;
 
 @property(nonatomic,readonly,weak) ObserverType observer;
-@property(nonatomic,readonly,strong) ObservedObjectType observedObject;
+@property(nonatomic,readonly,strong,nullable) ObservedObjectType observedObject; // nil once -invalidate has been sent, but not otherwise
 @property(nonatomic,readonly) NSKeyValueObservingOptions options;
 @property(nonatomic,readonly,copy) NSString *keyPath;
 
+- (void)invalidate;
 
 /*
  

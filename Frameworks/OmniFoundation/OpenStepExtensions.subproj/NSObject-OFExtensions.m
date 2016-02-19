@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -281,3 +281,36 @@ BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^p
     
     return done;
 }
+
+// Wrapper that hides the NSInvocation/NSMethodSignature details from Swift.
+
+@interface NSMethodSignature (OFInvokeMethod) <OFInvokeMethodSignature>
+@end
+@implementation NSMethodSignature (OFInvokeMethod)
+@end
+
+@interface NSInvocation (OFInvokeMethod) <OFInvokeMethodInvocation>
+@end
+@implementation NSInvocation (OFInvokeMethod)
+@end
+
+
+BOOL OFInvokeMethod(id object, SEL selector, OFInvokeMethodHandler provideArguments, OFInvokeMethodHandler collectResults)
+{
+    NSMethodSignature *methodSignature = [object methodSignatureForSelector:selector];
+    if (!methodSignature) {
+        return NO;
+    }
+
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSignature];
+    [invocation setTarget:object];
+    [invocation setSelector:selector];
+
+    if (!provideArguments(methodSignature, invocation))
+        return NO;
+
+    [invocation invoke];
+
+    return collectResults(methodSignature, invocation);
+}
+

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development. Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniAppKit/OAAppearance.h>
+#import <OmniAppKit/OAAppearancePropertyListCoder.h>
 
 // Constant strings that we use in the baseline .plist. All values are non-zero floats unless otherwise specified.
 extern NSString * const OAAppearanceTestBaselineTopLevelLeafKey;
@@ -21,7 +22,7 @@ extern NSString * const OAAppearanceTestBaselineColorKey; // color object instea
 extern NSString * const OAAppearanceTestBaselineEdgeInsetKey; // edge inset struct instead of a float
 
 // Trivial subclass for tests
-@interface OAAppearanceTestBaseline : OAAppearance
+@interface OAAppearanceTestBaseline : OAAppearance <OAAppearancePropertyListCodeable>
 
 @property (readonly) CGFloat TopLevelFloat;
 @property (readonly) NSColor *Color;
@@ -40,4 +41,28 @@ extern NSString * const OAAppearanceTestBaselineEdgeInsetKey; // edge inset stru
 @end
 
 @interface OAAppearanceTestSubclass2 : OAAppearanceTestBaseline
+@property (readonly) NSString *SpecialLeafyString;
+@end
+
+/// Test class covering all property encodings
+@interface OAAppearanceTestEncodingCoverage: OAAppearance <OAAppearancePropertyListCodeable>
+@property (readonly) NSString *string;
+@property (readonly) CGFloat cgFloat;
+@property (readonly) float float_;
+@property (readonly) double double_;
+@property (readonly) NSInteger integer;
+@property (readonly) BOOL bool_;
+@property (readonly) CGSize size;
+@property (readonly) OA_SYSTEM_EDGE_INSETS_STRUCT insets;
+@property (readonly) OA_SYSTEM_COLOR_CLASS *colorWithWhite;
+@property (readonly) OA_SYSTEM_COLOR_CLASS *colorWithRGB;
+@property (readonly) OA_SYSTEM_COLOR_CLASS *colorWithHSB;
+
+// TODO: Generalize for iOS. This test current only runs on Mac, and we don't have an OA_SYSTEM_IMAGE_CLASS cover yet.
+@property (readonly) NSImage *imageWithString;
+@property (readonly) NSImage *imageWithName;
+@property (readonly) NSImage *imageWithNameAndBundle;
+@property (readonly) NSImage *imageWithNameAndColor;
+
+@property (readonly) NSDictionary *dictionary;
 @end

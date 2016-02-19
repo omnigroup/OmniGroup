@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -149,6 +149,8 @@ static void _InitializeConfigurationValue ## counter(void) { \
 // If you want your log level/time interval variable to be static, you can insert 'static' before using these macros.
 #define OFDeclareDebugLogLevel(name) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, 0, 0, 10)
 #define OFDeclareTimeInterval(name, default_value, min_value, max_value) _OFDeclareConfigurationValue(TimeInterval, name, __COUNTER__, (default_value), (min_value), (max_value))
+
+#define OFDeclareIntegerConfigurationValue(name, value, min, max) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, (value), (min), (max))
 
 // Handle URLs of the form "scheme:///change-configuration-value?name=level. We ignore the scheme each app will have their own scheme.
 typedef void (^OFConfigurationValueChangeConfirmationCallback)(BOOL confirmed, NSError *confirmError);

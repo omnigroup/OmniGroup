@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1340,7 +1340,7 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
                 [buffer appendBytes:"" length:1];
         } else if (pieces[pieceIndex].rawBytes) {
             [buffer appendBytes:pieces[pieceIndex].rawBytes length:pieces[pieceIndex].length];
-        } else {
+        } else if (pieces[pieceIndex].obj) {
             [buffer appendData:pieces[pieceIndex].obj];
         }
     }

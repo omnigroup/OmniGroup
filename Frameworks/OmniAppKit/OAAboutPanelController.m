@@ -1,4 +1,4 @@
-// Copyright 2005-2006,2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 
 @implementation OAAboutPanelController
 
-- init;
+- (instancetype)init;
 {
     if (!(self = [super init]))
 	return nil;
@@ -35,13 +35,6 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     currentContentVariantIndex = -1;
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [panel release];
-    [contentVariants release];
-    [super dealloc];
 }
 
 #pragma mark -
@@ -158,7 +151,6 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 	if ([type isEqualToString:@"txt"]) {
 	    NSData *utf8Data = [[NSData alloc] initWithContentsOfFile:path];
 	    NSString *string = [[NSString alloc] initWithData:utf8Data encoding:NSUTF8StringEncoding];
-	    [utf8Data release];
 	    
 	    // There is no NSFont class method for the 'mini' size.
 	    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
@@ -166,8 +158,6 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 		[NSColor whiteColor], NSBackgroundColorAttributeName,
 		nil];
 	    variant = [[NSAttributedString alloc] initWithString:string attributes:attributes];
-            [string release];
-	    [attributes release];
 	} else {
 	    variant = [[NSAttributedString alloc] initWithPath:path documentAttributes:NULL];
 	    
@@ -186,7 +176,6 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     
     if (variant) {
 	[self addContentVariant:variant];
-	[variant release];
     }
 }
 
@@ -212,7 +201,6 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 	NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OAAboutPanel" bundle:OMNI_BUNDLE];
 	if (!nib || ![nib instantiateNibWithOwner:self topLevelObjects:NULL])
 	    NSLog(@"Unable to load OAAboutPanel.nib");
-	[nib release];
     }
     [self _updateFieldsAndWindowSize];
     [self willShowAboutPanel];

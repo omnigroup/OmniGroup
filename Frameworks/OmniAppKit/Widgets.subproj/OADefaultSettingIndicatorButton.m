@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,15 +15,17 @@
 
 RCS_ID("$Id$")
 
-@interface OADefaultSettingIndicatorButton (Private)
-- (void)_setupButton;
-- (BOOL)_shouldShow;
-- (id)_objectValue;
-- (id)_defaultObjectValue;
-- (void)_showOrHide;
-@end
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OADefaultSettingIndicatorButton
+{
+    IBOutlet NSView *snuggleUpToRightSideOfView;
+    IBOutlet id delegate;
+
+    struct {
+        unsigned int displaysEvenInDefaultState:1;
+    } _flags;
+}
 
 static NSImage *OnImage = nil;
 static NSImage *OffImage = nil;
@@ -37,7 +39,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     OffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE];
 }
 
-+ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
++ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id <NSCopying>)settingIdentifier forView:(NSView *)view delegate:(id)delegate;
 {
     NSSize buttonSize = [OnImage size];
     OADefaultSettingIndicatorButton *indicator = [[[self class] alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.height, buttonSize.width)];
@@ -47,7 +49,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
         [indicator setSnuggleUpToRightSideOfView:view];
         [indicator repositionWithRespectToSnuggleViewAllowingResize:NO];
     }
-    [indicator setIdentifier:identifier];
+    indicator.settingIdentifier = settingIdentifier;
     [indicator setDelegate:delegate];
     
     return indicator;
@@ -92,14 +94,11 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     delegate = newDelegate;
 }
 
-- (id)identifier;
-{
-    return identifier;
-}
+@dynamic identifier; // Needed to acknowledge that we won't get storage for _identifier since the superclass implements it.
 
-- (void)setIdentifier:(id)newIdentifier;
+- (void)setSettingIdentifier:(id<NSCopying>)settingIdentifier;
 {
-    identifier = newIdentifier;
+    _settingIdentifier = [settingIdentifier copyWithZone:NULL];
     
     [self validate];
 }
@@ -230,9 +229,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
         [super drawRect:rect];
 }
 
-@end
-
-@implementation OADefaultSettingIndicatorButton (Private)
+#pragma mark - Private
 
 - (void)_setupButton;
 {
@@ -273,5 +270,6 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     self.hidden = ![self _shouldShow];
 }
 
-
 @end
+
+NS_ASSUME_NONNULL_END

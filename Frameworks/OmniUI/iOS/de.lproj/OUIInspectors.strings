@@ -1,9 +1,9 @@
 /* font size label format string in points */
-"%@ points" = "%@ Punkte";
+"%@ points" = "%@ Punkt";
 
 /* title format for color component slider */
 
-"<alpha title+value>" = "Opazität: %d%%";
+"<alpha title+value>" = "Deckkraft: %d%%";
 
 /* title format for color component slider */
 "<blue title+value>" = "Blau: %d";
@@ -15,7 +15,7 @@
 "<green title+value>" = "Grün: %d";
 
 /* title format for color component slider */
-"<hue title+value>" = "Farbton: %d";
+"<hue title+value>" = "Farbton: %d°";
 
 /* title format for color component slider */
 "<red title+value>" = "Rot: %d";
@@ -36,10 +36,14 @@
 "Color" = "Farbe";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "Schrift";
 
 /* Increment font size button accessibility label */
 "Font bigger" = "Größere Schrift";
+
+/* Font size description accessibility label */
+"Font size" = "Schriftgröße";
 
 /* Decrement font size button accessibility label */
 "Font smaller" = "Kleinere Schrift";

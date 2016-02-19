@@ -177,9 +177,6 @@ RCS_ID("$Id$");
     [layoutManager ensureLayoutForTextContainer:textContainer];
     
     CGFloat height = [layoutManager totalHeightUsed];
-    [textStorage release];
-    [textContainer release];
-    [layoutManager release];
     
     [HeightForAttributesCache setObject:@(height) forKey:attributes];
     return height;

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 static void (*originalTextDidEndEditing)(NSTableView *self, SEL _cmd, NSNotification *note);
 static NSImage *(*originalDragImageForRows)(NSTableView *self, SEL _cmd, NSIndexSet *dragRows, NSArray *tableColumns, NSEvent *dragEvent, NSPointPointer dragImageOffset);
 
-static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
+static NSIndexSet * _Nullable OATableViewRowsInCurrentDrag = nil;
 // you'd think this should be instance-specific, but it doesn't have to be -- only one drag can be happening at a time.
 
 
@@ -458,7 +458,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 - (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation;
 {
     // We get NSDragOperationDelete now for dragging to the Trash.
-    if (operation == NSDragOperationDelete) {
+    if (operation == NSDragOperationDelete && OATableViewRowsInCurrentDrag != nil) {
         if ([self.dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
             [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self deleteRowsAtIndexes:OATableViewRowsInCurrentDrag];
             [self reloadData];

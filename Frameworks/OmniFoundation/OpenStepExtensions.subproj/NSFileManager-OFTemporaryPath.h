@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <Foundation/NSFileManager.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSFileManager (OFTemporaryPath)
 
@@ -43,3 +45,5 @@
 - (BOOL)exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,20 +35,8 @@ typedef NS_ENUM(NSInteger, OUIIconSize) {
 
 + (instancetype)exporterForViewController:(UIViewController<OUIDocumentExporterHost> *)hostViewController
 {
-    static NSMapTable *instances;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instances = [NSMapTable weakToStrongObjectsMapTable];
-    });
-    
-    OUIDocumentExporter *instance = [instances objectForKey:hostViewController];
-    if (!instance) {
-        OUIDocumentAppController *appDelegate = OB_CHECKED_CAST(OUIDocumentAppController, [[UIApplication sharedApplication] delegate]);
-        instance = [[[appDelegate documentExporterClass] alloc] init];
-        instance.hostViewController = hostViewController;
-        [instances setObject:instance forKey:hostViewController];
-    }
-    return instance;
+    OUIDocumentAppController *appDelegate = OB_CHECKED_CAST(OUIDocumentAppController, [[UIApplication sharedApplication] delegate]);
+    return [[[appDelegate documentExporterClass] alloc] initWithHostViewController:hostViewController];
 }
 
 /// Should be called when app enters background
@@ -69,17 +57,36 @@ typedef NS_ENUM(NSInteger, OUIIconSize) {
     return _openInMapCache;
 }
 
-
 - (BOOL)canExportFileItem:(ODSFileItem *)fileItem
 {
     return ([[self availableExportTypesForFileItem:fileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
 }
 
+- (instancetype)initWithHostViewController:(UIViewController<OUIDocumentExporterHost> *)hostViewController;
+{
+    if (!(self = [super init]))
+        return nil;
+
+    _hostViewController = hostViewController;
+    return self;
+}
+
 - (UIBarButtonItem *)barButtonItem
 {
+    NSString *imageName = @"OUIDocumentExport";
+    BOOL useCompactBarButtonItemsIfApplicable = ([self.hostViewController respondsToSelector:@selector(useCompactBarButtonItemsIfApplicable)] && [self.hostViewController useCompactBarButtonItemsIfApplicable]);
+    if (useCompactBarButtonItemsIfApplicable) {
+        BOOL isHorizontallyCompact = self.hostViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isVerticallyCompact = self.hostViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        if (isHorizontallyCompact || isVerticallyCompact) {
+            imageName = @"OUIDocumentExport-Compact";
+        }
+    }
     if (!_barButtonItem) {
-        _barButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentExport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
+        _barButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
         _barButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
+    } else if (useCompactBarButtonItemsIfApplicable) {
+        _barButtonItem.image = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     }
     return _barButtonItem;
 }
@@ -143,12 +150,14 @@ typedef NS_ENUM(NSInteger, OUIIconSize) {
     if (availableImageExportTypes.count > 0) {
         [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
             [self copyAsImageForFileItem:fileItem];
+            [self clearSelection];
         }]];
     }
     
     if (canSendToCameraRoll) {
         [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
             [self sendToCameraRollForFileItem:fileItem];
+            [self clearSelection];
         }]];
     }
     

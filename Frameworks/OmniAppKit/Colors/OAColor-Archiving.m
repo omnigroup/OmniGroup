@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,6 +60,55 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     NSData *result = [(NSMutableDictionary *)container objectForKey:key];
     OBASSERT(!result || [result isKindOfClass:[NSData class]]);
     return result;
+}
+
++ (BOOL)colorSpaceOfPropertyListRepresentation:(NSDictionary *)dict colorSpace:(OAColorSpace *)colorSpaceOutRef;
+{
+    /*
+     typedef enum {
+     OAColorSpaceRGB,
+     OAColorSpaceWhite, // 0=black, 1=white
+     OAColorSpaceCMYK,
+     OAColorSpaceHSV,
+     OAColorSpacePattern,
+     OAColorSpaceNamed,
+     } OAColorSpace;
+
+     */
+    static NSSet *whiteKeys;
+    static NSSet *rgbKeys;
+    static NSSet *hsvKeys;
+    static NSSet *hsbKeys;
+    static NSSet *cmykKeys;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        whiteKeys = [[NSSet setWithArray:@[@"w", @"a"]] retain];
+        rgbKeys = [[NSSet setWithArray:@[@"r", @"g", @"b", @"a"]] retain];
+        hsvKeys = [[NSSet setWithArray:@[@"h", @"s", @"v", @"a"]] retain];
+        hsbKeys = [[NSSet setWithArray:@[@"h", @"s", @"b", @"a"]] retain];
+        cmykKeys = [[NSSet setWithArray:@[@"c", @"m", @"y", @"k", @"a"]] retain];
+    });
+    
+    OBASSERT_NOTNULL(colorSpaceOutRef);
+    if (colorSpaceOutRef == NULL) {
+        return NO;
+    }
+    
+    NSSet *incomingKeys = [NSSet setWithArray:[dict allKeys]];
+    if ([incomingKeys isSubsetOfSet:whiteKeys]) {
+        *colorSpaceOutRef = OAColorSpaceWhite;
+    } else if ([incomingKeys isSubsetOfSet:rgbKeys]) {
+        *colorSpaceOutRef = OAColorSpaceRGB;
+    } else if ([incomingKeys isSubsetOfSet:hsvKeys] || [incomingKeys isSubsetOfSet:hsbKeys]) {
+        *colorSpaceOutRef = OAColorSpaceHSV;
+    } else if ([incomingKeys isSubsetOfSet:cmykKeys]) {
+        *colorSpaceOutRef = OAColorSpaceCMYK;
+    } else {
+        OBASSERT_NOT_REACHED(@"Unimplemented color space detection");
+        return NO;
+    }
+    
+    return YES;
 }
 
 + (OAColor *)_colorFromContainer:(void *)container getters:(OAColorGetters)getters;

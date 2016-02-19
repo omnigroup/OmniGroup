@@ -737,6 +737,8 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     if ([scanner scanCharactersFromSet:roundedCharacterSet intoString:NULL]) {
         DLOG(@"-[%@ %@]: found rounding characters in '%@'", OBShortObjectDescription(self), NSStringFromSelector(_cmd), string);
     }
+
+    unsigned int lastMatchedUnit = UNITS_COUNT;
     while (1) {
         // Eat whitespace
         [scanner scanCharactersFromSet:whitespaceCharacterSet intoString:NULL];
@@ -806,36 +808,42 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
             }
         } else {
             for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-                if ([scanner scanString:unit.localizedPluralString intoString:NULL] || [scanner scanString:unit.localizedSingularString intoString:NULL])
+                OFTimeSpanUnit *unit = TimeSpanUnits[(lastMatchedUnit+unitIndex) % UNITS_COUNT];
+                if ([scanner scanString:unit.localizedPluralString intoString:NULL] || [scanner scanString:unit.localizedSingularString intoString:NULL]) {
+                    lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                     break;
+                }
             }
             if (unitIndex == UNITS_COUNT) {
                 // Didn't match any long forms, try abbreviations instead
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-                    if ([scanner scanString:unit.localizedAbbreviatedString intoString:NULL])
+                    OFTimeSpanUnit *unit = TimeSpanUnits[(lastMatchedUnit+unitIndex) % UNITS_COUNT];
+                    if ([scanner scanString:unit.localizedAbbreviatedString intoString:NULL]) {
+                        lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                         break;
+                    }
                 }
             }
             if (unitIndex == UNITS_COUNT)
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
+                    OFTimeSpanUnit *unit = TimeSpanUnits[(lastMatchedUnit+unitIndex) % UNITS_COUNT];
                     // Didn't match any localized version, try non-localized
-                    if ([scanner scanString:unit.pluralString intoString:NULL] || [scanner scanString:unit.singularString intoString:NULL])
+                    if ([scanner scanString:unit.pluralString intoString:NULL] || [scanner scanString:unit.singularString intoString:NULL]) {
+                        lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                         break;
-                }
+                    }                }
             if (unitIndex == UNITS_COUNT) {
                 // unlocalized abbreviations?
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-                    if ([scanner scanString:unit.abbreviatedString intoString:NULL])
+                    OFTimeSpanUnit *unit = TimeSpanUnits[(lastMatchedUnit+unitIndex) % UNITS_COUNT];
+                    if ([scanner scanString:unit.abbreviatedString intoString:NULL]) {
+                        lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                         break;
-                }
+                    }                }
             }
         }
         if (unitIndex != UNITS_COUNT) {
-            OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
+            OFTimeSpanUnit *unit = TimeSpanUnits[lastMatchedUnit];
             float existingValue = unit.spanGetImplementation(timeSpan, NULL);
             unit.spanSetImplementation(timeSpan, NULL, number + existingValue);
         } else {

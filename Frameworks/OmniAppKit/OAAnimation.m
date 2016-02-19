@@ -1,4 +1,4 @@
-// Copyright 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,13 +18,9 @@ RCS_ID("$Id$")
     // TODO: This might not be threadsafe! Rather than stop the animation and synchronize with -setCurrentProgress:, just assert we aren't threaded.
     OBASSERT(self.animationBlockingMode != NSAnimationNonblockingThreaded);
     
-    [_CGFloatValueTransformer release];
     _CGFloatValueTransformer = nil;
     
-    [_progressHandler release];
     _progressHandler = nil;
-    
-    [super dealloc];
 }
 
 - (float)currentValue;

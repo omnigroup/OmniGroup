@@ -9,17 +9,37 @@
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSData.h>
-#import <Foundation/NSDictionary.h>
 
 @class NSIndexSet;
 @class OFSSegmentEncryptWorker;
+
+/* The format of the wrapped data is a sequence of key slots. Each slot contains:
+ - key type (1 byte)
+ - key length in quads (1 byte)
+ - key index (2 bytes)
+ - key data (keylength*4 bytes)
+ 
+ Any unused trailing space is filled with 0s; key type 0 is reserved to avoid ambiguity.
+ 
+ Note that these numbers are part of the file format: don't change them! Also, don't reuse old numbers.
+ */
+enum OFSDocumentKeySlotType {
+    SlotTypeNone                = 0,    // Trailing padding
+    
+    SlotTypeActiveAESWRAP       = 1,    // Currently-active AES key
+    SlotTypeRetiredAESWRAP      = 2,    // Old AES key used after rollover
+    
+    SlotTypeActiveAES_CTR_HMAC  = 3,    // Currently-active CTR+HMAC key
+    SlotTypeRetiredAES_CTR_HMAC = 4,    // Old key used after rollover
+};
 
 NS_ASSUME_NONNULL_BEGIN
 
 /* An OFSDocumentKey represents a set of subkeys protected by a user-relevant mechanism like a passphrase. */
 @interface OFSDocumentKey : NSObject
 
-- (instancetype __nullable)initWithData:(NSData * __nullable)finfo error:(NSError **)outError;
+- (instancetype __nullable)initWithData:(NSData * __nullable)finfo error:(NSError **)outError;          // For reading a stored keyblob
+- (instancetype __nullable)initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;   // For creating a new keyblob sharing another one's password
 - (NSData *)data;
 
 @property (readonly,nonatomic) NSInteger changeCount;  // For detecting (semantically significant) changes to -data. Starts at 0 and increases. Not (currently) KVOable.
@@ -32,7 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
 
 /* Key rollover: this updates the receiver to garbage-collect any slots not mentioned in keepThese, and if retireCurrent=YES, mark any active keys as inactive (and generate new active keys as needed). */
-- (void)discardKeysExceptSlots:(NSIndexSet * __nullable)keepThese retireCurrent:(BOOL)retire;
+- (void)discardKeysExceptSlots:(NSIndexSet * __nullable)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)tp;
+@property (readonly,nonatomic) NSIndexSet *retiredKeySlots, *keySlots;
 
 /* Return an encryption worker for the current active key slot. */
 - (OFSSegmentEncryptWorker *)encryptionWorker;
@@ -42,6 +63,5 @@ NS_ASSUME_NONNULL_BEGIN
 - (ssize_t)unwrapFileKey:(const uint8_t *)wrappedFileKeyInfo length:(size_t)wrappedFileKeyInfoLen into:(uint8_t *)buffer length:(size_t)unwrappedKeyBufferLength error:(NSError **)outError;
 
 @end
-
 
 NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 #import <OmniFoundation/OmniFoundation.h>
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSWindowController (OAExtensionsPrivate)
 + (void)_longIndicatorThread:(id)arg;
@@ -27,7 +29,7 @@ RCS_ID("$Id$");
     #define DEBUG_LONG_OPERATION_INDICATOR(format, ...)
 #endif
 
-static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
+static BOOL LongOperationIndicatorEnabledForWindow(NSWindow * _Nullable window)
 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LongOperationIndicatorDisabled"])
         return NO;
@@ -124,7 +126,9 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
 {
     OBPRECONDITION(_progressIndicator);
     OBPRECONDITION(_attributes);
-    
+
+    OBASSERT_NOTNULL(title); // This is the default since we are default-nonnull in this file, but OFISEQUAL checks for nil.
+
     [_titleLock lock];
     if (OFISEQUAL(title, _title)) {
         [_titleLock unlock];
@@ -257,7 +261,7 @@ enum {
 
 @implementation NSWindowController (OAExtensions)
 
-static NSWindow *RootlessProgressWindow = nil;
+static NSWindow * _Nullable RootlessProgressWindow = nil;
 
 + (void)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle inWindow:(NSWindow *)documentWindow automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
@@ -514,3 +518,5 @@ static NSWindow *RootlessProgressWindow = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

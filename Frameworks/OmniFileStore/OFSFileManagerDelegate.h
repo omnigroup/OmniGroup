@@ -25,7 +25,13 @@
 // This is called to satisfy client-side-encryption challenges
 - (OFSDocumentKey * __nullable)fileManager:(OFSFileManager * __nonnull)fileManager
                                     getKey:(ODAVFileInfo * __nonnull)encryptionInfo
+                                withChange:(BOOL)promptForChangedPassword
                                      error:(NSError * __nullable * __nullable)outError;
 - (OFSDocumentKey * __nullable)fileManager:(OFSFileManager * __nonnull)underlyingFileManager initialKeyWithError:(NSError * __nullable * __nullable)outError;
+- (void)fileManagerDidStore:(NSURL * __nonnull )where key:(OFSDocumentKey * __nullable )keyStore data:(NSData * __nonnull)d;
+
+// For keeping track of key slot usage
+- (void)fileManager:(OFSFileManager * __nonnull)fileManager usedSlot:(unsigned)keyslot URL:(NSURL * __nonnull)location flags:(NSUInteger)fileManagerSlotUsageFlags;
 
 @end
+

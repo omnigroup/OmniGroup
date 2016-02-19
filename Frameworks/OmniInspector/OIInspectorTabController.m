@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import <OmniAppKit/OmniAppKit.h>
 #import <OmniInspector/OITabbedInspector.h>
 #import <OmniInspector/OIInspectorRegistry.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 RCS_ID("$Id$");
 
@@ -44,8 +46,8 @@ RCS_ID("$Id$");
 	}
 	imageName = [tabPlist objectForKey:@"image"];
     }
-    
-    _inspector = [OIInspector newInspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:fromBundle];
+
+    _inspector = [OIInspector inspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:fromBundle];
     if (!_inspector) {
 	// Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
 	return nil;
@@ -188,14 +190,9 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Covers for OIInspector methods
 
-- (OIInspector *)inspector;
+- (NSString *)inspectorIdentifier;
 {
-    return _inspector;
-}
-
-- (NSString *)identifier;
-{
-    return [_inspector identifier];
+    return _inspector.inspectorIdentifier;
 }
 
 - (NSString *)displayName;
@@ -213,9 +210,11 @@ RCS_ID("$Id$");
     return [_inspector shortcutModifierFlags];
 }
 
-- (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
+- (NSMenuItem *)menuItemForTarget:(nullable id)target action:(SEL)action;
 {
     return [_inspector menuItemForTarget:target action:action];
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

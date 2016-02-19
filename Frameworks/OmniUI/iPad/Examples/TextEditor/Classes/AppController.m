@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,9 +9,9 @@
 
 #import "TextDocument.h"
 #import "TextViewController.h"
+#import "TextDocumentExporter.h"
 
 #import <OmniUI/OUITextView.h>
-#import <OmniUI/OUITextLayout.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
 RCS_ID("$Id$")
@@ -32,6 +32,11 @@ RCS_ID("$Id$")
 }
 
 #pragma mark - OUISingleDocumentAppController subclass
+
+- (Class)documentExporterClass
+{
+    return [TextDocumentExporter class];
+}
 
 - (Class)documentClassForURL:(NSURL *)url;
 {
@@ -77,46 +82,5 @@ RCS_ID("$Id$")
     return (NSString *)kUTTypeRTF;
 }
 
-#pragma mark - OUIDocumentPickerDelegate
-
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-{
-    TextDocument *doc = [[TextDocument alloc] initWithExistingFileItem:fileItem error:outError];
-    if (!doc)
-        return nil;
-    
-    // TODO: Paper sizes, pagination
-    const CGFloat pdfWidth = 500;
-    
-    OUITextLayout *textLayout = [[OUITextLayout alloc] initWithAttributedString:doc.text constraints:CGSizeMake(pdfWidth, 0)];
-    
-    CGRect bounds = CGRectMake(0, 0, pdfWidth, [textLayout usedSize].height);
-    NSMutableData *data = [NSMutableData data];
-    
-    NSMutableDictionary *documentInfo = [NSMutableDictionary dictionary];
-    NSString *appName = [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey];
-    if (appName)
-        [documentInfo setObject:appName forKey:(id)kCGPDFContextCreator];
-
-    // other keys we might want to add
-    // kCGPDFContextAuthor - string
-    // kCGPDFContextSubject -- string
-    // kCGPDFContextKeywords -- string or array of strings
-    UIGraphicsBeginPDFContextToData(data, bounds, documentInfo);
-    {
-        CGContextRef ctx = UIGraphicsGetCurrentContext();
-        
-        UIGraphicsBeginPDFPage();
-        
-        [textLayout drawFlippedInContext:ctx bounds:bounds];
-    }
-    UIGraphicsEndPDFContext();
-    
-    [textLayout release];
-    [doc didClose];
-    [doc release];
-    
-    return data;
-}
 
 @end

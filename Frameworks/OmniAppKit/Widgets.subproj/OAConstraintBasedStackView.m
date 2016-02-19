@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,9 +63,29 @@ static void _commonInit(OAConstraintBasedStackView *self)
     }
 }
 
-//
-// NSView subclass
-//
+#pragma mark -- OAAnimatedSubviewHiding
+
+- (void)setSubview:(NSView *)subview isHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
+{
+    [self setSubviews:[NSArray arrayWithObject:subview] areHidden:shouldBeHidden animated:animated];
+}
+
+- (void)setSubviews:(NSArray *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
+{
+    [NSStackView setViews:subviews areHidden:shouldBeHidden animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
+}
+
+- (void)setHiddenSubviews:(NSArray *)hiddenSubviews animated:(BOOL)animated;
+{
+    [NSStackView setHiddenSubviews:hiddenSubviews ofView:self animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
+}
+
+- (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews animated:(BOOL)animated;
+{
+    [NSStackView setUnhiddenSubviews:unhiddenSubviews ofView:self animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
+}
+
+#pragma mark -- NSView subclass
 
 - (BOOL)isFlipped;
 {

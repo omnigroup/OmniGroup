@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUIDocument/OUIDocumentPickerItemView.h>
 
 #import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniFoundation/OFBinding.h>
@@ -31,6 +32,7 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 @interface OUIDocumentPickerItemView (/*Private*/)
 - (void)_loadOrDeferLoadingPreviewsForViewsStartingAtIndex:(NSUInteger)index;
 @property (nonatomic, strong) NSArray *cachedCustomAccessibilityActions;
+@property (nonatomic, strong) NSTimer *hackyTimerToGetRenamingToWorkWithProKeyboard;
 @end
 
 @interface OUIDocumentPickerPreviewViewContainer : UIView
@@ -184,6 +186,7 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 - (void)dealloc;
 {
     [self stopObservingItem:_item];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 }
 
 @synthesize item = _item;
@@ -445,6 +448,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     self.metadataView.translatesAutoresizingMaskIntoConstraints = NO;
     // and reset constraints
     [self insertSubview:self.metadataView aboveSubview:self.contentView];
+    [self _nameChanged];
     [NSLayoutConstraint activateConstraints:[self constraintsToPositionMetaDataView]];
 }
 
@@ -476,10 +480,15 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
                              [self.contentView.bottomAnchor constraintEqualToAnchor:self.contentView.superview.bottomAnchor],
                              [self.contentView.leftAnchor constraintEqualToAnchor:self.contentView.superview.leftAnchor],
                              
-                             [self.statusImageView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8],
-                             [self.statusImageView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-8],
-                             
-                             self.metaDataBigHeight
+                             [NSLayoutConstraint constraintWithItem:self.statusImageView
+                                                          attribute:NSLayoutAttributeWidth
+                                                          relatedBy:NSLayoutRelationEqual
+                                                             toItem:self.contentView
+                                                          attribute:NSLayoutAttributeWidth
+                                                         multiplier:0.20f
+                                                           constant:0.0f],
+                             [self.statusImageView.centerXAnchor constraintEqualToAnchor:self.contentView.rightAnchor],
+                             [self.statusImageView.centerYAnchor constraintEqualToAnchor:self.contentView.topAnchor]
                              ];
     
     constraints = [constraints arrayByAddingObjectsFromArray:[self constraintsToPositionMetaDataView]];
@@ -528,6 +537,9 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)startRenaming;
 {
+    if (self.metadataView.superview != self.superview) {
+        [self detachMetaDataView];
+    }
     if ([_metadataView.nameTextField becomeFirstResponder]) {
         [_metadataView.nameTextField selectAll:nil];
     }
@@ -822,11 +834,29 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         [_metadataView setNeedsLayout];
         [_metadataView layoutIfNeeded];
     }];
+    
+    self.hackyTimerToGetRenamingToWorkWithProKeyboard = [NSTimer timerWithTimeInterval:0.1
+                                                                                target:self
+                                                                              selector:@selector(hackyTimerForProKeyboardFired)
+                                                                              userInfo:nil
+                                                                               repeats:NO];
+    
+    [[NSRunLoop mainRunLoop] addTimer:self.hackyTimerToGetRenamingToWorkWithProKeyboard forMode:NSRunLoopCommonModes];
+    
+}
+
+- (void)hackyTimerForProKeyboardFired
+{
+    // the keyboard hasn't yet started to appear, so we're going to assume it won't appear at all and we'd better do the animation now.
+    // this is necessary because when there is an onscreen keyboard, we want to animate alongside its appearance.  but we don't want to fail to perform the animation if no onscreen keyboard will appear.  And the keyboardWillShow message comes through after the didBeginEditing message, so we can't just start the animation from didBeginEditing.
+    [self _keyboardWillShow];
 }
 
 - (void)_keyboardWillShow
 {
     if (_isEditingName) {
+        [self.hackyTimerToGetRenamingToWorkWithProKeyboard invalidate];
+        self.hackyTimerToGetRenamingToWorkWithProKeyboard = nil;
         id target = [self targetForAction:@selector(documentPickerItemNameStartedEditing:) withSender:self];
         OBASSERT(target);
         [target documentPickerItemNameStartedEditing:self];

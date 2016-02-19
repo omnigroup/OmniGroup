@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -216,6 +216,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     return bareHeader;
 }
 
+- (NSInteger)statusCode;
+{
+    if (!_response)
+        OBRejectInvalidCall(self, _cmd, @"No response");
+    return [_response statusCode];
+}
+
 - (NSString *)valueForResponseHeader:(NSString *)header;
 {
     OBPRECONDITION(_response);
@@ -243,6 +250,8 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 @synthesize didReceiveData = _didReceiveData;
 @synthesize didReceiveBytes = _didReceiveBytes;
 @synthesize didSendBytes = _didSendBytes;
+
+@synthesize resultData = _resultData;
 
 - (NSURL *)url;
 {
@@ -909,3 +918,48 @@ void ODAVAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, 
     [entries addObject:redirect];
 }
 
+/*
+ Handles the Content-Range header in the specific case that it is a byte-content-range:
+ 
+ Content-Range = byte-content-range / other-content-range
+ 
+ byte-content-range = "bytes" SP ( byte-range-resp / unsatisfied-range )
+
+ byte-range-resp = first-byte-pos "-" last-byte-pos "/" ( complete-length / "*" )
+ unsatisfied-range = "*" "/" complete-length
+
+ first-byte-pos, last-byte-pos, complete-length = 1*DIGIT
+*/
+BOOL ODAVParseContentRangeBytes(NSString *contentRange, unsigned long long *outFirstByte, unsigned long long *outLastByte, unsigned long long *outTotalLength)
+{
+    if (!contentRange)
+        return NO;
+    
+    NSScanner *scan = [NSScanner scannerWithString:contentRange];
+    scan.charactersToBeSkipped = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    
+    if (![scan scanString:@"bytes" intoString:NULL])
+        return NO;
+    
+    if ([scan scanString:@"*" intoString:NULL]) {
+        // unsatisfied-range
+    } else {
+        if (![scan scanUnsignedLongLong:outFirstByte] ||
+            ![scan scanString:@"-" intoString:NULL] ||
+            ![scan scanUnsignedLongLong:outLastByte])
+            return NO;
+    }
+    
+    if (![scan scanString:@"/" intoString:NULL])
+        return NO;
+    
+    if ([scan scanString:@"*" intoString:NULL]) {
+        // unspecified complete-length
+    } else if ([scan scanUnsignedLongLong:outTotalLength]) {
+        // specified complete-length
+    } else {
+        return NO;
+    }
+
+    return YES;
+}

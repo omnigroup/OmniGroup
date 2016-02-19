@@ -1687,7 +1687,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2147,6 +2147,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OWF;
 				PRODUCT_NAME = OWF;
 			};
 			name = Debug;
@@ -2158,6 +2159,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OWF;
 				PRODUCT_NAME = OWF;
 			};
 			name = Release;

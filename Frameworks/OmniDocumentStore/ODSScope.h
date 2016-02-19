@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniDocumentStore/ODSFileItem.h>
 
 @class ODSStore, ODSFileItem, ODSFolderItem, ODSItem, OFFileEdit, ODSFileItemEdit;
 
@@ -21,17 +22,7 @@ typedef enum {
 typedef void (^ODSScopeDocumentCreationAction)(void (^handler)(OFFileEdit *resultFileEdit, NSError *errorOrNil));
 typedef void (^ODSScopeDocumentCreationHandler)(ODSFileItem *createdFileItem, NSError *error);
 
-@interface ODSFileItemMotion : NSObject
 
-@property(nonatomic,readonly) ODSFileItem *fileItem;
-@property(nonatomic,readonly) ODSFileItemEdit *originalItemEdit; // Might be nil for files that haven't been downloaded
-@property(nonatomic,readonly) NSURL *sourceFileURL;
-@property(nonatomic,readonly) NSURL *destinationFileURL;
-
-@end
-
-// destinationEditOrNil is nil if the copy failed
-typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *destinationURL, ODSFileItemEdit *destinationEditOrNil, NSError *errorOrNil);
 
 @interface ODSScope : NSObject <NSCopying>
 

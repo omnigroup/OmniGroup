@@ -61,10 +61,11 @@ typedef enum {
 } DPCode;
 
 typedef enum {
-    OFRelativeDateParserNoRelativity = 0, // no modfier 
+    OFRelativeDateParserNoRelativity = 0, // no modifier
     OFRelativeDateParserCurrentRelativity = 2, // "this"
     OFRelativeDateParserFutureRelativity = -1, // "next"
     OFRelativeDateParserPastRelativity = 1, // "last"
+    OFRelativeDateParserNowRelativity = 3, // actual current date
 } OFRelativeDateParserRelativity;
 
 static NSRegularExpression *_createRegex(NSString *pattern)
@@ -202,7 +203,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     _englishRelativeDateNames = [[NSMutableDictionary alloc] init];
 
     /* Specified Time, Use Current Time */
-    [self _registerRelativeDateName:@"now" code:DPDay number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:YES monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"now" code:DPDay number:0 relativity:OFRelativeDateParserNowRelativity timeSpecific:YES monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now, used for scanning user input. Do NOT add whitespace")];
     /* Specified Time*/
     [self _registerRelativeDateName:@"noon" code:DPHour number:12 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"noon", @"OFDateProcessing", OMNI_BUNDLE, @"noon, used for scanning user input. Do NOT add whitespace")];
     [self _registerRelativeDateName:@"tonight" code:DPHour number:23 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"tonight", @"OFDateProcessing", OMNI_BUNDLE, @"tonight, used for scanning user input. Do NOT add whitespace")];
@@ -1332,6 +1333,17 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                         // This is pretty terrible. We frontload parsing of relative day names, but we shouldn't consume 'dom' (Italian) if the user entered 'Domenica'.
                         // If we are in the middle of a word, don't consume the match.
                         // When we clean up this code (rewrite the parsing loop?) we should probably make it so that we have a flattened list of words and associated quanitites that we parse all at once, preferring longest match.
+
+                        // array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
+                        NSArray *dateOffset = [relativeDateNames objectForKey:match];
+
+                        // <bug:///119023> (Data Corruption: "now" gets stuck at first time it is used)
+                        // Make "now" (or localized equivalent) really mean [NSDate date], regardless of reference date.
+                        if ([dateOffset[2] integerValue] == OFRelativeDateParserNowRelativity) {
+                            date = [NSDate date];
+                            currentComponents = [calendar components:unitFlags fromDate:date];
+                        }
+
                         if (![scanner isAtEnd]) {
                             unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
                             if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
@@ -1339,23 +1351,20 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                                 continue;
                             }
                         }
-                    
-                    
-			// array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
-			NSArray *dateOffset = [relativeDateNames objectForKey:match];
-			DEBUG_DATE(@"found relative date match: %@", match);
-			daySpecific = [[dateOffset objectAtIndex:5] boolValue];
-			*timeSpecific = [[dateOffset objectAtIndex:3] boolValue];
-			if (!*timeSpecific) {
-			    // clear times
-			    [currentComponents setHour:0];
-			    [currentComponents setMinute:0];
-			    [currentComponents setSecond:0];
-			}
-			
-			BOOL monthSpecific = [[dateOffset objectAtIndex:4] boolValue];
-			if (!monthSpecific) 
-			    [currentComponents setMonth:1];
+
+                        DEBUG_DATE(@"found relative date match: %@", match);
+                        daySpecific = [[dateOffset objectAtIndex:5] boolValue];
+                        *timeSpecific = [[dateOffset objectAtIndex:3] boolValue];
+                        if (!*timeSpecific) {
+                            // clear times
+                            [currentComponents setHour:0];
+                            [currentComponents setMinute:0];
+                            [currentComponents setSecond:0];
+                        }
+
+                        BOOL monthSpecific = [[dateOffset objectAtIndex:4] boolValue];
+                        if (!monthSpecific) 
+                            [currentComponents setMonth:1];
 			 			
 			// apply the codes from the dateOffset array
 			int codeInt = [[dateOffset objectAtIndex:1] intValue];
@@ -1425,8 +1434,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 		    multiplier = [self _multiplierForModifer:modifier];
 		    modifierForNumber = YES;
 		}
-	    } 
-	    
+	    }
+
 	    // test for month names, but only match full months here (to avoid ambiguity with partial conflicts. i.e. mar could be Marzo or Martes in Spanish)
             if (month == -1) {
                 for (NSString *name in _months) {
@@ -1795,20 +1804,21 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	
 	// if there is a modifier, add a week if its "next", sub a week if its "last", or stay in the current week if its "this"
 	int dayModification = 0;
-	switch(modifier) {    
-	    case OFRelativeDateParserNoRelativity:
-	    case OFRelativeDateParserCurrentRelativity:
-		break;
-	    case OFRelativeDateParserFutureRelativity: // "next"
-		dayModification = 7;
-		DEBUG_DATE(@"CURRENT Modifier \"this\"");
-		break;
-	    case OFRelativeDateParserPastRelativity: // "last"
-		dayModification = -7;
-		DEBUG_DATE(@"PAST Modifier \"last\"");
-		break;
-	}
-	
+        switch(modifier) {
+            case OFRelativeDateParserNoRelativity:
+            case OFRelativeDateParserCurrentRelativity:
+            case OFRelativeDateParserNowRelativity:
+                break;
+            case OFRelativeDateParserFutureRelativity: // "next"
+                dayModification = 7;
+                DEBUG_DATE(@"CURRENT Modifier \"this\"");
+                break;
+            case OFRelativeDateParserPastRelativity: // "last"
+                dayModification = -7;
+                DEBUG_DATE(@"PAST Modifier \"last\"");
+                break;
+        }
+        
 	DEBUG_DATE( @"set the weekday to: %ld days difference from the current weekday: %ld, BUT add %d days", (requestedWeekday- currentWeekday), currentWeekday, dayModification );
 	[components setDay:(requestedWeekday- currentWeekday)+dayModification];
     }

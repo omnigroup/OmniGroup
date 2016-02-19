@@ -8,34 +8,12 @@
 // $Id$
 
 
-#import <Foundation/NSObject.h>
-#import <CommonCrypto/CommonHMAC.h>
+#import <Foundation/Foundation.h>
+#import <OmniFoundation/OFByteProviderProtocol.h>
 #include <stdint.h>
 
-// #define WITH_ACCEPTOR_PROVIDER_API 1
-
-#if WITH_ACCEPTOR_PROVIDER_API
-#import <OmniFoundation/OFByteProviderProtocol.h>
-#endif
-
-@class OFSDocumentKey;
+@class OFSDocumentKey, OFSSegmentEncryptWorker;
 @class NSData, NSError;
-
-@interface OFSSegmentEncryptWorker : NSObject
-
-- (NSData *)wrappedKeyWithDocumentKey:(OFSDocumentKey *)dk error:(NSError **)outError;
-- (BOOL)encryptBuffer:(const uint8_t *)plaintext length:(size_t)len index:(uint32_t)order into:(uint8_t *)ciphertext header:(uint8_t *)hdr error:(NSError **)outError;
-//- (BOOL)decryptBuffer:(const uint8_t *)ciphertext range:(NSRange)r index:(uint32_t)order into:(uint8_t *)plaintext header:(const uint8_t *)hdr error:(NSError **)outError;  // Not currently used
-- (void)fileMACContext:(CCHmacContext *)ctxt;
-
-
-// Temporary non-incremental encrypt and decrypt methods
-+ (NSData *)encryptData:(NSData *)plaintext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
-+ (NSData *)decryptData:(NSData *)ciphertext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
-
-@end
-
-#if WITH_ACCEPTOR_PROVIDER_API
 
 @interface OFSSegmentDecryptingByteProvider : NSObject <OFByteProvider>
 
@@ -54,6 +32,4 @@
                               offset:(size_t)segmentsBegin;
 
 @end
-
-#endif
 

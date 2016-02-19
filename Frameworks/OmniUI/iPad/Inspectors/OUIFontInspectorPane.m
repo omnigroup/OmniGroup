@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
-#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
@@ -336,7 +336,7 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
 
     UIFont *font = [item objectForKey:ItemFont];
     
-    [(OUIFontInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
+    [(OUIFontFamilyInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
 }
 
 #pragma mark - Private

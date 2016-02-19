@@ -55,3 +55,10 @@ UIImage *OUIToolbarUndoImage(void)
 {
     return [UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
+
+UIImage *OUIServerAccountValidationSuccessImage()
+{
+    return [UIImage imageNamed:@"OUIServerAccountValidationSuccess" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+

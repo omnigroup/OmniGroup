@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -530,7 +530,13 @@ static void _FillOutDownloadInProgressError(NSError **outError)
             }
         }
     }
-    
+
+    if (folder == nil) {
+        OBASSERT_NOT_REACHED("Bad permissions on download folder or some other issue?");
+        NSLog(@"Unable to determine download directory");
+        return;
+    }
+
     // On some people's machines, we'll end up with foo.tbz2.bz2 as the suggested name.  This is not good; it seems to come from having a 3rd party utility instaled that handles bz2 files, registering a set of UTIs that convinces NSURLDownload to suggest the more accurate extension.  So, we ignore the suggestion and use the filename from the URL.
     
     NSString *originalFileName = [[_packageURL path] lastPathComponent];

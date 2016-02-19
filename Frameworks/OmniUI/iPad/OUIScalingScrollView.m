@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,6 +73,11 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 {
+    if (unscaledContentSize.height <= 0 || unscaledContentSize.width <= 0) {
+        OBASSERT_NOT_REACHED(@"unscaledContentSize must be positive and non-zero in both dimensions");
+        return;
+    }
+    
     OUIScalingView *view = _scalingView(self);
     if (!view || view.scaleEnabled == NO)
         return;

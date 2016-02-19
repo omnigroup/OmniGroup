@@ -241,6 +241,25 @@ RCS_ID("$Id$");
     return [self.keysToObjects hash] ^ [self.objectsToKeys hash];
 }
 
+- (NSString *)description;
+{
+    NSMutableString *description = [NSMutableString string];
+    
+    [description appendFormat:@"%@ <%p> {\n", NSStringFromClass([self class]), self];
+    
+    for (id key in self.keysToObjects.keyEnumerator) {
+        NSString *objectDescription = [[self.keysToObjects objectForKey:key] description];
+        if ([objectDescription rangeOfString:@"\n"].location != NSNotFound) {
+            objectDescription = [objectDescription stringByReplacingOccurrencesOfString:@"\n" withString:@"\n    "];
+        }
+        [description appendFormat:@"    %@ -> %@\n", key, objectDescription];
+    }
+    
+    [description appendString:@"}"];
+     
+    return description;
+}
+
 #pragma mark - Debugging & assertions
 
 #if defined(OMNI_ASSERTIONS_ON)

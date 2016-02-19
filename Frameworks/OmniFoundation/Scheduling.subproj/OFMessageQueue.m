@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 #import <Foundation/NSOperation.h>
 
 RCS_ID("$Id$")
+
+OB_REQUIRE_ARC
 
 typedef enum {
     QUEUE_HAS_NO_SCHEDULABLE_INVOCATIONS, QUEUE_HAS_INVOCATIONS,
@@ -77,17 +79,6 @@ static BOOL OFMessageQueueDebug = NO;
 
     return self;
 }
-
-- (void)dealloc;
-{
-    [queueProcessors release];
-    [queue release];
-    [queueSet release];
-    [queueLock release];
-    [queueProcessorsLock release];
-    [super dealloc];
-}
-
 
 //
 
@@ -215,7 +206,7 @@ static BOOL OFMessageQueueDebug = NO;
             }
 
             if (useCurrentInvocation) {
-                nextRetainedInvocation = [nextInvocation retain];
+                nextRetainedInvocation = nextInvocation;
                 OBASSERT([queue objectAtIndex:invocationIndex] == nextInvocation);
                 [queue removeObjectAtIndex:invocationIndex];
                 if (queueSet)
@@ -258,13 +249,13 @@ static BOOL OFMessageQueueDebug = NO;
 	NSLog(@"[%@ addQueueEntry:%@]", [self shortDescription], [aQueueEntry shortDescription]);
 
     // Log a backtrace buffer for the enqueue site of the delayed invocation (we also log one when it is invoked, so we can match up which one crashed and where it came from).
-    OBRecordBacktraceWithContext(sel_getName(aQueueEntry.selector), OBBacktraceBuffer_PerformSelector, aQueueEntry);
+    OBRecordBacktraceWithContext(sel_getName(aQueueEntry.selector), OBBacktraceBuffer_PerformSelector, (__bridge void *)aQueueEntry);
 
     [queueLock lock];
 
     NSUInteger queueCount = [queue count];
     BOOL wasEmpty = (queueCount == 0);
-    id <OFMessageQueueDelegate> strongDelegate = [_weak_delegate retain];
+    id <OFMessageQueueDelegate> strongDelegate = _weak_delegate;
     
     NSUInteger entryIndex = queueCount;
     if (flags.schedulesBasedOnPriority) {
@@ -296,7 +287,6 @@ static BOOL OFMessageQueueDebug = NO;
 
     if (wasEmpty)
         [strongDelegate queueHasInvocations:self];
-    [strongDelegate release];
 }
 
 - (void)addQueueEntryOnce:(OFInvocation *)aQueueEntry;
@@ -321,7 +311,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject nsInvocation:anInvocation];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject;
@@ -333,7 +322,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelectorOnce:(SEL)aSelector forObject:(id <NSObject>)anObject;
@@ -345,7 +333,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector];
     [self addQueueEntryOnce:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withObject:(id <NSObject>)withObject;
@@ -357,7 +344,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withObject:withObject];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelectorOnce:(SEL)aSelector forObject:(id <NSObject>)anObject withObject:(id <NSObject>)withObject;
@@ -369,7 +355,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withObject:withObject];
     [self addQueueEntryOnce:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withObject:(id <NSObject>)object1 withObject:(id <NSObject>)object2;
@@ -381,7 +366,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withObject:object1 withObject:object2];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelectorOnce:(SEL)aSelector forObject:(id <NSObject>)anObject withObject:(id <NSObject>)object1 withObject:(id <NSObject>)object2;
@@ -393,7 +377,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withObject:object1 withObject:object2];
     [self addQueueEntryOnce:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withObject:(id <NSObject>)object1 withObject:(id <NSObject>)object2 withObject:(id <NSObject>)object3;
@@ -405,7 +388,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withObject:object1 withObject:object2 withObject:object3];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withBool:(BOOL)aBool;
@@ -417,7 +399,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withBool:aBool];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withInt:(int)anInt;
@@ -429,7 +410,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withInt:anInt];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withInt:(int)anInt withInt:(int)anotherInt;
@@ -441,7 +421,6 @@ static BOOL OFMessageQueueDebug = NO;
     
     queueEntry = [[OFInvocation alloc] initForObject:anObject selector:aSelector withInt:anInt withInt:anotherInt];
     [self addQueueEntry:queueEntry];
-    [queueEntry release];
 }
 
 // Debugging
@@ -461,7 +440,7 @@ static BOOL OFMessageQueueDebug = NO;
     [debugDictionary setObject:[NSNumber numberWithUnsignedInteger:uncreatedProcessors] forKey:@"uncreatedProcessors"];
     [debugDictionary setObject:flags.schedulesBasedOnPriority ? @"YES" : @"NO" forKey:@"flags.schedulesBasedOnPriority"];
     
-    id <OFMessageQueueDelegate> strongDelegate = [[_weak_delegate retain] autorelease];
+    id <OFMessageQueueDelegate> strongDelegate = _weak_delegate;
     if (strongDelegate)
 	[debugDictionary setObject:strongDelegate forKey:@"delegate"];
     
@@ -482,7 +461,6 @@ static BOOL OFMessageQueueDebug = NO;
         newProcessor = [[OFQueueProcessor alloc] initForQueue:self];
         [newProcessor startProcessingQueueInNewThread];
         [queueProcessors addObject:newProcessor];
-        [newProcessor release];
         uncreatedProcessors--;
         projectedIdleProcessors++;
     }

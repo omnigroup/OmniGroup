@@ -7,15 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryption.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryption.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryption.m */; };
+		1E1B38101C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */; };
+		1E1B38111C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */; };
+		1E1B38121C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */; };
+		1E1B38131C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */; };
+		1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m */; };
 		1E8106C41B8E5C0200DCBCE0 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34973C9E125BCF340057E909 /* Security.framework */; };
-		1E946FF41BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */; settings = {ASSET_TAGS = (); }; };
-		1E946FF51BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */; settings = {ASSET_TAGS = (); }; };
+		1E946FF41BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E946FF51BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EE97FD91B8BF6DB00E0943F /* OFSEncryptingFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EF8B67519A42B9F002590DF /* OFSEncryptingFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EE97FDA1B8BF6E500E0943F /* OFSEncryptingFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF8B67319A42B8B002590DF /* OFSEncryptingFileManager.m */; };
-		1EE97FDB1B8BF6E900E0943F /* OFSSegmentedEncryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryption.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		1EE97FDC1B8BF6F000E0943F /* OFSSegmentedEncryption.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryption.m */; };
+		1EE97FDB1B8BF6E900E0943F /* OFSSegmentedEncryptionWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		1EE97FDC1B8BF6F000E0943F /* OFSSegmentedEncryptionWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m */; };
 		1EE97FDF1B8BF6FE00E0943F /* OFSDocumentKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EF8306C1A01C046006CBDA3 /* OFSDocumentKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EE97FE01B8BF70400E0943F /* OFSDocumentKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF8306D1A01C046006CBDA3 /* OFSDocumentKey.m */; };
 		1EF8306E1A01C046006CBDA3 /* OFSDocumentKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EF8306C1A01C046006CBDA3 /* OFSDocumentKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -82,10 +86,15 @@
 		15F7CBF5185F991900EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		1E0012921BCC2EA4000F7670 /* EncryptionFormat.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = EncryptionFormat.md; sourceTree = "<group>"; };
 		1E0D27421A6F24E200E65230 /* OFSEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSEncryptionTests.m; sourceTree = "<group>"; };
-		1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSSegmentedEncryption.h; sourceTree = "<group>"; };
-		1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSSegmentedEncryption.m; sourceTree = "<group>"; };
+		1E1B38081C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSSegmentedEncryptionProviderAcceptor.h; sourceTree = "<group>"; };
+		1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSSegmentedEncryptionProviderAcceptor.m; sourceTree = "<group>"; };
+		1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFSEncryption-Internal.h"; sourceTree = "<group>"; };
+		1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFSEncryption-Internal.m"; sourceTree = "<group>"; };
+		1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSSegmentedEncryptionWorker.h; sourceTree = "<group>"; };
+		1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSSegmentedEncryptionWorker.m; sourceTree = "<group>"; };
 		1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSEncryptionConstants.h; sourceTree = "<group>"; };
 		1EA308D71BF3F42E00C67966 /* OFSEncryption.graffle */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = OFSEncryption.graffle; sourceTree = "<group>"; };
+		1EE438061C0D404700231058 /* OmniFileStore.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = OmniFileStore.modulemap; sourceTree = "<group>"; };
 		1EF8306C1A01C046006CBDA3 /* OFSDocumentKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSDocumentKey.h; sourceTree = "<group>"; };
 		1EF8306D1A01C046006CBDA3 /* OFSDocumentKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSDocumentKey.m; sourceTree = "<group>"; };
 		1EF8B67319A42B8B002590DF /* OFSEncryptingFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSEncryptingFileManager.m; sourceTree = "<group>"; };
@@ -275,8 +284,12 @@
 				1E946FF31BFD3DD900BD102C /* OFSEncryptionConstants.h */,
 				1EF8B67519A42B9F002590DF /* OFSEncryptingFileManager.h */,
 				1EF8B67319A42B8B002590DF /* OFSEncryptingFileManager.m */,
-				1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryption.h */,
-				1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryption.m */,
+				1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */,
+				1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m */,
+				1E1B38081C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.h */,
+				1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */,
+				1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */,
+				1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */,
 				1EF8306C1A01C046006CBDA3 /* OFSDocumentKey.h */,
 				1EF8306D1A01C046006CBDA3 /* OFSDocumentKey.m */,
 			);
@@ -297,6 +310,7 @@
 			children = (
 				32DBCF5E0370ADEE00C91783 /* OmniFileStore_Prefix.h */,
 				34415DB51BE06A58001EE0F7 /* OmniFileStore.h */,
+				1EE438061C0D404700231058 /* OmniFileStore.modulemap */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -366,10 +380,11 @@
 				34415DB71BE06A58001EE0F7 /* OmniFileStore.h in Headers */,
 				3474D9A61B5EF2EE0084B8AE /* OFSFileOperation.h in Headers */,
 				1EE97FD91B8BF6DB00E0943F /* OFSEncryptingFileManager.h in Headers */,
-				1EE97FDB1B8BF6E900E0943F /* OFSSegmentedEncryption.h in Headers */,
+				1EE97FDB1B8BF6E900E0943F /* OFSSegmentedEncryptionWorker.h in Headers */,
 				3474D9A31B5EF2EE0084B8AE /* OFSFileManagerDelegate.h in Headers */,
 				1E946FF51BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */,
 				1EE97FDF1B8BF6FE00E0943F /* OFSDocumentKey.h in Headers */,
+				1E1B38111C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,10 +400,11 @@
 				3469F30A10FD900100FF0307 /* OFSFileManagerDelegate.h in Headers */,
 				34415DB61BE06A58001EE0F7 /* OmniFileStore.h in Headers */,
 				34B5E45012773A810007C4E3 /* OFSFileOperation.h in Headers */,
-				1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryption.h in Headers */,
+				1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h in Headers */,
 				1EF8B67619A43214002590DF /* OFSEncryptingFileManager.h in Headers */,
 				1E946FF41BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */,
 				34201EE21464897900A45403 /* OFSFeatures.h in Headers */,
+				1E1B38101C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,7 +456,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					3474D9871B5EF23E0084B8AE = {
 						CreatedOnToolsVersion = 7.0;
@@ -536,8 +552,9 @@
 				1EE97FDA1B8BF6E500E0943F /* OFSEncryptingFileManager.m in Sources */,
 				3474D9A91B5EF2EE0084B8AE /* OFSFileManager.m in Sources */,
 				1EE97FE01B8BF70400E0943F /* OFSDocumentKey.m in Sources */,
-				1EE97FDC1B8BF6F000E0943F /* OFSSegmentedEncryption.m in Sources */,
+				1EE97FDC1B8BF6F000E0943F /* OFSSegmentedEncryptionWorker.m in Sources */,
 				3474D9A21B5EF2EE0084B8AE /* OFSDAVFileManager.m in Sources */,
+				1E1B38131C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,12 +564,13 @@
 			files = (
 				3444B06B0F71FFFF005CFD59 /* OFSDAVFileManager.m in Sources */,
 				3444B06F0F71FFFF005CFD59 /* OFSFileFileManager.m in Sources */,
-				1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryption.m in Sources */,
+				1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m in Sources */,
 				1EF830701A01C046006CBDA3 /* OFSDocumentKey.m in Sources */,
 				3444B0730F71FFFF005CFD59 /* OFSFileManager.m in Sources */,
 				1EF8B67419A42B8B002590DF /* OFSEncryptingFileManager.m in Sources */,
 				3444B0BB0F72022C005CFD59 /* Errors.m in Sources */,
 				34B5E45112773A810007C4E3 /* OFSFileOperation.m in Sources */,
+				1E1B38121C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +620,7 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				MODULEMAP_FILE = OmniFileStore.modulemap;
 			};
 			name = Debug;
 		};
@@ -613,6 +632,7 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				MODULEMAP_FILE = OmniFileStore.modulemap;
 			};
 			name = Release;
 		};

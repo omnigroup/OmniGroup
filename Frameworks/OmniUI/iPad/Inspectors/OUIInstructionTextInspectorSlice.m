@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUI/OUIInstructionTextInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/UILabel-OUITheming.h>
@@ -52,8 +53,7 @@ RCS_ID("$Id$");
     _instructionText = [text copy];
     
     if ([self isViewLoaded]) {
-        UILabel *view = (UILabel *)self.view;
-        view.text = _instructionText;
+        self.label.text = _instructionText;
         [self sizeChanged];
     }
 }
@@ -67,7 +67,17 @@ RCS_ID("$Id$");
 
 - (UIColor *)sliceBackgroundColor;
 {
-    return [UIColor clearColor];
+    return [OUIInspector backgroundColor];
+}
+
+- (BOOL)includesInspectorSliceGroupSpacerOnTop;
+{
+    return YES;
+}
+
+- (BOOL)includesInspectorSliceGroupSpacerOnBottom;
+{
+    return YES;
 }
 
 #pragma mark - UIViewController subclass
@@ -88,11 +98,13 @@ RCS_ID("$Id$");
     containerView.translatesAutoresizingMaskIntoConstraints = NO;
     self.label.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [NSLayoutConstraint activateConstraints:@[
-                                              [self.label.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:self.class.sliceAlignmentInsets.left],
-                                              [self.label.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:self.class.sliceAlignmentInsets.right * -1],
-                                              [self.label.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-                                              [self.label.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]]];
+    [NSLayoutConstraint activateConstraints:
+     @[
+       [self.label.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor],
+       [self.label.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor],
+       [self.label.topAnchor constraintEqualToAnchor:containerView.topAnchor constant:self.class.sliceAlignmentInsets.top],
+       [self.label.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor constant:self.class.sliceAlignmentInsets.bottom]
+       ]];
 
     self.view = containerView;
     

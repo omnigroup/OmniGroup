@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray <OUUnzipEntry *> *_entries;
 }
 
-static id _unzipError(id self, const char *func, int err, NSError **outError)
+// This always returns nil, so that callers can 'return UNZIP_ERROR(...);'
+static _Nullable id _unzipError(id self, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err];
@@ -199,7 +200,8 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
     return matches;
 }
 
-static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int err, NSError **outError)
+// This always returns nil, so that callers can 'return UNZIP_DATA_ERROR(...);'
+static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, [entry name], [self path]];

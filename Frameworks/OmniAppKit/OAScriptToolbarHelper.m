@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,7 @@
 #import "OAScriptToolbarHelper.h"
 
 #import <AppKit/AppKit.h>
-#import <Automator/Automator.h>
 #import <Foundation/Foundation.h>
-#import <OSAKit/OSAKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
@@ -22,13 +20,13 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
-@implementation OAScriptToolbarHelper
-{
-@private
+@implementation OAScriptToolbarHelper {
+  @private
     NSMutableDictionary *_pathForItemDictionary;
-    NSMutableDictionary *_cachedScriptInfoDictionaries;
 }
 
 static BOOL OAScriptToolbarItemsDisabled = NO;
@@ -44,7 +42,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         return nil;
 
     _pathForItemDictionary = [[NSMutableDictionary alloc] init];
-    _cachedScriptInfoDictionaries = [[NSMutableDictionary alloc] init];
 
     return self;
 }
@@ -135,6 +132,10 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         NSArray *keys = @[@"label", @"paletteLabel", @"toolTip"];
         for (NSString *key in keys) {
             NSString *format = [localizedToolbarInfo objectForKey:key];
+            if (format == nil) {
+                OBASSERT_NOT_REACHED("window controller %@ returned info dictionary that was missing a format for the key \"%@\".", windowController, key);
+                continue;
+            }
             NSString *value = [NSString stringWithFormat:format, [self _stringByRemovingScriptFilenameExtension:[path lastPathComponent]]];
             [toolbarItem setValue:value forKey:key];
         }
@@ -173,8 +174,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     OBRetainAutorelease(sender);
     OAToolbarItem *toolbarItem = sender;
     
-    OAToolbarWindowController *windowController = (OAToolbarWindowController *)[[toolbarItem toolbar] delegate];
-    OBASSERT(!windowController || [windowController isKindOfClass:[OAToolbarWindowController class]]);
+    OAToolbarWindowController *windowController = OB_CHECKED_CAST_OR_NIL(OAToolbarWindowController, [[toolbarItem toolbar] delegate]);
+    if (!windowController) {
+        OBASSERT_NOT_REACHED("How are we activating a script toolbar item w/o a window controller?");
+        return;
+    }
     OBRetainAutorelease(windowController);  // The script may cause the window to be closed
 
     if ([windowController respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] && ![windowController scriptToolbarItemShouldExecute:sender]) {
@@ -187,28 +191,18 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         }
     };
     
-    // TODO: We seem to always be sandboxed now? If so, the unsandboxed paths below could go away, taking a deprecation warning along with them. <bug:///122264> (Unassigned: Remove the non-sandboxed code path from -[OAScriptToolbarHelper executeScriptItem:]). 
-    BOOL isSandboxed = [[NSProcessInfo processInfo] isSandboxed];
     NSString *itemPath = [[self pathForItem:sender] stringByExpandingTildeInPath];
     NSString *typename = [[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:NULL];
 
-    // Once we require 10.8 and later, we can collapse these code paths down to just the "sandboxed" version.
-    // The sandboxed version uses 10.8 and later API, but that API also works in unsandboxed applications.
-    // We'd give up our compiled script cache, but that isn't really buying us a lot in terms of performance, and may cause persistent properties to get out of sync if the scripts are ever run outside of the app while they are in our cache.
-    
+    // This code only supports 10.8 and later so we always use the sandbox savvy APIs, since they also support unsandboxed applications.
+    //
+    // This also avoids having to deal with new potentially false positive nullability warnings from OSAKit, which still lacks API documentation.
+
     OBASSERT_NOTNULL(typename);
     if ([[NSWorkspace sharedWorkspace] type:typename conformsToType:@"com.apple.automator-workflow"]) {
-        if (isSandboxed) {
-            [self _sandboxedExecuteAutomatorWorkflowForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
-        } else {
-            [self _unsandboxedExecuteAutomatorWorkflowForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
-        }
+        [self _executeAutomatorWorkflowForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
     } else {
-        if (isSandboxed) {
-            [self _sandboxedExecuteOSAScriptForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
-        } else {
-            [self _unsandboxedExecuteOSAScriptForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
-        }
+        [self _executeOSAScriptForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
     }
 }
 
@@ -219,34 +213,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
 #pragma mark -
 #pragma mark Private
-
-- (OSAScript *)_compiledScriptForPath:(NSString *)path errorInfo:(NSDictionary **)errorInfo;
-{
-    static NSString *ScriptInfoCompiledScriptKey = @"ScriptInfoCompiledScriptKey";
-    static NSString *ScriptInfoModificationDateKey = @"ScriptInfoModificationDateKey";
-    
-    if (errorInfo != NULL) {
-        *errorInfo = nil;
-    }
-    
-    NSDictionary *scriptFileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
-    NSDate *scriptModificationDate = [scriptFileAttributes fileModificationDate];
-    
-    OBASSERT_NOTNULL(scriptModificationDate); // clang can't tell that this shouldn't happen
-    
-    NSDictionary *cachedScriptInfoDictionary = [_cachedScriptInfoDictionaries objectForKey:path];
-    if (cachedScriptInfoDictionary == nil || OFNOTEQUAL(scriptModificationDate, [cachedScriptInfoDictionary objectForKey:ScriptInfoModificationDateKey])) {
-        // We don't have a cached script yet, or the script has been modified since it was cached
-        OSAScript *compiledScript = [[OSAScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:path] error:errorInfo];
-        NSMutableDictionary *scriptInfoDictionary = [NSMutableDictionary dictionary];
-        [scriptInfoDictionary setObject:compiledScript forKey:ScriptInfoCompiledScriptKey defaultObject:nil];
-        [scriptInfoDictionary setObject:scriptModificationDate forKey:ScriptInfoModificationDateKey defaultObject:nil];
-        [_cachedScriptInfoDictionaries setObject:scriptInfoDictionary forKey:path];
-        cachedScriptInfoDictionary = scriptInfoDictionary;
-    }
-    
-    return [cachedScriptInfoDictionary objectForKey:ScriptInfoCompiledScriptKey];
-}
 
 - (void)_scanItems;
 {
@@ -321,7 +287,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     return string;
 }
 
-- (void)_sandboxedExecuteAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
+- (void)_executeAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
 {
     NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path];
@@ -344,7 +310,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     }];
 }
 
-- (void)_sandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
+- (void)_executeOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
 {
     NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
     if (!path) {
@@ -388,72 +354,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
             completionHandler(toolbarItem, error);
         }];
     }];
-}
-
-- (void)_unsandboxedExecuteAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-{
-    NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
-    NSURL *url = [NSURL fileURLWithPath:path];
-
-    NSError *error = nil;
-    id result = [AMWorkflow runWorkflowAtURL:url withInput:nil error:&error];
-    if (result == nil) {
-        [self _handleAutomatorWorkflowExecutionErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[error localizedDescription]];
-    }
-    
-    completionHandler(toolbarItem, error);
-}
-
-- (void)_unsandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-{
-    NSDictionary *errorDictionary = nil;
-    NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
-    OSAScript *script = [self _compiledScriptForPath:path errorInfo:&errorDictionary];
-
-    if (script == nil) {
-        [self _handleOSAScriptLoadErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[errorDictionary objectForKey:OSAScriptErrorMessage]];
-
-        // Should probably pass en error through to the completion handler, but it is not currently unused
-        completionHandler(toolbarItem, nil);
-        return;
-    }
-    
-    NSAppleEventDescriptor *result = nil;
-    NSAppleEventDescriptor *arguments = nil;
-
-    if (![windowController respondsToSelector:@selector(scriptToolbarItemArguments:)] || !(arguments = [windowController scriptToolbarItemArguments:toolbarItem])) {
-        result = [script executeAndReturnError:&errorDictionary];
-    } else {
-        if ([arguments descriptorType] != cAEList) {
-            // Scripts expect to be given a list of arguments (though for some reason "run script aScriptObj" will give them a reference to the script object, rather than a list)
-            arguments = [arguments coerceToDescriptorType:cAEList];
-            OBASSERT_NOTNULL(arguments);
-        }
-
-        NSAppleEventDescriptor *event = [NSAppleEventDescriptor appleEventWithEventClass:kCoreEventClass eventID:kAEOpenApplication targetDescriptor:nil returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
-        [event setParamDescriptor:arguments forKeyword:keyDirectObject];
-        result = [script executeAppleEvent:event error:&errorDictionary];
-    }
-    
-    if (result == nil) {
-        NSString *errorText = [errorDictionary objectForKey:OSAScriptErrorMessage];
-        [self _handleOSAScriptExecutionErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:errorText];
-
-        // Should probably pass en error through to the completion handler, but it is not currently unused
-        completionHandler(toolbarItem, nil);
-        return;
-    }
-    
-    // This might fail for a variety of reasons, but we don't consider that fatal
-    if ([script isCompiled]) {
-        // <bug:///124065> (Unassigned: Update saving of script toolbar items to pass the right storage type)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-        [script writeToURL:[NSURL fileURLWithPath:path] ofType:nil error:&errorDictionary];
-#pragma clang diagnostic pop
-    }
-
-    completionHandler(toolbarItem, nil);
 }
 
 - (void)_handleAutomatorWorkflowLoadErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
@@ -546,3 +446,5 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

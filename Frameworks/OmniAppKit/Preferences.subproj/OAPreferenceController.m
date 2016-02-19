@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -339,8 +339,12 @@ static NSString *windowFrameSaveName = @"Preferences";
     [contentView addSubview:_globalControlsView];
     
     // Add the new client box to the view hierarchy
-    [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - NSWidth(controlBoxFrame)) / 2.0), NSHeight([_globalControlsView frame]))];
-    [contentView addSubview:controlBox];
+    if (controlBox) {
+        [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - NSWidth(controlBoxFrame)) / 2.0), NSHeight([_globalControlsView frame]))];
+        [contentView addSubview:controlBox];
+    } else {
+        OBASSERT_NOT_REACHED("Preference client %@ has no controlBox set", nonretained_currentClient);
+    }
     
     // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
     [_window setInitialFirstResponder:[nonretained_currentClient initialFirstResponder]];

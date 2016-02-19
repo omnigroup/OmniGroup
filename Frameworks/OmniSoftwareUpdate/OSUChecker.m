@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,6 +41,10 @@
 #import "OSUCheckerTarget.h"
 #import "OSUSettings.h"
 #import "OSURunOperation.h"
+#import "OSUPartialItem.h"
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+#import <OmniUI/OUIAppController.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -699,7 +703,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     // Disallow automatic checks if we are a debug build; attached to the debugger.
     // You can still trigger a manual check to debug Software Update, or turn this off if necessary.
     
-#ifdef DEBUG
+#if 1 && defined(DEBUG)
     if (OBIsBeingDebugged() && (OSUDebug == 0))
         return NO;
 #endif
@@ -729,7 +733,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSDate *now = [NSDate date];
         NSDate *lastCheckDate = [defaults objectForKey:OSULastSuccessfulCheckDateKey];
-        if (![lastCheckDate isKindOfClass:[NSDate class]]) {
+        if (![lastCheckDate isKindOfClass:[NSDate class]] || [lastCheckDate timeIntervalSinceNow] > 60.0) {
             // If we don't have a last check date, or it is some strange value, then write 'now' as the date and we'll wait a full check interval.
             lastCheckDate = now;
             [defaults setObject:lastCheckDate forKey:OSULastSuccessfulCheckDateKey];
@@ -869,6 +873,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 #if OSU_FULL
         [self _interpretSoftwareUpdateData:data operation:operation error:&error];
+#else
+        [self _checkForMessageInSoftwareUpdateData:data];
 #endif
     }
     
@@ -1026,6 +1032,20 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     return YES;
 }
+#else
+- (void)_checkForMessageInSoftwareUpdateData:(NSData *)data
+{
+    OSUPartialItem *oneItem = [[OSUPartialItem alloc] initWithXMLData:data];
+    if (oneItem) {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        if (oneItem.releaseNotesURLString.length > 0 && [[UIApplication sharedApplication].delegate isKindOfClass:[OUIAppController class]]) {
+            OUIAppController *appController = (OUIAppController *)[UIApplication sharedApplication].delegate;
+            [appController showNewsURLString:oneItem.releaseNotesURLString evenIfShownAlready:NO];
+        }
+#endif
+    }
+}
+
 #endif
 
 - (BOOL)_shouldLoadAfterWarningUserAboutNewVersion;

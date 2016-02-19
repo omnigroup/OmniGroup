@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -459,14 +459,20 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
         NSString *fileIdentifier = metadataItem.fileIdentifier;
         ODSFileItem *fileItem = existingFileItemByIdentifier[fileIdentifier];
 
+        if ((!fileItem && _previouslyAppliedMetadataItemsByIdentifier[fileIdentifier] == metadataItem) || (fileItem.scope && fileItem.scope != self)) {
+            // we maybe holding on to metadata for an item which has changed scopes, moved to the Trash scope for example.  In this instance we will not have a fileItem and will crash if we try to add it to updatedFileItems
+            continue;
+        }
+
         appliedMetadataByIdentifier[fileIdentifier] = metadataItem;
+
         if (_previouslyAppliedMetadataItemsByIdentifier[fileIdentifier] == metadataItem) {
             DEBUG_METADATA(2, @"metadata unchanged for %@", [fileURL absoluteString]);
             [updatedFileItems addObject:fileItem];
             [existingFileItemByIdentifier removeObjectForKey:fileIdentifier];
             continue;
         }
-        
+
         DEBUG_METADATA(2, @"item %@ %@", metadataItem, [fileURL absoluteString]);
         DEBUG_METADATA(2, @"  %@", [metadataItem debugDictionary]);
 

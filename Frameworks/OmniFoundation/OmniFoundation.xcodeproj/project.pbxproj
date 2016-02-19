@@ -791,7 +791,7 @@
 		4A4E073008AA72B10098FF0F /* OFIObjectSelectorObjectObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D58FE8AAEA611C9CC38 /* OFIObjectSelectorObjectObject.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E073108AA72B10098FF0F /* OFIObjectSelectorObjectObjectObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D59FE8AAEA611C9CC38 /* OFIObjectSelectorObjectObjectObject.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E073308AA72B10098FF0F /* OFInvocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D51FE8AAEA611C9CC38 /* OFInvocation.m */; settings = {ATTRIBUTES = (); }; };
-		4A4E073408AA72B10098FF0F /* OFMessageQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5AFE8AAEA611C9CC38 /* OFMessageQueue.m */; settings = {ATTRIBUTES = (); }; };
+		4A4E073408AA72B10098FF0F /* OFMessageQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5AFE8AAEA611C9CC38 /* OFMessageQueue.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fobjc-arc"; }; };
 		4A4E073508AA72B10098FF0F /* OFObject-Queue.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5BFE8AAEA611C9CC38 /* OFObject-Queue.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E073608AA72B10098FF0F /* OFQueueProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5CFE8AAEA611C9CC38 /* OFQueueProcessor.m */; settings = {ATTRIBUTES = (); }; };
 		4A4E073708AA72B10098FF0F /* OFResultHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D5DFE8AAEA611C9CC38 /* OFResultHolder.m */; settings = {ATTRIBUTES = (); }; };
@@ -3963,7 +3963,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -4844,6 +4844,7 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				GCC_PREFIX_HEADER = "Tests/OFNetStateNotifier/OFNetStateNotifier-Prefix.pch";
 				INFOPLIST_FILE = "Tests/OFNetStateNotifier/OFNetStateNotifier-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -4859,6 +4860,7 @@
 				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				GCC_PREFIX_HEADER = "Tests/OFNetStateNotifier/OFNetStateNotifier-Prefix.pch";
 				INFOPLIST_FILE = "Tests/OFNetStateNotifier/OFNetStateNotifier-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

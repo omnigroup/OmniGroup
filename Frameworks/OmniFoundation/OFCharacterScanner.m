@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,12 +72,11 @@ static inline int unicharDigitValue(unichar c)
 /* Calls -fetchMoreDataFromCharacters:length:freeWhenDone: with the contents of the inputString */
 - (BOOL)fetchMoreDataFromString:(NSString *)inputString;
 {
-    NSUInteger length;
-    unichar *newBuffer = NULL;
+    NSUInteger length = [inputString length];
+    if (length == 0)
+        return NO;
 
-    length = [inputString length];
-    if (length)
-        newBuffer = malloc(sizeof(unichar) * length);
+    unichar *newBuffer = malloc(sizeof(unichar) * length);
     [inputString getCharacters:newBuffer];
     return [self fetchMoreDataFromCharacters:newBuffer length:length offset:inputStringPosition + (scanEnd - inputBuffer) freeWhenDone:YES];
 }

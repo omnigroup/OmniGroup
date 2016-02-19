@@ -60,14 +60,13 @@ RCS_ID("$Id$");
     return _tableView;
 }
 
-#pragma mark - OUIInspectorSlice subclass
-
-- (void)_reloadTableAndResize;
+- (void)_resizeTable;
 {
-    [_tableView reloadData];
     OUITableViewAdjustHeightToFitContents(_tableView);
     CGFloat currentHeight = self.tableView.contentSize.height;
-    OBASSERT(currentHeight > 0.0);
+    if (currentHeight == 0.0)
+        return;
+    
     if (self.heightConstraint == nil) {
         self.heightConstraint = [self.tableView.heightAnchor constraintEqualToConstant:currentHeight];
         self.heightConstraint.active = YES;
@@ -76,10 +75,18 @@ RCS_ID("$Id$");
     }
 }
 
+- (void)reloadTableAndResize;
+{
+    [_tableView reloadData];
+    [self _resizeTable];
+}
+
+#pragma mark - OUIInspectorSlice subclass
+
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
-    [self _reloadTableAndResize];
+    [self reloadTableAndResize];
 }
 
 #pragma mark - UIViewController subclass
@@ -116,7 +123,7 @@ RCS_ID("$Id$");
     [super viewWillAppear:animated];
     
     // Might be coming back from a detail pane that edited a displayed value
-    [self _reloadTableAndResize];
+    [self reloadTableAndResize];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;

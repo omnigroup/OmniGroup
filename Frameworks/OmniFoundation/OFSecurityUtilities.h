@@ -1,4 +1,4 @@
-// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Security/Security.h>
+#import <Foundation/Foundation.h>
 #import <TargetConditionals.h>
 #import <OmniBase/macros.h>
 
@@ -81,6 +82,14 @@ extern NSString *OFSecKeyAlgorithmDescription(enum OFKeyAlgorithm alg, unsigned 
 
 /* A description of a keychain item in -[NSObject shortDescription] format, e.g. "<SecKeyRef 0x123456: Public RSA-1024>" */
 extern NSString *OFSecItemDescription(CFTypeRef item);
+
+#if TARGET_OS_IPHONE
+/* This function makes up for the lack of key export functionality on iOS. On OSX, you can use SecItemExport(kSecFormatOpenSSL,...) instead. The addToKeychain flag controls whether the private key ref is in the keychain on exit--- the public key is not stored in the keychain, just returned as data. */
+BOOL OFSecKeyGeneratePairAndInfo(enum OFKeyAlgorithm keyType, int keyBits, BOOL addToKeychain, NSString *label, NSData * __autoreleasing *outSubjectPublicKeyInfo, SecKeyRef *outPrivateKey, NSError * __autoreleasing * outError);
+#endif
+
+/* A low-level routine for generating a certificate signing request per PKCS#10 / RFC2314 / RFC2986. The caller is responsible for producing a correctly DER-formatted name, list of request attributes (see PKCS#9 / RFC2985 for values), and SubjectPublicKeyInfo structure (the pub key info can be generated using SecItemExport with format kSecFormatOpenSSL on OSX, or by OFSecKeyGeneratePairAndInfo() on iOS). The returned data is a DER-encoded CertificationRequest structure suitable for use in an application/pkcs10 message per RFC5967. */
+NSData *OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, SecKeyRef privateKey, NSArray<NSData *> *derAttributes, NSMutableString *log, NSError **outError);
 
 /* This is internal to OmniFoundation */
 struct OFNamedCurveInfo {

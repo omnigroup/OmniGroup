@@ -1,4 +1,4 @@
-// Copyright 2005-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,17 @@ extern NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *fun
 } while(0)
     
 #define OBErrorWithErrno(error, errno_value, function, argument, localizedDescription) OBErrorWithErrnoObjectsAndKeys(error, errno_value, function, argument, localizedDescription, nil)
-    
+
+/* This is handy for implementors of +setUserInfoValueProviderForDomain:provider: */
+enum OBErrorWellKnownInfoKey {
+    OBErrorKeyUnknown,
+    OBErrorKeyDescription,    // -localizedDescription, NSLocalizedDescriptionKey
+    OBErrorKeyFailureReason,  // -localizedFailureReason, NSLocalizedFailureReasonErrorKey
+    OBErrorKeyHelpAnchor,     // -helpAnchor, NSHelpAnchorErrorKey
+    OBErrorKeyRecoverySuggestion,  // -localizedRecoverySuggestion, NSLocalizedRecoverySuggestionErrorKey
+};
+enum OBErrorWellKnownInfoKey OBErrorWellKnownInfoKey(NSString *key);
+
 #if defined(__cplusplus)
 } // extern "C"
 #endif

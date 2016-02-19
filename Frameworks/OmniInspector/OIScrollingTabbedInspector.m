@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniInspector/OIAppearance.h>
 #import <OmniInspector/OITabMatrix.h>
+#import <OmniInspector/OIInspectorController.h>
 #import <OmniInspector/OIInspectorTabController.h>
 
 RCS_ID("$Id$")
@@ -108,8 +109,12 @@ RCS_ID("$Id$")
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[_inspectorScrollView]-0-|" options:0 metrics:nil views:views]];
 
     CGFloat tabCenter = NSMidX([self.buttonMatrix cellFrameAtRow:self.buttonMatrix.selectedRow column:self.buttonMatrix.selectedColumn]);
-    
-    self.tabLabel.stringValue = firstTab.inspector.displayName;
+
+    NSString *displayName = firstTab.inspector.displayName;
+    if (!displayName)
+        displayName = @"";
+    self.tabLabel.stringValue = displayName;
+
     if (!self.labelCenterConstraint) {
         self.labelCenterConstraint = [NSLayoutConstraint constraintWithItem:self.tabLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.buttonMatrix attribute:NSLayoutAttributeLeft multiplier:1 constant:tabCenter];
         self.labelCenterConstraint.priority = NSLayoutPriorityDefaultHigh;
@@ -125,7 +130,8 @@ RCS_ID("$Id$")
 - (void)_scrollerStyleDidChange:(NSNotification *)notification
 {
     // We don't really need to redo all the layout, but we do want to maybe adjust the width based on [verticalScroller scrollerStyle]
-    [self _layoutSelectedTabs];
+    if ([self.inspectorController isVisible])
+        [self _layoutSelectedTabs];
 }
 
 @end

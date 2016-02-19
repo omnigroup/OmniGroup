@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniDocumentStore/ODSLocalDirectoryScope.h>
+#import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
@@ -20,6 +21,7 @@
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniFoundation/OFWeakReference.h>
 
 #import "ODSItem-Internal.h"
 #import "ODSFileItem-Internal.h"
@@ -511,7 +513,8 @@ static unsigned ScopeContext;
 
         if ([delegate respondsToSelector:@selector(documentStore:addedFileItems:)]) {
             NSMutableSet *items = [[NSMutableSet alloc] initWithSet:mergedFileItems];
-            [items minusSet:_mergedFileItems];
+            if (_mergedFileItems)
+                [items minusSet:_mergedFileItems];
             if ([items count])
                 addedFileItems = [items copy];
         }
@@ -609,3 +612,5 @@ static unsigned ScopeContext;
 }
 
 @end
+
+

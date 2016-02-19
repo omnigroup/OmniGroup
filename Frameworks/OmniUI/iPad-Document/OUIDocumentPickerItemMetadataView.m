@@ -15,9 +15,6 @@
 
 RCS_ID("$Id$");
 
-@interface OUIDocumentNameTextField : UITextField
-@end
-
 @implementation OUIDocumentNameTextField
 
 - (CGRect)clearButtonRectForBounds:(CGRect)bounds;
@@ -25,6 +22,10 @@ RCS_ID("$Id$");
     // We have padding to the right of this text field, so jam the clear button all the way to the right edge
     CGRect rect =  [super clearButtonRectForBounds:bounds];
     
+    if (self.useLargerClearButton) {
+        rect = CGRectInset(rect, floorf(-(0.5 * rect.size.width)), floorf(-(0.5 * rect.size.height)));
+    }
+
     rect.origin.x = CGRectGetMaxX(bounds) - CGRectGetWidth(rect);
     rect.origin.y = floor(CGRectGetMidY(bounds) - CGRectGetHeight(rect) / 2);
     
@@ -117,75 +118,38 @@ RCS_ID("$Id$");
                                                          constant:1.0 / [self contentScaleFactor]]];
     
     // labels and status image
-    UIView *labels = [[UIView alloc] init];
     _nameTextField = [[OUIDocumentNameTextField alloc] init];
-    [_nameTextField setContentHuggingPriority:10 forAxis:UILayoutConstraintAxisHorizontal];
     _dateLabel = [[UILabel alloc] init];
-    [_dateLabel setContentHuggingPriority:10 forAxis:UILayoutConstraintAxisHorizontal];
-    [labels addSubview:_nameTextField];
-    [labels addSubview:_dateLabel];
-    
-    NSLayoutConstraint *nameShouldBeProportionalHeight = [NSLayoutConstraint constraintWithItem:_nameTextField
-                                                                                      attribute:NSLayoutAttributeHeight
-                                                                                      relatedBy:NSLayoutRelationEqual
-                                                                                         toItem:labels
-                                                                                      attribute:NSLayoutAttributeHeight
-                                                                                     multiplier:3.0/5.0
-                                                                                                 constant:0.0f];
-    [constraints addObject:nameShouldBeProportionalHeight];
-     
-    NSLayoutConstraint *nameToDateVertical = [NSLayoutConstraint constraintWithItem:_dateLabel
-                                                                          attribute:NSLayoutAttributeTop
-                                                                          relatedBy:NSLayoutRelationEqual
-                                                                             toItem:_nameTextField
-                                                                          attribute:NSLayoutAttributeBottom
-                                                                         multiplier:1.0f
-                                                                           constant:kOUIDocumentPickerItemViewNameToDatePadding];
-    [constraints addObject:nameToDateVertical];
-    
-    self.topAndBottomPadding = @[[_nameTextField.topAnchor constraintEqualToAnchor:_nameTextField.superview.topAnchor],
-                                 [_dateLabel.superview.bottomAnchor constraintEqualToAnchor:_dateLabel.bottomAnchor]];
-    for (NSLayoutConstraint *constraint in self.topAndBottomPadding) {
-        constraint.constant = [self topAndBottomPaddingAmount];
-    }
-    
-    [constraints addObjectsFromArray:self.topAndBottomPadding];
-    
-    [constraints addObjectsFromArray:@[
-                                       [_nameTextField.leadingAnchor constraintEqualToAnchor:_nameTextField.superview.leadingAnchor],
-                                       [_nameTextField.trailingAnchor constraintEqualToAnchor:_nameTextField.superview.trailingAnchor],
-                                       [_dateLabel.leadingAnchor constraintEqualToAnchor:_dateLabel.superview.leadingAnchor],
-                                       [_dateLabel.trailingAnchor constraintEqualToAnchor:_dateLabel.superview.trailingAnchor]
-                                       ]];
+    [_dateLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
+    [_dateLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+    [_nameTextField setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+    [_dateLabel setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+
+    UIStackView *labels = [[UIStackView alloc] initWithArrangedSubviews:@[_nameTextField, _dateLabel]];
+    labels.axis = UILayoutConstraintAxisVertical;
     
     _nameBadgeImageView = [[UIImageView alloc] init];
+    _nameBadgeImageView.contentMode = UIViewContentModeScaleAspectFit;
     
     // put these things in a stack view because then when we hide the statusImage, the labels will automatically grow to fill the space
     UIStackView *horizontalStackView = [[UIStackView alloc] initWithArrangedSubviews:@[labels, _nameBadgeImageView]];
     
     horizontalStackView.axis = UILayoutConstraintAxisHorizontal;
     
-    
     [self addSubview:horizontalStackView];
-    self.padding = [NSLayoutConstraint constraintWithItem:horizontalStackView
-                                                attribute:NSLayoutAttributeLeading
-                                                relatedBy:NSLayoutRelationEqual
-                                                   toItem:horizontalStackView.superview
-                                                attribute:NSLayoutAttributeLeading
-                                               multiplier:1.0f
-                                                 constant:8];
-    [constraints addObject:self.padding];
-    [constraints addObject:[NSLayoutConstraint constraintWithItem:horizontalStackView
-                                                        attribute:NSLayoutAttributeTrailing
-                                                        relatedBy:NSLayoutRelationEqual
-                                                           toItem:horizontalStackView.superview
-                                                        attribute:NSLayoutAttributeTrailing
-                                                       multiplier:1.0f
-                                                         constant:-8]];
-    [constraints addObjectsFromArray:@[
-                                       [horizontalStackView.topAnchor constraintEqualToAnchor:horizontalStackView.superview.topAnchor],
-                                       [horizontalStackView.bottomAnchor constraintEqualToAnchor:horizontalStackView.superview.bottomAnchor]
-                                       ]];
+
+    self.topPadding = [horizontalStackView.topAnchor constraintEqualToAnchor:horizontalStackView.superview.topAnchor];
+    self.topPadding.constant = [self topPaddingAmount];
+    self.bottomPadding = [horizontalStackView.superview.bottomAnchor constraintEqualToAnchor:horizontalStackView.bottomAnchor];
+    self.bottomPadding.constant = [self bottomPaddingAmount];
+    [constraints addObjectsFromArray:@[self.topPadding, self.bottomPadding]];
+
+    self.leadingHorizPadding = [horizontalStackView.leadingAnchor constraintEqualToAnchor:horizontalStackView.superview.leadingAnchor];
+    self.leadingHorizPadding.constant = [self _nameToPreviewPadding];
+    self.trailingHorizPadding = [_nameBadgeImageView.trailingAnchor constraintEqualToAnchor:horizontalStackView.superview.trailingAnchor];
+    self.trailingHorizPadding.constant = -[self bottomPaddingAmount];
+
+    [constraints addObjectsFromArray:@[self.leadingHorizPadding, self.trailingHorizPadding]];
     
     [NSLayoutConstraint activateConstraints:constraints];
 }
@@ -208,6 +172,21 @@ RCS_ID("$Id$");
 {
     _nameBadgeImageView.image = nameBadgeImage;
     self.showsImage = (nameBadgeImage != nil);
+    if (nameBadgeImage) {
+        self.imageAspectRatioConstraint = [NSLayoutConstraint constraintWithItem:self.nameBadgeImageView
+                                                                       attribute:NSLayoutAttributeWidth
+                                                                       relatedBy:NSLayoutRelationEqual
+                                                                          toItem:self.nameBadgeImageView
+                                                                       attribute:NSLayoutAttributeHeight
+                                                                      multiplier:nameBadgeImage.size.width/nameBadgeImage.size.height
+                                                                        constant:0.0f];
+        [NSLayoutConstraint activateConstraints:@[self.imageAspectRatioConstraint]];
+    } else {
+        if (self.imageAspectRatioConstraint) {            
+            [NSLayoutConstraint deactivateConstraints:@[self.imageAspectRatioConstraint]];
+            self.imageAspectRatioConstraint = nil;
+        }
+    }
 }
 
 - (BOOL)showsImage;
@@ -247,17 +226,28 @@ RCS_ID("$Id$");
         _doubleSizeFonts = doubleSizeFonts;
         self.nameHeightConstraint.constant = doubleSizeFonts ? [self _nameHeight] * 2 : [self _nameHeight];
         self.dateHeightConstraint.constant = doubleSizeFonts ? [self _dateHeight] * 2: [self _dateHeight];
-        self.padding.constant = doubleSizeFonts ? self.padding.constant * 2 : self.padding.constant / 2;
-        for (NSLayoutConstraint *constraint in self.topAndBottomPadding) {
-            constraint.constant = doubleSizeFonts ? [self topAndBottomPaddingAmount] * 2 : [self topAndBottomPaddingAmount];
-        }
+        self.leadingHorizPadding.constant = doubleSizeFonts ? self.leadingHorizPadding.constant * 2 : self.leadingHorizPadding.constant / 2;
+        self.trailingHorizPadding.constant = doubleSizeFonts ? self.trailingHorizPadding.constant * 2 : self.trailingHorizPadding.constant / 2;
+        self.topPadding.constant = doubleSizeFonts ? [self topPaddingAmount] * 2 : [self topPaddingAmount];
+        self.bottomPadding.constant = doubleSizeFonts ? [self bottomPaddingAmount] * 2 : [self bottomPaddingAmount];
         [self _resetLabelFontSizes];
     }
+    self.nameTextField.useLargerClearButton = doubleSizeFonts;
 }
 
-- (CGFloat)topAndBottomPaddingAmount
+- (CGFloat)verticalPaddingAmount
 {
     return self.isSmallSize ? kOUIDocumentPickerItemViewNameToTopPaddingSmallSize : kOUIDocumentPickerItemViewNameToTopPaddingLargeSize;
+}
+
+- (CGFloat)topPaddingAmount
+{
+    return [self verticalPaddingAmount];
+}
+
+- (CGFloat)bottomPaddingAmount
+{
+    return [self verticalPaddingAmount] / kOUIDocumentPickerItemViewTopToBottomPaddingRatio;
 }
 
 - (NSString *)dateString;
@@ -307,6 +297,8 @@ RCS_ID("$Id$");
     
     self.frame = endFrame;
     self.doubleSizeFonts = endFrame.size.width > startFrame.size.width;
+    [self setNeedsUpdateConstraints];
+    [self updateConstraintsIfNeeded];
     [self setNeedsLayout];
     [self layoutIfNeeded];
     self.endSnap = [self snapshotViewAfterScreenUpdates:YES];
@@ -334,7 +326,7 @@ RCS_ID("$Id$");
 - (void)animationsToPerformAlongsideScalingToHeight:(CGFloat)height
 {
     self.startSnap.alpha = 0.0f;
-    self.endSnap.alpha = 1.0f;
+    self.endSnap.alpha = 0.6f;
     self.startSnap.frame = [self rectByScalingRect:self.startSnap.frame toHeight:height];
     self.endSnap.frame = [self rectByScalingRect:self.endSnap.frame toHeight:height];
 }
@@ -364,13 +356,13 @@ RCS_ID("$Id$");
 
     [self _resetLabelFontSizes];
     
-    self.padding.constant = [self _nameToPreviewPadding];
+    self.leadingHorizPadding.constant = [self _nameToPreviewPadding];
+    self.trailingHorizPadding.constant = -[self bottomPaddingAmount];
     self.nameToDatePadding.constant = kOUIDocumentPickerItemViewNameToDatePadding;
     self.nameHeightConstraint.constant = [self _nameHeight];
     self.dateHeightConstraint.constant = [self _dateHeight];
-    for (NSLayoutConstraint *constraint in self.topAndBottomPadding) {
-        constraint.constant = isSmallSize ? kOUIDocumentPickerItemViewNameToTopPaddingSmallSize : kOUIDocumentPickerItemViewNameToTopPaddingLargeSize;
-    }
+    self.topPadding.constant = [self topPaddingAmount];
+    self.bottomPadding.constant = [self bottomPaddingAmount];
 }
 
 #pragma mark - Private

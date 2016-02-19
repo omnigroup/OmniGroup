@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,14 +39,15 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     state->childIndex = InvalidChildIndex;
 }
 
-@interface OFXMLCursor (Private)
-#ifdef OMNI_ASSERTIONS_ON
-- (BOOL)_checkInvariants;
-#endif
-- (id)_nextChild:(BOOL)peek;
-@end
-
 @implementation OFXMLCursor
+{
+    OFXMLDocument *_document;
+    OFXMLElement *_startingElement;
+    struct _OFXMLCursorState *_state;
+    unsigned int _stateCount;
+    unsigned int _stateSize;
+}
+
 /*.doc. OFXMLCursor provides a simple way to traverse the elements in an OFXMLDocument.  At any point of time, the cursor can be thought of sitting 'at' one of the elements in the document (with the starting location being the root element).  The cursor also maintains a notion of the current child and allows you to enumerate through the children.  If you find a child that you want to recurse into temporarily, you can call -openElement.  Once you are done with that element, you call -closeElement to return to the cursor to the parent element (also restoring the notion of the current child).
 */
 
@@ -210,9 +211,8 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     OBINVARIANT([self _checkInvariants]);
 }
 
-//
-// Convenience methods that forward to -currentElement
-//
+#pragma mark - Convenience methods that forward to -currentElement
+
 - (NSString *)name;
 {
     return [[self currentElement] name];
@@ -252,9 +252,8 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     return NO;
 }
 
-//
-// Debugging
-//
+#pragma mark - Debugging
+
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict;
@@ -264,9 +263,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     return dict;
 }
 
-@end
-
-@implementation OFXMLCursor (Private)
+#pragma mark - Private
 
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_checkInvariants;

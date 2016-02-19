@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,7 +186,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     for (OUIInspectorSlice *slice in _availableSlices) {
         // Don't put a spacer at the beginning, or two spacers back-to-back
         if ([slice isKindOfClass:[OUIEmptyPaddingInspectorSlice class]]) {
-            if ((previousSlice == nil) || previousSlice.includesInspectorSliceGroupSpacerOnBottom) {
+            if (previousSlice.includesInspectorSliceGroupSpacerOnBottom) {
                 continue;
             }
         }
@@ -286,16 +286,22 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     }
     // view controllers need to be told they're being added & removed from each other.
     _slices = slices;
-    [self setNeedsSliceLayout];
+    
     self.maintainHeirarchyOnNextSliceLayout = maintainHierarchy;
     for (OUIInspectorSlice *slice in slices) {
         slice.containingPane = self;
         slice.view.backgroundColor = [slice sliceBackgroundColor];
         [self addChildViewController:slice];
         [self.sliceStackView addArrangedSubview:slice.view];
-
     }
-
+    for (NSUInteger index = 0; index < slices.count; index++) {
+        OUIInspectorSlice *previous = index > 0 ? slices[index-1] : nil;
+        OUIInspectorSlice *next = index < (slices.count-1) ? slices[index+1] : nil;
+        OUIInspectorSlice *current = slices[index];
+        
+        current.groupPosition = [OUIStackedSlicesInspectorPane _sliceGroupPositionForSlice:current precededBySlice:previous followedBySlice:next];
+    }
+    [self setNeedsSliceLayout];
 }
 
 - (void)setSlices:(NSArray *)slices;
@@ -430,15 +436,18 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     self.sliceStackView.alignment = UIStackViewAlignmentFill;
     self.sliceStackView.axis = UILayoutConstraintAxisVertical;
     self.sliceStackView.distribution = UIStackViewDistributionEqualSpacing;
-    self.sliceStackView.spacing = 1;
+    self.sliceStackView.spacing = 0;
     [view addSubview:self.sliceStackView];
 
-    // set up constraints so that the stackView is as big as the scrollview.
-    [self.sliceStackView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
-    [self.sliceStackView.rightAnchor constraintEqualToAnchor: view.rightAnchor].active = YES;
-    [self.sliceStackView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
-    [self.sliceStackView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
-    [self.sliceStackView.widthAnchor constraintEqualToAnchor:view.widthAnchor].active = YES; // this is required in addition to the left & right pins, because the stackSliceView doesn't have an intrinsic content size, so, like a scroll view, it needs 6 points of definition. 
+    [NSLayoutConstraint activateConstraints:
+     @[
+       // set up constraints so that the stackView is as big as the scrollview.
+       [self.sliceStackView.leftAnchor constraintEqualToAnchor:view.leftAnchor],
+       [self.sliceStackView.rightAnchor constraintEqualToAnchor: view.rightAnchor],
+       [self.sliceStackView.topAnchor constraintEqualToAnchor:view.topAnchor],
+       [self.sliceStackView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor],
+       [self.sliceStackView.widthAnchor constraintEqualToAnchor:view.widthAnchor], // this is required in addition to the left & right pins, because the stackSliceView doesn't have an intrinsic content size, so, like a scroll view, it needs 6 points of definition.
+       ]];
 
     // If we are getting our view reloaded after a memory warning, we might already have slices. They should be mostly set up, but their superview needs fixing.
     for (OUIInspectorSlice *slice in _slices) {
@@ -461,7 +470,11 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     // The last time we were on screen, we may have been dismissed because the keyboard showed.  We would have gotten the message that the keyboard was showing, and changed our bottom content inset to deal with that, but not gotten the message that the keyboard dismissed and so not have reset our bottom inset to 0.
     UIScrollView *scrollview = (UIScrollView*)self.contentView;
     UIEdgeInsets defaultInsets = scrollview.contentInset;
-    defaultInsets.bottom = 0;
+    if (self.inspector.alwaysShowToolbar || ([self.toolbarItems count] > 0)) {
+        defaultInsets.bottom = self.navigationController.toolbar.frame.size.height;
+    } else {
+        defaultInsets.bottom = 0;
+    }
     scrollview.contentInset = defaultInsets;
 
     [super viewWillAppear:animated];
@@ -472,6 +485,10 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     [super viewDidAppear:animated];
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     [view flashScrollIndicators];
+    
+    UIEdgeInsets margins = UIEdgeInsetsMake(0.0, self.view.layoutMargins.left, 0.0, self.view.layoutMargins.right);
+    for (OUIInspectorSlice *slice in _slices)
+        slice.view.layoutMargins = margins;
 }
 
 #pragma mark -

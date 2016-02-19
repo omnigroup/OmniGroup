@@ -11,8 +11,14 @@
 #import <OmniBase/OmniBase.h>
 
 @class OFSDocumentKey;
+@class OFSEncryptingFileManagerTasteOperation;
+@class ODAVFileInfo;
 
 NS_ASSUME_NONNULL_BEGIN
+
+#define OFSFileManagerSlotWrote   0x0001
+#define OFSFileManagerSlotRead    0x0002
+#define OFSFileManagerSlotTasted  0x0004
 
 @interface OFSEncryptingFileManager : OFSFileManager <OFSConcreteFileManager>
 
@@ -20,7 +26,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, copy, nonatomic, nullable) NSString *maskedFileName;
 @property (readonly, nonatomic, nonnull) OFSDocumentKey *keyStore;
+@property (readwrite, nonatomic, nullable, retain) ODAVFileInfo *keyStoreOrigin;
+@property (readonly, nonatomic, retain) OFSFileManager *underlyingFileManager;
 
+- (OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
+- (NSIndexSet * __nullable)unusedKeySlotsOfSet:(NSIndexSet *)slots amongFiles:(NSArray <ODAVFileInfo *> *)files error:(NSError **)outError;
+
+@end
+
+@interface OFSEncryptingFileManagerTasteOperation : NSOperation
+/* These properties are not necessarily KVOable. Wait for the operation to be finished, then read them. */
+@property (atomic,readonly) int keySlot;
+@property (atomic,readonly,copy,nullable) NSError *error;
 @end
 
 NS_ASSUME_NONNULL_END

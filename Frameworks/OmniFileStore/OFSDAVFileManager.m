@@ -86,9 +86,22 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return [_connection asynchronousGetContentsOfURL:url];
 }
 
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfFile:(ODAVFileInfo *)f range:(NSString *)range;
+{
+    return [_connection asynchronousGetContentsOfURL:f.originalURL withETag:f.ETag range:range];
+}
+
 - (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
 {
     return [_connection asynchronousPutData:data toURL:url];
+}
+
+- (id <ODAVAsynchronousOperation>)asynchronousDeleteFile:(ODAVFileInfo *)f;
+{
+    OBPRECONDITION(f);
+    NSURL *url = f.originalURL;
+    OBPRECONDITION(url);
+    return [_connection asynchronousDeleteURL:url withETag:f.ETag];
 }
 
 #pragma mark OFSConcreteFileManager
@@ -191,6 +204,29 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return [_connection synchronousPutData:data toURL:url error:outError];
 }
 
+- (NSURL *)writeData:(NSData *)data atomicallyReplacing:(ODAVFileInfo *)destination error:(NSError **)outError;
+{
+    // Do a non-atomic PUT to a temporary location.  The name needs to be something that won't get picked up by XMLTransactionGraph or XMLSynchronizer (which use file extensions).  We don't have a temporary directory on the DAV server.
+    // TODO: Use the "POST to unique filename" feature if this DAV server supports it --- we'll need to do discovery, but we can do that for free in our initial PROPFIND. See ftp://ftp.ietf.org/internet-drafts/draft-reschke-webdav-post-08.txt.
+    NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
+    NSURL *temporaryURL = OFURLWithNameAffix(destination.originalURL, temporaryNameSuffix, NO, YES);
+    
+    NSURL *actualTemporaryURL = [self writeData:data toURL:temporaryURL atomically:NO error:outError];
+    if (!actualTemporaryURL)
+        return nil;
+    
+    NSURL *finalURL = destination.originalURL;
+    if (!OFURLEqualsURL(actualTemporaryURL,temporaryURL)) {
+        NSString *rewrittenFinalURL = OFURLAnalogousRewrite(temporaryURL, [finalURL absoluteString], actualTemporaryURL);
+        if (rewrittenFinalURL)
+            finalURL = [NSURL URLWithString:rewrittenFinalURL];
+    }
+    
+    // MOVE the fully written data into place.
+    // TODO: Try to delete the temporary file if MOVE fails?
+    return [_connection synchronousMoveURL:actualTemporaryURL toURL:finalURL withDestinationETag:destination.ETag overwrite:destination.exists error:outError];
+}
+
 - (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
 {
     OBPRECONDITION(url);
@@ -211,6 +247,13 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 {
     OBPRECONDITION(url);
     return [_connection synchronousDeleteURL:url withETag:nil error:outError];
+}
+
+- (BOOL)deleteFile:(ODAVFileInfo *)fileinfo error:(NSError **)outError;
+{
+    NSURL *url = fileinfo.originalURL;
+    OBPRECONDITION(url);
+    return [_connection synchronousDeleteURL:url withETag:fileinfo.ETag error:outError];
 }
 
 @end

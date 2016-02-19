@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,9 +27,9 @@
 #import <OmniUI/OUIPurchaseURLCommand.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
-#import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniUI/OUIAttentionSeekingButton.h>
 
 #import <sys/sysctl.h>
 
@@ -38,9 +38,15 @@
 RCS_ID("$Id$");
 
 NSString * const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
+NSString * const NeedToShowURLKey = @"OSU_need_to_show_URL";
+NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
 
-@interface OUIAppController () <OUIWebViewControllerDelegate>
+NSString *OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
+NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
+
+@interface OUIAppController ()
 @property(strong, nonatomic) NSTimer *timerForSnapshots;
+@property(strong, nonatomic) NSMapTable *appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems;
 @end
 
 @implementation OUIAppController
@@ -382,7 +388,9 @@ static void __iOS7B5CleanConsoleOutput(void)
     controller.mailComposeDelegate = self;
     [controller setToRecipients:[NSArray arrayWithObject:feedbackAddress]];
     [controller setSubject:subject];
-    if (![NSString isEmptyString:body])
+    
+    // N.B. The static analyzer doesn't know that +isEmptyString: is also a null check, so we duplicate it here
+    if (body != nil && ![NSString isEmptyString:body])
         [controller setMessageBody:body isHTML:NO];
     
     [viewControllerToPresentFrom presentViewController:controller animated:YES completion:nil];
@@ -444,15 +452,39 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (UIBarButtonItem *)newAppMenuBarButtonItem;
 {
+    
+    BOOL needsAttentionDot = [self newsWantsAttention];
+    
     NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
     if ([NSString isEmptyString:imageName])
         imageName = @"OUIAppMenu";
+    UIImage *normalImage = menuImage(imageName);
     
-    UIImage *appMenuImage = menuImage(imageName);
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStylePlain target:self action:@selector(_showAppMenu:)];
+    imageName = [imageName stringByAppendingString:@"-Badged"];
+    UIImage *attentionImage = menuImage(imageName);
+    
+    OUIAttentionSeekingButton *button = [[OUIAttentionSeekingButton alloc] initForAttentionKey:OUIAttentionSeekingForNewsKey normalImage:normalImage attentionSeekingImage:attentionImage dotOrigin:CGPointMake(15, 0)];
+    [button addTarget:self action:@selector(_showAppMenu:) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithCustomView:button];
+    
+    if (needsAttentionDot) {
+        button.seekingAttention = YES;
+    }
     
     item.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
     
+    if (!self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems) {
+        self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems = [NSMapTable weakToWeakObjectsMapTable];
+    }
+    [self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems setObject:item forKey:button];
+    
+    return item;
+}
+
+- (UIBarButtonItem *)barButtonItemForSender:(id)sender
+{
+    UIBarButtonItem *item = [self.appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems objectForKey:sender];
     return item;
 }
 
@@ -476,8 +508,16 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     _appMenuController.topOptions = [self _appMenuTopOptions];
     _appMenuController.tintColor = self.window.tintColor;
     
-    OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    _appMenuController.popoverPresentationController.barButtonItem = sender;
+    UIBarButtonItem *appropriatePresenter = nil;
+    if ([sender isKindOfClass:[UIBarButtonItem class]])
+    {
+        appropriatePresenter = sender;
+    } else {
+        appropriatePresenter = [self barButtonItemForSender:sender];
+    }
+    OBASSERT(appropriatePresenter != nil);
+    OBASSERT([appropriatePresenter isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
+    _appMenuController.popoverPresentationController.barButtonItem = appropriatePresenter;
     [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
 }
 
@@ -488,8 +528,9 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self sendFeedbackWithSubject:subject body:nil];
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle
 {
+    OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil)
         return nil;
     
@@ -500,8 +541,90 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
     webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     
+    webNavigationController.modalPresentationStyle = presentationStyle;
+    
     [self.window.rootViewController presentViewController:webNavigationController animated:YES completion:nil];
     return webController;
+}
+
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
+{
+    return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen];
+}
+
+- (void)_showLatestNewsMessage
+{
+    [self showNewsURLString:[self mostRecentNewsURLString] evenIfShownAlready:YES];
+}
+
+- (void)setNewsURLStringToShowWhenReady:(NSString *)newsURLStringToShowWhenReady
+{
+    if (newsURLStringToShowWhenReady) {
+        [[NSUserDefaults standardUserDefaults] setObject:newsURLStringToShowWhenReady forKey:NeedToShowURLKey];
+        // Post notification after saving the URL, so observers of the notification get correct property values when they query us.
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(YES) }];
+    } else {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:NeedToShowURLKey];
+    }
+}
+
+- (NSString *)newsURLStringToShowWhenReady
+{
+    return [[NSUserDefaults standardUserDefaults] objectForKey:NeedToShowURLKey];
+}
+
+- (BOOL)hasUnreadNews
+{
+    BOOL result = [self newsWantsAttention];
+    return result;
+}
+
+- (BOOL)hasAnyNews
+{
+    BOOL result = !OFIsEmptyString([self mostRecentNewsURLString]);
+    return result;
+}
+
+- (NSString *)mostRecentNewsURLString
+{
+    NSString *newsURLToShow = self.newsURLStringToShowWhenReady;
+    if (!newsURLToShow) {
+        NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+        newsURLToShow = [previouslyShown lastObject];
+    }
+    return newsURLToShow;
+}
+
+- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
+{
+#if 0 && DEBUG_shannon
+    NSLog(@"asked to show news.  root view controller is %@", self.window.rootViewController);
+    showNoMatterWhat = YES;
+#endif
+    if (self.window.rootViewController.presentedViewController) {
+        self.newsURLStringToShowWhenReady = urlString;
+        return nil;  // we don't want to interrupt the user to show the news message (or try to work around every issue that could arise with trying to present this news message when something else is already presented)
+    }
+    
+    if (showNoMatterWhat || ![self haveShownReleaseNotes:urlString]) {
+        self.newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title") withModalPresentationStyle:UIModalPresentationFormSheet];
+    }
+    
+    self.newsURLCurrentlyShowing = urlString;
+    return self.newsViewController;
+}
+
+- (BOOL)haveShownReleaseNotes:(NSString *)urlString
+{
+    NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+    __block BOOL foundIt = NO;
+    [previouslyShown enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj isEqualToString:urlString]) {
+            foundIt = YES;
+            *stop = YES;
+        }
+    }];
+    return foundIt;
 }
 
 - (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
@@ -614,6 +737,11 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
 
 #pragma mark - OUIMenuControllerDelegate
 
+- (BOOL)newsWantsAttention
+{
+    return [self mostRecentNewsURLString].length > 0 && ![self haveShownReleaseNotes:self.mostRecentNewsURLString];
+}
+
 static UIImage *menuImage(NSString *name)
 {
     UIImage *image = [[UIImage imageNamed:name inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -651,6 +779,17 @@ static UIImage *menuImage(NSString *name)
         [options addObject:option];
     }
 
+    if ([self mostRecentNewsURLString]){
+        OUIMenuOption *newsOption = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showLatestNewsMessage)
+                                                                              title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News menu item")
+                                                                              image:menuImage(@"OUIMenuItemAnnouncement.png")];
+        [options addObject:newsOption];
+        OUIAttentionSeekingButton *newsButton = [[OUIAttentionSeekingButton alloc] initForAttentionKey:OUIAttentionSeekingForNewsKey normalImage:menuImage(@"OUIMenuItemAnnouncement.png") attentionSeekingImage:menuImage(@"OUIMenuItemAnnouncement-Badged.png") dotOrigin:CGPointMake(25, 2)];
+        newsButton.seekingAttention = [self newsWantsAttention];
+        newsButton.userInteractionEnabled = NO;
+        newsOption.attentionDotView = newsButton;
+        
+    }
     
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showReleaseNotes:)
                                                        title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
@@ -691,6 +830,29 @@ static UIImage *menuImage(NSString *name)
 
 - (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
 {
+    if (webViewController == self.newsViewController
+        && self.newsURLCurrentlyShowing != nil
+        && webViewController.webView.URL) {
+        if (![self haveShownReleaseNotes:self.newsURLCurrentlyShowing]) {
+            // remember that we showed this url
+            NSArray<NSString *> *previouslyShown = [[NSUserDefaults standardUserDefaults] arrayForKey:PreviouslyShownURLsKey];
+            if (!previouslyShown) {
+                previouslyShown = @[];
+            }
+            previouslyShown = [previouslyShown arrayByAddingObject:self.newsURLCurrentlyShowing];
+            [[NSUserDefaults standardUserDefaults] setObject:previouslyShown forKey:PreviouslyShownURLsKey];
+            
+            if ([self.newsURLCurrentlyShowing isEqualToString:self.newsURLStringToShowWhenReady]) {
+                self.newsURLStringToShowWhenReady = nil;
+            }
+        }
+        
+        self.newsViewController = nil;
+        self.newsURLCurrentlyShowing = nil;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(NO) }];
+    }
+    
     [webViewController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 

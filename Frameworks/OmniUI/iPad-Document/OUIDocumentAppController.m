@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,6 +76,7 @@
 #import "OUILaunchViewController.h"
 #import <OmniFoundation/OFBackgroundActivity.h>
 
+
 RCS_ID("$Id$");
 
 // OUIDocumentConflictResolutionViewControllerDelegate is gone
@@ -119,6 +120,7 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 @property (nonatomic, weak) OUIWebViewController *webViewController;
 @property (nonatomic,readonly) UIBarButtonItem *editButtonItem;
 @property (nonatomic, strong) void (^externalPickerCompletionBlock)(NSURL *);
+@property (nonatomic) BOOL readyToShowNews;
 
 @end
 
@@ -185,6 +187,11 @@ static unsigned SyncAgentRunningAccountsContext;
     return window;
 }
 
+- (BOOL)useCompactBarButtonItemsIfApplicable;
+{
+    return NO;
+}
+
 @synthesize closeDocumentBarButtonItem = _closeDocumentBarButtonItem;
 - (UIBarButtonItem *)closeDocumentBarButtonItem;
 {
@@ -213,6 +220,12 @@ static unsigned SyncAgentRunningAccountsContext;
         _infoBarButtonItem = [OUIInspector inspectorBarButtonItemWithTarget:self action:@selector(_showInspector:)];
         _infoBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Info", @"OmniUIDocument", OMNI_BUNDLE, @"Info item accessibility label");
     }
+    if (self.useCompactBarButtonItemsIfApplicable) {
+        BOOL isHorizontallyCompact = self.document.documentViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isVerticallyCompact = self.document.documentViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
+        _infoBarButtonItem.image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
+    }
     return _infoBarButtonItem;
 }
 
@@ -220,6 +233,14 @@ static unsigned SyncAgentRunningAccountsContext;
 {
     UIBarButtonItem *infoBarButtonItem = [OUIInspector inspectorOUIBarButtonItemWithTarget:self action:@selector(_showInspector:)];
     infoBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Info", @"OmniUIDocument", OMNI_BUNDLE, @"Info item accessibility label");
+
+    if (self.useCompactBarButtonItemsIfApplicable) {
+        BOOL isHorizontallyCompact = self.document.documentViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isVerticallyCompact = self.document.documentViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        NSString *imageName = (isHorizontallyCompact || isVerticallyCompact) ? @"OUIToolbarInfo-Compact" : @"OUIToolbarInfo";
+        infoBarButtonItem.image = [UIImage imageNamed:imageName inBundle:[OUIInspector bundle] compatibleWithTraitCollection:NULL];
+    }
+
     return infoBarButtonItem;
 }
 
@@ -235,8 +256,20 @@ static unsigned SyncAgentRunningAccountsContext;
         [[UIMenuController sharedMenuController] setMenuVisible:NO animated:YES];
     }
     
+    // Update the modification date in case the doc picker is sorting by date and the file save hasn't landed yet.
+    if (self.document.hasUnsavedChanges) {
+        self.document.fileItem.userModificationDate = [NSDate date];
+    }
+    
     [self closeDocumentWithCompletionHandler:^{
         [_documentPicker dismissViewControllerAnimated:YES completion:nil];
+    }];
+}
+
+- (void)closeAndDismissDocumentWithCompletionHandler:(void (^)(void))completionHandler
+{
+    [self closeDocumentWithCompletionHandler:^{
+        [_documentPicker dismissViewControllerAnimated:YES completion:completionHandler];
     }];
 }
 
@@ -982,6 +1015,17 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     return options;
 }
 
+- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
+{
+    if (self.readyToShowNews) {
+        return [super showNewsURLString:urlString evenIfShownAlready:showNoMatterWhat];
+        
+    } else {
+        self.newsURLStringToShowWhenReady = urlString;
+        return nil;
+    }
+}
+
 #pragma mark - UIResponder subclass
 
 - (NSArray *)keyCommands;
@@ -1418,12 +1462,16 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
             dispatch_after(0, dispatch_get_main_queue(), ^{
                 [self showOnlineHelp:nil];
             });
+        } else if (self.newsURLStringToShowWhenReady){
+            self.readyToShowNews = YES;
+            [self showNewsURLString:self.newsURLStringToShowWhenReady evenIfShownAlready:NO];
         }
     } else {
         // Now that we are on screen, if we are waiting for a document to open, we'll just fade it in when it is loaded.
         _isOpeningURL = YES; // prevent preview generation while we are getting around to it
     }
     
+    self.readyToShowNews = YES;
     if (completionHandler)
         completionHandler();
 }
@@ -1658,7 +1706,8 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 OBASSERT(strongSelf);
                 if (!strongSelf)
                     return;
-                
+
+
                 [strongSelf _updateCoreSpotlightIndex];
                 
                 [strongSelf _delayedFinishLaunchingAllowCopyingSampleDocuments:YES
@@ -2210,8 +2259,11 @@ static NSMutableDictionary *spotlightToFileURL;
 + (void)registerSpotlightID:(NSString *)uniqueID forDocumentFileURL:(NSURL *)fileURL;
 {
     NSMutableDictionary *dict = [self _spotlightToFileURL];
-    [dict setObject:[self _savedPathForFileURL:fileURL] forKey:uniqueID];
-    [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
+    NSString *savedPath = [self _savedPathForFileURL:fileURL];
+    if (savedPath) {
+        [dict setObject:savedPath forKey:uniqueID];
+        [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
+    }
 }
 
 + (NSString *)spotlightIDForFileURL:(NSURL *)fileURL;
@@ -2406,12 +2458,6 @@ static NSMutableDictionary *spotlightToFileURL;
 {
     _externalPickerCompletionBlock(nil);
     [self.window.rootViewController dismissViewControllerAnimated:NO completion:nil];
-}
-
-#pragma mark - OUIWebViewControllerDelegate
-- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
-{
-    [webViewController.presentingViewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
 #pragma mark - OUIUndoBarButtonItemTarget

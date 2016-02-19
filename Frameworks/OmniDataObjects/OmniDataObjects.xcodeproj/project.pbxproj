@@ -86,7 +86,7 @@
 		341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */; };
 		343BD2DD1B62F35D002D09C6 /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34019F651B62ECB4003A5BE4 /* OmniDataObjects.framework */; };
 		343BD2E31B62F381002D09C6 /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; };
-		343BD2E41B62F384002D09C6 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; };
+		343BD2E41B62F384002D09C6 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		343BD2E51B62F389002D09C6 /* ODOTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DFC0DAAD0EF00BF27F8 /* ODOTestCase.m */; };
 		343BD2E61B62F38E002D09C6 /* ODOUndoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DEB0DAAD02500BF27F8 /* ODOUndoTests.m */; };
 		343BD2E71B62F391002D09C6 /* ODODeleteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */; };
@@ -128,7 +128,7 @@
 		3465D9F70D89C13B00D0B1D9 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3465D9F60D89C13B00D0B1D9 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346AE8B51909889E00C28CFE /* ODOSnapshotTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346AE8B41909889E00C28CFE /* ODOSnapshotTests.m */; };
 		3472C2D20DAFD8A800AAD622 /* ODODeleteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */; };
-		3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; };
+		3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; };
 		3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3477F3DB0DA29343001CF280 /* ODOFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3481A9B40D899C210050FC54 /* OmniDataObjects.h in Headers */ = {isa = PBXBuildFile; fileRef = 3481A9B30D899C210050FC54 /* OmniDataObjects.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -866,7 +866,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;

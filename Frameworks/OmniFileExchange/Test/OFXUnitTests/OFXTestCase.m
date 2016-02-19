@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -724,7 +724,7 @@ static void _logAgentState(OFXAgent *agent)
 
     for (OFXAgent *agent in otherAgents) {
         NSURL *localDocumentsForOtherAgent = [self singleAccountInAgent:agent].localDocumentsURL;
-        OFDiffFiles(self, [localDocumentsForFirstAgent path], [localDocumentsForOtherAgent path], nil/*filter*/);
+        OFDiffFiles(self, [localDocumentsForFirstAgent path], [localDocumentsForOtherAgent path], nil/*operations*/);
     }
 }
 
@@ -749,7 +749,7 @@ static void _logAgentState(OFXAgent *agent)
         for (OFXFileMetadata *metadata in metadataItems) {
             OFXFileMetadata *firstMetadata = firstAgentFileIdentifierToMetadata[metadata.fileIdentifier];
             XCTAssertEqualObjects(metadata.editIdentifier, firstMetadata.editIdentifier, @"should be on the same version");
-            OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*filter*/);
+            OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*operations*/);
         }
     }
 }

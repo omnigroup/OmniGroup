@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,12 @@
 
 RCS_ID("$Id$");
 
+@interface OAControlTextColorTransformer ()
+
+@property (nonatomic) BOOL negate;
+
+@end
+
 @implementation OAControlTextColorTransformer
 
 /*" This value transformer transforms a boolean into either the controlTextColor or the disabledControlTextColor. It's useful for binding a text field to a boolean which controls the enabled state of the control it is the label for. (See also -[NSTextField(OAExtensions) changeColorAsIfEnabledStateWas:].) "*/
@@ -21,14 +27,12 @@ RCS_ID("$Id$");
 + (void)didLoad;
 {
     OAControlTextColorTransformer *normal = [[self alloc] init];
-    normal->negate = NO;
+    normal.negate = NO;
     [NSValueTransformer setValueTransformer:normal forName:@"OAControlTextColor"];
-    [normal release];
     
     OAControlTextColorTransformer *negated = [[self alloc] init];
-    negated->negate = YES;
+    negated.negate = YES;
     [NSValueTransformer setValueTransformer:negated forName:@"OAControlTextColorInverted"];
-    [negated release];
 }
 
 + (Class)transformedValueClass;
@@ -43,18 +47,19 @@ RCS_ID("$Id$");
 
 - (id)transformedValue:(id)value;
 {
-    BOOL enable;
+    BOOL enable = NO;
     
     if (value) {
-        if ([value respondsToSelector:@selector(boolValue)])
+        if ([value respondsToSelector:@selector(boolValue)]) {
             enable = [value boolValue];
-        else
+        } else {
             enable = OFNOTNULL(value);
+        }
         
-        if (negate)
+        if (self.negate) {
             enable = !enable;
-    } else
-        enable = NO;
+        }
+    }
     
     return enable? [NSColor controlTextColor] : [NSColor disabledControlTextColor];
 }

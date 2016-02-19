@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,8 @@
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUIFeatures.h>
+#import <OmniUI/OUIWebViewController.h>
 
-@class OUIWebViewController;
 @class UIBarButtonItem;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
@@ -21,7 +21,12 @@
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
-@interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate>
+/// Posted when attention is sought or no longer sought. Notifications user info will have key for the sort of attention, mapping to a boolean value which is YES if attention is sought or NO if attention is no longer sought.
+extern NSString *OUIAttentionSeekingNotification;
+/// The key for when attention is sought for new "News" from Omni.
+extern NSString *OUIAttentionSeekingForNewsKey;
+
+@interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIWebViewControllerDelegate>
 
 + (instancetype)controller NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
@@ -68,7 +73,18 @@
 @property(nonatomic,readonly) NSString *fullReleaseString;
 
 // App menu support
+@property (nonatomic, strong) NSString *newsURLStringToShowWhenReady;
+@property (nonatomic, strong) NSString *newsURLCurrentlyShowing;
+@property (nonatomic, weak) OUIWebViewController *newsViewController;
 - (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
+
+@property (nonatomic, readonly) BOOL hasUnreadNews;
+@property (nonatomic, readonly) BOOL hasAnyNews;
+
+/// The most recent news URL, which could be an unread one or just the most recently shown one. Will be nil if there is no unread news and no already-read news stored in preferences.
+- (NSString *)mostRecentNewsURLString;
+
+- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat;
 
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionAfterReleaseNotes,

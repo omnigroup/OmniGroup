@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,27 +15,31 @@
 RCS_ID("$Id$");
 
 @interface NSDatePicker ()
+
 - (void)_clockAndCalendarReturnToHomeMonth:(id)sender;
 - (void)_clockAndCalendarRetreatMonth:(id)sender;
 - (void)_clockAndCalendarAdvanceMonth:(id)sender;
+
+@end
+
+@interface OADatePicker ()
+
+@property (nonatomic, assign) BOOL sentAction;
+@property (nonatomic, strong) NSDate *lastDate;
+@property (nonatomic, assign) BOOL ignoreNextDateRequest; // <bug://bugs/38625> (Selecting date selects current date first when switching between months, disappears (with some filters) before proper date can be selected)
+
 @end
 
 @implementation OADatePicker
 
-- (void)dealloc;
-{
-    [_lastDate release];
-    [super dealloc];
-}
-
 - (BOOL)sendAction:(SEL)theAction to:(id)theTarget;
 {
     if (theAction == self.action) {
-        ignoreNextDateRequest = NO;
+        self.ignoreNextDateRequest = NO;
     } else {
-        _lastDate = [[self dateValue] retain];
-        ignoreNextDateRequest = YES;
-        sentAction = YES;
+        self.lastDate = [self dateValue];
+        self.ignoreNextDateRequest = YES;
+        self.sentAction = YES;
     } 
 
     return [super sendAction:theAction to:theTarget];
@@ -45,18 +49,18 @@ RCS_ID("$Id$");
 {
     [super mouseDown:theEvent];
     
-    if (!sentAction && [theEvent type] == NSLeftMouseDown && [theEvent clickCount] > 1) {
+    if (!self.sentAction && [theEvent type] == NSLeftMouseDown && [theEvent clickCount] > 1) {
         [[self window] resignKeyWindow];
     }
 
-    _clicked = YES;
-    sentAction = NO;
+    self.clicked = YES;
+    self.sentAction = NO;
 }
 
 - (NSDate *)dateValue;
 {
-    if (ignoreNextDateRequest) {
-	return _lastDate;
+    if (self.ignoreNextDateRequest) {
+	return self.lastDate;
     }
     return [super dateValue];
 }
@@ -64,24 +68,13 @@ RCS_ID("$Id$");
 - (void)setDateValue:(NSDate *)newStartDate;
 {
     [super setDateValue:newStartDate];
-    _clicked = YES;
-}
-
-- (void)setClicked:(BOOL)clicked;
-{
-    _clicked = clicked;
-}
-
-- (BOOL)clicked;
-{
-    return _clicked;
+    self.clicked = YES;
 }
 
 - (void)reset;
 {
-    [_lastDate release];
-    _lastDate = nil;
-    ignoreNextDateRequest = NO;
+    self.lastDate = nil;
+    self.ignoreNextDateRequest = NO;
 }
 
 

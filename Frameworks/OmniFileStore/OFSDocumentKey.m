@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFileStore/OFSDocumentKey.h>
-#import <OmniFileStore/OFSSegmentedEncryption.h>
+#import <OmniFileStore/OFSSegmentedEncryptionWorker.h>
 
 #import <Security/Security.h>
 #import <CommonCrypto/CommonCrypto.h>
@@ -17,6 +17,7 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
+#import <OmniFileStore/OFSEncryption-Internal.h>
 #include <stdlib.h>
 
 #if (defined(MAC_OS_X_VERSION_10_10) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000)
@@ -27,63 +28,26 @@ RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
+#define MAX_SYMMETRIC_KEY_BYTES kCCKeySizeAES256
 struct skbuf {
     uint16_t len;
-    uint8_t bytes[kCCKeySizeAES256];
+    uint8_t bytes[MAX_SYMMETRIC_KEY_BYTES];
 };
 
 static BOOL validateSlots(NSData *slots);
 static BOOL traverseSlots(NSData *slots, BOOL (^cb)(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *start, size_t len));
 static uint16_t chooseUnusedSlot(NSIndexSet *used);
-static uint16_t derive(uint8_t derivedKey[kCCKeySizeAES256], NSString *password, NSData *salt, CCPseudoRandomAlgorithm prf, unsigned int rounds, NSError **outError);
+static uint16_t derive(uint8_t derivedKey[MAX_SYMMETRIC_KEY_BYTES], NSString *password, NSData *salt, CCPseudoRandomAlgorithm prf, unsigned int rounds, NSError **outError);
 static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, struct skbuf *outWk, NSError **outError);
 
-static NSError *wrapCarbonError(int cerr, NSString *op) __attribute__((cold));
-#define wrapCCError(e, o) wrapCarbonError(e,o)   /* CCCryptorStatus is actually in the Carbon OSStatus error domain */
-#define wrapSecError(e,o) wrapCarbonError(e,o)   /* Security.framework errors are also OSStatus error codes */
-static BOOL unsupportedError_(NSError **outError, int lineno, NSString *badThing) __attribute__((cold));
-#define unsupportedError(e, t) unsupportedError_(e, __LINE__, t)
+#if 0 && !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+/* iOS doesn't have the concept of a keychain item ref */
+static OSStatus removeItemFromKeychain(SecKeychainItemRef keyRef);
+#endif
+
+#define unsupportedError(e, t) ofsUnsupportedError_(e, __LINE__, t)
 
 static const char * const zeroes = "\0\0\0\0\0\0\0\0";
-
-static BOOL randomBytes(uint8_t *buffer, size_t bufferLength, NSError **outError)
-{
-#if (defined(MAC_OS_X_VERSION_10_10) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000)
-    CCRNGStatus randomErr = CCRandomGenerateBytes(buffer, bufferLength);
-    if (randomErr) {
-        if (outError)
-            *outError = wrapCCError(randomErr, @"CCRandomGenerateBytes");
-        return NO;
-    }
-#else
-    if (SecRandomCopyBytes(kSecRandomDefault, bufferLength, buffer) != 0) {
-        /* Documentation says "check errno to find out the real error" but a look at the published source code shows that's not going to be very reliable */
-        if (outError)
-            *outError = wrapSecError(kCCRNGFailure, @"SecRandomCopyBytes");
-        return NO;
-    }
-#endif
-    
-    return YES;
-}
-
-static NSError *wrapCarbonError(int cerr, NSString *op)
-{
-    NSDictionary *userInfo = [NSDictionary dictionaryWithObject:op forKey:@"function"];
-    return [NSError errorWithDomain:NSOSStatusErrorDomain code:cerr userInfo:userInfo];
-}
-
-static BOOL unsupportedError_(NSError **outError, int lineno, NSString *badThing)
-{
-    if (!badThing)
-        badThing = @"(nil)";
-    _OBError(outError, OFSErrorDomain, OFSEncryptionBadFormat, __FILE__, lineno,
-             NSLocalizedDescriptionKey, @"Could not decrypt file",
-             NSLocalizedFailureReasonErrorKey, @"Unrecognized settings in encryption header",
-             @"detail", badThing,
-             nil);
-    return NO;
-}
 
 static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfNames[] = {
     { CFSTR(PBKDFPRFSHA1),   kCCPRFHmacAlgSHA1   },
@@ -91,97 +55,7 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
     { CFSTR(PBKDFPRFSHA512), kCCPRFHmacAlgSHA512 },
 };
 
-#if 0 && TARGET_OS_IPHONE
-static BOOL checkCanRetrieveFromKeychain(CFDataRef itemref, NSError **outError);
-
-static BOOL retrieveFromKeychain(NSDictionary *docInfo, uint8_t *localKey, size_t localKeyLength, CFStringRef allowUI, NSError **outError)
-{
-    NSData *itemref = [docInfo objectForKey:KeychainPersistentIdentifier];
-    if (!itemref || ![itemref isKindOfClass:[NSData class]])
-        return unsupportedError(outError, NSStringFromClass([itemref class]));
-    
-    const void *keys[4] = { kSecValuePersistentRef, kSecClass, kSecReturnData, kSecUseAuthenticationUI };
-    const void *vals[4] = { (__bridge const void *)itemref, kSecClassKey, kCFBooleanTrue, allowUI };
-    
-    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    CFTypeRef result = NULL;
-    OSStatus oserr = SecItemCopyMatching(query, &result);
-    CFRelease(query);
-    
-    if (oserr != noErr) {
-        if (outError) {
-            NSError *e;
-            if (oserr == errSecUserCanceled) {
-                *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
-            } else {
-                e = wrapSecError(oserr, @"SecItemCopyMatching");
-                *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSUnderlyingErrorKey: e, OFSEncryptionNeedKeychain: @YES }];
-            }
-        }
-        return NO;
-    }
-    
-    if (CFGetTypeID(result) != CFDataGetTypeID() || (size_t)CFDataGetLength(result) != localKeyLength) {
-        CFRelease(result);
-        
-        if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFKeyNotAvailable userInfo:@{ NSLocalizedFailureReasonErrorKey: @"Invalid data retrieved from keychain" }];
-        
-        return NO;
-    }
-    CFDataGetBytes(result, (CFRange){0, localKeyLength }, localKey);
-    CFRelease(result);
-    
-    return YES;
-}
-
-static BOOL checkCanRetrieveFromKeychain(CFDataRef itemref, NSError **outError)
-{
-    const void *keys[3] = { kSecValuePersistentRef, kSecClass, kSecReturnAttributes };
-    const void *vals[3] = { NULL, kSecClassKey, kCFBooleanTrue };
-    vals[0] = itemref;
-    
-    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    CFTypeRef result = NULL;
-    OSStatus oserr = SecItemCopyMatching(query, &result);
-    CFRelease(query);
-    
-    if (oserr != noErr) {
-        if (outError) {
-            *outError = wrapSecError(oserr, @"SecItemCopyMatching");
-        }
-        return NO;
-    }
-    
-    NSString *failure;
-    if (CFGetTypeID(result) != CFDictionaryGetTypeID()) {
-        failure = @"API error";
-    } else if (!CFEqual(CFDictionaryGetValue(result, kSecClass), kSecClassKey)) {
-        failure = @"Wrong item class";
-    } else if (!CFEqual(CFDictionaryGetValue(result, kSecAttrKeyClass), kSecAttrKeyClassSymmetric)) {
-        failure = @"Wrong key class";
-    } else {
-        failure = nil;
-    }
-    
-    CFRelease(result);
-    
-    if (failure) {
-        if (outError) {
-            NSString *fullMessage = [@"Invalid data retrieved from keychain: " stringByAppendingString:failure];
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain
-                                            code:(-25304)
-                                        userInfo:@{ NSLocalizedDescriptionKey: @"Internal error updating keychain",
-                                                    NSLocalizedFailureReasonErrorKey: fullMessage }];
-        }
-        
-        return NO;
-    }
-    
-    return YES;
-}
-
-#endif
+#define arraycount(a) (sizeof(a)/sizeof(a[0]))
 
 @implementation OFSDocumentKey
 {
@@ -194,15 +68,18 @@ static BOOL checkCanRetrieveFromKeychain(CFDataRef itemref, NSError **outError)
     /* The decrypted key slots. buf is nil if we are not unlocked/valid. */
     NSData *buf;
     
+    /* Incremented when -data changes */
+    NSInteger changeCount;
+    
     /* We keep a copy of the wrapping key around so we can re-wrap after a rollover event */
     struct skbuf wk;
-
-    NSInteger changeCount;
 }
 
 - initWithData:(NSData *)storeData error:(NSError **)outError;
 {
     self = [super init];
+    
+    memset(&wk, 0, sizeof(wk));
     
     if (storeData != nil) {
         NSError * __autoreleasing error = NULL;
@@ -254,6 +131,23 @@ static BOOL checkCanRetrieveFromKeychain(CFDataRef itemref, NSError **outError)
     return self;
 }
 
+/* Passphrase continuity: create a new document key with no keyslots, but the same authenticator (including the PBKDF2 salt, which allows stored authenticators on clients to continue working). */
+- initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;
+{
+    self = [super init];
+    
+    if (!(source.valid)) {
+        unsupportedError(outError, @"source.valid = NO");
+        return nil;
+    }
+    
+    passwordDerivation = source->passwordDerivation;
+    buf = [NSData data];
+    memcpy(&wk, &(source->wk), sizeof(wk));
+    
+    return self;
+}
+
 - (NSData *)data;
 {
     /* Return an NSData blob with the information we'll need to recover the document key in the future. The caller will presumably store this blob in the underlying file manager or somewhere related, and hand it back to us via -initWithData:error:. */
@@ -264,7 +158,7 @@ static BOOL checkCanRetrieveFromKeychain(CFDataRef itemref, NSError **outError)
 @synthesize changeCount = changeCount;
 @dynamic valid, hasPassword;
 
-- (BOOL)isValid;
+- (BOOL)valid;
 {
     return (buf && buf.length)? YES : NO;
 }
@@ -309,7 +203,7 @@ static void calibrateRounds(void *dummy) {
 }
 static dispatch_once_t calibrateRoundsOnce;
 
-static uint16_t derive(uint8_t derivedKey[kCCKeySizeAES256], NSString *password, NSData *salt, CCPseudoRandomAlgorithm prf, unsigned int rounds, NSError **outError)
+static uint16_t derive(uint8_t derivedKey[MAX_SYMMETRIC_KEY_BYTES], NSString *password, NSData *salt, CCPseudoRandomAlgorithm prf, unsigned int rounds, NSError **outError)
 {
     /* TODO: A stringprep profile might be more appropriate here than simple NFC. Is there one that's been defined for unicode passwords? */
     NSData *passBytes = [[password precomposedStringWithCanonicalMapping] dataUsingEncoding:NSUTF8StringEncoding];
@@ -331,6 +225,7 @@ static uint16_t derive(uint8_t derivedKey[kCCKeySizeAES256], NSString *password,
     } else {
         outputLength = kCCKeySizeAES128;
     }
+    _Static_assert(kCCKeySizeAES256 <= MAX_SYMMETRIC_KEY_BYTES, "");
     
     CCCryptorStatus cerr = CCKeyDerivationPBKDF(kCCPBKDF2, [passBytes bytes], [passBytes length],
                                                 [salt bytes], [salt length],
@@ -339,7 +234,7 @@ static uint16_t derive(uint8_t derivedKey[kCCKeySizeAES256], NSString *password,
     
     if (cerr) {
         if (outError)
-            *outError = wrapCCError(cerr, @"CCKeyDerivationPBKDF");
+            *outError = ofsWrapCCError(cerr, @"CCKeyDerivationPBKDF", nil, nil);
         return 0;
     }
     
@@ -466,7 +361,7 @@ static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, str
     }
     
     /* Derive the key-wrapping-key from the user's password */
-    uint8_t wrappingKey[kCCKeySizeAES256];
+    uint8_t wrappingKey[MAX_SYMMETRIC_KEY_BYTES];
     uint16_t wrappingKeyLength = derive(wrappingKey, password, salt, prf, pbkdfRounds, outError);
     if (!wrappingKeyLength) {
         return nil;
@@ -485,8 +380,12 @@ static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, str
     NSData *retval;
     if (cerr) {
         free(localKey);
+        if (cerr < 0 && cerr > -4000) {
+            // CCSymmetricKeyUnwrap() returns bogus error codes.
+            cerr = kCCDecodeError;
+        }
         if (outError)
-            *outError = wrapCCError(cerr, @"CCSymmetricKeyUnwrap");
+            *outError = ofsWrapCCError(cerr, @"CCSymmetricKeyUnwrap", nil, nil);
         retval = nil;
     } else {
         outWk->len = wrappingKeyLength;
@@ -566,11 +465,41 @@ static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, str
 }
 #endif
 
+/* Return an encryption worker for an active key slot. Encryption workers can be used from multiple threads, so we can safely cache one and return it here. */
 - (OFSSegmentEncryptWorker *)encryptionWorker;
 {
     @synchronized(self) {
-        if (!reusableEncryptionWorker)
-            reusableEncryptionWorker = [[OFSSegmentEncryptWorker alloc] init];
+        
+        if (!self.valid)
+            return nil;
+        
+        if (!reusableEncryptionWorker) {
+            
+            __block BOOL sawAESWRAP = NO;
+            traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength) {
+                if (tp == SlotTypeActiveAES_CTR_HMAC && keylength == SEGMENTED_INNER_LENGTH) {
+                    reusableEncryptionWorker = [[OFSSegmentEncryptWorker alloc] initWithBytes:keydata length:keylength];
+                    uint8_t sbuf[2];
+                    OSWriteBigInt16(sbuf, 0, sn);
+                    reusableEncryptionWorker.wrappedKey = [NSData dataWithBytes:sbuf length:2];
+                    return YES;
+                }
+                if (tp == SlotTypeActiveAESWRAP)
+                    sawAESWRAP = YES;
+                return NO;
+            });
+            
+            if (!reusableEncryptionWorker && sawAESWRAP) {
+                uint8_t kbuf[SEGMENTED_INNER_LENGTH_PADDED];
+                randomBytes(kbuf, SEGMENTED_INNER_LENGTH, NULL);
+                memset(kbuf + SEGMENTED_INNER_LENGTH, 0, sizeof(kbuf) - SEGMENTED_INNER_LENGTH);
+                NSData *wrapped = [self wrapFileKey:kbuf length:sizeof(kbuf) error:NULL];
+                reusableEncryptionWorker = [[OFSSegmentEncryptWorker alloc] initWithBytes:kbuf length:sizeof(kbuf)];
+                memset(kbuf, 0, sizeof(kbuf));
+                reusableEncryptionWorker.wrappedKey = wrapped;
+            }
+            
+        }
         return reusableEncryptionWorker;
     }
 }
@@ -651,16 +580,39 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
     return (uint16_t)availableIndex;
 }
 
-- (void)discardKeysExceptSlots:(NSIndexSet *)keepThese retireCurrent:(BOOL)retire;
+static void fillSlot(NSMutableData *slotbuffer, uint8_t slottype, uint16_t slotlength, uint16_t slotnumber)
+{
+    uint8_t newslot[4 + slotlength];
+    newslot[0] = SlotTypeActiveAESWRAP;
+    if (slotlength > (4 * 255))
+        abort();
+    newslot[1] = (uint8_t)(slotlength / 4);
+    OSWriteBigInt16(newslot, 2, slotnumber);
+    memset(newslot+4, 0, slotlength);
+    
+    [slotbuffer replaceBytesInRange:(NSRange){0, 0} withBytes:newslot length:sizeof(newslot)];
+    
+    NSError *e = NULL;
+    if (!randomBytes([slotbuffer mutableBytes]+4, slotlength, &e)) {
+        [NSException raise:NSGenericException
+                    format:@"Failure generating random data: %@", [e description]];
+    }
+}
+
+- (void)discardKeysExceptSlots:(NSIndexSet *)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)ensureSlot;
 {
     if (keepThese && !buf)
         OBRejectInvalidCall(self, _cmd, @"not currently valid");
     
+    @synchronized(self) {
+        reusableEncryptionWorker = nil;
+    }
+    
     NSMutableIndexSet *usedSlots = [NSMutableIndexSet indexSet];
     NSMutableData *newBuffer = [NSMutableData data];
-    __block BOOL seenActiveAESKey = NO;
+    __block BOOL seenActiveKey = NO;
     traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
-        BOOL copyThis = [keepThese containsIndex:sn] && ![usedSlots containsIndex:sn];
+        BOOL copyThis = (keepThese == nil) || ([keepThese containsIndex:sn] && ![usedSlots containsIndex:sn]);
         if (retire && (tp == SlotTypeActiveAESWRAP)) {
             tp = SlotTypeRetiredAESWRAP;
             copyThis = YES;
@@ -672,8 +624,8 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
                             format:@"Invalid slot length %zu", keylength];
                 return NO;
             }
-            if (tp == SlotTypeActiveAESWRAP)
-                seenActiveAESKey = YES;
+            if (tp == ensureSlot)
+                seenActiveKey = YES;
             uint8_t slotheader[4];
             slotheader[0] = tp;
             slotheader[1] = (uint8_t)(keylength/4);
@@ -685,21 +637,22 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
         return NO;
     });
     
-    /* Make sure we have a key of type SlotTypeActiveAESWRAP */
-    if (!seenActiveAESKey) {
-        uint8_t newslot[4 + kCCKeySizeAES128];
-        newslot[0] = SlotTypeActiveAESWRAP;
-        newslot[1] = kCCKeySizeAES128 / 4;
-        OSWriteBigInt16(newslot, 2, chooseUnusedSlot(usedSlots));
-        
-        NSError *e = NULL;
-        if (!randomBytes(newslot+4, kCCKeySizeAES128, &e)) {
-            [NSException raise:NSGenericException
-                        format:@"Failure generating random data: %@", [e description]];
+    /* Make sure we have an active key slot */
+    if (!seenActiveKey) {
+        switch (ensureSlot) {
+            case SlotTypeNone:
+                /* not asked to generate a key */
+                break;
+            case SlotTypeActiveAESWRAP:
+                fillSlot(newBuffer, SlotTypeActiveAESWRAP, kCCKeySizeAES128, chooseUnusedSlot(usedSlots));
+                break;
+            case SlotTypeActiveAES_CTR_HMAC:
+                fillSlot(newBuffer, SlotTypeActiveAES_CTR_HMAC, SEGMENTED_INNER_LENGTH, chooseUnusedSlot(usedSlots));
+                break;
+            default:
+                OBRejectInvalidCall(self, _cmd, @"bad ensureSlot vaule");
+                break;
         }
-        
-        // NSLog(@"In discardKeys: added new key in slot %u", OSReadBigInt16(newslot, 2));
-        [newBuffer replaceBytesInRange:(NSRange){0, 0} withBytes:newslot length:sizeof(newslot)];
     }
     
     if (buf && [buf isEqual:newBuffer]) {
@@ -716,6 +669,41 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
     }
 }
 
+- (NSIndexSet *)retiredKeySlots;
+{
+    if (!buf)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    
+    NSMutableIndexSet *result = [NSMutableIndexSet indexSet];
+    traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
+        switch(tp) {
+            case SlotTypeRetiredAESWRAP:
+            case SlotTypeRetiredAES_CTR_HMAC:
+                [result addIndex:sn];
+                break;
+            default:
+                break;
+        }
+        return NO;
+    });
+    
+    return result;
+}
+
+- (NSIndexSet *)keySlots;
+{
+    if (!buf)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    
+    NSMutableIndexSet *result = [NSMutableIndexSet indexSet];
+    traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
+        [result addIndex:sn];
+        return NO;
+    });
+    
+    return result;
+}
+
 #pragma mark File-subkey wrapping and unwrapping
 
 - (NSData *)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)fileKeyInfoLength error:(NSError **)outError;
@@ -726,7 +714,7 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
     /* AESWRAP is only defined for multiples of 64 bits, but CCSymmetricKeyWrap() "handles" this by silently truncating and indicating success in that case; check here so we fail before writing out an unusable blob. (RFC5649 defines a variation on AESWRAP that handles other byte lengths, but CCSymmetricKeyWrap/Unwrap() doesn't implement it, nor is its API flexible enough for us to implement RFC5649 on top of Apple's RFC3394 implementation.) */
     if (fileKeyInfoLength < 16 || (fileKeyInfoLength % 8 != 0)) {
         if (outError)
-            *outError = wrapCCError(kCCParamError, @"CCSymmetricKeyWrap");
+            *outError = ofsWrapCCError(kCCParamError, @"CCSymmetricKeyWrap", @"len", @( fileKeyInfoLength ));
         return nil;
     }
     
@@ -761,7 +749,7 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used)
     
     if (cerr != kCCSuccess) {
         if (outError)
-            *outError = wrapCCError(cerr, @"CCSymmetricKeyWrap");
+            *outError = ofsWrapCCError(cerr, @"CCSymmetricKeyWrap", nil, nil);
         return nil;
     }
     
@@ -773,13 +761,13 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
 {
     /* AESWRAP key wrapping is only defined for multiples of 64 bits, and CCSymmetricKeyUnwrap() does not check this, so we check it here. */
     if (wrappedBlobLength < 16 || wrappedBlobLength % 8 != 0) {
-        return wrapCCError(kCCParamError, @"CCSymmetricKeyUnwrap");
+        return ofsWrapCCError(kCCParamError, @"CCSymmetricKeyUnwrap", @"len", @( wrappedBlobLength ));
     }
     
     /* Unwrap the file key using the document key */
     size_t blobSize = CCSymmetricUnwrappedSize(kCCWRAPAES, wrappedBlobLength);
     if (blobSize > unwrappedKeyBufferLength) {
-        return wrapCCError(kCCBufferTooSmall, @"CCSymmetricKeyUnwrap");
+        return ofsWrapCCError(kCCBufferTooSmall, @"CCSymmetricKeyUnwrap", @"len", @( unwrappedKeyBufferLength ));
     }
     size_t unwrapt = blobSize;
     CCCryptorStatus cerr = CCSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
@@ -791,7 +779,7 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
         /* Note that, contrary to documentation, the only failure code CCSymmetricKeyUnwrap() returns is -1, which makes no sense as an error code */
         if (cerr == -1)
             cerr = kCCDecodeError;
-        return wrapCCError(cerr, @"CCSymmetricKeyUnwrap");
+        return ofsWrapCCError(cerr, @"CCSymmetricKeyUnwrap", nil, nil);
     }
     
     /* Note that RFC3394-style key wrapping does effectively include a check field --- if we pass an incorrect wrapping key, or the wrapped key is bogus or something, it should fail. */
@@ -854,6 +842,404 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
     OBASSERT(localError == nil);
     return result;
 }
+
+#pragma mark Keychain storage
+
+#if 0
+
+static NSArray *retrieveFromKeychain(NSString *applicationLabel, NSError **outError)
+{
+    const void *keys[6] = { kSecMatchLimit, kSecAttrKeyClass, kSecAttrApplicationLabel, kSecClass, kSecReturnAttributes, kSecReturnRef };
+    const void *vals[6] = { kSecMatchLimitAll, kSecAttrKeyClassSymmetric, (__bridge CFStringRef)applicationLabel, kSecClassKey, kCFBooleanTrue, kCFBooleanTrue };
+    
+    // See RADAR 24489395: in order to get results consistently, we need to ask for attributes, or we get nothing.
+    
+    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 6, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFTypeRef result = NULL;
+    OSStatus oserr = SecItemCopyMatching(query, &result);
+    CFRelease(query);
+    
+    if (oserr != noErr) {
+        if (oserr == errSecItemNotFound) {
+            return [NSArray array];
+        } else {
+            if (outError) {
+                *outError = ofsWrapSecError(oserr, @"SecItemCopyMatching", nil, nil);
+            }
+            return nil;
+        }
+    }
+    
+    /* Do the usual defensive checks against SecItemCopyMatching() bugginess */
+    NSString *failure;
+    if (!result || CFGetTypeID(result) != CFArrayGetTypeID()) {
+        failure = @"API error (not a CFArrayRef)";
+    } else {
+        failure = nil;
+        CFIndex resultCount = CFArrayGetCount(result);
+        for (CFIndex resultIndex = 0; resultIndex < resultCount; resultIndex ++) {
+            CFDictionaryRef item = CFArrayGetValueAtIndex(result, resultIndex);
+            if (CFGetTypeID(item) != CFDictionaryGetTypeID()) {
+                failure = @"API error (not a CFDictionaryRef)";
+                break;
+            }
+            SecKeyRef keyItem = (SecKeyRef)CFDictionaryGetValue(item, kSecValueRef);
+            if (keyItem) {
+                if (CFGetTypeID(keyItem) != SecKeyGetTypeID()) {
+                    failure = @"API error (not a SecKeyRef)";
+                    break;
+                }
+            } else {
+                // See RADAR 24489177: we ask for a key ref back, and we don't get one, but we do get the actual (supposedly secret?) contents of the key.
+                CFDataRef keyData = (CFDataRef)CFDictionaryGetValue(item, kSecValueData);
+                if (keyData) {
+                    if (CFGetTypeID(keyData) != CFDataGetTypeID()) {
+                        failure = @"API error (not a CFDataRef)";
+                        break;
+                    }
+                } else {
+                    failure = @"API error (missing requested result key)";
+                }
+            }
+            CFTypeRef keyClass = CFDictionaryGetValue(item, kSecAttrKeyClass);
+            if (!keyClass) {
+                failure = @"API error (not a symmetric key)";
+                break;
+            }
+#if 0
+            /* This consistency check fails (RADAR 19804744), but it appears to be benign */
+            if (!CFEqual(keyClass, kSecAttrKeyClassSymmetric)) {
+                failure = @"API error (not a symmetric key)";
+                break;
+            }
+#endif
+        }
+    }
+    
+    if (failure) {
+        if (result)
+            CFRelease(result);
+        if (outError) {
+            NSString *fullMessage = [@"Invalid data retrieved from keychain: " stringByAppendingString:failure];
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+                                            code:(-25304)
+                                        userInfo:@{ NSLocalizedDescriptionKey: @"Internal error updating keychain",
+                                                    NSLocalizedFailureReasonErrorKey: fullMessage }];
+        }
+        
+        return nil;
+    }
+    
+    return CFBridgingRelease(result);
+}
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+static OSStatus storeInKeychain(CFDataRef keymaterial, id applicationLabel, id applicationTag, NSError **outError)
+{
+    
+#define NUM_LOOKUP_ITEMS 4
+#define NUM_STORED_ITEMS 6
+    const void *keys[NUM_LOOKUP_ITEMS + NUM_STORED_ITEMS] = {
+        /* Search attributes */
+        kSecAttrKeyClass, kSecClass, kSecAttrApplicationLabel, kSecAttrApplicationTag,
+        
+        /* Storage attributes */
+        kSecValueData,
+        kSecAttrIsPermanent, kSecAttrCanWrap, kSecAttrCanUnwrap, kSecAttrSynchronizable,
+        kSecAttrAccessible,
+        // kSecAttrDescription,     // "Description" only applies to password items, not keys
+    };
+    const void *vals[NUM_LOOKUP_ITEMS + NUM_STORED_ITEMS] = {
+        kSecAttrKeyClassSymmetric, kSecClassKey, (__bridge CFTypeRef)applicationLabel, (__bridge CFTypeRef)applicationTag,
+        
+        keymaterial,
+        kCFBooleanTrue, kCFBooleanTrue, kCFBooleanTrue, kCFBooleanFalse,
+        kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        // CFSTR("Password-Based-Encryption Key")
+    };
+    
+    {
+        CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, NUM_LOOKUP_ITEMS, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFDictionaryRef update = CFDictionaryCreate(kCFAllocatorDefault, keys + NUM_LOOKUP_ITEMS, vals + NUM_LOOKUP_ITEMS, NUM_STORED_ITEMS, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        OSStatus err = SecItemUpdate(query, update);
+        CFRelease(query);
+        CFRelease(update);
+        
+        if (err == errSecItemNotFound) {
+            /* Huh. Try adding it, then. */
+        } else if (err == errSecParam) {
+            /* Keychain operations just fail sometimes for undocumented reasons and/or bugs. It's amazing how buggy this API is. */
+        } else {
+            /* Either success, or some failure other than errSecItemNotFound */
+            if (err != noErr && outError != NULL) {
+                *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:@{ @"function": @"SecItemUpdate" }];
+            }
+            return err;
+        }
+    }
+    
+    {
+        CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, NUM_LOOKUP_ITEMS + NUM_STORED_ITEMS, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        OSStatus err = SecItemAdd(query, NULL);
+        CFRelease(query);
+        if (err != noErr && outError != NULL) {
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:@{ @"function": @"SecItemAdd" }];
+        }
+        return err;
+    }
+}
+
+#else /* OSX */
+
+/*
+ (Cribbed from StackOverflow, but this matches the contents of libsecurity_cdsa_utilities/lib/KeySchema.m4 in published Security-57337.20.44) "For a keychain item of class kSecClassKey, the primary key is the combination of kSecAttrApplicationLabel, kSecAttrApplicationTag, kSecAttrKeyType, kSecAttrKeySizeInBits, kSecAttrEffectiveKeySize, and the creator, start date and end date which are not exposed by SecItem yet."
+ 
+ Of these, the only ones we can really use to distinguish our keys are kSecAttrApplicationLabel and kSecAttrApplicationTag. Quoth the docs:
+ 
+ kSecAttrApplicationLabel: "[....] This is different from the kSecAttrLabel (which is intended to be human-readable). This attribute is used to look up a key programmatically"
+ 
+ kSecAttrApplicationTag: "Specifies a dictionary key whose value is a CFDataRef containing private tag data."
+ 
+ However, on OSX, the Keychain Access app erroneously stores the user-editable "Comment" textbox contents under kSecAttrApplicationTag (RADAR 24579912; presumably it's supposed to be editing kSecAttrComment). So we can't use ApplicationTag or we'll get clobbered if the user edits that field. That leaves kSecAttrApplicationLabel.
+*/
+
+static BOOL storeInKeychain(CFDataRef keymaterial, CFDataRef keylabel, NSString *displayName, NSError **outError)
+{
+    /* OSX is tricky.
+     You can't add a symmetric key directly with SecItemAdd(), because Apple never bothered to implement that. (SecItemAdd() just works in terms of SecKeychainItemCreateFromContent() anyway, see below.) See RADAR 24575784
+     You can't fully create one with SecKeychainItemCreateFromContent(); this seems to just be an oversight in Schema::attributeInfo(), which is missing the attributes we need (all the key-specific attributes as well as ApplicationLabel (RADAR 24577556) and ApplicationTag (RADAR 24578456)).
+     You can't partially create one with SecKeychainItemCreateFromContent() and then add the missing attributes with SecItemUpdate or SecKeychainItemModifyContent, because the primary-key attributes you need to set in order to insert it into the keychain are not among those that SecKeychainItemCreateFromContent understands.
+     You can't create one with SecKeyCreateFromData(), then modify its attributes and *then* insert it into a keychain, because both of the attribute-modifying calls (SecItemUpdate or SecKeychainItemModifyContent) only work on items which are already inserted into the keychain (RADAR 11840882)
+     
+     So, what we have to do is generate a *random* key with SecKeyGenerateSymmetric() (which also applies a random keylabel), and then modify all of its attributes, including the keylabel and key data, using SecKeychainItemModifyAttributesAndData().
+    */
+    
+    OSStatus err;
+    SecKeychainItemRef keyRef;
+    BOOL creatingNewItem;
+    
+    /* First, check whether we already have a key with that keylabel */
+    {
+        const void *itkeys[] = { kSecClass, kSecAttrKeyClass, kSecMatchLimit, kSecReturnRef, kSecReturnAttributes, kSecAttrApplicationLabel };
+        const void *itvals[] = { kSecClassKey, kSecAttrKeyClassSymmetric, kSecMatchLimitAll, kCFBooleanTrue, kCFBooleanTrue, keylabel };
+        _Static_assert(arraycount(itkeys) == arraycount(itvals), "");
+        CFDictionaryRef attrs = CFDictionaryCreate(kCFAllocatorDefault, itkeys, itvals, arraycount(itkeys), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFArrayRef oot = NULL;
+        err = SecItemCopyMatching(attrs, (CFTypeRef *)&oot);
+        
+        if (err == noErr) {
+            /* Work around SecItemCopyMatching() bugs ... */
+            if (CFGetTypeID(oot) != CFArrayGetTypeID()) {
+                CFArrayRef wrappedInArray = CFArrayCreate(kCFAllocatorDefault, (const void **)&oot, 1, &kCFTypeArrayCallBacks);
+                CFRelease(oot);
+                oot = wrappedInArray;
+            }
+            
+            keyRef = NULL;
+            for (CFIndex i = 0; i < CFArrayGetCount(oot); i++) {
+                CFDictionaryRef d = CFArrayGetValueAtIndex(oot, i);
+                CFDataRef found_klbl = CFDictionaryGetValue(d, kSecAttrApplicationLabel);
+                if (found_klbl != NULL && CFEqual(found_klbl, keylabel)) {
+                    keyRef = (SecKeychainItemRef)CFRetain(CFDictionaryGetValue(d, kSecValueRef));
+                    break;
+                }
+            }
+            
+            CFRelease(oot);
+        } else if (err == errSecItemNotFound) {
+            // Expected error, no key matching that label
+            keyRef = NULL;
+        } else {
+            // Unexpected error
+            CFStringRef msg = SecCopyErrorMessageString(err, NULL);
+            NSLog(@"SecItemCopyMatching() returns --> %d %@", err, msg);
+            CFRelease(msg);
+            // But continue as if the item just wasn't found
+            keyRef = NULL;
+        }
+    }
+    
+    if (keyRef != NULL) {
+        creatingNewItem = NO;
+    } else {
+        creatingNewItem = YES;
+        
+        SecAccessRef initialAccess = NULL;
+        NSString *descr = @"Sync Encryption Key";
+        err = SecAccessCreate((__bridge CFStringRef)descr, NULL /* "If NULL, defaults to (just) the application creating the item." */, &initialAccess);
+        if (err != noErr) {
+            NSLog(@"SecAccessCreate -> %d", (int)err);
+        }
+        
+        SInt32 bitsize = 8 * (int)CFDataGetLength(keymaterial);
+        CFNumberRef num = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &bitsize);
+        const void *itkeys[] = {
+            /* kSecUseKeychain, */ kSecAttrKeyType, kSecAttrKeySizeInBits, kSecAttrLabel,
+            kSecAttrCanEncrypt, kSecAttrCanDecrypt, kSecAttrCanWrap, kSecAttrCanUnwrap,
+            kSecAttrAccess
+        };
+        const void *itvals[] = {
+            /* kcRef, */ kSecAttrKeyTypeAES, num, CFSTR("Temporary Keychain Entry"),
+            kCFBooleanFalse, kCFBooleanFalse, kCFBooleanTrue, kCFBooleanTrue,
+            initialAccess
+        };
+        _Static_assert(arraycount(itkeys) == arraycount(itvals), "");
+        CFDictionaryRef attrs = CFDictionaryCreate(kCFAllocatorDefault, itkeys, itvals, arraycount(itkeys), &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFRelease(num);
+        
+        keyRef = NULL;
+        CFErrorRef errref = NULL;
+        /// TODO WIML: It seems like SecKeyGenerateSymmetric() would return +1 ref count, but the compiler thinks otherwise.
+        keyRef = (SecKeychainItemRef)CFRetain(SecKeyGenerateSymmetric(attrs, &errref));
+        
+        CFRelease(attrs);
+        
+        if (keyRef == NULL) {
+            NSLog(@"SecKeyGenerateSymmetric failed: %@", errref);
+            if (outError) {
+                *outError = (__bridge NSError *)errref;
+            }
+            CFRelease(errref);
+            return NO;
+        }
+    }
+    
+    /* Okay, now we can update everything */
+    {
+        char dateBytes[15];
+        SecKeychainAttribute attrs[5];
+        int attrCount = 0;
+        UInt32 yes = 1;
+        CFDataRef displayBytes = NULL;
+        
+        attrs[attrCount++] = (SecKeychainAttribute){ kSecKeySensitive, sizeof(yes), &yes };
+        attrs[attrCount++] = (SecKeychainAttribute){ kSecKeyExtractable, sizeof(yes), &yes };
+        
+        if (creatingNewItem) {
+            time_t tnow = time(NULL);
+            struct tm parts;
+            gmtime_r(&tnow, &parts);
+            strftime(dateBytes, sizeof(dateBytes), "%Y%m%d%H%M%S", &parts);
+            attrs[attrCount++] = (SecKeychainAttribute){ kSecKeyStartDate, (UInt32)strlen(dateBytes), dateBytes };
+            
+            attrs[attrCount++] = (SecKeychainAttribute){ kSecKeyLabel, (UInt32)CFDataGetLength(keylabel), (void *)CFDataGetBytePtr(keylabel) };
+
+            displayBytes = CFBridgingRetain([displayName dataUsingEncoding:NSUTF8StringEncoding]);
+            attrs[attrCount++] = (SecKeychainAttribute){ kSecKeyPrintName, (UInt32)CFDataGetLength(displayBytes), (void *)CFDataGetBytePtr(displayBytes) };
+        }
+        
+        SecKeychainAttributeList attrList = { .count = attrCount, .attr = attrs };
+        err = SecKeychainItemModifyAttributesAndData(keyRef, &attrList, (UInt32)CFDataGetLength(keymaterial), (void *)CFDataGetBytePtr(keymaterial));
+        if (displayBytes)
+            CFRelease(displayBytes);
+    }
+    
+    if (creatingNewItem && err != noErr) {
+        // Remove the incomplete entry
+        removeItemFromKeychain(keyRef);
+    }
+    
+    CFRelease(keyRef); // We might have just modified the keylabel, which would make this key reference invalid.
+    
+    if (err != noErr) {
+        CFStringRef msg = SecCopyErrorMessageString(err, NULL);
+        NSLog(@"SecKeychainItemModifyAttributesAndData() returns --> %d %@", err, msg);
+        
+        if (outError) {
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:@{ NSLocalizedDescriptionKey: (__bridge id)msg,
+                                                                                            @"function": @"SecKeychainItemModifyAttributesAndData" }];
+        }
+        
+        CFRelease(msg);
+        
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+static OSStatus removeItemFromKeychain(SecKeychainItemRef keyRef)
+{
+    const void *kk[1] = { kSecValueRef };
+    const void *vv[1] = { keyRef };
+    CFDictionaryRef del = CFDictionaryCreate(kCFAllocatorDefault, kk, vv, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    OSStatus result = SecItemDelete(del);
+    CFRelease(del);
+    return result;
+}
+
+#endif
+
+
+#if 0
+static OSStatus removeDerivations(CFStringRef attrKey, NSData *attrValue)
+{
+    const void *keys[3] = { kSecClass, kSecAttrKeyClass, attrKey };
+    const void *vals[3] = { kSecClassKey, kSecAttrKeyClassSymmetric, (__bridge CFDataRef)attrValue };
+    
+    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    OSStatus err = SecItemDelete(query);
+    CFRelease(query);
+    
+    return err;
+}
+#endif
+
+static NSData *retrieveItemData(CFTypeRef item, CFTypeRef itemClass)
+{
+    /*
+     Docs say: "By default, this function searches for items in the keychain. To instead provide your own set of items to be filtered by this search query, specify the search key kSecMatchItemList and provide as its value a CFArrayRef object".
+     
+     However, what you actually have to supply, at least on iOS 8.1 through 9.2, is kSecValueRef, and you also have to supply kSecAttrSynchronizable=Any or else it fails with paramErr.
+     
+     We can't be bugfix-compatible, unfortunately: if we pass the kSecMatchItemList key, it fails with paramErr.
+     */
+    const void *ks[4] = { kSecClass,     kSecValueRef, kSecAttrSynchronizable,         kSecReturnData   };
+    const void *vs[4] = { itemClass,     item,         kSecAttrSynchronizableAny,      kCFBooleanTrue   };
+
+    CFTypeRef result;
+    OSStatus kerr;
+
+    {
+        CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, ks, vs, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        result = NULL;
+        kerr = SecItemCopyMatching(query, &result);
+        CFRelease(query);
+    }
+    
+    if (kerr == errSecParam || kerr == errSecItemNotFound) {
+        /* Try again, using the documented parameters */
+        ks[1] = kSecMatchItemList;
+        vs[1] = CFArrayCreate(kCFAllocatorDefault, &(vs[1]), 1, &kCFTypeArrayCallBacks);
+        CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, ks, vs, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFRelease(vs[1]);
+        vs[1] = NULL;
+        result = NULL;
+        kerr = SecItemCopyMatching(query, &result);
+        CFRelease(query);
+    }
+    
+    if (kerr != noErr || !result) {
+        return nil;
+    }
+    
+    /* SecItemCopyMatching() sometimes returns 1-item arrays when it's supposed to return a bare item */
+    if (CFGetTypeID(result) == CFArrayGetTypeID()) {
+        CFTypeRef unwrapped = CFRetain(CFArrayGetValueAtIndex(result, 0));
+        CFRelease(result);
+        result = unwrapped;
+    }
+    
+    if (CFGetTypeID(result) != CFDataGetTypeID()) {
+        NSLog(@"Incorrect type returned from SecItemCopyMatching?");
+        CFRelease(result);
+        return nil;
+    } else {
+        return CFBridgingRelease(result);
+    }
+}
+
+#endif
 
 @end
 

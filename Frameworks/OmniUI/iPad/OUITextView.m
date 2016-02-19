@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,8 @@
 #import <OmniUI/OUIKeyCommands.h>
 #import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
-#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontFamilyInspectorSlice.h>
+#import <OmniUI/OUIFontSizeInspectorSlice.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIScalingTextStorage.h>
 #import <OmniUI/OUISingleViewInspectorPane.h>
@@ -1363,7 +1364,8 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     [slices addObject:[[OUITextColorAttributeInspectorSlice alloc] initWithLabel:NSLocalizedStringFromTableInBundle(@"Background color", @"OUIInspectors", OMNI_BUNDLE, @"Title above color swatch picker for the text color.")
                                                                     attributeName:NSBackgroundColorAttributeName]];
     [slices addObject:[[OUIFontAttributesInspectorSlice alloc] init]];
-    [slices addObject:[[OUIFontInspectorSlice alloc] init]];
+    [slices addObject:[[OUIFontSizeInspectorSlice alloc] init]];
+    [slices addObject:[[OUIFontFamilyInspectorSlice alloc] init]];
     [slices addObject:[[OUIParagraphStyleInspectorSlice alloc] init]];
     
     return slices;

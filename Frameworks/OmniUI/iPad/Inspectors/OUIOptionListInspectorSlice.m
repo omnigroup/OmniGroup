@@ -101,6 +101,11 @@ RCS_ID("$Id$");
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
+{
+    return self.topPadding;
+}
+    
 #pragma mark - Private
 
 - (void)_changeValue:(NSUInteger)row;

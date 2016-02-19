@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,6 +133,11 @@ enum {
 - (NSString *)asRFC2047Phrase;      /* Returns a sequence of atoms, quoted-strings, and encoded-words, as appropriate to represent the receiver in the syntax defined by RFC822 and RFC2047. */
 
 - (NSString *)stringByTruncatingToMaximumLength:(NSUInteger)maximumLength atSpaceAfterMinimumLength:(NSUInteger)minimumLength;
+
+/// Create a dictionary for use with CSLocalizedString (for example)
+/// Adopted with ever so slight modification from here https://forums.developer.apple.com/thread/15943
+/// Take note of the warning: """IMPORTANT This is crazy inefficient.  If you’re doing this for lots of strings, you’ll want to process the dictionaries in bulk and cache the results."""
++ (NSDictionary *)localizedStringDictionaryForKey:(NSString *)key table:(NSString *)tableName bundle:(NSBundle *)bundle;
 
 @end
 

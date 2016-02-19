@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -261,6 +261,24 @@ static NSString *StandardUserAgentString;
         }
         COMPLETE_AND_RETURN(errorOrNil);
     }];
+}
+
+- (ODAVOperation *)asynchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag;
+{
+    DEBUG_DAV(1, @"operation: DELETE %@%@", url, ETag? [NSString stringWithFormat:@" If-Match: %@", ETag] : @"");
+    
+    NSMutableURLRequest *request = [self _requestForURL:url];
+    [request setHTTPMethod:@"DELETE"];
+    
+    if (![NSString isEmptyString:ETag])
+        [request setValue:ETag forHTTPHeaderField:@"If-Match"];
+    
+    // NOTE: If the caller never starts the task, we'll end up leaking it in our task->operation table
+    ODAVOperation *operation = [self _makeOperationForRequest:request];
+    
+    // DO NOT launch the operation here. The caller should do this so it can assign it to an ivar or otherwise store it before it has to expect any callbacks.
+    
+    return operation;
 }
 
 - (void)makeCollectionAtURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
@@ -782,6 +800,27 @@ static NSString *ODAVDepthName(ODAVDepth depth)
     return operation;
 }
 
+- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(NSString *)ETag range:(NSString *)range;
+{
+    DEBUG_DAV(1, @"operation: GET %@ range=%@", url, range);
+    
+    NSMutableURLRequest *request = [self _requestForURL:url];
+    [request setHTTPMethod:@"GET"]; // really the default, but just for conformity with the others...
+
+    if (![NSString isEmptyString:ETag])
+        [request setValue:ETag forHTTPHeaderField:@"If-Match"];
+    if (![NSString isEmptyString:range])
+        [request setValue:range forHTTPHeaderField:@"Range"];
+    
+    // NOTE: If the caller never starts the task, we'll end up leaking it in our task->operation table
+    ODAVOperation *operation = [self _makeOperationForRequest:request];
+    
+    // DO NOT launch the operation here. The caller should do this so it can assign it to an ivar or otherwise store it before it has to expect any callbacks.
+    
+    return operation;
+}
+
+
 - (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 {
     completionHandler = [completionHandler copy];
@@ -827,7 +866,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
 
 typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, NSURL *destURL);
 
-// COPY supports Depth=0 as well, but we haven't neede that yet.
+// COPY supports Depth=0 as well, but we haven't needed that yet.
 - (void)_moveOrCopy:(NSString *)method sourceURL:(NSURL *)sourceURL toURL:(NSURL *)destURL overwrite:(BOOL)overwrite predicate:(OFSAddPredicate)predicate completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 {
     completionHandler = [completionHandler copy];
@@ -1243,6 +1282,8 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
     OBPRECONDITION(operation || [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]); // See commentary below where `operation` is used
     OBPRECONDITION(completionHandler);
     
+    // NOTE: The assertion above is wrong; there are other session-level challenges like client certs, Negotiate (and possibly proxy authentication and SOCKS server authentication?) - see for example OBZ #124539
+    
     DEBUG_DAV(3, @"will send request for authentication challenge %@", challenge);
     
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
@@ -1261,7 +1302,8 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
         
         NSLog(@"proposed credential %@", [challenge proposedCredential]);
         NSLog(@"previous failure count %ld", [challenge previousFailureCount]);
-        NSLog(@"failure response %@", [challenge failureResponse]);
+        if (ODAVConnectionDebug > 3)
+            NSLog(@"failure response %@", [challenge failureResponse]);
         NSLog(@"error %@", [[challenge error] toPropertyList]);
     }
     

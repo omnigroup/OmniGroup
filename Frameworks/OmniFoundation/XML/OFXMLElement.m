@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,9 +26,17 @@
 
 RCS_ID("$Id$");
 
-@implementation OFXMLElement
+NS_ASSUME_NONNULL_BEGIN
 
-- initWithName:(NSString *)name attributeOrder:(NSMutableArray *)attributeOrder attributes:(NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
+@implementation OFXMLElement
+{
+    NSMutableArray * _Nullable _children;
+    NSMutableArray * _Nullable _attributeOrder;
+    NSMutableDictionary * _Nullable _attributes;
+    BOOL _markedAsReferenced;
+}
+
+- initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
 {
     if (!(self = [super init]))
         return nil;
@@ -86,16 +94,6 @@ RCS_ID("$Id$");
     return newElement;
 }
 
-- (NSString *)name;
-{
-    return _name;
-}
-
-- (NSArray *)children;
-{
-    return _children;
-}
-
 - (NSUInteger)childrenCount;
 {
     return [_children count];
@@ -130,9 +128,9 @@ RCS_ID("$Id$");
     OBPRECONDITION([child respondsToSelector:@selector(appendXML:withParentWhiteSpaceBehavior:document:level:error:)]);
 
     if (!_children)
-	// This happens a lot; avoid the placeholder goo
-	_children = (OB_BRIDGE NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks);
-    CFArrayAppendValue((CFMutableArrayRef)_children, (__bridge CFTypeRef)child);
+        _children = [[NSMutableArray alloc] initWithObjects:&child count:1];
+    else
+        [_children addObject:child];
 }
 
 - (void)removeChild:(id)child;
@@ -200,7 +198,6 @@ RCS_ID("$Id$");
     return currentElement;
 }
 
-
 - (OFXMLElement *)firstChildWithAttribute:(NSString *)attributeName value:(NSString *)value;
 {
     OBPRECONDITION(attributeName);
@@ -227,7 +224,7 @@ RCS_ID("$Id$");
     return [_attributes objectForKey: name];
 }
 
-- (void)setAttribute:(NSString *)name string:(NSString *)value;
+- (void)setAttribute:(NSString *)name string:(nullable NSString *)value;
 {
     if (!_attributeOrder) {
         OBASSERT(!_attributes);
@@ -249,7 +246,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (void) setAttribute: (NSString *) name value: (id) value;
+- (void) setAttribute: (NSString *) name value: (nullable id) value;
 {
     [self setAttribute: name string: [value description]]; // For things like NSNumbers
 }
@@ -311,10 +308,11 @@ RCS_ID("$Id$");
     return value ? [value doubleValue] : defaultValue;
 }
 
-- (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *)contents;
+- (OFXMLElement *)appendElement:(NSString *)elementName containingString:(nullable NSString *)contents;
 {
     OFXMLElement *child = [[OFXMLElement alloc] initWithName: elementName];
-    if (![NSString isEmptyString: contents])
+
+    if (!OFIsEmptyString(contents))
         [child appendChild: contents];
     [self appendChild: child];
     [child release];
@@ -379,25 +377,15 @@ RCS_ID("$Id$");
     [_attributeOrder sortUsingSelector:comparator];
 }
 
-- (void)setIgnoreUnlessReferenced:(BOOL)flag;
-{
-    _flags.ignoreUnlessReferenced = (flag != NO);
-}
-
-- (BOOL)ignoreUnlessReferenced;
-{
-    return (_flags.ignoreUnlessReferenced != 0);
-}
-
 - (void)markAsReferenced;
 {
-    _flags.markedAsReferenced = 1;
+    _markedAsReferenced = 1;
 }
 
 - (BOOL)shouldIgnore;
 {
-    if (_flags.ignoreUnlessReferenced)
-        return !_flags.markedAsReferenced;
+    if (_ignoreUnlessReferenced)
+        return !_markedAsReferenced;
     return NO;
 }
 
@@ -424,7 +412,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
+- (nullable NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 {
     OFXMLWhitespaceBehavior *whitespace = [[OFXMLWhitespaceBehavior alloc] init];
     [whitespace setBehavior:OFXMLWhitespaceBehaviorTypeIgnore forElementName:[self name]];
@@ -443,14 +431,13 @@ RCS_ID("$Id$");
     return xml;
 }
 
-//
-// NSObject (OFXMLWriting)
-//
+#pragma mark - NSObject (OFXMLWriting)
+
 - (BOOL)appendXML:(struct _OFXMLBuffer *)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 {
     OFXMLWhitespaceBehaviorType whitespaceBehavior;
 
-    if (_flags.ignoreUnlessReferenced && !_flags.markedAsReferenced)
+    if (_ignoreUnlessReferenced && !_markedAsReferenced)
         return YES; // trivial success
 
     whitespaceBehavior = [[doc whitespaceBehavior] behaviorForElementName: _name];
@@ -541,8 +528,7 @@ RCS_ID("$Id$");
     return [[OFXMLFrozenElement alloc] initWithName:_name children:_children attributes:_attributes attributeOrder:_attributeOrder];
 }
 
-#pragma mark -
-#pragma mark Comparison
+#pragma mark - Comparison
 
 - (BOOL)isEqual:(id)otherObject;
 {
@@ -577,8 +563,7 @@ RCS_ID("$Id$");
     return YES;
 }
 
-#pragma mark -
-#pragma mark Debugging
+#pragma mark - Debugging
 
 - (NSMutableDictionary *)debugDictionary;
 {
@@ -630,3 +615,5 @@ RCS_ID("$Id$");
     return [self retain];
 }
 @end
+
+NS_ASSUME_NONNULL_END

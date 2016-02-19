@@ -268,29 +268,31 @@ do { \
 	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
             @autoreleasepool {
-	    
-    	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-    	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-    	    
-    	    // now, should be this instant
-    	    NSString *string = @"now";
-    	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-    	    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-    	    
-    	    // should be 12pm of today
-    	    string = @"noon";
-    	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
-    	    expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
-    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-    	    
-    	    string = @"tonight";
-    	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
-    	    expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
-    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    }
-	}
+
+                NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
+                NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+
+                // "now" should be this instant - it should be [NSDate date], regardless of baseDate
+                NSString *string = @"now";
+                NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+                NSDate *expectedDate = [NSDate date];
+                NSDate *nowResult = nil;
+                [[OFRelativeDateParser sharedParser] getDateValue:&nowResult forString:string fromStartingDate:baseDate calendar:calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil];
+                XCTAssertEqualWithAccuracy(nowResult.timeIntervalSince1970, expectedDate.timeIntervalSince1970, 1.0);
+
+                // should be 12pm of today
+                string = @"noon";
+                baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+                expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
+                parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  );
+
+                string = @"tonight";
+                baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+                expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
+                parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  );
+                
+            }
+        }
     }
 }
 

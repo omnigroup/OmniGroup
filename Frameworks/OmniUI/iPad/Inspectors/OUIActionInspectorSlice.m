@@ -67,11 +67,12 @@ RCS_ID("$Id$");
 {
     CGRect textWellFrame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
     UIView *containerView = [[UIView alloc] initWithFrame:textWellFrame];
+    containerView.preservesSuperviewLayoutMargins = YES;
     
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
     _textWell.translatesAutoresizingMaskIntoConstraints = NO;
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
-    
+
     // Accessibility
     _textWell.isAccessibilityElement = YES;
     _textWell.accessibilityLabel = self.title;
@@ -89,6 +90,7 @@ RCS_ID("$Id$");
         _textWell.text = self.title;
 
     [containerView addSubview:_textWell];
+        
     self.view = containerView;
     self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -96,7 +98,7 @@ RCS_ID("$Id$");
     
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[_textWell.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:buffer]];
+    [constraintsToActivate addObject:[_textWell.leadingAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leadingAnchor constant:0]];
     [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1]];
     [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:containerView.topAnchor]];
     [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]];

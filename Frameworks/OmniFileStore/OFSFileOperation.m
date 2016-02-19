@@ -16,7 +16,11 @@ RCS_ID("$Id$");
     __weak OFSFileManager *_weak_fileManager;
     NSOperationQueue *_callbackQueue;
     NSData *_data;
-    BOOL _read;
+    enum {
+        OFSFileOperationRead,
+        OFSFileOperationWrite,
+        OFSFileOperationDelete
+    } _op;
     BOOL _atomically; // for writing
     NSURL *_url;
 
@@ -30,7 +34,7 @@ RCS_ID("$Id$");
     
     _weak_fileManager = fileManager;
     _url = [url copy];
-    _read = YES;
+    _op = OFSFileOperationRead;
     _data = nil;
     
     return self;
@@ -43,13 +47,25 @@ RCS_ID("$Id$");
     
     _weak_fileManager = fileManager;
     _url = [url copy];
-    _read = NO;
+    _op = OFSFileOperationWrite;
     _atomically = atomically;
     _data = [data copy];
     
     return self;
 }
 
+- initWithFileManager:(OFSFileManager *)fileManager deletingURL:(NSURL *)url;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _weak_fileManager = fileManager;
+    _url = [url copy];
+    _op = OFSFileOperationDelete;
+    _data = nil;
+    
+    return self;
+}
 
 #pragma mark - ODAVAsynchronousOperation
 
@@ -83,6 +99,14 @@ RCS_ID("$Id$");
     return [_data length];
 }
 
+- (NSData *)resultData;
+{
+    if (_op != OFSFileOperationRead)
+        OBRejectInvalidCall(self, _cmd, @"Not a read operation (_op = %d)", _op);
+    
+    return _data;
+}
+
 - (void)startWithCallbackQueue:(NSOperationQueue *)queue;
 {
     OBPRECONDITION(_didFinish); // What is the purpose of an async operation that we don't track the end of?
@@ -100,8 +124,10 @@ RCS_ID("$Id$");
     }
     
     // We do all operations synchronously by default right now.
-    if (_read) {
-        __autoreleasing NSError *error = nil;
+    __autoreleasing NSError *error = nil;
+    switch(_op) {
+      case OFSFileOperationRead:
+      {
         NSData *data = [fileManager dataWithContentsOfURL:_url error:&error];
         if (data == nil) {
             NSError *strongError = error;
@@ -113,10 +139,14 @@ RCS_ID("$Id$");
             } else if (_didReceiveBytes) {
                 PERFORM_CALLBACK(_didReceiveBytes, self, _processedLength);
             }
+            if (!_didReceiveData)
+                _data = data;
             PERFORM_CALLBACK(_didFinish, self, nil);
         }
-    } else {
-        __autoreleasing NSError *error = nil;
+        break;
+      }
+      case OFSFileOperationWrite:
+      {
         if (![fileManager writeData:_data toURL:_url atomically:_atomically error:&error]) {
             NSError *strongError = error;
             PERFORM_CALLBACK(_didFinish, self, strongError);
@@ -125,6 +155,18 @@ RCS_ID("$Id$");
             PERFORM_CALLBACK(_didSendBytes, self, _processedLength);
             PERFORM_CALLBACK(_didFinish, self, nil);
         }
+        break;
+      }
+      case OFSFileOperationDelete:
+      {
+        if (![fileManager deleteURL:_url error:&error]) {
+            NSError *strongError = error;
+            PERFORM_CALLBACK(_didFinish, self, strongError);
+        } else {
+            PERFORM_CALLBACK(_didFinish, self, nil);
+        }
+        break;
+      }
     }
 }
 

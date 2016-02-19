@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,7 @@
 
 @property(readonly,nonatomic) long long processedLength;
 @property(readonly,nonatomic) long long expectedLength;
+@property(nonatomic,readonly) NSData *resultData; // Only set if didReceiveData is nil, otherwise that block is expected to accumulate data however the caller wants
 
 /*
  The callback queue specifies what queue the didFinish, etc. callbacks will be fired. If nil is passed, the current queue is used.

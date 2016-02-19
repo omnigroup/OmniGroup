@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -132,14 +132,21 @@ RCS_ID("$Id$");
 
     [NSLayoutConstraint activateConstraints:
      @[
-       [_fontAttributeSegmentedControl.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:[OUIInspectorSlice sliceAlignmentInsets].left],
-       [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:[OUIInspectorSlice sliceAlignmentInsets].right * -1],
+       [_fontAttributeSegmentedControl.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor],
+       [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor],
        [_fontAttributeSegmentedControl.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
        [containerView.heightAnchor constraintEqualToConstant:46.0],
        ]
      ];
 
     self.view = containerView;
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
 }
 
 #pragma mark - OUIInspectorSlice subclass

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,29 +11,23 @@
 
 #import <AppKit/NSNibDeclarations.h> // For IBAction, IBOutlet
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OADefaultSettingIndicatorButton : NSButton
-{
-    IBOutlet NSView *snuggleUpToRightSideOfView;
-    IBOutlet id delegate;
-    
-    id identifier;
-    
-    struct {
-        unsigned int displaysEvenInDefaultState:1;
-    } _flags;
-}
 
 // Actions
 - (IBAction)resetDefaultValue:(id)sender;
 
 // API
-+ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
++ (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id <NSCopying>)settingIdentifier forView:(NSView *)view delegate:(id)delegate;
 
 - (id)delegate;
 - (void)setDelegate:(id)newDelegate;
 
-- (id)identifier;
-- (void)setIdentifier:(id)newIdentifier;
+// Make sure no one calls this one, which is now object by NSUserInterfaceItemIdentification
+@property (nullable, copy) NSString *identifier NS_UNAVAILABLE;
+
+@property(nonatomic,copy) id <NSCopying> settingIdentifier;
 
 - (void)validate;
 
@@ -49,8 +43,11 @@
 
 @interface NSObject (OADefaultSettingIndicatorButtonDelegate)
 - (NSInteger)stateForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
-- (id)defaultObjectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
-- (id)objectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
+- (nullable id)defaultObjectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
+- (nullable id)objectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
 - (void)restoreDefaultObjectValueForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
-- (NSString *)toolTipForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
+- (nullable NSString *)toolTipForSettingIndicatorButton:(OADefaultSettingIndicatorButton *)indicatorButton;
 @end
+
+NS_ASSUME_NONNULL_END
+

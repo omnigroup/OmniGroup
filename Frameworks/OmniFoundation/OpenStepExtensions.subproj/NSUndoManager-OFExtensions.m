@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
-#import <OmniBase/OmniBase.h>     // for 'shortDescription'
+@import OmniBase;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h>  // This seems to be the most parsimonious way to include CGBase.h for the CGFloat typedef
@@ -19,6 +19,8 @@
 #endif
 
 RCS_ID("$Id$");
+
+NSString * const OFUndoManagerEnablednessDidChangeNotification = @"OFUndoManagerEnablednessDidChangeNotification";
 
 static unsigned int OFUndoManagerLoggingOptions = OFUndoManagerNoLogging;
 static CFMutableSetRef OFUndoManagerStates = NULL;
@@ -265,8 +267,17 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 
 @implementation NSUndoManager (OFUndoLogging)
 
+// Only call +performPosing explicitly on iOS; on Mac, we have OBPostLoader, which makes that call for us.
+#if 1 && defined(DEBUG) && (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
++ (void)load
+{
+    [self performPosing];
+}
+#endif
+
 + (void)performPosing;
 {
+    // Need to turn on undo logging? Add an environment variable in your app's scheme, setting OFUndoManagerLoggingOptions to one of the values defined in this file's header
     if (getenv("OFUndoManagerLoggingOptions") != NULL)
         [self setLoggingOptions:atoi(getenv("OFUndoManagerLoggingOptions"))]; // TODO: Use an OFEnumNameTable and NSUserDefaults to make this more friendly
 }
@@ -488,6 +499,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 - (void)logging_replacement_disableUndoRegistration;
 {
     logging_original_disableUndoRegistration(self, _cmd);
+    [[NSNotificationCenter defaultCenter] postNotificationName:OFUndoManagerEnablednessDidChangeNotification object:self];
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging)) {
         OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
         state->indentLevel++;
@@ -498,6 +510,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 - (void)logging_replacement_enableUndoRegistration;
 {
     logging_original_enableUndoRegistration(self, _cmd);
+    [[NSNotificationCenter defaultCenter] postNotificationName:OFUndoManagerEnablednessDidChangeNotification object:self];
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging)) {
         OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
         _log(self, YES, @"} (%p)END DISABLE UNDO REGISTRATION\n", self);

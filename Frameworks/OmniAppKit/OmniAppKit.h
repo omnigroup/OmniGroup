@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 #import <OmniAppKit/OAAppearance.h>
+#import <OmniAppKit/OAAppearancePropertyListCoder.h>
 #import <OmniAppKit/OAColor.h>
 #import <OmniAppKit/OAColor-Archiving.h>
 #import <OmniAppKit/OAFindPattern.h>
@@ -58,6 +59,7 @@
 #import <OmniAppKit/NSScrollView-OAExtensions.h>
 #import <OmniAppKit/NSSliderCell-OAExtensions.h>
 #import <OmniAppKit/NSSplitView-OAExtensions.h>
+#import <OmniAppKit/NSStackView-OAExtensions.h>
 #import <OmniAppKit/NSString-OAExtensions.h>
 #import <OmniAppKit/NSTableView-OAColumnConfigurationExtensions.h>
 #import <OmniAppKit/NSTableView-OAExtensions.h>
@@ -139,7 +141,6 @@
 #import <OmniAppKit/OATabViewController.h>
 #import <OmniAppKit/OATabbedWindowController.h>
 #import <OmniAppKit/OATextField.h>
-#import <OmniAppKit/OATextFieldBinder.h>
 #import <OmniAppKit/OATextWithIconCell.h>
 #import <OmniAppKit/OAThumbnailView.h>
 #import <OmniAppKit/OATinyPopUpButton.h>

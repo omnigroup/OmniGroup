@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -149,14 +149,22 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
             
             AuthorizationItem items[3] = {};
             AuthorizationRights rights = { .count = 0, .items = items};
-            
+            int index = 0;
+            AuthorizationItem *item = NULL;
+
+            // value is incorrectly marked as non-null by a blanked assume-non-null in Authorization.h in 7.3 beta (7D111g)
+            // rdar://problem/24209238
+            //
+            // Ensure the array is zero filled now, and avoid assigning item->value = NULL
+            memset(items, 0, sizeof(items));
+
             if (shouldInstallOrUpdateTool) {
-                int index = rights.count++;
-                AuthorizationItem *item = &rights.items[index];
-                
+                index = rights.count++;
+                item = &rights.items[index];
+
                 item->name = kSMRightBlessPrivilegedHelper;
                 item->valueLength = 0;
-                item->value = NULL;
+//              item->value = NULL;
                 item->flags = 0;
                 
                 index = rights.count++;
@@ -164,19 +172,17 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
                 
                 item->name = kSMRightModifySystemDaemons;
                 item->valueLength = 0;
-                item->value = NULL;
+//              item->value = NULL;
                 item->flags = 0;
             }
             
-            if (requiresPrivilegedInstall) {
-                int index = rights.count++;
-                AuthorizationItem *item = &rights.items[index];
-                
-                item->name = [OSUInstallUpdateRightName UTF8String];
-                item->valueLength = 0;
-                item->value = NULL;
-                item->flags = 0;
-            }
+            index = rights.count++;
+            item = &rights.items[index];
+            
+            item->name = [OSUInstallUpdateRightName UTF8String];
+            item->valueLength = 0;
+//          item->value = NULL;
+            item->flags = 0;
             
             // We have to ask for the rights in the XPC service. AuthorizationCreate will return errAuthorizationDenied in a sandboxed application.
             // The downside of doing it here is that the authorization dialog will use the filesystem name of our bundle, which is required to match its bundle identifier.
@@ -855,8 +861,12 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
         }
 
         newName = [[oldBasename stringByAppendingFormat:@" %@", bundleVersion] stringByAppendingPathExtension:oldExtension];
+    } else {
+        // Our caller uniquifies the filename as needed. If we coudln't parse the version out of the bundle, return the old basename.
+        OBASSERT_NOT_REACHED("Couldn't get the bundleVersion from the previously installed copy.");
+        newName = oldBasename;
     }
-
+    
     archivePath = [existingFileDir stringByAppendingPathComponent:newName];
     
     return archivePath;

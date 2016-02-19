@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E07D6C91C20E95C00208D55 /* ODAVStaleFiles.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E558DD519E3774C0074C8EE /* ODAVStaleFiles.m */; };
+		1E2C4DBA1C0E2D1D00E2E090 /* ODAVStaleFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E558DD619E3774C0074C8EE /* ODAVStaleFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E558DD719E3774C0074C8EE /* ODAVStaleFiles.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E558DD519E3774C0074C8EE /* ODAVStaleFiles.m */; };
+		1EA288351C3C8FEB008CF071 /* ODAVTestServer.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EA288341C3C8FEB008CF071 /* ODAVTestServer.m */; };
 		340ECC9717A1A16200CABA13 /* ODAVOperation-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */; };
 		341348541A1E860400A03EEC /* ODAVMoveRedirectTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 341348531A1E860400A03EEC /* ODAVMoveRedirectTestCase.m */; };
 		341348551A1E860400A03EEC /* ODAVMoveRedirectTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 341348531A1E860400A03EEC /* ODAVMoveRedirectTestCase.m */; };
@@ -146,6 +151,10 @@
 		15F7CBE4185F980800EFB846 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
 		15F7CBE5185F980900EFB846 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
 		15F7CBE6185F980900EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
+		1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVStaleFiles.h; sourceTree = "<group>"; };
+		1E558DD519E3774C0074C8EE /* ODAVStaleFiles.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVStaleFiles.m; sourceTree = "<group>"; };
+		1EA288331C3C8FEB008CF071 /* ODAVTestServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ODAVTestServer.h; path = Test/LocalWebDAVServer/ODAVTestServer.h; sourceTree = SOURCE_ROOT; };
+		1EA288341C3C8FEB008CF071 /* ODAVTestServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ODAVTestServer.m; path = Test/LocalWebDAVServer/ODAVTestServer.m; sourceTree = SOURCE_ROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniDAV_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDAV_Prefix.h; sourceTree = "<group>"; };
 		340490AC15E53DDC0044F67F /* libODAVUnitTestsTouch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libODAVUnitTestsTouch.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODAVOperation-Internal.h"; sourceTree = "<group>"; };
@@ -376,6 +385,8 @@
 				3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */,
 				3444B0B80F72022C005CFD59 /* ODAVErrors.h */,
 				3444B0B90F72022C005CFD59 /* ODAVErrors.m */,
+				1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */,
+				1E558DD519E3774C0074C8EE /* ODAVStaleFiles.m */,
 				3498626C1A71B3C200EA7437 /* ODAVUpload.h */,
 				3498626D1A71B3C200EA7437 /* ODAVUpload.m */,
 				3428DB641B2A878600B01297 /* OmniDAV.registrations */,
@@ -477,6 +488,8 @@
 				341348531A1E860400A03EEC /* ODAVMoveRedirectTestCase.m */,
 				344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */,
 				349F979315DEA87B00D7677C /* Supporting Files */,
+				1EA288331C3C8FEB008CF071 /* ODAVTestServer.h */,
+				1EA288341C3C8FEB008CF071 /* ODAVTestServer.m */,
 			);
 			path = ODAVUnitTests;
 			sourceTree = "<group>";
@@ -542,6 +555,7 @@
 				34D621D31B38810500DCE250 /* ODAVOperation.h in Headers */,
 				34D621D91B38811A00DCE250 /* ODAVErrors.h in Headers */,
 				34D621D41B38810900DCE250 /* ODAVOperation-Internal.h in Headers */,
+				1E2C4DBA1C0E2D1D00E2E090 /* ODAVStaleFiles.h in Headers */,
 				34D621CA1B3880E800DCE250 /* ODAVConnection.h in Headers */,
 				34D621C81B3880E000DCE250 /* OmniDAV.h in Headers */,
 				34D621DB1B38812300DCE250 /* ODAVUpload.h in Headers */,
@@ -567,6 +581,7 @@
 				3444B0700F71FFFF005CFD59 /* ODAVFileInfo.h in Headers */,
 				3444B0BA0F72022C005CFD59 /* ODAVErrors.h in Headers */,
 				340ECC9717A1A16200CABA13 /* ODAVOperation-Internal.h in Headers */,
+				1E558DD619E3774C0074C8EE /* ODAVStaleFiles.h in Headers */,
 				3464810E1276674B00E8A9B4 /* ODAVAsynchronousOperation.h in Headers */,
 				34201EE21464897900A45403 /* ODAVFeatures.h in Headers */,
 				3498626E1A71B3C200EA7437 /* ODAVUpload.h in Headers */,
@@ -675,7 +690,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					34D621AE1B38807700DCE250 = {
 						CreatedOnToolsVersion = 7.0;
@@ -815,6 +830,7 @@
 				34AF4BF016AEF14D005CB08F /* ODAVDynamicTestCase.m in Sources */,
 				34AF4BF716AF3C7D005CB08F /* ODAVStaticTestCase.m in Sources */,
 				344743BF1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m in Sources */,
+				1EA288351C3C8FEB008CF071 /* ODAVTestServer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -834,6 +850,7 @@
 				34D621CE1B3880F600DCE250 /* ODAVConnection_URLSession.m in Sources */,
 				34D621D71B38811400DCE250 /* ODAVFileInfo.m in Sources */,
 				34D621D21B38810300DCE250 /* ODAVConformanceTest.m in Sources */,
+				1E07D6C91C20E95C00208D55 /* ODAVStaleFiles.m in Sources */,
 				34D621D51B38810D00DCE250 /* ODAVOperation.m in Sources */,
 				34D621CC1B3880F000DCE250 /* ODAVConnection.m in Sources */,
 				34D621DC1B38812700DCE250 /* ODAVUpload.m in Sources */,
@@ -849,6 +866,7 @@
 				3444B0710F71FFFF005CFD59 /* ODAVFileInfo.m in Sources */,
 				3444B0BB0F72022C005CFD59 /* ODAVErrors.m in Sources */,
 				34AF4BF316AF3865005CB08F /* ODAVConformanceTest.m in Sources */,
+				1E558DD719E3774C0074C8EE /* ODAVStaleFiles.m in Sources */,
 				3428DB5C1B2A86CD00B01297 /* ODAVConnection_URLConnection.m in Sources */,
 				349862701A71B3C200EA7437 /* ODAVUpload.m in Sources */,
 				3428DB621B2A86DD00B01297 /* ODAVConnection_URLSession.m in Sources */,

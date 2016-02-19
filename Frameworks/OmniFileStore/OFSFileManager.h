@@ -12,6 +12,7 @@
 @class NSMutableArray;
 
 @protocol ODAVAsynchronousOperation;
+@class ODAVFileInfo;
 @protocol OFByteProvider;
 
 extern NSInteger OFSFileManagerDebug;
@@ -33,12 +34,11 @@ extern NSInteger OFSFileManagerDebug;
 
 - (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
 - (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
+- (id <ODAVAsynchronousOperation>)asynchronousDeleteFile:(ODAVFileInfo *)f;
 
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)directoryURL error:(NSError **)outError;
 
 @end
-
-@class ODAVFileInfo;
 
 @protocol OFSConcreteFileManager
 
@@ -68,11 +68,15 @@ extern NSInteger OFSFileManagerDebug;
 
 // Failure due to the URL not existing will be mapped to OFSNoSuchFile (with an underlying Cocoa/POSIX or HTTP error).
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)deleteFile:(ODAVFileInfo *)fileinfo error:(NSError **)outError;
 
 @optional
 
-- (NSObject <OFByteProvider> *)byteProviderWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
+- (NSURL *)writeData:(NSData *)data atomicallyReplacing:(ODAVFileInfo *)destination error:(NSError **)outError;
 
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfFile:(ODAVFileInfo *)f range:(NSString *)range;
+
+- (NSObject <OFByteProvider> *)byteProviderWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 
 @end
 

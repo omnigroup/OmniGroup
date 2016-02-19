@@ -19,6 +19,10 @@ RCS_ID("$Id$");
 
 //static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
+@interface OADatePickerTextField ()
+@property (nonatomic, strong) NSButton *calendarButton;
+@end
+
 @implementation OADatePickerTextField
 
 #pragma mark -
@@ -31,9 +35,9 @@ RCS_ID("$Id$");
 
 static id _commonInit(OADatePickerTextField *self)
 {
-    if (!self->calendarButton) {
-        self->calendarButton = [OAPopupDatePicker newCalendarButton];
-        [OAPopupDatePicker showCalendarButton:self->calendarButton forFrame:[OAPopupDatePicker calendarRectForFrame:[self bounds]] inView:self withTarget:self action:@selector(_toggleDatePicker)];
+    if (!self.calendarButton) {
+        self.calendarButton = [OAPopupDatePicker newCalendarButton];
+        [OAPopupDatePicker showCalendarButton:self.calendarButton forFrame:[OAPopupDatePicker calendarRectForFrame:[self bounds]] inView:self withTarget:self action:@selector(_toggleDatePicker)];
         [self setAutoresizesSubviews:YES];
     }
     
@@ -68,16 +72,6 @@ static id _commonInit(OADatePickerTextField *self)
     return _commonInit(self);
 }
 
-- (void)dealloc;
-{
-    [minDate release];
-    [maxDate release];
-    [calendarButton release];
-    [calendar release];
-    [_defaultTextField release];
-    [super dealloc];
-}
-
 #pragma mark -
 #pragma mark KVO
 
@@ -99,52 +93,6 @@ static id _commonInit(OADatePickerTextField *self)
     return defaultDate;
 }
 
-- (void)setDefaultDateTextField:(NSTextField *)defaultTextField;
-{
-    //[self bind:DefaultDateBinding toObject:boundObject withKeyPath:boundKey options:nil];
-    _defaultTextField = [defaultTextField retain];
-}
-
-#pragma mark -
-#pragma mark Accessors
-
-- (NSDate *)minDate;
-{
-    return minDate;
-}
-
-- (void)setMinDate:(NSDate *)aDate;
-{
-    [minDate release];
-    minDate = [aDate retain];
-}
-
-- (NSDate *)maxDate;
-{
-    return maxDate;
-}
-
-- (void)setMaxDate:(NSDate *)aDate;
-{
-    [maxDate release];
-    maxDate = [aDate retain];
-}
-
-- (NSCalendar *)calendar;
-{
-    return calendar;
-}
-
-- (void)setCalendar:(NSCalendar *)aCalendar;
-{
-    if (aCalendar == calendar) 
-        return;
-    
-    [calendar release];
-    calendar = [aCalendar retain];
-}
-
-
 #pragma mark -
 #pragma mark OASteppableTextField subclass
 
@@ -155,9 +103,9 @@ static id _commonInit(OADatePickerTextField *self)
 
     NSDate *date = objectValue;
     // if a min or max date is set, check against that
-    if ((maxDate != nil && [date compare:maxDate] == NSOrderedDescending)) 
+    if ((self.maxDate != nil && [date compare:self.maxDate] == NSOrderedDescending))
 	return NO;
-    if ((minDate != nil && [date compare:minDate] == NSOrderedAscending))
+    if ((self.minDate != nil && [date compare:self.minDate] == NSOrderedAscending))
 	return NO;	
 
     return YES;
@@ -169,14 +117,14 @@ static id _commonInit(OADatePickerTextField *self)
 - (void)setEnabled:(BOOL)enabled;
 {
     [super setEditable:enabled];
-    [calendarButton setEnabled:enabled];
+    self.calendarButton.enabled = enabled;
 }
 
 - (void)setEditable:(BOOL)editable;
 {
     [super setEditable:editable];
     [super setTextColor:editable ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
-    [calendarButton setEnabled:editable];
+    self.calendarButton.enabled = editable;
 }
     
 #pragma mark -
@@ -190,11 +138,12 @@ static id _commonInit(OADatePickerTextField *self)
 
 - (void)didAddSubview:(NSView *)subview;
 {
-    if (subview == calendarButton)
+    if (subview == self.calendarButton) {
         return;
+    }
 
-    [calendarButton removeFromSuperview];
-    [self addSubview:calendarButton];
+    [self.calendarButton removeFromSuperview];
+    [self addSubview:self.calendarButton];
 }
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow;
@@ -205,18 +154,20 @@ static id _commonInit(OADatePickerTextField *self)
 
 - (BOOL)isDatePickerHidden;
 {
-    return [calendarButton isHidden];
+    return self.calendarButton.isHidden;
 }
+
 - (void)setIsDatePickerHidden:(BOOL)yn;
 {
-    [calendarButton setHidden:yn];
+    self.calendarButton.hidden = yn;
 }
 
 - (void)resetCursorRects
 {
     [self addCursorRect:self.bounds cursor:[NSCursor IBeamCursor]];
-    if (![calendarButton isHidden])
-	[self addCursorRect:[calendarButton frame] cursor:[NSCursor arrowCursor]];
+    if (!self.calendarButton.isHidden) {
+	[self addCursorRect:self.calendarButton.frame cursor:[NSCursor arrowCursor]];
+    }
 }
 
 #pragma mark - Private
@@ -227,7 +178,7 @@ static id _commonInit(OADatePickerTextField *self)
     if ([sharedPopupDatePicker isKey])
         [sharedPopupDatePicker close]; 
     else {
-        [sharedPopupDatePicker setCalendar:calendar];
+        [sharedPopupDatePicker setCalendar:self.calendar];
         
         NSString *title = NSLocalizedStringFromTableInBundle(@"Choose Date", @"OmniAppKit", OMNI_BUNDLE, @"Date picker window title");
         
@@ -253,13 +204,11 @@ static id _commonInit(OADatePickerTextField *self)
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setMinute:1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     } else {
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setDay:1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     }
 }
@@ -274,13 +223,11 @@ static id _commonInit(OADatePickerTextField *self)
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setHour:1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     } else {
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setMonth:1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     }
 }
@@ -295,13 +242,11 @@ static id _commonInit(OADatePickerTextField *self)
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setMinute:1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     } else {
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setDay:-1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     }
 }
@@ -316,13 +261,11 @@ static id _commonInit(OADatePickerTextField *self)
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setHour:-1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     } else {
 	NSDateComponents *components = [[NSDateComponents alloc] init];
 	[components setMonth:-1];
 	NSDate *date = [currentCalendar dateByAddingComponents:components toDate:anObjectValue options:0];
-	[components release];
 	return date;
     }
 }

@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "La bibliothèque bzip2 a renvoyé le code d’erreur %1$d lors de l’écriture des données. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Annuler";
 
 /* error recovery option */
@@ -122,8 +122,8 @@
 /* local bundle path readable string */
 "local configuration file" = "fichier de configuration locale";
 
-/* time span formatter span (minute) */
-"m" = "m";
+/* time span formatter span */
+"m" = "min";
 
 /* time span formatter span */
 "minute" = "minute";
@@ -131,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "minutes";
 
-/* time span formatter span (month) */
+/* time span formatter span */
 "mo" = "mo";
 
 /* time span formatter span */
@@ -146,7 +146,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "N’est pas un lot valide";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Ignorer le verrou";
 
 /* alert message format when clicking on a configuration value URL */
@@ -171,7 +171,7 @@
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” ne semble pas valide. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "La date du certificat de serveur de “%@” n’est pas valide. Il se peut que ce certificat soit périmé ou pas encore actif. Voulez-vous quand même vous y connecter ?";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "La date du certificat de serveur de “%@” n’est pas valide. Il peut être expiré ou pas encore actif. Voulez-vous quand même vous y connecter ?";
 
 /* server certificate has unknown root */
 "The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” n’est signé par aucun serveur racine. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
@@ -208,6 +208,9 @@
 
 /* error description */
 "Unable to lock document." = "Impossible de verrouiller le document.";
+
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "Inconnu";
 
 /* decompression error reason */
 "unrecognized compression format." = "format de compression non reconnu.";

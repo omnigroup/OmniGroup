@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,33 +9,15 @@
 
 #import "OASteppableTextField.h"
 
-@class /* AppKit */ NSButton;
-
 @interface OADatePickerTextField : OASteppableTextField
-{
-    NSDate *minDate;
-    NSDate *maxDate;
-    NSButton *calendarButton;
-    NSCalendar *calendar;
-    
-    NSTrackingRectTag visibleRectTag;
 
-    NSTextField *_defaultTextField;
-}
+@property (nonatomic, strong, readonly) NSDate *defaultDate;
 
-- (NSDate *)defaultDate;
-- (void)setDefaultDateTextField:(NSTextField *)defaultTextField;
-
-- (NSDate *)minDate;
-- (void)setMinDate:(NSDate *)aDate;
-- (NSDate *)maxDate;
-- (void)setMaxDate:(NSDate *)aDate;
-
-- (BOOL)isDatePickerHidden;
-- (void)setIsDatePickerHidden:(BOOL)yn;
-
-- (NSCalendar *)calendar;
-- (void)setCalendar:(NSCalendar *)aCalendar;
+@property (nonatomic, strong) NSTextField *defaultTextField;
+@property (nonatomic, strong) NSDate *minDate;
+@property (nonatomic, strong) NSDate *maxDate;
+@property (nonatomic, assign) BOOL isDatePickerHidden;
+@property (nonatomic, strong) NSCalendar *calendar;
 
 @end
 

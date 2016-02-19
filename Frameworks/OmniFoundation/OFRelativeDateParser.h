@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
-@class NSArray, NSCalendar, NSDate, NSDateComponents, NSError, NSLocale, NSTimeZone;
+@class NSCalendar, NSDate, NSDateComponents, NSError, NSLocale;
 
 // WARNING: Do not use this yet, it's still a work in progress
 

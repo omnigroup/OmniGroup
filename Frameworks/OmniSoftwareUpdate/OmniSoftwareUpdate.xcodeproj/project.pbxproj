@@ -249,6 +249,12 @@
 		A2E26F180FD5D887008F0B93 /* OSUTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = A2E26F160FD5D887008F0B93 /* OSUTextField.m */; };
 		A2FC6056100C19C200F3990C /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A2FC6055100C19C200F3990C /* libxml2.dylib */; };
 		E2B8A8BF15BDEEBD00B5F26B /* OSUPreferences@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8BE15BDEEBD00B5F26B /* OSUPreferences@2x.png */; };
+		FB0929AD1C3B356400469860 /* OSUPartialItem.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0929AB1C3B356400469860 /* OSUPartialItem.h */; };
+		FB0929AE1C3B356400469860 /* OSUPartialItem.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0929AB1C3B356400469860 /* OSUPartialItem.h */; };
+		FB0929AF1C3B356400469860 /* OSUPartialItem.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0929AC1C3B356400469860 /* OSUPartialItem.m */; };
+		FB0929B01C3B356400469860 /* OSUPartialItem.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0929AC1C3B356400469860 /* OSUPartialItem.m */; };
+		FB79E6561C3C6F4900A5ACD4 /* OSUPartialItem.h in Headers */ = {isa = PBXBuildFile; fileRef = FB0929AB1C3B356400469860 /* OSUPartialItem.h */; };
+		FB79E6611C3C6F5200A5ACD4 /* OSUPartialItem.m in Sources */ = {isa = PBXBuildFile; fileRef = FB0929AC1C3B356400469860 /* OSUPartialItem.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -680,6 +686,8 @@
 		BF3171E6062F41550097A147 /* OSUPreferences.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OSUPreferences.png; sourceTree = "<group>"; };
 		BF3171ED062F41740097A147 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Preferences.strings; sourceTree = "<group>"; };
 		E2B8A8BE15BDEEBD00B5F26B /* OSUPreferences@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OSUPreferences@2x.png"; sourceTree = "<group>"; };
+		FB0929AB1C3B356400469860 /* OSUPartialItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPartialItem.h; sourceTree = "<group>"; };
+		FB0929AC1C3B356400469860 /* OSUPartialItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPartialItem.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -972,6 +980,8 @@
 				3433C1F81A12BB920021318A /* OSUSettings.m */,
 				34F2A1941A3106AB00B2E8BD /* OSUProbe.h */,
 				34F2A1951A3106AB00B2E8BD /* OSUProbe.m */,
+				FB0929AB1C3B356400469860 /* OSUPartialItem.h */,
+				FB0929AC1C3B356400469860 /* OSUPartialItem.m */,
 				341605EA0C693324002839DF /* OSUItem.h */,
 				341605EB0C693324002839DF /* OSUItem.m */,
 				3456AED00C1201300066F5F4 /* OSURunTime.h */,
@@ -1282,6 +1292,7 @@
 				348A78941B583D590082D55D /* OSUSettings.h in Headers */,
 				348A788C1B583D380082D55D /* OSUPreferences.h in Headers */,
 				348A78981B583D690082D55D /* OSURunTime.h in Headers */,
+				FB0929AE1C3B356400469860 /* OSUPartialItem.h in Headers */,
 				348A789C1B583DA60082D55D /* OSUPreferencesViewController.h in Headers */,
 				348A78921B583D500082D55D /* OSUCheckOperation.h in Headers */,
 				348A79081B5847BF0082D55D /* OSUReportKeys.h in Headers */,
@@ -1314,6 +1325,7 @@
 				34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */,
 				34972BC91AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */,
 				34A5F55C184E62E500E8BA9A /* OSUFeatures.h in Headers */,
+				FB79E6561C3C6F4900A5ACD4 /* OSUPartialItem.h in Headers */,
 				34A5F553184E555400E8BA9A /* OSUCheckOperation.h in Headers */,
 				34A5F557184E558200E8BA9A /* OSUPreferences.h in Headers */,
 				34F2A1981A3106AB00B2E8BD /* OSUProbe.h in Headers */,
@@ -1326,6 +1338,7 @@
 			files = (
 				4A40EBF008AB009A00E1769D /* OSUChecker.h in Headers */,
 				4A40EBF108AB009A00E1769D /* NSApplication-OSUSupport.h in Headers */,
+				FB0929AD1C3B356400469860 /* OSUPartialItem.h in Headers */,
 				34CEC66718565B530030515C /* OSULinkButton.h in Headers */,
 				34469268186284E200FBDD73 /* OSUPrivacyAlertWindowController.h in Headers */,
 				4A40EBED08AB009A00E1769D /* OmniSoftwareUpdate_Prefix.h in Headers */,
@@ -1555,7 +1568,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -1867,6 +1880,7 @@
 				348A788D1B583D3C0082D55D /* OSUPreferences.m in Sources */,
 				348A79071B5847B70082D55D /* OSUOpenGLExtensions.m in Sources */,
 				348A788B1B583D340082D55D /* OSUErrors.m in Sources */,
+				FB0929B01C3B356400469860 /* OSUPartialItem.m in Sources */,
 				348A788E1B583D410082D55D /* OSUPreferences-Items.m in Sources */,
 				348A789B1B583DA30082D55D /* OSUController.m in Sources */,
 				348A78911B583D4D0082D55D /* OSUChecker.m in Sources */,
@@ -1899,6 +1913,7 @@
 				34A5F53F184E519C00E8BA9A /* OSUErrors.m in Sources */,
 				34A2E0EB184F9375009E0D9F /* OSUPreferences-Items.m in Sources */,
 				34A5F540184E519C00E8BA9A /* OSUPreferences.m in Sources */,
+				FB79E6611C3C6F5200A5ACD4 /* OSUPartialItem.m in Sources */,
 				34CEC66A18565B530030515C /* OSULinkButton.m in Sources */,
 				3433C1FE1A12BB920021318A /* OSUSettings.m in Sources */,
 				34A5F568184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m in Sources */,
@@ -1926,6 +1941,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A40EBFB08AB009A00E1769D /* OSUController.m in Sources */,
+				FB0929AF1C3B356400469860 /* OSUPartialItem.m in Sources */,
 				34A2E0E9184F9363009E0D9F /* OSUPreferences-Items.m in Sources */,
 				4A40EBFC08AB009A00E1769D /* OSUPreferenceClient.m in Sources */,
 				4A40EBFD08AB009A00E1769D /* OSUChecker.m in Sources */,

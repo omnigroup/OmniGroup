@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,3 +60,4 @@ typedef enum {
 - (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 
 @end
+

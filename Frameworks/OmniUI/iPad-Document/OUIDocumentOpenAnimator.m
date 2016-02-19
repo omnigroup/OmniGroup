@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,11 +96,14 @@ RCS_ID("$Id$")
         self.backgroundSnapshotView.translatesAutoresizingMaskIntoConstraints = NO;
         [containerView addSubview:self.backgroundSnapshotView];
         [containerView sendSubviewToBack:self.backgroundSnapshotView];
-        
-        [self.backgroundSnapshotView.topAnchor constraintEqualToAnchor:containerView.topAnchor].active = YES;
-        [self.backgroundSnapshotView.rightAnchor constraintEqualToAnchor:containerView.rightAnchor].active = YES;
-        [self.backgroundSnapshotView.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor].active = YES;
-        [self.backgroundSnapshotView.leftAnchor constraintEqualToAnchor:containerView.leftAnchor].active = YES;
+
+        [NSLayoutConstraint activateConstraints:
+         @[
+           [self.backgroundSnapshotView.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+           [self.backgroundSnapshotView.rightAnchor constraintEqualToAnchor:containerView.rightAnchor],
+           [self.backgroundSnapshotView.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+           [self.backgroundSnapshotView.leftAnchor constraintEqualToAnchor:containerView.leftAnchor],
+           ]];
         
         self.previewSnapshotView.translatesAutoresizingMaskIntoConstraints = YES;
         CGRect pr = [containerView convertRect:self.previewRect fromView:nil];

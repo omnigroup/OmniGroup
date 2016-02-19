@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,12 @@ static id _commonInit(OUIColorSwatchPicker *self)
 {
     if (OFISEQUAL(colors, _colors))
         return;
-    _colors = [[NSMutableArray alloc] initWithArray:colors];
+    
+    if (colors != nil)
+        _colors = [[NSMutableArray alloc] initWithArray:colors];
+    else
+        _colors = [[NSMutableArray alloc] init];
+    
     [self setNeedsLayout];
 }
 

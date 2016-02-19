@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ RCS_ID("$Id$")
         if ([self shouldHideSliceWithIdentifier:identifier]) // OP uses this to hide non-Pro slices
             continue;
         
-        OIInspector *inspector = [OIInspector newInspectorWithDictionary:slicePlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
+        OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:slicePlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
         
         if (!inspector) {
             // Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
@@ -90,7 +90,7 @@ RCS_ID("$Id$")
 - (OIInspector *)inspectorWithIdentifier:(NSString *)identifier;
 {
     for (OIInspectorController *inspectorController in _sliceControllers) {
-        if ([inspectorController.identifier isEqualToString:identifier])
+        if ([inspectorController.inspectorIdentifier isEqualToString:identifier])
             return inspectorController.inspector;
     }
     
@@ -134,12 +134,12 @@ RCS_ID("$Id$")
     //    self.equalLabelWidthsConstraintManager = [[OFIEqualityConstraintManager alloc] initWithContainer:self attribute:NSLayoutAttributeWidth];
 
     NSSet *inspectorIdentifiers = [_sliceControllers setByPerformingBlock:^id(OIInspectorController *controller) {
-        return controller.identifier;
+        return controller.inspectorIdentifier;
     }];
     BOOL foundFirstInspector = NO;
 
     for (OIAutoLayoutInspectorController *inspectorController in _sliceControllers) {
-        NSStackViewVisibilityPriority newPriority = [inspectorIdentifiers containsObject:[inspectorController identifier]] ? NSStackViewVisibilityPriorityMustHold : NSStackViewVisibilityPriorityNotVisible;
+        NSStackViewVisibilityPriority newPriority = [inspectorIdentifiers containsObject:inspectorController.inspectorIdentifier] ? NSStackViewVisibilityPriorityMustHold : NSStackViewVisibilityPriorityNotVisible;
 
         if (newPriority == NSStackViewVisibilityPriorityMustHold && !foundFirstInspector) {
             inspectorController.drawsHeaderSeparator = NO;
@@ -149,7 +149,7 @@ RCS_ID("$Id$")
         }
 
         NSView *inspectorContainerView = [inspectorController containerView];
-        NSString *identifier = [inspectorController identifier];
+        NSString *identifier = inspectorController.inspectorIdentifier;
         
         [inspectorController loadInterface];
         [inspectorController setExpanded:YES withNewTopLeftPoint:NSZeroPoint]; // top left point should be ignored for embedded inspectors
@@ -277,7 +277,7 @@ RCS_ID("$Id$")
     
     for (OIInspectorController *controller in _sliceControllers) {
         //        OIInspector *inspector = OB_CHECKED_CAST(OIInspector, [controller inspector]);
-        NSString *identifier = [controller identifier];
+        NSString *identifier = controller.inspectorIdentifier;
         
         if (![[self.containerStackView views] containsObject:self.inspectorViewsByIdentifier[identifier]])
             continue; // Skip views that aren't in the stack view at all (as is the case during loading/teardown)

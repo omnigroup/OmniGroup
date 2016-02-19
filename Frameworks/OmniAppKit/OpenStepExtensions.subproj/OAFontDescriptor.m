@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -861,6 +861,14 @@ static NSArray *_matchingDescriptorsForFontFamily(NSString *familyName)
         _font = _copyFont(fallbackDescriptor, integralSize);
         CFRelease(fallbackDescriptor);
     }
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    if (!_font) {
+        DEBUG_FONT_LOOKUP(@"Last-ditch attempt — system font of size")
+        _font = [NSFont systemFontOfSize:integralSize];
+    }
+#endif
+
     goto done;
         
 matchSucceeded:

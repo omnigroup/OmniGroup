@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/OAAppearance.h>
+
+@import OmniFoundation;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <OmniAppKit/OAAppearanceColors.h>
@@ -15,12 +17,8 @@
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #endif
 
-#import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
-#import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/OFBinding.h> // for OFKeysForKeyPath()
-#import <OmniFoundation/OFEnumNameTable.h>
+#import "OAAppearance-Internal.h"
+
 #import <OmniAppKit/OAColor-Archiving.h>
 #import <objc/runtime.h>
 #import <OmniBase/rcsid.h>
@@ -31,6 +29,12 @@ NSString * const OAAppearancePlistExtension = @"plist";
 NSString * const OAAppearanceValuesWillChangeNotification = @"com.omnigroup.framework.OmniAppKit.Appearance.ValuesWillChange";
 NSString * const OAAppearanceValuesDidChangeNotification = @"com.omnigroup.framework.OmniAppKit.Appearance.ValuesDidChange";
 NSString * const OAAppearancePrivateClassNamePrefix = @"__PrivateReifying_";
+
+NSString * const OAAppearanceErrorDomain = @"com.omnigroup.OmniAppKit.OAAppearance";
+typedef NS_ENUM(NSUInteger, OAAppearanceErrorCode) {
+    OAAppearanceErrorCodeKeyNotFound,
+    OAAppearanceErrorCodeUnexpectedValueType,
+};
 
 #define OA_PERFORM_FILE_PRESENTATION (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
 
@@ -123,6 +127,57 @@ void OAAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
 }
 
 #endif
+
+#pragma mark - NSObject subclass
+
+/// Returns whether we should defer to `-[NSObject valueForKey:]` when looking up the value for the `keyPathComponents.
+///
+/// We want to do so when there is a corresponding property, because the NSObject implementation will defer to the property, hitting our cached value and using the property's declared type.
+- (BOOL)_shouldUseImplementedPropertyForValueForKeyPathComponents:(NSArray <NSString *>*)keyPathComponents;
+{
+    if (keyPathComponents.count != 1) {
+        return NO;
+    }
+    
+    // If there is a matching property declaration, then use it.
+    objc_property_t backingProperty = [[self class] _propertyForSelector:NSSelectorFromString(keyPathComponents[0]) matchGetter:NO];
+    
+    return (backingProperty != NULL);
+}
+
+- (id)valueForKey:(NSString *)key;
+{
+    NSArray <NSString *>*keyPathComponents = @[key];
+    if ([self _shouldUseImplementedPropertyForValueForKeyPathComponents:keyPathComponents]) {
+        return [super valueForKey:key];
+    }
+    
+    id result = [self _valueForPlistKeyPathComponents:keyPathComponents error:NULL];
+    if (result == nil) {
+        result = [super valueForKey:key];
+    }
+    
+    return result;
+}
+
+- (id)valueForKeyPath:(NSString *)keyPath;
+{
+    NSArray <NSString *> *keyPathComponents = OFKeysForKeyPath(keyPath);
+
+    if ([self _shouldUseImplementedPropertyForValueForKeyPathComponents:keyPathComponents]) {
+        OBASSERT(keyPathComponents.count == 1);
+        NSString *key = keyPath;
+        return [super valueForKey:key];
+    }
+
+    id result = [self _valueForPlistKeyPathComponents:keyPathComponents error:NULL];
+    if (result == nil) {
+        result = [super valueForKeyPath:keyPath];
+    }
+
+    return result;
+}
+
 
 #pragma mark Helpers
 
@@ -244,8 +299,60 @@ static NSURL *urlIfExists(NSURL *url)
         }
     }
     
+#ifdef OMNI_ASSERTIONS_ON
+    [self validateDynamicPropertyDeclarations];
+#endif
+    
     _cacheInvalidationCount ++;
 }
+
+#ifdef OMNI_ASSERTIONS_ON
+- (NSMutableSet <NSString *> *)_nonDynamicPropertyNames;
+{
+    NSMutableSet *result = [NSMutableSet new];
+    
+    Class cls = self.class;
+    do {
+        unsigned int propertyCount;
+        objc_property_t *allProperties = class_copyPropertyList(cls, &propertyCount);
+        
+        for (unsigned int i = 0; i < propertyCount; i++) {
+            objc_property_t property = allProperties[i];
+            SEL selector = sel_getUid(property_getName(property));
+            char *propertyIsDynamic = property_copyAttributeValue(property, "D");
+            if (propertyIsDynamic == NULL) {
+                // not dynamic
+                NSString *propertyName = NSStringFromSelector(selector);
+                [result addObject:propertyName];
+            }
+            free(propertyIsDynamic);
+        }
+        
+        free(allProperties);
+        
+        cls = [cls superclass];
+    } while (cls != Nil);
+    
+    return result;
+}
+
+- (void)validateDynamicPropertyDeclarations
+{
+    OBASSERT_NOTNULL(_plist);
+    
+    NSMutableSet *propertyNames = [self _nonDynamicPropertyNames];
+    NSSet *plistKeys = [NSSet setWithArray:[_plist allKeys]];
+    
+    [propertyNames intersectSet:plistKeys];
+    if (propertyNames.count != 0) {
+        for (NSString *propertyName in propertyNames) {
+            NSLog(@"%@ missing @dynamic declaration for declared property “%@“ that has a corresponding plist key.", NSStringFromClass([self class]), propertyName);
+        }
+        OBASSERT_NOT_REACHED(@"Expect the declared properties on an OAAppearance class to be dynamic if they have corresponding keys in the plist. See details logged above.");
+    }
+}
+#endif
+
 
 /// Returns the URL for the user override appearance plist.
 - (NSURL *)userPlistURL;
@@ -260,22 +367,21 @@ static NSURL *urlIfExists(NSURL *url)
 
 #pragma mark - Static accessors
 
-- (id)_objectOfClass:(Class)cls forPlistKeyPath:(NSString *)keyPath;
+- (id)_valueForPlistKeyPathComponents:(NSArray <NSString *> *)keyPathComponents error:(NSError **)error;
 {
     // Can enable this to check if appearance values are being looked up on commonly hit drawing paths.
 #if 0 && defined(DEBUG)
-    NSLog(@"Looking up %@/%@ in %@", NSStringFromClass(cls), keyPath, self);
+    NSLog(@"Looking up %@ in %@", keyPathComponents, self);
 #endif
     
     id obj = _plist;
-    
-    NSArray *keys = OFKeysForKeyPath(keyPath);
-    NSUInteger keyCount = keys.count;
+    NSUInteger keyCount = keyPathComponents.count;
     for (NSUInteger idx = 0; idx < keyCount; idx++) {
-        NSString *key = keys[idx];
+        NSString *key = keyPathComponents[idx];
         id parentObj = obj;
         obj = [obj objectForKey:key];
-        Class expectedClass = (idx == keyCount - 1) ? cls : [NSDictionary class];
+        BOOL isLastPathComponent = idx == keyCount - 1;
+        Class expectedClass = isLastPathComponent ? [NSObject class] : [NSDictionary class];
         
         if (!obj) {
             // First try to find an alias for the given key
@@ -283,32 +389,128 @@ static NSURL *urlIfExists(NSURL *url)
             if (aliases != nil) {
                 NSString *alias = [aliases objectForKey:key];
                 if (alias != nil) {
-                    // Found an alias; restart the search at the top level for the resultant target key path
-                    NSString *dereferencedKeyPath = nil;
-                    if (idx == keyCount - 1) {
-                        dereferencedKeyPath = alias;
-                    } else {
-                        NSArray *remainingKeys = [keys subarrayWithRange:NSMakeRange(idx + 1, keyCount - (idx + 1))];
-                        dereferencedKeyPath = [alias stringByAppendingFormat:@".%@", [remainingKeys componentsJoinedByString:@"."]];
+                    // Found an alias; restart the search at the top level for the resultant target key path.
+                    // We allow aliases inside other structures, treating them as absolute references. We also allow aliases to themselves be keypaths. So, the new key path is the alias followed by the portion of the original keypath not yet traversed. For example, if the original path is A.B.C and A.B is the path to an alias with value X.Y, then our new path should be X.Y.C.
+                    NSArray <NSString *> *newKeyPathComponents = OFKeysForKeyPath(alias);
+                    if (!isLastPathComponent) {
+                        NSUInteger nextIndex = idx + 1;
+                        NSArray <NSString *> *remainingKeyPathComponents = [keyPathComponents subarrayWithRange:NSMakeRange(nextIndex, keyCount - nextIndex)];
+                        newKeyPathComponents = [newKeyPathComponents arrayByAddingObjectsFromArray:remainingKeyPathComponents];
                     }
                     
-                    return [self _objectOfClass:cls forPlistKeyPath:dereferencedKeyPath];
+                    return [self _valueForPlistKeyPathComponents:newKeyPathComponents error:error];
                 }
             }
             
             // If no alias exists, either fall back to the superclass or throw, depending on what class this is
             if ([self class] == [OAAppearance class]) {
-                @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"No object found for key path component '%@'", key] userInfo:nil];
+                if (error != NULL) {
+                    NSDictionary *info = @{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"No object found for key path component '%@'", key]};
+                    *error = [NSError errorWithDomain:OAAppearanceErrorDomain code:OAAppearanceErrorCodeKeyNotFound userInfo:info];
+                }
+                return nil;
             } else {
                 // Recurse into the actual hierarchy, where the plists live
-                return [[[self class] _appearanceForClass:[self superclass] reifyingInstance:NO] _objectOfClass:cls forPlistKeyPath:keyPath];
+                OAAppearance *superApperance = [[self class] _appearanceForClass:[self superclass] reifyingInstance:NO];
+                return [superApperance _valueForPlistKeyPathComponents:keyPathComponents error:error];
             }
         } else if (![obj isKindOfClass:expectedClass]) {
-            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Object for key path component '%@' in appearance '%@' is not an instance of expected class '%@'", key, NSStringFromClass([self class]), NSStringFromClass(expectedClass)] userInfo:@{key:obj}];
+            if (error != NULL) {
+                NSDictionary *info = @{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"Object for key path component '%@' in appearance '%@' is not an instance of expected class '%@'", key, NSStringFromClass([self class]), NSStringFromClass(expectedClass)]};
+                *error = [NSError errorWithDomain:OAAppearanceErrorDomain code:OAAppearanceErrorCodeUnexpectedValueType userInfo:info];
+            }
+            return nil;
         }
     };
     
     return obj;
+}
+
+- (id)_objectOfClass:(Class)cls forPlistKeyPath:(NSString *)keyPath;
+{
+    NSArray *keyPathComponents = OFKeysForKeyPath(keyPath);
+    NSError *error = nil;
+    id result = [self _valueForPlistKeyPathComponents:keyPathComponents error:&error];
+    if (result == nil) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:error.localizedDescription userInfo:nil];
+    } else if (![result isKindOfClass:cls]) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Object for keyPath '%@' in appearance '%@' is not an instance of expected class '%@'", keyPath, NSStringFromClass([self class]), NSStringFromClass(cls)] userInfo:nil];
+    }
+    
+    return result;
+}
+
+- (OAAppearanceValueEncoding)valueEncodingForKeyPath:(NSString *)keyPath;
+{
+    static NSSet <NSString *> *sizeEncodingKeys;
+    static NSSet <NSString *> *edgeInsetsEncodingKeys;
+    static Class platformImageClass;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sizeEncodingKeys = [NSSet setWithArray:@[@"width", @"height"]];
+        edgeInsetsEncodingKeys = [NSSet setWithArray:@[@"top", @"left", @"bottom", @"right"]];
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        platformImageClass = [NSImage class];
+#else
+        platformImageClass = [UIImage class];
+#endif
+    });
+    
+    // Use the type of the value at the keyPath as a first approximation of the encoding, looking at the underlying representation in the plist to differentiate if necessary.
+    NSObject *currentValue = [self valueForKeyPath:keyPath];
+    NSObject *currentEncoding = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+    NSDictionary *currentEncodingDictionary = nil;
+    if ([currentEncoding isKindOfClass:[NSDictionary class]]) {
+        currentEncodingDictionary = (NSDictionary *)currentEncoding;
+    }
+    
+    if ([currentValue isKindOfClass:[OA_SYSTEM_COLOR_CLASS class]]) {
+        OAColorSpace colorSpace;
+        BOOL colorSpaceDetected = currentEncodingDictionary != nil && [OAColor colorSpaceOfPropertyListRepresentation:currentEncodingDictionary colorSpace:&colorSpace];
+        if (colorSpaceDetected) {
+            switch (colorSpace) {
+                case OAColorSpaceWhite: return OAAppearanceValueEncodingWhiteColor;
+                case OAColorSpaceRGB: return OAAppearanceValueEncodingRGBColor;
+                case OAColorSpaceHSV:
+                case OAColorSpaceCMYK:
+                    // both HSV and CMYK are written in HSB
+                    return OAAppearanceValueEncodingHSBColor;
+                default:
+                    OBASSERT_NOT_REACHED(@"unimplemented color space conversion for keyPath: %@, colorSpace: %@", keyPath, @(colorSpace));
+                    break;
+            }
+        }
+        // default to HSB
+        return OAAppearanceValueEncodingHSBColor;
+    } else if ([currentValue isKindOfClass:[NSDictionary class]]) {
+        return OAAppearanceValueEncodingRaw;
+    } else if ([currentValue isKindOfClass:platformImageClass]) {
+        return OAAppearanceValueEncodingCustom;
+    } else if ([currentValue isKindOfClass:[NSValue class]] && currentEncodingDictionary != nil) {
+        NSSet <NSString *> *currentEncodingKeys = [NSSet setWithArray:[currentEncodingDictionary allKeys]];
+        if ([currentEncodingKeys isEqualToSet:sizeEncodingKeys]) {
+            return OAAppearanceValueEncodingSize;
+        } else if ([currentEncodingKeys isEqualToSet:edgeInsetsEncodingKeys]) {
+            return OAAppearanceValueEncodingEdgeInsets;
+        }
+        OBASSERT_NOT_REACHED(@"Unexpected encoding for keyPath “%@” with NSValue type: %@", keyPath, currentEncodingDictionary);
+        return OAAppearanceValueEncodingRaw;
+    }
+    
+    // Having failed to draw any other conclusion, fall back to just a raw property list encoding.
+    return OAAppearanceValueEncodingRaw;
+}
+
+- (NSObject *)customEncodingForKeyPath:(NSString *)keyPath;
+{
+    OBPRECONDITION([self valueEncodingForKeyPath:keyPath] == OAAppearanceValueEncodingCustom);
+    
+    // We should only get here for images, whose encoding could be either a string or a dictionary.
+    NSObject *currentEncoding = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+    OBASSERT([currentEncoding isKindOfClass:[NSDictionary class]] || [currentEncoding isKindOfClass:[NSString class]], @"Unexpected encoding for keyPath “%@”: %@", keyPath, currentEncoding);
+
+    // Just return the current encoding, skipping the normalization that -[OAAppearancePropertyListCoder _encodedValueForKeyPath:] provides for other value encodings.
+    return currentEncoding;
 }
 
 - (NSString *)stringForKeyPath:(NSString * )keyPath;
@@ -418,7 +620,11 @@ static NSURL *urlIfExists(NSURL *url)
                     break;
                 }
                 if ([bundleIdentifier isEqual:@"self"]) {
-                    bundle = [NSBundle bundleForClass:[self class]];
+                    Class classForBundleLookup = [self class];
+                    if ([OAAppearance isReifyingClass:classForBundleLookup]) {
+                        classForBundleLookup = [classForBundleLookup superclass];
+                    }
+                    bundle = [NSBundle bundleForClass:classForBundleLookup];
                 } else if ([bundleIdentifier isEqual:@"main"]) {
                     bundle = [NSBundle mainBundle];
                 } else {
@@ -468,14 +674,19 @@ static NSURL *urlIfExists(NSURL *url)
             NSBundle *bundle = nil;
             NSString *bundleIdentifier = plist[@"bundle"];
             if (bundleIdentifier) {
-                if (![bundleIdentifier isKindOfClass:[NSString class]])
+                if (![bundleIdentifier isKindOfClass:[NSString class]]) {
                     break;
-                if ([bundleIdentifier isEqual:@"self"])
-                    bundle = [NSBundle bundleForClass:[self class]];
-                else if ([bundleIdentifier isEqual:@"main"])
+                } else if ([bundleIdentifier isEqual:@"self"]) {
+                    Class classForBundleLookup = [self class];
+                    if ([OAAppearance isReifyingClass:classForBundleLookup]) {
+                        classForBundleLookup = [classForBundleLookup superclass];
+                    }
+                    bundle = [NSBundle bundleForClass:classForBundleLookup];
+                } else if ([bundleIdentifier isEqual:@"main"]) {
                     bundle = [NSBundle mainBundle];
-                else
+                } else {
                     bundle = [NSBundle bundleWithIdentifier:bundleIdentifier];
+                }
                 if (!bundle) {
                     // Bundle specified, but not found
                     break;
@@ -505,6 +716,8 @@ static NSURL *urlIfExists(NSURL *url)
                 
                 return [image imageByTintingWithColor:color];
             }
+            
+            return image;
         }
     } while (0);
     
@@ -514,7 +727,7 @@ static NSURL *urlIfExists(NSURL *url)
 
 #pragma mark - Dynamic accessors
 
-static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls)
+static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls, BOOL matchGetter)
 {
     unsigned int propertyCount;
     objc_property_t *allProperties = class_copyPropertyList(cls, &propertyCount);
@@ -524,7 +737,7 @@ static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls)
         SEL getterSel;
         
         char *getterName = property_copyAttributeValue(allProperties[i], "G");
-        if (getterName) {
+        if (getterName != NULL && matchGetter) {
             getterSel = sel_getUid(getterName);
             free(getterName);
         } else {
@@ -542,12 +755,12 @@ static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls)
     return backingProp;
 }
 
-+ (objc_property_t)_propertyForSelector:(SEL)invocationSel;
++ (objc_property_t)_propertyForSelector:(SEL)invocationSel matchGetter:(BOOL)matchGetter;
 {
     objc_property_t backingProp = NULL;
     Class cls = self;
     do {
-        backingProp = _propertyForSelectorInClass(invocationSel, cls);
+        backingProp = _propertyForSelectorInClass(invocationSel, cls, matchGetter);
         cls = class_getSuperclass(cls);
     } while (backingProp == NULL && (cls != Nil));
     
@@ -556,7 +769,7 @@ static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls)
 
 + (void)_synthesizeGetter:(SEL)invocationSel forProperty:(objc_property_t)backingProp;
 {
-    OBPRECONDITION([NSStringFromClass(self) hasPrefix:OAAppearancePrivateClassNamePrefix], @"Synthesizing getter %@: should only synthesize getters for private reifying class instances, not for %@", NSStringFromSelector(invocationSel), NSStringFromClass(self));
+    OBPRECONDITION([OAAppearance isReifyingClass:self], @"Synthesizing getter %@: should only synthesize getters for private reifying class instances, not for %@", NSStringFromSelector(invocationSel), NSStringFromClass(self));
 
     const char *backingPropName = property_getName(backingProp);
     
@@ -816,26 +1029,18 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
 + (BOOL)resolveInstanceMethod:(SEL)name
 {
     // Don't attempt to resolve dynamic methods unless the class is the private reifying class.
-    BOOL isReifyingClassInstance = [NSStringFromClass(self) hasPrefix:OAAppearancePrivateClassNamePrefix];
+    BOOL isReifyingClassInstance = [OAAppearance isReifyingClass:self];
     if (!isReifyingClassInstance) {
         return [super resolveInstanceMethod:name];
     }
     
-    objc_property_t backingProperty = [self _propertyForSelector:name];
+    objc_property_t backingProperty = [self _propertyForSelector:name matchGetter:YES];
     if (backingProperty) {
         [self _synthesizeGetter:name forProperty:backingProperty];
         return YES;
     } else {
         return [super resolveInstanceMethod:name];
     }
-}
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation;
-{
-    if ([self respondsToSelector:anInvocation.selector])
-        [anInvocation invoke];
-    else
-        [super forwardInvocation:anInvocation];
 }
 
 #pragma mark - Private API
@@ -868,7 +1073,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
 + (OAAppearance *)_appearanceForClass:(Class)cls reifyingInstance:(BOOL)reifyingInstance
 {
     OBPRECONDITION([cls isSubclassOfClass:[OAAppearance class]]);
-    OBPRECONDITION(![NSStringFromClass(cls) hasPrefix:OAAppearancePrivateClassNamePrefix], @"Should only call with public class. Called with class %@", NSStringFromClass(cls));
+    OBPRECONDITION(![OAAppearance isReifyingClass:cls], @"Should only call with public class. Called with class %@", NSStringFromClass(cls));
     
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -914,6 +1119,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
     }
     
     NSURL *directoryURLForSwitchablePlist = [[appearance class] directoryURLForSwitchablePlist];
+    OBASSERT_IF(appearance.optionalPlistDirectoryURL != directoryURLForSwitchablePlist, !OFURLEqualsURL(appearance.optionalPlistDirectoryURL, directoryURLForSwitchablePlist), @"OAAppearance subclass `%@` implementation of `%@` returned a fresh NSURL instance with the same value as the previously returned instance. This is a serious performance regression.", NSStringFromClass([appearance class]), NSStringFromSelector(@selector(directoryURLForSwitchablePlist)));
     if (!OFURLEqualsURL(appearance.optionalPlistDirectoryURL, directoryURLForSwitchablePlist)) {
         appearance.optionalPlistDirectoryURL = directoryURLForSwitchablePlist;
         [appearance invalidateCachedValues];
@@ -949,6 +1155,23 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
 }
 
 @end
+
+#pragma mark - Internal API
+
+@implementation OAAppearance (Internal)
+
++ (BOOL)isReifyingClass:(Class)cls;
+{
+    if (![cls isSubclassOfClass:[OAAppearance class]]) {
+        return NO;
+    }
+    
+    BOOL result = [NSStringFromClass(cls) hasPrefix:OAAppearancePrivateClassNamePrefix];
+    return result;
+}
+
+@end
+
 
 #pragma mark - Subclass Conveniences
 

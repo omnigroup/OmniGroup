@@ -17,14 +17,22 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSDocumentKey.h>
-#import <OmniFileStore/OFSSegmentedEncryption.h>
+#import <OmniFileStore/OFSSegmentedEncryptionWorker.h>
 #import <OmniFileStore/Errors.h>
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVOperation.h>
 #import <dispatch/dispatch.h>
 
 RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
+
+@interface OFSEncryptingFileManagerTasteOperation (/* Private interfaces */)
+- (instancetype)initWithOperation:(id <ODAVAsynchronousOperation>)op;
+@property (atomic,readwrite) int keySlot;
+@property (atomic,readwrite,copy,nullable) NSError *error;
+@end
 
 @implementation OFSEncryptingFileManager
 {
@@ -58,6 +66,7 @@ OB_REQUIRE_ARC
 }
 
 @synthesize keyStore = keyManager;
+@synthesize underlyingFileManager = underlying;
 
 #pragma mark OFSConcreteFileManager
 
@@ -91,16 +100,40 @@ OB_REQUIRE_ARC
     if (!encrypted)
         return nil;
 
-    return [OFSSegmentEncryptWorker decryptData:encrypted withKey:keyManager error:outError];
+    size_t offset = 0;
+    OFSSegmentDecryptWorker *decryptionWorker = [OFSSegmentDecryptWorker decryptorForData:encrypted key:keyManager dataOffset:&offset error:outError];
+    if (!decryptionWorker)
+        return nil;
+    
+    NSData *result = [decryptionWorker decryptData:encrypted dataOffset:offset error:outError];
+    if (!result)
+        return nil;
+    
+    return result;
 }
 
 - (NSURL *)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
-    NSData *encrypted = [OFSSegmentEncryptWorker encryptData:data withKey:keyManager error:outError];
+    OFSSegmentEncryptWorker *worker = keyManager.encryptionWorker;
+    
+    NSData *encrypted = [worker encryptData:data error:outError];
     if (!encrypted)
         return nil;
     
-    return [underlying writeData:encrypted toURL:url atomically:atomically error:outError];
+    NSURL *wroteTo = [underlying writeData:encrypted toURL:url atomically:atomically error:outError];
+    if (!wroteTo)
+        return nil;
+    
+#if 0 // Not implemented yet
+    NSDictionary *uinfo = @{
+                            OFSFileManagerKeySlotOp: @( OFSFileManagerSlotWrote ),
+                            OFSFileManagerKeySlotURL: wroteTo,
+                            OFSFileManagerKeySlotNumber: @( worker.keySlot )
+                            };
+    [[NSNotificationCenter defaultCenter] postNotificationName:OFSFileManagerKeySlotNotificationName object:self userInfo:uinfo];
+#endif
+    
+    return wroteTo;
 }
 
 - (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
@@ -118,5 +151,235 @@ OB_REQUIRE_ARC
     return [underlying deleteURL:url error:outError];
 }
 
+- (BOOL)deleteFile:(ODAVFileInfo *)fileInfo error:(NSError **)outError;
+{
+    return [underlying deleteFile:fileInfo error:outError];
+}
+
+- (OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
+{
+    if (!file || !file.exists)
+        return nil;
+    
+    id <ODAVAsynchronousOperation> readOp = nil;
+    
+    /* Attempt to use Range requests for longer files */
+    size_t tasteLength = [OFSSegmentDecryptWorker maximumSlotOffset];
+    if (file.size > (off_t)(512 + tasteLength) && [underlying respondsToSelector:@selector(asynchronousReadContentsOfFile:range:)]) {
+        readOp = [underlying asynchronousReadContentsOfFile:file range:[NSString stringWithFormat:@"bytes=0-%zu", tasteLength]];
+    }
+    
+    if (!readOp) {
+        readOp = [underlying asynchronousReadContentsOfURL:file.originalURL];
+    }
+    
+    return [[OFSEncryptingFileManagerTasteOperation alloc] initWithOperation:readOp];
+}
+
+- (NSIndexSet *)unusedKeySlotsOfSet:(NSIndexSet *)slots amongFiles:(NSArray <ODAVFileInfo *> *)files error:(NSError **)outError;
+{
+    NSMutableArray <ODAVFileInfo *> *byAge = [files mutableCopy];
+
+    [byAge sortUsingComparator:^(id a, id b){
+        NSDate *aDate = ((ODAVFileInfo *)a).lastModifiedDate;
+        NSDate *bDate = ((ODAVFileInfo *)b).lastModifiedDate;
+        
+        if (aDate && bDate)
+            return [aDate compare:bDate];
+        else if (!aDate && !bDate)
+            return NSOrderedSame;
+        else if (!aDate)
+            return NSOrderedAscending;
+        else
+            return NSOrderedDescending;
+    }];
+
+    NSMutableIndexSet *unusedSlots = [slots mutableCopy];
+    NSOperationQueue *tasteq = [[NSOperationQueue alloc] init];
+    // tasteq.maxConcurrentOperationCount = 3; ?
+    tasteq.name = NSStringFromSelector(_cmd);
+    
+    /* Taste the files, oldest-first */
+    while (unusedSlots.count && byAge.count) {
+        /* TODO: Arrange to have multiple tastes in flight; they're very small so the delay is probably mostly roundtrip delay not transfer delay. However, don't start piling them on until the first one has come back: in the common case, there'll be one slot, the oldest file will be using it, we'll go to 0 immediately, and we should avoid tasting other files. In any case, we should cancel any enqueued requests once we hit 0. */
+        
+        ODAVFileInfo *finfo = [byAge objectAtIndex:0];
+        [byAge removeObjectAtIndex:0];
+        OFSEncryptingFileManagerTasteOperation *op = [self asynchronouslyTasteKeySlot:finfo];
+        [tasteq addOperation:op];
+        [op waitUntilFinished];
+        
+        NSError *error = op.error;
+        NSError *suberror;
+        if (error) {
+            /* Need to decide whether this error indicates a garbage file (which we can safely ignore) or a recoverable read error (which we should not ignore) */
+            NSString *domain = error.domain;
+            if ([domain isEqualToString:OFSErrorDomain]) {
+                NSInteger code = error.code;
+                if (code == OFSNoSuchFile) {
+                    /* We had a successful HTTP transaction which told us that the file doesn't exist. We can continue on: either someone deleted the file out from under us, or PROPFIND returned a file that doesn't actually exist. */
+                    continue;
+                }
+                if (code == OFSEncryptionBadFormat) {
+                    /* Garbled file, or file that isn't even encrypted. In neither case does it reference a key slot. */
+                    continue;
+                }
+            }
+            if ((suberror = [error underlyingErrorWithDomain:OFSDAVHTTPErrorDomain]) != nil) {
+                NSInteger code = suberror.code;
+                if (code == OFS_HTTP_NOT_FOUND || code == OFS_HTTP_GONE) {
+                    continue;
+                }
+            }
+            
+            // Failure!
+            if (outError)
+                *outError = error;
+            return nil;
+        } else {
+            [unusedSlots removeIndex:op.keySlot];
+        }
+    }
+    
+    return unusedSlots;
+}
+
 @end
+
+@implementation OFSEncryptingFileManagerTasteOperation
+{
+    id <NSObject,ODAVAsynchronousOperation> _readerOp;
+    NSError *_storedError;
+    enum operationState : sig_atomic_t {
+        operationState_unstarted,
+        operationState_running,
+        operationState_finished
+    } _state;
+    int _storedKeySlot;
+}
+
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)theKey
+{
+    if ([theKey isEqualToString:@"executing"] || [theKey isEqualToString:@"finished"])
+        return NO;
+    
+    /* It doesn't seem like we should be called with these values, since the property is named w/o the "is"... but we are. Apparently NSOperationQueue observes the key "isExecuting", not "executing". */
+    if ([theKey isEqualToString:@"isExecuting"] || [theKey isEqualToString:@"isFinished"])
+        return NO;
+    
+    return [super automaticallyNotifiesObserversForKey:theKey];
+}
+
+- (instancetype)initWithOperation:(id <ODAVAsynchronousOperation>)op
+{
+    if (!(self = [super init])) {
+        return nil;
+    }
+    
+    OBASSERT([op conformsToProtocol:@protocol(ODAVAsynchronousOperation)]);
+    _readerOp = op;
+    _state = operationState_unstarted;
+    _storedKeySlot = 0;
+    
+    return self;
+}
+
+@synthesize error = _storedError;
+@synthesize keySlot = _storedKeySlot;
+
+- (void)start;
+{
+    ODAVOperation *reader;
+    
+    [self willChangeValueForKey:@"executing"];
+    [self willChangeValueForKey:@"isExecuting"];
+    if (self.cancelled) {
+        _state = operationState_finished;
+        [_readerOp cancel];
+        _readerOp = nil;
+        reader = nil;
+    } else {
+        _state = operationState_running;
+        reader = _readerOp;
+    }
+    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:@"executing"];
+    
+    if (!reader)
+        return;
+
+    reader.didFinish = ^(id <ODAVAsynchronousOperation> op, NSError *errorOrNil){
+        OBINVARIANT(op == _readerOp);
+        OBPRECONDITION(_state == operationState_running);
+        _readerOp = nil;
+        
+        /* Validate the range response */
+        if (!errorOrNil && [op respondsToSelector:@selector(statusCode)]) {
+            ODAVOperation *davOp = (ODAVOperation *)op;
+            NSInteger statusCode = [davOp statusCode];
+            if (statusCode == ODAV_HTTP_OK /* 200 */) {
+                // OK
+            } else if (statusCode == ODAV_HTTP_PARTIAL_CONTENT /* 206 */) {
+                NSString *header = [davOp valueForResponseHeader:@"Content-Range"];
+                unsigned long long firstByte, lastByte;
+                if (ODAVParseContentRangeBytes(header, &firstByte, &lastByte, NULL)) {
+                    if (firstByte != 0 || lastByte < firstByte || lastByte+1 != [davOp.resultData length]) {
+                        errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": header }];
+                    }
+                } else {
+                    errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": (header?header:@"(missing)") }];
+                }
+            } else {
+                errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"statusCode": @(statusCode) }];
+            }
+        }
+        
+        if (errorOrNil) {
+            _storedError = errorOrNil;
+        } else {
+            NSError *error = nil;
+            int slotnumber = [OFSSegmentDecryptWorker slotForData:op.resultData error:&error];
+            if (slotnumber < 1) {
+                _storedError = error;
+            } else {
+                _storedKeySlot = slotnumber;
+            }
+        }
+        [self willChangeValueForKey:@"executing"];
+        [self willChangeValueForKey:@"finished"];
+        [self willChangeValueForKey:@"isExecuting"];
+        [self willChangeValueForKey:@"isFinished"];
+        _state = operationState_finished;
+        [self didChangeValueForKey:@"isFinished"];
+        [self didChangeValueForKey:@"isExecuting"];
+        [self didChangeValueForKey:@"finished"];
+        [self didChangeValueForKey:@"executing"];
+    };
+
+    [reader startWithCallbackQueue:nil];
+}
+
+- (void)cancel;
+{
+    [_readerOp cancel];
+}
+
+- (BOOL)isAsynchronous
+{
+    return YES;
+}
+
+- (BOOL)isExecuting
+{
+    return ( _state == operationState_running );
+}
+
+- (BOOL)isFinished
+{
+    return ( _state == operationState_finished );
+}
+@end
+
+
+
 

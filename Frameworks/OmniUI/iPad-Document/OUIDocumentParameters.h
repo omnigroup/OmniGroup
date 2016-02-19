@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,10 +20,11 @@
 #define kOUIDocumentPickerItemMetadataViewBackgroundColor ((OAWhiteAlpha){1.0, 0.9})
 #define kOUIDocumentPickerItemMetadataViewEditingBackgroundColor ((OAWhiteAlpha){1.0, 1.0})
 #define kOUIDocumentPickerItemViewNameToPreviewPadding (7.0)
-#define kOUIDocumentPickerItemSmallViewNameToPreviewPadding (2.0)
+#define kOUIDocumentPickerItemSmallViewNameToPreviewPadding (5.0)
 #define kOUIDocumentPickerItemViewNameToDatePadding (0.0)
-#define kOUIDocumentPickerItemViewNameToTopPaddingSmallSize (1.0)
+#define kOUIDocumentPickerItemViewNameToTopPaddingSmallSize (2.0)
 #define kOUIDocumentPickerItemViewNameToTopPaddingLargeSize (4.0)
+#define kOUIDocumentPickerItemViewTopToBottomPaddingRatio (1)
 #define kOUIDocumentPickerItemViewLabelShadowColor ((OAWhiteAlpha){0.0, 0.66})
 #define kOUIDocumentPickerItemViewProgressTintColor ((OALinearRGBA){0.5, 0.5, 0.85, 1.0})
 
@@ -45,7 +46,7 @@
 #define kOUIDocumentPickerItemNormalSize (220.0)
 #define kOUIDocumentPickerItemSmallSize (104.0)
 
-#define kOUIDocumentPickerMetaDataNormalSizeRatio (4.0)  // metadata view will be 1/4 the total height of the item view
+#define kOUIDocumentPickerMetaDataNormalSizeRatio (4.2)  // metadata view will be a bit less than 1/4 the total height of the item view
 #define kOUIDocumentPickerMetaDataSmallSizeRatio (3.5)
 
 // Animations
