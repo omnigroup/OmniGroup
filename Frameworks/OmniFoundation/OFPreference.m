@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1023,15 +1023,16 @@ NSString * const OFChangeConfigurationValueURLPath = @"/change-configuration-val
 
 @interface OFConfigurationValue ()
 
-- initWithKey:(NSString *)key objcType:(const char *)objcType pointer:(void *)pointer defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
-
-@property(nonatomic,readonly) void *pointer;
+@property(nonatomic,readonly) BOOL integral;
 
 - (void)update;
 
 @end
 
 @implementation OFConfigurationValue
+{
+    NSMutableArray <OFConfigurationValueObserver> *_observers;
+}
 
 + (void)initialize;
 {
@@ -1128,18 +1129,20 @@ static NSString *ConfigurationValuesURLScheme = nil;
     }];
 }
 
-- initWithKey:(NSString *)key objcType:(const char *)objcType pointer:(void *)pointer defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
+- initWithKey:(NSString *)key integral:(BOOL)integral defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
 {
     OBPRECONDITION(defaultValue >= minimumValue);
     OBPRECONDITION(defaultValue <= maximumValue);
-    
+    OBASSERT_IF(integral, defaultValue == floor(defaultValue));
+    OBASSERT_IF(integral, minimumValue == floor(minimumValue));
+    OBASSERT_IF(integral, maximumValue == floor(maximumValue));
+
     if (!(self = [super init])) {
         return nil;
     }
     
     _key = [key copy];
-    _objcType = objcType;
-    _pointer = pointer;
+    _integral = integral;
     _defaultValue = defaultValue;
     _minimumValue = minimumValue;
     _maximumValue = maximumValue;
@@ -1149,18 +1152,21 @@ static NSString *ConfigurationValuesURLScheme = nil;
     return self;
 }
 
-- (double)currentValue;
+- (void)dealloc;
 {
-    if (strcmp(_objcType, @encode(NSInteger)) == 0) {
-        NSInteger *levelPointer = _pointer;
-        return *levelPointer;
-    }
-    if (strcmp(_objcType, @encode(NSTimeInterval)) == 0) {
-        NSTimeInterval *intervalPointer = (NSTimeInterval *)_pointer;
-        return *intervalPointer;
-    }
-    NSLog(@"%@: Unknown encoding '%s'", NSStringFromClass([self class]), _objcType);
-    return 0;
+    [_key release];
+    [_observers release];
+    [super dealloc];
+}
+
+- (void)addValueObserver:(OFConfigurationValueObserver)observer;
+{
+    if (!_observers)
+        _observers = [[NSMutableArray alloc] init];
+
+    observer = [observer copy];
+    [_observers addObject:observer];
+    [observer release];
 }
 
 - (BOOL)hasNonDefaultValue;
@@ -1175,20 +1181,18 @@ static NSString *ConfigurationValuesURLScheme = nil;
 
 - (void)setValueFromString:(NSString *)stringValue;
 {
-    if (strcmp(_objcType, @encode(NSInteger)) == 0) {
+    if (_integral) {
         NSInteger level = [stringValue integerValue];
         [[NSUserDefaults standardUserDefaults] setObject:@(level) forKey:_key];
-    } else if (strcmp(_objcType, @encode(NSTimeInterval)) == 0) {
-        NSTimeInterval value = [stringValue doubleValue];
-        [[NSUserDefaults standardUserDefaults] setObject:@(value) forKey:_key];
     } else {
-        NSLog(@"%s: Unknown encoding '%s'", __func__, _objcType);
+        double value = [stringValue doubleValue];
+        [[NSUserDefaults standardUserDefaults] setObject:@(value) forKey:_key];
     }
 }
 
 - (void)setValueFromDouble:(double)value;
 {
-    // -update does the clamping and snapping to integer values when needed.
+    // -update does the clamping and snapping to integral values when needed.
     [[NSUserDefaults standardUserDefaults] setObject:@(value) forKey:_key];
 }
 
@@ -1196,53 +1200,44 @@ static NSString *ConfigurationValuesURLScheme = nil;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (strcmp(_objcType, @encode(NSInteger)) == 0) {
-        NSInteger level = _defaultValue;
+    double level = _defaultValue;
+    if (_integral) {
         const char *env = getenv([_key UTF8String]); /* easier for command line tools */
         if (env)
             level = strtoul(env, NULL, 0);
         else if ([[NSUserDefaults standardUserDefaults] objectForKey:_key])
             level = [[NSUserDefaults standardUserDefaults] integerForKey:_key];
-        
-        level = CLAMP(level, _minimumValue, _maximumValue);
-        
-        // Log if the value is getting set to something non-zero the first time around, or if its changing the second time around.
-        NSInteger *levelPointer = (NSInteger *)_pointer;
-        if (*levelPointer != level) {
-            if ((*levelPointer == _defaultValue && level != _defaultValue) || (*levelPointer != _defaultValue && level != *levelPointer))
-                NSLog(@"DEBUG LEVEL %@ = %ld", _key, level);
-            [self willChangeValueForKey:OFValidateKeyPath(self, currentValue)];
-            *levelPointer = level;
-            [self didChangeValueForKey:OFValidateKeyPath(self, currentValue)];
-        }
-    } else if (strcmp(_objcType, @encode(NSTimeInterval)) == 0) {
-        NSTimeInterval value = _defaultValue;
-        
+    } else {
         const char *env = getenv([_key UTF8String]); /* easier for command line tools */
         if (env)
-            value = strtod(env, NULL);
+            level = strtod(env, NULL);
         else if ([[NSUserDefaults standardUserDefaults] objectForKey:_key])
-            value = [[NSUserDefaults standardUserDefaults] doubleForKey:_key];
-        
-        value = CLAMP(value, _minimumValue, _maximumValue);
-        
-        // Log if the value is getting set to something non-zero the first time around, or if its changing the second time around.
-        NSTimeInterval *intervalPointer = (NSTimeInterval *)_pointer;
-        if (*intervalPointer != value) {
-            if ((*intervalPointer == _defaultValue && value != _defaultValue) || (*intervalPointer != _defaultValue && value != *intervalPointer))
-                NSLog(@"TIME INTERVAL %@ = %lf", _key, value);
-            [self willChangeValueForKey:OFValidateKeyPath(self, currentValue)];
-            *intervalPointer = value;
-            [self didChangeValueForKey:OFValidateKeyPath(self, currentValue)];
+            level = [[NSUserDefaults standardUserDefaults] doubleForKey:_key];
+    }
+
+    level = CLAMP(level, _minimumValue, _maximumValue);
+
+    // Log if the value is getting set to something non-zero the first time around, or if its changing the second time around.
+    if (_currentValue != level) {
+        if ((_currentValue == _defaultValue && level != _defaultValue) || (_currentValue != _defaultValue && level != _currentValue))
+            NSLog(@"CONFIGURATION %@ = %g", _key, level);
+
+        [self willChangeValueForKey:OFValidateKeyPath(self, currentValue)];
+        _currentValue = level;
+        [self didChangeValueForKey:OFValidateKeyPath(self, currentValue)];
+
+        // Fire block based observers too
+        NSArray <OFConfigurationValueObserver> *observers = [_observers copy];
+        for (OFConfigurationValueObserver observer in observers) {
+            observer(self);
         }
-    } else {
-        NSLog(@"%@: Unknown encoding '%s'", NSStringFromClass([self class]), _objcType);
+        [observers release];
     }
 }
 
 - (NSString *)debugDescription;
 {
-    return [NSString stringWithFormat:@"<%@:%p %@ '%s' at %p>", NSStringFromClass([self class]), self, _key, _objcType, _pointer];
+    return [NSString stringWithFormat:@"<%@:%p %@ integral:%d>", NSStringFromClass([self class]), self, _key, _integral];
 }
 
 @end
@@ -1334,7 +1329,15 @@ void _OFRegisterIntegerConfigurationValue(NSInteger *outLevel, NSString *name, d
     OBPRECONDITION([NSThread isMainThread]);
     
     @autoreleasepool {
-        OFConfigurationValue *configurationValue = [[OFConfigurationValue alloc] initWithKey:name objcType:@encode(typeof(*outLevel)) pointer:outLevel defaultValue:defaultValue minimumValue:minimumValue maximumValue:maximumValue];
+        OBASSERT(ConfigurationValueRegistrations[name] == nil);
+
+        OFConfigurationValue *configurationValue = [[OFConfigurationValue alloc] initWithKey:name integral:YES defaultValue:defaultValue minimumValue:minimumValue maximumValue:maximumValue];
+
+        [configurationValue addValueObserver:^(OFConfigurationValue *value){
+            *outLevel = (NSInteger)value.currentValue;
+        }];
+        *outLevel = (NSInteger)configurationValue.currentValue; // Initial value
+
         ConfigurationValueRegistrations[name] = configurationValue;
         [configurationValue release];
     }
@@ -1344,10 +1347,15 @@ void _OFRegisterTimeIntervalConfigurationValue(NSTimeInterval *outInterval, NSSt
     OBPRECONDITION([NSThread isMainThread]);
     
     @autoreleasepool {
-        OFConfigurationValue *configurationValue = [[OFConfigurationValue alloc] initWithKey:name objcType:@encode(typeof(*outInterval)) pointer:outInterval defaultValue:defaultValue minimumValue:minimumValue maximumValue:maximumValue];
+        OBASSERT(ConfigurationValueRegistrations[name] == nil);
+
+        OFConfigurationValue *configurationValue = [[OFConfigurationValue alloc] initWithKey:name integral:NO defaultValue:defaultValue minimumValue:minimumValue maximumValue:maximumValue];
+        [configurationValue addValueObserver:^(OFConfigurationValue *value){
+            *outInterval = value.currentValue;
+        }];
+        *outInterval = configurationValue.currentValue; // Initial value
+
         ConfigurationValueRegistrations[name] = configurationValue;
         [configurationValue release];
     }
 }
-
-

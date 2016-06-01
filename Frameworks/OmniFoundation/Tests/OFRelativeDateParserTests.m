@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,8 @@ RCS_ID("$Id$")
 }
 //+ (NSDate *)_dateFromYear:(int)year month:(int)month day:(int)day hour:(int)hour minute:(int)minute second:(int)second;
 @end
+
+@implementation OFRelativeDateParserTests
 
 static NSDate *_dateFromYear(NSInteger year, NSInteger month, NSInteger day, NSInteger hour, NSInteger minute, NSInteger second, NSCalendar *cal)
 {
@@ -65,7 +67,7 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     
     NSString *dateFormat = shortFormat;
 
-    OFCreateRegularExpression(formatseparatorRegex, @"^\\w+([\\./-])");
+    OFCreateRegularExpression(formatseparatorRegex, @"^\\w+([\\./-])"); // Backslash, period, forward slash, hyphen
 //    OFRegularExpressionMatch *formattedDateMatch = [formatseparatorRegex matchInString:dateFormat];
 //    NSString *formatStringseparator = nil;
 //    if (formattedDateMatch) {
@@ -197,8 +199,6 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
 }
 
 
-@implementation OFRelativeDateParserTests
-
 - (void)setUp;
 {
     const char *env = getenv("DataGeneratorSeed");
@@ -234,6 +234,17 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     [super tearDown];
 }
 
+static NSString *_stringForDate(NSDate *date)
+{
+    static NSDateFormatter *dateFormatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.dateFormat = @"yyyy-MM-dd HH:mm zzz";
+    });
+    return [dateFormatter stringFromDate:date];
+}
+
 #define parseDate(string, expectedDate, baseDate, dateFormat, timeFormat) \
 do { \
     NSDate *result = nil; \
@@ -243,7 +254,7 @@ do { \
         [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate calendar:calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil]; \
     } \
     if (expectedDate && ![result isEqualTo:expectedDate]) \
-        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], result, expectedDate, dateFormat, timeFormat); \
+        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@ dateFormat:%@, timeFormat:%@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], _stringForDate(result), _stringForDate(expectedDate), dateFormat, timeFormat); \
     XCTAssertEqualObjects(result, expectedDate); \
 } while(0)
 //NSLog( @"string: %@, expected: %@, result: %@", string, expectedDate, result );
@@ -299,13 +310,8 @@ do { \
 - (void)testFriNoon;
 {
     //test setting the date with year-month-day even when the date format is d/m/y
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    // skip we have crazy canadian dates, this combo is just messed up
 	    if (![dateFormat containsString:@"MMM"]) {
 		NSString *string = @"fri noon";
@@ -334,13 +340,8 @@ do { \
 - (void)testSweden;
 {
     //test setting the date with year-month-day even when the date format is d/m/y
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    // skip we have crazy canadian dates, this combo is just messed up
 	    if (![dateFormat containsString:@"MMM"]) {
 		NSString *string = @"1997-12-29";
@@ -370,9 +371,7 @@ do { \
     baseDate = _dateFromYear(2011, 7, 15, 0, 0, 0, calendar);
     expectedDate = _dateFromYear(2012, 12, 29, 0, 0, 0, calendar);
     parseDate( @"29 dec. 2012", expectedDate, baseDate, nil, nil ); 
-
-    NSString *dateString = [NSString stringWithFormat:@"29 d%Cc. 2012", (unichar)0xE9];
-    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+    parseDate( @"29 déc. 2012", expectedDate, baseDate, nil, nil );
 
     [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
 }
@@ -399,9 +398,7 @@ do { \
     baseDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
     expectedDate = _dateFromYear(2011, 7, 6, 0, 0, 0, calendar);
     parseDate( @"miercoles", expectedDate, baseDate, nil, nil ); 
-
-    NSString *dateString = [NSString stringWithFormat:@"mi%Crcoles", (unichar)0xE9];
-    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+    parseDate( @"miércoles", expectedDate, baseDate, nil, nil );
     
 
     [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
@@ -419,17 +416,14 @@ do { \
     
     NSDate *baseDate = nil;
     NSDate *expectedDate = nil;
-    NSString *dateString = nil;
-    
+
     baseDate = _dateFromYear(2011, 6, 29, 0, 0, 0, calendar);
     expectedDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
-    dateString = [NSString stringWithFormat:@"marted%C", (unichar)0xEC];
-    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+    parseDate( @"martedì", expectedDate, baseDate, nil, nil );
 
     baseDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
     expectedDate = _dateFromYear(2011, 7, 10, 0, 0, 0, calendar);
-    dateString = @"domenica";
-    parseDate( dateString, expectedDate, baseDate, nil, nil ); 
+    parseDate( @"domenica", expectedDate, baseDate, nil, nil );
 
     [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
 }
@@ -568,13 +562,8 @@ do { \
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     NSDate *baseDate = _dateFromYear(2007, 1, 1, 1, 1, 0, calendar);
     NSString *string = @"";
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    parseDate( string, nil, baseDate, dateFormat, timeFormat );   
 	}
     }
@@ -660,13 +649,8 @@ do { \
 - (void)testBugs;
 {
     // test with all different formats
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    // <bug://bugs/37222> ("4 may" is interpreted at 4 months)
 	    NSString *string = @"4 May";
 	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
@@ -711,16 +695,11 @@ do { \
     }
 }
 
-- (void)testSeperatedDates;
+- (void)testSeparatedDates;
 {
     // test with all different formats
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    // 23th of may, 1979
 	    NSString *string = @"23 May 1979";
 	    NSDate *baseDate = _dateFromYear(1979, 1, 1, 0, 0, 0, calendar);
@@ -769,13 +748,8 @@ do { \
 - (void)testAt;
 {
     // test with all different formats
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    NSString *string = @"may 4 1997 at 3:07pm";
 	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
 	    NSDate *expectedDate = _dateFromYear(1997, 5, 4, 15, 7, 0, calendar);
@@ -851,13 +825,8 @@ do { \
 - (void)testTwentyFourHourTime;
 {
     // test with all different formats
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    // <bug://bugs/37104> (Fix 24hour time support in OFRelativeDateParser)
 	    NSString *string = @"19:59";
 	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
@@ -870,12 +839,8 @@ do { \
 - (void)testRandomDatesAndRoundTrips;
 {
     // test with all different formats
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    XCTAssertTrue(_testRandomDate(randomState, dateFormat, dateFormat, dateFormat, timeFormat));
 	}
     }
@@ -1040,13 +1005,8 @@ do { \
 
 - (void)testTimes;
 {
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
 	    parseDate( @"1d@5:45:1", 
 		      _dateFromYear(2001, 1, 2, 5, 45, 1, calendar),
 		      _dateFromYear(2001, 1, 1, 1, 1, 1, calendar),  dateFormat, timeFormat  );
@@ -1065,18 +1025,13 @@ do { \
 
 - (void)testCodes;
 {
-    NSUInteger dateIndex = [dateFormats count];
-    while (dateIndex--) {
-	NSUInteger timeIndex = [timeFormats count];
-	while (timeIndex--) {
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
             @autoreleasepool {
-            
-    	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-    	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];    
-    	    parseDate( @"-1h2h3h4h+1h2h3h4h", 
+    	    parseDate( @"-1h2h3h4h+1h2h3h4h",
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-    	    parseDate( @"0h", 
+    	    parseDate( @"0h",
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
     	    parseDate( @"1h", 
@@ -1192,6 +1147,221 @@ do { \
         XCTAssertEqual(components.hour, expectedHour);
         XCTAssertEqual(components.minute, 28L);
     }
+}
+
+- (void)_testDateRelativeToAbsoluteDateWithDateFormat:(NSString *)dateFormat timeFormat:(NSString *)timeFormat;
+{
+    @autoreleasepool {
+        NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+
+        // Try parsing with a date and time format
+        NSDate *expectedDate = _dateFromYear(2001, 4, 1, 0, 0, 0, calendar);
+
+        parseDate(@"2001-07-01 -3m", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"July 1, 2001 -3m", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"July 1, 2001 3pm -3m", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2001, 6, 30, 0, 0, 0, calendar);
+        parseDate(@"2001-07-01 -1d", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"July 1, 2001 -1d", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"July 1, 2001 15:31 -1d", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"July 1, 2001 3pm -1d", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2001, 6, 30, 15, 31, 0, calendar);
+        parseDate(@"2001-07-01 15:31 -24h", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2001, 7, 1, 14, 31, 0, calendar);
+        parseDate(@"2001-07-01 15:31 -1h", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2001, 6, 30, 15, 0, 0, calendar);
+        parseDate(@"2001-07-01 3pm -24h", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2001, 7, 1, 14, 0, 0, calendar);
+        parseDate(@"2001-07-01 3pm -1h", expectedDate, baseDate, dateFormat, timeFormat);
+
+        expectedDate = _dateFromYear(2016, 4, 1, 0, 0, 0, calendar);
+        parseDate(@"2016-07-01 -3m", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"20160701 -3m", expectedDate, baseDate, dateFormat, timeFormat);
+        parseDate(@"2016  07    01 -3m", expectedDate, baseDate, dateFormat, timeFormat);
+    }
+}
+
+- (void)testDateRelativeToAbsoluteDate;
+{
+    [self _testDateRelativeToAbsoluteDateWithDateFormat:nil timeFormat:nil];
+    [self _testDateRelativeToAbsoluteDateWithDateFormat:@"yyyy-MM-dd" timeFormat:@"HH:mm"];
+    [self _testDateRelativeToAbsoluteDateWithDateFormat:@"M/d/yy" timeFormat:@"HH:mm"];
+    [self _testDateRelativeToAbsoluteDateWithDateFormat:@"MMMM d, y" timeFormat:@"h:mm a"];
+    [self _testDateRelativeToAbsoluteDateWithDateFormat:@"MMMM d, yy" timeFormat:@"h:mm a"];
+}
+
+- (void)testMeridians;
+{
+    NSString *timeFormat = @"HH:mm";
+    NSString *dateFormat = @"yyyy-MM-dd";
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    parseDate(@"12am", expectedDate, baseDate, dateFormat, timeFormat);
+    parseDate(@"3am -3h", expectedDate, baseDate, dateFormat, timeFormat);
+    parseDate(@"3pm -15h", expectedDate, baseDate, dateFormat, timeFormat);
+    expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
+    parseDate(@"12pm", expectedDate, baseDate, dateFormat, timeFormat);
+    parseDate(@"3pm -3h", expectedDate, baseDate, dateFormat, timeFormat);
+    parseDate(@"3am +9h", expectedDate, baseDate, dateFormat, timeFormat);
+}
+
+- (void)testNonIsoDashDate;
+{
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2014, 5, 6, 0, 0, 0, calendar);
+    parseDate(@"05-06-14", expectedDate, baseDate, @"MM-dd-yy", @"HH:mm");
+    parseDate(@"2014-05-06", expectedDate, baseDate, @"MM-dd-yy", @"HH:mm");
+
+    expectedDate = _dateFromYear(2040, 10, 20, 0, 0, 0, calendar);
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
+            parseDate(@"40-20-10", expectedDate, baseDate, dateFormat, timeFormat);
+            parseDate(@"40-10-20", expectedDate, baseDate, dateFormat, timeFormat);
+            parseDate(@"20-40-10", expectedDate, baseDate, dateFormat, timeFormat);
+            parseDate(@"20-10-40", expectedDate, baseDate, dateFormat, timeFormat);
+            parseDate(@"10-20-40", expectedDate, baseDate, dateFormat, timeFormat);
+            parseDate(@"10-40-20", expectedDate, baseDate, dateFormat, timeFormat);
+        }
+    }
+}
+
+- (void)testShortNonIsoHyphenDates;
+{
+    NSDate *baseDate = _dateFromYear(2014, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2014, 1, 5, 0, 0, 0, calendar);
+    parseDate(@"5-1", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+    parseDate(@"1-5", expectedDate, baseDate, @"MM-dd-yy", @"HH:mm");
+}
+
+- (void)testShortNonIsoEnDashDates;
+{
+    NSDate *baseDate = _dateFromYear(2014, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2014, 1, 5, 0, 0, 0, calendar);
+    parseDate(@"5–1", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm"); // en-dash
+}
+
+- (void)testCentury;
+{
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *thisCentury = _dateFromYear(2040, 10, 20, 0, 0, 0, calendar);
+    NSDate *firstCentury = _dateFromYear(40, 10, 20, 0, 0, 0, calendar);
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
+            parseDate(@"10-20-2040", thisCentury, baseDate, dateFormat, timeFormat);
+            parseDate(@"10-20-40", thisCentury, baseDate, dateFormat, timeFormat);
+            if ([dateFormat containsString:@"yyyy"]) {
+                parseDate(@"10-20-0040", firstCentury, baseDate, dateFormat, timeFormat);
+            }
+        }
+    }
+
+    NSDate *lastCentury = _dateFromYear(1999, 10, 20, 0, 0, 0, calendar);
+    thisCentury = _dateFromYear(2099, 10, 20, 0, 0, 0, calendar);
+    firstCentury = _dateFromYear(99, 10, 20, 0, 0, 0, calendar);
+    for (NSString *dateFormat in dateFormats) {
+	for (NSString *timeFormat in timeFormats) {
+            parseDate(@"10-20-99", lastCentury, baseDate, dateFormat, timeFormat);
+            parseDate(@"10-20-1999", lastCentury, baseDate, dateFormat, timeFormat);
+            parseDate(@"10-20-2099", thisCentury, baseDate, dateFormat, timeFormat);
+            if ([dateFormat containsString:@"yyyy"]) {
+                parseDate(@"10-20-0099", firstCentury, baseDate, dateFormat, timeFormat);
+            }
+        }
+    }
+}
+
+- (void)testDefaultTime;
+{
+    NSDateComponents *defaultTimeComponents = [[NSDateComponents alloc] init];
+    defaultTimeComponents.hour = 17;
+    defaultTimeComponents.minute = 0;
+    defaultTimeComponents.second = 0;
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2016, 4, 20, 17, 0, 0, calendar);
+    NSDate *result = nil;
+    NSString *string = @"4.20.16";
+    [[OFRelativeDateParser sharedParser] getDateValue:&result forString:string fromStartingDate:baseDate useEndOfDuration:NO defaultTimeDateComponents:defaultTimeComponents calendar:calendar withCustomFormat:@"MM/dd/yy" error:NULL];
+    if (expectedDate && ![result isEqualTo:expectedDate])
+        NSLog( @"FAILURE-> String: %@, locale:%@, result:%@, expected: %@", string, [[[OFRelativeDateParser sharedParser] locale] localeIdentifier], _stringForDate(result), _stringForDate(expectedDate));
+    XCTAssertEqualObjects(result, expectedDate);
+}
+
+- (void)testCombinedDateWithoutYear;
+{
+    NSDate *baseDate = _dateFromYear(2016, 4, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2016, 5, 12, 0, 0, 0, calendar);
+    parseDate(@"May 15 -3d", expectedDate, baseDate, nil, nil);
+    parseDate(@"5/15 -3d", expectedDate, baseDate, nil, nil);
+    expectedDate = _dateFromYear(2017, 1, 12, 0, 0, 0, calendar);
+    parseDate(@"Jan 15 -3d", expectedDate, baseDate, nil, nil);
+    parseDate(@"1/15 -3d", expectedDate, baseDate, nil, nil);
+    expectedDate = _dateFromYear(2016, 4, 12, 0, 0, 0, calendar);
+    parseDate(@"April 15 -3d", expectedDate, baseDate, nil, nil);
+    parseDate(@"4/15 -3d", expectedDate, baseDate, nil, nil);
+}
+
+- (void)testDateWithoutYearWithTime;
+{
+    NSDate *baseDate = _dateFromYear(2016, 4, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2016, 5, 15, 20, 01, 0, calendar);
+    parseDate(@"May 15 20:01", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2016, 11, 2, 15, 0, 0, calendar);
+    parseDate(@"11.2 15:", expectedDate, baseDate, nil, nil);
+    parseDate(@"11.2 15:00", expectedDate, baseDate, nil, nil);
+    parseDate(@"11.2. 3pm", expectedDate, baseDate, nil, nil);
+    parseDate(@"11.2 3:00 pm", expectedDate, baseDate, nil, nil);
+    parseDate(@"11.2 3pm", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2017, 2, 11, 15, 0, 0, calendar);
+    parseDate(@"11.2 15:", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+    parseDate(@"11.2 15:00", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+    parseDate(@"11.2. 3pm", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+    parseDate(@"11.2 3:00 pm", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+    parseDate(@"11.2 3pm", expectedDate, baseDate, @"dd-MM-yy", @"HH:mm");
+}
+
+- (void)testCombinedDateWithoutYearWithTime;
+{
+    NSDate *baseDate = _dateFromYear(2016, 4, 1, 0, 0, 0, calendar);
+
+    NSDate *expectedDate = _dateFromYear(2016, 5, 12, 21, 01, 0, calendar);
+    parseDate(@"May 15 20:01 -71h", expectedDate, baseDate, nil, nil);
+    parseDate(@"5/15 20:01 -71h", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2016, 4, 12, 17, 01, 02, calendar);
+    parseDate(@"April 15 17:01:02 -72h", expectedDate, baseDate, nil, nil);
+    parseDate(@"4/15 17:01:02 -72h", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2016, 4, 12, 17, 0, 0, calendar);
+    parseDate(@"April 15 5pm -72h", expectedDate, baseDate, nil, nil);
+    parseDate(@"4/15 5pm -72h", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2016, 4, 12, 0, 0, 0, calendar);
+    parseDate(@"April 15 5pm -3d", expectedDate, baseDate, nil, nil);
+    parseDate(@"4/15 5pm -3d", expectedDate, baseDate, nil, nil);
+}
+
+- (void)testGermanLongFormatDate;
+{
+    NSLocale *savedLocale = [[OFRelativeDateParser sharedParser] locale];
+
+    NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"de"];
+    [[OFRelativeDateParser sharedParser] setLocale:locale];
+
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setLocale:locale];
+
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2014, 8, 4, 0, 0, 0, calendar);
+    parseDate(@"4. August 2014", expectedDate, baseDate, nil, nil);
+
+    [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
 }
 
 @end

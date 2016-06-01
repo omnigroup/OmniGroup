@@ -13,6 +13,7 @@
 @interface OSUPartialItem : NSObject <NSXMLParserDelegate>
 
 @property (nonatomic, strong) NSString *releaseNotesURLString;
+@property (nonatomic, strong) NSString *publishDateString;
 
 -(instancetype)initWithXMLData:(NSData *)data;
 

@@ -1,16 +1,21 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFileStore/OFSEncryption-Internal.h>
+#import "OFSEncryption-Internal.h"
 
 #import <OmniFoundation/NSRange-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
 #import <OmniFileStore/Errors.h>
+
+#import <Security/Security.h>
+#import <CommonCrypto/CommonCrypto.h>
+#import <OmniBase/OmniBase.h>
+#import <dispatch/dispatch.h>
 
 RCS_ID("$Id$");
 
@@ -25,7 +30,8 @@ static BOOL resetCryptor(CCCryptorRef cryptor, const uint8_t segmentIV[kCCBlockS
 dispatch_once_t testRADARsOnce;
 BOOL canResetCTRIV;
 
-const char magic_ver0_6[FMT_V0_6_MAGIC_LEN] = "OmniFileStore encryption\x00STRAWMAN-6";
+const char magic_ver0_6[FMT_V0_6_MAGIC_LEN] = "OmniFileStore encryption\x00STRAWMAN-6";  // STRAWMAN-6 is the same as version 1.0.
+const char magic_ver1_0[FMT_V1_0_MAGIC_LEN] = "OmniFileEncryption\x00\x00";  // Our published version. We can bump that NUL if we want to.
 
 #pragma mark HMAC
 

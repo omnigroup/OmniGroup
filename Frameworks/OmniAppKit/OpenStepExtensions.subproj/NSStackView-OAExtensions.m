@@ -5,11 +5,14 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSStackView-OAExtensions.h"
+#import <OmniAppKit/NSStackView-OAExtensions.h>
 
 #import <Cocoa/Cocoa.h>
 
 RCS_ID("$Id$")
+
+
+NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat _viewSizeForOrientation(NSView *view, NSUserInterfaceLayoutOrientation orientation)
 {
@@ -26,8 +29,8 @@ typedef enum {
 
 
 @interface NSView (OAAnimatedHidingSupport)
-@property NSLayoutConstraint *constraintForOAAnimatedHidingSupport;
-- (NSLayoutConstraint *)prepareToOAAnimateToState:(OAAnimatedHiddenState)targetState orientation:(NSUserInterfaceLayoutOrientation)orientation;
+@property (nullable, nonatomic, retain) NSLayoutConstraint *constraintForOAAnimatedHidingSupport;
+- (nullable NSLayoutConstraint *)prepareToOAAnimateToState:(OAAnimatedHiddenState)targetState orientation:(NSUserInterfaceLayoutOrientation)orientation;
 - (void)cleanupAfterOOAnimatingWithConstraint:(NSLayoutConstraint *)constraint;
 @end
 
@@ -45,21 +48,21 @@ typedef enum {
     [self setSubviews:[NSArray arrayWithObject:subview] areHidden:shouldBeHidden animated:animated];
 }
 
-- (void)setSubviews:(NSArray *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
+- (void)setSubviews:(NSArray <NSView *> *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
 {
     [NSStackView setViews:subviews areHidden:shouldBeHidden animated:animated byCollapsingOrientation:self.orientation completionBlock:^void (void) {
         [self _collapseCompletelyIfAllSubviewsAreHidden];
     }];
 }
 
-- (void)setHiddenSubviews:(NSArray *)hiddenSubviews animated:(BOOL)animated;
+- (void)setHiddenSubviews:(NSArray <NSView *> *)hiddenSubviews animated:(BOOL)animated;
 {
     [NSStackView setHiddenSubviews:hiddenSubviews ofView:self animated:animated byCollapsingOrientation:self.orientation completionBlock:^void (void) {
         [self _collapseCompletelyIfAllSubviewsAreHidden];
     }];
 }
 
-- (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews animated:(BOOL)animated;
+- (void)setUnhiddenSubviews:(NSArray <NSView *> *)unhiddenSubviews animated:(BOOL)animated;
 {
     [NSStackView setUnhiddenSubviews:unhiddenSubviews ofView:self animated:animated byCollapsingOrientation:self.orientation completionBlock:^void (void) {
         [self _collapseCompletelyIfAllSubviewsAreHidden];
@@ -92,14 +95,14 @@ typedef enum {
 
 #pragma mark -- OAAnimatedHidingSupport
 
-+ (void)setViews:(NSArray *)views areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setViews:(nullable NSArray <NSView *> *)views areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 {
     NSArray *viewsToHide = (shouldBeHidden ? views : nil);
     NSArray *viewsToUnhide = (shouldBeHidden ? nil : views);
     [self hideViews:viewsToHide andUnhideViews:viewsToUnhide animated:animated byCollapsingOrientation:orientation completionBlock:completionBlock];
 }
 
-+ (void)setHiddenSubviews:(NSArray *)hiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setHiddenSubviews:(nullable NSArray <NSView *> *)hiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 {
     NSMutableArray *subviewsToHide = [NSMutableArray array];
     NSMutableArray *subviewsToUnhide = [NSMutableArray array];
@@ -120,7 +123,7 @@ typedef enum {
     [self hideViews:subviewsToHide andUnhideViews:subviewsToUnhide animated:animated byCollapsingOrientation:orientation completionBlock:completionBlock];
 }
 
-+ (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setUnhiddenSubviews:(nullable NSArray <NSView *> *)unhiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 {
     NSMutableArray *subviewsToHide = [NSMutableArray array];
     NSMutableArray *subviewsToUnhide = [NSMutableArray array];
@@ -141,7 +144,7 @@ typedef enum {
     [self hideViews:subviewsToHide andUnhideViews:subviewsToUnhide animated:animated byCollapsingOrientation:orientation completionBlock:completionBlock];
 }
 
-+ (void)hideViews:(NSArray *)viewsToHide andUnhideViews:(NSArray *)viewsToUnhide animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)hideViews:(nullable NSArray <NSView *> *)viewsToHide andUnhideViews:(nullable NSArray <NSView *> *)viewsToUnhide animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 {
     NSWindow *window = [[viewsToHide lastObject] window];
     if (window == nil) {
@@ -167,7 +170,7 @@ typedef enum {
         return;
     }
     
-    NSMapTable *viewToTargetSizeMapTable = [NSMapTable strongToWeakObjectsMapTable];
+    NSMapTable *viewToTargetSizeMapTable = [NSMapTable weakToStrongObjectsMapTable];
     NSMutableArray *constraints = [NSMutableArray array];
     
     // We need to lock from before the constraints are setup to after they begin animating because that setup involves looking at any existing constraints to see if they should be left alone, revised, or discarded.
@@ -199,7 +202,7 @@ typedef enum {
         
         [window layoutIfNeeded];
         
-        [NSAnimationContext runAnimationGroup:^(NSAnimationContext * _Nonnull context) {
+        [NSAnimationContext runAnimationGroup:^(NSAnimationContext * context) {
             context.allowsImplicitAnimation = YES; // So the window frame change will animate
             context.duration = 0.15; // Per Bill, we want a slightly-faster-than-default animation (0.15)
             
@@ -240,12 +243,12 @@ typedef enum {
 
 @implementation NSView (OAAnimatedHidingSupport)
 
-- (NSLayoutConstraint *)constraintForOAAnimatedHidingSupport;
+- (nullable NSLayoutConstraint *)constraintForOAAnimatedHidingSupport;
 {
     return objc_getAssociatedObject(self, &OAAnimatedHidingSupportConstraintIdentifier);
 }
 
-- (void)setConstraintForOAAnimatedHidingSupport:(NSLayoutConstraint *)constraint;
+- (void)setConstraintForOAAnimatedHidingSupport:(nullable NSLayoutConstraint *)constraint;
 {
     objc_setAssociatedObject(self, &OAAnimatedHidingSupportConstraintIdentifier, constraint, OBJC_ASSOCIATION_RETAIN);
 }
@@ -264,7 +267,7 @@ typedef enum {
     return (existingConstraint.animator.constant == 0.0 ? OAAnimatedHiddenStateHidden : OAAnimatedHiddenStateUnhidden);
 }
 
-- (NSLayoutConstraint *)prepareToOAAnimateToState:(OAAnimatedHiddenState)targetState orientation:(NSUserInterfaceLayoutOrientation)orientation;
+- (nullable NSLayoutConstraint *)prepareToOAAnimateToState:(OAAnimatedHiddenState)targetState orientation:(NSUserInterfaceLayoutOrientation)orientation;
 {
     if (targetState == self._currentActualOrInProgressOAAnimatedState) {
         return nil;
@@ -306,3 +309,38 @@ typedef enum {
 }
 
 @end
+
+
+@implementation NSStackView (OACrossfadeSupport)
+
+- (void)crossfadeAfterPerformingLayout:(OACrossfadeLayoutBlock)layoutBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+{
+    /*
+     If the new layout results in a change in size, the size change is animated by using temporary size constraints which can conflict with our internal constraints. To handle this possibility, before the animation we temporarily change our visibility priorities to allow the internal views to be dropped if necessary, then after the animation is complete we restore the original visibility priorities.
+     */
+    NSMapTable *visibilityPrioritiesByView = [NSMapTable weakToStrongObjectsMapTable];
+    void (^preAnimationBlock)(void) = ^{
+        for (NSView *view in self.views) {
+            [visibilityPrioritiesByView setObject:[NSNumber numberWithFloat:[self visibilityPriorityForView:view]] forKey:view];
+            [self setVisibilityPriority:NSStackViewVisibilityPriorityNotVisible forView:view];
+        }
+    };
+    void (^extendedCompletionBlock)(void) = ^{
+        for (NSView *view in self.views) {
+            NSNumber *visibilityPriority = [visibilityPrioritiesByView objectForKey:view];
+            if (visibilityPriority != nil) {
+                [self setVisibilityPriority:[visibilityPriority floatValue] forView:view];
+            }
+        }
+        
+        if (completionBlock != nil) {
+            completionBlock();
+        }
+    };
+    
+    [NSView crossfadeView:self afterPerformingLayout:layoutBlock preAnimationBlock:preAnimationBlock completionBlock:extendedCompletionBlock];
+}
+
+@end
+
+NS_ASSUME_NONNULL_END

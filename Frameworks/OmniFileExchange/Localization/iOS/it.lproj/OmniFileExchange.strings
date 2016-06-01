@@ -23,7 +23,7 @@
 "Add WebDAV Server" = "Aggiungi server WebDAV";
 
 /* error description */
-"Another account is syncing to this folder already." = "Un altro account si sincronizza già con questa cartella.";
+"Another account is syncing to this folder already." = "Un altro account si sincronizza già a questa cartella.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Impossibile individuare la cartella dei documenti sincronizzati.";
@@ -82,7 +82,7 @@
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
-"Please check that the account information you entered is correct." = "Assicurati che i dati di account immessi siano corretti.";
+"Please check that the account information you entered is correct." = "Verifica che i dati di account immessi siano corretti.";
 
 /* account validation error suggestion */
 "Please enter an address for the account." = "Inserisci un indirizzo per l'account.";
@@ -115,7 +115,7 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "La cartella proposta per i documenti locali contiene già documenti. Specifica una cartella vuota o una non ancora esistente.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "La cartella proposta per i documenti locali sembra trovarsi all'interno di una cartella di Dropbox. Utilizzare due sistemi di sincronizzazione documenti per la stessa cartella può comportare la perdita di dati.";
+"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "La cartella proposta per i documenti locali sembra trovarsi all'interno di una cartella di Dropbox. Utilizzare due sistemi di sincronizzazione file per la stessa cartella può comportare la perdita di dati.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "La cartella proposta per i documenti locali non si trova su un volume locale. Seleziona una posizione locale sul tuo computer.";
@@ -124,7 +124,7 @@
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Necessario il formato %1$@ di OmniPresence per questa applicazione, mentre l'account cloud utilizza il formato %2$@. Effettua l'upgrade dell'account cloud.";
 
 /* Error reason */
-"This OmniPresence folder contains another OmniPresence synced folder." = "Questa cartella di OmniPresence contiene un'altra cartella sincronizzata di OmniPresence.";
+"This OmniPresence folder contains another OmniPresence synced folder." = "Questa cartella OmniPresence contiene un'altra cartella OmniPresence sincronizzata.";
 
 /* Error description when syncing will be disabled due to too many recent errors */
 "Too many file transfers encountered errors recently." = "Troppi errori verificatisi di recente durante il trasferimento di file.";

@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,8 @@
 @interface ODOObject (Internal)
 - (id)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault;
 - (id)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot;
+- (BOOL)_isAwakingFromInsert;
+- (void)_setIsAwakingFromInsert:(BOOL)isAwakingFromInsert;
 - (void)_setIsFault:(BOOL)isFault;
 - (void)_turnIntoFault:(BOOL)deleting;
 - (void)_invalidate;

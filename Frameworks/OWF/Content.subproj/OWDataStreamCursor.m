@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,9 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OWContentType.h"
-#import "OWDataStream.h"
-#import "OWDataStreamCharacterCursor.h"
+#import <OWF/OWContentType.h>
+#import <OWF/OWDataStream.h>
+#import <OWF/OWDataStreamCharacterCursor.h>
 
 RCS_ID("$Id$")
 
@@ -21,7 +21,7 @@ RCS_ID("$Id$")
 
 NSException *OWDataStreamCursor_UnderflowException;
 
-NSString *OWDataStreamCursor_UnknownEncodingException = @"OWDataStreamCursor: Unknown Encoding";
+NSString * const OWDataStreamCursor_UnknownEncodingException = @"OWDataStreamCursor: Unknown Encoding";
 
 NSMutableDictionary *encoders, *decoders;
 

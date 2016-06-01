@@ -532,3 +532,13 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 }
 
 @end
+
+
+@implementation NSObject (OFUndoExtensions)
+
+- (instancetype)prepareInvocationWithUndoManager:(NSUndoManager *)undoManager;
+{
+    return [undoManager prepareWithInvocationTarget:self];
+}
+
+@end

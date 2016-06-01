@@ -2,6 +2,18 @@
 "An error has occurred." = "Si è verificato un errore.";
 
 /* error description */
+"Cannot create directory." = "Impossibile creare la directory.";
+
+/* error description */
+"Cannot delete file." = "Impossibile eliminare il file.";
+
+/* error description */
+"Cannot move file." = "Impossibile spostare il file.";
+
+/* error description */
+"Could not decrypt file." = "Impossibile decriptare il documento.";
+
+/* error description */
 "Could not find \"%@\"." = "Impossibile trovare “%@”.";
 
 /* error description */
@@ -21,6 +33,9 @@
 "No document exists at \"%@\"." = "Non esiste nessun documento in “%@”.";
 
 /* error reason */
+"No such directory \"%@\"" = "Nessuna directory \"%@\".";
+
+/* error reason */
 "No such file \"%@\"." = "Nessun documento “%@”.";
 
 /* error reason */
@@ -34,3 +49,12 @@
 
 /* error description */
 "Unable to read document." = "Impossibile leggere il documento.";
+
+/* error description */
+"Unable to read file." = "Impossibile leggere il file.";
+
+/* error description */
+"Unable to write file." = "Impossibile scrivere nel file.";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "Impostazioni non riconosciute nell'intestazione di criptatura";

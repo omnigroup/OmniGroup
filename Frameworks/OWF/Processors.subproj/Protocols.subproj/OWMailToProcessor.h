@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,15 +28,13 @@
 
 @end
 
-#import <OWF/FrameworkDefines.h>
-
 // Use these keys to retrieve values from the parameter dictionary.
 
-OWF_EXTERN NSString *OWMailToProcessorToParameterKey;
+extern NSString * const OWMailToProcessorToParameterKey;
     // The "to" address
 
-OWF_EXTERN NSString *OWMailToProcessorSubjectParameterKey;
+extern NSString * const OWMailToProcessorSubjectParameterKey;
     // The subject line
 
-OWF_EXTERN NSString *OWMailToProcessorBodyParameterKey;
+extern NSString * const OWMailToProcessorBodyParameterKey;
     // The message body

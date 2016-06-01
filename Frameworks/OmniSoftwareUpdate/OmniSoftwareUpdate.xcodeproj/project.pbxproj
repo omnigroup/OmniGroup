@@ -174,6 +174,22 @@
 		34F3003612639CBD0044AB52 /* OSUOpenGLExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3003512639CBD0044AB52 /* OSUOpenGLExtensions.h */; };
 		34F300711263A6850044AB52 /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		34F3008A1263A79D0044AB52 /* OmniSoftwareUpdate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */; };
+		4228B7081CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 4228B7061CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4228B7091CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 4228B7061CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4228B70A1CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 4228B7071CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m */; };
+		4228B70B1CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 4228B7071CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m */; };
+		425DBA261CC56183003CF4EF /* nonews.html in Resources */ = {isa = PBXBuildFile; fileRef = 425DBA251CC56183003CF4EF /* nonews.html */; };
+		425DBA271CC56183003CF4EF /* nonews.html in Resources */ = {isa = PBXBuildFile; fileRef = 425DBA251CC56183003CF4EF /* nonews.html */; };
+		425DBA281CC56183003CF4EF /* nonews.html in Resources */ = {isa = PBXBuildFile; fileRef = 425DBA251CC56183003CF4EF /* nonews.html */; };
+		42943F881CBC2A0E005E9862 /* OSUDeviceDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 42943F861CBC2A0E005E9862 /* OSUDeviceDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		42943F891CBC2A0E005E9862 /* OSUDeviceDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 42943F871CBC2A0E005E9862 /* OSUDeviceDetails.m */; };
+		42943F941CBC2A38005E9862 /* OSUDeviceDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 42943F861CBC2A0E005E9862 /* OSUDeviceDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		42943F951CBC2A39005E9862 /* OSUDeviceDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 42943F861CBC2A0E005E9862 /* OSUDeviceDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		42943F961CBC2A3C005E9862 /* OSUDeviceDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 42943F871CBC2A0E005E9862 /* OSUDeviceDetails.m */; };
+		42943F971CBC2A3D005E9862 /* OSUDeviceDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 42943F871CBC2A0E005E9862 /* OSUDeviceDetails.m */; };
+		42943FD41CBC2AC1005E9862 /* OSUDevices.json in Resources */ = {isa = PBXBuildFile; fileRef = 42943FD31CBC2AC1005E9862 /* OSUDevices.json */; };
+		42943FD51CBC2ACD005E9862 /* OSUDevices.json in Resources */ = {isa = PBXBuildFile; fileRef = 42943FD31CBC2AC1005E9862 /* OSUDevices.json */; };
+		42943FD61CBC2ACE005E9862 /* OSUDevices.json in Resources */ = {isa = PBXBuildFile; fileRef = 42943FD31CBC2AC1005E9862 /* OSUDevices.json */; };
 		4912144509D4B6D7003DC19F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4912144409D4B6D7003DC19F /* main.m */; };
 		4912144809D4B6EF003DC19F /* OSUTestApp.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4912144609D4B6EF003DC19F /* OSUTestApp.xib */; };
 		4912145709D4BDD9003DC19F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
@@ -602,6 +618,12 @@
 		34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUHardwareInfo.h; sourceTree = "<group>"; };
 		34F3003512639CBD0044AB52 /* OSUOpenGLExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUOpenGLExtensions.h; sourceTree = "<group>"; };
 		34F300701263A6850044AB52 /* OSUErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUErrors.m; sourceTree = "<group>"; };
+		4228B7061CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSApplication-OSUNewsSupport.h"; sourceTree = "<group>"; };
+		4228B7071CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication-OSUNewsSupport.m"; sourceTree = "<group>"; };
+		425DBA251CC56183003CF4EF /* nonews.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = nonews.html; sourceTree = "<group>"; };
+		42943F861CBC2A0E005E9862 /* OSUDeviceDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUDeviceDetails.h; sourceTree = "<group>"; };
+		42943F871CBC2A0E005E9862 /* OSUDeviceDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUDeviceDetails.m; sourceTree = "<group>"; };
+		42943FD31CBC2AC1005E9862 /* OSUDevices.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = OSUDevices.json; sourceTree = "<group>"; };
 		4904940F1B7440F700C07782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OSUPreferences.xib; sourceTree = "<group>"; };
 		4909C8951B7ECE5800D58546 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OSUPrivacyAlert.xib; sourceTree = "<group>"; };
 		4912123B09D39ED7003DC19F /* OSUTestApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OSUTestApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -615,6 +637,7 @@
 		491215FB09DA08E9003DC19F /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
 		491215FC09DA08FB003DC19F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		491215FF09DA0907003DC19F /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
+		494355121BF187F4006F8875 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OSUDownloadController.xib; sourceTree = "<group>"; };
 		4951AEBB1B82941500AAF366 /* OSUSystemConfiguration.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OSUSystemConfiguration.xib; sourceTree = "<group>"; };
 		49DC54F21B82A0AC006A5AC3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OSUAvailableUpdateController.xib; sourceTree = "<group>"; };
 		49E586BB09EC853000F3BFA7 /* OSUTAChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUTAChecker.h; sourceTree = "<group>"; };
@@ -628,7 +651,6 @@
 		4A40EC0A08AB009A00E1769D /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OmniSoftwareUpdateCheck; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA5E8F6148D5F7F00633311 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OSUDownloadController.xib; sourceTree = "<group>"; };
 		4AB8F42A08AD27BF00DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42B08AD27BF00DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -851,6 +873,7 @@
 			children = (
 				34D0FD7A184D04C800453075 /* OmniSoftwareUpdate.defaults */,
 				4A40EC0A08AB009A00E1769D /* Info.plist */,
+				425DBA251CC56183003CF4EF /* nonews.html */,
 				34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */,
 				348CDD581A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html */,
 				BF3171E6062F41550097A147 /* OSUPreferences.png */,
@@ -869,6 +892,8 @@
 			children = (
 				34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */,
 				34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */,
+				4228B7061CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h */,
+				4228B7071CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m */,
 				BF3171DE062F410E0097A147 /* OSUController.h */,
 				BF3171DF062F410E0097A147 /* OSUController.m */,
 				BF3171E0062F410E0097A147 /* OSUPreferenceClient.h */,
@@ -1055,6 +1080,8 @@
 		34A5F50B184E474C00E8BA9A /* OmniSystemInfo */ = {
 			isa = PBXGroup;
 			children = (
+				42943F861CBC2A0E005E9862 /* OSUDeviceDetails.h */,
+				42943F871CBC2A0E005E9862 /* OSUDeviceDetails.m */,
 				34A5F564184E670F00E8BA9A /* Preferences */,
 				34A5F50C184E474C00E8BA9A /* Supporting Files */,
 			);
@@ -1064,6 +1091,7 @@
 		34A5F50C184E474C00E8BA9A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				42943FD31CBC2AC1005E9862 /* OSUDevices.json */,
 				34A5F50D184E474C00E8BA9A /* OmniSystemInfo-Info.plist */,
 				34A5F511184E474C00E8BA9A /* OmniSystemInfo-Prefix.pch */,
 				34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */,
@@ -1289,6 +1317,7 @@
 				348A78901B583D490082D55D /* OSUChecker.h in Headers */,
 				348A789A1B583D9E0082D55D /* OSUController.h in Headers */,
 				348A79061B5847B40082D55D /* OSUOpenGLExtensions.h in Headers */,
+				42943F951CBC2A39005E9862 /* OSUDeviceDetails.h in Headers */,
 				348A78941B583D590082D55D /* OSUSettings.h in Headers */,
 				348A788C1B583D380082D55D /* OSUPreferences.h in Headers */,
 				348A78981B583D690082D55D /* OSURunTime.h in Headers */,
@@ -1310,6 +1339,7 @@
 			files = (
 				34A5F550184E554100E8BA9A /* InfoPlist.h in Headers */,
 				34A5F555184E555C00E8BA9A /* OSUOpenGLExtensions.h in Headers */,
+				42943F941CBC2A38005E9862 /* OSUDeviceDetails.h in Headers */,
 				34A5F554184E555900E8BA9A /* OSUHardwareInfo.h in Headers */,
 				34CEC66818565B530030515C /* OSULinkButton.h in Headers */,
 				34A5F567184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h in Headers */,
@@ -1323,6 +1353,7 @@
 				3479A3991AB8D8590077BB01 /* OSURunOperationParameters.h in Headers */,
 				34469269186284E200FBDD73 /* OSUPrivacyAlertWindowController.h in Headers */,
 				34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */,
+				4228B7091CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h in Headers */,
 				34972BC91AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */,
 				34A5F55C184E62E500E8BA9A /* OSUFeatures.h in Headers */,
 				FB79E6561C3C6F4900A5ACD4 /* OSUPartialItem.h in Headers */,
@@ -1344,6 +1375,7 @@
 				4A40EBED08AB009A00E1769D /* OmniSoftwareUpdate_Prefix.h in Headers */,
 				4A40EBEE08AB009A00E1769D /* OSUController.h in Headers */,
 				4A40EBEF08AB009A00E1769D /* OSUPreferenceClient.h in Headers */,
+				42943F881CBC2A0E005E9862 /* OSUDeviceDetails.h in Headers */,
 				3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */,
 				34EDDEC90C6127FD009E2E27 /* OSUErrors.h in Headers */,
 				34972BC81AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */,
@@ -1365,6 +1397,7 @@
 				34F2A1961A3106AB00B2E8BD /* OSUProbe.h in Headers */,
 				34A2E0E8184F9363009E0D9F /* OSUPreferences-Items.h in Headers */,
 				A2D3F57C0FF98D92001AB2C5 /* OSUAppcastSignature.h in Headers */,
+				4228B7081CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.h in Headers */,
 				34F3002312639C1B0044AB52 /* OSUHardwareInfo.h in Headers */,
 				34F3003612639CBD0044AB52 /* OSUOpenGLExtensions.h in Headers */,
 				3479A3981AB8D8590077BB01 /* OSURunOperationParameters.h in Headers */,
@@ -1705,7 +1738,9 @@
 			files = (
 				348A790D1B5848350082D55D /* de.lproj in Resources */,
 				348A79141B5848350082D55D /* zh-Hans.lproj in Resources */,
+				425DBA271CC56183003CF4EF /* nonews.html in Resources */,
 				348A790F1B5848350082D55D /* fr.lproj in Resources */,
+				42943FD61CBC2ACE005E9862 /* OSUDevices.json in Resources */,
 				348A79121B5848350082D55D /* nl.lproj in Resources */,
 				348A790E1B5848350082D55D /* es.lproj in Resources */,
 				348A79131B5848350082D55D /* ru.lproj in Resources */,
@@ -1728,8 +1763,10 @@
 			files = (
 				3446927A1862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */,
 				34CF60AE184E769000C09946 /* OmniSoftwareUpdate.defaults in Resources */,
+				425DBA281CC56183003CF4EF /* nonews.html in Resources */,
 				34A5F563184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib in Resources */,
 				34A5F560184E64EE00E8BA9A /* OmniSystemInfo@2x.png in Resources */,
+				42943FD51CBC2ACD005E9862 /* OSUDevices.json in Resources */,
 				34A5F510184E474C00E8BA9A /* Preferences.strings in Resources */,
 				34A5F55F184E64EE00E8BA9A /* OmniSystemInfo.png in Resources */,
 				348CDD5A1A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html in Resources */,
@@ -1750,6 +1787,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A40EBF308AB009A00E1769D /* OSUPreferences.png in Resources */,
+				425DBA261CC56183003CF4EF /* nonews.html in Resources */,
+				42943FD41CBC2AC1005E9862 /* OSUDevices.json in Resources */,
 				344692791862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */,
 				348CDD591A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html in Resources */,
 				4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */,
@@ -1884,6 +1923,7 @@
 				348A788E1B583D410082D55D /* OSUPreferences-Items.m in Sources */,
 				348A789B1B583DA30082D55D /* OSUController.m in Sources */,
 				348A78911B583D4D0082D55D /* OSUChecker.m in Sources */,
+				42943F961CBC2A3C005E9862 /* OSUDeviceDetails.m in Sources */,
 				348A79051B5847A20082D55D /* OSUHardwareInfo.m in Sources */,
 				348A790A1B5847D00082D55D /* OSURunOperation.m in Sources */,
 				348A790B1B5847E10082D55D /* OSURunOperationParameters.m in Sources */,
@@ -1910,6 +1950,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34F2A19B1A3106AB00B2E8BD /* OSUProbe.m in Sources */,
+				4228B70B1CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m in Sources */,
 				34A5F53F184E519C00E8BA9A /* OSUErrors.m in Sources */,
 				34A2E0EB184F9375009E0D9F /* OSUPreferences-Items.m in Sources */,
 				34A5F540184E519C00E8BA9A /* OSUPreferences.m in Sources */,
@@ -1918,6 +1959,7 @@
 				3433C1FE1A12BB920021318A /* OSUSettings.m in Sources */,
 				34A5F568184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m in Sources */,
 				34A5F541184E519C00E8BA9A /* OSUChecker.m in Sources */,
+				42943F971CBC2A3D005E9862 /* OSUDeviceDetails.m in Sources */,
 				34A5F542184E519C00E8BA9A /* OSUCheckOperation.m in Sources */,
 				3479A39C1AB8D8590077BB01 /* OSURunOperationParameters.m in Sources */,
 				34A5F545184E519C00E8BA9A /* OSURunTime.m in Sources */,
@@ -1955,7 +1997,9 @@
 				34CEC66918565B530030515C /* OSULinkButton.m in Sources */,
 				3416044D0C6913CC002839DF /* OSUCheckOperation.m in Sources */,
 				341605ED0C693324002839DF /* OSUItem.m in Sources */,
+				42943F891CBC2A0E005E9862 /* OSUDeviceDetails.m in Sources */,
 				341607710C6A27AA002839DF /* OSUFlippedView.m in Sources */,
+				4228B70A1CAC545D00A4D1AB /* NSApplication-OSUNewsSupport.m in Sources */,
 				6AC963520C6A756600256B9C /* OSUThinBorderView.m in Sources */,
 				34BC77820C6BAEBF006EFE2E /* OSUItemTableView.m in Sources */,
 				6A950E500C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m in Sources */,
@@ -2125,7 +2169,7 @@
 		4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4AA5E8F6148D5F7F00633311 /* en */,
+				494355121BF187F4006F8875 /* Base */,
 			);
 			name = OSUDownloadController.xib;
 			sourceTree = "<group>";

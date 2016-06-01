@@ -1,4 +1,4 @@
-// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OATabViewController.h"
+#import <OmniAppKit/OATabViewController.h>
 
 RCS_ID("$Id$")
 

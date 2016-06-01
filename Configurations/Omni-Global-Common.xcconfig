@@ -3,7 +3,7 @@
 // $Id$
 
 // Include private configuration variables for Omni-local builds
-#include "Omni-Global-Private.xcconfig"
+#include "Private/Omni-Global.xcconfig"
 
 // Build setting overrides for the current store target
 #include "Omni-Global-Common-Store.xcconfig"

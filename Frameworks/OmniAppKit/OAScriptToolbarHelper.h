@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-#import "OAToolbarWindowController.h"
+#import <OmniAppKit/OAToolbarWindowController.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

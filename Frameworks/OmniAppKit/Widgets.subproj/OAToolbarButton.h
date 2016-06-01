@@ -15,15 +15,12 @@
 
 @interface OAToolbarButton : NSButton
 {
-    IBOutlet id delegate;
     BOOL isShowingMenu;
 }
 
 // API
 @property (weak) NSToolbarItem *toolbarItem;
-
-- (id)delegate;
-- (void)setDelegate:(id)aDelegate;
+@property (weak) IBOutlet id delegate;
 
 - (void)_showMenu;
 

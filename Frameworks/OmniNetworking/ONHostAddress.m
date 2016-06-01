@@ -1,20 +1,20 @@
-// Copyright 1997-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "ONHostAddress.h"
-#import "ONFeatures.h"
+#import <OmniNetworking/ONHostAddress.h>
+#import <OmniNetworking/ONFeatures.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniBase/system.h>
 
 #import "ONHostAddress-Private.h"
-#import "ONInterface.h"
-#import "ONLinkLayerHostAddress.h"
+#import <OmniNetworking/ONInterface.h>
+#import <OmniNetworking/ONLinkLayerHostAddress.h>
 
 RCS_ID("$Id$")
 

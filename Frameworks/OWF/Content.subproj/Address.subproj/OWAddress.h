@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,6 @@
 
 #import <OWF/OWContentCacheProtocols.h>
 #import <OWF/OWProcessor.h> // For the OWProcessorContext protocol
-#import <OWF/FrameworkDefines.h>
 
 @class NSArray, NSBundle, NSCharacterSet, NSData, NSMutableCharacterSet, NSScanner, NSURL, NSURLRequest;
 @class OWContentType, OWPipeline, OWURL;
@@ -142,17 +141,17 @@ typedef enum {
 @end
 
 
-OWF_EXTERN NSString *OWAddressContentDataMethodKey;
-OWF_EXTERN NSString *OWAddressContentAdditionalHeadersMethodKey;
-OWF_EXTERN NSString *OWAddressContentStringMethodKey;
-OWF_EXTERN NSString *OWAddressContentTypeMethodKey;  // Indicates the content-type of the method data (POST/PUT body, e.g.)
-OWF_EXTERN NSString *OWAddressBoundaryMethodKey;
+extern NSString * const OWAddressContentDataMethodKey;
+extern NSString * const OWAddressContentAdditionalHeadersMethodKey;
+extern NSString * const OWAddressContentStringMethodKey;
+extern NSString * const OWAddressContentTypeMethodKey;  // Indicates the content-type of the method data (POST/PUT body, e.g.)
+extern NSString * const OWAddressBoundaryMethodKey;
 
-OWF_EXTERN NSString *OWAddressContentTypeContextKey;  // Hack to indicate the type of the returned object, if already known; only works in certain cases
-OWF_EXTERN NSString *OWAddressSourceRangeContextKey;
+extern NSString * const OWAddressContentTypeContextKey;  // Hack to indicate the type of the returned object, if already known; only works in certain cases
+extern NSString * const OWAddressSourceRangeContextKey;
 
-OWF_EXTERN NSString *OWAddressesToFilterDefaultName;
-OWF_EXTERN NSString *OWAddressesToAllowDefaultName;
-OWF_EXTERN NSString *OWAddressFilteringEnabledDefaultName;
+extern NSString * const OWAddressesToFilterDefaultName;
+extern NSString * const OWAddressesToAllowDefaultName;
+extern NSString * const OWAddressFilteringEnabledDefaultName;
 
-OWF_EXTERN NSString *OWAddressShortcutsDidChange;
+extern NSString * const OWAddressShortcutsDidChange;

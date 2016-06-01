@@ -343,11 +343,12 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     _remoteBaseURL = [accountRemoteBaseURL URLByAppendingPathComponent:_remoteDirectoryName isDirectory:YES];
     
     ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:[ODAVConnectionConfiguration new] baseURL:_remoteBaseURL];
-    connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+    connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         // Trust all certificates for these tests.
         OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
+        return nil;
     };
-    connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+    connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
         if ([challenge previousFailureCount] <= 2) {
             // Use the account credential if we have an account added. We might be clearing out the remote directory before an account has been added to this test's account registry, though
             NSURLCredential *credential;
@@ -359,7 +360,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
                 credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone]; // Fallback.
             
             OBASSERT(credential);
-            return credential;
+            return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, credential);
         }
         return nil;
     };

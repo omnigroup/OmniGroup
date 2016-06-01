@@ -1,4 +1,4 @@
-// Copyright 2005-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,15 @@
 //
 //  Created by Timothy J. Wood on 8/31/05.
 
-#import "NSView-OQExtensions.h"
+#import <OmniQuartz/NSView-OQExtensions.h>
 
-#import "CIContext-OQExtensions.h"
-#import "OQTargetAnimation.h"
+#import <OmniQuartz/CIContext-OQExtensions.h>
+#import <OmniQuartz/OQTargetAnimation.h>
 
 RCS_ID("$Id$")
+
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSView (OQExtensions)
 
@@ -26,13 +29,13 @@ RCS_ID("$Id$")
     return [self newImageFromRect:rect compatibleWithWindow:[self window]];
 }
 
-- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(NSWindow *)targetWindow;
+- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(nullable NSWindow *)targetWindow;
 {
     return [self newImageFromRect:rect compatibleWithWindow:targetWindow opaque:YES];
 }
 
 // Returns a new retained CIImage that has the contents of the rect specified.  This image will be transparent in the appropriate spots.  If an opaque image is requested, the returned image will contain rendering from the opaque ancestor of the receiver.  The targetWindow is the window into which the image will be drawn, which may be different from the window (possibly none) in which the receiver resides.  The returned image will have the passed in rect's origin at its origin.
-- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(NSWindow *)targetWindow opaque:(BOOL)opaque;
+- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(nullable NSWindow *)targetWindow opaque:(BOOL)opaque;
 {
     CGContextRef windowContext = [[targetWindow graphicsContext] graphicsPort];
     
@@ -72,7 +75,7 @@ RCS_ID("$Id$")
 
 // Either view can be nil.  The frames of the two views are not changed.
 // NOTE: This method seems to not work for WebViews since they draw w/o CSS information during fading (possibly since they've been marked as 'hidden')
-- (void)fadeOutAndReplaceSubview:(NSView *)oldSubview withView:(NSView *)newSubview;
+- (void)fadeOutAndReplaceSubview:(nullable NSView *)oldSubview withView:(nullable NSView *)newSubview;
 {
     if (oldSubview == newSubview)
 	return;
@@ -314,3 +317,5 @@ typedef struct _TransitionUserInfo {
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

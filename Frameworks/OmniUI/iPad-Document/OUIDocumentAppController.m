@@ -199,6 +199,7 @@ static unsigned SyncAgentRunningAccountsContext;
         NSString *closeDocumentTitle = NSLocalizedStringWithDefaultValue(@"Documents <back button>", @"OmniUIDocument", OMNI_BUNDLE, @"Documents", @"Toolbar button title for returning to list of documents.");
         _closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:closeDocumentTitle
                                                                         style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
+        _closeDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments"; // match with compact edition below for consistent screenshot script access.
     }
     return _closeDocumentBarButtonItem;
 }
@@ -209,6 +210,7 @@ static unsigned SyncAgentRunningAccountsContext;
     if (!_compactCloseDocumentBarButtonItem) {
         _compactCloseDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
                                                                        style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
+        _compactCloseDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments";
     }
     return _compactCloseDocumentBarButtonItem;
 }
@@ -1180,12 +1182,17 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     if ([syncError hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted]) {
         NSURLAuthenticationChallenge *challenge = [[syncError userInfo] objectForKey:ODAVCertificateTrustChallengeErrorKey];
         OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
-        certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
-            OFAddTrustForChallenge(challenge, trustDuration);
-            if (retryBlock)
+        certAlert.shouldOfferTrustAlwaysOption = YES;
+        certAlert.storeResult = YES;
+        if (retryBlock) {
+            certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
                 retryBlock();
-        };
-        [certAlert showFromViewController:viewController];
+            };
+        }
+        [certAlert findViewController:^{
+            return viewController;
+        }];
+        [[[OUIAppController sharedController] backgroundPromptQueue] addOperation:certAlert];
         return;
     }
     
@@ -1706,7 +1713,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 OBASSERT(strongSelf);
                 if (!strongSelf)
                     return;
-
+                
 
                 [strongSelf _updateCoreSpotlightIndex];
                 

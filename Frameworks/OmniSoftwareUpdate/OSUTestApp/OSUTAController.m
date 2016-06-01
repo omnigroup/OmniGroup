@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,11 @@
 
 #import "OSUTAController.h"
 
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUTAChecker.h"
 #import "OSUItem.h"
-#import "OSUPreferences.h"
-#import "NSApplication-OSUSupport.h"
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/NSApplication-OSUSupport.h>
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>

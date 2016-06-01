@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,24 +9,23 @@
 
 #import <Security/SecKeychain.h>
 #import <Security/SecKeychainSearch.h>
-#import <OWF/FrameworkDefines.h>
 
 @class NSData, NSDictionary, NSMutableDictionary, NSString;
 
 #if 0
 /* Get the raw bytes representing an item attribute. Returns nil if the item does not have that attribute. Raises an exception if an error occurs. */
-OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItemAttr attrTag);
+extern NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItemAttr attrTag) OB_HIDDEN;
 
 /* Fetch several of the attributes of an item and convert them into reasonable Foundation types. Dictionary keys are the same as the attribute type constants defined in Apple's header, with the "kSec" and "ItemAttr" stripped off and the initial capital reduced to lower case. */
-OWF_PRIVATE_EXTERN NSMutableDictionary *OWKCExtractItemAttributes(SecKeychainItemRef itemRef);
+extern NSMutableDictionary *OWKCExtractItemAttributes(SecKeychainItemRef itemRef) OB_HIDDEN;
 
 /* A cover for SecKeychainSearchCreateFromAttributes() which gets the item attributes from a dictionary. Dictionary keys & values are the same as would be returned by OWKCGetItemAttribute(). */
-OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *attributes, SecKeychainSearchRef *grepstate);
+extern OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *attributes, SecKeychainSearchRef *grepstate) OB_HIDDEN;
 
 #endif
 
 /* Updates a keychain item with the specified information */
-OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData);
+extern OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData) OB_HIDDEN;
 
 /* Extracts the secret data from the keychain item (typically, this is the password) and returns it */
-OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password);
+extern OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password) OB_HIDDEN;

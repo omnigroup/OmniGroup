@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
 
@@ -43,15 +44,17 @@ RCS_ID("$Id$");
     _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:serverAccount.remoteBaseURL];
     
     __weak OUIWebDAVSyncListController *weakSelf = self;
-    _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+    _connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         OUIWebDAVSyncListController *strongSelf = weakSelf;
         if (strongSelf)
             strongSelf->_certificateChallenge = challenge;
-    };
-    _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
-        if ([challenge previousFailureCount] < 2)
-            return credentials;
         return nil;
+    };
+    
+    _connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
+        if ([challenge previousFailureCount] < 2)
+            return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, credentials);
+        return OFImmediateCredentialResponse(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
     };
     
     return self;
@@ -128,6 +131,7 @@ RCS_ID("$Id$");
                 _certificateChallenge =  nil;
                 
                 OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
+                certAlert.shouldOfferTrustAlwaysOption = YES;
                 certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
                     // Our superclass will reload its list of files when this happens, due to OFCertificateTrustUpdatedNotification being posted.
                     OFAddTrustForChallenge(challenge, trustDuration);
@@ -135,7 +139,8 @@ RCS_ID("$Id$");
                 certAlert.cancelBlock = ^{
                     [self cancel:nil];
                 };
-                [certAlert showFromViewController:self];
+                [certAlert findViewController:^{ return self; }];
+                [[[OUIAppController sharedController] backgroundPromptQueue] addOperation:certAlert];
             } else {
                 OUI_PRESENT_ALERT_FROM(errorOrNil, self);
             }

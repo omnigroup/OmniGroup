@@ -1,15 +1,15 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWAuthorizationRequest.h"
-#import "OWAuthorizationCredential.h"
-#import "OWNetLocation.h"
-#import "OWPipeline.h"
-#import "OWHeaderDictionary.h"
+#import <OWF/OWAuthorizationRequest.h>
+#import <OWF/OWAuthorizationCredential.h>
+#import <OWF/OWNetLocation.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWHeaderDictionary.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
@@ -49,7 +49,7 @@ static BOOL OWAuthorizationDebug = NO;
 static NSLock *credentialCacheLock = nil;
 static OFMultiValueDictionary *credentialCache = nil;
 
-NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheChanged";
+NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheChanged";
 
 + (Class)authorizationRequestClass;
 {
@@ -935,6 +935,6 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
 @end
 
-NSString *OWAuthorizationRequestKeychainExceptionName = @"OWAuthorizationRequest:KeychainException";
-NSString *OWAuthorizationRequestKeychainExceptionKeychainStatusKey = @"OWAuthorizationRequest:KeychainException:KeychainStatus";
+NSString * const OWAuthorizationRequestKeychainExceptionName = @"OWAuthorizationRequest:KeychainException";
+NSString * const OWAuthorizationRequestKeychainExceptionKeychainStatusKey = @"OWAuthorizationRequest:KeychainException:KeychainStatus";
 

@@ -1,13 +1,13 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OASteppableTextField.h"
+#import <OmniAppKit/OASteppableTextField.h>
 
-#import "OAUtilities.h"
+#import <OmniAppKit/OAUtilities.h>
 #import <AppKit/NSKeyValueBinding.h>
 #import <AppKit/NSApplication.h>
 #import <OmniBase/rcsid.h>
@@ -22,6 +22,9 @@ RCS_ID("$Id$");
 
 - (BOOL)textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector;
 {
+    if (![self isEditable]) {
+        return NO;
+    }
     SEL formatterSelector;
     
     if (commandSelector == @selector(moveUp:)) {

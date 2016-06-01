@@ -1,29 +1,29 @@
-// Copyright 1997-2005, 2008, 2010, 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWCookie.h"
+#import <OWF/OWCookie.h>
 
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSDate-OWExtensions.h"
-#import "OWAddress.h"
-#import "OWCookieDomain.h"
-#import "OWHeaderDictionary.h"
-#import "OWHTTPProcessor.h"
-#import "OWHTTPSession.h"
-#import "OWNetLocation.h"
-#import "OWURL.h"
+#import <OWF/NSDate-OWExtensions.h>
+#import <OWF/OWAddress.h>
+#import <OWF/OWCookieDomain.h>
+#import <OWF/OWHeaderDictionary.h>
+#import <OWF/OWHTTPProcessor.h>
+#import <OWF/OWHTTPSession.h>
+#import <OWF/OWNetLocation.h>
+#import <OWF/OWURL.h>
 
 RCS_ID("$Id$")
 
-NSString *OWCookieGlobalPath = @"/";
+NSString * const OWCookieGlobalPath = @"/";
 
 @implementation OWCookie
 

@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ static OFRelativeDateParser *sharedParser;
 static NSArray *englishWeekdays;
 static NSArray *englishShortdays;
 
-#if 0 && defined(DEBUG)
+#if defined(DEBUG_kc0)
     #define DEBUG_DATE(format, ...) NSLog(@"DATE: " format , ## __VA_ARGS__)
 #else
     #define DEBUG_DATE(format, ...) do {} while (0)
@@ -440,32 +440,46 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     NSDate *date = nil;
     NSRange usedStringRange;
     NSError *strictDateError = nil;
-    if ([self _getStrictDateValue:&date usedCustomFormat:&usedCustomFormat forString:string fromStartingDate:startingDate calendar:calendar withCustomFormat:customFormat  withShortDateFormat:shortFormat mediumDateFormat:mediumFormat longDateFormat:longFormat usedStringRange:&usedStringRange error:&strictDateError]) {
+    if ([self _getStrictDateValue:&date usedCustomFormat:&usedCustomFormat forString:string fromStartingDate:startingDate calendar:calendar withCustomFormat:customFormat withShortDateFormat:shortFormat mediumDateFormat:mediumFormat longDateFormat:longFormat usedStringRange:&usedStringRange error:&strictDateError]) {
         if (usedStringRange.length == 0)
             date = startingDate;
         NSUInteger timeLocation = NSMaxRange(usedStringRange);
         NSUInteger stringLength = string.length;
         NSRange remainingRange = (NSRange){timeLocation, stringLength - timeLocation};
         NSString *remainingString = [[string substringWithRange:remainingRange] stringByRemovingSurroundingWhitespace];
-        NSDateComponents *timeComponents = nil;
-        if (usedCustomFormat) {
-            if ([NSString isEmptyString:remainingString]) {
-                if (outDate != NULL)
-                    *outDate = date;
-                return YES;
-            }
+        if ([remainingString hasPrefix:@":"]) {
+            // Our date formatter picked up a number that belongs to a time
         } else {
-            if (![NSString isEmptyString:remainingString])
-                timeComponents = [self _parseTimeString:remainingString withTimeFormat:timeFormat calendar:calendar];
-            if (timeComponents == nil)
-                timeComponents = defaultTimeDateComponents;
-
-            if (timeComponents != nil) {
-                NSDate *combinedDate = [self _dateWithDate:date timeComponents:timeComponents calendar:calendar];
-                OBASSERT(combinedDate != nil);
-                if (outDate != NULL)
-                    *outDate = combinedDate;
-                return YES;
+            NSDateComponents *timeComponents = nil;
+            if (usedCustomFormat) {
+                if ([NSString isEmptyString:remainingString]) {
+                    OFCreateRegularExpression(timeFormatRegex, @"[hHkK]"); // hour in am/pm (1~12), hour in day (0~23), hour in day (1~24), hour in am/pm (0~11)
+                    if (![timeFormatRegex hasMatchInString:customFormat]) // The custom format didn't include a time, so we need to supply a default time
+                        date = [self _dateWithDate:date timeComponents:defaultTimeDateComponents calendar:calendar];
+                    if (outDate != NULL)
+                        *outDate = date;
+                    return YES;
+                }
+            } else {
+                BOOL understoodEverything = NO;
+                if ([NSString isEmptyString:remainingString]) {
+                    timeComponents = defaultTimeDateComponents;
+                    understoodEverything = YES;
+                } else {
+                    timeComponents = [self _parseTimeString:remainingString withTimeFormat:timeFormat calendar:calendar];
+                    understoodEverything = timeComponents != nil;
+                }
+                if (understoodEverything) {
+                    NSDate *combinedDate = [self _dateWithDate:date timeComponents:timeComponents calendar:calendar];
+                    OBASSERT(combinedDate != nil);
+                    if (outDate != NULL)
+                        *outDate = combinedDate;
+                    return YES;
+                } else {
+                    if ([self _getHeuristicDateValue:outDate forString:remainingString fromStartingDate:date calendar:calendar withShortDateFormat:shortFormat mediumDateFormat:mediumFormat longDateFormat:longFormat timeFormat:timeFormat useEndOfDuration:useEndOfDuration defaultTimeDateComponents:defaultTimeDateComponents error:outError]) {
+                        return YES;
+                    }
+                }
             }
         }
     }
@@ -480,16 +494,17 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     dateFormatter.timeZone = calendar.timeZone;
     dateFormatter.locale = _locale;
     dateFormatter.dateFormat = customFormat;
+    NSDate *returnDate = nil;
     NSRange range = (NSRange){0, string.length};
     *usedCustomFormat = YES;
-    if (!customFormat || ![dateFormatter getObjectValue:outDate forString:string range:&range error:outError]) {
+    if (!customFormat || ![dateFormatter getObjectValue:&returnDate forString:string range:&range error:outError]) {
         *usedCustomFormat = NO;
         dateFormatter.dateFormat = shortFormat;
-        if (![dateFormatter getObjectValue:outDate forString:string range:&range error:outError]) {
+        if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:outError]) {
             dateFormatter.dateFormat = mediumFormat;
-            if (![dateFormatter getObjectValue:outDate forString:string range:&range error:NULL]) {
+            if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:NULL]) {
                 dateFormatter.dateFormat = longFormat;
-                if (![dateFormatter getObjectValue:outDate forString:string range:&range error:NULL]) {
+                if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:NULL]) {
                     return NO;
                 }
             }
@@ -498,6 +513,20 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 
     if (outUsedStringRange != NULL)
         *outUsedStringRange = range;
+
+    NSDateComponents *dateComponents = [calendar components:NSCalendarUnitDay|NSCalendarUnitMonth|NSCalendarUnitYear|NSCalendarUnitEra fromDate:returnDate];
+    if (dateComponents.year < 100 && [dateFormatter.dateFormat containsString:@"yyyy"] && ![string containsString:@"00"]) {
+	if (dateComponents.year >= 90 && dateComponents.year <= 99)
+	    dateComponents.year += 1900;
+	else if (dateComponents.year < 90)
+	    dateComponents.year += 2000;
+        returnDate = [calendar dateFromComponents:dateComponents];
+    }
+
+    if (outDate != NULL) {
+        *outDate = returnDate;
+    }
+
     return YES;
 }
 
@@ -523,6 +552,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 - (BOOL)_getHeuristicDateValue:(NSDate **)outDate forString:(NSString *)string fromStartingDate:(NSDate *)startingDate calendar:(NSCalendar *)calendar withShortDateFormat:(NSString *)shortFormat mediumDateFormat:(NSString *)mediumFormat longDateFormat:(NSString *)longFormat timeFormat:(NSString *)timeFormat useEndOfDuration:(BOOL)useEndOfDuration defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents error:(NSError **)error;
 {
     string = [[string lowercaseString] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
+    string = [string stringByReplacingOccurrencesOfString:@"–" withString:@"-"]; // Turn en-dash into ASCII
     NSString *dateString = nil;
     NSString *timeString = nil; // just the "hh:mm" part
     NSString *meridianString = nil;
@@ -612,64 +642,70 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     NSDate *date;
 
     if (![NSString isEmptyString:dateString]) {
-        NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
-        dateFormatter.calendar = calendar;
-        dateFormatter.timeZone = calendar.timeZone;
-        dateFormatter.locale = _locale;
-        dateFormatter.dateFormat = shortFormat;
-        if (![dateFormatter getObjectValue:&date forString:dateString range:NULL error:NULL]) {
-            NSString *stringWithDotSpace = nil;
-            
-            // Some formats have dots and spaces as a separator and will fail to match our formattedDateRegex otherwise
-            if ([dateString rangeOfString:@". "].location != NSNotFound) {
-                stringWithDotSpace = dateString;
-                dateString = [dateString stringByReplacingOccurrencesOfString:@". " withString:@"."];
-            }
-            
-            OFCreateRegularExpression(spacedDateRegex, @"^(\\d{1,4})\\s(\\d{1,4})\\s?(\\d{0,4})$");
-            OFCreateRegularExpression(formattedDateRegex, @"^\\w+([\\./-])\\w+");
-            OFCreateRegularExpression(unseparatedDateRegex, @"^(\\d{2,4})(\\d{2})(\\d{2})$");
-            
-            OFRegularExpressionMatch *spacedDateMatch = [spacedDateRegex of_firstMatchInString:dateString];
-            OFRegularExpressionMatch *formattedDateMatch = [formattedDateRegex of_firstMatchInString:dateString];
-            OFRegularExpressionMatch *unseparatedDateMatch = [unseparatedDateRegex of_firstMatchInString:dateString];
-            
-            if (unseparatedDateMatch) {
-                dateString = [NSString stringWithFormat:@"%@-%@-%@", [unseparatedDateMatch captureGroupAtIndex:0], [unseparatedDateMatch captureGroupAtIndex:1], [unseparatedDateMatch captureGroupAtIndex:2]];
-            }
-            
-            if (formattedDateMatch || unseparatedDateMatch || spacedDateMatch) {
-                NSString *separator = @" ";
-                if (unseparatedDateMatch) {
-                    DEBUG_DATE(@"found an 'unseparated' date");
-                    separator = @"-";
-                } else if (formattedDateMatch) {
-                    DEBUG_DATE(@"formatted date found with the separator as: %@", [formattedDateMatch captureGroupAtIndex:0]);
-                    separator = [formattedDateMatch captureGroupAtIndex:0];
-                } else if (spacedDateMatch) {
-                    DEBUG_DATE(@"numerical space delimited date found");
-                    separator = @" ";
-                }
-                
-                date = [self _parseFormattedDate:dateString withDate:startingDate withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withseparator:separator calendar:calendar];
-                OBASSERT(date != nil);
+        NSString *stringWithDotSpace = nil;
+
+        // Some formats have dots and spaces as a separator and will fail to match our formattedDateRegex otherwise
+        if ([dateString rangeOfString:@". "].location != NSNotFound) {
+            stringWithDotSpace = dateString;
+            dateString = [dateString stringByReplacingOccurrencesOfString:@". " withString:@"."];
+        }
+
+        OFCreateRegularExpression(spacedDateRegex, @"^(\\d{1,4})\\s(\\d{1,4})\\s?(\\d{0,4})\\b([^:]|$)"); // 1-4 digits, space, 1-4 digits, space, 0-4 digits: 2016 01 01
+        OFCreateRegularExpression(formattedDateRegex, @"^\\w+([\\./-])\\w+(([\\./-])\\w+)?\\b([^:]|$)"); // word, separator, word (optional: final separator, final word): 2016-01-01
+        OFCreateRegularExpression(unseparatedDateRegex, @"^(\\d{2,4})(\\d{2})(\\d{2})\\b([^:]|$)"); // 2-4 digits, 2 digits, 2 digits: 20160101
+
+        OFRegularExpressionMatch *spacedDateMatch = [spacedDateRegex of_firstMatchInString:dateString];
+        OFRegularExpressionMatch *formattedDateMatch = [formattedDateRegex of_firstMatchInString:dateString];
+        OFRegularExpressionMatch *unseparatedDateMatch = [unseparatedDateRegex of_firstMatchInString:dateString];
+
+        if (formattedDateMatch != nil || unseparatedDateMatch != nil || spacedDateMatch != nil) {
+            NSString *separator;
+            NSRange matchRange;
+            if (unseparatedDateMatch != nil) {
+                DEBUG_DATE(@"found an 'unseparated' date");
+                separator = @"-"; // We'll insert dashes between our capture groups before parsing it
+                matchRange = unseparatedDateMatch.matchRange;
+            } else if (formattedDateMatch != nil) {
+                DEBUG_DATE(@"formatted date found with the separator as: %@", [formattedDateMatch captureGroupAtIndex:0]);
+                separator = [formattedDateMatch captureGroupAtIndex:0];
+                matchRange = formattedDateMatch.matchRange;
             } else {
-                if (stringWithDotSpace)
-                    dateString = stringWithDotSpace;
-                
-                date = [self _parseDateNaturalLanguage:dateString withDate:startingDate timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
-                if (date == nil) {
-                    if (outDate != NULL)
-                        *outDate = nil;
-                    return NO;
-                }
+                OBASSERT(spacedDateMatch != nil);
+                DEBUG_DATE(@"numerical space delimited date found");
+                separator = @" ";
+                matchRange = spacedDateMatch.matchRange;
+            }
+            NSString *remainingString = [[dateString substringFromIndex:NSMaxRange(matchRange)] stringByRemovingSurroundingWhitespace];
+            NSString *absoluteDateString;
+            if (unseparatedDateMatch != nil) {
+                absoluteDateString = [NSString stringWithFormat:@"%@-%@-%@", [unseparatedDateMatch captureGroupAtIndex:0], [unseparatedDateMatch captureGroupAtIndex:1], [unseparatedDateMatch captureGroupAtIndex:2]];
+            } else {
+                absoluteDateString = [dateString substringWithRange:matchRange];
+            }
+            date = [self _parseFormattedDate:absoluteDateString withDate:startingDate withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withseparator:separator calendar:calendar];
+            OBASSERT(date != nil);
+
+            if (remainingString.length != 0) {
+                NSDate *relativeDate = [self _parseDateNaturalLanguage:remainingString withDate:date timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
+                if (relativeDate != nil)
+                    date = relativeDate;
+            }
+        } else {
+            if (stringWithDotSpace)
+                dateString = stringWithDotSpace;
+
+            date = [self _parseDateNaturalLanguage:dateString withDate:startingDate timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
+            if (date == nil) {
+                if (outDate != NULL)
+                    *outDate = nil;
+                return NO;
             }
         }
     } else {
 	date = startingDate;
         OBASSERT(date != nil);
     }
-    
+
     if (timeString != nil) {
         if (!date) {
             // In case of a nil date, don't crash <bug:///112326> (Crasher: Crash in OFRelativeDateParser: [__NSCFCalendar components:fromDate:]: date cannot be nil), but just log instead.
@@ -780,7 +816,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 	return YES;
     
     // see if we have some colons in a dately way
-    OFCreateRegularExpression(timeColonRegex, @"(\\d{1,2}):(\\d{0,2}):?(\\d{0,2})");
+    OFCreateRegularExpression(timeColonRegex, @"(\\d{1,2}):(\\d{0,2}):?(\\d{0,2})$");
     BOOL colonMatched = [timeColonRegex hasMatchInString:firstString];
     if (colonMatched)
 	return YES;
@@ -906,21 +942,21 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
         }
     }
 
-    BOOL isPM = meridianString ? [self _isPostmeridianString:meridianString calendar:calendar] : NO;
+    BOOL isPM = meridianString != nil ? [self _isPostmeridianString:meridianString calendar:calendar] : NO;
     
     static dispatch_once_t onceToken;
-    static NSRegularExpression *timeSeperatorRegex = nil;
+    static NSRegularExpression *timeSeparatorRegex = nil;
     dispatch_once(&onceToken, ^{
-	timeSeperatorRegex = _createRegex(@"^\\d{1,4}([:.])?");
+	timeSeparatorRegex = _createRegex(@"^\\d{1,4}([:.])?");
     });
-    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeperatorRegex of_firstMatchInString:timeString];
+    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeparatorRegex of_firstMatchInString:timeString];
     DEBUG_DATE(@"timeSeperatorMatch = %@", timeSeperatorMatch);
     NSString *separator = [timeSeperatorMatch captureGroupAtIndex:0];
     if ([NSString isEmptyString:separator])
 	separator = @":";
 
     NSArray *timeComponents = [[timeString stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace] componentsSeparatedByString:separator];
-    DEBUG_DATE( @"meridianString: %@, isPM: %d", meridianString, isPM);
+    DEBUG_DATE(@"meridianString: %@, isPM: %d", meridianString, isPM);
     DEBUG_DATE(@"time comps: %@", timeComponents);
     
     int hours = -1;
@@ -940,9 +976,14 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 		break;
 	}
     }
-    if (isPM && hours < 12) {
-	DEBUG_DATE(@"isPM was true, adding 12 to: %d", hours);
-	hours += 12;
+
+    if (meridianString != nil) {
+        if (hours == 12) {
+            hours = isPM ? 12 : 0;
+        } else if (hours < 12 && isPM) {
+            DEBUG_DATE(@"isPM was true, adding 12 to: %d", hours);
+            hours += 12;
+        }
     }  else if ([[timeComponents objectAtIndex:0] length] == 4 && [timeComponents count] == 1 && hours <= 2500 ) {
 	//24hour time
 	minutes = hours % 100;
@@ -1028,7 +1069,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	datePosition.separator = @"-";
     } else {
 	DEBUG_DATE(@"using DETERMINED, formatseparator: %@", formatStringseparator);
-	datePosition= [self _dateElementOrderFromFormat:dateFormat];
+	datePosition = [self _dateElementOrderFromFormat:dateFormat];
     }
     
     // <bug://bugs/39123> 
@@ -1056,10 +1097,10 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     if (dateSet.day == -1 && dateSet.month == -1 && dateSet.year == -1)
 	return nil;
         
-    // set unset year to next year
+    // set unset year to the upcoming year
     if (dateSet.year == -1) {
-	if (dateSet.month < [currentComponents month])
-	    dateSet.year = [currentComponents year]+1;
+	if (dateSet.month < currentComponents.month)
+	    dateSet.year = currentComponents.year + 1;
     }
 	
     // set the month day and year components if they exist
@@ -1089,17 +1130,17 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     NSUInteger count = [dateComponents count];
     DEBUG_DATE(@"date components: %@, day:%ld month:%ld, year:%ld", dateComponents, datePosition.day, datePosition.month, datePosition.year);
     /**Initial Setting**/
-    BOOL didSwap = NO;
+    BOOL foundMonthName = NO;
     // day
     if (datePosition.day <= count) {
-	dateSet.day= [[dateComponents objectAtIndex:datePosition.day-1] intValue];
+	dateSet.day = [[dateComponents objectAtIndex:datePosition.day-1] intValue];
 	if (dateSet.day == 0) {
 	    // the only way for zero to get set is for intValue to be unable to return an int, which means its probably a month, swap day and month
 	    NSInteger position = datePosition.day;
 	    datePosition.day = datePosition.month;
 	    datePosition.month = position;
-	    dateSet.day= [[dateComponents objectAtIndex:datePosition.day-1] intValue];
-	    didSwap = YES;
+	    dateSet.day = [[dateComponents objectAtIndex:datePosition.day-1] intValue];
+	    foundMonthName = YES;
 	}
     }
     
@@ -1112,12 +1153,13 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	    NSString *yearString = [[dateComponents objectAtIndex:datePosition.year-1] lowercaseString];
 	    if (![yearString hasPrefix:@"0"])
 		dateSet.year = -1;
-	    if (dateSet.year == -1 && !didSwap) {
-		// the only way for zero to get set is for intValue to be unable to return an int, which means its probably a month, swap day and month
+	    if (dateSet.year == -1 && !foundMonthName) {
+		// the only way for zero to get set is for intValue to be unable to return an int, which means its probably a month, swap year and month
 		NSInteger position = datePosition.year;
 		datePosition.year = datePosition.month;
 		datePosition.month = position;
 		dateSet.year = [[dateComponents objectAtIndex:datePosition.year-1] intValue];
+                foundMonthName = YES;
 	    }
 	}
     }
@@ -1185,23 +1227,89 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 		dateSet.day = dateSet.month;
 		dateSet.month = day;
 	    }
-	}else if (count == 3 ) {
-	    DEBUG_DATE(@"sanity checking a 3 compoent date. Day: %ld, Month: %ld Year: %ld", dateSet.day, dateSet.month, dateSet.year);
-	    if (dateSet.day > 31) {
-		DEBUG_DATE(@"swap day and year");
-		NSInteger year = dateSet.year;
-		dateSet.year = dateSet.day;
-		dateSet.day = year;
-	    } else if (dateSet.month > 12 && dateSet.day <= 31 && dateSet.year <= 12) {
-		DEBUG_DATE(@"swap month and year");
-		NSInteger year = dateSet.year;
-		dateSet.year = dateSet.month;
-		dateSet.month = year;
-	    } else if ( dateSet.day <= 12 && dateSet.month > 12 ) {
-		DEBUG_DATE(@"swap day and month");
-		NSInteger day = dateSet.day;
-		dateSet.day = dateSet.month;
-		dateSet.month = day;
+	} else if (count == 3) {
+	    DEBUG_DATE(@"sanity checking a 3 component date. Day: %ld, Month: %ld Year: %ld", dateSet.day, dateSet.month, dateSet.year);
+            NSInteger originalYear = dateSet.year;
+            NSInteger originalMonth = dateSet.month;
+            NSInteger originalDay = dateSet.day;
+            NSInteger originalYearPosition = datePosition.year;
+            NSInteger originalMonthPosition = datePosition.month;
+            NSInteger originalDayPosition = datePosition.day;
+            if (originalMonth > 12 || originalDay > 31) {
+                // Something has to move
+                if (foundMonthName) {
+                    // We found the month, so the only thing we can swap is the day and the year
+                    if (originalDay <= 31 || originalYear > 31)
+                        break; // Swapping the year with the day won't help anything, so we're done here
+
+                    dateSet.year = originalDay;
+                    dateSet.day = originalYear;
+                    datePosition.year = originalDayPosition;
+                    datePosition.day = originalYearPosition;
+                } else if (sanity != 0) {
+                    // No names, just numbers. Let's try putting the year first if it wasn't already (ISO standard order: yyyy-MM-dd)
+                    if (originalYearPosition != 1) {
+                        if (originalMonthPosition == 1) {
+                            dateSet.year = originalMonth;
+                            datePosition.year = originalMonthPosition;
+                        } else {
+                            OBASSERT(datePosition.day == 1);
+                            dateSet.year = originalDay;
+                            datePosition.year = originalDayPosition;
+                        }
+                    }
+                    if (originalMonthPosition != 2) {
+                        if (originalYearPosition == 2) {
+                            dateSet.month = originalYear;
+                            datePosition.month = originalYearPosition;
+                        } else {
+                            dateSet.month = originalDay;
+                            datePosition.month = originalDayPosition;
+                        }
+                    }
+                    if (originalDayPosition != 3) {
+                        if (originalYearPosition == 3) {
+                            dateSet.day = originalYear;
+                            datePosition.day = originalYearPosition;
+                        } else {
+                            dateSet.day = originalMonth;
+                            datePosition.day = originalMonthPosition;
+                        }
+                    }
+                } else {
+                    // We already shifted the numbers to yyyy-MM-dd and that didn't help. Let's just see what fits.
+                    OBASSERT(originalYearPosition == 1);
+                    OBASSERT(originalMonthPosition == 2);
+                    OBASSERT(originalDayPosition == 3);
+
+                    if (originalYear > 31) {
+                        // Year has to stay put
+                    } else if (originalDay > 31) {
+                        // Swap the year with the oversized day
+                        dateSet.year = originalDay;
+                        dateSet.day = originalYear;
+                        datePosition.year = originalDayPosition;
+                        datePosition.day = originalYearPosition;
+                    } else if (originalMonth > 12) {
+                        // Swap the year with the oversized month
+                        dateSet.year = originalMonth;
+                        dateSet.month = originalYear;
+                        datePosition.year = originalMonthPosition;
+                        datePosition.month = originalYearPosition;
+                    }
+
+                    NSInteger updatedMonth = dateSet.month;
+                    NSInteger updatedDay = dateSet.day;
+                    if (updatedDay > 12) {
+                        // Day has to stay put
+                    } else if (updatedMonth > 12) {
+                        dateSet.month = updatedDay;
+                        dateSet.day = updatedMonth;
+                        NSInteger oldMonthPosition = datePosition.month;
+                        datePosition.month = datePosition.day;
+                        datePosition.day = oldMonthPosition;
+                    }
+                }
 	    }
 	    DEBUG_DATE(@"after any swaps we're now at: Day: %ld, Month: %ld Year: %ld", dateSet.day, dateSet.month, dateSet.year);
 	}
@@ -1217,11 +1325,11 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     }
     
     // fiddle with year
-    if (readYear) {
-	if (dateSet.year >= 90 && dateSet.year <= 99)
+    if (readYear && dateSet.year < 100 && ![[dateComponents objectAtIndex:datePosition.year - 1] hasPrefix:@"00"]) {
+	if (dateSet.year >= 90)
 	    dateSet.year += 1900;
 	else if (dateSet.year < 90)
-	    dateSet.year +=2000;
+	    dateSet.year += 2000;
     } 
  
     return dateSet;
@@ -1291,11 +1399,12 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 
     DEBUG_DATE(@"Parse Natural Language Date String (after normalization): \"%@\"", dateString );
 
-    OFRelativeDateParserRelativity modifier = OFRelativeDateParserNoRelativity; // look for a modifier as the first part of the string
+    OFRelativeDateParserRelativity relativityModifier = OFRelativeDateParserNoRelativity; // look for a modifier as the first part of the string
+    OFRelativeDateParserRelativity monthRelativityModifier = OFRelativeDateParserNoRelativity;
     NSDateComponents *currentComponents = [calendar components:unitFlags fromDate:date]; // the given date as components
     
     DEBUG_DATE(@"PRE comps. m: %ld, d: %ld, y: %ld", [currentComponents month], [currentComponents day], [currentComponents year]);
-    int multiplier = [self _multiplierForModifer:modifier];
+    int multiplier = [self _multiplierForModifer:relativityModifier];
     
     NSInteger month = -1;
     NSInteger weekday = -1;
@@ -1334,6 +1443,14 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                         // If we are in the middle of a word, don't consume the match.
                         // When we clean up this code (rewrite the parsing loop?) we should probably make it so that we have a flattened list of words and associated quanitites that we parse all at once, preferring longest match.
 
+                        if (![scanner isAtEnd]) {
+                            unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
+                            if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
+                                [scanner setScanLocation:savedScanLocation];
+                                continue;
+                            }
+                        }
+
                         // array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
                         NSArray *dateOffset = [relativeDateNames objectForKey:match];
 
@@ -1342,14 +1459,6 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                         if ([dateOffset[2] integerValue] == OFRelativeDateParserNowRelativity) {
                             date = [NSDate date];
                             currentComponents = [calendar components:unitFlags fromDate:date];
-                        }
-
-                        if (![scanner isAtEnd]) {
-                            unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
-                            if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
-                                [scanner setScanLocation:savedScanLocation];
-                                continue;
-                            }
                         }
 
                         DEBUG_DATE(@"found relative date match: %@", match);
@@ -1429,9 +1538,9 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	    while ((pattern = [patternEnum nextObject])) {
 		NSString *match;
 		if ([scanner scanString:pattern intoString:&match]) {
-		    modifier = [[_modifiers objectForKey:pattern] intValue];
+		    relativityModifier = [[_modifiers objectForKey:pattern] intValue];
 		    DEBUG_DATE(@"Found Modifier: %@", match);
-		    multiplier = [self _multiplierForModifer:modifier];
+		    multiplier = [self _multiplierForModifer:relativityModifier];
 		    modifierForNumber = YES;
 		}
 	    }
@@ -1453,6 +1562,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                         }
 
                         month = [self _monthIndexForString:match];
+                        monthRelativityModifier = relativityModifier;
                         scanned = YES;
                         DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                         break;
@@ -1520,6 +1630,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                 NSString *match;
                 if ([scanner scanString:name intoString:&match]) {
                     month = [self _monthIndexForString:match];
+                    monthRelativityModifier = relativityModifier;
                     scanned = YES;
                     DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                 }
@@ -1533,6 +1644,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                 NSString *match;
                 if ([scanner scanString:name intoString:&match]) {
                     month = [self _monthIndexForString:match];
+                    monthRelativityModifier = relativityModifier;
                     scanned = YES;
                     DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
                 }
@@ -1558,12 +1670,53 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
         if (number != -1) {
             needToProcessNumber = NO;
             
+            BOOL foundCode = NO;
+            if ([scanner scanString:@":" intoString:NULL]) {
+                // Scan a time
+                [currentComponents setHour:number];
+                if ([scanner scanInt:&number]) {
+                    [currentComponents setMinute:number];
+                    if ([scanner scanString:@":" intoString:NULL] && [scanner scanInt:&number]) {
+                        [currentComponents setSecond:number];
+                    }
+                }
+                [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+
+                scanned = YES;
+                foundCode = YES;
+                number = -1;
+            }
+
+            if (![scanner isAtEnd]) {
+                NSUInteger previousLocation = [scanner scanLocation];
+                NSString *nextToken = nil;
+                BOOL foundMeridian = [scanner scanCharactersFromSet:[NSCharacterSet lowercaseLetterCharacterSet] intoString:&nextToken] && [self _isMeridianString:nextToken calendar:calendar];
+                if (foundMeridian) {
+                    if (number != -1) {
+                        scanned = YES;
+                        foundCode = YES;
+                        [currentComponents setHour:number];
+                        number = -1;
+                    }
+
+                    BOOL isPM = [self _isPostmeridianString:nextToken calendar:calendar];
+                    if (currentComponents.hour == 12) {
+                        currentComponents.hour = isPM ? 12 : 0;
+                    } else if (currentComponents.hour < 12 && isPM) {
+                        currentComponents.hour = currentComponents.hour + 12;
+                    }
+
+                    [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+                } else {
+                    [scanner setScanLocation:previousLocation];
+                }
+            }
+
             NSArray *keys = [_codes allKeys];
             NSDictionary *codesTable = _codes;
             NSArray *sortedKeyArray = [keys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
             NSEnumerator *codeEnum = [[sortedKeyArray reversedArray] objectEnumerator];
             NSString *codeString = nil;
-            BOOL foundCode = NO;
             while ((codeString = [codeEnum nextObject]) && !foundCode && (![scanner isAtEnd])) {
                 if ([scanner scanString:codeString intoString:NULL]) {
                     dpCode = [[codesTable objectForKey:codeString] intValue];
@@ -1601,7 +1754,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                     if (year > 90 && year < 100)
                         year += 1900;
                     else if (year < 90)
-                        year +=2000;
+                        year += 2000;
                 } else {
                     day = number;
                     daySpecific = YES;
@@ -1611,7 +1764,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
                 if (year > 90)
                     year += 1900;
                 else 
-                    year +=2000;
+                    year += 2000;
             }
         }
         
@@ -1619,11 +1772,11 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
 	
 	if (weekday != -1) {
-	    date = [self _modifyDate:date withWeekday:weekday withModifier:modifier calendar:calendar];
+	    date = [self _modifyDate:date withWeekday:weekday withModifier:relativityModifier calendar:calendar];
 	    currentComponents = [calendar components:unitFlags fromDate:date];
 	    weekday = -1;
-	    modifier = 0;
-	    multiplier = [self _multiplierForModifer:modifier];
+	    relativityModifier = 0;
+	    multiplier = [self _multiplierForModifer:relativityModifier];
 	}
 	
 	//check for any modifier again, before checking for numbers, so that we can record the proper modifier
@@ -1632,8 +1785,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	while ((pattern = [patternEnum nextObject])) {
 	    NSString *match;
 	    if ([scanner scanString:pattern intoString:&match]) {
-		modifier = [[_modifiers objectForKey:pattern] intValue];
-		multiplier = [self _multiplierForModifer:modifier];
+		relativityModifier = [[_modifiers objectForKey:pattern] intValue];
+		multiplier = [self _multiplierForModifer:relativityModifier];
 		modifierForNumber = YES;
 	    }
 	} 
@@ -1644,15 +1797,16 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	    scanned = YES;
 	}
 	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+
+        if (!scanned) {
+            // if we haven't made any progress, skip punctuation
+            if ([scanner scanCharactersFromSet:[NSCharacterSet punctuationCharacterSet] intoString:NULL]) {
+                DEBUG_DATE(@"skipped some punctuation");
+                scanned = YES;
+            }
+        }
 	
-	// eat any punctuation
-	BOOL punctuation = NO;
-	if ([scanner scanCharactersFromSet:[NSCharacterSet punctuationCharacterSet] intoString:NULL]) {
-	    DEBUG_DATE(@"scanned some symbols");
-	    punctuation = YES;
-	}
-	
-	if ([scanner scanLocation] == [[scanner string] length] && !needToProcessNumber) {
+	if ([scanner isAtEnd] && !needToProcessNumber) {
 	    break;
 	} else {
 	    if (!scanned) {
@@ -1665,10 +1819,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	//		@"we were unable to parse something, return an error for string" // description
 	//		);
 	if (number == -1 && !scanned) {
-	    if (!punctuation) {
-		DEBUG_DATE(@"ERROR String: %@, number: %d loc: %ld", dateString, number, [scanner scanLocation]);
-		return nil;
-	    }
+            DEBUG_DATE(@"ERROR String: %@, number: %d loc: %ld", dateString, number, [scanner scanLocation]);
+            return nil;
 	}
 	
     } // scanner
@@ -1690,13 +1842,13 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	    // find the last month of the year ?
 	}
 	month+=1;
-	[currentComponents setYear:[self _determineYearForMonth:month withModifier:modifier fromCurrentMonth:[currentComponents month] fromGivenYear:[currentComponents year]]];
-	[currentComponents setMonth:month];
+	currentComponents.year = [self _determineYearForMonth:month withModifier:monthRelativityModifier fromCurrentMonth:currentComponents.month fromGivenYear:currentComponents.year];
+	currentComponents.month = month;
     }
     
     // TODO: default year?
     if (year != -1) 
-	[currentComponents setYear:year];
+	currentComponents.year = year;
     
     date = [calendar dateFromComponents:currentComponents];
     DEBUG_DATE(@"comps. m: %ld, d: %ld, y: %ld", [currentComponents month], [currentComponents day], [currentComponents year]);
@@ -1832,41 +1984,41 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 {
     codeInt*=multiplier;
     switch (dpCode) {
-	case DPHour:
-	    if ([components hour] == NSDateComponentUndefined)
-		[components setHour:codeInt];
-	    else
-		[components setHour:[components hour] + codeInt];
-	    DEBUG_DATE( @"Added %d hours to the components, now at: %ld hours", codeInt, [components hour] );
-	    break;
-	    case DPDay:
-	    if ([components day] == NSDateComponentUndefined)
-		[components setDay:codeInt];
-	    else 
-		[components setDay:[components day] + codeInt];
-	    DEBUG_DATE( @"Added %d days to the components, now at: %ld days", codeInt, [components day] );
-	    break;
-	    case DPWeek:
-	    if ([components day] == NSDateComponentUndefined)
-		[components setDay:codeInt*7];
-	    else
-		[components setDay:[components day] + codeInt*7];
-	    DEBUG_DATE( @"Added %d weeks(ie. days) to the components, now at: %ld days", codeInt, [components day] );
-	    break;
-	    case DPMonth:
-	    if ([components month] == NSDateComponentUndefined)
-		[components setMonth:codeInt];
-	    else 
-		[components setMonth:[components month] + codeInt];
-	    DEBUG_DATE( @"Added %d months to the components, now at: %ld months", codeInt, [components month] );
-	    break;
-	    case DPYear:
-	    if ([components year] == NSDateComponentUndefined)
-		[components setYear:codeInt];
-	    else 
-		[components setYear:[components year] + codeInt];
-	    DEBUG_DATE( @"Added %d years to the components, now at: %ld years", codeInt, [components year] );
-	    break;
+        case DPHour:
+            if ([components hour] == NSDateComponentUndefined)
+                [components setHour:codeInt];
+            else
+                [components setHour:[components hour] + codeInt];
+            DEBUG_DATE( @"Added %d hours to the components, now at: %ld hours", codeInt, [components hour] );
+            break;
+        case DPDay:
+            if ([components day] == NSDateComponentUndefined)
+                [components setDay:codeInt];
+            else
+                [components setDay:[components day] + codeInt];
+            DEBUG_DATE( @"Added %d days to the components, now at: %ld days", codeInt, [components day] );
+            break;
+        case DPWeek:
+            if ([components day] == NSDateComponentUndefined)
+                [components setDay:codeInt*7];
+            else
+                [components setDay:[components day] + codeInt*7];
+            DEBUG_DATE( @"Added %d weeks(ie. days) to the components, now at: %ld days", codeInt, [components day] );
+            break;
+        case DPMonth:
+            if ([components month] == NSDateComponentUndefined)
+                [components setMonth:codeInt];
+            else
+                [components setMonth:[components month] + codeInt];
+            DEBUG_DATE( @"Added %d months to the components, now at: %ld months", codeInt, [components month] );
+            break;
+        case DPYear:
+            if ([components year] == NSDateComponentUndefined)
+                [components setYear:codeInt];
+            else 
+                [components setYear:[components year] + codeInt];
+            DEBUG_DATE( @"Added %d years to the components, now at: %ld years", codeInt, [components year] );
+            break;
     }
 }
 

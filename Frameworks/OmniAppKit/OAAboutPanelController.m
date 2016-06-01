@@ -7,9 +7,9 @@
 //
 //  Created by Timothy J. Wood on 11/21/05.
 
-#import "OAAboutPanelController.h"
+#import <OmniAppKit/OAAboutPanelController.h>
 
-#import "NSLayoutManager-OAExtensions.h"
+#import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>

@@ -1,13 +1,13 @@
-// Copyright 1999-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "ONInterface.h"
+#import <OmniNetworking/ONInterface.h>
 
-#import "ONHostAddress.h"
+#import <OmniNetworking/ONHostAddress.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>

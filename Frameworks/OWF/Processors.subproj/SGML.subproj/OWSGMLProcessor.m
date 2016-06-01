@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,22 +11,22 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSString-OWSGMLString.h"
-#import "OWAbstractObjectStream.h"
-#import "OWContentCacheProtocols.h"
-#import "OWContentInfo.h"
-#import "OWContentType.h"
-#import "OWDocumentTitle.h"
-#import "OWHeaderDictionary.h"
-#import "OWObjectStreamCursor.h"
-#import "OWPipeline.h"
-#import "OWAddress.h"
-#import "OWSGMLAppliedMethods.h"
-#import "OWSGMLDTD.h"
-#import "OWSGMLMethods.h"
-#import "OWSGMLTag.h"
-#import "OWSGMLTagType.h"
-#import "OWURL.h"
+#import <OWF/NSString-OWSGMLString.h>
+#import <OWF/OWAbstractObjectStream.h>
+#import <OWF/OWContentCacheProtocols.h>
+#import <OWF/OWContentInfo.h>
+#import <OWF/OWContentType.h>
+#import <OWF/OWDocumentTitle.h>
+#import <OWF/OWHeaderDictionary.h>
+#import <OWF/OWObjectStreamCursor.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWAddress.h>
+#import <OWF/OWSGMLAppliedMethods.h>
+#import <OWF/OWSGMLDTD.h>
+#import <OWF/OWSGMLMethods.h>
+#import <OWF/OWSGMLTag.h>
+#import <OWF/OWSGMLTagType.h>
+#import <OWF/OWURL.h>
 
 
 RCS_ID("$Id$")

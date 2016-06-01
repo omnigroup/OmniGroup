@@ -1,25 +1,25 @@
-// Copyright 2003-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWStaticArc.h"
+#import <OWF/OWStaticArc.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 
-#import "NSDate-OWExtensions.h"
-#import "OWAddress.h"
-#import "OWContent.h"
-#import "OWContentCacheGroup.h"
-#import "OWContentType.h"
-#import "OWDataStream.h"
-#import "OWPipeline.h"
-#import "OWProcessor.h"
+#import <OWF/NSDate-OWExtensions.h>
+#import <OWF/OWAddress.h>
+#import <OWF/OWContent.h>
+#import <OWF/OWContentCacheGroup.h>
+#import <OWF/OWContentType.h>
+#import <OWF/OWDataStream.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWProcessor.h>
 
 #ifdef DEBUG_kc
 #define DEBUG_Invalidation

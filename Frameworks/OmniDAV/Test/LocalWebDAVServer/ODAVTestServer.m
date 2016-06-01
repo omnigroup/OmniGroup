@@ -119,6 +119,7 @@ RCS_ID("$Id$")
     
     [apacheTask launch];
     NSLog(@"Starting test apache as pid %d", apacheTask.processIdentifier);
+    NSLog(@"  filesystem path: %@", apacheSroot);
     
     /* Wait for Apache to write its pid to the configured path --- this lets us wait until it has finished reading its config file, etc., and is basically running, before trying to run any tests against it. */
     for(int i = 0; i < 10; i++) {

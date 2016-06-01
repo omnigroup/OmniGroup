@@ -44,6 +44,9 @@ extern NSString * const OAAppearanceTestBaselineEdgeInsetKey; // edge inset stru
 @property (readonly) NSString *SpecialLeafyString;
 @end
 
+@interface OAAppearanceTestInvalidPlist : OAAppearanceTestBaseline
+@end
+
 /// Test class covering all property encodings
 @interface OAAppearanceTestEncodingCoverage: OAAppearance <OAAppearancePropertyListCodeable>
 @property (readonly) NSString *string;

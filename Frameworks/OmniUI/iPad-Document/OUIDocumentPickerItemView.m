@@ -116,7 +116,11 @@ static id _commonInit(OUIDocumentPickerItemView *self)
         if (view != self) {
             view.translatesAutoresizingMaskIntoConstraints = NO;
         }
-        return OUIViewVisitorResultContinue;
+        if (view == self.metadataView.transferProgressView) {
+            return OUIViewVisitorResultSkipSubviews;  // otherwise, we turn off layout that UIKit is depending on
+        } else {
+            return OUIViewVisitorResultContinue;
+        }
     }];
     [NSLayoutConstraint activateConstraints:[self constraintsForBasicLayout]];
     

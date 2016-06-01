@@ -199,7 +199,8 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
             desc = [desc newFontDescriptorWithBold:flag];
-            [object setFontDescriptor:desc fromInspectorSlice:self];
+            [object setFontDescriptor:desc fromInspectorSlice:self undoManager:self.undoManager];
+            //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
         }
     }
     [self.inspector didEndChangingInspectedObjects];
@@ -213,7 +214,8 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
             desc = [desc newFontDescriptorWithItalic:flag];
-            [object setFontDescriptor:desc fromInspectorSlice:self];
+            [object setFontDescriptor:desc fromInspectorSlice:self undoManager:self.undoManager];
+            //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
         }
     }
     [self.inspector didEndChangingInspectedObjects];

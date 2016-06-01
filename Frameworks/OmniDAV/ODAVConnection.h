@@ -8,10 +8,12 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <Foundation/NSURLSession.h>
 #import <OmniDAV/ODAVFeatures.h>
 
-@class NSURLCredential, NSURLAuthenticationChallenge;
+@class NSURLCredential, NSURLAuthenticationChallenge, NSOperation;
 @class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult, ODAVURLAndDataResult;
+@protocol OFCertificateTrustDisposition, OFCredentialChallengeDisposition;
 
 typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);
 typedef void (^ODAVConnectionOperationCompletionHandler)(ODAVOperation *op);
@@ -55,8 +57,11 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @property(nonatomic,copy) NSString *operationReason;
 
 // NOTE: These get called on a private queue, not the queue the connection was created on or the queue the operations were created or started on
-@property(nonatomic,copy) void (^validateCertificateForChallenge)(NSURLAuthenticationChallenge *challenge);
-@property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(NSURLAuthenticationChallenge *challenge);
+// validateCertificateForChallenge: Decide whether to trust a server (NSURLAuthenticationMethodServerTrust), and return the adjusted SecTrustRef credential if so. Returning nil is equivalent to not setting a callback in the first place, which results in NSURLSessionAuthChallengeRejectProtectionSpace. (TODO: Should it be default handling instead of reject?)
+// This callback should simply apply any stored exceptions or similar overrides, but probably shouldn't prompt the user: if it takes too long the server may drop the connection, and NSURLSession doesn't automatically handle that timeout. Instead, users of OmniDAV should run a trust dialog if an operation fails for a server-trust-related reason.
+@property(nonatomic,copy) NSURLCredential *(^validateCertificateForChallenge)(NSURLAuthenticationChallenge *challenge);
+// findCredentialsForChallenge: Start an operation to get a username+password for an operation, and return it. The DAV operation will be canceled, but the NSOperation will be returned in the error block for the caller to wait on if it wants. (In the future we may want the DAV operation to wait on the NSOperation automatically.)
+@property(nonatomic,copy) NSOperation <OFCredentialChallengeDisposition> *(^findCredentialsForChallenge)(NSURLAuthenticationChallenge *challenge);
 
 - (void)deleteURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(ODAVConnectionBasicCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag;
@@ -157,4 +162,5 @@ extern void ODAVSyncOperations(const char *file, unsigned line, ODAVAddOperation
 - (BOOL)synchronousUnlockURL:(NSURL *)url token:(NSString *)lockToken error:(NSError **)outError;
 
 @end
+
 

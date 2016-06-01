@@ -19,6 +19,15 @@ RCS_ID("$Id$");
     return set == nil || set.count == 0;
 }
 
++ (instancetype)setByEnumerating:(NSEnumerator *)enumerator;
+{
+    NSMutableSet *set = [NSMutableSet set];
+    for (id obj in enumerator) {
+        [set addObject:obj];
+    }
+    return [self setWithSet:set];
+}
+
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 {
     return [self setByPerformingBlock:^(id object){

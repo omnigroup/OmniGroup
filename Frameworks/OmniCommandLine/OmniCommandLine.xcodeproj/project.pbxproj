@@ -17,7 +17,7 @@
 		34824B4B1742E77300253D52 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34824B331742E75A00253D52 /* OmniFoundation.framework */; };
 		34824B4E1742E80400253D52 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34824B4C1742E80400253D52 /* InfoPlist.strings */; };
 		34824CBF1742E94C00253D52 /* OmniCommandLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 34824CBE1742E94C00253D52 /* OmniCommandLine.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34824CC01742E95200253D52 /* OmniCommandLine_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 34824AB31742E3C200253D52 /* OmniCommandLine_Prefix.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34824CC01742E95200253D52 /* OmniCommandLine_Prefix.h in Headers */ = {isa = PBXBuildFile; fileRef = 34824AB31742E3C200253D52 /* OmniCommandLine_Prefix.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */

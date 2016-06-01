@@ -1,0 +1,499 @@
+{
+  "M68AP": {
+    "name": "iPhone 1"
+  },
+  "N82AP": {
+    "name": "iPhone 3G"
+  },
+  "N88AP": {
+    "name": "iPhone 3GS"
+  },
+  "N90AP": {
+    "name": "iPhone 4 (GSM)"
+  },
+  "N90bAP": {
+    "name": "iPhone 4 (GSM)",
+    "comment": "Revision A"
+  },
+  "N92AP": {
+    "name": "iPhone 4 (CDMA)"
+  },
+  "N94AP": {
+    "name": "iPhone 4S"
+  },
+  "N41AP": {
+    "name": "iPhone 5 (NA)"
+  },
+  "N42AP": {
+    "name": "iPhone 5 (World)"
+  },
+  "N48AP": {
+    "name": "iPhone 5c (GSM)",
+    "platform": "iPhone5,3"
+  },
+  "N49AP": {
+    "name": "iPhone 5c (World)",
+    "platform": "iPhone5,4"
+  },
+  "N51AP": {
+    "name": "iPhone 5s",
+    "platform": "iPhone6,1",
+    "comment": "US/China/Japan"
+  },
+  "N53AP": {
+    "name": "iPhone 5s",
+    "platform": "iPhone6,2",
+    "comment": "UK/Europe"
+  },
+  "N56AP": {
+    "name": "iPhone 6 Plus",
+    "platform": "iPhone7,1"
+  },
+  "N61AP": {
+    "name": "iPhone 6",
+    "platform": "iPhone7,2"
+  },
+  "N71AP": {
+    "name": "iPhone 6s",
+    "platform": "iPhone8,1",
+    "comment": "Samsung A9 chip"
+  },
+  "N71mAP": {
+    "name": "iPhone 6s",
+    "comment": "TSMC A9 chip"
+  },
+  "N66AP": {
+    "name": "iPhone 6s Plus",
+    "platform": "iPhone8,2",
+    "comment": "Samsung A9 chip"
+  },
+  "N66mAP": {
+    "name": "iPhone 6s Plus",
+    "platform": "iPhone8,2",
+    "comment": "TSMC A9 chip"
+  },
+  "N69AP": {
+    "name": "iPhone SE",
+    "platform": "iPhone8,4",
+    "comment": "Samsung A9 chip"
+  },
+  "N69uAP": {
+    "name": "iPhone SE",
+    "platform": "iPhone8,4",
+    "comment": "TSMC A9 chip"
+  },
+  "K48AP": {
+    "name": "iPad 1"
+  },
+  "K93AP": {
+    "name": "iPad 2 (Wi-Fi)"
+  },
+  "K93aAP": {
+    "name": "iPad 2 (Wi-Fi)",
+    "comment": "Slightly newer CPU"
+  },
+  "K94AP": {
+    "name": "iPad 2 (3G)"
+  },
+  "K95AP": {
+    "name": "iPad 2 (CDMA)"
+  },
+  "J1AP": {
+    "name": "iPad 3",
+    "platform": "iPad3,1"
+  },
+  "J2AP": {
+    "name": "iPad 3 (CDMA)",
+    "platform": "iPad3,2"
+  },
+  "J2aAP": {
+    "name": "iPad 3 (GSM)",
+    "platform": "iPad3,3"
+  },
+  "P101AP": {
+    "name": "iPad 4 (Wi-Fi)",
+    "platform": "iPad3,4"
+  },
+  "P102AP": {
+    "name": "iPad 4 (LTE)",
+    "platform": "iPad3,5"
+  },
+  "P103AP": {
+    "name": "iPad 4 (CDMA)",
+    "platform": "iPad3,6"
+  },
+  "J71AP": {
+    "name": "iPad Air (Wi-Fi)",
+    "platform": "iPad4,1"
+  },
+  "J72AP": {
+    "name": "iPad Air (GSM)",
+    "platform": "iPad4,2"
+  },
+  "J73AP": {
+    "name": "iPad Air (China)",
+    "platform": "iPad4,3"
+  },
+  "J85AP": {
+    "name": "iPad miniR (Wi-Fi)",
+    "platform": "iPad4,4"
+  },
+  "J86AP": {
+    "name": "iPad miniR (GSM)",
+    "platform": "iPad4,5"
+  },
+  "J87AP": {
+    "name": "iPad miniR (China)",
+    "platform": "iPad4,6"
+  },
+  "J85mAP": {
+    "name": "iPad mini 3 (Wi-Fi)",
+    "platform": "iPad4,7"
+  },
+  "J86mAP": {
+    "name": "iPad mini 3 (LTE)",
+    "platform": "iPad4,8"
+  },
+  "J87mAP": {
+    "name": "iPad mini 3 (China)",
+    "platform": "iPad4,9"
+  },
+  "P105AP": {
+    "name": "iPad mini (Wi-Fi)",
+    "platform": "iPad2,5"
+  },
+  "P106AP": {
+    "name": "iPad mini (GSM)",
+    "platform": "iPad2,6"
+  },
+  "P107AP": {
+    "name": "iPad mini (LTE)",
+    "platform": "iPad2,7"
+  },
+  "J96AP": {
+    "name": "iPad mini 4 (Wi-Fi)",
+    "platform": "iPad5,1"
+  },
+  "J97AP": {
+    "name": "iPad mini 4 (LTE)",
+    "platform": "iPad5,2"
+  },
+  "J81AP": {
+    "name": "iPad Air 2 (Wi-Fi)",
+    "platform": "iPad5,3"
+  },
+  "J82AP": {
+    "name": "iPad Air 2 (LTE)",
+    "platform": "iPad5,4"
+  },
+  "J98aAP": {
+    "name": "iPad Pro",
+    "platform": "iPad6,7"
+  },
+  "J99aAP": {
+    "name": "iPad Pro",
+    "platform": "iPad6,8"
+  },
+  "N45AP": {
+    "name": "iPod Touch 1G"
+  },
+  "N72AP": {
+    "name": "iPod Touch 2G"
+  },
+  "N18AP": {
+    "name": "iPod Touch 3G"
+  },
+  "N81AP": {
+    "name": "iPod Touch 4G"
+  },
+  "N78AP": {
+    "name": "iPod Touch 5G"
+  },
+  "N78aAP": {
+    "name": "iPod Touch 5G",
+    "comment": "Smaller flash"
+  },
+  "N102AP": {
+    "name": "iPod Touch 6G"
+  },
+  "K66AP": {
+    "name": "Apple TV 2G"
+  },
+  "J33AP": {
+    "name": "Apple TV 3"
+  },
+  "J33iAP": {
+    "name": "Apple TV 3"
+  },
+  "J42dAP": {
+    "name": "Apple TV 4",
+    "platform": "AppleTV5,3"
+  },
+  "iMac,1": {
+    "name": "iMac G3"
+  },
+  "iMac4,1": {
+    "name": "iMac"
+  },
+  "iMac4,2": {
+    "name": "iMac"
+  },
+  "iMac5,2": {
+    "name": "iMac"
+  },
+  "iMac5,1": {
+    "name": "iMac"
+  },
+  "iMac6,1": {
+    "name": "iMac"
+  },
+  "iMac7,1": {
+    "name": "iMac"
+  },
+  "iMac8,1": {
+    "name": "iMac"
+  },
+  "iMac9,1": {
+    "name": "iMac"
+  },
+  "iMac10,1": {
+    "name": "iMac"
+  },
+  "iMac11,1": {
+    "name": "iMac"
+  },
+  "iMac11,2": {
+    "name": "iMac"
+  },
+  "iMac11,3": {
+    "name": "iMac"
+  },
+  "iMac12,1": {
+    "name": "iMac"
+  },
+  "iMac12,2": {
+    "name": "iMac"
+  },
+  "iMac13,1": {
+    "name": "iMac"
+  },
+  "iMac13,2": {
+    "name": "iMac"
+  },
+  "iMac14,1": {
+    "name": "iMac"
+  },
+  "iMac14,3": {
+    "name": "iMac"
+  },
+  "iMac14,2": {
+    "name": "iMac"
+  },
+  "iMac14,4": {
+    "name": "iMac"
+  },
+  "iMac15,1": {
+    "name": "iMac"
+  },
+  "iMac16,1": {
+    "name": "iMac"
+  },
+  "iMac16,2": {
+    "name": "iMac"
+  },
+  "iMac17,1": {
+    "name": "iMac"
+  },
+  "Macmini1,1": {
+    "name": "Mac mini"
+  },
+  "Macmini2,1": {
+    "name": "Mac mini"
+  },
+  "Macmini3,1": {
+    "name": "Mac mini"
+  },
+  "Macmini4,1": {
+    "name": "Mac mini"
+  },
+  "Macmini5,1": {
+    "name": "Mac mini"
+  },
+  "Macmini5,2": {
+    "name": "Mac mini"
+  },
+  "Macmini5,3": {
+    "name": "Mac mini"
+  },
+  "Macmini6,1": {
+    "name": "Mac mini"
+  },
+  "Macmini6,2": {
+    "name": "Mac mini"
+  },
+  "Macmini7,1": {
+    "name": "Mac mini"
+  },
+  "MacPro1,1*": {
+    "name": "Mac Pro"
+  },
+  "MacPro2,1": {
+    "name": "Mac Pro"
+  },
+  "MacPro3,1": {
+    "name": "Mac Pro"
+  },
+  "MacPro4,1": {
+    "name": "Mac Pro"
+  },
+  "MacPro5,1": {
+    "name": "Mac Pro"
+  },
+  "MacPro6,1": {
+    "name": "Mac Pro"
+  },
+  "MacBook1,1": {
+    "name": "MacBook"
+  },
+  "MacBook2,1": {
+    "name": "MacBook"
+  },
+  "MacBook3,1": {
+    "name": "MacBook"
+  },
+  "MacBook4,1": {
+    "name": "MacBook"
+  },
+  "MacBook5,1": {
+    "name": "MacBook"
+  },
+  "MacBook5,2": {
+    "name": "MacBook"
+  },
+  "MacBook6,1": {
+    "name": "MacBook"
+  },
+  "MacBook7,1": {
+    "name": "MacBook"
+  },
+  "MacBook8,1": {
+    "name": "MacBook"
+  },
+  "MacBookAir1,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir2,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir3,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir3,2": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir4,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir4,2": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir5,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir5,2": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir6,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir6,2": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir7,1": {
+    "name": "MacBook Air"
+  },
+  "MacBookAir7,2": {
+    "name": "MacBook Air"
+  },
+  "MacBookPro1,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro1,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro2,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro2,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro3,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro4,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro5,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro5,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro5,5": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro5,4": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro5,3": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro7,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro6,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro6,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro8,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro8,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro8,3": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro9,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro9,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro10,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro10,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro11,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro11,2": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro11,3": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro12,1": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro11,4": {
+    "name": "MacBook Pro"
+  },
+  "MacBookPro11,5": {
+    "name": "MacBook Pro"
+  }
+}

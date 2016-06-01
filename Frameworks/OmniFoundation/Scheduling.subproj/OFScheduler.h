@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,7 @@
 + (OFScheduler *)mainSchedulerIfCreated;
 + (OFDedicatedThreadScheduler *)dedicatedThreadScheduler;
 
+- (void)scheduleEvents;
 - (void)scheduleEvent:(OFScheduledEvent *)event;
 - (BOOL)abortEvent:(OFScheduledEvent *)anEvent;
 - (void)abortSchedule;

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OASlowLoadingImage.h"
+#import <OmniAppKit/OASlowLoadingImage.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>

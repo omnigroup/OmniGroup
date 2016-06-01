@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <OWF/FrameworkDefines.h>
 
 // An OWAuthorizationRequest encapsulates one request from a protocol processor for authentication information. It checks the credential cache, etc., but its main purpose is to manage the user dialogue (the document- or app-modal prompt, and dealing with the event loop / background-thread synchronization).
 
@@ -44,7 +43,7 @@
     NSString *errorString;              // String error message if we've had an error
 }
 
-OWF_EXTERN NSString *OWAuthorizationCacheChangedNotificationName;
+extern NSString * const OWAuthorizationCacheChangedNotificationName;
 
 // Users of the framework can install a subclass of this class which knows how to do user interaction
 + (Class)authorizationRequestClass;
@@ -86,5 +85,5 @@ OWF_EXTERN NSString *OWAuthorizationCacheChangedNotificationName;
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;
 @end
 
-OWF_EXTERN NSString *OWAuthorizationRequestKeychainExceptionName;
-OWF_EXTERN NSString *OWAuthorizationRequestKeychainExceptionKeychainStatusKey;
+extern NSString * const OWAuthorizationRequestKeychainExceptionName;
+extern NSString * const OWAuthorizationRequestKeychainExceptionKeychainStatusKey;

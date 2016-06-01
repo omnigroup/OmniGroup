@@ -19,6 +19,9 @@
 #define PREDICATE_BLOCK BOOL(^)(ObjectType)
 #define MAP_BLOCK id(^)(ObjectType)
 
+/// Builds a new array by calling the valueAtIndex block for 0..<length. Currently always returns an immutable array since we can't do "instancetype<ObjectType>"
++ (NSArray <ObjectType> *)arrayWithCount:(NSUInteger)count valueAtIndex:(ObjectType (^)(NSUInteger))valueAtIndex;
+
 - (ObjectType)anyObject;
     // Returns any object from the array.
 

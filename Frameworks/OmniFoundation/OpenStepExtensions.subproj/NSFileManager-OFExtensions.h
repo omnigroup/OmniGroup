@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@
 // Note: these are *not* industrial-strength robust file locks, but will do for occasional use.
 
 - (NSDictionary *)lockFileAtPath:(NSString *)path overridingExistingLock:(BOOL)override created:(BOOL *)outCreated error:(NSError **)outError;
-- (void)unlockFileAtPath:(NSString *)path;
+- (void)unlockFileAtPath:(NSString *)path  DEPRECATED_MSG_ATTRIBUTE("-unlockFileAtPath: has been nonfunctional since 2008");
 
 // Special directories
 - (NSURL *)trashDirectoryURLForURL:(NSURL *)fileURL error:(NSError **)outError;

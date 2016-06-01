@@ -8,7 +8,7 @@
 #import "OFXTestCase.h"
 
 #import "OFXTrace.h"
-#import "OFXAccountClientParameters.h"
+#import <OmniFileExchange/OFXAccountClientParameters.h>
 
 #import <OmniFoundation/OFNull.h>
 #import <OmniDAV/ODAVErrors.h>

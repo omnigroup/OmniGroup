@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,14 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 #import <CoreFoundation/CoreFoundation.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSRange-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSDocumentKey.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
-#import <OmniFileStore/OFSEncryption-Internal.h>
+#import "OFSEncryption-Internal.h"
 #import <OmniFileStore/Errors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <dispatch/dispatch.h>
@@ -25,7 +26,9 @@ RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
-static NSError *headerError(const char *detai) __attribute__((cold));
+static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertextLength, NSError **outError);
+static NSError *headerError(const char *detail) __attribute__((cold));
+static NSError *badMagic(const char *detail) __attribute__((cold));
 static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((cold,unused));
 #define unsupportedError(e, t) do{ if(e) { *(e) = unsupportedError_(__LINE__, t); } }while(0)
 
@@ -42,7 +45,8 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 
 + (size_t)maximumSlotOffset;
 {
-    return FMT_V0_6_MAGIC_LEN /* Magic number */ + 2 /* Key info length */ + 16 /* Only need 2 bytes for slot number; being generous */;
+    /* This returns the maximum file prefix length we need in order to discover the key slot of a file. It's used when "tasting" for expired keys. */
+    return MAX(FMT_V0_6_MAGIC_LEN, FMT_V1_0_MAGIC_LEN) /* Magic number */ + 2 /* Key info length */ + 16 /* Only need 2 bytes for slot number; being generous */;
 }
 
 - (instancetype)init;
@@ -308,12 +312,12 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
     
     /* Header is: magic || infolength || info || padding */
     size_t keyInfoLength = [keyInfo length];
-    size_t headerLength = FMT_V0_6_MAGIC_LEN + 2 + keyInfoLength;
+    size_t headerLength = FMT_V1_0_MAGIC_LEN + 2 + keyInfoLength;
     headerLength = 16 * ((headerLength + 15)/16);
     void *header = calloc(1, headerLength);
-    memcpy(header, magic_ver0_6, FMT_V0_6_MAGIC_LEN);
-    OSWriteBigInt16(header, FMT_V0_6_MAGIC_LEN, (uint16_t)keyInfoLength);
-    [keyInfo getBytes:header + (FMT_V0_6_MAGIC_LEN + 2) length:keyInfoLength];
+    memcpy(header, magic_ver1_0, FMT_V1_0_MAGIC_LEN);
+    OSWriteBigInt16(header, FMT_V1_0_MAGIC_LEN, (uint16_t)keyInfoLength);
+    [keyInfo getBytes:header + (FMT_V1_0_MAGIC_LEN + 2) length:keyInfoLength];
     dispatch_data_t result_data = dispatch_data_create(header, headerLength, NULL, DISPATCH_DATA_DESTRUCTOR_FREE);
     
     /* Concat the segments, and compute the file MAC */
@@ -361,70 +365,123 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 
 @implementation OFSSegmentDecryptWorker (OneShot)
 
-static uint16_t checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertextLength, NSError **outError)
+static uint16_t checkOneHeaderMagic(size_t magicLength, const char *magicBytes, NSData * __nonnull ciphertext, size_t ciphertextLength)
 {
-    char buffer[FMT_V0_6_MAGIC_LEN + 2];
+    char buffer[magicLength + 2];
     
-    /* Look at the fixed-length portions of the header */
-    if (ciphertextLength < (FMT_V0_6_MAGIC_LEN + 2)) {
-        if (outError) *outError = headerError("file too short");
+    /* Look at the fixed-length portions of the header: the magic number, and the info blob length field which immediately follows it */
+    if (ciphertextLength < (magicLength + 2)) {
         return 0;
     }
     
-    [ciphertext getBytes:buffer length:FMT_V0_6_MAGIC_LEN + 2];
+    [ciphertext getBytes:buffer length:magicLength + 2];
     
     /* Check the file magic */
-    if (memcmp(buffer, magic_ver0_6, FMT_V0_6_MAGIC_LEN) != 0) {
-        if (outError) *outError = headerError("invalid encryption header");
+    if (memcmp(buffer, magicBytes, magicLength) != 0) {
         return 0;
     }
     
-    /* Find the length of the header */
-    return OSReadBigInt16(buffer, FMT_V0_6_MAGIC_LEN);
+    /* Find the length of the info blob */
+    uint16_t infoBlobLength = OSReadBigInt16(buffer, magicLength);
+    
+    /* A zero-length info blob is invalid (which is why we also use 0 as our error return value here). */
+    if (infoBlobLength == 0) {
+        return 0;
+    }
+    
+    return infoBlobLength;
 }
 
-+ (OFSSegmentDecryptWorker *)decryptorForData:(NSData *)ciphertext key:(OFSDocumentKey *)kek dataOffset:(size_t *)outHeaderLength error:(NSError * __autoreleasing *)outError;
+static BOOL checkForeignHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertextLength)
 {
-    if (!ciphertext) {
-        if (outError) *outError = headerError("missing ciphertext");
-        return nil;
-    }
-    size_t ciphertextLength = [ciphertext length];
+    if (ciphertextLength >= 16u && [ciphertext indexOfBytes:"crypt" length:5 range:(NSRange){0, MIN(ciphertextLength, 32u)}])
+        return YES;
     
-    size_t const wrappedKeyBlobLocation = FMT_V0_6_MAGIC_LEN + 2;
-    uint16_t wrappedKeyBlobSize = checkHeaderMagic(ciphertext, ciphertextLength, outError);
-    if (!wrappedKeyBlobSize)
-        return nil;
+    return NO;
+}
+
+static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertextLength, NSError **outError)
+{
+    uint16_t infoBlobLength;
     
-    /* Read the variable-length portion of the header, which consists of the wrapped key blob, followed by zero-padding to a 16-byte boundary */
+    /* STRAWMAN-6 and version 1.0 are identical. Accept both for now. In the future we might also want to check for version 1.1 or something and return an indication of which sub-version we found (if nothing else, we'll need to be sure to adjust SEGMENTED_FILE_MAC_VERSION_BYTE for any format changes) */
     
-    size_t paddedLength = ((wrappedKeyBlobLocation + wrappedKeyBlobSize + 15) / 16) * 16;
-    
-    if (ciphertextLength < (paddedLength + SEGMENTED_FILE_MAC_LEN)) {
-        if (outError) *outError = headerError("file too short");
-        return nil;
+    infoBlobLength = checkOneHeaderMagic(FMT_V1_0_MAGIC_LEN, magic_ver1_0, ciphertext, ciphertextLength);
+    if (infoBlobLength) {
+        return (NSRange){ FMT_V1_0_MAGIC_LEN /* magic */ + 2 /* info blob length field */, infoBlobLength };
     }
     
-    *outHeaderLength = paddedLength;
+    infoBlobLength = checkOneHeaderMagic(FMT_V0_6_MAGIC_LEN, magic_ver0_6, ciphertext, ciphertextLength);
+    if (infoBlobLength) {
+        return (NSRange){ FMT_V0_6_MAGIC_LEN /* magic */ + 2 /* info blob length field */, infoBlobLength };
+    }
     
-    /* Safe alloca, since wrappedKeyBlobSize < 2^16 */
-    uint8_t *blobbuffer = alloca(paddedLength - wrappedKeyBlobLocation);
-    [ciphertext getBytes:blobbuffer range:(NSRange){wrappedKeyBlobLocation, paddedLength - wrappedKeyBlobLocation}];
-    
-    /* Check the padding - we haven't touched our key yet, so no information leaks here */
-    for(size_t i = wrappedKeyBlobSize; i < (paddedLength - wrappedKeyBlobLocation); i++) {
-        if (blobbuffer[i] != 0) {
-            if (outError) *outError = headerError("invalid encryption header");
-            return nil;
+    if (outError) {
+        if (checkForeignHeaderMagic(ciphertext, ciphertextLength)) {
+            *outError = badMagic("invalid encryption header");
+        } else {
+            *outError = headerError("invalid encryption header");
         }
     }
     
+    return (NSRange){ 0, 0 };
+}
+
+/* Check the magic number of this encrypted file. Return YES (and optionally return the keyinfo blob and the offset of the start of the ciphertext) if it's a file we can handle, otherwise return NO and set *outError.
+ 
+ If mayBeTruncated is YES, then we're given a "ciphertext" data that is just a prefix of a file. We return YES if we can positively identify the magic number and the offsets of the other stuff in the file, but we don't fail if some of those offsets are past the end of the data we have. This is used for checking what keyslot a file uses without reading the entire file.
+*/
++ (BOOL)parseHeader:(NSData *)ciphertext truncated:(BOOL)mayBeTruncated wrappedInfo:(NSRange *)outBlobLocation dataOffset:(size_t *)outHeaderLength error:(NSError * __autoreleasing *)outError;
+{
+    if (!ciphertext) {
+        if (outError) *outError = headerError("missing ciphertext");
+        return NO;
+    }
+    size_t ciphertextLength = [ciphertext length];
+    
+    NSRange wrappedKeyBlobRange = checkHeaderMagic(ciphertext, ciphertextLength, outError);
+    if (!wrappedKeyBlobRange.location)
+        return NO;
+    
+    /* Read the variable-length portion of the header, which consists of the wrapped key blob, followed by zero-padding to a 16-byte boundary */
+    
+    size_t paddedLength = ((NSMaxRange(wrappedKeyBlobRange) + 15) / 16) * 16;
+    
+    if (!mayBeTruncated && ciphertextLength < (paddedLength + SEGMENTED_FILE_MAC_LEN)) {
+        if (outError) *outError = headerError("file too short");
+        return NO;
+    }
+    
+    /* Check the padding - we haven't touched our key yet, so no information leaks here */
+    size_t paddingLength = paddedLength - NSMaxRange(wrappedKeyBlobRange);
+    if (paddingLength && (!mayBeTruncated || ciphertextLength >= paddedLength)) {
+        char buf[16];
+        [ciphertext getBytes:buf range:(NSRange){NSMaxRange(wrappedKeyBlobRange), paddingLength}];
+        for(size_t i = 0; i < paddingLength; i++) {
+            if (buf[i] != 0) {
+                if (outError) *outError = headerError("invalid encryption header");
+                return NO;
+            }
+        }
+    }
+    
+    if (outHeaderLength)
+        *outHeaderLength = paddedLength;
+    
+    if (outBlobLocation) {
+        *outBlobLocation = wrappedKeyBlobRange;
+    }
+    
+    return YES;
+}
+
++ (OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)keyblob documentKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
+{
     OFSSegmentDecryptWorker *result = [[OFSSegmentDecryptWorker alloc] init];
     
     /* Finally, ask our document key manager to unwrap the file key */
     _Static_assert(sizeof(result->_keydata) == SEGMENTED_INNER_LENGTH_PADDED, "");
-    ssize_t resultSize = [kek unwrapFileKey:blobbuffer length:wrappedKeyBlobSize
-                                       into:result->_keydata length:SEGMENTED_INNER_LENGTH_PADDED error:outError];
+    ssize_t resultSize = [kek unwrapFileKey:keyblob into:result->_keydata length:SEGMENTED_INNER_LENGTH_PADDED error:outError];
     if (resultSize < 0)
         return nil;
     if (resultSize != SEGMENTED_INNER_LENGTH_PADDED) {
@@ -433,29 +490,6 @@ static uint16_t checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertex
     }
     
     return result;
-}
-
-/* Returns the key slot index from this file. This slightly breaks the encapsulation of OFSDocumentKey: elsewhere, the fact that the key blob starts with a key slot index is internal to that class. But the fact that key slots *exist* is part of its API, so this isn't too bad. */
-+ (int)slotForData:(NSData *)ciphertext error:(NSError **)outError;
-{
-    if (!ciphertext) {
-        if (outError) *outError = headerError("missing ciphertext");
-        return -1;
-    }
-    size_t ciphertextLength = [ciphertext length];
-    
-    size_t const wrappedKeyBlobLocation = FMT_V0_6_MAGIC_LEN + 2;
-    uint16_t wrappedKeyBlobSize = checkHeaderMagic(ciphertext, ciphertextLength, outError);
-    if (!wrappedKeyBlobSize)
-        return -1;
-    if (wrappedKeyBlobSize < 2) {
-        if (outError) *outError = headerError("invalid encryption header");
-        return -1;
-    }
-    
-    char buf[2];
-    [ciphertext getBytes:buf range:(NSRange){wrappedKeyBlobLocation, 2}];
-    return OSReadBigInt16(buf, 0);
 }
 
 - (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)segmentsBegin error:(NSError * __autoreleasing *)outError;
@@ -467,6 +501,7 @@ static uint16_t checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertex
     
     if (lastSegmentLength < SEGMENT_HEADER_LEN) {
         // Impossible file length
+        // (some ciphertext lengths do not correspond to any plaintext length)
         if (outError) *outError = headerError("file too short");
         return nil;
     }
@@ -535,7 +570,6 @@ static NSError *headerError(const char *msg)
     /* This error path is for errors which don't depend on knowing the file key: unknown magic, gross format errors, etc. */
     
     /* The user should not normally see these messages: they'll be wrapped in some higher level error message. */
-    
     NSDictionary *uinfo;
     if (msg) {
         uinfo = @{ NSLocalizedFailureReasonErrorKey: [NSString stringWithUTF8String:msg] };
@@ -543,6 +577,16 @@ static NSError *headerError(const char *msg)
         uinfo = nil;
     }
     
+    return [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:uinfo];
+}
+
+static NSError *badMagic(const char *msg)
+{
+    /* The user should not normally see these messages: they'll be wrapped in some higher level error message. */
+    NSDictionary *uinfo = @{
+                            NSLocalizedFailureReasonErrorKey: [NSString stringWithUTF8String:msg],
+                            OFSEncryptionBadFormatNotEncryptedKey: @(YES)
+                            };
     return [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:uinfo];
 }
 

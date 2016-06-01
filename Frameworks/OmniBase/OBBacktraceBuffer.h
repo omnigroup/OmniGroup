@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-enum OBBacktraceBufferType {
+typedef CF_ENUM(uintptr_t, OBBacktraceBufferType) {
     OBBacktraceBuffer_Unused = 0,      /* Indicates an unused slot */
     OBBacktraceBuffer_Allocated = 1,   /* Allocated but not filled slot */
     
@@ -20,8 +20,13 @@ enum OBBacktraceBufferType {
     OBBacktraceBuffer_PerformSelector = 7,
 };
 
-extern void OBRecordBacktrace(const char *message, unsigned int optype);
-extern void OBRecordBacktraceWithContext(const char *message, unsigned int optype, const void *context);
+extern void OBRecordBacktrace(const char *message, OBBacktraceBufferType optype);
+extern void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType optype, const void *context);
 /*.doc.
  Records a backtrace for possible debugging use in the future. The input message must be a constant string. The optype must be greater than one. The context pointer is not examined at all, but just stored. This allows matching up call sites where delayed operations are enqueued with where they are performed in a crash report.
  */
+
+
+#ifdef DEBUG
+extern void OBBacktraceDumpEntries(void);
+#endif

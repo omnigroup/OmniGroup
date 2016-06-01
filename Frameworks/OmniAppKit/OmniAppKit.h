@@ -7,8 +7,6 @@
 //
 // $Id$
 
-#import <Foundation/Foundation.h>
-
 #import <OmniAppKit/OAFeatures.h>
 
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
@@ -81,6 +79,7 @@
 #import <OmniAppKit/OABoxSeparator.h>
 #import <OmniAppKit/OABrowserCell.h>
 #import <OmniAppKit/OACalendarView.h>
+#import <OmniAppKit/OACertificateTrustPrompt.h>
 #import <OmniAppKit/OAChangeConfigurationValue.h>
 #import <OmniAppKit/OAChasingArrowsProgressIndicator.h>
 #import <OmniAppKit/OACloseButtonOverlay.h>

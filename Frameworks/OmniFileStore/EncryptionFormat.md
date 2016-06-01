@@ -28,9 +28,11 @@ The design is broken into three parts:
 Threat model
 ------------
 
-An attacker is assumed to be able to read the stored files repeatedly over time. This may leak activity information (frequency and size of changes) but shouldn't leak any contents.
+An attacker is assumed to be able to read the stored files repeatedly at any time.
+This may leak activity information (frequency and size of changes) but shouldn't leak any contents.
 
-(Concern: Some content information can be leaked by traffic analysis *a la* CRIME, because we compress stuff.)
+(Concern: Some content information can be leaked by traffic analysis *a la* CRIME, because we compress stuff.
+Combined with Mail Drop, this could allow an all-observing attacker to probe for specific text in a user's database.)
 
 An attacker may gain access to a device and/or old password after that
 device has been removed from access (eg via a password change). In
@@ -58,16 +60,16 @@ arbitrary files with content of their choosing; if so this makes our
 file integrity fairly weak (but still prevents an attacker from
 replacing part of a file while leaving the rest unchanged).
 
-Concern: We don't authenticate (or encrypt) filenames at all, currently. Should we? They are significant for both OF and OP.
+Concern: We don't authenticate (or encrypt) filenames at all, currently. Perhaps we should: They are significant for both OF and OP. See 'Filename Integrity Check', below.
 
 Document Key Management
 -----------------------
 
-This is only partly fleshed out. Document key management must provide
-the following functions:
+Document key management provides the following functions:
 
-* Given a key index (a small integer), provide a file key (128 or 256 bits of AES key).
-* Create new file keys as needed, and garbage-collect old ones when no longer used. This will require hooks into the application which is using OFS.
+* Given a key index (a small integer), provide a file key (128 or 256 bits of AES key and MAC key).
+* Create new file keys as needed, rotate them into use, and garbage-collect old ones when no longer used. This will require hooks into the application which is using OmniFileStore.
+* Maintain policy for which files within the document need to be encrypted (see Unencrypted Files, below).
 * The information needed to do the above will be protected using a passphrase.
 
 Group Membership
@@ -96,14 +98,16 @@ It might be overkill for encryption of server-stored data; see 'Non-Segmented Fi
 A file consists of:
 
 * Fixed-length header containing magic number and key index
-    * File magic (currently "OmniFileStore Encryption STRAWMAN-4\\n", will change repeatedly until finalized)
+    * File magic (currently "OmniFileStore Encryption\0STRAWMAN-6", will change repeatedly until finalized)
     * Key information length (2 bytes, size of next section not including padding)
 * File keys, encrypted using document key
     * Key index (2 bytes). Selects a document key for unwrapping the file key.
-    * Encrypted file key, wrapped using RFC3394 AESWRAP. Contains:
-        * AES key ( kCCKeySizeAES128 = 16 bytes)
-        * HMAC key ( SEGMENTED\_MAC\_KEY\_LEN = 16 bytes )
-        * Zero-padding to boundary as needed by AESWRAP (zero bytes)
+    * Remaining contents of this section depend on the type of the key selected by the key index.
+        * For AES\_CTR\_HMAC keys, this is empty (zero bytes). The file key (AES and HMAC) comes from the keyslot.
+        * For AESWRAP keys, this is the file key, wrapped using RFC3394 AESWRAP:
+            * AES key ( kCCKeySizeAES128 = 16 bytes)
+            * HMAC key ( SEGMENTED\_MAC\_KEY\_LEN = 16 bytes )
+            * Zero-padding to boundary as needed by AESWRAP (zero bytes)
     * Padding to a 16-byte boundary. Must be zero; must be checked by reader.
 * Variable-length array of encrypted segments
     * Segment IV (12 bytes = block size minus the 32-bit AES-CTR counter)
@@ -112,11 +116,15 @@ A file consists of:
 * Trailer
     * File HMAC: (SEGMENTED\_FILE\_MAC\_LEN = 32 bytes) computed over a version identifier and the segment MACs.
 
-The file MAC is the HMAC-SHA256 of  ( SEGMENTED\_INNER\_VERSION || segment\_mac\_0 || segment\_mac\_1 ... ) (all of the segment MACs in sequence)
+All multibyte integers are in big-endian (network) byte order.
+
+The file MAC is the HMAC-SHA256 of  ( SEGMENTED\_INNER\_VERSION || segment\_mac\_0 || segment\_mac\_1 ... ) (all of the segment MACs in sequence). SEGMENTED\_INNER\_VERSION is the single byte 0x01
 
 The data is AES-CTR encrypted with initial IV of ( IV || zeroes ) as is normal for CTR mode.
 
-The segment MAC is the truncated HMAC-SHA256 of ( IV || segment number || encrypted data ) where the segment number is a 32-bit number.
+The segment MAC is the truncated HMAC-SHA256 of ( IV || segment number || encrypted data ) where the segment number is a 32-bit number, starting at 0.
+
+The length of the plaintext is determined by the length of the encrypted file. The file HMAC protects against truncation/lengthening.
 
 ### Motivations ###
 
@@ -125,6 +133,8 @@ The segment IV and MAC add to a multiple of 16 bytes for alignment purposes.
 Most files are quite short (less than 1kB), so the format should be reasonably compact in that case. But some files are large (~ 1GB).
 
 It's assumed that in the normal case, all files will be encrypted with the same document key (will have the same key index). During a key rollover, new files will have a new index and the old key will be retained only for reading pre-rollover files until they are deleted or reëncrypted.
+
+A similar mechanism is used when a document is first encrypted, with a special temporary key indicating that old files may be plaintext.
 
 (Concern: This requires us to garbage-collect old document keys. This is okay for OmniFocus, since a compaction happens regularly and we touch and re-encrypt all files when that happens. This might not be practical for OmniPresence however.)
 
@@ -146,6 +156,8 @@ itself; this means we have to seek back and fill in holes in the file.
 (This is the main reason for having a per-segment IV; otherwise updating a segment would imply reusing an IV.)
 However, this isn't necessary for encrypting remote databases since we always write out the file to be uploaded before uploading it; we could use one-pass encryption.
 
+### Other Notes
+
 Algorithm choice: AES+HMAC is easy to implement using the primitives
 available on OSX and iOS. If Apple provided an AES-GCM implementation
 we could use that instead of AES+HMAC, but AES+HMAC is probably
@@ -154,18 +166,25 @@ bundle our own, would a completely different choice like ChaCha+Poly
 be even better?  AES has the advantage of being boring. How well-regarded
 are chacha/salsa/poly1305 outside of the djb fan club, anyway?
 
-The IV is constructed from some random bytes and a per-AES-key counter to eliminate the possibility of nonce reuse, but that's an implementation detail.
+The IV is constructed from 8 random bytes (via CommonCrypto's CSPRNG) and a 32-bit per-AES-key counter to eliminate the possibility of nonce reuse, but that's an implementation detail. Clients cannot communicate their counter values, so the random portion has to be enough to prevent client/client collisions.
 (Concern: We currently generate IVs as a combination of random data and a monotonic counter; this means that the order of blocks written is visible in the encrypted file. This probably reveals no useful information, but we could pass the counter through a guaranteed-1:1 transformation, [see][ro1])
 
-NOTE: The segment MAC prevents many modifications of the ciphertext,
+The segment MAC prevents many modifications of the ciphertext,
 but it is possible to truncate the file to a segment boundary without
 detection. For that, the file MAC is used: it is simply the
 HMAC-SHA256 of all the segments' MACs.
 
-
 ### Questions ###
 
 Concern: Since we have variable-length segments, should we include the segment length in the segment HMAC? I don't think this protects us from anything that the HMAC construction itself doesn't protect us from, but adding more fields here is cheap, so why not?
+
+Concern: To prevent an attacker from renaming encrypted files, which might cause OmniFocus to put its database in a bad state, should we include the file's name in the file? See 'Filename Integrity Check', below.
+
+Concern: An attacker can tell how long the plaintexts are, which could
+potentially leak information especially about the sizes of attachments
+which are being added to an OF database. Is there a way to pad files
+that doesn't inflate the data usage too much but still provides an
+actual benefit?
 
 Concern: Should we include e.g. the file header in the file MAC? It
 may be desirable to be able to rewrite the wrapped file key with one
@@ -173,13 +192,12 @@ wrapped with a different key (e.g., rewriting a downloaded file to be
 encrypted with a local key; or rewriting a file written with a special
 write-only key to use the normal key.)
 
-Concern: Is the version number in the wrapped blob needed? Should we
-just produce a new file magic for any version changes, or tie the version information to a key slot?
-
 Question: We have two encryption formats in this file: AES-CTR-HMAC, and AESWRAP. AESWRAP was designed for the exact purpose we're using it for, but is an old design. Should we use CTR-HMAC for everything instead for simplicity? (On the other hand, AESWRAP is available in CommonCrypto on both OSX and iOS.)
 
 Non-Segmented File Encryption
 -----------------------------
+
+This is probably not worth doing:
 
 If we don't require random read access, it might be possible to use a
 standard encryption container like PBE (PKCS#5) CMS (PKCS#7), or PGP's
@@ -193,6 +211,31 @@ FileVault), or re-encrypt into a random-access format.
 
 A non-segmented format might be worthwile if it allows us to use a well-defined industry standard format, but otherwise the advantage seems small.
 
+Unencrypted Files
+-----------------
+
+Several types of files in an OmniFocus database remain unencrypted
+(see the discussion of key management records 5 and 6, below).
+
+`.client` files are unencrypted in order for the account-management
+website and for customer support to get some information about a
+database's usage.
+
+(Opportunity: We could still HMAC them, even if we don't encrypt them.)
+
+`.inbox` files contain incoming transactions generated by Mail Drop or
+perhaps other machinery which should not have access to a user's full
+database; they exist temporarily until they are consumed by a client.
+
+(Opportunity: We can put an asymmetric keypair in the file management
+plist, and allow Mail Drop to encrypt its droppings. This works great
+against a passive attacker; is there a way to make it effective
+against an active attacker who can modify the key management plist? I
+don't think so, unless we can somehow provide Mail Drop with a trust
+path to verify the contents of the management plist, and clients with
+a trust path to identify a "genuine" maildrop instance.)
+
+
 Document Key Management
 -----------------------
 
@@ -201,50 +244,82 @@ key management file provides the connection from a user's passphrase
 to a document key.
 
 The key management file is named "encrypted" and is a plist containing
-an array of dictionaries. Each dictionary represents a means for
-deriving a key.
+a dictionary. (An earlier version contained an array of dictionaries,
+with each dictionary corresponding to one method for deriving a key;
+some code still expects or handles 1-element arrays.) The dictionary
+contains an encrypted list of *key slots*, plus information needed to
+derive the unwrapping key for that list.
 
-In the current implementation we can't do key rollover, so there is
-only one key, the key with index 0. In the future, we plan for there
-to be a single "current key", with possibly oter keys available (see
-under Work to do).
+There are two derivation methods:
 
-There are three derivation methods:
+"method = static": For testing, the key slot data can simply be stored in plaintext as a `data` under the key "key".
 
-"method = static": For testing, the key can simply be stored in plaintext as a data under the key "key".
+"method = password": The document key is wrapped using a PBKDF2-derived key. The other dictionary keys are "algorithm" (always "PBKDF2; aes128-wrap"); "rounds", "salt", "prf" (the PBKDF2 parameters); and "key" (the AES128-wrapped key information).
 
-"method = password": The document key is wrapped using a PBKDF2-derived key. The other dictionary keys are "algorithm" (always "PBKDF2; aes128-wrap"); "rounds", "salt", "prf" (the PBKDF2 parameters); and "key" (the AES128-wrapped document key).
+### Key information
 
-"method = keychain": For local storage, and not useful for networked stores. The "item" key contains the persistent identifier for a keychain item which should be the document key.
+Once unwrapped, the key information consists of a sequence of records. Each record has a type (one byte), an identifier (two bytes), and a length byte (in 4-byte units, allowing up to 2^10 bytes of data in a record).
 
+The current version uses types 3 (ActiveAES\_CTR\_HMAC) and 4 (RetiredAES\_CTR\_HMAC).
+They are identical except that new files should only be encrypted with an active key.
+Retired keys are retained as long as there are files encrypted with them; they are then deleted.
 
-Work to do
-==========
+The data of an AES\_CTR\_HMAC key slot consists of 16 bytes of AES128 key, followed by 16 bytes of HMAC-SHA256 key.
 
-Multiple key slots
-------------------
+The previous version (ActiveAESWRAP) contained a single AES key, which was
+used to unwrap the CTR and HMAC keys stored in each file's header.
 
-For rollover and multiple key-type support (see below), we'll want to
-be able to have more than one key active at once.
+Two non-key record types also exist, which define encryption policy
+based on file names:
+
+Type 5 (Plaintext Mask) indicates that files
+matching its pattern are to be both written and read unencrypted.
+
+Type 6 (Retired Plaintext Mask) allows files to be read unencrypted,
+but they are still written encrypted; this is used when converting a
+database from unencrypted to encrypted to indicate that the conversion
+is in progress. Once all files are encrypted, the type-6 record is
+removed, and clients will no longer allow reading of unencrypted
+files.
+
+These "policy" records contain in their data section a string (padded
+with NULs if necessary); if this string matches a suffix of a
+filename, the policy of the record applies to that file. By default,
+if a file matches no policy record, it is written encrypted, and OFS
+will refuse to read files which are not encrypted.
+
+### Key rollover
 
 Rollover should be triggered by any password change, and if group
 management is implemented, should be triggered whenever anyone leaves
-the group.
+the group. A new unused key index is chosen at random and a key is generated.
+The existing key is changed to its corresponding Retired key type.
 
-Approach 1: Old keys can simply be stored in the key management blob
-encrypted using the current key. However an attacker with
-regular snapshots would be able to walk backwards in time and decrypt
-arbitrarily far back if a current passphrase / group membership is
-compromised.
+(Concern: People don't change their passwords all that often. Should
+we silently start a key rollover whenever enough time has passed?
+Should we try to measure the amount of data encrypted under a key and
+trigger a rollover when it exceeds a threshold?)
 
-Approach 2: All keys are encrypted using the current authentication
-mechanism (and are re-wrapped with new keys after a password change);
-senescent keys contain some marker or other. This makes unlocking a
-document more expensive.
+Whenever a client deletes files (currently this happens only during compaction)
+it checks to see whether there are any retired keys, and then whether there are any remaining files encrypted under those retired keys. If not, the retired keys are removed from the key information.
+This means that a password change requires two updates to the document key information file: one to create a new active key and wrap it with the new passphrase; and some time later, one to remove the old key once it is no longer in use.
 
-Approach 3: Introduce yet another layer of key indirection (a document
-master key) which only wraps lists of document sub-keys, which are
-then accessed by index to unwrap individual files' file keys.
+### Notes
+
+One motivation of this design is to avoid having any secrets with an
+infinite lifetime. Assuming the user changes their password once in a
+while, all keys will eventually be rotated out of use and
+deleted. This limits the amount of time forwards/backwards that a
+compromised passphrase (or group authenticator) will be useful.
+
+Safely rewriting files is difficult/time-expensive because clients
+can't communicate directly, so data files are written once, read many
+times, and deleted; the key-management/metadata file is unique in that
+it will need to be updated over time, but we want to minimize the
+frequency with which we have to do that.
+
+Work to do
+==========
 
 'Write-only' keys
 -----------------
@@ -252,12 +327,9 @@ then accessed by index to unwrap individual files' file keys.
 Both Quick Entry and MailDrop would benefit from being able to encrypt
 a file and add it to a document without having decryption access. The
 obvious solution would be for some key slots to contain a
-public/private keypair, with the public half unencrypted.
-
-On the other hand, allowing unauthenticated writers to add files to
-the document might be dangerous, in which case QE and MD would need to
-contain some less-capable key which can encrypt and authenticate new
-data, but not decrypt existing data. This depends on our threat model.
+public/private keypair, with the public half also stored unencrypted
+in the plist. EC-IEC over something like Curve25519 seems like the
+obvious choice there.
 
 Any specialized keys for these purposes can simply live in their own
 key slots.
@@ -276,11 +348,21 @@ escrow public key in the document key management blob, along with an
 authenticator (HMAC using the current document key?) and encrypted
 copies of all current document keys.
 
-Password (and other authenticator) changes
-------------------------------------------
+Filename integrity check
+------------------------
 
-The format allows the document to have multiple access methods (password, keychain, group membership) and for it to be usable by a device which can use *any* of them. But key rollover and special-purpose (eg write-only) keys would require a device to be able to write new keys to new key slots, which they can't do unless they can use *all* access methods defined in the document management blob. Does this mean we should drop the multiple-access-method feature? It's mostly there for development and testing, really.
+Our main concern is passive attackers, but if we can prevent some
+kinds of active attacks, we might as well. An attacker who can rename
+files can alter the way they are incorporated into an OmniFocus
+database, conceivably causing subtle corruption. So perhaps we should
+have an integrity check on files' names.
 
-Concern: If an attacker can append a new, weak access method, a client could give the attacker access at the next key rollover. So unless we can cross-authenticate access methods we should have only one. Maybe this means that any multiple-access-method support logically belongs in the group management layer (which already has to be able to do cross authentication & authorization among group members).
+Option 1: Prepend a record containing the file's name (and other
+metadata?) to the plaintext before encrypting. (Implementation of this
+could be combined with adding obfuscatory padding, if we decide to do
+that.)
+
+Option 2: Add an "additional authenticated (but unencrypted) data"
+field to the file header, and include this field in the file HMAC.
 
 [ro1]: https://www.voltage.com/wp-content/uploads/UCSD_Rogaway_Synopsis_Format_Preserving_Encyption-1.pdf

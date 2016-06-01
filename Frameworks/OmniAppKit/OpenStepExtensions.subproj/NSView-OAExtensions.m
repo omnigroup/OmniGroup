@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,43 @@
 #import <OmniAppKit/NSApplication-OAExtensions.h>
 
 RCS_ID("$Id$")
+
+#define DEBUG_CROSSFADE 0
+#if DEBUG_CROSSFADE
+#define LOG_CROSSFADE(format, ...) NSLog(@"CROSSFADE: " format, ## __VA_ARGS__)
+#else
+#define LOG_CROSSFADE(format, ...)
+#endif
+
+
+/*!
+ @brief A simple class used to store a crossfade request that arrives while a crossfade is already in-progress, until the new request can be handled.
+ @discussion Note that the blocks are copied; this is required in order to move them to the heap so they will survive past the scope in which they were created.
+ */
+@interface OACrossfadeDescriptor : NSObject
+
+@property (nonnull, nonatomic, copy) OACrossfadeLayoutBlock layoutBlock;
+@property (nullable, nonatomic, copy) OACrossfadePreAnimationBlock preAnimationBlock;
+@property (nullable, nonatomic, copy) OACrossfadeCompletionBlock completionBlock;
+
++ (instancetype)descriptorWithLayoutBlock:(nonnull OACrossfadeLayoutBlock)layoutBlock preAnimationBlock:(nullable OACrossfadePreAnimationBlock)preAnimationBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+
+@end
+
+
+@implementation OACrossfadeDescriptor
+
++ (instancetype)descriptorWithLayoutBlock:(nonnull OACrossfadeLayoutBlock)layoutBlock preAnimationBlock:(nullable OACrossfadePreAnimationBlock)preAnimationBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+{
+    OACrossfadeDescriptor *newInstance = [[[[self class] alloc] init] autorelease];
+    newInstance.layoutBlock = layoutBlock;
+    newInstance.preAnimationBlock = preAnimationBlock;
+    newInstance.completionBlock = completionBlock;
+    return newInstance;
+}
+
+@end
+
 
 @implementation NSView (OAExtensions)
 
@@ -172,7 +209,7 @@ static void replacement_unlockFocus(NSView *self, SEL _cmd)
 
 // Drawing
 
-+ (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color isFilled:(BOOL)isFilled;
++ (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(nonnull NSColor *)color isFilled:(BOOL)isFilled;
 {
     CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
     [color set];
@@ -195,7 +232,7 @@ static void replacement_unlockFocus(NSView *self, SEL _cmd)
     }
 }
 
-- (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color;
+- (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(nonnull NSColor *)color;
 {
     [[self class] drawRoundedRect:rect cornerRadius:radius color:color isFilled:YES];
 }
@@ -493,7 +530,7 @@ static unsigned int scrollEntriesCount = 0;
 // Finding views
 
 // Will return self if it is of the specified class.
-- (id)enclosingViewOfClass:(Class)cls;
+- (nullable id)enclosingViewOfClass:(nonnull Class)cls;
 {
     OBPRECONDITION(OBClassIsSubclassOfClass(cls, [NSView class]));
     
@@ -521,7 +558,7 @@ static unsigned int scrollEntriesCount = 0;
     return nil;
 }
 
-- (NSView *)lastChildKeyView;
+- (nonnull NSView *)lastChildKeyView;
 {
     NSView *cursor = self;
     for(;;) {
@@ -550,7 +587,7 @@ static unsigned int scrollEntriesCount = 0;
     }
 }
 
-- (NSView *)subviewContainingView:(NSView *)subSubView;
+- (nullable NSView *)subviewContainingView:(nonnull NSView *)subSubView;
 {
     for (;;) {
         NSView *ssParent = [subSubView superview];
@@ -729,6 +766,182 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
     }
     
     return animations;
+}
+
+/*
+ This uses -[NSView cacheDisplayInRect:toBitmapImageRep:], which does not support all features of layer-backed/hosted views, such as layer filters. It does support some features such as layer background color and border radius; I *speculate* that it supports what -[CALayer renderInContext:] supports, but I do not know. It covers what we need at the moment, but it's possible that in the future we will need more from it.
+ 
+ Other things I've tried in order to be able to snapshot the fully-rendered content of a layer-hosting view:
+ 
+ - CGWindowListCreateImage(NSRectToCGRect(viewBoundsInScreenCoordinatesWithOriginAtBottomLeft), kCGWindowListOptionIncludingWindow, (CGWindowID)[view.window windowNumber], kCGWindowImageBoundsIgnoreFraming)
+ 
+ This perfectly captures the fully-rendered content and works for views with or without layers. Unfortunately, the content must have been fully flushed to the screen (+[CATransaction flush], for views using layers), resulting in very obvious flickering in one of our use cases, which is to grab a snapshot post-layout as the crossfade destination. Tried disabling screen updates around this, but 1) the redraw was still visible (especially when the window frame is changin), and 2) the resulting snapshot was just a block (the appropriate size) of completely transparent pixels.
+ 
+ - CGBitmapContextCreate() + [layer.presentationLayer renderInContext:] + CGBitmapContextCreateImage()
+ 
+ This doesn't support all layer features; I suspect it doesn't support any more than cacheDisplayInRect:toBitmapImagRep:. Plus it doesn't work for views without layers, so would (at a minimum) require a great deal of extra effort to generate and piece together all the elements in the view and all its subviews.
+ 
+ - -[NSView displayRectIgnoringOpacity:inContext:] to an NSImage that has been lockFocused.
+ 
+ In modest testing, this worked fine, but it's unclear if it has any benefit or drawback vs cacheDisplayInRect:toBitmapImageRep:. If some problem is found with *that* approach, this would be a possible alternate.
+ */
+static NSImage * _Nonnull _snapshotImageForView(NSView * _Nonnull view)
+{
+    OBASSERT(view != nil);
+    NSRect bounds = view.bounds;
+    NSBitmapImageRep *bitmap = [view bitmapImageRepForCachingDisplayInRect:bounds];
+    [view cacheDisplayInRect:bounds toBitmapImageRep:bitmap];
+    OBASSERT(bitmap != nil);
+    NSImage *image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
+    [image addRepresentation:bitmap];
+    OBASSERT(image != nil);
+    return image;
+}
+
+static NSImageView * _Nonnull _snapshotImageViewForView(NSView * _Nonnull view)
+{
+    NSImage *image = _snapshotImageForView(view);
+    NSRect frame = view.frame;
+    frame.origin = NSZeroPoint;
+    NSImageView *imageView = [[[NSImageView alloc] initWithFrame:frame] autorelease];
+    imageView.translatesAutoresizingMaskIntoConstraints = NO;
+    imageView.imageScaling = NSImageScaleNone;
+    imageView.imageAlignment = NSImageAlignTopLeft;
+    imageView.image = image;
+    
+    return imageView;
+}
+
++ (void)crossfadeView:(nonnull NSView *)view afterPerformingLayout:(nonnull OACrossfadeLayoutBlock)layoutBlock preAnimationBlock:(nullable OACrossfadePreAnimationBlock)preAnimationBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+{
+    OBASSERT(layoutBlock != nil);
+    
+    LOG_CROSSFADE(@"Crossfade requested for view %p", view);
+    static NSMutableArray *CrossfadingViews = nil;
+    static NSMapTable *QueuedCrossfadesByView = nil;
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        CrossfadingViews = [[NSMutableArray alloc] init];
+        QueuedCrossfadesByView = [[NSMapTable strongToStrongObjectsMapTable] retain];
+    });
+    
+    // Clear out any queued layout change
+#if DEBUG_CROSSFADE
+    if ([QueuedCrossfadesByView objectForKey:view] != nil) {
+        LOG_CROSSFADE(@"  Discarding previously-queued crossfade for view %p", view);
+    }
+#endif
+    [QueuedCrossfadesByView removeObjectForKey:view];
+    
+    // If we're already animating, just queue this change up to be handled when the current animation is complete
+    if ([CrossfadingViews indexOfObjectIdenticalTo:view] != NSNotFound) {
+        LOG_CROSSFADE(@"  In the midst of a crossfade for view %p; queueing new request", view);
+        OACrossfadeDescriptor *crossfade = [OACrossfadeDescriptor descriptorWithLayoutBlock:layoutBlock preAnimationBlock:preAnimationBlock completionBlock:completionBlock];
+        [QueuedCrossfadesByView setObject:crossfade forKey:view];
+        return;
+    }
+    
+    // If we're not visible, don't bother to animate
+    if (view.hidden || (view.superview == nil) || !view.window.visible) {
+        LOG_CROSSFADE(@"  Not visible, view %p; executing layout and completion blocks without animation", view);
+        layoutBlock();
+        if (completionBlock != nil) {
+            completionBlock();
+        }
+        return;
+    }
+    
+    [CrossfadingViews addObject:view];
+    
+    // Snapshot our old visual
+    [view.window layoutIfNeeded];
+    NSImageView *oldImageView = _snapshotImageViewForView(view);
+    
+    // Execute the layout block
+    layoutBlock();
+    
+    // Snapshot our new visual
+    [view.window layoutIfNeeded];
+    NSImageView *newImageView = _snapshotImageViewForView(view);
+    
+    // If the new visual appearance is identical to the old visual appearance; don't animate (it's not needed, and in fact it looks wrong: during the transition the view just looks like it fades out and back in a bit)
+    if ([oldImageView.image.TIFFRepresentation isEqual:newImageView.image.TIFFRepresentation]) {
+        LOG_CROSSFADE(@"  No change in visual appearance for view %p; skipping the animation", view);
+        [CrossfadingViews removeObject:view];
+        if (completionBlock != nil) {
+            completionBlock();
+        }
+        return;
+    }
+    
+    // Do any work the caller needs done before we actually animate
+    if (preAnimationBlock != nil) {
+        preAnimationBlock();
+    }
+    
+    // Hide our content views so they don't display over/through the transition animation (this is also why we need both old and new snapshots: so that we get full crossfade with no unintended bleeding through during the transition)
+    view.hidden = YES;
+    
+    NSMutableArray *tempConstraints = [NSMutableArray array];
+    
+    // Prepare to fade out the snapshot of the old state
+    newImageView.alphaValue = 1.0;
+    [view.superview addSubview:oldImageView];
+    [NSView appendConstraints:tempConstraints forView:view toHaveSameFrameAsView:oldImageView];
+    
+    // Prepare to fade in the snapshot of the new state
+    newImageView.alphaValue = 0.0;
+    [view.superview addSubview:newImageView];
+    [NSView appendConstraints:tempConstraints forView:view toHaveSameFrameAsView:newImageView];
+    
+    // Use some temporary constraints to animate from the old view size to the new view size
+    NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:oldImageView.image.size.width];
+    widthConstraint.identifier = @"animating width (temp)";
+    [tempConstraints addObject:widthConstraint];
+    NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:view attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:oldImageView.image.size.height];
+    heightConstraint.identifier = @"animating height (temp)";
+    [tempConstraints addObject:heightConstraint];
+    
+    [NSLayoutConstraint activateConstraints:tempConstraints];
+    [view.window layoutIfNeeded];
+    
+    [NSAnimationContext runAnimationGroup:^(NSAnimationContext * _Nonnull context) {
+        LOG_CROSSFADE(@"  Starting crossfade for view %p", view);
+        context.allowsImplicitAnimation = YES; // So the window frame change will animate
+        context.duration = 0.1;
+        
+        // Animate to the new size
+        widthConstraint.animator.constant = newImageView.image.size.width;
+        heightConstraint.animator.constant = newImageView.image.size.height;
+        
+        // Crossfade from the old snapshot to the new snapshot
+        oldImageView.animator.alphaValue = 0.0;
+        newImageView.animator.alphaValue = 1.0;
+        
+    } completionHandler:^{
+        LOG_CROSSFADE(@"  Finished crossfade for view %p", view);
+        // Unhide the subject view now that the transition is complete
+        view.hidden = NO;
+        
+        // Get rid of the old snapshots and the temporary constraints now that we're through with them
+        [oldImageView removeFromSuperview];
+        [newImageView removeFromSuperview];
+        [NSLayoutConstraint deactivateConstraints:tempConstraints];
+        
+        [CrossfadingViews removeObjectIdenticalTo:view];
+        
+        if (completionBlock != nil) {
+            completionBlock();
+        }
+        
+        // If a new transition was queued up during our animation, start it going
+        OACrossfadeDescriptor *queuedCrossfade = [QueuedCrossfadesByView objectForKey:view];
+        if (queuedCrossfade != nil) {
+            LOG_CROSSFADE(@"  Initiating previously-queued crossfade for view %p", view);
+            [self crossfadeView:view afterPerformingLayout:queuedCrossfade.layoutBlock preAnimationBlock:queuedCrossfade.preAnimationBlock completionBlock:queuedCrossfade.completionBlock];
+        }
+    }];
 }
 
 #pragma mark - Constraints

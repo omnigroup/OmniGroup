@@ -5,15 +5,15 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSTableView-OAExtensions.h"
+#import <OmniAppKit/NSTableView-OAExtensions.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSOutlineView-OAExtensions.h"
-#import "NSView-OAExtensions.h"
+#import <OmniAppKit/NSOutlineView-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -24,7 +24,9 @@ OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automag
 NS_ASSUME_NONNULL_BEGIN
 
 @interface NSTableView (OAExtensionsPrivate)
+- (BOOL)_canCopyToPasteboard;
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;
+- (BOOL)_canPasteFromPasteboard;
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
 @end
 
@@ -429,8 +431,77 @@ static NSIndexSet * _Nullable OATableViewRowsInCurrentDrag = nil;
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-    if (item.action == @selector(duplicate:) && [self.delegate respondsToSelector:@selector(duplicate:)] && [self.delegate respondsToSelector:@selector(validateMenuItem:)]) {
-        return [(id)self.delegate validateMenuItem:item];
+    BOOL (^delegatesActionForMenuItem)(NSMenuItem *item) = ^BOOL(NSMenuItem *menuItem) {
+        SEL action = menuItem.action;
+        
+        if ([self.dataSource respondsToSelector:action]) {
+            return YES;
+        }
+
+        if ([self.delegate respondsToSelector:action]) {
+            return YES;
+        }
+        
+        return NO;
+    };
+
+    BOOL (^validateMenuItem)(NSMenuItem *item) = ^BOOL(NSMenuItem *menuItem) {
+        SEL action = menuItem.action;
+
+        if ([self.dataSource respondsToSelector:action]) {
+            if ([self.dataSource respondsToSelector:@selector(validateMenuItem:)]) {
+                id dataSource = self.dataSource;
+                return [dataSource validateMenuItem:menuItem];
+            } else {
+                return YES;
+            }
+        }
+        
+        if ([self.delegate respondsToSelector:action] && [self.delegate respondsToSelector:@selector(validateMenuItem:)]) {
+            if ([self.dataSource respondsToSelector:@selector(validateMenuItem:)]) {
+                id delegate = self.delegate;
+                return [delegate validateMenuItem:menuItem];
+            } else {
+                return YES;
+            }
+        }
+        
+        OBASSERT_NOT_REACHED("Unreachable.");
+        return NO;
+    };
+    
+    BOOL hasSelection = self.numberOfSelectedRows > 0;
+
+    if (item.action == @selector(cut:)) {
+        if (delegatesActionForMenuItem(item)) {
+            return hasSelection && validateMenuItem(item);
+        } else {
+            return hasSelection;
+        }
+    }
+
+    if (item.action == @selector(copy:)) {
+        if (delegatesActionForMenuItem(item)) {
+            return hasSelection && validateMenuItem(item);
+        } else {
+            return hasSelection && [self _canCopyToPasteboard];
+        }
+    }
+
+    if (item.action == @selector(paste:)) {
+        if (delegatesActionForMenuItem(item)) {
+            return validateMenuItem(item);
+        } else {
+            return [self _canPasteFromPasteboard];
+        }
+    }
+
+    if (item.action == @selector(duplicate:) && delegatesActionForMenuItem(item)) {
+        return hasSelection && validateMenuItem(item);
+    }
+
+    if (item.action == @selector(delete:) && delegatesActionForMenuItem(item)) {
+        return hasSelection && validateMenuItem(item);
     }
 
     return [super validateMenuItem:item];
@@ -531,27 +602,56 @@ static NSIndexSet * _Nullable OATableViewRowsInCurrentDrag = nil;
 
 @implementation NSTableView (OAExtensionsPrivate)
 
+- (BOOL)_canCopyToPasteboard;
+{
+    if ([self isKindOfClass:[NSOutlineView class]]) {
+        NSOutlineView *outlineView = (id)self;
+        id <NSOutlineViewDataSource> dataSource = outlineView.dataSource;
+        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
+            return YES;
+        }
+    } else {
+        id <NSTableViewDataSource> dataSource = self.dataSource;
+        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
+            return YES;
+        }
+    }
+    
+    return NO;
+}
+
 - (BOOL)_copyToPasteboard:(NSPasteboard *)pasteboard;
 {
     if ([self isKindOfClass:[NSOutlineView class]]) {
         NSOutlineView *outlineView = (id)self;
         id <NSOutlineViewDataSource> dataSource = outlineView.dataSource;
-        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)])
+        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
             return [dataSource outlineView:outlineView writeItems:[outlineView selectedItems] toPasteboard:pasteboard];
-        else
+        } else {
             return NO;
+        }
     } else {
         id <NSTableViewDataSource> dataSource = self.dataSource;
-        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)])
+        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
             return [dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
-        else
+        } else {
             return NO;
+        }
     }
+}
+
+- (BOOL)_canPasteFromPasteboard;
+{
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    return [dataSource respondsToSelector:@selector(tableView:addItemsFromPasteboard:)];
 }
 
 - (void)_pasteFromPasteboard:(NSPasteboard *)pasteboard;
 {
-    [(id <OAExtendedTableViewDataSource>)self.dataSource tableView:self addItemsFromPasteboard:pasteboard];
+    id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    if ([dataSource respondsToSelector:@selector(tableView:addItemsFromPasteboard:)]) {
+        [dataSource tableView:self addItemsFromPasteboard:pasteboard];
+    }
 }
 
 @end

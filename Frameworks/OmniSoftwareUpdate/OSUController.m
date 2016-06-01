@@ -1,11 +1,11 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUController.h"
+#import <OmniSoftwareUpdate/OSUController.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -15,13 +15,13 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
 
-#import "OSUChecker.h"
-#import "OSUPreferences.h"
-#import "OSUDownloadController.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUDownloadController.h>
 #import "OSUAvailableUpdateController.h"
 #import "OSUErrors.h"
 #import "OSUItem.h"
-#import "OSUCheckOperation.h"
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import "OSUSendFeedbackErrorRecovery.h"
 #import "OSUPrivacyAlertWindowController.h"
 
@@ -170,7 +170,8 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     }
     
     // Disabling the errors from the asynchronous check until the UI is improved.  <bug://bugs/40635> (Warn users if they haven't successfully connected to software update in N days)
-    BOOL shouldReport = op.initiatedByUser;
+    // Also, don't show the error if the user initiated the check and subsequently closed the Check for Updates window
+    BOOL shouldReport = op.initiatedByUser && availableUpdateController.window.visible;
     
     if (shouldReport) {
         // NOTE: OSUSendFeedbackErrorRecovery will recuse itself for errors that aren't things we can help with.

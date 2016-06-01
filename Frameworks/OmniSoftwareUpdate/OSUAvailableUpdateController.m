@@ -7,9 +7,9 @@
 
 #import "OSUAvailableUpdateController.h"
 
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUItem.h"
-#import "OSUController.h"
+#import <OmniSoftwareUpdate/OSUController.h>
 #import "OSUPreferences-Items.h"
 #import "OSUFlippedView.h"
 #import "OSUThinBorderView.h"
@@ -107,6 +107,11 @@ RCS_ID("$Id$");
 @property(nonatomic,strong) IBOutlet NSView *itemAlertPane;
 @property(nonatomic,strong) IBOutlet NSTextField *itemAlertMessage;
 
+@property(nonatomic) BOOL loadingReleaseNotes;
+@property(nonatomic) BOOL checkInProgress;
+@property(nonatomic) BOOL lastCheckFailed;
+@property(nonatomic) BOOL lastCheckExplicit;
+
 - (void)_updateWindowLayout;
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
@@ -123,10 +128,6 @@ RCS_ID("$Id$");
     NSArray *_availableItems;
     NSIndexSet *_selectedItemIndexes;
     OSUItem *_selectedItem;
-    BOOL _loadingReleaseNotes;
-    BOOL _checkInProgress;
-    BOOL _lastCheckFailed;
-    BOOL _lastCheckExplicit;
 }
 
 + (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;
@@ -250,9 +251,9 @@ RCS_ID("$Id$");
     NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
     
     if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue]) {
-        format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
+        format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates…", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
         return [NSString stringWithFormat:format, appName];
-    } else if (_lastCheckFailed) {
+    } else if (self.lastCheckFailed) {
         format = NSLocalizedStringFromTableInBundle(@"Unable to check for updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when check failed");
         return [NSString stringWithFormat:format, appName];
     } else {
@@ -309,7 +310,7 @@ RCS_ID("$Id$");
         formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
     }
     
-    if (newerVersionsAvailable && !_lastCheckExplicit) {
+    if (newerVersionsAvailable && !self.lastCheckExplicit) {
         format = NSLocalizedStringFromTableInBundle(@"If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog, with [link] to preference pane");
         formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
     }
@@ -338,6 +339,19 @@ RCS_ID("$Id$");
     }
     
     return detailText;
+}
+
++ (NSSet *)keyPathsForValuesAffectingDismissButtonTitle;
+{
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerCheckInProgressBinding, nil];
+}
+
+- (NSString *)dismissButtonTitle;
+{
+    if (self.checkInProgress) {
+        return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
+    }
+    return NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
 }
 
 - (void)setAvailableItems:(NSArray *)items;
@@ -421,7 +435,7 @@ RCS_ID("$Id$");
     }
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
+    if (!self.checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 #else
@@ -471,7 +485,7 @@ RCS_ID("$Id$");
         [_availableItemController removeSelectedObjects:[NSArray arrayWithObject:curSelection]];
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
+    if (!self.checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 }
@@ -618,6 +632,14 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
         return;
     
     [self.stackView setUnhiddenSubviews:[self _visibleStackedViews] animated:YES];
+
+    if (self.checkInProgress) {
+        self.spinner.hidden = NO;
+        [self.spinner startAnimation:nil];
+    } else {
+        self.spinner.hidden = YES;
+        [self.spinner stopAnimation:nil];
+    }
 }
 
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
@@ -704,7 +726,7 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     // The cancel button's key equivalent is set to ESC in the nib, but making it be the default button cell (as happens in some branches of this if) clobbers the key equivalent. So we set it back in the other branches.
     // (Note that ESC is also documented to catch cmd-period, as a special case in NSWindow.)
     
-    if ([visibleItems count] == 0 && !_checkInProgress) {
+    if ([visibleItems count] == 0 && !self.checkInProgress) {
         [[self window] setDefaultButtonCell:[_cancelButton cell]];
     } else if (_displayingWarningPane && !sel_isEqual([_installButton action], @selector(showMoreInformation:))) {
         [[self window] setDefaultButtonCell:nil];

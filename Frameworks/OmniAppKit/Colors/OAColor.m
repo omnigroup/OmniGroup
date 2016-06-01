@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,8 @@
 #endif
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 /*
  Conceptually, we want to draw the opaque outline background color and then layer on colors based on other styles until we have filled the cell.  But, we need to provide a single color for the layer background color and we start from the deepest nesting. So, instead we want to compute start from the top color and work our way back until we hit an opaque color (hopefully quickly). As we work, we need to either composite a top translucent color and a bottom color that may be opaque or translucent.
@@ -185,40 +187,46 @@ OALinearRGBA OACompositeLinearRGBA(OALinearRGBA T, OALinearRGBA B)
 
 // Composites *ioTop on bottom and puts it back in *ioTop, using the calibrated RGB color space. Return YES if the output is opaque.  A nil input is interpreted as clear.
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-BOOL OACompositeColors(NSColor **ioTopColor, NSColor *bottomColor)
+NSColor *OACompositeColors(NSColor *topColor, NSColor *bottomColor, BOOL * _Nullable isOpaque)
 #else
-BOOL OACompositeColors(OAColor **ioTopColor, OAColor *bottomColor)
+OAColor *OACompositeColors(OAColor *topColor, OAColor *bottomColor, BOOL * _Nullable isOpaque)
 #endif
 {
-    OALinearRGBA T = OAGetColorComponents(*ioTopColor);
+    OALinearRGBA T = OAGetColorComponents(topColor);
     if (T.a >= 1.0) {
         // Top is opaque; just use it.
-        return YES;
+        if (isOpaque)
+            *isOpaque = YES;
+        return topColor;
     }
     OALinearRGBA B = OAGetColorComponents(bottomColor);
     if (T.a <= 0.0) {
         // Top is totally transparent, so return the bottom color (which may itself be opaque or not).
-        *ioTopColor = bottomColor;
-        return (B.a >= 1.0);
+        if (isOpaque)
+            *isOpaque = B.a >= 1.0;
+        return bottomColor;
     }
     if (B.a <= 0.0) {
         // Bottom is clear, return the top color.  We know the top isn't opaque here since we checked above, so we just return NO.
-        return NO;
+        if (isOpaque)
+            *isOpaque = NO;
+        return topColor;
     }
     
     OALinearRGBA R = OACompositeLinearRGBA(T, B);
     
+    if (isOpaque)
+        *isOpaque = R.a >= 1.0; // Might be fully opaque now if T was translucent and B was opaque.
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    *ioTopColor = [NSColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+    return [NSColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
 #else
-    *ioTopColor = [OAColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+    return [OAColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
 #endif
-    
-    return R.a >= 1.0; // Might be fully opaque now if T was translucent and B was opaque.
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque)
+CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL * _Nullable isOpaque)
 {
     OALinearRGBA T = OAGetColorRefComponents(topColor);
     if (T.a >= 1.0) {
@@ -295,19 +303,19 @@ CGColorRef OACreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-CGColorRef OACreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c)
+CGColorRef __nullable OACreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c)
 {
     // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
     // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
     OBASSERT_NOTNULL(destinationColorSpace, "OACreateColorRefFromColor returning nil for nil colorspace -- didn't used to allow that, now we are.");
     OBASSERT_NOTNULL(c, "OACreateColorRefFromColor returning nil for nil color -- didn't used to allow that, now we are.");
     if (!destinationColorSpace || !c)
-        return nil;
+        return NULL;
     
     return [c newCGColorWithCGColorSpace:destinationColorSpace];
 }
 
-NSColor *OAColorFromColorRef(CGColorRef c)
+NSColor * __nullable OAColorFromColorRef(CGColorRef c)
 {
     // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
     // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
@@ -318,13 +326,13 @@ NSColor *OAColorFromColorRef(CGColorRef c)
     return [NSColor colorFromCGColor:c];
 }
 
-CGColorRef OACreateGrayColorRefFromColor(NSColor *c)
+CGColorRef __nullable OACreateGrayColorRefFromColor(NSColor *c)
 {
     // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
     // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
     OBASSERT_NOTNULL(c, "OACreateGrayColorRefFromColor returning nil for nil color -- didn't used to allow that, now we are.");
     if (!c)
-        return nil;
+        return NULL;
     
     CGFloat alpha;
     CGFloat luma = OAGetColorLuma(c, &alpha);
@@ -1130,11 +1138,27 @@ static void OAColorInitPlatformColor(OAColor *self)
     return [self colorWithWhite:white alpha:alpha];
 }
 
-+ (OAColor *)clearColor;
++ (OAColor *)blackColor;
 {
     static OAColor *c = nil;
     if (!c)
-        c = OAWhiteColorCreate(0, 0);
+        c = OAWhiteColorCreate(0, 1);
+    return c;
+}
+
++ (OAColor *)darkGrayColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OAWhiteColorCreate(0.333, 1);
+    return c;
+}
+
++ (OAColor *)lightGrayColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OAWhiteColorCreate(0.667, 1);
     return c;
 }
 
@@ -1146,27 +1170,11 @@ static void OAColorInitPlatformColor(OAColor *self)
     return c;
 }
 
-+ (OAColor *)blackColor;
++ (OAColor *)grayColor;
 {
     static OAColor *c = nil;
     if (!c)
-        c = OAWhiteColorCreate(0, 1);
-    return c;
-}
-
-+ (OAColor *)blueColor;
-{
-    static OAColor *c = nil;
-    if (!c)
-        c = OARGBAColorCreate((OALinearRGBA){0, 0, 1, 1});
-    return c;
-}
-
-+ (OAColor *)purpleColor;
-{
-    static OAColor *c = nil;
-    if (!c)
-        c = OARGBAColorCreate((OALinearRGBA){1, 0, 1, 1});
+        c = OAWhiteColorCreate(0.5f, 1);
     return c;
 }
 
@@ -1178,6 +1186,30 @@ static void OAColorInitPlatformColor(OAColor *self)
     return c;
 }
 
++ (OAColor *)greenColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){0, 1, 0, 1});
+    return c;
+}
+
++ (OAColor *)blueColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){0, 0, 1, 1});
+    return c;
+}
+
++ (OAColor *)cyanColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){0, 1, 1, 1});
+    return c;
+}
+
 + (OAColor *)yellowColor;
 {
     static OAColor *c = nil;
@@ -1186,13 +1218,46 @@ static void OAColorInitPlatformColor(OAColor *self)
     return c;
 }
 
-+ (OAColor *)grayColor;
++ (OAColor *)magentaColor;
 {
     static OAColor *c = nil;
     if (!c)
-        c = OAWhiteColorCreate(0.5f, 1);
+        c = OARGBAColorCreate((OALinearRGBA){1, 0, 1, 1});
     return c;
 }
+
++ (OAColor *)orangeColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){1, 0.5, 0, 1});
+    return c;
+}
+
++ (OAColor *)purpleColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){1, 0, 1, 1});
+    return c;
+}
+
++ (OAColor *)brownColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OARGBAColorCreate((OALinearRGBA){0.6, 0.4, 0.2, 1});
+    return c;
+}
+
++ (OAColor *)clearColor;
+{
+    static OAColor *c = nil;
+    if (!c)
+        c = OAWhiteColorCreate(0, 0);
+    return c;
+}
+
 
 + (OAColor *)keyboardFocusIndicatorColor;
 {
@@ -1242,7 +1307,7 @@ static void OAColorInitPlatformColor(OAColor *self)
 #pragma mark -
 #pragma mark Copying
 
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(nullable NSZone *)zone;
 {
     return self;
 }
@@ -1276,3 +1341,6 @@ static void _OALinearColorReleaseInfoFunction(void *info)
 const CGFunctionCallbacks OALinearFunctionCallbacks = {0, &_OALinearColorBlendFunction, &_OALinearColorReleaseInfoFunction};
 
 #endif
+
+NS_ASSUME_NONNULL_END
+

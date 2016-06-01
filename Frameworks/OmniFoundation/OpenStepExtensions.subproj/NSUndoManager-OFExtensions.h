@@ -41,3 +41,9 @@ extern void _OFUndoManagerPopCallSite(NSUndoManager *undoManager);
 
 #define OFUndoManagerPushCallSite(undoManager) _OFUndoManagerPushCallSite(undoManager, self, _cmd)
 #define OFUndoManagerPopCallSite(undoManager) _OFUndoManagerPopCallSite(undoManager)
+
+
+@interface NSObject (OFUndoExtensions)
+// Preserves the type-checking ability by casting the result of -prepareWithInvocationTarget: instead of casting it to id.
+- (instancetype)prepareInvocationWithUndoManager:(NSUndoManager *)undoManager;
+@end

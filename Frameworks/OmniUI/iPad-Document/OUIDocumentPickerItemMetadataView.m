@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,6 +123,7 @@ RCS_ID("$Id$");
     [_dateLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh forAxis:UILayoutConstraintAxisVertical];
     [_dateLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [_nameTextField setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+    [_nameTextField setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
     [_dateLabel setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
 
     UIStackView *labels = [[UIStackView alloc] initWithArrangedSubviews:@[_nameTextField, _dateLabel]];
@@ -130,6 +131,7 @@ RCS_ID("$Id$");
     
     _nameBadgeImageView = [[UIImageView alloc] init];
     _nameBadgeImageView.contentMode = UIViewContentModeScaleAspectFit;
+    _nameBadgeImageView.translatesAutoresizingMaskIntoConstraints = NO;
     
     // put these things in a stack view because then when we hide the statusImage, the labels will automatically grow to fill the space
     UIStackView *horizontalStackView = [[UIStackView alloc] initWithArrangedSubviews:@[labels, _nameBadgeImageView]];
@@ -150,6 +152,13 @@ RCS_ID("$Id$");
     self.trailingHorizPadding.constant = -[self bottomPaddingAmount];
 
     [constraints addObjectsFromArray:@[self.leadingHorizPadding, self.trailingHorizPadding]];
+    
+    self.transferProgressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleBar];
+    self.transferProgressView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:self.transferProgressView];
+    [constraints addObject:[self.transferProgressView.widthAnchor constraintEqualToAnchor:self.widthAnchor]];
+    [constraints addObject:[self.transferProgressView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor]];
+    [constraints addObject:[self.transferProgressView.centerYAnchor constraintEqualToAnchor:self.topAnchor]];
     
     [NSLayoutConstraint activateConstraints:constraints];
 }

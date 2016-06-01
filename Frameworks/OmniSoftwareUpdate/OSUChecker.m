@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/OFController.h>
@@ -27,18 +27,18 @@
 #import "OSUFeatures.h"
 
 #if OSU_FULL
-    #import "OSUController.h"
+    #import <OmniSoftwareUpdate/OSUController.h>
     #import "OSUItem.h"
 #elif (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
     #import "OSUPrivacyAlertWindowController.h"
 #endif
-#import "OSUPreferences.h"
-#import "OSURunTime.h"
-#import "OSUCheckOperation.h"
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSURunTime.h>
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import "OSUErrors.h"
 #import "OSUAppcastSignature.h"
 #import "InfoPlist.h"
-#import "OSUCheckerTarget.h"
+#import <OmniSoftwareUpdate/OSUCheckerTarget.h>
 #import "OSUSettings.h"
 #import "OSURunOperation.h"
 #import "OSUPartialItem.h"
@@ -62,7 +62,7 @@ static OFDeclareDebugLogLevel(OSUDebug);
 
 #define VERIFY_APPCAST 1
 
-#if 0 && defined(DEBUG_correia)
+#if 0 && (defined(DEBUG_correia) || defined(DEBUG_kilodelta))
     #undef VERIFY_APPCAST
     #define VERIFY_APPCAST 0
 #endif
@@ -83,7 +83,7 @@ static OFDeclareDebugLogLevel(OSUDebug);
 #endif
 
 // Strings of interest
-static NSString * const OSUDefaultCurrentVersionsURLString = @"http://update.omnigroup.com/appcast/";  // Must end in '/' for the path appending to not replace the last component
+static NSString * const OSUDefaultCurrentVersionsURLString = @"https://update.omnigroup.com/appcast/";  // Must end in '/' for the path appending to not replace the last component
 
 // Info.plist keys
 static NSString * const OSUBundleCheckAtLaunchKey = @"OSUSoftwareUpdateAtLaunch";
@@ -94,6 +94,9 @@ static NSString * const OSUBundleLicenseTypeKey = @"OSUSoftwareUpdateLicenseType
 // Preferences keys
 static NSString * const OSUCurrentVersionsURLKey = @"OSUCurrentVersionsURL";
 static NSString * const OSUNewestVersionNumberLaunchedKey = @"OSUNewestVersionNumberLaunched";
+
+NSString * const OSUNewsAnnouncementNotification = @"OSUNewsAnnouncement";
+NSString * const OSUNewsAnnouncementHasBeenReadNotification = @"OSUNewsAnnouncementHasBeenRead";
 
 // We used to have this be the bundle version, but when using a Copy Files build phase to install a framework into an app, codesign would get called with .../Versions/A instead of ..Versions/2009A (which was what we had FRAMEWORK_VERSION set to). Instead, just define this here and don't try to grab it out of the framework version (which isn't useful now anyway since we bundle frameworks inside the app).
 #define OSU_VERSION_NUMBER 2009A
@@ -124,6 +127,7 @@ NSString * const OSULicenseTypeAppStore = @"appstore";
 
 @interface OSUChecker ()
 @property(nonatomic,retain) id <OSUCheckerTarget> target;
+@property(nonatomic,retain) NSDateFormatter *dateFormatter;
 @end
 
 @implementation OSUChecker
@@ -490,6 +494,63 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return (_currentCheckOperation != nil)? YES : NO; 
 }
 
+- (BOOL)unreadNewsAvailable
+{
+    return [[OSUPreferences unreadNews] boolValue];
+}
+
+- (void)setUnreadNewsAvailable:(BOOL)unreadNewsAvailable
+{
+    BOOL originalUnreadValue = self.unreadNewsAvailable;
+    if (unreadNewsAvailable != originalUnreadValue) {
+        [[OSUPreferences unreadNews] setBoolValue:unreadNewsAvailable];
+        
+        if (originalUnreadValue == YES) {
+            // the news was read by the user, and is no longer considered unread.
+            [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementHasBeenReadNotification object:nil];
+        }
+    }
+}
+
+- (NSURL *)currentNewsURL
+{
+    NSString *urlString = [[OSUPreferences currentNewsURL] stringValue];
+    if (urlString) {
+        return [NSURL URLWithString:urlString];
+    }
+    return nil;
+}
+
+- (void)setCurrentNewsURL:(NSURL *)currentNewsURL
+{
+    if (currentNewsURL != self.currentNewsURL) {
+        [[OSUPreferences currentNewsURL] setStringValue:[currentNewsURL absoluteString]];
+        self.unreadNewsAvailable = YES;
+        [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementNotification
+                                                            object:self
+                                                          userInfo:@{@"OSUNewsAnnouncementURL":currentNewsURL}];
+    }
+}
+
+- (void)handleNewsURL:(NSURL *)url withPublishDate:(NSDate *)publishDate
+{
+    OBPRECONDITION(publishDate);
+    OBPRECONDITION(url);
+    if (publishDate == nil || url == nil) {
+        // if we didn't get a valid url or publish date, we need to bail and not try to show news.
+        return;
+    }
+    
+    NSDate *currentNewsDate = [[OSUPreferences newsPublishDate] objectValue];
+    // only publish that we have a new news item, if the publishDate is later than the last news item publish date we received.
+    if (currentNewsDate == nil || [currentNewsDate compare:publishDate] == NSOrderedAscending) {
+#if defined(DEBUG_kilodelta)
+        NSLog(@"news item with a date later than: %@ -- new date: %@", currentNewsDate, publishDate);
+#endif
+        [[OSUPreferences newsPublishDate] setObjectValue:publishDate];
+        self.currentNewsURL = url;
+    }
+}
 // API
 
 - (BOOL)checkSynchronously;
@@ -662,6 +723,20 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
 }
 
+- (NSDateFormatter *)dateFormatter
+{
+    if (_dateFormatter == nil) {
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        NSLocale *us = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
+        [formatter setLocale:us];
+        // Formatter needs to follow RFC 822 for RSS version 2.0
+        formatter.dateFormat = @"EEE, dd MMM yyyy HH:mm:ss zzz";
+        _dateFormatter = formatter;
+    }
+    
+    return _dateFormatter;
+}
+
 - (BOOL)_shouldCheckAtLaunch;
 {
 #if 0 && defined(DEBUG)
@@ -812,6 +887,13 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     // The fetch subprocess has completed.
     NSDictionary *output = _currentCheckOperation.output;
+#if defined(DEBUG)
+    // This is helpful when you need to test the behavior when a software update check fails. (Specifically, this only mimics the kind of failure you get if the server can be reached but never actually responds.)
+    if ((output != nil) && [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUTestCheckFailure"]) {
+        NSLog(@"OSUTestCheckFailure: pretending that we got no check operation output");
+        output = nil;
+    }
+#endif
     __autoreleasing NSError *error = nil;
     if (!output) {
         error = _currentCheckOperation.error;
@@ -972,9 +1054,11 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     NSError *firstError = nil;
     NSMutableArray *items = [NSMutableArray array];
     NSUInteger nodeIndex = [nodes count];
+ 
     while (nodeIndex--) {
         __autoreleasing NSError *itemError = nil;
         OSUItem *item = [[OSUItem alloc] initWithRSSElement:[nodes objectAtIndex:nodeIndex] error:&itemError];
+        
         if (!item) {
             ITEM_DEBUG(@"Unable to interpret node %@ as a software update: %@", [nodes objectAtIndex:nodeIndex], itemError);
             if (!firstError)
@@ -1002,6 +1086,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         }
     }
     
+    
     // If we had some matching nodes, but none were usable, return the error for the first
     if ([nodes count] > 0 && [items count] == 0 && firstError) {
         if (outError)
@@ -1009,6 +1094,27 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         return NO;
     }
 
+    // from the feed items we have, check if we have a news item.
+    OSUItem *newsItem = nil;
+    for (OSUItem *item in items) {
+        if (item.isNewsItem) {
+            newsItem = item;
+            break;
+        }
+    }
+    
+    if (newsItem != nil) {
+        NSDate *publishDate = [self _convertRFC822DateString:newsItem.publishDateString];
+        [self handleNewsURL:newsItem.releaseNotesURL withPublishDate:publishDate];
+#if defined(DEBUG_kilodelta)
+        NSLog(@"------- Got a new news item: %@ for date: %@", newsItem.releaseNotesURL, publishDate);
+#endif
+        // take this item out of the feed so we don't show it.
+        [items removeObject:newsItem];
+        
+        //Note: What should happen if we have a news feed item and an update? Currently we badge the UI for news, but show the update panel.
+    }
+    
     // If it looks like we'll display anything, retrieve the track descriptions and up-to-date orderings
     if ([items count] > 0 && !_refreshingTrackInfo) {
         NSArray *trackInfoAttributes = [document objectsForXQuery:[NSString stringWithFormat:@"declare namespace oac = \"%@\";\n /rss/channel/attribute::oac:trackinfo", OSUAppcastTrackInfoNamespace] error:NULL];
@@ -1023,6 +1129,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         }
     }
     
+    
     [items makeObjectsPerformSelector:@selector(setAvailablityBasedOnSystemVersion:) withObject:[OFVersionNumber userVisibleOperatingSystemVersionNumber]];
     [OSUItem setSupersededFlagForItems:items];
     
@@ -1032,6 +1139,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     return YES;
 }
+
 #else
 - (void)_checkForMessageInSoftwareUpdateData:(NSData *)data
 {
@@ -1043,6 +1151,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
             [appController showNewsURLString:oneItem.releaseNotesURLString evenIfShownAlready:NO];
         }
 #endif
+        // MAS Build.
+        NSURL *newsURL = [NSURL URLWithString:oneItem.releaseNotesURLString];
+        NSDate *publishDate = [self _convertRFC822DateString:oneItem.publishDateString];
+        [self handleNewsURL:newsURL withPublishDate:publishDate];
     }
 }
 
@@ -1129,4 +1241,25 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 }
 #endif
 
+- (NSDate *)_convertRFC822DateString:(NSString *)dateString
+{
+    // Guard against some possible bad date formats in the OSU publish date string.
+    
+    if ([dateString rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"-"]].location != NSNotFound) {
+        // guard against a possibly poorly formated date string.
+        dateString = [dateString stringByReplacingOccurrencesOfString:@"-" withString:@" "];
+    }
+    
+    if ([dateString rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@","]].location == NSNotFound) {
+        // use a format that doesn't include the day abrev.
+        self.dateFormatter.dateFormat = @"dd MMM yyyy HH:mm:ss zzz";
+    }
+    
+    NSDate *date = [self.dateFormatter dateFromString:dateString];
+    OBASSERT(date);
+    if (! date) {
+        OSU_DEBUG(1, @"failed to convert: %@ into a RFC822 date", dateString);
+    }
+    return date;
+}
 @end

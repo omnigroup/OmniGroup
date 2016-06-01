@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -244,6 +244,11 @@ RCS_ID("$Id$")
 - (void)controlTextDidEndEditing:(NSNotification *)notification;
 {
     [self setValueForSender:[notification object]];
+}
+
+- (BOOL)wantsAutosizing
+{
+    return NO;
 }
 
 @end

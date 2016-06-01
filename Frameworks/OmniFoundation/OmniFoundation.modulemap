@@ -2,9 +2,7 @@ framework module OmniFoundation {
     umbrella header "OmniFoundation.h"
     
     // Exclude headers that import other non-module headers
-    exclude header "OFDigestUtilities.h"
     exclude header "OFXMLSignature.h"
-    exclude header "OFSecurityUtilities.h"
     
     // Nearly deprecated headers
     exclude header "OFSimpleLock.h"

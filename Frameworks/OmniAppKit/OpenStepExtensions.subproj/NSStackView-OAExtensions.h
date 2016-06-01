@@ -8,7 +8,10 @@
 // $Id$
 
 #import <AppKit/NSStackView.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
 
+
+NS_ASSUME_NONNULL_BEGIN
 
 /*!
  @protocol OAAnimatedSubviewHiding
@@ -31,21 +34,21 @@
  @param shouldBeHidden YES if the subviews are to be hidden; NO if they are to be unhidden.
  @param animated YES if the subviews should be animated in/out.
  */
-- (void)setSubviews:(NSArray *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
+- (void)setSubviews:(NSArray <NSView *> *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
 
 /*!
  @discussion Hides the specified views and unhides all other subviews, with optional animation. Any subviews already in the requested state are unchanged.
  @param hiddenSubviews The array of views to be hidden. All of the views must be immediate subviews of the recipient.
  @param animated YES if the subviews should be animated in/out.
  */
-- (void)setHiddenSubviews:(NSArray *)hiddenSubviews animated:(BOOL)animated;
+- (void)setHiddenSubviews:(NSArray <NSView *> *)hiddenSubviews animated:(BOOL)animated;
 
 /*!
  @discussion Unhides the specified views and hides all other subviews, with optional animation. Any subviews already in the requested state are unchanged.
  @param unhiddenSubviews The array of views to be unhidden. All of the views must be immediate subviews of the recipient.
  @param animated YES if the subviews should be animated in/out.
  */
-- (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews animated:(BOOL)animated;
+- (void)setUnhiddenSubviews:(NSArray <NSView *> *)unhiddenSubviews animated:(BOOL)animated;
 
 @end
 
@@ -69,7 +72,7 @@
  @param orientation Specifies whether the animation adjusts the views' horizontal size or their vertical size.
  @param completionBlock An optional block to be called when the animation is complete. If not being animated, this block is called after the hidden state is set as appropriate for all the views.
  */
-+ (void)setViews:(NSArray *)views areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setViews:(nullable NSArray <NSView *> *)views areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 
 /*!
  @discussion Hides the specified views and unhides all other subviews, with optional animation. Any subviews already in the requested state are unchanged.
@@ -79,7 +82,7 @@
  @param orientation Specifies whether the animation adjusts the subviews' horizontal size or their vertical size.
  @param completionBlock An optional block to be called when the animation is complete. If not being animated, this block is called after the hidden state is set as appropriate for all the subviews.
  */
-+ (void)setHiddenSubviews:(NSArray *)hiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setHiddenSubviews:(nullable NSArray <NSView *> *)hiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 
 /*!
  @discussion Unhides the specified views and hides all other subviews, with optional animation. Any subviews already in the requested state are unchanged.
@@ -89,7 +92,7 @@
  @param orientation Specifies whether the animation adjusts the subviews' horizontal size or their vertical size.
  @param completionBlock An optional block to be called when the animation is complete. If not being animated, this block is called after the hidden state is set as appropriate for all the subviews.
  */
-+ (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)setUnhiddenSubviews:(nullable NSArray <NSView *> *)unhiddenSubviews ofView:(NSView *)parentView animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 
 /*!
  @discussion Hides and unhides the specified views as appropriate, with optional animation. Any views already in the requested state are unchanged.
@@ -99,7 +102,7 @@
  @param orientation Specifies whether the animation adjusts the subviews' horizontal size or their vertical size.
  @param completionBlock An optional block to be called when the animation is complete. If not being animated, this block is called after the hidden state is set as appropriate for all the views.
  */
-+ (void)hideViews:(NSArray *)viewsToHide andUnhideViews:(NSArray *)viewsToUnhide animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(void (^)(void))completionBlock;
++ (void)hideViews:(nullable NSArray <NSView *> *)viewsToHide andUnhideViews:(nullable NSArray <NSView *> *)viewsToUnhide animated:(BOOL)animated byCollapsingOrientation:(NSUserInterfaceLayoutOrientation)orientation completionBlock:(nullable void (^)(void))completionBlock;
 
 @end
 
@@ -110,3 +113,18 @@
  */
 @interface NSStackView (OAAnimatedSubviewHidingExtensions) <OAAnimatedSubviewHiding>
 @end
+
+
+@interface NSStackView (OACrossfadeSupport)
+
+/*!
+ @discussion This is a convenience method to perform an autolayout-compatible crossfade animation between two configurations of the receiver. It uses the crossfade animation support provided in NSView(OAExtensions), while providing the bit of extra logic required to avoid layout constraint conflicts during the animation.
+ @param layoutBlock The block that updates the stack view to its desired layout. This block is required. This block will NOT be executed if there is already a crossfade being performed AND a subsequent crossfade request is made before the earlier crossfade completes.
+ @param completionBlock An optional block which will be executed when the layout transition is complete. The completion block will be executed even if the transition is not animated (for instance, if the window is hidden, so there is no point is performing an animated transition). The completion block will NOT be executed if the layout block is not executed. (See the description of the layoutBlock parameter for details on when that can happen.)
+ @see +[NSView(OAExtensions) crossfadeView:afterPerformingLayout:preAnimationBlock:completionBlock:
+ */
+- (void)crossfadeAfterPerformingLayout:(OACrossfadeLayoutBlock)layoutBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+
+@end
+
+NS_ASSUME_NONNULL_END

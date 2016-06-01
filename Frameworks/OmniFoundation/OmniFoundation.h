@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,16 +7,16 @@
 //
 // $Id$
 
-#import <Foundation/Foundation.h>
-
 #import <OmniFoundation/OFFeatures.h>
 
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFAlias.h>
+#import <OmniFoundation/OFAsynchronousOperation.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFBacktrace.h>
 #import <OmniFoundation/OFBijection.h>
 #import <OmniFoundation/OFBinding.h>
+#import <OmniFoundation/OFBundledClass.h>
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import <OmniFoundation/OFCancelErrorRecovery.h>
@@ -24,6 +24,7 @@
 #import <OmniFoundation/OFCharacterSet.h>
 #import <OmniFoundation/OFCompletionMatch.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFDateFormatConversion.h>
 #import <OmniFoundation/OFEnumNameTable-OFXMLArchiving.h>
@@ -78,7 +79,6 @@
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 	#import <OmniFoundation/OFBTree.h>
 	#import <OmniFoundation/OFBulkBlockPool.h>
-	#import <OmniFoundation/OFBundledClass.h>
 	#import <OmniFoundation/OFByteSet.h>
 	#import <OmniFoundation/OFCDSAUtilities.h>
 	#import <OmniFoundation/OFCacheFile.h>
@@ -184,6 +184,7 @@
 #import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/NSFileManager-OFExtendedAttributes.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 

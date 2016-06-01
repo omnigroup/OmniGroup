@@ -5,25 +5,29 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUDownloadController.h"
+#import <OmniSoftwareUpdate/OSUDownloadController.h>
 
 #import "OSUErrors.h"
 #import "OSUInstaller.h"
 #import "OSUItem.h"
 #import "OSUSendFeedbackErrorRecovery.h"
-#import "OSUPreferences.h"
+#import <OmniSoftwareUpdate/OSUPreferences.h>
 
 #import <AppKit/AppKit.h>
 
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/OAConstraintBasedStackView.h>
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 
-static BOOL OSUDebugDownload = NO;
+#ifdef DEBUG
+static NSString *OSUInstallationDirectoryOverride = nil;
+#endif
 
+static BOOL OSUDebugDownload = YES;
 #define DEBUG_DOWNLOAD(format, ...) \
 do { \
     if (OSUDebugDownload) \
@@ -36,28 +40,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
 
 @interface OSUDownloadController () <NSURLDownloadDelegate, OSUInstallerDelegate> {
   @private
-    // Book-keeping information for swapping views in and out of the panel.
-    NSView *_bottomView;
-    NSSize _originalBottomViewSize;
-    NSSize _originalWindowSize;
-    NSSize _originalWarningViewSize;
-    CGFloat _originalWarningTextHeight;
-    CGFloat _warningTextTopMargin;
-    
-    // These are the toplevel views we might display in the panel.
-    NSView *_plainStatusView;
-    NSView *_credentialsView;
-    NSView *_progressView;
-    NSView *_installBasicView;         // Very basic, nonthreatening dialog text.
-    NSView *_installOptionsNoteView;   // View with small note text displayed instead of options view.
-    NSView *_installWarningView;       // Warning message and icon.
-    NSView *_installButtonsView;       // Box containing the action buttons.
-    
-    NSTextField *_installViewMessageText;
-    NSImageView *_installViewCautionImageView;
-    NSTextField *_installViewCautionText;
-    NSButton *_installViewInstallButton;
-    
     NSURL *_packageURL;
     OSUItem *_item;
     NSURLRequest *_request;
@@ -67,40 +49,30 @@ static OSUDownloadController *CurrentDownloadController = nil;
     BOOL _showCautionText;  // Usually describing a verification failure
     BOOL _displayingInstallView;
     
-    NSString *_status;
-    
-    NSString *_userName;
-    NSString *_password;
-    BOOL _rememberInKeychain;
-    
-    off_t _currentBytesDownloaded;
-    off_t _totalSize;
-    
     // Where we're downloading the package to
     NSString *_suggestedDestinationFile;
     NSString *_destinationFile;
-    
-    // Where we think we'll install the new application
-    NSString *_installationDirectory;
-    NSAttributedString *_installationDirectoryNote;
-    
-    // Installer bookkeeping
-    OSUInstaller *_installer;
 }
 
-@property (nonatomic, retain) IBOutlet NSView *bottomView;
-@property (nonatomic, retain) IBOutlet NSView *plainStatusView;
+@property (nonatomic, retain) IBOutlet OAConstraintBasedStackView *contentView;
+
+// These are the toplevel views we might display in the contentView.
+@property (nonatomic, retain) IBOutlet NSView *downloadProgressView;
+@property (nonatomic, retain) IBOutlet NSView *installProgressView;
+
+// These are the views we might display in the downloadProgressView
 @property (nonatomic, retain) IBOutlet NSView *credentialsView;
-@property (nonatomic, retain) IBOutlet NSView *progressView;
+
+// These are the views we might display in the installView
 @property (nonatomic, retain) IBOutlet NSView *installBasicView;
 @property (nonatomic, retain) IBOutlet NSView *installOptionsNoteView;
 @property (nonatomic, retain) IBOutlet NSView *installWarningView;
 @property (nonatomic, retain) IBOutlet NSView *installButtonsView;
 
-@property (nonatomic, retain) IBOutlet NSView *installViewMessageText;
+@property (nonatomic, retain) IBOutlet NSTextField *installViewMessageText;
 @property (nonatomic, retain) IBOutlet NSImageView *installViewCautionImageView;
-@property (nonatomic, retain) IBOutlet NSView *installViewCautionText;
-@property (nonatomic, retain) IBOutlet NSView *installViewInstallButton;
+@property (nonatomic, retain) IBOutlet NSTextField *installViewCautionText;
+@property (nonatomic, retain) IBOutlet NSButton *installViewInstallButton;
 
 @property (nonatomic, copy) NSString *installationDirectory;
 @property (nonatomic, copy) NSAttributedString *installationDirectoryNote;
@@ -114,6 +86,7 @@ static OSUDownloadController *CurrentDownloadController = nil;
 @property (nonatomic) off_t currentBytesDownloaded;
 @property (nonatomic) off_t totalSize;
 
+// Installer bookkeeping
 @property (nonatomic, retain) OSUInstaller *installer;
 
 - (IBAction)cancelAndClose:(id)sender;
@@ -135,6 +108,9 @@ static OSUDownloadController *CurrentDownloadController = nil;
     OBINITIALIZE;
     
     OSUDebugDownload = [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUDebugDownload"];
+#ifdef DEBUG
+    OSUInstallationDirectoryOverride = [[NSUserDefaults standardUserDefaults] stringForKey:@"OSUInstallationDirectoryOverride"];
+#endif
 }
 
 + (OSUDownloadController *)currentDownloadController;
@@ -198,9 +174,9 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     };
 
     __autoreleasing NSError *validateError = nil;
-    if (_installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:_installationDirectory error:&validateError]) {
+    if (self.installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:self.installationDirectory error:&validateError]) {
         // We should only have to prompt the user to pick a directory if both the application's directory and /Applications on the root filesystem both live on read-only filesystems.
-        [OSUInstaller chooseInstallationDirectory:_installationDirectory modalForWindow:self.window completionHandler:^(NSError *error, NSString *result) {
+        [OSUInstaller chooseInstallationDirectory:self.installationDirectory modalForWindow:self.window completionHandler:^(NSError *error, NSString *result) {
             if (result == nil) {
                 [[NSApplication sharedApplication] presentError:error];
                 [self cancelAndClose:nil];
@@ -238,35 +214,29 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 {
     [super windowDidLoad];
     
-    OBASSERT([_bottomView window] == [self window]);
+    OBASSERT([self.contentView window] == [self window]);
     
-    _originalBottomViewSize = [_bottomView frame].size;
-    _originalWindowSize = [[[self window] contentView] frame].size;
-    _originalWarningViewSize = [_installWarningView frame].size;
-    NSRect warningTextFrame = [_installViewCautionText frame];
-    NSRect warningViewBounds = [_installWarningView bounds];
-    _originalWarningTextHeight = warningTextFrame.size.height;
-    _warningTextTopMargin = NSMaxY(warningViewBounds) - NSMaxY(warningTextFrame);
-
-    OBASSERT([_installViewCautionText superview] == _installWarningView);
-    OBASSERT([_installViewInstallButton superview] == _installButtonsView);
-    OBASSERT([_installViewMessageText superview] == _installBasicView);
-
+    OBASSERT([self.installViewCautionText superview] == self.installWarningView);
+    OBASSERT([self.installViewInstallButton superview] == self.installButtonsView);
+    OBASSERT([self.installViewMessageText superview] == self.installBasicView);
+    
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    
     NSString *name = [[[_request URL] path] lastPathComponent];
     [self setStatus:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ \\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - text is filename of update package being downloaded"), name]];
     
-    [_installViewCautionText setStringValue:@"---"];
-    [self _setDisplayedView:_plainStatusView];
+    [self.installViewCautionText setStringValue:@"---"];
+    [self _setDisplayedView:self.downloadProgressView];
+    [self.window layoutIfNeeded];
     
     NSString *appDisplayName = [[NSProcessInfo processInfo] processName];
     [[self window] setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ Update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download window title - text is name of the running application"), appDisplayName]];
     
-    NSString *basicText = [_installViewMessageText stringValue];
-    basicText = [basicText stringByReplacingOccurrencesOfString:@"%@" withString:appDisplayName];
-    [_installViewMessageText setStringValue:basicText];
+    NSString *basicText = [self.installViewMessageText stringValue];
+     basicText = [basicText stringByReplacingOccurrencesOfString:@"%@" withString:appDisplayName];
+    [self.installViewMessageText setStringValue:basicText];
     
-    [self _adjustProgressIndiciateAttributesInSubtreeForView:_progressView];
-    [self _adjustProgressIndiciateAttributesInSubtreeForView:_plainStatusView];
+    [self _adjustProgressIndicatorAttributesInSubtreeForView:self.downloadProgressView];
 }
 
 #pragma mark -
@@ -291,11 +261,11 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     NSWindow *window = [self window];
     [window makeFirstResponder:window];
     
-    NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:_userName password:_password persistence:(_rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
+    NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:self.userName password:self.password persistence:(self.rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
     [[_challenge sender] useCredential:credential forAuthenticationChallenge:_challenge];
 
     // Switch views so that if we get another credential failure, the user sees that we *tried* to use what they gave us, but failed again.
-    [self _setDisplayedView:_progressView];
+    [self _setDisplayedView:self.downloadProgressView];
 }
 
 - (IBAction)installAndRelaunch:(id)sender;
@@ -313,27 +283,13 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     installer.delegate = self;
     installer.installedVersionPath = [[NSBundle mainBundle] bundlePath];
     
-    if (_installationDirectory != nil)
-        installer.installationDirectory = _installationDirectory;
+    if (self.installationDirectory != nil)
+        installer.installationDirectory = self.installationDirectory;
     
     self.installer = installer;
     
-    [self _setDisplayedView:_plainStatusView];
+    [self _setDisplayedView:self.installProgressView];
     [installer run];
-}
-
-- (NSString *)status;
-{
-    return _status;
-}
-
-- (void)setStatus:(NSString *)status
-{
-    if (status != _status) {
-        _status = [status copy];
-
-        [[self window] displayIfNeeded];
-    }
 }
 
 - (IBAction)chooseDirectory:(id)sender;
@@ -357,16 +313,36 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 
 - (BOOL)sizeKnown;
 {
-    return _totalSize != 0ULL;
+    return self.totalSize != 0ULL;
 }
 
-- (NSString *)installationDirectory;
++ (NSSet *)keyPathsForValuesAffectingIsInstalling;
 {
-    return _installationDirectory;
+    return [NSSet setWithObject:@"installer"];
+}
+
+- (BOOL)isInstalling;
+{
+    return (self.installer != nil);
+}
+
+- (void)setStatus:(NSString *)status
+{
+    if (status != _status) {
+        _status = [status copy];
+        
+        [[self window] displayIfNeeded];
+    }
 }
 
 - (void)setInstallationDirectory:(NSString *)installationDirectory
 {
+#ifdef DEBUG
+    if (OSUInstallationDirectoryOverride != nil) {
+        installationDirectory = OSUInstallationDirectoryOverride;
+    }
+#endif
+    
     if (OFISEQUAL(_installationDirectory, installationDirectory))
         return;
     
@@ -460,9 +436,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         return;
     }
     
-    // Clear our status to stop the animation in the view.  NSProgressIndicator hates getting removed from the view while it is animating, yielding exceptions in the heartbeat thread.
-    [self setStatus:nil];
-    [self _setDisplayedView:_credentialsView];
+    [self _setDisplayedView:self.credentialsView];
     [self showWindow:nil];
     [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
 }
@@ -486,8 +460,8 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         DEBUG_DOWNLOAD(@"  allHeaderFields %@", [(NSHTTPURLResponse *)response allHeaderFields]);
     }
 
-    [self setTotalSize:[response expectedContentLength]];
-    [self _setDisplayedView:_progressView];
+    self.totalSize = [response expectedContentLength];
+    [self _setDisplayedView:self.downloadProgressView];
 }
 
 - (void)download:(NSURLDownload *)download willResumeWithResponse:(NSURLResponse *)response fromByte:(long long)startingByte;
@@ -497,7 +471,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 
 - (void)download:(NSURLDownload *)download didReceiveDataOfLength:(NSUInteger)length;
 {
-    off_t newBytesDownloaded = _currentBytesDownloaded + length;
+    off_t newBytesDownloaded = self.currentBytesDownloaded + length;
     self.currentBytesDownloaded = newBytesDownloaded;
 }
 
@@ -587,7 +561,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     [self setStatus:NSLocalizedStringFromTableInBundle(@"Verifying file\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status")];
     NSString *caution = [_item verifyFile:_destinationFile];
     if (![NSString isEmptyString:caution]) {
-        [_installViewCautionText setStringValue:caution];
+        [self.installViewCautionText setStringValue:caution];
         _showCautionText = YES;
     }
     
@@ -689,13 +663,13 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 #pragma mark -
 #pragma mark Private
 
-- (void)_adjustProgressIndiciateAttributesInSubtreeForView:(NSView *)view;
+- (void)_adjustProgressIndicatorAttributesInSubtreeForView:(NSView *)view;
 {
     for (NSView *subview in view.subviews) {
-        [self _adjustProgressIndiciateAttributesInSubtreeForView:subview];
+        [self _adjustProgressIndicatorAttributesInSubtreeForView:subview];
         
         // Threaded animation doesn't play nicely with our blocking animation; it causes visual glitches.
-        // Probably shoudl move off of blocking animation, but easier to just turn this off for now.
+        // Probably should move off of blocking animation, but easier to just turn this off for now.
         if ([subview isKindOfClass:[NSProgressIndicator class]]) {
             NSProgressIndicator *progressIndicator = (NSProgressIndicator *)subview;
             [progressIndicator setUsesThreadedAnimation:NO];
@@ -706,37 +680,20 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 - (void)_setInstallViews;
 {
     NSMutableArray *installViews = [NSMutableArray array];
-    [installViews addObject:_installBasicView];
 
-    if (_installationDirectoryNote != nil) {
-        [installViews addObject:_installOptionsNoteView];
+    [installViews addObject:self.installBasicView];
+    
+    if (self.installationDirectoryNote != nil) {
+        [installViews addObject:self.installOptionsNoteView];
     }
     
     if (_showCautionText) {
-        [installViews addObject:_installWarningView];
-        // Resize the warning text, if it's tall, and resize its containing view as well. Unfortunately, just resizing the containing view and telling it to automatically resize its subviews doesn't do the right thing here, so we do the bookkeeping ourselves.
-        NSSize textSize = [_installViewCautionText desiredFrameSize:NSViewHeightSizable];
-        NSRect textFrame = [_installViewCautionText frame];
-        if (textSize.height <= _originalWarningTextHeight) {
-            [_installWarningView setFrameSize:_originalWarningViewSize];
-            textFrame.size.height = _originalWarningTextHeight;
-        } else {
-            [_installWarningView setFrameSize:(NSSize){
-                .width = _originalWarningViewSize.width,
-                .height = ceil(_originalWarningViewSize.height + textSize.height - _originalWarningTextHeight)
-            }];
-            textFrame.size.height = textSize.height;
-        }
-        
-        textFrame.origin.y = ceil(NSMaxY([_installWarningView bounds]) - _warningTextTopMargin - textFrame.size.height);
-        [_installViewCautionText setFrame:textFrame];
-        [_installViewCautionText setNeedsDisplay:YES];
-        [_installWarningView setNeedsDisplay:YES];
-        [_installViewCautionImageView setImage:[NSImage imageNamed:NSImageNameCaution]];
+        [installViews addObject:self.installWarningView];
+        [self.installViewCautionImageView setImage:[NSImage imageNamed:NSImageNameCaution]];
     }
 
-    [installViews addObject:_installButtonsView];
-    
+    [installViews addObject:self.installButtonsView];
+
     _displayingInstallView = YES;
     [self setContentViews:installViews];
 }
@@ -744,70 +701,22 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 - (void)_setDisplayedView:(NSView *)aView;
 {
     _displayingInstallView = NO;
-    [self setContentViews:[NSArray arrayWithObject:aView]];
+    [self setContentViews:(aView != nil ? [NSArray arrayWithObject:aView] : nil)];
 }
 
 - (void)setContentViews:(NSArray *)newContent;
 {
     NSWindow *window = [self window];
-    
-    // Get a list of view animations to position all the new content in _bottomView
-    // (and to hide the old content)
-    NSSize desiredBottomViewFrameSize = _originalBottomViewSize;
-    NSMutableArray *animations = [_bottomView animationsToStackSubviews:newContent finalFrameSize:&desiredBottomViewFrameSize];
-    
-    // Compute the desired size of the window frame.
-    // By virtue of the fact that our bottom view is flipped, resizable and the various contents are set to be top-aligned, this is the only resizing we need.
-    
-    CGFloat desiredWindowContentWidth = _originalWindowSize.width + desiredBottomViewFrameSize.width - _originalBottomViewSize.width;
-    CGFloat desiredWindowContentHeight = _originalWindowSize.height + desiredBottomViewFrameSize.height - _originalBottomViewSize.height;
-    NSRect oldFrame = [window frame];
-    NSRect windowFrame = [window contentRectForFrameRect:oldFrame];
-    windowFrame.size.width = desiredWindowContentWidth;
-    windowFrame.size.height = desiredWindowContentHeight;
-    windowFrame = [window frameRectForContentRect:windowFrame];
-    
-    // It looks nicest if we keep the window's title bar in approximately the same position when resizing.
-    // NSWindow screen coordinates are in a Y-increases-upwards orientation.
-    windowFrame.origin.y += ( NSMaxY(oldFrame) - NSMaxY(windowFrame) );
-
-    // If moving horizontally, let's see if keeping a point 1/3 from the left looks good.
-    windowFrame.origin.x = floor(oldFrame.origin.x + (oldFrame.size.width - windowFrame.size.width)/3);
-
-    NSScreen *windowScreen = [window screen];
-    if (windowScreen) {
-        windowFrame = OFConstrainRect(windowFrame, [windowScreen visibleFrame]);
-    }
-    
-    if (!NSEqualRects(oldFrame, windowFrame)) {
-        NSDictionary *animationDictionary = @{
-            NSViewAnimationTargetKey : window,
-            NSViewAnimationStartFrameKey : [NSValue valueWithRect:oldFrame],
-            NSViewAnimationEndFrameKey : [NSValue valueWithRect:windowFrame],
-        };
-        [animations addObject:animationDictionary];
-    }
-
-    // Animate if there was anything to do.
-    if ([animations count] > 0) {
-        NSViewAnimation *animation = [[NSViewAnimation alloc] initWithViewAnimations:animations];
-        NSTimeInterval duration = [window isVisible] ? 0.1 : 0.0;
-        [animation setDuration:duration];
-        [animation setAnimationBlockingMode:NSAnimationBlocking];
-        [animation startAnimation];
-    }
-    
-    // Update up the key view loop and first responder if appropriate
-    // If there are no animations, assume we don't need to make any changes to the key view loop.
-    if ([animations count] > 0) {
-       [window recalculateKeyViewLoop];
+    [self.contentView crossfadeToViews:newContent completionBlock:^{
+        // Update up the key view loop and first responder if appropriate
+        [window recalculateKeyViewLoop];
         
-        NSView *nextValidKeyView = [[newContent objectAtIndex:0] nextValidKeyView];
+        NSView *nextValidKeyView = [[newContent firstObject] nextValidKeyView];
         BOOL shouldAdjustFirstResponder = [window firstResponder] == nil || [window firstResponder] == window;
         if (shouldAdjustFirstResponder && nextValidKeyView != nil) {
             [window makeFirstResponder:nextValidKeyView];
         }
-    }
+    }];
 }
 
 - (void)_cancel;

@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,11 +29,11 @@
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <dirent.h>
 #else
 #import <CoreServices/CoreServices.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #endif
+#import <dirent.h>
 
 RCS_ID("$Id$")
 
@@ -1393,13 +1393,19 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     
     ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:self.remoteBaseDirectory];
 
+    OBExpectDeallocation(connection); // These shouldn't be long lived...
+
     connection.userAgent = _debugName;
     
-    connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+#if 0  // Seems redundant: if we don't implement this, we'll just bubble this error up to the invoker, who will present it if that makes sense.
+    connection.validateCertificateForChallenge = ^NSURLConnection *(NSURLAuthenticationChallenge *challenge){
         // This gets called on an anonymous queue, but -reportError: just dispatches to the main queue, we we are safe
         [_account reportError:[NSError certificateTrustErrorForChallenge:challenge]];
+        return nil;
     };
-    connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+#endif
+    
+    connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
         // This gets called on an anonymous queue, so we need to serialize access to our state
         if ([challenge previousFailureCount] <= 2) {
             NSURLCredential *credential;
@@ -1409,7 +1415,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
             // This will legitimately be nil in -[OFXAgentAccountChangeTestCase testRemoveAccount] since we can have a sync running and then have removed the account before the sync finishes.
             // TODO: Still true?
             OBASSERT(credential);
-            return credential;
+            return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, credential);
         }
         return nil;
     };

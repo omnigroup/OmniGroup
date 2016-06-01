@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -143,6 +143,17 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
         return shouldOrderParentsFirst ? NSOrderedAscending : NSOrderedDescending;
     else
         return shouldOrderParentsFirst ? NSOrderedDescending : NSOrderedAscending;
+}
+
+- (NSUInteger)hash;
+{
+    // Multiple the parent has by a prime number to cause a bit shift/more entropy in the hash
+    return (13 * [_parent hash]) ^ _index;
+}
+
+- (BOOL)isEqual:(id)otherObject;
+{
+    return [self _compare:otherObject orderParentsFirst:YES] == NSOrderedSame;
 }
 
 - (NSComparisonResult)compare:(OFIndexPath *)otherObject;

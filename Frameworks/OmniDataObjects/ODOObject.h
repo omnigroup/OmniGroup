@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 #import <OmniDataObjects/ODOFeatures.h>
 #import <OmniBase/macros.h>
 
-@class NSString, NSArray, NSMutableDictionary, NSError, NSSet, NSMutableSet;
+@class NSString, NSArray, NSError, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
 @interface ODOObject : OFObject
@@ -29,7 +29,9 @@
         unsigned int isFault : 1;
         unsigned int changeProcessingDisabled : 1;
         unsigned int invalid : 1;
+        unsigned int isAwakingFromInsert : 1;
         unsigned int needsAwakeFromFetch : 1;
+        unsigned int isAwakingFromFetch : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
         unsigned int undeletable : 1;
     } _flags;
@@ -47,19 +49,23 @@
 
 - (void)setDefaultAttributeValues;
 
+- (BOOL)isAwakingFromInsert;
 - (void)awakeFromInsert;
+
+- (BOOL)isAwakingFromFetch;
 - (void)awakeFromFetch;
-- (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 - (void)didAwakeFromFetch;
+
+- (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 
 @property(readonly) ODOEntity *entity; // do not subclass
 @property(readonly) ODOEditingContext *editingContext; // do not subclass
 @property(readonly) ODOObjectID *objectID; // do not subclass
 
 - (void)willSave;
-- (void)willInsert; // Just calls -willSave
-- (void)willUpdate; // Just calls -willSave
-- (void)willDelete; // Just calls -willSave
+- (void)willInsert NS_REQUIRES_SUPER; // Just calls -willSave
+- (void)willUpdate NS_REQUIRES_SUPER; // Just calls -willSave
+- (void)willDelete NS_REQUIRES_SUPER; // Just calls -willSave
 
 - (void)prepareForDeletion; // Nothing; for subclasses
 
@@ -85,14 +91,15 @@
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
 - (NSDictionary *)changedValues;
+- (NSDictionary *)changedNonDerivedValues;
 
 - (id)committedValueForKey:(NSString *)key;
 // - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 
-+ (void)addDerivedPropertyNames:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
++ (void)addDerivedPropertyNames:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
 - (BOOL)changedNonDerivedChangedValue;
 
-+ (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
++ (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
 - (BOOL)shouldChangeDateModified;
 
 @end
@@ -103,6 +110,13 @@ extern BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint
 
 extern id ODOGetPrimitiveProperty(ODOObject *object, NSString *key);
 extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue);
+
+typedef id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
+
+typedef id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
+
+/// Returns the value of the given key for the object by reading the given snapshot, instead of querying the object directly. Useful if you have taken a snapshot of the object at some earlier point in time, and care about what the value of a particular key was at that point.
+extern id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We wouldn't implement this -- we need to switch to the newer API on the iPhone.  But, this will let things compile for now.

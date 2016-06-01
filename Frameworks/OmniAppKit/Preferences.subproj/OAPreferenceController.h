@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,8 @@
 @class NSBox, NSButton, NSImageView, NSMatrix, NSTabView, NSTextField, NSToolbar, NSView, NSWindow;
 @class OAPreferenceClient, OAPreferenceClientRecord, OAPreferencesIconView, OAPreferencesWindow;
 
+extern const NSLayoutPriority OAPreferenceClientControlBoxFixedWidthPriority;
+
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
 #import <AppKit/NSToolbar.h>
 
@@ -22,6 +24,8 @@ typedef enum OAPreferencesViewStyle {
         OAPreferencesViewMultiple = 1, // several clients, presented a la Mail or Terminal
         OAPreferencesViewCustomizable = 2 // many clients in one or more categories, presented a la System Prefs. 
 } OAPreferencesViewStyle;
+
+typedef void (^OAPreferenceClientChangeCompletion)(__kindof OAPreferenceClient *client);
 
 @interface OAPreferenceController : OFObject <NSToolbarDelegate>
 
@@ -45,6 +49,8 @@ typedef enum OAPreferencesViewStyle {
 - (void)setTitle:(NSString *)title;
 - (void)setCurrentClientByClassName:(NSString *)name;
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord;
+- (void)setCurrentClientByClassName:(NSString *)name completion:(OAPreferenceClientChangeCompletion)completion;
+- (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord completion:(OAPreferenceClientChangeCompletion)completion;
 - (void)reloadCurrentClient;
 - (NSArray <OAPreferenceClientRecord *> *)clientRecords;
 - (NSString *)defaultKeySuffix;

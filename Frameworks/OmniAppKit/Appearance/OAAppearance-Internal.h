@@ -9,6 +9,14 @@
 
 #import <OmniAppKit/OAAppearance.h>
 
+extern NSString * const OAAppearanceErrorDomain;
+typedef NS_ENUM(NSUInteger, OAAppearanceErrorCode) {
+    OAAppearanceErrorCodeKeyNotFound,
+    OAAppearanceErrorCodeUnexpectedValueType,
+    OAAppearanceErrorCodeInvalidValueInPropertyList,
+};
+
+
 @interface OAAppearance (Internal)
 + (BOOL)isReifyingClass:(Class)cls;
 @end

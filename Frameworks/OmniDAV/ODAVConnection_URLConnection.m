@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -151,8 +151,17 @@ RCS_ID("$Id$")
                     [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
                 }
                 break;
+            case NSURLSessionAuthChallengeCancelAuthenticationChallenge:
+                [[challenge sender] cancelAuthenticationChallenge:challenge];
+                break;
+            case NSURLSessionAuthChallengeRejectProtectionSpace:
+                [[challenge sender] rejectProtectionSpaceAndContinueWithChallenge:challenge];
+                break;
             default:
                 DEBUG_DAV(0, "Unhandled auth challenge disposition %ld", disposition);
+                /*FALLTHROUGH*/
+            case NSURLSessionAuthChallengePerformDefaultHandling:
+                [[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
                 break;
         }
     }];

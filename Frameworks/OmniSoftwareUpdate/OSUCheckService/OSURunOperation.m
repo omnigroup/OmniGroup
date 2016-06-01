@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011, 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import "OSURunOperationParameters.h"
 #import "OSUOpenGLExtensions.h"
-#import "OSUHardwareInfo.h"
+#import <OmniSoftwareUpdate/OSUHardwareInfo.h>
 #import "OSUCheckServiceProtocol.h"
 #import "OSULookupCredentialProtocol.h"
 

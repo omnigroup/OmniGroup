@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -109,8 +109,10 @@ RCS_ID("$Id$");
         [view addSubview:slider];
         yOffset = CGRectGetMaxY(sliderFrame) + kSpaceBetweenSliders;
         
-        // Need the up/cancel variants so we find out about the end of the tracking.
-        [slider addTarget:self action:@selector(_componentSliderValueChanged:) forControlEvents:UIControlEventValueChanged|UIControlEventTouchUpInside|UIControlEventTouchUpOutside|UIControlEventTouchCancel];
+        // Need the up/cancel variants so we find out about the end of the tracking and manage undo grouping
+        [slider addTarget:self action:@selector(_componentSliderValueChanged:) forControlEvents:UIControlEventValueChanged];
+        [slider addTarget:self action:@selector(_beginChangingSliderValue:) forControlEvents:UIControlEventTouchDown];
+        [slider addTarget:self action:@selector(_endChangingSliderValue:) forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchUpOutside|UIControlEventTouchCancel];
     }
     
     CGRect viewFrame = view.frame;
@@ -131,16 +133,6 @@ RCS_ID("$Id$");
 - (OAColor *)color;
 {
     return self.selectionValue.firstValue;
-}
-
-- (BOOL)isContinuousColorChange;
-{
-    for (OUIColorComponentSlider *slider in _componentSliders) {
-        // -state and -tracking don't transition until after the 'beginTouchs' ends.
-        if (slider.inMiddleOfTouch)
-            return YES;
-    }
-    return NO;
 }
 
 #pragma mark -
@@ -283,6 +275,16 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     }
 
     free(components);
+}
+
+- (void)_beginChangingSliderValue:(OUIColorComponentSlider *)slider NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    [[UIApplication sharedApplication] sendAction:@selector(beginChangingColor) to:self.target from:self forEvent:nil];
+}
+
+- (void)_endChangingSliderValue:(OUIColorComponentSlider *)slider NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    [[UIApplication sharedApplication] sendAction:@selector(endChangingColor) to:self.target from:self forEvent:nil];
 }
 
 - (void)_componentSliderValueChanged:(OUIColorComponentSlider *)slider NS_EXTENSION_UNAVAILABLE_IOS("");

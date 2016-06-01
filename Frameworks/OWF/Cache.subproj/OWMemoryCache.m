@@ -1,23 +1,23 @@
-// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWMemoryCache.h"
+#import <OWF/OWMemoryCache.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OWAddress.h"
-#import "OWContent.h"
-#import "OWContentCacheProtocols.h"
-#import "OWContentCacheGroup.h"
-#import "OWPipeline.h"
-#import "OWStaticArc.h"
-#import "OWURL.h"
+#import <OWF/OWAddress.h>
+#import <OWF/OWContent.h>
+#import <OWF/OWContentCacheProtocols.h>
+#import <OWF/OWContentCacheGroup.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWStaticArc.h>
+#import <OWF/OWURL.h>
 
 RCS_ID("$Id$");
 

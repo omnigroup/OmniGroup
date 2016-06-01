@@ -70,13 +70,15 @@ NSString * const OAAppearanceTestBaselineEdgeInsetKey = @"EdgeInsets";
     return [NSSet new];
 }
 
-+ (BOOL)includeSuperclassKeyPaths
-{
-    return YES;
-}
-
 @dynamic SpecialLeafyString;
 
+@end
+
+@implementation OAAppearanceTestInvalidPlist
++ (NSSet<NSString *> *)additionalLocalKeyPaths
+{
+    return [NSSet new];
+}
 @end
 
 @implementation OAAppearanceTestEncodingCoverage

@@ -21,6 +21,9 @@ extern NSString * const OAAppearanceMissingKeyKey;
 - (instancetype)initWithCodeable:(NSObject <OAAppearancePropertyListCodeable> *)codeable;
 - (NSDictionary <NSString *, NSObject *> *)propertyList;
 
+/// Queries this coder's codeable object for every key path, returning YES if all queries are successful.
+- (BOOL)validatePropertyListValuesWithError:(NSError **)error;
+
 /// Validates the keys present in the given property list against this coder's codeable object.
 ///
 /// - returns: nil if all keys are valid, otherwise a dictionary with the keys `OAAppearanceUnknownKeyKey` and `OAAppearanceMissingKeyKey` mapping to arrays of the unknown and missing keys respectively.
@@ -30,6 +33,9 @@ extern NSString * const OAAppearanceMissingKeyKey;
 /// This protocol is a bit odd. The questions about key paths and hierarchy are answered on a class-basis and we need to walk the class hierarchy to find valid key paths. However OAAppearancePropertyListCoder needs an instance of a conforming class, because we'll do valueForKeyPath: lookups on the instance to populate the values in the resulting property list.
 @protocol OAAppearancePropertyListCodeable <NSObject>
 - (OAAppearanceValueEncoding)valueEncodingForKeyPath:(NSString *)keyPath;
+
+/// Validates that the *value* at the given keyPath is encoded correctly.
+- (BOOL)validateValueAtKeyPath:(NSString *)keyPath error:(NSError **)error;
 
 @optional
 - (NSObject *)customEncodingForKeyPath:(NSString *)keyPath;

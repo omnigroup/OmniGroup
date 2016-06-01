@@ -73,8 +73,8 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 {
-    if (unscaledContentSize.height <= 0 || unscaledContentSize.width <= 0) {
-        OBASSERT_NOT_REACHED(@"unscaledContentSize must be positive and non-zero in both dimensions");
+    if (unscaledContentSize.height <= 0 || unscaledContentSize.width <= 0 || effectiveScale <= 0) {
+        OBASSERT_NOT_REACHED(@"unscaledContentSize must be positive and non-zero in both dimensions and effectiveScale must be greater than zero");
         return;
     }
     

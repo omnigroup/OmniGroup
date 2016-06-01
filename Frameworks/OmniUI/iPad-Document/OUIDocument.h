@@ -13,7 +13,8 @@
 #import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
 @class UIResponder, UIView, UIViewController;
-@class ODSFileItem, OUIDocumentViewController, OUIDocumentPreview;
+@class ODSFileItem, OUIDocumentViewController;
+@class OUIDocumentPreview, OUIImageLocation;
 
 @protocol OUIDocumentViewController;
 
@@ -101,7 +102,7 @@
 - (void)didRebuildViewController:(NSDictionary *)state;
 
 // Support for previews
-+ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
++ (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 
 // UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).

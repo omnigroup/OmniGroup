@@ -38,6 +38,7 @@ typedef enum _OFControllerTerminateReply {
 @interface OFController : NSObject <NSUserNotificationCenterDelegate>
 
 + (NSBundle *)controllingBundle;
++ (BOOL)isRunningUnitTests;
 
 + (instancetype)sharedController;
 - (void)becameSharedController NS_REQUIRES_SUPER;
@@ -51,6 +52,7 @@ typedef enum _OFControllerTerminateReply {
 // A simplified way to perform an action at a specific point in the app's lifecycle without going to the trouble of being an observer
 - (void)queueSelector:(SEL)message forObject:(NSObject *)receiver whenStatus:(OFControllerStatus)state;
 - (void)queueInvocation:(OFInvocation *)action whenStatus:(OFControllerStatus)state;
+- (void)performBlock:(void (^)(void))block whenStatus:(OFControllerStatus)state;
 
 - (void)didInitialize;
 - (void)startedRunning;

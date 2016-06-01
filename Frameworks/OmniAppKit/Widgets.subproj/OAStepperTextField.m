@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAStepperTextField.h"
+#import <OmniAppKit/OAStepperTextField.h>
 
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>

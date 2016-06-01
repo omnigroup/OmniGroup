@@ -115,7 +115,7 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Le dossier de documents locaux proposé contient déjà des fichiers. Spécifiez un dossier vide ou un qui n’existe pas encore.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Le dossier de documents locaux proposé semble se trouver dans un dossier Dropbox. L’utilisation de deux systèmes de synchronisation de fichiers pour un même dossier peut provoquer la perte de données.";
+"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Le dossier de documents locaux proposé semble se trouver dans un dossier Dropbox. L'utilisation de deux systèmes de synchronisation de fichiers pour un même dossier peut provoquer la perte de données.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Le dossier de documents locaux proposé ne se trouve pas sur un volume local. Sélectionnez un emplacement local sur votre ordinateur.";

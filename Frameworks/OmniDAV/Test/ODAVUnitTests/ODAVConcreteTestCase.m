@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 
 @implementation ODAVConcreteTestCase
@@ -26,15 +27,22 @@
     __weak ODAVConcreteTestCase *weakSelf = self;
     
     _connection = [[ODAVConnection alloc] initWithSessionConfiguration:[ODAVConnectionConfiguration new] baseURL:remoteBaseURL];
-    _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+    _connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         if ([weakSelf shouldAddTrustForCertificateChallenge:challenge])
             OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
+        if (OFHasTrustForChallenge(challenge)) {
+            return [NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust];
+        } else
+            return nil;
     };
-    _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+    _connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
+        NSURLCredential *credential;
         if ([challenge previousFailureCount] <= 2) {
-            return [weakSelf accountCredentialWithPersistence:NSURLCredentialPersistenceForSession];
+            credential = [weakSelf accountCredentialWithPersistence:NSURLCredentialPersistenceForSession];
+        } else {
+            credential = nil;
         }
-        return nil;
+        return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, credential);
     };
     
     // Make sure we start with a clean directory. Use a unique id in case we are testing locks (where we have to restart the server or wait for the lock to timeout).

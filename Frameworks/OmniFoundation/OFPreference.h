@@ -16,6 +16,8 @@
 // Like +addObserver:selector:forPreference:, the notification will be delivered on the thread where the preference was changed.
 extern NSString * const OFPreferenceObjectValueBinding;
 
+// OFPreference instances should be readable in a thread-safe way from any queue, but writing to them should happen on the main queue.
+// See <bug:///122290> (Bug: OFPreference deadlock) and _setValueUnderlyingValue from implementation.
 @interface OFPreference : NSObject
 
 // API
@@ -113,7 +115,12 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 #import <Foundation/NSDate.h>
 
+@class OFConfigurationValue;
+typedef void (^OFConfigurationValueObserver)(OFConfigurationValue *configurationValue);
+
 @interface OFConfigurationValue : NSObject
+
+- initWithKey:(NSString *)key integral:(BOOL)integral defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
 
 + (NSArray *)configurationValues;
 + (void)restoreAllConfigurationValuesToDefaults;
@@ -122,7 +129,8 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (NSURL *)URLForConfigurationValues:(NSArray *)configurationValues;
 
 @property(nonatomic,readonly) NSString *key;
-@property(nonatomic,readonly) const char *objcType;
+
+- (void)addValueObserver:(OFConfigurationValueObserver)observer;
 
 @property(nonatomic,readonly) double currentValue; // KVO observable, but probably only OAChangeConfigurationValuesWindowController should observe (really this whole class is not for general use).
 @property(nonatomic,readonly) double defaultValue;

@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OASteppableTextField.h"
+#import <OmniAppKit/OASteppableTextField.h>
 
 @interface OADatePickerTextField : OASteppableTextField
 

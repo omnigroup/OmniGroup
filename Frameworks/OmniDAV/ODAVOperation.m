@@ -42,6 +42,7 @@ NSString * const ODAVContentTypeHeader = @"Content-Type";
     
     BOOL _finished;
     BOOL _shouldCollectDetailsForError;
+    BOOL _authChallengeCancelled;
     NSMutableData *_errorData;
     NSError *_error;
     NSMutableArray *_redirects;
@@ -323,12 +324,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 #pragma mark - Internal
 
-- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge disposition:(NSURLSessionAuthChallengeDisposition)disposition;
 {
     // Keep around the response that says something about the failure, and set the flag indicating we want details recorded for this error
     OBASSERT(_response == nil);
     _response = [[challenge failureResponse] copy];
     _shouldCollectDetailsForError = YES;
+    _authChallengeCancelled = (disposition == NSURLSessionAuthChallengeCancelAuthenticationChallenge);
 }
 
 - (void)_didCompleteWithError:(NSError *)error;
@@ -744,7 +746,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     OBPRECONDITION(!_finished);
     
     if (_shouldCollectDetailsForError) {
-        _error = [self _generateErrorForResponse];
+        // If we've already recorded a cancellation error in _error, don't overwrite that. In that case, include the detailed error response as the underlying error.
+        if (_error != nil && ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication] || ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled] && _authChallengeCancelled))) {
+            NSDictionary *userInfo = @{NSUnderlyingErrorKey: [self _generateErrorForResponse]};
+            _error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:userInfo];
+        } else {
+            _error = [self _generateErrorForResponse];
+        }
     }
     
     if (_error != nil) {

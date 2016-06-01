@@ -1,4 +1,4 @@
-// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -393,7 +393,7 @@ NSData *OFLibXMLNodeBase64Content(const xmlNode *node)
         return nil;
     
     @try {
-        return [NSData dataWithBase64String:text];
+        return [[[NSData alloc] initWithBase64EncodedString:text options:NSDataBase64DecodingIgnoreUnknownCharacters] autorelease];
     } @finally {
         [text release];
     };
@@ -826,7 +826,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
                     goto failed;
 
                 success = YES;
-                setNodeContentToString(signatureValueNode, [generatedSignature base64String]);
+                setNodeContentToString(signatureValueNode, [generatedSignature base64EncodedStringWithOptions:0]);
             } else {
                 signatureStructuralFailure(err, @"(bad op %d at line %u)", op, (unsigned)__LINE__);
                 success = NO;
@@ -1727,7 +1727,7 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         return NO;
     }
         
-    NSString *digestString = [digestValue base64String];
+    NSString *digestString = [digestValue base64EncodedStringWithOptions:0];
     
     xmlNode *digestValueNode = OFLibXMLChildNamed(referenceNode, "DigestValue", XMLSignatureNamespace, &count);
     if (count > 1) {

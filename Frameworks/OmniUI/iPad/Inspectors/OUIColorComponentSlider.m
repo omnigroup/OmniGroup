@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -302,10 +302,9 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
     // Multi-touch should be off, so we should get only one begin/{end|cancel} cycle.
     OBPRECONDITION(!self.multipleTouchEnabled);
     OBPRECONDITION([[event touchesForView:self] count] <= 1);
-    
-    // OmniGraffle uses a different undo strategy than OmniGraphSketcher, where this actually does help them avoid massive numbers of undo groups
-    [[self undoManager] beginUndoGrouping];
 
+    [self sendActionsForControlEvents:UIControlEventTouchDown];
+    
     OBASSERT(_inMiddleOfTouch == NO);
     _inMiddleOfTouch = YES;
     
@@ -331,8 +330,7 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
 
     [super endTrackingWithTouch:touch withEvent:event];
 
-    // OmniGraffle uses a different undo strategy than OmniGraphSketcher, where this actually does help them avoid massive numbers of undo groups
-    [[self undoManager] endUndoGrouping];
+    [self sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)cancelTrackingWithEvent:(UIEvent *)event;
@@ -342,8 +340,7 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
 
     [super cancelTrackingWithEvent:event];
 
-    // OmniGraffle uses a different undo strategy than OmniGraphSketcher, where this actually does help them avoid massive numbers of undo groups
-    [[self undoManager] endUndoGrouping];
+    [self sendActionsForControlEvents:UIControlEventTouchCancel];
 }
 
 #pragma mark UIView subclass

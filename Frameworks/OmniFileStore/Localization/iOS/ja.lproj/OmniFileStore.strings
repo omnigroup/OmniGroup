@@ -2,6 +2,18 @@
 "An error has occurred." = "エラーが発生しました。";
 
 /* error description */
+"Cannot create directory." = "ディレクトリを作成できません。";
+
+/* error description */
+"Cannot delete file." = "ファイルを削除できません。";
+
+/* error description */
+"Cannot move file." = "ファイルを移動できません。";
+
+/* error description */
+"Could not decrypt file." = "ファイルを暗号解除できませんでした。";
+
+/* error description */
 "Could not find \"%@\"." = "“%@” が見つかりませんでした。";
 
 /* error description */
@@ -20,6 +32,9 @@
 "No document exists at \"%@\"." = "“%@” に書類はありません。";
 
 /* error reason */
+"No such directory \"%@\"" = "“%@” というディレクトリはありません";
+
+/* error reason */
 "No such file \"%@\"." = "“%@” というファイルはありません。";
 
 /* error reason */
@@ -33,3 +48,12 @@
 
 /* error description */
 "Unable to read document." = "書類を読み込めません。";
+
+/* error description */
+"Unable to read file." = "ファイルを読み込めません。";
+
+/* error description */
+"Unable to write file." = "ファイルに書き込めません。";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "暗号化ヘッダに認識できない設定があります";

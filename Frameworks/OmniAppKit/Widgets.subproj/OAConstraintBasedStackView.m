@@ -5,12 +5,15 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAConstraintBasedStackView.h"
+#import <OmniAppKit/OAConstraintBasedStackView.h>
 
 RCS_ID("$Id$")
 
+
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OAConstraintBasedStackView ()
-@property (nonatomic, copy) NSArray *stackConstraints;
+@property (nullable, nonatomic, copy) NSArray *stackConstraints;
 @property (nonatomic, retain) NSMutableArray *orderedSubviews;
 @end
 
@@ -58,7 +61,7 @@ static void _commonInit(OAConstraintBasedStackView *self)
     // If we were initialized with initWithCoder: we won't yet have built our list of orderedSubviews and will need to do so now. (Yes, it's possible that we simply don't have any subviews, but that's unlikely, and if it's true this is inexpensive anyway.)
     if (self.orderedSubviews.count == 0) {
         for (NSView *subview in self.subviews) {
-            [self _addToOrderedSubviews:subview];
+            [self _addToOrderedSubviewsAtAppropriateIndex:subview];
         }
     }
 }
@@ -70,19 +73,42 @@ static void _commonInit(OAConstraintBasedStackView *self)
     [self setSubviews:[NSArray arrayWithObject:subview] areHidden:shouldBeHidden animated:animated];
 }
 
-- (void)setSubviews:(NSArray *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
+- (void)setSubviews:(NSArray <NSView *> *)subviews areHidden:(BOOL)shouldBeHidden animated:(BOOL)animated;
 {
+    if (self.hidden) {
+        animated = NO;
+    }
     [NSStackView setViews:subviews areHidden:shouldBeHidden animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
 }
 
-- (void)setHiddenSubviews:(NSArray *)hiddenSubviews animated:(BOOL)animated;
+- (void)setHiddenSubviews:(NSArray <NSView *> *)hiddenSubviews animated:(BOOL)animated;
 {
+    if (self.hidden) {
+        animated = NO;
+    }
     [NSStackView setHiddenSubviews:hiddenSubviews ofView:self animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
 }
 
-- (void)setUnhiddenSubviews:(NSArray *)unhiddenSubviews animated:(BOOL)animated;
+- (void)setUnhiddenSubviews:(NSArray <NSView *> *)unhiddenSubviews animated:(BOOL)animated;
 {
+    if (self.hidden) {
+        animated = NO;
+    }
     [NSStackView setUnhiddenSubviews:unhiddenSubviews ofView:self animated:animated byCollapsingOrientation:NSUserInterfaceLayoutOrientationVertical completionBlock:NULL];
+}
+
+#pragma mark -- Crossfading
+
+- (void)crossfadeToViews:(NSArray <NSView *> *)views completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+{
+    [self crossfadeAfterPerformingLayout:^{
+        self.arrangedSubviews = views;
+    } completionBlock:completionBlock];
+}
+
+- (void)crossfadeAfterPerformingLayout:(OACrossfadeLayoutBlock)layoutBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
+{
+    [NSView crossfadeView:self afterPerformingLayout:layoutBlock preAnimationBlock:nil completionBlock:completionBlock];
 }
 
 #pragma mark -- NSView subclass
@@ -125,7 +151,31 @@ static void _commonInit(OAConstraintBasedStackView *self)
     [super updateConstraints];
 }
 
-- (void)_addToOrderedSubviews:(NSView *)subview;
+- (void)_updateFramesOfOrderedSubviews;
+{
+    OBASSERT([self isFlipped]);
+    CGFloat yOffset = 0.0;
+    for (NSView *view in self.orderedSubviews) {
+        NSRect frame = view.frame;
+        frame.origin.y = yOffset;
+        view.frame = frame;
+        yOffset = NSMaxY(frame);
+    }
+}
+
+- (void)_didAddToOrderedSubviews:(NSView *)subview;
+{
+    [subview addObserver:self forKeyPath:CBSVHiddenSubviewProperty options:NSKeyValueObservingOptionNew context:&CBSVHiddenSubviewContext];
+    [self _setNeedsReload];
+}
+
+- (void)_didRemoveFromOrderedSubviews:(NSView *)subview;
+{
+    [subview removeObserver:self forKeyPath:CBSVHiddenSubviewProperty context:&CBSVHiddenSubviewContext];
+    [self _setNeedsReload];
+}
+
+- (void)_addToOrderedSubviewsAtAppropriateIndex:(NSView *)subview;
 {
     NSMutableArray *orderedSubviews = self.orderedSubviews;
     [orderedSubviews insertObject:subview inArraySortedUsingComparator:^NSComparisonResult(NSView *view1, NSView *view2) {
@@ -138,27 +188,27 @@ static void _commonInit(OAConstraintBasedStackView *self)
         else
             return NSOrderedSame;
     }];
-    [subview addObserver:self forKeyPath:CBSVHiddenSubviewProperty options:NSKeyValueObservingOptionNew context:&CBSVHiddenSubviewContext];
-    [self _setNeedsReload];
+    [self _didAddToOrderedSubviews:subview];
 }
 
 - (void)didAddSubview:(NSView *)subview;
 {
     [super didAddSubview:subview];
-    [self _addToOrderedSubviews:subview];
+    if ([self.orderedSubviews indexOfObjectIdenticalTo:subview] == NSNotFound) {
+        [self _addToOrderedSubviewsAtAppropriateIndex:subview];
+    }
 }
 
 - (void)willRemoveSubview:(NSView *)subview;
 {
-    [subview removeObserver:self forKeyPath:CBSVHiddenSubviewProperty context:&CBSVHiddenSubviewContext];
     [self.orderedSubviews removeObjectIdenticalTo:subview];
+    [self _didRemoveFromOrderedSubviews:subview];
     [super willRemoveSubview:subview];
-    [self _setNeedsReload];
 }
 
 #pragma mark - NSObject subclass
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSString*, id> *)change context:(nullable void *)context;
 {
     if (context == &CBSVHiddenSubviewContext) {
         [self _setNeedsReload];
@@ -169,7 +219,7 @@ static void _commonInit(OAConstraintBasedStackView *self)
 
 #pragma mark - Properties
 
-- (void)setStackConstraints:(NSArray *)stackConstraints;
+- (void)setStackConstraints:(nullable NSArray <NSLayoutConstraint *> *)stackConstraints;
 {
     if (OFISEQUAL(_stackConstraints, stackConstraints))
         return;
@@ -179,6 +229,7 @@ static void _commonInit(OAConstraintBasedStackView *self)
     }
     _stackConstraints = [stackConstraints copy];
     if (stackConstraints != nil) {
+        [self _updateFramesOfOrderedSubviews];
         [NSLayoutConstraint activateConstraints:stackConstraints];
     }
 }
@@ -193,3 +244,60 @@ static void _commonInit(OAConstraintBasedStackView *self)
 }
 
 @end
+
+
+@implementation OAConstraintBasedStackView (OAConstraintBasedStackViewArrangedSubviews)
+
+- (void)setArrangedSubviews:(NSArray<__kindof NSView *> *)newValue;
+{
+    NSArray *subviews = [self.subviews copy];
+    for (NSView *subview in subviews) {
+        [self removeArrangedSubview:subview];
+    }
+    for (NSView *subview in newValue) {
+        subview.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addArrangedSubview:subview];
+    }
+}
+
+- (NSArray<__kindof NSView *> *)arrangedSubviews;
+{
+    return [NSArray arrayWithArray:self.orderedSubviews];
+}
+
+- (void)addArrangedSubview:(NSView *)view;
+{
+    OBPRECONDITION([self.orderedSubviews indexOfObjectIdenticalTo:view] == NSNotFound);
+    OBPRECONDITION(view.superview != self);
+    [self.orderedSubviews addObject:view]; // Append to orderedSubviews so it will end up on the bottom
+    [self _didAddToOrderedSubviews:view];
+    [self addSubview:view];
+}
+
+// This API is copied from NSStackView API - dunno why they used NSInteger instead of NSUInteger for the insertion index
+- (void)insertArrangedSubview:(NSView *)view atIndex:(NSInteger)insertionIndex;
+{
+    NSUInteger oldIndex = [self.orderedSubviews indexOfObjectIdenticalTo:view];
+    if (oldIndex != (NSUInteger)insertionIndex) { // Optimization: && (oldIndex != (NSUInteger)(insertionIndex + 1))
+        [self.orderedSubviews insertObject:view atIndex:(NSUInteger)insertionIndex];
+        if (oldIndex == NSNotFound) {
+            OBPRECONDITION(view.superview != self);
+            [self _didAddToOrderedSubviews:view];
+            [self addSubview:view];
+        } else {
+            OBPRECONDITION(view.superview == self);
+            [self.orderedSubviews removeObjectAtIndex:oldIndex];
+            [self _setNeedsReload];
+        }
+    }
+}
+
+- (void)removeArrangedSubview:(NSView *)view;
+{
+    OBASSERT(view.superview == self);
+    [view removeFromSuperview]; // The view will be removed from orderedSubviews in -willRemoveSubview
+}
+
+@end
+
+NS_ASSUME_NONNULL_END

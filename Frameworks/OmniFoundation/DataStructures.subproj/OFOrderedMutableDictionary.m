@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,14 +62,14 @@ RCS_ID("$Id$");
     [self.orderedKeys sortUsingComparator:cmptr];
 }
 
-- (void)enumerateEntriesUsingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
+- (void)enumerateEntriesUsingBlock:(void (^)(NSUInteger index, id key, id obj, BOOL *stop))blk;
 {
     [self.orderedKeys enumerateObjectsUsingBlock:^(id orderedKeysObject, NSUInteger orderedKeysIndex, BOOL *stop) {
         blk(orderedKeysIndex, orderedKeysObject, self[orderedKeysIndex], stop);
     }];
 }
 
-- (void)enumerateEntriesWithOptions:(NSEnumerationOptions)opts usingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
+- (void)enumerateEntriesWithOptions:(NSEnumerationOptions)opts usingBlock:(void (^)(NSUInteger index, id key, id obj, BOOL *stop))blk;
 {
     [self.orderedKeys enumerateObjectsWithOptions:opts usingBlock:^(id orderedKeysObject, NSUInteger orderedKeysIndex, BOOL *stop) {
         blk(orderedKeysIndex, orderedKeysObject, self[orderedKeysIndex], stop);

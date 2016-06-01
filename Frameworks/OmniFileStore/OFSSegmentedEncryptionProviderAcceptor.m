@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,13 +16,9 @@
 #import <OmniFileStore/OFSDocumentKey.h>
 #import <OmniFileStore/OFSSegmentedEncryptionWorker.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
-#import <OmniFileStore/OFSEncryption-Internal.h>
+#import "OFSEncryption-Internal.h"
 #import <OmniFileStore/Errors.h>
 #import <libkern/OSAtomic.h>
-
-#if (defined(MAC_OS_X_VERSION_10_10) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000)
-#import <CommonCrypto/CommonRandom.h>
-#endif
 
 RCS_ID("$Id$");
 
@@ -97,7 +93,8 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 - (BOOL)unwrapKey:(NSRange)wrappedBlob using:(OFSDocumentKey *)unwrapper error:(NSError **)outError;
 {
     return withBackingRange(_backingStore, wrappedBlob, ^(const uint8_t *buffer){
-        ssize_t len = [unwrapper unwrapFileKey:buffer length:wrappedBlob.length into:_keyMaterial length:sizeof(_keyMaterial) error:outError];
+        NSData *wrappedKey = [NSData dataWithBytes:buffer length:wrappedBlob.length];
+        ssize_t len = [unwrapper unwrapFileKey:wrappedKey into:_keyMaterial length:sizeof(_keyMaterial) error:outError];
         if (len < 0)
             return NO;
         else if (len == sizeof(_keyMaterial)) {

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
+
+#import <Security/SecTrust.h>
 
 @class NSURLCredential;
 
@@ -30,15 +32,31 @@ extern void OFDeleteAllCredentials(void); // For resetting demo builds or cleari
 typedef enum {
     OFCertificateTrustDurationSession,
     OFCertificateTrustDurationAlways,
+    OFCertificateTrustDurationNotEvenBriefly,
 } OFCertificateTrustDuration;
+
+#if DEBUG
+extern NSString *OFCertificateTrustDurationName(OFCertificateTrustDuration);
+#endif
+
+@protocol OFCertificateTrustDisposition
+- (SecTrustRef)serverTrust;    // The trust ref we've evaluated and possibly modified
+@property (nonatomic,readonly) OFCertificateTrustDuration result;
+@end
 
 // A per-session notation of trust. We'll get a challenge with an untrusted certificate and will want to prompt the user. We cannot block until the user makes a choice, so we continue w/o meeting the challenge in these cases and then try again later. If the user accepts the certificate, whatever UI they use can stash the trusted certificates here so that the next challenge will be met.
 @class NSURLAuthenticationChallenge;
 extern void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertificateTrustDuration duration);
+// OFHasTrustForChallenge() looks through previously-stored user-confirmed exceptions, and sees if any apply to this challenge. If so, it updates the SecTrustRef to include the exception and re-evaluates it. Returns YES if the re-evaluation results in success ("Proceed"), NO otherwise.
 extern BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge);
+// Same as above, but operate directly on SecTrustRefs
+extern void OFAddTrustExceptionForTrust(CFTypeRef trustRef, OFCertificateTrustDuration duration);
+extern BOOL OFHasTrustExceptionForTrust(CFTypeRef trustRef);
+
 
 // Helpers for configuring a SFCertificateTrustPanel
 extern NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *challenge);
+extern NSString *OFCertificateTrustPromptForError(NSError *error);
 
 // Posted on the main queue after OFAddTrustForChallenge() makes a change.
 extern NSString * const OFCertificateTrustUpdatedNotification;

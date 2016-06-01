@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,6 +68,22 @@ RCS_ID("$Id$");
     XCTAssertTrue ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     XCTAssertEqualObjects (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
     
+    timeSpanString = @"2d";
+    expectedTimeSpanString = @"2d";
+    XCTAssertTrue ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
+    XCTAssertEqualObjects (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
+    
+}
+
+- (void)testArchiveUnitFormatter;
+{
+    OFTimeSpanFormatter *formatter = [[OFTimeSpanFormatter alloc] init];
+    [formatter setUsesArchiveUnitStrings:YES];
+    NSDecimalNumber *timeSpan;
+    NSString *timeSpanString = @"2d";
+    NSString *expectedTimeSpanString = @"2d";
+    XCTAssertTrue ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
+    XCTAssertEqualObjects (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 }
 
 - (void)testStandardCalendarTimeFormatter;

@@ -1,11 +1,11 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUCheckOperation.h"
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
 
 #import <OmniSoftwareUpdate/OSUProbe.h>
 #import <OmniFoundation/OFVersionNumber.h>
@@ -14,13 +14,13 @@
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniBase/OmniBase.h>
 
-#import "OSUPreferences.h"
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUErrors.h"
 #import "OSURunOperationParameters.h"
 #import "OSURunOperation.h"
 #import "OSURuntime.h"
-#import "OSUHardwareInfo.h"
+#import <OmniSoftwareUpdate/OSUHardwareInfo.h>
 #import "OSUSettings.h"
 
 RCS_ID("$Id$");
@@ -203,6 +203,15 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
 
 - (void)_run;
 {
+#if defined(DEBUG)
+    unsigned int delay = (unsigned int)[[NSUserDefaults standardUserDefaults] integerForKey:@"OSUCheckDelay"];
+    // This is helpful when you need some time to examine/test the software update panel in its initial state before it gets a response from the software update server.
+    if (delay > 0) {
+        NSLog(@"OSUCheckDelay: delaying the check for %u seconds", delay);
+        sleep(delay);
+    }
+#endif
+
     NSString *host = [_url host];
     if ([NSString isEmptyString:host]) {
         // A file URL for testing?

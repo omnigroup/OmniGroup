@@ -8,7 +8,7 @@
 // $Id$
 
 #import <Security/Security.h>
-#import <Foundation/Foundation.h>
+
 #import <TargetConditionals.h>
 #import <OmniBase/macros.h>
 

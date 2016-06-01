@@ -1,11 +1,11 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWContent.h"
+#import <OWF/OWContent.h>
 
 #import <Foundation/Foundation.h>
 
@@ -18,19 +18,19 @@
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFUtilities.h>
 
-#import "OWAddress.h"
-#import "OWCacheControlSettings.h"
-#import "OWContentInfo.h"
-#import "OWContentType.h"
-#import "OWDataStream.h"
-#import "OWDataStreamCursor.h"
-#import "OWDataStreamCharacterProcessor.h"
-#import "OWHeaderDictionary.h"
-#import "OWObjectStream.h"
-#import "OWParameterizedContentType.h"
-#import "OWPipeline.h"
-#import "OWProcessor.h"
-#import "NSDate-OWExtensions.h"
+#import <OWF/OWAddress.h>
+#import <OWF/OWCacheControlSettings.h>
+#import <OWF/OWContentInfo.h>
+#import <OWF/OWContentType.h>
+#import <OWF/OWDataStream.h>
+#import <OWF/OWDataStreamCursor.h>
+#import <OWF/OWDataStreamCharacterProcessor.h>
+#import <OWF/OWHeaderDictionary.h>
+#import <OWF/OWObjectStream.h>
+#import <OWF/OWParameterizedContentType.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWProcessor.h>
+#import <OWF/NSDate-OWExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -1225,7 +1225,7 @@ static void Thingy(id mememe, SEL wheee)
 }
 
 #warning OWContentHasNewMetadata notifications are commented out because they are currently unused
-//NSString *OWContentHasNewMetadataNotificationName = @"OWContentHasNewMetadata";
+//NSString * const OWContentHasNewMetadataNotificationName = @"OWContentHasNewMetadata";
 
 @end
 

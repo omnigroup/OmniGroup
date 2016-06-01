@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,8 +26,8 @@ static void (*oldBecomeKeyWindow)(id self, SEL _cmd);
 static void (*oldResignKeyWindow)(id self, SEL _cmd);
 static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);
 static void (*oldDidChangeValueForKey)(id self, SEL _cmd, NSString *key);
-static id (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
-static id (*oldDisplayIfNeededIMP)(id, SEL) = NULL;
+static void (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
+static void (*oldDisplayIfNeededIMP)(id, SEL) = NULL;
 static NSWindow *becomingKeyWindow = nil;
 
 @implementation NSWindow (OAExtensions)
@@ -57,7 +57,7 @@ static NSMutableArray *zOrder;
     [[NSApplication sharedApplication] makeWindowsPerform:@selector(_addToZOrderArray) inOrder:YES];
     NSArray *result = zOrder;
     zOrder = nil;
-    return [result autorelease];
+    return result;
 }
 
 static NSLock *displayIfNeededBlocksLock = nil;
@@ -68,7 +68,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        displayIfNeededBlocks = [[NSMapTable weakToStrongObjectsMapTable] retain];;
+        displayIfNeededBlocks = [NSMapTable weakToStrongObjectsMapTable];
         displayIfNeededBlocksLock = [[NSLock alloc] init];
     });
 
@@ -86,7 +86,6 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     [perWindowBlocks addObject:copiedBlock];
     
     [displayIfNeededBlocksLock unlock];
-    [copiedBlock release];
 
     if (needsQueue) {
         if (window != nil) {
@@ -152,7 +151,6 @@ static BOOL displayIfNeededBlocksInProgress = NO;
                 block();
             }
             
-            [queuedBlocks release];
             [displayIfNeededBlocksLock lock];
         }
         
@@ -262,7 +260,6 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 {
     OAConstructionTitlebarAccessoryViewController *accessory = [[OAConstructionTitlebarAccessoryViewController alloc] init];
     [self addTitlebarAccessoryViewController:accessory];
-    [accessory release];
 }
 
 - (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
@@ -435,7 +432,51 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-    return [self retain];
+    OBASSERT_NOT_REACHED(@"Who is trying to copy a window?");
+    return self;
 }
 
 @end
+
+#pragma mark -
+
+@implementation NSWindow (CoalescedRecalculateKeyViewLoop)
+
+static void *RecalculateKeyViewLoopScheduledKey = &RecalculateKeyViewLoopScheduledKey;
+
+- (void)setRecalculateKeyViewLoopScheduled:(BOOL)recalculateKeyViewLoopScheduled
+{
+    objc_setAssociatedObject(self, RecalculateKeyViewLoopScheduledKey, @(recalculateKeyViewLoopScheduled), OBJC_ASSOCIATION_RETAIN);
+}
+
+- (BOOL)isRecalculateKeyViewLoopScheduled
+{
+    NSNumber *numberRef = objc_getAssociatedObject(self, RecalculateKeyViewLoopScheduledKey);
+    BOOL result = [numberRef boolValue];
+    return result;
+}
+
+- (void)beforeDisplayIfNeededRecalculateKeyViewLoop;
+{
+    if (self.isRecalculateKeyViewLoopScheduled) {
+        return;
+    }
+    
+    self.recalculateKeyViewLoopScheduled = YES;
+    
+    __weak NSWindow *weakSelf = self;
+    [NSWindow beforeAnyDisplayIfNeededPerformBlock:^{
+        NSWindow *strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        
+        if (strongSelf.recalculateKeyViewLoopScheduled) {
+            [strongSelf recalculateKeyViewLoop];
+            strongSelf.recalculateKeyViewLoopScheduled = NO;
+        }
+    }];
+}
+
+@end
+

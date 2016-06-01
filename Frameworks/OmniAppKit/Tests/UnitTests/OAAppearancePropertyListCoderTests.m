@@ -12,6 +12,7 @@ RCS_ID("$Id$")
 #import "OAAppearanceTestBaseline.h"
 
 #import <OmniAppKit/OAAppearancePropertyListCoder.h>
+#import "OAAppearance-Internal.h"
 #import "OAAppearancePropertyListCoder-Internal.h"
 
 OB_REQUIRE_ARC;
@@ -188,12 +189,135 @@ OB_REQUIRE_ARC;
     XCTAssertEqualObjects(expectedPlist, plist);
 }
 
-// TODO: Enabled for all when done. <bug:///126282> (Feature: Present list of any extra and missing keys to user when importing style file)
-#ifdef DEBUG_curt
-- (void)testInvalidKeysInPropertyList;
+- (void)testPathComponentsTree1;
 {
-    // TODO: test. <bug:///126282> (Feature: Present list of any extra and missing keys to user when importing style file)
+    NSArray *input = @[@"A", @"B"];
+    NSDictionary *result = [OAAppearancePropertyListCoder _pathComponentsTreeFromKeyPaths:input];
+    NSDictionary *expectedResult = @{@"A": @{}, @"B": @{}};
+    XCTAssertEqualObjects(result, expectedResult);
 }
 
-#endif
+- (void)testPathComponentsTree2;
+{
+    NSArray *input = @[@"A", @"A.B"];
+    NSDictionary *result = [OAAppearancePropertyListCoder _pathComponentsTreeFromKeyPaths:input];
+    NSDictionary *expectedResult = @{@"A": @{@"B": @{}}};
+    XCTAssertEqualObjects(result, expectedResult);
+}
+
+- (void)testPathComponentsTree3;
+{
+    NSArray *input = @[@"A.B", @"A"];
+    NSDictionary *result = [OAAppearancePropertyListCoder _pathComponentsTreeFromKeyPaths:input];
+    NSDictionary *expectedResult = @{@"A": @{@"B": @{}}};
+    XCTAssertEqualObjects(result, expectedResult);
+}
+
+- (void)testPathComponentsTree4;
+{
+    NSArray *input = @[@"A.B", @"A", @"B"];
+    NSDictionary *result = [OAAppearancePropertyListCoder _pathComponentsTreeFromKeyPaths:input];
+    NSDictionary *expectedResult = @{@"A": @{@"B": @{}}, @"B": @{}};
+    XCTAssertEqualObjects(result, expectedResult);
+}
+
+- (void)testValidatePropertyListValuesWithError1
+{
+    NSError *error = nil;
+    BOOL success = [self.appearanceCoder validatePropertyListValuesWithError:&error];
+    XCTAssert(success);
+}
+
+- (void)testValidatePropertyListValuesWithError2
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[OAAppearanceTestInvalidPlist class]];
+    NSURL *plistURL = [bundle URLForResource:@"OAAppearanceTestInvalidPlist" withExtension:@"plist"];
+    NSURL *plistDirectory = [plistURL URLByDeletingLastPathComponent];
+    OAAppearanceTestInvalidPlist *appearance = [OAAppearanceTestInvalidPlist appearanceForValidatingPropertyListInDirectory:plistDirectory forClass:[OAAppearanceTestInvalidPlist class]];
+    OAAppearancePropertyListCoder *coder = [[OAAppearancePropertyListCoder alloc] initWithCodeable:appearance];
+    NSError *error = nil;
+    
+    BOOL success = [coder validatePropertyListValuesWithError:&error];
+    
+    XCTAssertFalse(success);
+    XCTAssertEqual(error.domain, OAAppearanceErrorDomain);
+    XCTAssertEqual(error.code, (NSInteger)OAAppearanceErrorCodeInvalidValueInPropertyList);
+}
+
+- (void)testInvalidKeysInPropertyList1;
+{
+    NSDictionary *plist = self.appearanceCoder.propertyList;
+    id result = [self.appearanceCoder invalidKeysInPropertyList:plist];
+    XCTAssertNil(result);
+}
+
+- (void)testInvalidKeysInPropertyList2;
+{
+    NSDictionary *badPlist = @{
+                                    @"TopLevelFloat": @(1),
+                                    @"Color": @{@"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                                    @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
+                                    @"OverriddenGoat": @(-1),
+                                    @"Nested": @{@"Float": @(1)},
+                                    };
+
+    NSDictionary *result = [self.appearanceCoder invalidKeysInPropertyList:badPlist];
+    
+    XCTAssertNotNil(result);
+    XCTAssertEqualObjects(result[OAAppearanceMissingKeyKey], @[@"OverriddenFloat"]);
+    XCTAssertEqualObjects(result[OAAppearanceUnknownKeyKey], @[@"OverriddenGoat"]);
+}
+
+- (void)testInvalidKeysInPropertyList3;
+{
+    NSDictionary *badPlist = @{
+                               @"TopLevelFloat": @(1),
+                               @"Color": @{@"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                               @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
+                               @"OverriddenFloat": @(-1),
+                               @"Nested": @{@"Goat": @(1)},
+                               };
+    
+    NSDictionary *result = [self.appearanceCoder invalidKeysInPropertyList:badPlist];
+    
+    XCTAssertNotNil(result);
+    XCTAssertEqualObjects(result[OAAppearanceMissingKeyKey], @[@"Nested.Float"]);
+    XCTAssertEqualObjects(result[OAAppearanceUnknownKeyKey], @[@"Nested.Goat"]);
+}
+
+- (void)testInvalidKeysInPropertyList4;
+{
+    NSDictionary *badPlist = @{
+                               @"TopLevelFloat": @(1),
+                               @"Color": @{@"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                               @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
+                               @"OverriddenFloat": @(-1),
+                               @"Crested": @{@"Goat": @(1)},
+                               };
+    
+    NSDictionary *result = [self.appearanceCoder invalidKeysInPropertyList:badPlist];
+    
+    XCTAssertNotNil(result);
+    XCTAssertEqualObjects(result[OAAppearanceMissingKeyKey], @[@"Nested"]);
+    XCTAssertEqualObjects(result[OAAppearanceUnknownKeyKey], @[@"Crested"]);
+}
+
+- (void)testInvalidKeysInPropertyList5;
+{
+    NSDictionary *badPlist = @{
+                               @"TopLevelFloat": @(1),
+                               @"Color": @{@"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                               @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
+                               @"OverriddenFloat": @(-1),
+                               @"Nested": @{@"Float": @(1), @"Goat": @(2)},
+                               };
+    
+    NSDictionary *result = [self.appearanceCoder invalidKeysInPropertyList:badPlist];
+    
+    XCTAssertNotNil(result);
+    XCTAssertEqualObjects(result[OAAppearanceMissingKeyKey], @[]);
+    XCTAssertEqualObjects(result[OAAppearanceUnknownKeyKey], @[@"Nested.Goat"]);
+}
+
+
 @end

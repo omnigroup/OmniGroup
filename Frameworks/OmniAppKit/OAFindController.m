@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,9 @@
 
 #import <OmniAppKit/NSBundle-OAExtensions.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
-#import "OAFindPattern.h"
-#import "OARegExFindPattern.h"
-#import "OAWindowCascade.h"
+#import <OmniAppKit/OAFindPattern.h>
+#import <OmniAppKit/OARegExFindPattern.h>
+#import <OmniAppKit/OAWindowCascade.h>
 
 RCS_ID("$Id$")
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,3 +62,28 @@ UIImage *OUIServerAccountValidationSuccessImage()
 }
 
 
+@implementation OUIImageLocation
+
+- initWithName:(NSString *)name bundle:(NSBundle *)bundle;
+{
+    if (!(self = [super init]))
+        return nil;
+    _bundle = bundle;
+    _name = [name copy];
+    return self;
+}
+
+- (UIImage *)image;
+{
+    // Allow the main bundle to override images
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    UIImage *image = [UIImage imageNamed:_name inBundle:mainBundle compatibleWithTraitCollection:nil];
+    if (!image && _bundle != mainBundle) {
+        image = [UIImage imageNamed:_name inBundle:_bundle compatibleWithTraitCollection:nil];
+    }
+
+    OBASSERT_NOTNULL(image);
+    return image;
+}
+
+@end

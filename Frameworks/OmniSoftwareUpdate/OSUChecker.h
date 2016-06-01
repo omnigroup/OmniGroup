@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,14 @@ extern NSString * const OSULicenseTypeTrial;
 extern NSString * const OSULicenseTypeExpiring;
 extern NSString * const OSULicenseTypeAppStore;
 
+/// Posted when a new news item is available. UserInfo constains the url to the news item and the version number of the feed.
+extern NSString * const OSUNewsAnnouncementNotification;
+/// key for the OSUNewsAnnouncementNotification.userInfo dictionary. Value is an NSURL to the news URL.
+extern NSString * const OSUNewsAnnouncementURLString;
+
+/// Posted when a unread news item has been read by the user. Notification has no object or userInfo.
+extern NSString * const OSUNewsAnnouncementHasBeenReadNotification;
+
 #define OSUCheckerCheckInProgressBinding (@"checkInProgress")
 #define OSUCheckerLicenseTypeBinding (@"licenseType")
 
@@ -50,6 +58,9 @@ extern NSString * const OSULicenseTypeAppStore;
 - (NSDictionary *)generateReport;
 
 @property(readonly) BOOL checkInProgress;
+
+@property(readwrite) BOOL unreadNewsAvailable;
+@property(readonly) NSURL *currentNewsURL;
 
 #pragma mark Subclass opportunities
 

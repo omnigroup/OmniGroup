@@ -41,6 +41,7 @@ RCS_ID("$Id$");
 
 OBDEPRECATED_METHOD(-initWithExistingFileItem:conflictFileVersion:error:); // Our syncing can't create conflict NSFileVersions, so we don't use NSFileVersion any more.
 OBDEPRECATED_METHOD(+placeholderPreviewImageNameForFileURL:landscape:); // 'area'
+OBDEPRECATED_METHOD(+placeholderPreviewImageNameForFileURL:area:); // we return an image now, so no 'Name' in selector
 
 OBDEPRECATED_METHOD(-initWithExistingFileItemFromTemplate:error:);
 OBDEPRECATED_METHOD(-initEmptyDocumentToBeSavedToURL:templateURL:error:);
@@ -124,7 +125,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 + (BOOL)shouldShowAutosaveIndicator;
 {
-#if 0 && defined(DEBUG_shannon)
+#if 1 && defined(DEBUG_shannon)
     return YES;
 #endif
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
@@ -1412,7 +1413,7 @@ static OFPreference *LastEditsPreference;
 
 #pragma mark - Preview support
 
-+ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
++ (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 
-#import "OFXAccountClientParameters.h"
+#import <OmniFileExchange/OFXAccountClientParameters.h>
 #import "OFXContainerAgent-Internal.h"
 #import "OFXContentIdentifier.h"
 #import "OFXDAVUtilities.h"

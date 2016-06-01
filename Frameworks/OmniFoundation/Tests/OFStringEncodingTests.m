@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -176,13 +176,17 @@ typedef NSData *(^OFStringTestDecodeBlock)(NSString *encoded, NSError **outError
 
         knownResults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"plist"]];
         suite = [XCTestSuite testSuiteWithName:[self description]];
-        
+
+        // Our wrappers are marked deprecated, but until they are gone, we'll test them.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [suite addTest:[self testsForPatternNamed:@"base64String"
                                            encode:^NSString *(NSData *original){ return [original base64String]; }
                                            decode:^NSData *(NSString *encoded, NSError **outError) {
                                                return [[NSData alloc] initWithBase64String:encoded];
                                            } inf:knownResults]];
-        
+#pragma clang diagnostic pop
+
         [suite addTest:[self testsForPatternNamed:@"ascii85String"
                                            encode:^NSString *(NSData *original){ return [original ascii85String]; }
                                            decode:^NSData *(NSString *encoded, NSError **outError) {

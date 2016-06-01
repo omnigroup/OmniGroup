@@ -23,7 +23,7 @@
 "Add WebDAV Server" = "Добавить сервер WebDAV";
 
 /* error description */
-"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая уч. запись.";
+"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая учетная запись.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Не удается найти папку синхронизированных документов.";
@@ -56,10 +56,10 @@
 "Documents" = "Документы";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Простая беспл. синхрониз. док-в Omni.";
+"Easily sync Omni documents. Signup is free!" = "Cинхронизация документов Omni. Бесплатная регистрация!";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Экспортировать в %@";
+"Export to \"%@\"" = "Экспортировать в «%@»";
 
 /* iTunes export title */
 "Export to iTunes" = "Экспортировать в iTunes";
@@ -109,7 +109,7 @@
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Для облачной учетной записи требуется формат OmniPresence %1$@, а на этом устройстве используется формат %2$@. Обновите эту копию OmniPresence.";
 
 /* Error description */
-"The document \"%@\" is not fully downloaded." = "Документ %@ загружен неполностью.";
+"The document \"%@\" is not fully downloaded." = "Документ «%@» загружен неполностью.";
 
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Предложенная папка локальных документов уже содержит файлы. Укажите пустую или несуществующую папку.";
@@ -148,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Не удалось проверить учетные данные входа.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Синхронизация через собственный сервер WebDAV.";
+"Use your own WebDAV space." = "Используйте собственное пространство на сервере WebDAV.";
 
 /* Account validation step description */
 "Validating Account..." = "Проверка учетной записи…";

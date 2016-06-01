@@ -1,4 +1,4 @@
-// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,16 +8,10 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <OmniBase/system.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OFVersionNumber : NSObject <NSCopying>
-{
-    NSString *_originalVersionString;
-    NSString *_cleanVersionString;
-    
-    NSUInteger  _componentCount;
-    NSUInteger *_components;
-}
 
 + (OFVersionNumber *)mainBundleVersionNumber;
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
@@ -25,17 +19,18 @@
 // Convenience methods for testing the current operating system.  One nice thing about using these (rather than looking up the operating system and comparing it by hand) is that we can remove these methods when they become irrelevant (e.g. when we require Snow Leopard), helping us find and update any code which is unnecessarily trying to support an older operating system.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We require iOS 9.0 now.
++ (BOOL)isOperatingSystemiOS93OrLater;
 #else
 + (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
 #endif
 
-- initWithVersionString:(NSString *)versionString;
+- (nullable instancetype)initWithVersionString:(NSString *)versionString;
 
-- (NSString *)originalVersionString;
-- (NSString *)cleanVersionString;
-- (NSString *)prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
+@property(nonatomic,readonly) NSString *originalVersionString;
+@property(nonatomic,readonly) NSString *cleanVersionString;
+@property(nonatomic,readonly) NSString *prettyVersionString; // NB: This version string can't be parsed back into an OFVersionNumber. For display only!
 
-- (NSUInteger)componentCount;
+@property(nonatomic,readonly) NSUInteger componentCount;
 - (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;
 
 - (NSComparisonResult)compareToVersionNumber:(OFVersionNumber *)otherVersion;
@@ -43,3 +38,5 @@
 @end
 
 extern NSString * const OFVersionNumberTransformerName;
+
+NS_ASSUME_NONNULL_END

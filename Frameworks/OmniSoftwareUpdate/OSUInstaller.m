@@ -9,9 +9,10 @@
 
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniBase/system.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUErrors.h"
 #import "OSUChooseLocationErrorRecovery.h"
 #import "OSUInstallerServiceProtocol.h"
@@ -624,6 +625,13 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }
     
     UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Decompressing\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
+    
+#ifdef DEBUG
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OSUTestInstallationFailure"]) {
+        OSUError(outError, OSUUnableToProcessPackage, @"Testing failure to install.", @"Test operation.");
+        return NO;
+    }
+#endif
     
     // Create a temporary directory into which to unpack
     NSString *temporaryPath = [self _chooseTemporaryPath:[[_packagePath lastPathComponent] stringByDeletingPathExtension] error:outError];

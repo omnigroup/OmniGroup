@@ -31,10 +31,36 @@ NSString * const OAAppearanceValuesDidChangeNotification = @"com.omnigroup.frame
 NSString * const OAAppearancePrivateClassNamePrefix = @"__PrivateReifying_";
 
 NSString * const OAAppearanceErrorDomain = @"com.omnigroup.OmniAppKit.OAAppearance";
-typedef NS_ENUM(NSUInteger, OAAppearanceErrorCode) {
-    OAAppearanceErrorCodeKeyNotFound,
-    OAAppearanceErrorCodeUnexpectedValueType,
+
+typedef NS_ENUM(NSUInteger, OAAppearanceSupportedType) {
+    OAAppearanceSupportedTypeSystemColor,
+    OAAppearanceSupportedTypeOAColor,
+    OAAppearanceSupportedTypeSystemImage,
+    OAAppearanceSupportedTypeObject,
+    OAAppearanceSupportedTypeFloat,
+    OAAppearanceSupportedTypeDouble,
+    OAAppearanceSupportedTypeBool,
+    OAAppearanceSupportedTypeSystemEdgeInsets,
+    OAAppearanceSupportedTypeSize,
+    OAAppearanceSupportedTypeLong,
 };
+
+static NSString *nameForSupportedType(OAAppearanceSupportedType type, Class cls)
+{
+    // intentionally not localized as tags in the plist are not localized
+    switch (type) {
+        case OAAppearanceSupportedTypeSystemColor: return @"color";
+        case OAAppearanceSupportedTypeOAColor: return @"color";
+        case OAAppearanceSupportedTypeSystemImage: return @"image name";
+        case OAAppearanceSupportedTypeObject: return NSStringFromClass(cls);
+        case OAAppearanceSupportedTypeFloat: return @"real";
+        case OAAppearanceSupportedTypeDouble: return @"real";
+        case OAAppearanceSupportedTypeBool: return @"boolean";
+        case OAAppearanceSupportedTypeSystemEdgeInsets: return @"edge insets";
+        case OAAppearanceSupportedTypeSize: return @"size";
+        case OAAppearanceSupportedTypeLong: return @"int";
+    }
+}
 
 #define OA_PERFORM_FILE_PRESENTATION (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
 
@@ -56,6 +82,7 @@ RCS_ID("$Id$")
 
 static NSMapTable *PublicClassToAppearanceMap = nil;
 static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
+static NSMutableSet *InvalidatedClassesForSwitchedPlistURLDirectories = nil;
 
 @interface OAAppearance () {
   @private
@@ -77,6 +104,12 @@ static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
 
 @implementation OAAppearance
 
++ (void)initialize
+{
+    OBINITIALIZE;
+    InvalidatedClassesForSwitchedPlistURLDirectories = [NSMutableSet new];
+}
+
 #pragma mark - Lifecycle
 
 - (id)_initWithPlistName:(NSString *)plistName inBundle:(NSBundle *)bundle;
@@ -93,6 +126,20 @@ static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
     return self;
 }
 
+- (id)_initForValidationWithDirectoryURL:(NSURL *)url;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _plistName = NSStringFromClass([self class]);
+    _plistBundle = nil;
+    _optionalPlistDirectoryURL = url;
+    
+    [self recachePlistFromFile];
+    
+    return self;
+}
+
 - (void)dealloc;
 {
     [self endPresentingUserPlistIfNecessary];
@@ -101,6 +148,11 @@ static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
 + (instancetype)appearance;
 {
     return [self appearanceForClass:self];
+}
+
++ (instancetype)sharedAppearance;
+{
+    return [self appearance];
 }
 
 static NSString *_OUIAppearanceUserOverrideFolder = nil;
@@ -349,6 +401,7 @@ static NSURL *urlIfExists(NSURL *url)
             NSLog(@"%@ missing @dynamic declaration for declared property “%@“ that has a corresponding plist key.", NSStringFromClass([self class]), propertyName);
         }
         OBASSERT_NOT_REACHED(@"Expect the declared properties on an OAAppearance class to be dynamic if they have corresponding keys in the plist. See details logged above.");
+        assert(propertyNames.count == 0);
     }
 }
 #endif
@@ -511,6 +564,114 @@ static NSURL *urlIfExists(NSURL *url)
 
     // Just return the current encoding, skipping the normalization that -[OAAppearancePropertyListCoder _encodedValueForKeyPath:] provides for other value encodings.
     return currentEncoding;
+}
+
+- (BOOL)validateValueAtKeyPath:(NSString *)keyPath error:(NSError **)error;
+{
+    // Attempt a look-up. If it raises, then the data was bad
+    // These are used for error reporting in the `catch` block, so need to be declared before the `try`.
+    NSString *backingPropName = nil;
+    NSString *expectedTypeName = nil;
+    
+    @try {
+        NSArray *components = OFKeysForKeyPath(keyPath);
+        if (components.count > 1) {
+            // We don't have a great way to check the expected type of keyPath with this architecture. For now, check that we can at least get some value. If this becomes a problem in practice, we may need to pass in an expected type somehow.
+            // For example, the coder, which calls us, could use a known good codeable plus an instance of the thing to be validated. The known good codeable could be queried for a value, then the type of that value could be passed in to this method on the object to be validated.
+            OBASSERT_NOT_REACHED(@"Attempting to validate non-trivial keyPath “%@”. This part of the validation algorithm is weak sauce.", keyPath);
+            id value = [self _valueForPlistKeyPathComponents:components error:error];
+            BOOL result = (value != nil);
+            return result;
+        }
+
+        NSString *key = components.firstObject;
+        OBASSERT(key != nil);
+
+        objc_property_t backingProperty = [[self class] _propertyForSelector:NSSelectorFromString(key) matchGetter:YES];
+        OAAppearanceSupportedType type;
+        Class optionalTypeClass;
+        backingPropName = nameForBackingProp(backingProperty, &type, &optionalTypeClass);
+        expectedTypeName = nameForSupportedType(type, optionalTypeClass);
+        
+        switch (type) {
+            case OAAppearanceSupportedTypeSystemColor: {
+                [self colorForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeOAColor: {
+                [self OAColorForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeSystemImage: {
+                [self imageForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeObject: {
+                OBASSERT_NOTNULL(optionalTypeClass);
+                [self _objectOfClass:optionalTypeClass forPlistKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeFloat: {
+                [self floatForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeDouble: {
+                [self doubleForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeBool: {
+                [self boolForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeSystemEdgeInsets: {
+                [self edgeInsetsForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeSize: {
+                [self sizeForKeyPath:backingPropName];
+                break;
+            }
+            case OAAppearanceSupportedTypeLong: {
+                // Check if there is a class method that defines an enum name table.
+                NSString *enumNameTableProperty = [[NSString alloc] initWithFormat:@"%@EnumNameTable", backingPropName];
+                OFEnumNameTable *nameTable = nil;
+                if ([[self class] respondsToSelector:NSSelectorFromString(enumNameTableProperty)]) {
+                    nameTable = [[self class] valueForKey:enumNameTableProperty];
+                }
+                
+                if (nameTable) {
+                    expectedTypeName = @"enumeration name"; // intentionally not localized as tags in the plist are not localized
+                    NSString *name = [self stringForKeyPath:backingPropName];
+                    [nameTable enumForName:name];
+                } else {
+                    [self integerForKeyPath:backingPropName];
+                }
+                break;
+            }
+        }
+        
+        return YES;
+    }
+    @catch (NSException *exception) {
+        if (error != NULL) {
+            *error = [[self class] validationErrorForExpectedTypeName:expectedTypeName keyPath:backingPropName];
+        }
+        return NO;
+    }
+}
+
++ (NSError *)validationErrorForExpectedTypeName:(NSString *)expectedTypeName keyPath:(NSString *)keyPath;
+{
+    NSString *descriptionFormat = NSLocalizedStringFromTableInBundle(@"Unexpected value for key “%@”", @"OmniAppKit", [OAAppearance bundle], @"style validation error message for {key}");
+    NSString *description = [NSString stringWithFormat:descriptionFormat, keyPath];
+    NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"Expected value of type “%@”", @"OmniAppKit", [OAAppearance bundle], @"style validation error message for expected {type}");
+    NSString *reason = [NSString stringWithFormat:reasonFormat, expectedTypeName];
+    NSDictionary *userInfo = @{
+        NSLocalizedDescriptionKey: description,
+        NSLocalizedFailureReasonErrorKey: reason,
+        NSLocalizedRecoverySuggestionErrorKey: reason,
+    };
+    return [NSError errorWithDomain:OAAppearanceErrorDomain code:OAAppearanceErrorCodeInvalidValueInPropertyList userInfo:userInfo];
 }
 
 - (NSString *)stringForKeyPath:(NSString * )keyPath;
@@ -767,32 +928,117 @@ static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls,
     return backingProp;
 }
 
+/// Looks up the name, type, and (if type is an object type) class for the given property.
+static NSString *nameForBackingProp(objc_property_t backingProp, OAAppearanceSupportedType *outType, Class *outClass)
+{
+    const char *backingPropName = property_getName(backingProp);
+    char *type = property_copyAttributeValue(backingProp, "T");
+    NSString *nameString = [NSString stringWithUTF8String:backingPropName];
+    *outClass = Nil;
+    @try {
+        if (type[0] == '@') {
+            Class valueClass = classFromTypeEncoding(type);
+            if (!valueClass) {
+                @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unknown class type '%@' for key '%@'", [NSString stringWithUTF8String:type], nameString] userInfo:nil];
+            } else if (valueClass == [OA_SYSTEM_COLOR_CLASS class]) {
+                *outType = OAAppearanceSupportedTypeSystemColor;
+            } else if (valueClass == [OAColor class]){
+                *outType = OAAppearanceSupportedTypeOAColor;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+            } else if (valueClass == [UIImage class]) {
+                *outType = OAAppearanceSupportedTypeSystemImage;
+#else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+            } else if (valueClass == [NSImage class]) {
+                *outType = OAAppearanceSupportedTypeSystemImage;
+#endif
+            } else {
+                *outType = OAAppearanceSupportedTypeObject;
+            }
+            *outClass = valueClass;
+        } else if (strcmp(type, @encode(float)) == 0) {
+            *outType = OAAppearanceSupportedTypeFloat;
+        } else if (strcmp(type, @encode(double)) == 0) {
+            *outType = OAAppearanceSupportedTypeDouble;
+        } else if (strcmp(type, @encode(BOOL)) == 0) {
+            *outType = OAAppearanceSupportedTypeBool;
+        } else if (strcmp(type, @encode(OA_SYSTEM_EDGE_INSETS_STRUCT)) == 0) {
+            *outType = OAAppearanceSupportedTypeSystemEdgeInsets;
+        } else if (strcmp(type, @encode(CGSize)) == 0) {
+            *outType = OAAppearanceSupportedTypeSize;
+        } else if (strcmp(type, @encode(long)) == 0) {
+            *outType = OAAppearanceSupportedTypeLong;
+        } else {
+            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unsupported type encoding '%@' for plist key '%@'", [NSString stringWithUTF8String:type], nameString] userInfo:nil];
+        }
+        
+        return nameString;
+    }
+    @finally {
+        free(type);
+    }
+}
+
 + (void)_synthesizeGetter:(SEL)invocationSel forProperty:(objc_property_t)backingProp;
 {
-    OBPRECONDITION([OAAppearance isReifyingClass:self], @"Synthesizing getter %@: should only synthesize getters for private reifying class instances, not for %@", NSStringFromSelector(invocationSel), NSStringFromClass(self));
-
-    const char *backingPropName = property_getName(backingProp);
+    if (![OAAppearance isReifyingClass:self]) {
+        @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:[NSString stringWithFormat:@"Synthesizing getter %@: should only synthesize getters for private reifying class instances, not for %@", NSStringFromSelector(invocationSel), NSStringFromClass(self)] userInfo:nil];
+    }
+    
+    OAAppearanceSupportedType backingPropType;
+    Class optionalBackingPropTypeClass;
+    NSString *backingPropName = nameForBackingProp(backingProp, &backingPropType, &optionalBackingPropTypeClass);
     
     char *backingPropReadonly = property_copyAttributeValue(backingProp, "R");
     if (!backingPropReadonly)
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Property declaration for '%@' must be readonly.", [NSString stringWithUTF8String:backingPropName]] userInfo:nil];
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Property declaration for '%@' must be readonly.", backingPropName] userInfo:nil];
     free(backingPropReadonly);
     
-    char *backingPropType = property_copyAttributeValue(backingProp, "T");
     
     IMP getterImp;
     char *getterTypes;
     
-    MakeImpForProperty(self, [NSString stringWithUTF8String:backingPropName], backingPropType, invocationSel, &getterImp, &getterTypes);
-    free(backingPropType);
+    MakeImpForProperty(self, backingPropName, backingPropType, optionalBackingPropTypeClass, invocationSel, &getterImp, &getterTypes);
     
     class_addMethod(self, invocationSel, getterImp, getterTypes);
     
     free(getterTypes);
 }
 
-/*! outImpTypes must be free()d. */
-static void MakeImpForProperty(Class implementationCls, NSString *backingPropName, const char *type, SEL invocationSel, IMP *outImp, char **outImpTypes)
+static Class classFromTypeEncoding(const char *type)
+{
+    if (type[0] != '@') {
+        return nil;
+    }
+    
+    // Properties with object values have an encoding of `@"ClassName"` or `@"ClassName<ProtocolList>"` (which is an undocumented extension to the @encode() spec).
+    
+    // drop leading at-sign and quotation mark
+    char *className = strdup(type + 2);
+    BOOL trimmedProtocol = NO;
+    NSInteger length = strlen(className);
+    for (NSInteger i = 0; i < length; i++) {
+        if (className[i] == '<') {
+            // drop everything from the opening less-than delimiter to the end
+            trimmedProtocol = YES;
+            className[i] = '\0';
+            break;
+        }
+    }
+    if (!trimmedProtocol) {
+        // drop trailing quotation marks
+        className[strlen(className) - 1] = '\0';
+    }
+    Class valueClass = objc_getClass(className);
+    free(className);
+    return valueClass;
+}
+
+/// Constructs and returns, via `outImp` and `outImpTypes`, the implementation and type signature for an accessor for `backingPropName` in `implementationCls`.
+///
+/// If `type` is an object type, then `optionalTypeClass` should be the Class of the object type. Otherwise it should be Nil.
+///
+/// *outImpTypes must be free()d.*
+static void MakeImpForProperty(Class implementationCls, NSString *backingPropName, OAAppearanceSupportedType type, Class optionalTypeClass, SEL invocationSel, IMP *outImp, char **outImpTypes)
 {
     
     // This function provides a variety of very similar dynamic getter implementations for the different return types that OAAppearance supports (color, edge inset, size, float, bool, etc.). Each implementation has built-in caching for the fetched object, so that the caller can avoid doing its own (potentially incorrect) caching work.
@@ -807,17 +1053,9 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
 #endif
     char *returnType;
     
-    if (type[0] == '@') {
-        returnType = "@";
-        
-        // Properties with object values have an encoding of `@"ClassName"` (which is an undocumented extension to the @encode() spec).
-        char *className = strdup(type + 2);
-        className[strlen(className) - 1] = '\0';
-        Class valueClass = objc_getClass(className);
-        
-        if (!valueClass) {
-            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unknown class '%@' for key '%@'", [NSString stringWithUTF8String:className], backingPropName] userInfo:nil];
-        } else if (valueClass == [OA_SYSTEM_COLOR_CLASS class]) {
+    switch (type) {
+        case OAAppearanceSupportedTypeSystemColor: {
+            returnType = "@";
             __block OA_SYSTEM_COLOR_CLASS *cachedColor = nil;
             __block NSUInteger localInvalidationCount = 0;
             
@@ -832,7 +1070,10 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 
                 return cachedColor;
             });
-        } else if (valueClass == [OAColor class]){
+            break;
+        }
+        case OAAppearanceSupportedTypeOAColor: {
+            returnType = "@";
             __block OAColor *cachedColor = nil;
             __block NSUInteger localInvalidationCount = 0;
             
@@ -847,8 +1088,11 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 
                 return cachedColor;
             });
+            break;
+        }
+        case OAAppearanceSupportedTypeSystemImage: {
+            returnType = "@";
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-        } else if (valueClass == [UIImage class]) {
             __block UIImage *cachedImage = nil;
             __block NSUInteger localInvalidationCount = 0;
             
@@ -864,7 +1108,6 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 return cachedImage;
             });
 #else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-        } else if (valueClass == [NSImage class]) {
             __block NSImage *cachedImage = nil;
             __block NSUInteger localInvalidationCount = 0;
             
@@ -880,14 +1123,18 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 return cachedImage;
             });
 #endif
-        } else {
+            break;
+        }
+        case OAAppearanceSupportedTypeObject: {
+            OBASSERT_NOTNULL(optionalTypeClass);
+            returnType = "@";
             __block id cachedObject = nil;
             __block NSUInteger localInvalidationCount = 0;
             
             *outImp = imp_implementationWithBlock(^(id self) {
                 NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
                 if (localInvalidationCount < globalInvalidationCount) {
-                    id object = [self _objectOfClass:valueClass forPlistKeyPath:backingPropName];
+                    id object = [self _objectOfClass:optionalTypeClass forPlistKeyPath:backingPropName];
                     DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(valueClass), backingPropName, object);
                     cachedObject = object;
                     localInvalidationCount = globalInvalidationCount;
@@ -895,127 +1142,136 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 
                 return cachedObject;
             });
+            break;
         }
-        
-        free(className);
-    } else if (strcmp(type, @encode(float)) == 0) {
-        returnType = @encode(float);
-        
-        __block float cachedResult = 0;
-        __block NSUInteger localInvalidationCount = 0;
-        
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                float val = [self floatForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"floatForKeyPath:%@ --> %f", backingPropName, val);
-                cachedResult = val;
-                localInvalidationCount = globalInvalidationCount;
-            }
+        case OAAppearanceSupportedTypeFloat: {
+            returnType = @encode(float);
             
-            return cachedResult;
-        });
-    } else if (strcmp(type, @encode(double)) == 0) {
-        returnType = @encode(double);
-        
-        __block double cachedResult = 0;
-        __block NSUInteger localInvalidationCount = 0;
-        
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                double val = [self doubleForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"doubleForKeyPath:%@ --> %f", backingPropName, val);
-                cachedResult = val;
-                localInvalidationCount = globalInvalidationCount;
-            }
+            __block float cachedResult = 0;
+            __block NSUInteger localInvalidationCount = 0;
             
-            return cachedResult;
-        });
-    } else if (strcmp(type, @encode(BOOL)) == 0) {
-        returnType = "c";
-
-        __block BOOL cachedBool = NO;
-        __block NSUInteger localInvalidationCount = 0;
-
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                BOOL val = [self boolForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"boolForKeyPath:%@ --> %@", backingPropName, val ? @"YES" : @"NO");
-                cachedBool = val;
-                localInvalidationCount = globalInvalidationCount;
-            }
-            
-            return cachedBool;
-        });
-    } else if (strcmp(type, @encode(OA_SYSTEM_EDGE_INSETS_STRUCT)) == 0) {
-        returnType = @encode(OA_SYSTEM_EDGE_INSETS_STRUCT);
-        
-        __block OA_SYSTEM_EDGE_INSETS_STRUCT cachedInsets = {0};
-        __block NSUInteger localInvalidationCount = 0;
-        
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                OA_SYSTEM_EDGE_INSETS_STRUCT insets = [self edgeInsetsForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"edgeInsetsForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&insets objCType:returnType]);
-                cachedInsets = insets;
-                localInvalidationCount = globalInvalidationCount;
-            }
-            
-            return cachedInsets;
-        });
-    } else if (strcmp(type, @encode(CGSize)) == 0) {
-        returnType = @encode(CGSize);
-        
-        __block CGSize cachedSize = {0};
-        __block NSUInteger localInvalidationCount = 0;
-        
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                CGSize size = [self sizeForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"sizeForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&size objCType:returnType]);
-                cachedSize = size;
-                localInvalidationCount = globalInvalidationCount;
-            }
-            
-            return cachedSize;
-        });
-    } else if (strcmp(type, @encode(long)) == 0) {
-        returnType = @encode(long);
-
-        // Check if there is a class method that defines an enum name table.
-        NSString *enumNameTableProperty = [[NSString alloc] initWithFormat:@"%@EnumNameTable", backingPropName];
-        OFEnumNameTable *nameTable = nil;
-        if ([implementationCls respondsToSelector:NSSelectorFromString(enumNameTableProperty)]) {
-            nameTable = [implementationCls valueForKey:enumNameTableProperty];
-        }
-
-        __block long cachedValue = {0};
-        __block NSUInteger localInvalidationCount = 0;
-        
-        *outImp = imp_implementationWithBlock(^(id self) {
-            NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
-            if (localInvalidationCount < globalInvalidationCount) {
-                long value;
-                if (nameTable) {
-                    NSString *name = [self stringForKeyPath:backingPropName];
-                    value = [nameTable enumForName:name];
-                    DEBUG_DYNAMIC_GETTER(@"stringForKeyPath:%@ --> %@", backingPropName, name);
-                } else {
-                    value = [self integerForKeyPath:backingPropName];
-                    DEBUG_DYNAMIC_GETTER(@"integerForKeyPath:%@ --> %ld", backingPropName, value);
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    float val = [self floatForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"floatForKeyPath:%@ --> %f", backingPropName, val);
+                    cachedResult = val;
+                    localInvalidationCount = globalInvalidationCount;
                 }
-                cachedValue = value;
-                localInvalidationCount = globalInvalidationCount;
+                
+                return cachedResult;
+            });
+            break;
+        }
+        case OAAppearanceSupportedTypeDouble: {
+            returnType = @encode(double);
+            
+            __block double cachedResult = 0;
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    double val = [self doubleForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"doubleForKeyPath:%@ --> %f", backingPropName, val);
+                    cachedResult = val;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedResult;
+            });
+            break;
+        }
+        case OAAppearanceSupportedTypeBool: {
+            returnType = "c";
+            
+            __block BOOL cachedBool = NO;
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    BOOL val = [self boolForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"boolForKeyPath:%@ --> %@", backingPropName, val ? @"YES" : @"NO");
+                    cachedBool = val;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedBool;
+            });
+            break;
+        }
+        case OAAppearanceSupportedTypeSystemEdgeInsets: {
+            returnType = @encode(OA_SYSTEM_EDGE_INSETS_STRUCT);
+            
+            __block OA_SYSTEM_EDGE_INSETS_STRUCT cachedInsets = {0};
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    OA_SYSTEM_EDGE_INSETS_STRUCT insets = [self edgeInsetsForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"edgeInsetsForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&insets objCType:returnType]);
+                    cachedInsets = insets;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedInsets;
+            });
+            break;
+        }
+        case OAAppearanceSupportedTypeSize: {
+            returnType = @encode(CGSize);
+            
+            __block CGSize cachedSize = {0};
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    CGSize size = [self sizeForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"sizeForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&size objCType:returnType]);
+                    cachedSize = size;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedSize;
+            });
+            break;
+        }
+        case OAAppearanceSupportedTypeLong: {
+            returnType = @encode(long);
+            
+            // Check if there is a class method that defines an enum name table.
+            NSString *enumNameTableProperty = [[NSString alloc] initWithFormat:@"%@EnumNameTable", backingPropName];
+            OFEnumNameTable *nameTable = nil;
+            if ([implementationCls respondsToSelector:NSSelectorFromString(enumNameTableProperty)]) {
+                nameTable = [implementationCls valueForKey:enumNameTableProperty];
             }
             
-            return cachedValue;
-        });
-    } else {
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unsupported type encoding '%@' for plist key '%@'", [NSString stringWithUTF8String:type], backingPropName] userInfo:nil];
+            __block long cachedValue = {0};
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OAAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    long value;
+                    if (nameTable) {
+                        NSString *name = [self stringForKeyPath:backingPropName];
+                        value = [nameTable enumForName:name];
+                        DEBUG_DYNAMIC_GETTER(@"stringForKeyPath:%@ --> %@", backingPropName, name);
+                    } else {
+                        value = [self integerForKeyPath:backingPropName];
+                        DEBUG_DYNAMIC_GETTER(@"integerForKeyPath:%@ --> %ld", backingPropName, value);
+                    }
+                    cachedValue = value;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedValue;
+            });
+            break;
+        }
     }
     
     size_t returnTypeLength = strlen(returnType);
@@ -1118,12 +1374,16 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
         [mapTable setObject:appearance forKey:cls];
     }
     
-    NSURL *directoryURLForSwitchablePlist = [[appearance class] directoryURLForSwitchablePlist];
-    OBASSERT_IF(appearance.optionalPlistDirectoryURL != directoryURLForSwitchablePlist, !OFURLEqualsURL(appearance.optionalPlistDirectoryURL, directoryURLForSwitchablePlist), @"OAAppearance subclass `%@` implementation of `%@` returned a fresh NSURL instance with the same value as the previously returned instance. This is a serious performance regression.", NSStringFromClass([appearance class]), NSStringFromSelector(@selector(directoryURLForSwitchablePlist)));
-    if (!OFURLEqualsURL(appearance.optionalPlistDirectoryURL, directoryURLForSwitchablePlist)) {
-        appearance.optionalPlistDirectoryURL = directoryURLForSwitchablePlist;
-        [appearance invalidateCachedValues];
-        // Note that we do not currently use file presenters to track our base plist. We only track the user override plist. Therefore, we don't need to end/begin presenting here.
+    if ([InvalidatedClassesForSwitchedPlistURLDirectories containsObject:cls]) {
+        [InvalidatedClassesForSwitchedPlistURLDirectories removeObject:cls];
+        OAAppearance *appearanceToInvalidate = appearance;
+        if (reifyingInstance) {
+            // Need to invalidate the public instance. That will recursively invalidate `appearance`.
+            appearanceToInvalidate = [self _appearanceForClass:[appearance superclass] reifyingInstance:NO];
+        }
+        NSURL *directoryURLForSwitchablePlist = [[appearanceToInvalidate class] directoryURLForSwitchablePlist];
+        appearanceToInvalidate.optionalPlistDirectoryURL = directoryURLForSwitchablePlist;
+        [appearanceToInvalidate invalidateCachedValues];
     }
     
     return appearance;
@@ -1185,6 +1445,26 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
 
 + (NSURL *)directoryURLForSwitchablePlist;
 {
+    return nil;
+}
+
++ (void)invalidateDirectoryURLForSwitchablePlist;
+{
+    Class cls = self;
+    if ([OAAppearance isReifyingClass:cls]) {
+        cls = [cls superclass];
+    }
+    [InvalidatedClassesForSwitchedPlistURLDirectories addObject:cls];
+}
+
++ (instancetype)appearanceForValidatingPropertyListInDirectory:(NSURL *)directoryURL forClass:(Class)cls;
+{
+    OAAppearance *appearance = [[cls alloc] _initForValidationWithDirectoryURL:directoryURL];
+    NSURL *plistURL = [appearance _plistURL];
+    NSURL *plistDirectory = [plistURL URLByDeletingLastPathComponent];
+    if (OFURLEqualsURL(directoryURL, plistDirectory)) {
+        return appearance;
+    }
     return nil;
 }
 

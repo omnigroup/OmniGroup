@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 
 /// Returns YES if set is nil or is empty.
 + (BOOL)isEmptySet:(NSSet *)set;
+
++ (instancetype)setByEnumerating:(NSEnumerator<ObjectType> *)enumerator;
 
 - (NSSet<ObjectType> *)setByPerformingSelector:(SEL)aSelector;
 - (NSSet<ObjectType> *)setByPerformingBlock:(OFObjectToObjectBlock)block;

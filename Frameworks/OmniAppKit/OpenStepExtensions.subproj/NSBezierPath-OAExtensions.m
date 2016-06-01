@@ -1,11 +1,11 @@
-// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSBezierPath-OAExtensions.h"
+#import <OmniAppKit/NSBezierPath-OAExtensions.h>
 #import "NSBezierPath-OAInternal.h"
 
 #import <AppKit/AppKit.h>
@@ -144,8 +144,13 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
 
 + (NSBezierPath *)bezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
 {
+    return [self bezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius includingEdges:OFRectEdgeAllEdges];
+}
+
++ (NSBezierPath *)bezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius includingEdges:(OFRectEdge)edges;
+{
     NSBezierPath *path = [[NSBezierPath alloc] init];
-    [path appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
+    [path appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius includingEdges:edges];
     return [path autorelease];
 }
 
@@ -875,22 +880,22 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
 
 - (void)appendBezierPathWithRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
-    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:OFRectCornerAllCorners withRadius:radius];
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:OFRectCornerAllCorners withRadius:radius includingEdges:OFRectEdgeAllEdges];
 }
 
 - (void)appendBezierPathWithLeftRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
     OFRectCorner corners = (OFRectCornerMinXMinY | OFRectCornerMinXMaxY);
-    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius includingEdges:OFRectEdgeAllEdges];
 }
 
 - (void)appendBezierPathWithRightRoundedRectangle:(NSRect)rect withRadius:(CGFloat)radius;
 {
     OFRectCorner corners = (OFRectCornerMaxXMinY | OFRectCornerMaxXMaxY);
-    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius];
+    return [self appendBezierPathWithRoundedRectangle:rect byRoundingCorners:corners withRadius:radius includingEdges:OFRectEdgeAllEdges];
 }
 
-- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius;
+- (void)appendBezierPathWithRoundedRectangle:(NSRect)rect byRoundingCorners:(OFRectCorner)corners withRadius:(CGFloat)radius includingEdges:(OFRectEdge)edges;
 {
     // This is the value AppKit uses in -appendBezierPathWithRoundedRect:xRadius:yRadius:
     
@@ -901,6 +906,7 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     }
     
     NSBezierPath *bezierPath = [[self class] bezierPath];
+    NSPoint startPoint;
     NSPoint sourcePoint;
     NSPoint destPoint;
     NSPoint controlPoint1;
@@ -910,79 +916,138 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     radius = MIN(radius, length / 2.0);
     
     // Top Left (in terms of a non-flipped view)
-
+    BOOL includeCorner = (edges & OFRectEdgeMinX) != 0 || (edges & OFRectEdgeMinY) != 0;
     if ((corners & OFRectCornerMinXMinY) != 0) {
         sourcePoint = NSMakePoint(NSMinX(rect), NSMaxY(rect) - radius);
+        startPoint = sourcePoint; // capture for "closing" path without necessarily adding a segment for the final edge
+        
         destPoint = NSMakePoint(NSMinX(rect) + radius, NSMaxY(rect));
         
-        controlPoint1 = sourcePoint;
-        controlPoint1.y += radius * kControlPointMultiplier;
-        
-        controlPoint2 = destPoint;
-        controlPoint2.x -= radius * kControlPointMultiplier;
-        
-        [bezierPath moveToPoint:sourcePoint];
-        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        if (includeCorner) {
+            controlPoint1 = sourcePoint;
+            controlPoint1.y += radius * kControlPointMultiplier;
+            
+            controlPoint2 = destPoint;
+            controlPoint2.x -= radius * kControlPointMultiplier;
+            
+            [bezierPath moveToPoint:sourcePoint];
+            [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     } else {
-        [bezierPath moveToPoint:NSMakePoint(NSMinX(rect), NSMaxY(rect))];
+        startPoint = NSMakePoint(NSMinX(rect), NSMaxY(rect));  // capture for "closing" path without necessarily adding a segment for the final edge
+        [bezierPath moveToPoint:startPoint];
     }
     
     // Top right (in terms of a flipped view)
-    
+    BOOL includeEdge = (edges & OFRectEdgeMinY) != 0;
+    includeCorner = (edges & OFRectEdgeMinY) != 0 || (edges & OFRectEdgeMaxX) != 0;
     if ((corners & OFRectCornerMaxXMinY) != 0) {
         sourcePoint = NSMakePoint(NSMaxX(rect) - radius, NSMaxY(rect));
         destPoint = NSMakePoint(NSMaxX(rect), NSMaxY(rect) - radius);
         
-        controlPoint1 = sourcePoint;
-        controlPoint1.x += radius * kControlPointMultiplier;
+        if (includeEdge) {
+            [bezierPath lineToPoint:sourcePoint];
+        } else {
+            [bezierPath moveToPoint:sourcePoint];
+        }
         
-        controlPoint2 = destPoint;
-        controlPoint2.y += radius * kControlPointMultiplier;
-        
-        [bezierPath lineToPoint:sourcePoint];
-        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        if (includeCorner) {
+            controlPoint1 = sourcePoint;
+            controlPoint1.x += radius * kControlPointMultiplier;
+            
+            controlPoint2 = destPoint;
+            controlPoint2.y += radius * kControlPointMultiplier;
+            
+            [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     } else {
-        [bezierPath lineToPoint:NSMakePoint(NSMaxX(rect), NSMaxY(rect))];
+        destPoint = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
+        if (includeEdge) {
+            [bezierPath lineToPoint:destPoint];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     }
     
     // Bottom right (in terms of a flipped view)
-    
+    includeEdge = (edges & OFRectEdgeMaxX) != 0;
+    includeCorner = (edges & OFRectEdgeMaxX) != 0 || (edges & OFRectEdgeMaxY) != 0;
     if ((corners & OFRectCornerMaxXMaxY) != 0) {
         sourcePoint = NSMakePoint(NSMaxX(rect), NSMinY(rect) + radius);
         destPoint = NSMakePoint(NSMaxX(rect) - radius, NSMinY(rect));
         
-        controlPoint1 = sourcePoint;
-        controlPoint1.y -= radius * kControlPointMultiplier;
+        if (includeEdge) {
+            [bezierPath lineToPoint:sourcePoint];
+        } else {
+            [bezierPath moveToPoint:sourcePoint];
+        }
         
-        controlPoint2 = destPoint;
-        controlPoint2.x += radius * kControlPointMultiplier;
-        
-        [bezierPath lineToPoint:sourcePoint];
-        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        if (includeCorner) {
+            controlPoint1 = sourcePoint;
+            controlPoint1.y -= radius * kControlPointMultiplier;
+            
+            controlPoint2 = destPoint;
+            controlPoint2.x += radius * kControlPointMultiplier;
+            
+            [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     } else {
-        [bezierPath lineToPoint:NSMakePoint(NSMaxX(rect), NSMinY(rect))];
+        destPoint = NSMakePoint(NSMaxX(rect), NSMinY(rect));
+        if (includeEdge) {
+            [bezierPath lineToPoint:destPoint];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     }
     
     // Bottom left (in terms of a flipped view)
-    
+    includeEdge = (edges & OFRectEdgeMaxY) != 0;
+    includeCorner = (edges & OFRectEdgeMaxY) != 0 || (edges & OFRectEdgeMinX) != 0;
     if ((corners & OFRectCornerMinXMaxY) != 0) {
         sourcePoint = NSMakePoint(NSMinX(rect) + radius, NSMinY(rect));
         destPoint = NSMakePoint(NSMinX(rect), NSMinY(rect) + radius);
         
-        controlPoint1 = sourcePoint;
-        controlPoint1.x -= radius * kControlPointMultiplier;
+        if (includeEdge) {
+            [bezierPath lineToPoint:sourcePoint];
+        } else {
+            [bezierPath moveToPoint:sourcePoint];
+        }
         
-        controlPoint2 = destPoint;
-        controlPoint2.y -= radius * kControlPointMultiplier;
-        
-        [bezierPath lineToPoint:sourcePoint];
-        [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        if (includeCorner) {
+            controlPoint1 = sourcePoint;
+            controlPoint1.x -= radius * kControlPointMultiplier;
+            
+            controlPoint2 = destPoint;
+            controlPoint2.y -= radius * kControlPointMultiplier;
+            
+            [bezierPath curveToPoint:destPoint controlPoint1:controlPoint1 controlPoint2:controlPoint2];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     } else {
-        [bezierPath lineToPoint:NSMakePoint(NSMinX(rect), NSMinY(rect))];
+        destPoint = NSMakePoint(NSMinX(rect), NSMinY(rect));
+        if (includeEdge) {
+            [bezierPath lineToPoint:destPoint];
+        } else {
+            [bezierPath moveToPoint:destPoint];
+        }
     }
     
-    // Append the path
-    [bezierPath closePath];
+    // Back to top Left (in terms of a non-flipped view)
+    // CONSIDER: If the top-left corner is rounded, the subpath ends at the beginning of the curve rather than at the top-left corner of the bounding rect (assuming non-flipped coordinates). Is that really what we want if using this for composite paths? Should we do an additional move to (MinX, MinY) of the bounding rect?
+    includeEdge = (edges & OFRectEdgeMinX) != 0;
+    if (includeEdge) {
+        [bezierPath lineToPoint:startPoint];
+    } else {
+        [bezierPath moveToPoint:startPoint];
+    }
+    
     [self appendBezierPath: bezierPath];
 }
 

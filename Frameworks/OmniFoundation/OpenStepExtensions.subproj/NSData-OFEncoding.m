@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -300,6 +300,27 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
 // Base-64 (RFC-1521) support.  The following is based on mpack-1.5 (ftp://ftp.andrew.cmu.edu/pub/mpack/)
 //
 
++ (id)dataWithBase64String:(NSString *)base64String;
+{
+    return [[[self alloc] initWithBase64String:base64String] autorelease];
+}
+
+#define WRAP_FOUNDATION_BASE64_API 0
+
+#if WRAP_FOUNDATION_BASE64_API
+
+- initWithBase64String:(NSString *)base64String;
+{
+    return [self initWithBase64EncodedString:base64String options:NSDataBase64DecodingIgnoreUnknownCharacters];
+}
+
+- (NSString *)base64String;
+{
+    return [self base64EncodedStringWithOptions:0];
+}
+
+#else
+
 #define XX 127
 static const char index_64[256] = {
 XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
@@ -323,11 +344,6 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
 
 #define BASE64_GETC (length > 0 ? (length--, bytes++, (unsigned int)(bytes[-1])) : (unsigned int)EOF)
 #define BASE64_PUTC(c) OFDataBufferAppendByte(buffer, (c))
-
-+ (id)dataWithBase64String:(NSString *)base64String;
-{
-    return [[[self alloc] initWithBase64String:base64String] autorelease];
-}
 
 - initWithBase64String:(NSString *)base64String;
 {
@@ -449,6 +465,8 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
     
     return string;
 }
+
+#endif
 
 //
 // Omni's custom base-26 support.  This is based on the ascii85 implementation above.

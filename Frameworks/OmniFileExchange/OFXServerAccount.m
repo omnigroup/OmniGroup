@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFPreference.h>
+#import <sys/mount.h>
 
 RCS_ID("$Id$")
 
@@ -52,20 +53,14 @@ static OFDeclareDebugLogLevel(OFXBookmarkDebug);
     } while (0)
 
 // When running unit tests on Mac OS X 10.9, we cannot use app-scoped bookmarks. This worked in 10.8, but under 10.9 we get a generic 'cannot open' error. We don't just check -[NSProcessInfo isSandboxed] since we archive the "bookmark" in a plist. We don't want to handle archiving/unarchiving different styles of bookmarks between sandboxed/non-sandboxed.
-static BOOL IsRunningUnitTests(void)
+static BOOL CannotUseAppScopedBookmarks(void)
 {
-    static BOOL runningUnitTests;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSString *pathExtension = [[[OFController controllingBundle] bundlePath] pathExtension];
-        runningUnitTests = [pathExtension isEqual:@"xctest"];
-    });
-    return runningUnitTests;
+    return [OFController isRunningUnitTests];
 }
 
 static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
 {
-    if (IsRunningUnitTests()) {
+    if (CannotUseAppScopedBookmarks()) {
         NSData *data = [[url absoluteString] dataUsingEncoding:NSUTF8StringEncoding];
         assert(data); // otherwise we need to fill out the outError
         return data;
@@ -75,7 +70,7 @@ static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
 
 static NSURL *URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outError)
 {
-    if (IsRunningUnitTests()) {
+    if (CannotUseAppScopedBookmarks()) {
         NSString *urlString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         NSURL *url = [NSURL URLWithString:urlString];
         assert(url); // otherwise we need to fill out the outError

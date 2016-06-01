@@ -53,6 +53,7 @@ NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
 {
     NSMutableArray *_launchActions;
     OUIMenuController *_appMenuController;
+    NSOperationQueue *_backgroundPromptQueue;
 }
 
 BOOL OUIShouldLogPerformanceMetrics = NO;
@@ -224,15 +225,15 @@ static void __iOS7B5CleanConsoleOutput(void)
     [self presentError:error fromViewController:viewController file:NULL line:0];
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
 {
     if (error == nil || [error causedByUserCancelling])
         return;
-    
+
     if (file)
         NSLog(@"Error reported from %s:%d", file, line);
     NSLog(@"%@", [error toPropertyList]);
-    
+
     // This delayed presentation avoids the "wait_fences: failed to receive reply: 10004003" lag/timeout which can happen depending on the context we start the reporting from.
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         NSMutableArray *messages = [NSMutableArray array];
@@ -240,20 +241,33 @@ static void __iOS7B5CleanConsoleOutput(void)
         NSString *reason = [error localizedFailureReason];
         if (![NSString isEmptyString:reason])
             [messages addObject:reason];
-        
+
         NSString *suggestion = [error localizedRecoverySuggestion];
         if (![NSString isEmptyString:suggestion])
             [messages addObject:suggestion];
-        
+
         NSString *message = [messages componentsJoinedByString:@"\n"];
-        
+
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
 
         [alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
+        if (optionalActionTitle && optionalAction) {
+            [alertController addAction:[UIAlertAction actionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalAction]];
+        }
 
         [viewController presentViewController:alertController animated:YES completion:^{}];
-
+        
     }];
+}
+
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
+{
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:nil optionalAction:NULL];
+}
+
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
+{
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") optionalActionTitle:optionalActionTitle optionalAction:optionalAction];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
@@ -275,6 +289,19 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     OBFinishPorting; // Make this public? Move the credential stuff into OmniFoundation instead of OmniFileStore?
 //    OUIDeleteAllCredentials();
+}
+
+- (NSOperationQueue *)backgroundPromptQueue;
+{
+    @synchronized (self) {
+        if (!_backgroundPromptQueue) {
+            _backgroundPromptQueue = [[NSOperationQueue alloc] init];
+            _backgroundPromptQueue.maxConcurrentOperationCount = 1;
+            _backgroundPromptQueue.qualityOfService = NSQualityOfServiceUserInitiated;
+            _backgroundPromptQueue.name = @"Serialized Queue for Background-Initiated Prompts";
+        }
+        return _backgroundPromptQueue;
+    }
 }
 
 - (void)showOnlineHelp:(id)sender;
@@ -347,7 +374,8 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *testFlightString = [OUIAppController inSandboxStore] ? @" TestFlight" : @"";
-    return [NSString stringWithFormat:@"%@ %@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    NSString *proString = [self isPurchaseUnlocked:[self proUpgradeProductIdentifier]] ? @" [Pro]" : @"";
+    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], proString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
 }
 
 

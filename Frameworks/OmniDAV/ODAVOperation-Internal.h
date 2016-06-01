@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,10 +18,7 @@
 @property(nonatomic,readonly) NSURLRequest *request;
 @property(nonatomic,readonly) NSOperationQueue *callbackQueue;
 
-//@property(nonatomic,copy) void (^validateCertificateForChallenge)(ODAVOperation *op, NSURLAuthenticationChallenge *challenge);
-//@property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(ODAVOperation *op, NSURLAuthenticationChallenge *challenge);
-
-- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge disposition:(NSURLSessionAuthChallengeDisposition)disposition;
 - (void)_didCompleteWithError:(NSError *)error;
 - (void)_didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend;
 - (void)_didReceiveResponse:(NSURLResponse *)response;

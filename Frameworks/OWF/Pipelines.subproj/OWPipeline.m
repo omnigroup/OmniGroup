@@ -1,35 +1,35 @@
-// Copyright 1997-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWPipeline.h"
+#import <OWF/OWPipeline.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSException-OWConcreteCacheEntry.h"
-#import "OWAddress.h" // Only for heuristic for compositeTypeString
-#import "OWContent.h"
-#import "OWContentCacheGroup.h"
-#import "OWContentCacheProtocols.h"
-#import "OWCookieDomain.h"
+#import <OWF/NSException-OWConcreteCacheEntry.h>
+#import <OWF/OWAddress.h> // Only for heuristic for compositeTypeString
+#import <OWF/OWContent.h>
+#import <OWF/OWContentCacheGroup.h>
+#import <OWF/OWContentCacheProtocols.h>
+#import <OWF/OWCookieDomain.h>
 #import "OWCacheSearch.h"
-#import "OWContentInfo.h"
-#import "OWContentType.h"
-#import "OWContentTypeLink.h"
-#import "OWConversionPathElement.h"
-#import "OWHeaderDictionary.h"
-#import "OWURL.h" // Only for heuristic for compositeTypeString
-#import "OWProcessor.h"
+#import <OWF/OWContentInfo.h>
+#import <OWF/OWContentType.h>
+#import <OWF/OWContentTypeLink.h>
+#import <OWF/OWConversionPathElement.h>
+#import <OWF/OWHeaderDictionary.h>
+#import <OWF/OWURL.h> // Only for heuristic for compositeTypeString
+#import <OWF/OWProcessor.h>
 #import "OWProcessorCacheArc.h"
-#import "OWSitePreference.h"
+#import <OWF/OWSitePreference.h>
 
 // [wiml jan2004] ugly - should not be necessary to import these here at all
-#import "OWStaticArc.h"
+#import <OWF/OWStaticArc.h>
 
 RCS_ID("$Id$")
 
@@ -2921,16 +2921,16 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 @end
 
-NSString *OWPipelineHasErrorNotificationName = @"OWPipelineHasError";
-NSString *OWPipelineHasErrorNotificationPipelineKey = @"pipeline";
-NSString *OWPipelineHasErrorNotificationProcessorKey = @"processor";
-NSString *OWPipelineHasErrorNotificationErrorNameKey = @"errorName";
-NSString *OWPipelineHasErrorNotificationErrorReasonKey = @"errorReason";
-NSString *OWPipelineTreeActivationNotificationName = @"OWPipelineTreeActivation";
-NSString *OWPipelineTreeDeactivationNotificationName = @"OWPipelineTreeDeactivation";
-NSString *OWPipelineTreePeriodicUpdateNotificationName = @"OWPipelineTreePeriodicUpdateNotificationName";
-NSString *OWPipelineHasBuddedNotificationName = @"OWPipelineHasBudded";
-NSString *OWPipelineChildPipelineKey = @"child";
-NSString *OWPipelineFetchLastAddressKey = @"address";
-NSString *OWPipelineFetchNewContentKey = @"content";
-NSString *OWPipelineFetchNewArcKey = @"arc";
+NSString * const OWPipelineHasErrorNotificationName = @"OWPipelineHasError";
+NSString * const OWPipelineHasErrorNotificationPipelineKey = @"pipeline";
+NSString * const OWPipelineHasErrorNotificationProcessorKey = @"processor";
+NSString * const OWPipelineHasErrorNotificationErrorNameKey = @"errorName";
+NSString * const OWPipelineHasErrorNotificationErrorReasonKey = @"errorReason";
+NSString * const OWPipelineTreeActivationNotificationName = @"OWPipelineTreeActivation";
+NSString * const OWPipelineTreeDeactivationNotificationName = @"OWPipelineTreeDeactivation";
+NSString * const OWPipelineTreePeriodicUpdateNotificationName = @"OWPipelineTreePeriodicUpdateNotificationName";
+NSString * const OWPipelineHasBuddedNotificationName = @"OWPipelineHasBudded";
+NSString * const OWPipelineChildPipelineKey = @"child";
+NSString * const OWPipelineFetchLastAddressKey = @"address";
+NSString * const OWPipelineFetchNewContentKey = @"content";
+NSString * const OWPipelineFetchNewArcKey = @"arc";

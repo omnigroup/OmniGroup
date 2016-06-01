@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,30 @@
 RCS_ID("$Id$")
 
 @implementation NSArray (OFExtensions)
+
++ (NSArray *)arrayWithCount:(NSUInteger)count valueAtIndex:(id (^)(NSUInteger))valueAtIndex;
+{
+#if OB_ARC
+#error Need to make this array __strong and initialized to zeros, or otherwise hold onto the objects that are returned from the block, since if *it* is ARC, the objects could get deallocated immediately
+#endif
+    if (count == 0)
+        return [NSArray array]; // See header for why we don't use `self`
+
+    id *objects = malloc(sizeof(*objects) * count);
+    for (NSUInteger valueIndex = 0; valueIndex < count; valueIndex++) {
+        objects[valueIndex] = valueAtIndex(valueIndex);
+    }
+
+    // See header for why we don't use `self`
+    NSArray *result = [[[NSArray alloc] initWithObjects:objects count:count] autorelease];
+
+#if OB_ARC
+#error Need to store nils to each element to release them, or otherwise arrange to lose the reference we added above.
+#endif
+    free(objects);
+
+    return result;
+}
 
 - (id)anyObject;
 {

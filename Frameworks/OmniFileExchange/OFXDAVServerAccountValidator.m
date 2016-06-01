@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,17 +65,20 @@ RCS_ID("$Id$")
     __weak OFXDAVServerAccountValidator *weakSelf = self;
     
     // This gets called on an anonymous queue, so we need to serialize access to our state
-    _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
-        OFXDAVServerAccountValidator *stongSelf = weakSelf;
-        if (!stongSelf)
-            return;
-        stongSelf->_certificateTrustError = [NSError certificateTrustErrorForChallenge:challenge];
-    };
-    _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+    _connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         OFXDAVServerAccountValidator *stongSelf = weakSelf;
         if (!stongSelf)
             return nil;
-        return [stongSelf _findCredentialsForChallenge:challenge];
+        stongSelf->_certificateTrustError = [NSError certificateTrustErrorForChallenge:challenge];
+        return nil;
+    };
+    _connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
+        OFXDAVServerAccountValidator *strongSelf = weakSelf;
+        if (!strongSelf)
+            return nil;
+        /* TODO: Make use of the fact that we can now return an in-progress operation here. */
+        NSURLCredential *result = [strongSelf _findCredentialsForChallenge:challenge];
+        return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, result);
     };
     
     return self;

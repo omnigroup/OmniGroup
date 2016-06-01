@@ -9,6 +9,8 @@
 
 #import <Foundation/NSObject.h>
 
+#import <Foundation/NSKeyValueObserving.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OFObservationChange<ObserverType, ObservedObjectType> : NSObject

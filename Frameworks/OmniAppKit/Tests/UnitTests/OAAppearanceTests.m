@@ -11,6 +11,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/OFBinding.h> // for OFKeyPathForKeys
 #import <OmniAppKit/OAAppearance.h>
+#import "OAAppearance-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -165,6 +166,23 @@ XCTAssertNotEqualWithAccuracy(result, 0.0f, OAAppearanceTestFloatAccuracy, @"Exp
         XCTAssertEqual((NSInteger)[counter.notificationCounts countForObject:className], 2, @"notification count for %@", className);
         XCTAssertEqual((NSInteger)appearance.cacheInvalidationCount, 3, @"invalidation count for %@", className); // still 2
     }
+}
+
+- (void)testAppearanceForValidatingPropertyListInDirectory
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[OAAppearanceTestInvalidPlist class]];
+    NSURL *plistURL = [bundle URLForResource:@"OAAppearanceTestInvalidPlist" withExtension:@"plist"];
+    NSURL *plistDirectory = [plistURL URLByDeletingLastPathComponent];
+    OAAppearanceTestInvalidPlist *appearance = [OAAppearanceTestInvalidPlist appearanceForValidatingPropertyListInDirectory:plistDirectory forClass:[OAAppearanceTestInvalidPlist class]];
+    
+    NSError *error;
+    BOOL success = [appearance validateValueAtKeyPath:@"TopLevelFloat" error:&error];
+
+    XCTAssertFalse(success);
+    XCTAssertEqual(error.domain, OAAppearanceErrorDomain);
+    XCTAssertEqual(error.code, (NSInteger)OAAppearanceErrorCodeInvalidValueInPropertyList);
+    
+    XCTAssertThrows(appearance.TopLevelFloat);
 }
 
 @end

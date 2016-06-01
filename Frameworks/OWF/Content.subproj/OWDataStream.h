@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,8 +125,6 @@ enum OWStringEncodingProvenance {
 
 @end
 
-#import <OWF/FrameworkDefines.h>
-
-OWF_EXTERN const NSUInteger OWDataStreamUnknownLength;
-OWF_EXTERN NSString *OWDataStreamNoLongerValidException;
+extern const NSUInteger OWDataStreamUnknownLength;
+extern NSString * const OWDataStreamNoLongerValidException;
 

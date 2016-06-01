@@ -1,11 +1,11 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWContentType.h"
+#import <OWF/OWContentType.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
@@ -15,6 +15,7 @@
 #import <OWF/OWContentTypeLink.h>
 #import <OWF/OWConversionPathElement.h>
 #import <OWF/OWUnknownDataStreamProcessor.h>
+#import <sys/attr.h>
 
 RCS_ID("$Id$")
 
@@ -111,11 +112,11 @@ typedef struct {
 
 @implementation OWContentType
 
-NSTimeInterval OWContentTypeNeverExpireTimeInterval = -1.0;
-NSTimeInterval OWContentTypeExpireWhenFlushedTimeInterval = 1e+10;
-NSString *OWContentTypeNeverExpireString = @"NeverExpire";
-NSString *OWContentTypeExpireWhenFlushedString = @"ExpireWhenFlushed";
-NSString *OWContentTypeReloadExpirationTimeIntervalsNotificationName = @"OWContentTypeReloadExpirationTimeIntervals";
+const NSTimeInterval OWContentTypeNeverExpireTimeInterval = -1.0;
+const NSTimeInterval OWContentTypeExpireWhenFlushedTimeInterval = 1e+10;
+NSString * const OWContentTypeNeverExpireString = @"NeverExpire";
+NSString * const OWContentTypeExpireWhenFlushedString = @"ExpireWhenFlushed";
+NSString * const OWContentTypeReloadExpirationTimeIntervalsNotificationName = @"OWContentTypeReloadExpirationTimeIntervals";
 
 static NSRecursiveLock *contentTypeLock;
 static NSMutableDictionary *contentTypeDictionary;

@@ -275,6 +275,13 @@ RCS_ID("$Id$")
     self.view = webView;
 }
 
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+    
+    [self.webView stopLoading];
+}
+
 - (BOOL)shouldAutorotate;
 {
     return YES;
@@ -302,16 +309,27 @@ RCS_ID("$Id$")
         return;
     }
     
+    // Avoid creating a retain cycle here; we don't want to keep the web view alive and processing onload scripts when this view controller has been dismissed
+    __weak typeof(self) weakSelf = self;
     NSString *javaScript = OB_CHECKED_CAST(NSString, [self.onLoadJavaScripts keyAtIndex:0]);
     [self.webView evaluateJavaScript:javaScript completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-        void (^completionHandler)(id, NSError*) = self.onLoadJavaScripts[javaScript];
-        [self.onLoadJavaScripts removeObjectForKey:javaScript];
+        __strong typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
         
-        if (!OFISNULL(completionHandler)) {
+        // We must check whether the value is [NSNull null] before assigning it to a local variable typed as a block.
+        // As soon as we assign it to a local typed as a block, the compiler may try to copy the block on our behalf, which will crash if the object is not a block.
+        if (!OFISNULL(strongSelf.onLoadJavaScripts[javaScript])) {
+            void (^completionHandler)(id, NSError*) = strongSelf.onLoadJavaScripts[javaScript];
             completionHandler(result, error);
         }
         
-        [self _runOnLoadJavaScripts];
+        // Remove the script that we just ran
+        [strongSelf.onLoadJavaScripts removeObjectForKey:javaScript];
+
+        // Recurse and run any remaining onLoad scripts
+        [strongSelf _runOnLoadJavaScripts];
     }];
 }
 

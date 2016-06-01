@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -183,6 +183,9 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
         OQRectMinYEdge, OQRectMaxXEdge, OQRectMaxYEdge, OQRectMinXEdge,
     };
     
+    /* Control points for squircle corners, normalized to the radius */
+    const float k1 = 0.074911, k2 = 0.169060, k3 = 0.372824, k4 = 0.631494, k5 = 0.868407, k6 = 1.088493, k7 = 1.528665;
+    
     /* firstCorners[] computes the first corner we want to draw, based on the contents of the edges bitmap.
        We draw any corner that is adjacent to a drawn edge, and we draw them in the order they appear in points[].
        If there are any gaps (i.e., anything other than OQRectAllEdges), we need to start at the beginning of a run of edges--- the first 1-bit that follows a 0-bit. */
@@ -200,22 +203,45 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
         int cornum = corner % 4;
         CGFloat px = points[cornum].x;
         CGFloat py = points[cornum].y;
-        /* Draw this corner, depending on whether the mask indicates it should be rounded, or not; also draw the edge leading from the last corner to this one (CGContextAddArcToPoint() does this implicitly). */
+        /* Draw this corner, depending on whether the mask indicates it should be rounded, or not. */
         if (mask & bitForCorner[corner]) {
-            if (penUp) {
-                CGFloat approachx = px, approachy = py;
-                switch (cornum) {
-                    case 0: approachy += radius; break;
-                    case 1: approachx -= radius; break;
-                    case 2: approachy -= radius; break;
-                    case 3: approachx += radius; break;
+            /* Also draw the edge leading from the last corner to this one (CGContextAddArcToPoint() does this implicitly, but if we're doing squircle corners, we need to do it ourselves). */
+            CGFloat ux, uy;
+            switch (cornum) {
+                case 0: ux =        0; uy =   radius; break;
+                case 1: ux = - radius; uy =        0; break;
+                case 2: ux =        0; uy = - radius; break;
+                case 3: ux =   radius; uy =        0; break;
+                default:
+                    OBASSERT_NOT_REACHED("only four corners in a square.");
+                    return;
+            }
+            if (penUp || (mask & OQRectIveCorners)) {
+                CGFloat approachx = ux, approachy = uy;
+                if (mask & OQRectIveCorners) {
+                    approachx *= k7;
+                    approachy *= k7;
                 }
-                PathOp(MoveToPoint, approachx, approachy);
-                penUp = 0;
+                approachx += px;
+                approachy += py;
+                if (penUp) {
+                    PathOp(MoveToPoint, approachx, approachy);
+                    penUp = 0;
+                } else {
+                    PathOp(AddLineToPoint, approachx, approachy);
+                }
             }
             int nextcorner = ( corner + 1 ) % 4;
-            PathOp(AddArcToPoint, px, py, points[nextcorner].x, points[nextcorner].y, radius);
+            if (!(mask & OQRectIveCorners)) {
+                PathOp(AddArcToPoint, px, py, points[nextcorner].x, points[nextcorner].y, radius);
+            } else {
+                /* Our basis vectors are <ux,uy> and <uy,-ux> (since we always go the same direction around the rectangle, we can simply rotate u by 90 degrees) */
+                PathOp(AddCurveToPoint, px + ux * k6,           py + uy * k6,           px + ux * k5,           py + uy * k5,           px + ux * k4 + uy * k1, py + uy * k4 - ux * k1);
+                PathOp(AddCurveToPoint, px + ux * k3 + uy * k2, py + uy * k3 - ux * k2, px + ux * k2 + uy * k3, py + uy * k2 - ux * k3, px + ux * k1 + uy * k4, py + uy * k1 - ux * k4);
+                PathOp(AddCurveToPoint, px           + uy * k5, py           - ux * k5, px           + uy * k6, py           - ux * k6, px           + uy * k7, py           - ux * k7);
+            }
         } else {
+            /* For a square corner, we can just do a moveto or lineto, as appropriate. */
             if (penUp) {
                 PathOp(MoveToPoint, px, py);
                 penUp = 0;

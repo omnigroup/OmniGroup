@@ -10,7 +10,7 @@
 #import <OmniDocumentStore/ODSFileItem.h> // For -fileURL
 #import <OmniQuartz/OQDrawing.h> // For OQCreateImageWithSize()
 #import <OmniUIDocument/OUIDocumentPreview.h>
-#import <OmniUI/UIView-OUIExtensions.h> // For -snapshotImageWithSize:
+#import <OmniUI/OmniUI.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -104,14 +104,14 @@ RCS_ID("$Id$");
     [super didClose];
 }
 
-+ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
++ (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 {
-    return @"DocumentPreviewPlaceholder.png";
+    return [[[OUIImageLocation alloc] initWithName:@"DocumentPreviewPlaceholder.png" bundle:[NSBundle mainBundle]] autorelease];
 }
 
 static void _writePreview(Class self, OFFileEdit *fileEdit, UIViewController *viewController, void (^completionHandler)(void))
 {
-    // We ping pong back and forth between the main queue and the OUIDocumentPreview background queue here a bit. We want to do as much work as possible on the background queue as possible so that the main queue is available to process user events (like scrolling in the document picker) while previews are being generated. Some code, however, must be done on the main thread. In particular our drawing code is UIView-based and so the preview image must be done on the main queue.
+    // We ping pong back and forth between the main queue and the OUIDocumentPreview background queue here a bit. We want to do as much work as possible on the background queue so that the main queue is available to process user events (like scrolling in the document picker) while previews are being generated. Some code, however, must be done on the main thread. In particular our drawing code is UIView-based and so the preview image must be done on the main queue.
     // One might thing that it would be better to determine the final preview image size and call -snapshotImageWithSize: with that size, but this is (very) wrong. The issue is that the CALayer -renderInContext: method is very slow if it has to scale the layer backing stores, but it is very fast if it can blit them w/o interpolation. So, it is faster to capture a 100% scale image and then do one final scaling operation (which we can also do on the background queue).
     
     completionHandler = [[completionHandler copy] autorelease];

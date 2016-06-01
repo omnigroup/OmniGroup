@@ -13,7 +13,9 @@
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLDocument.h>
@@ -674,6 +676,8 @@ static NSString *ODAVDepthName(ODAVDepth depth)
 {
     completionHandler = [completionHandler copy];
     
+    // NOTE: This method is somewhat misguided. A "collection resource" doesn't have a getetag property (it's a getetag, not a propfindetag), so our conditional read won't necessarily do the right thing. There may be a distinct resource accesible by doing a GET on the collection's URL, and that resource has a getetag, but there is no real reason to believe that changes in the collection membership cause changes in the GET-resource's etag. See RFC2518[8.4].
+    
     [self fileInfosAtURL:url ETag:ETag depth:ODAVDepthChildren completionHandler:^(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil) {
         if (!properties) {
             if ([errorOrNil hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
@@ -877,6 +881,7 @@ typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, 
     [request setHTTPMethod:method];
     
     // .Mac WebDAV accepts the just path the portion as the Destination, but normal OSXS doesn't.  It'll give a 400 Bad Request if we try that.  So, we send the full URL as the Destination.
+    // (The WebDAV spec says the Destination: header should carry an "absoluteURI", which is required to have the scheme etc.; .Mac was being more permissive than necessary.)
     NSString *destination = [destURL absoluteString];
     [request setValue:destination forHTTPHeaderField:@"Destination"];
     [request setValue:overwrite ? @"T" : @"F" forHTTPHeaderField:@"Overwrite"];
@@ -1273,6 +1278,20 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
 
 #pragma mark - Internal API for subclasses
 
+#if TARGET_OS_MAC
+static void fudgeTrust(SecTrustRef tref)
+{
+    SecTrustResultType tres = kSecTrustResultOtherError;
+    if (SecTrustGetTrustResult(tref, &tres) == errSecSuccess &&
+        (tres == kSecTrustResultProceed || tres == kSecTrustResultUnspecified))
+        return;
+    
+    CFDataRef exc = SecTrustCopyExceptions(tref);
+    SecTrustSetExceptions(tref, exc);
+    CFRelease(exc);
+}
+#endif
+
 // This should NEVER message the 'sender' of the challenge, though the NSURLConnection-based subclass will do that via the completion handler.
 - (void)_handleChallenge:(NSURLAuthenticationChallenge *)challenge
                operation:(nullable ODAVOperation *)operation
@@ -1311,9 +1330,8 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
     //    NSURLCredentialStorage *storage = [NSURLCredentialStorage sharedCredentialStorage];
     //    NSLog(@"all credentials = %@", [storage allCredentials]);
     
-    NSURLCredential *credential = nil;
-    
     if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+        NSURLCredential *credential = nil;
         SecTrustRef trustRef;
         if ((trustRef = [protectionSpace serverTrust]) != NULL) {
             SecTrustResultType evaluationResult = kSecTrustResultOtherError;
@@ -1329,60 +1347,99 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
             }
             if (oserr == noErr && evaluationResult == kSecTrustResultRecoverableTrustFailure) {
                 // The situation we're interested in is "recoverable failure": this indicates that the evaluation failed, but might succeed if we prod it a little.
+                // OFHasTrustForChallenge() looks through previously-stored user-confirmed exceptions, and sees if any apply to this challenge. If so, it updates the SecTrustRef to include the exception and re-evaluates it. Returns YES if the re-evaluation results in success ("Proceed"), NO otherwise.
                 BOOL hasTrust = OFHasTrustForChallenge(challenge);
-                if (!hasTrust) {
-                    // Our caller may choose to pop up UI or it might choose to immediately mark the certificate as trusted.
-                    if (_validateCertificateForChallenge)
-                        _validateCertificateForChallenge(challenge);
-                    hasTrust = OFHasTrustForChallenge(challenge);
-                }
+                NSURLCredential *adjustedTrust;
                 
                 if (hasTrust) {
+                    // TN2232 says "The system ignores the trust result of the trust object you use to create the credential; any valid trust object will allow the connection to succeed."
+                    // However, TN2232 is a lie. See RADAR 25793258.
+                    // (On iOS, currently, OFHasTrustForChallenge() alters the trust ref so that it passes; on OSX we don't do that (yet). See OBZ #128143)
+#if TARGET_OS_MAC
+                    fudgeTrust(trustRef);
+#endif
                     credential = [NSURLCredential credentialForTrust:trustRef];
-                    DEBUG_DAV(3, @"credential = %@", credential);
+                    DEBUG_DAV(3, @"using credential = %@ --- %@", credential, OFSummarizeTrustResult(trustRef));
                     completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
                     return;
+                } else if (_validateCertificateForChallenge != nil &&
+                           (adjustedTrust = _validateCertificateForChallenge(challenge)) != nil) {
+                    DEBUG_DAV(3, @"_validateCertificateForChallenge returns %@", adjustedTrust);
+                    if (adjustedTrust) {
+                        completionHandler(NSURLSessionAuthChallengeUseCredential, adjustedTrust);
+                    } else {
+                        /* There are several options we have here for "don't trust this server". As of iOS 9.3.1, the behaviors are:
+                         - NSURLSessionAuthChallengeCancelAuthenticationChallenge  causes the operation to fail with code NSURLErrorCancelled (not NSURLErrorUserCancelledAuthentication, as you'd expect).
+                         - NSURLSessionAuthChallengeRejectProtectionSpace  causes the operation to fail with a NSURLErrorDomain:NSURLErrorSecureConnectionFailed (containing a kCFErrorDomainCFNetwork:kCFURLErrorSecureConnectionFailed)
+                         - NSURLSessionAuthChallengeUseCredential(nil) appears to have the same result as NSURLSessionAuthChallengeRejectProtectionSpace
+                         - NSURLSessionAuthChallengePerformDefaultHandling appears to have the same result as NSURLSessionAuthChallengeRejectProtectionSpace
+                         */
+                        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+                    }
+                    return;
                 } else {
-                    // The delegate didn't opt to immediately mark the certificate trusted. It is presumably giving up or prompting the user and will retry the operation later.
+                    // We don't have a stored trust exception, and our delegate didn't start any operation (like prompting the user).
                     // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
                     //[[challenge sender] cancelAuthenticationChallenge:challenge];
                     
                     // These doesn't block the operation if, during this process, we've connected to the host, but the host has changed certificates since then.
                     //[[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
-                    completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
-                    
-                    // This doesn't block the operation
-                    //[[challenge sender] rejectProtectionSpaceAndContinueWithChallenge:challenge];
-                    
-                    //[[challenge sender] useCredential:nil forAuthenticationChallenge:challenge];
-                    
+                    completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
                     return;
                 }
+                
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+                /* notreached */
+                abort();
+#pragma clang diagnostic pop
             }
         }
         
         // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
         completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
         return;
+    } else if (operation == nil) {
+        // A session-level challenge that we don't know anything about.
+        NSLog(@"Unexpected session challenge: %@", challengeMethod);
+        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+        return;
     }
     
-    if (_findCredentialsForChallenge)
-        credential = _findCredentialsForChallenge(challenge);
+    // In the NSURLSession case, we get passed nil for the operation when we are getting a certificate challenge (it has both a whole-session and per-task challenge method and the per-task one is called for login credentials, while the per-session is called for certificate challenges). We are past the certificate challenge here, so we only need the operation in this case.
+    // We could maybe split this into two methods do express the nullability of `operation` more cleanly.
+    OBASSERT(operation); // ... or we'll lose the error info
     
-    DEBUG_DAV(3, @"credential = %@", credential);
+    NSOperation <OFCredentialChallengeDisposition> *findOp = nil;
+    if (_findCredentialsForChallenge) {
+        findOp = _findCredentialsForChallenge(challenge);
+        DEBUG_DAV(3, @"findCredentialsForChallenge => %@", findOp);
+    }
     
-    if (credential) {
-        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
+    NSOperation *finish;
+    if (findOp) {
+        finish = [NSBlockOperation blockOperationWithBlock:^{
+            OBPRECONDITION(findOp.finished);
+            
+            NSURLSessionAuthChallengeDisposition disposition = findOp.disposition;
+            NSURLCredential *credential = findOp.credential;
+            
+            if (!(disposition == NSURLSessionAuthChallengeUseCredential && credential != nil)) {
+                [operation _credentialsNotFoundForChallenge:challenge disposition:disposition];
+            }
+            
+            completionHandler(disposition, credential);
+        }];
+        [finish addDependency:findOp];
     } else {
-        // In the NSURLSession case, we get passed nil for the operation when we are getting a certificate challenge (it has both a whole-session and per-task challenge method and the per-task one is called for login credentials, while the per-session is called for certificate challenges). We are past the certificate challenge here, so we only need the operation in this case.
-        // We could maybe split this into two methods do express the nullability of `operation` more cleanly.
-        OBASSERT(operation); // ... or we'll lose the error info
-        [operation _credentialsNotFoundForChallenge:challenge];
-        
-        // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
-        //[[challenge sender] cancelAuthenticationChallenge:challenge];
-        completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
+        finish = [NSBlockOperation blockOperationWithBlock:^{
+            [operation _credentialsNotFoundForChallenge:challenge disposition:NSURLSessionAuthChallengePerformDefaultHandling];
+            completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+        }];
     }
+    
+    finish.name = @"ODAVOperation auth challenge completed";
+    [[NSOperationQueue currentQueue] addOperation:finish];
 }
 
 @end

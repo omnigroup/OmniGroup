@@ -1,18 +1,18 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAAppKitQueueProcessor.h"
+#import <OmniAppKit/OAAppKitQueueProcessor.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSView-OAExtensions.h"
+#import <OmniAppKit/NSView-OAExtensions.h>
 
 RCS_ID("$Id$")
 

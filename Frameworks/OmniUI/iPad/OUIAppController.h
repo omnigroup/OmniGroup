@@ -41,10 +41,13 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^)(UIAlertAction *action))optionalAction;
 
 + (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 
 + (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
+
+- (NSOperationQueue *)backgroundPromptQueue;
 
 // Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;

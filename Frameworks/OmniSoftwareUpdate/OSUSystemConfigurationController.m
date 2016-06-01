@@ -13,9 +13,9 @@
 #import <OmniSoftwareUpdate/OSUProbe.h>
 #import <OmniAppKit/OAController.h>
 
-#import "OSUChecker.h"
-#import "OSUPreferences.h"
-#import "OSUCheckOperation.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import "OSURunOperation.h"
 
 RCS_ID("$Id$");
@@ -137,7 +137,7 @@ RCS_ID("$Id$");
         p(NSLocalizedStringFromTableInBundle(@"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two. Note the <b> HTML tag around 'never'."));
         p(NSLocalizedStringFromTableInBundle(@"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two."));
 
-        NSString *linkString = [NSString stringWithFormat:@"<a href=\"http://update.omnigroup.com/\">%@</a>", self.frameworkDisplayName];
+        NSString *linkString = [NSString stringWithFormat:@"<a href=\"https://update.omnigroup.com/\">%@</a>", self.frameworkDisplayName];
         
         line = NSLocalizedStringFromTableInBundle(@"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime.");
         

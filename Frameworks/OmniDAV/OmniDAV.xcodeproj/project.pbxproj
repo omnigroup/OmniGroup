@@ -101,6 +101,8 @@
 		34E0FC80179F288D00AC716F /* OmniCommandLine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 349464B0179F283000865885 /* OmniCommandLine.framework */; };
 		34ED2DA31946D0ED005643C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED2DA21946D0ED005643C9 /* XCTest.framework */; };
 		34F0E3FE1330143E00AB6AEF /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */; };
+		4D46C1C91CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D46C1C81CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m */; };
+		4D46C1CA1CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D46C1C81CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
@@ -250,6 +252,7 @@
 		34D6222F1B38844A00DCE250 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		34ED2DA21946D0ED005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		4D46C1C81CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVStaleFilesTestCase.m; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniDAV.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniDAV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -487,6 +490,7 @@
 				34AF4BF616AF3C7D005CB08F /* ODAVStaticTestCase.m */,
 				341348531A1E860400A03EEC /* ODAVMoveRedirectTestCase.m */,
 				344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */,
+				4D46C1C81CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m */,
 				349F979315DEA87B00D7677C /* Supporting Files */,
 				1EA288331C3C8FEB008CF071 /* ODAVTestServer.h */,
 				1EA288341C3C8FEB008CF071 /* ODAVTestServer.m */,
@@ -811,6 +815,7 @@
 			files = (
 				34A129501608C5E4002300B1 /* ODAVConcreteTestCase.m in Sources */,
 				341348551A1E860400A03EEC /* ODAVMoveRedirectTestCase.m in Sources */,
+				4D46C1CA1CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m in Sources */,
 				34BC64CF160BE06E00727AD6 /* ODAVTestCase.m in Sources */,
 				344743C01B34A07700083FE6 /* ODAVNoCredentialsTestCase.m in Sources */,
 				34AF4BF116AEF14D005CB08F /* ODAVDynamicTestCase.m in Sources */,
@@ -827,6 +832,7 @@
 				34A1294F1608C5E4002300B1 /* ODAVConcreteTestCase.m in Sources */,
 				34BC64CE160BE06E00727AD6 /* ODAVTestCase.m in Sources */,
 				341348541A1E860400A03EEC /* ODAVMoveRedirectTestCase.m in Sources */,
+				4D46C1C91CEE6C6A00E18433 /* ODAVStaleFilesTestCase.m in Sources */,
 				34AF4BF016AEF14D005CB08F /* ODAVDynamicTestCase.m in Sources */,
 				34AF4BF716AF3C7D005CB08F /* ODAVStaticTestCase.m in Sources */,
 				344743BF1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m in Sources */,

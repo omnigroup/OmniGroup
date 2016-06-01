@@ -1,14 +1,16 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
 
-#import <Security/Security.h>
-#import <CommonCrypto/CommonCrypto.h>
-#import <OmniBase/OmniBase.h>
-#import <dispatch/dispatch.h>
+#import <CommonCrypto/CommonCryptor.h>
+#import <CommonCrypto/CommonCryptoError.h>
+#import <CommonCrypto/CommonHMAC.h>
+#import <dispatch/once.h>
 
 #if (defined(MAC_OS_X_VERSION_10_10) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_10) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000)
 #import <CommonCrypto/CommonRandom.h>
@@ -18,9 +20,12 @@
 #define FMT_V0_6_MAGIC_LEN 35
 extern const char magic_ver0_6[FMT_V0_6_MAGIC_LEN] OB_HIDDEN;
 
+#define FMT_V1_0_MAGIC_LEN 20
+extern const char magic_ver1_0[FMT_V1_0_MAGIC_LEN] OB_HIDDEN;
+
 /* Error reporting utility functions */
 NSError *ofsWrapCCError(CCCryptorStatus cerr, NSString *op, NSString *extra, NSObject *val) __attribute__((cold)) OB_HIDDEN; /* CommonCrypto errors fit in the OSStatus error domain */
-#define ofsWrapSecError(e,o,k,v) wrapCCError(e,o,k,v) /* Security.framework errors are also OSStatus error codes */
+#define ofsWrapSecError(e,o,k,v) ofsWrapCCError(e,o,k,v) /* Security.framework errors are also OSStatus error codes */
 BOOL ofsUnsupportedError_(NSError **outError, int lineno, NSString *badThing) __attribute__((cold)) OB_HIDDEN;
 
 /* CTR cryptor utilities */

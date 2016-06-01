@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@ enum {
     OFSNoFileManagerForScheme,
     OFSBaseURLIsNotAbsolute,
     OFSCannotCreateDirectory,
+    OFSCannotWrite,
     OFSCannotMove,
     OFSNoSuchDirectory,
     OFSCannotDelete,
@@ -40,6 +41,8 @@ extern BOOL OFSShouldOfferToReportError(NSError *error);
 #define OFSError(error, code, description, reason) OFSErrorWithInfo((error), (code), (description), (reason), nil)
 
 #define OFSResponseLocationErrorKey (@"Location")
+
+#define OFSEncryptionBadFormatNotEncryptedKey @"no-magic"
 
 extern NSString * const OFSURLErrorFailingURLErrorKey;          // > 4.0 use NSURLErrorFailingURLErrorKey
 extern NSString * const OFSURLErrorFailingURLStringErrorKey;    // > 4.0 use NSURLErrorFailingURLStringErrorKey

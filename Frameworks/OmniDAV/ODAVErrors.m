@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,6 +65,31 @@ BOOL ODAVShouldOfferToReportError(NSError *error)
         return YES;
     
     return NO;
+}
+
+- (NSError *)serverCertificateError;
+{
+    NSString *domain = self.domain;
+    if ([domain isEqualToString:NSURLErrorDomain]) {
+        NSInteger code = self.code;
+        if (code == NSURLErrorSecureConnectionFailed ||
+            code == NSURLErrorServerCertificateHasBadDate ||
+            code == NSURLErrorServerCertificateUntrusted ||
+            code == NSURLErrorServerCertificateHasUnknownRoot ||
+            code == NSURLErrorServerCertificateNotYetValid)
+            return self;
+    } else if ([domain isEqualToString:(__bridge NSString *)kCFErrorDomainCFNetwork]) {
+        NSInteger code = self.code;
+        if (code == kCFURLErrorSecureConnectionFailed ||
+            code == kCFURLErrorServerCertificateHasBadDate ||
+            code == kCFURLErrorServerCertificateUntrusted ||
+            code == kCFURLErrorServerCertificateHasUnknownRoot ||
+            code == kCFURLErrorServerCertificateNotYetValid)
+            return self;
+    }
+    
+    NSError *underlying = self.userInfo[NSUnderlyingErrorKey]; // May be nil
+    return [underlying serverCertificateError];
 }
 
 @end

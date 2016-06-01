@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <Foundation/NSGeometry.h> // For NSRect
 
 @class NSColor, NSFont, NSImage, NSTableColumn, NSTableView;
+@protocol OAFindPattern;
 
 @interface NSString (OAExtensions)
 
@@ -23,5 +24,20 @@
 - (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
 - (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment rectangle:(NSRect)rectangle;
 - (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(NSTextAlignment)alignment rectangle:(NSRect)rectangle;
+
+// Replacement
+
+- (BOOL)findPattern:(id <OAFindPattern>)pattern foundRange:(NSRangePointer)foundRangePointer;
+- (BOOL)findPattern:(id <OAFindPattern>)pattern inRange:(NSRange)range foundRange:(NSRangePointer)foundRangePointer;
+
+- (NSString *)stringByReplacingAllOfPattern:(id <OAFindPattern>)pattern;
+
+@end
+
+#pragma mark -
+
+@interface NSMutableString (OAExtensions)
+
+- (BOOL)replaceAllOfPattern:(id <OAFindPattern>)pattern;
 
 @end

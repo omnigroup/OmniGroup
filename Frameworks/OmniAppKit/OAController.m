@@ -1,11 +1,11 @@
-// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAController.h"
+#import <OmniAppKit/OAController.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/NSApplication.h>
@@ -13,9 +13,9 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OAAboutPanelController.h"
-#import "OAInternetConfig.h"
-#import "OAWebPageViewer.h"
+#import <OmniAppKit/OAAboutPanelController.h>
+#import <OmniAppKit/OAInternetConfig.h>
+#import <OmniAppKit/OAWebPageViewer.h>
 
 RCS_ID("$Id$")
 
@@ -103,7 +103,9 @@ RCS_ID("$Id$")
 
 - (NSString *)appName;
 {
-    return [NSBundle mainBundle].displayName;
+    // make sure that any name returned here doesn't include the path extension.
+    // <bug:///129671> (Bug: Suppress '.app' from the announcement string in titlebar [news])
+    return [NSBundle mainBundle].displayName.stringByDeletingPathExtension;
 }
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
@@ -154,6 +156,18 @@ RCS_ID("$Id$")
 - (BOOL)openURL:(NSURL *)url;
 {
     return [[NSWorkspace sharedWorkspace] openURL:url];
+}
+
+- (NSOperationQueue *)backgroundPromptQueue;
+{
+    static dispatch_once_t onceToken;
+    static NSOperationQueue *promptQueue;
+    dispatch_once(&onceToken, ^{
+        promptQueue = [[NSOperationQueue alloc] init];
+        promptQueue.maxConcurrentOperationCount = 1;
+        promptQueue.name = @"Background Prompt Serialization Queue";
+    });
+    return promptQueue;
 }
 
 #pragma mark -
@@ -219,6 +233,13 @@ RCS_ID("$Id$")
         return;
 
     OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Release Notes"];
+    
+    // don't go fullscreen
+    NSRect frame = [[viewer window] frame];
+    frame.size.width = 800;
+    [[viewer window] setFrame:frame display:NO];
+    [[viewer window] setMinSize:NSMakeSize(800, 400)];
+    [[viewer window] setMaxSize:NSMakeSize(800, FLT_MAX)];
 
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [viewer setMediaStyle:@"release-notes"];

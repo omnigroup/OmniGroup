@@ -9,10 +9,13 @@
 #import <OmniFoundation/OFNull.h>
 
 #import <Foundation/NSOperation.h>
+#import <Foundation/NSThread.h>
 #import <dispatch/dispatch.h>
 #import <OmniBase/macros.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSObject (OFExtensions)
 
@@ -39,7 +42,7 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
     return result;
 }
 
-+ (Class)classImplementingSelector:(SEL)aSelector;
++ (nullable Class)classImplementingSelector:(SEL)aSelector;
 {
     Class aClass = self;
 
@@ -65,7 +68,7 @@ typedef void  *(*ptrImp_t)(id self, SEL _cmd, id arg);
 typedef float  (*fltImp_t)(id self, SEL _cmd, id arg);
 typedef double (*dblImp_t)(id self, SEL _cmd, id arg);
 
-- (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
+- (BOOL)satisfiesCondition:(SEL)sel withObject:(nullable id)object;
 {
     NSMethodSignature *signature = [self methodSignatureForSelector:sel];
     Method method = class_getInstanceMethod([self class], sel);
@@ -179,9 +182,6 @@ void OFPerformInBackground(void (^block)(void))
     }];
 }
 
-#import <Foundation/NSThread.h>
-#import <dispatch/queue.h>
-
 void OFMainThreadPerformBlock(void (^block)(void))
 {
     if ([NSThread isMainThread])
@@ -214,7 +214,7 @@ void OFMainThreadPerformBlockSynchronously(void (^block)(void))
 
 // Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.
 
-BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^predicate)(void))
+BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate _Nullable predicate)
 {
     __block BOOL done = NO;
     
@@ -284,6 +284,20 @@ BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^p
 
 // Wrapper that hides the NSInvocation/NSMethodSignature details from Swift.
 
+NSString * _Nullable OFInstanceMethodReturnTypeEncoding(Class cls, SEL sel)
+{
+    Method m = class_getInstanceMethod(cls, sel);
+    if (m == NULL) {
+        return nil;
+    }
+
+    char *returnEncoding = method_copyReturnType(m);
+    NSString *result = [NSString stringWithUTF8String:returnEncoding];
+    free(returnEncoding);
+    return result;
+}
+
+
 @interface NSMethodSignature (OFInvokeMethod) <OFInvokeMethodSignature>
 @end
 @implementation NSMethodSignature (OFInvokeMethod)
@@ -294,13 +308,15 @@ BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^p
 @implementation NSInvocation (OFInvokeMethod)
 @end
 
-
+// This intentionally does not set argumentsRetained, leaving that up to the provideArguments block.
 BOOL OFInvokeMethod(id object, SEL selector, OFInvokeMethodHandler provideArguments, OFInvokeMethodHandler collectResults)
 {
     NSMethodSignature *methodSignature = [object methodSignatureForSelector:selector];
     if (!methodSignature) {
         return NO;
     }
+
+    OBRecordBacktraceWithContext(sel_getName(selector), OBBacktraceBuffer_PerformSelector, (__bridge const void *)object);
 
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSignature];
     [invocation setTarget:object];
@@ -314,3 +330,4 @@ BOOL OFInvokeMethod(id object, SEL selector, OFInvokeMethodHandler provideArgume
     return collectResults(methodSignature, invocation);
 }
 
+NS_ASSUME_NONNULL_END

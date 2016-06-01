@@ -17,5 +17,6 @@
 
 @interface OAAppearancePropertyListCoder (PrivateTestable)
 @property (nonatomic, readonly) OAAppearancePropertyListClassKeypathExtractor *keyExtractor;
++ (NSDictionary *)_pathComponentsTreeFromKeyPaths:(NSArray <NSString *> *)keyPaths;
 @end
 

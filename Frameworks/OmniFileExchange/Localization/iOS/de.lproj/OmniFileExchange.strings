@@ -56,13 +56,13 @@
 "Documents" = "Dokumente";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Omni-Dokumente leicht synchronisieren; kostenl. Anmeldung";
+"Easily sync Omni documents. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos. Kostenlose Anmeldung!";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Nach „%@“ exportieren";
+"Export to \"%@\"" = "Exportieren nach „%@“";
 
 /* iTunes export title */
-"Export to iTunes" = "Nach iTunes exportieren";
+"Export to iTunes" = "Exportieren nach iTunes";
 
 /* Server account type */
 "iTunes" = "iTunes";
@@ -82,7 +82,7 @@
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
-"Please check that the account information you entered is correct." = "Überprüfen Sie, ob die eingegebenen Account-Informationen richtig sind.";
+"Please check that the account information you entered is correct." = "Überprüfen Sie, ob die eingegebenen Accountinformationen richtig sind.";
 
 /* account validation error suggestion */
 "Please enter an address for the account." = "Geben Sie eine Adresse für den Account ein.";
@@ -115,7 +115,7 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Der vorgeschlagene lokale Dokumentordner enthält bereits Dateien. Geben Sie einen leeren Ordner oder einen nicht vorhandenen Ordner an.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Der vorgeschlagene lokale Dokumentordner scheint in einem Dropbox-Ordner zu sein. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.";
+"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Der vorgeschlagene lokale Dokumentordner scheint in einem Dropbox-Ordner zu sein. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.\n";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Der vorgeschlagene lokale Dokumentordner ist nicht auf einem lokalen Volume. Wählen Sie einen Ort, der lokal auf Ihrem Computer ist.";
@@ -148,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Die Anmeldeinformationen können zurzeit nicht überprüft werden.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Eigenen WebDAV-Speicher verwenden";
+"Use your own WebDAV space." = "Verwenden Sie Ihren eigenen WebDAV-Speicher.";
 
 /* Account validation step description */
 "Validating Account..." = "Account überprüfen …";

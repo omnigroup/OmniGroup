@@ -12,18 +12,20 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OAApplication.h"
-#import "NSBundle-OAExtensions.h"
-#import "NSImage-OAExtensions.h"
-#import "NSToolbar-OAExtensions.h"
-#import "NSView-OAExtensions.h"
-#import "OAPreferenceClient.h"
-#import "OAPreferenceClientRecord.h"
+#import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/NSBundle-OAExtensions.h>
+#import <OmniAppKit/NSImage-OAExtensions.h>
+#import <OmniAppKit/NSToolbar-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/OAPreferenceClient.h>
+#import <OmniAppKit/OAPreferenceClientRecord.h>
 #import "OAPreferencesIconView.h"
 #import "OAPreferencesToolbar.h"
 #import "OAPreferencesWindow.h"
 
 RCS_ID("$Id$") 
+
+const NSLayoutPriority OAPreferenceClientControlBoxFixedWidthPriority = NSLayoutPriorityFittingSizeCompression + 10;
 
 static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, NSString *key, NSString *value)
 {
@@ -230,6 +232,9 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)setHiddenPreferenceIdentifiers:(NSSet *)hiddenPreferenceIdentifiers;
 {
+    if (OFISEQUAL(_hiddenPreferenceIdentifiers, hiddenPreferenceIdentifiers))
+        return;
+    
     _hiddenPreferenceIdentifiers = hiddenPreferenceIdentifiers;
     [self _resetInterface];
 }
@@ -269,18 +274,32 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)setCurrentClientByClassName:(NSString *)name;
 {
+    [self setCurrentClientByClassName:name completion:nil];
+}
+
+- (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord;
+{
+    [self setCurrentClientRecord:clientRecord completion:nil];
+}
+
+- (void)setCurrentClientByClassName:(NSString *)name completion:(OAPreferenceClientChangeCompletion)completion;
+{
     for (OAPreferenceClientRecord *clientRecord in _clientRecords) {
         if ([[clientRecord className] isEqualToString:name]) {
-            [self setCurrentClientRecord:clientRecord];
+            [self setCurrentClientRecord:clientRecord completion:completion];
             return;
         }
     }
 }
 
-- (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord
+- (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord completion:(OAPreferenceClientChangeCompletion)completion;
 {    
-    if (nonretained_currentClientRecord == clientRecord)
+    if (nonretained_currentClientRecord == clientRecord) {
+        if (completion != nil) {
+            completion(nonretained_currentClient);
+        }
         return;
+    }
     
     // Save changes in any editing text fields
     [_window setInitialFirstResponder:nil];
@@ -308,18 +327,21 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     // Resize window for the new client box, after letting the client know that it's about to become current
     NSView *controlBox = [nonretained_currentClient controlBox];
+    
     // It's an error for controlBox to be nil, but it's pretty unfriendly to resize our window to be infinitely high when that happens.
-    NSRect controlBoxFrame = controlBox != nil ? [controlBox frame] : NSZeroRect;
+    NSSize controlBoxSize = (controlBox != nil ? [self _autosizeControlBox] : NSZeroSize);
     
     // Resize the window
     // We don't just tell the window to resize, because that tends to move the upper left corner (which will confuse the user)
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
-    CGFloat newWindowHeight = NSHeight(controlBoxFrame) + NSHeight([_globalControlsView frame]);    
+    CGFloat newWindowHeight = controlBoxSize.height + NSHeight([_globalControlsView frame]);
     if ([toolbar isVisible])
         newWindowHeight += NSHeight([[toolbar _toolbarView] frame]); 
     
-    NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[_window styleMask]];
-    [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
+    NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, controlBoxSize.width), newWindowHeight) styleMask:[_window styleMask]];
+    BOOL animate = [_window isVisible];
+    NSTimeInterval animationDuration = animate ? [_window animationResizeTime:newWindowFrame] : 0;
+    [_window setFrame:newWindowFrame display:YES animate:animate];
     
     [_nonretained_helpButton setHidden:[clientRecord helpURL] == nil];
 
@@ -340,7 +362,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     
     // Add the new client box to the view hierarchy
     if (controlBox) {
-        [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - NSWidth(controlBoxFrame)) / 2.0), NSHeight([_globalControlsView frame]))];
+        [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - controlBoxSize.width) / 2.0), NSHeight([_globalControlsView frame]))];
         [contentView addSubview:controlBox];
     } else {
         OBASSERT_NOT_REACHED("Preference client %@ has no controlBox set", nonretained_currentClient);
@@ -363,6 +385,16 @@ static NSString *windowFrameSaveName = @"Preferences";
     // As above, don't do this unless we are onscreen to avoid double become/resigns.
     if ([_window isVisible]) {
         [nonretained_currentClient didBecomeCurrentPreferenceClient];
+    }
+    
+    if (completion != nil) {
+        // Attempt to only call the completion block if the client is still current at the time of dispatch
+        OAPreferenceClient *client = nonretained_currentClient;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (client == nonretained_currentClient) {
+                completion(client);
+            }
+        });
     }
 }
 
@@ -854,6 +886,55 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     // Add new icons view
     [self.preferenceBox addSubview:showAllIconsView];
+}
+
+static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceController.idealWidthConstraint";
+
+- (NSSize)_autosizeControlBox
+{
+    NSView *controlBox = [nonretained_currentClient controlBox];
+    
+    if (!nonretained_currentClient.wantsAutosizing) {
+#ifdef OMNI_ASSERTIONS_ON
+        static NSMutableSet *IdentifiersOfClientsComplainedAbout = nil;
+        if (IdentifiersOfClientsComplainedAbout == nil) {
+            IdentifiersOfClientsComplainedAbout = [NSMutableSet new];
+        }
+        NSString *clientIdentifier = nonretained_currentClientRecord.identifier;
+        if (![IdentifiersOfClientsComplainedAbout containsObject:clientIdentifier]) {
+            [IdentifiersOfClientsComplainedAbout addObject:clientIdentifier];
+            BOOL likelyUsingAutoLayout = NO;
+            for (NSView *subview in controlBox.subviews) {
+                if (subview.translatesAutoresizingMaskIntoConstraints == NO) {
+                    likelyUsingAutoLayout = YES;
+                    break;
+                }
+            }
+            OBASSERT(!likelyUsingAutoLayout, @"OAPreferenceClient subclass %@ appears to use autolayout but does not override %@ to adopt autosizing of its controlBox. It probably should eventually. Maybe soon?", nonretained_currentClientRecord.className, NSStringFromSelector(@selector(wantsAutosizing)));
+        }
+#endif
+        return controlBox.frame.size;
+    }
+    
+    // N.B. See documentation of OAPreferenceClient's wantsAutosizing property.
+    NSLayoutConstraint *idealWidthConstraint = nil;
+    idealWidthConstraint = [controlBox.constraints first:^BOOL(NSLayoutConstraint *constraint) {
+        return [constraint.identifier isEqualToString:IdealWidthConstraintIdentifier];
+    }];
+    if (idealWidthConstraint == nil) {
+        idealWidthConstraint = [NSLayoutConstraint constraintWithItem:controlBox attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0f constant:idealWidth];
+        idealWidthConstraint.identifier = IdealWidthConstraintIdentifier;
+        idealWidthConstraint.priority = OAPreferenceClientControlBoxFixedWidthPriority;
+        idealWidthConstraint.active = YES;
+    } else {
+        idealWidthConstraint.constant = idealWidth;
+    }
+    
+    NSSize fittingSize = controlBox.fittingSize;
+    NSRect frame = controlBox.frame;
+    frame.size = fittingSize;
+    controlBox.frame = frame;
+    return fittingSize;
 }
 
 - (void)_defaultsDidChange:(NSNotification *)notification;

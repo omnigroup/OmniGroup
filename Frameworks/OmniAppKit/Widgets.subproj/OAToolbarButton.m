@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAToolbarButton.h"
+#import <OmniAppKit/OAToolbarButton.h>
 
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>
@@ -30,16 +30,6 @@ RCS_ID("$Id$");
              
     [(NSButtonCell *)aCell setImageScaling:NSImageScaleProportionallyUpOrDown];
     [super setCell:aCell];
-}
-
-- (id)delegate;
-{
-    return delegate;
-}
-
-- (void)setDelegate:(id)aDelegate;
-{
-    delegate = aDelegate;
 }
 
 //
@@ -137,8 +127,8 @@ RCS_ID("$Id$");
 
 - (NSPopUpButton *)_popUpButton;
 {
-    if ([delegate respondsToSelector:@selector(popUpButtonForToolbarButton:)])
-        return [delegate popUpButtonForToolbarButton:self];
+    if ([_delegate respondsToSelector:@selector(popUpButtonForToolbarButton:)])
+        return [_delegate popUpButtonForToolbarButton:self];
     else
         return nil;
 }

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2011-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,10 @@
 //
 // $Id$
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <Availability.h>
+
+// Availability macros don't work reliably when module headers are implicitly built, so use ours as a backup.
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || OMNI_BUILDING_FOR_IOS
     #import <UIKit/NSAttributedString.h>
     #import <CoreGraphics/CGGeometry.h>
 #else

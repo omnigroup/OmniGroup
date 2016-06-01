@@ -25,12 +25,6 @@ RCS_ID("$Id$")
 #import "OUIExportOptionsController.h"
 #import "OUIImportExportAccountListViewController.h"
 
-typedef NS_ENUM(NSInteger, OUIIconSize) {
-    OUIIconSizeNormal,
-    OUIIconSizeLarge,
-    OUIIconSizeCompact
-};
-
 @implementation OUIDocumentExporter
 
 + (instancetype)exporterForViewController:(UIViewController<OUIDocumentExporterHost> *)hostViewController
@@ -637,76 +631,16 @@ typedef NS_ENUM(NSInteger, OUIIconSize) {
     }
 }
 
-- (UIImage *)_iconForUTI:(NSString *)fileUTI size:(OUIIconSize)iconSize cache:(NSCache *)cache;
-{
-    static NSDictionary *imageUTIMap;
-    static dispatch_once_t imageUTIMapdispatchOnceToken;
-    dispatch_once(&imageUTIMapdispatchOnceToken, ^{
-        NSArray *imageUTINormaliedMappings = [NSArray arrayWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"OUIDocumentImageUTIMap" withExtension:@"plist"]];
-        assert(imageUTINormaliedMappings); // will need updating when OmniUI-Internal becomes a framework
-        
-        NSMutableDictionary *mutableImageUTIMap = [NSMutableDictionary dictionary];
-        for (NSDictionary *imageUTINormalizedMapping in imageUTINormaliedMappings) {
-            NSString *normalImageName = imageUTINormalizedMapping[@"normalImageName"];
-            NSArray *UTIs = imageUTINormalizedMapping[@"UTIs"];
-            
-            for (NSString *UTI in UTIs) {
-                [mutableImageUTIMap setObject:normalImageName forKey:UTI];
-            }
-        }
-        imageUTIMap = [NSDictionary dictionaryWithDictionary:mutableImageUTIMap];
-    });
-    
-    NSString *imageName = nil;
-    switch (iconSize) {
-        case OUIIconSizeNormal:
-            imageName = imageUTIMap[fileUTI];
-            break;
-        case OUIIconSizeLarge:
-            imageName = [NSString stringWithFormat:@"%@-Large", imageUTIMap[fileUTI]];
-            break;
-        case OUIIconSizeCompact:
-            imageName = [NSString stringWithFormat:@"%@-Compact", imageUTIMap[fileUTI]];
-            break;
-        default:
-            OBASSERT_NOT_REACHED("Unknown icon size.");
-            break;
-    }
-    
-    UIImage *resultImage = [UIImage imageNamed:imageName]; // Allow main bundle to override?
-    if (!resultImage)
-        resultImage = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-    
-    OBASSERT_NOTNULL(resultImage);
-    
-    return resultImage;
-}
-
 #pragma mark - Subclass Overrides
+
 - (UIImage *)iconForUTI:(NSString *)fileUTI;
 {
-    UIImage *icon = nil;
-    static NSCache *cache = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        cache = [[NSCache alloc] init];
-        [cache setName:@"OUIDocumentPicker iconForUTI:"];
-    });
-    icon = [self _iconForUTI:fileUTI size:OUIIconSizeNormal cache:cache];
-    return icon;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
 - (UIImage *)exportIconForUTI:(NSString *)fileUTI;
 {
-    UIImage *icon = nil;
-    static NSCache *cache = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        cache = [[NSCache alloc] init];
-        [cache setName:@"OUIDocumentPicker exportIconForUTI:"];
-    });
-    icon = [self _iconForUTI:fileUTI size:OUIIconSizeCompact cache:cache];
-    return icon;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
 - (NSString *)exportLabelForUTI:(NSString *)fileUTI;
@@ -715,6 +649,8 @@ typedef NS_ENUM(NSInteger, OUIIconSize) {
         return @"PDF";
     if (OFTypeConformsTo(fileUTI, kUTTypePNG))
         return @"PNG";
+    if (OFTypeConformsTo(fileUTI, kUTTypeScalableVectorGraphics))
+        return @"SVG";
     return nil;
 }
 

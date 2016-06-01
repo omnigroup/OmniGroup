@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,6 +86,9 @@ OB_HIDDEN extern BOOL OSUItemDebug;
 @property (readonly,nonatomic) NSFont *displayFont;
 @property (readonly,nonatomic) NSColor *displayColor;
 @property (readonly,nonatomic) NSString *downloadSizeString;
+
+@property (readonly,nonatomic) BOOL isNewsItem;
+@property (readonly,nonatomic) NSString *publishDateString;
 
 @property (readonly,nonatomic) NSNumber *price;
 @property (readonly,nonatomic) BOOL isFree;

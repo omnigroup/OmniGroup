@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,7 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     return info;
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
 {
     NSTimeInterval start = 0;
     if (OFSFileManagerDebug > 0) {
@@ -141,7 +141,16 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     return results;
 }
 
-- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections machineDate:(NSDate **)outMachineDate error:(NSError **)outError;
+{
+    NSArray<ODAVFileInfo *> *result = [self directoryContentsAtURL:url havingExtension:nil error:outError];
+    if (outMachineDate != NULL) {
+        *outMachineDate = [NSDate date];
+    }
+    return result;
+}
+
+- (NSMutableArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
 {
     return (NSMutableArray *)[self directoryContentsAtURL:url havingExtension:nil error:outError];
 }

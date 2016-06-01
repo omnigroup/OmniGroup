@@ -71,9 +71,10 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
             newSize = _normalizeFontSize(newSize);
             fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
         }
-        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
+        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:self.undoManager];
     }
-    
+    //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
+
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
     UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self->_fontSizeControl.accessibilityValue);
 }

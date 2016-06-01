@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,6 +42,7 @@ typedef enum {
 #define OQRectMaxXMaxYCorner      0x004
 #define OQRectMinXMaxYCorner      0x008
 #define OQRectAllCorners          0x00F
+#define OQRectIveCorners          0x100   // Use softened superellipse-like shape instead of circular arc
 
 // These do not depend on the flippedness of the coordinate system because they are symmetrical
 extern void OQAppendRoundedRect(CGContextRef ctx, CGRect rect, CGFloat radius);

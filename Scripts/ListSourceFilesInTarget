@@ -18,7 +18,7 @@ require 'xcodeproj'
 $prog = File.basename(__FILE__)
 def usage
   msg = <<EOS
-usage: #{$prog} [--no-cache] [--attribute attr1,attr2] target ext1,ext2 foo.xcodeproj
+usage: #{$prog} [--no-cache] [--ignore-derived] [--attribute attr1,attr2] target-name|ANY ext1,ext2 foo.xcodeproj
 EOS
   STDERR.print msg
   exit 1
@@ -26,13 +26,18 @@ end
 
 $RequiredAttributes = []
 $NoCache = false
+$IgnoreDerived = false
 
 GetoptLong.new(
-  [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ]
+  [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--ignore-derived", "-D", GetoptLong::NO_ARGUMENT ]
+
 ).each do |opt,arg|
   case opt
   when "--attribute"
     $RequiredAttributes << arg
+  when "--ignore-derived"
+    $IgnoreDerived = arg
   when "--no-cache"
     $NoCache = true
   else
@@ -66,7 +71,9 @@ $Project = Xcode::Project.new($ProjectPath)
 
 $MatchingFiles = []
 def do_target(target)
-  fail "Not a native target" unless Xcode::PBXNativeTarget === target
+  return if Xcode::PBXAggregateTarget === target # No files.
+  
+  fail "Not a native target (#{target} #{target.name})" unless Xcode::PBXNativeTarget === target
 
   cwd = Pathname.new(".").realpath
   
@@ -77,13 +84,15 @@ def do_target(target)
 
       next unless $RequiredAttributes.all? {|attr| buildFile.has_attribute?(attr) }
 
+      next if $IgnoreDerived && (fileRef.sourceTree == "BUILT_PRODUCTS_DIR" || fileRef.sourceTree == "DERIVED_SOURCES_DIR") # Other dirs that this could be too...
+      
       fullpath = $Project.resolvepath(fileRef.identifier)
       $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
   }
 end
 
 $Project.targets.each {|target|
-    if target.name == $TargetName
+    if $TargetName == "ANY" || target.name == $TargetName
       do_target(target)
     end
 }

@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,10 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OFSSegmentDecryptWorker (OneShot)
 
++ (BOOL)parseHeader:(NSData *)ciphertext truncated:(BOOL)mayBeTruncated wrappedInfo:(NSRange *)outBlobLocation dataOffset:(size_t * __nullable)outHeaderLength error:(OBNSErrorOutType)outError;
+
++ (OFSSegmentDecryptWorker * __nullable)decryptorForWrappedKey:(NSData *)wrappedKeyInfo documentKey:(OFSDocumentKey *)kek error:(OBNSErrorOutType)outError;
+
 // Temporary non-incremental encrypt and decrypt methods
-+ (int)slotForData:(NSData *)filePrefix error:(NSError **)outError;
-+ (OFSSegmentDecryptWorker *)decryptorForData:(NSData *)ciphertext key:(OFSDocumentKey *)kek dataOffset:(size_t *)outHeaderLength error:(NSError * __autoreleasing *)outError;
-- (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)headerLength error:(NSError * __autoreleasing *)outError;
+- (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)headerLength error:(OBNSErrorOutType)outError;
 
 @end
 
@@ -45,8 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithBytes:(const uint8_t *)bytes length:(NSUInteger)length NS_DESIGNATED_INITIALIZER;
 
-- (BOOL)encryptBuffer:(const uint8_t *)plaintext length:(size_t)len index:(uint32_t)order into:(uint8_t *)ciphertext header:(uint8_t *)hdr error:(NSError **)outError;
-- (NSData *)encryptData:(NSData *)plaintext error:(NSError * __autoreleasing *)outError;
+- (BOOL)encryptBuffer:(const uint8_t *)plaintext length:(size_t)len index:(uint32_t)order into:(uint8_t *)ciphertext header:(uint8_t *)hdr error:(OBNSErrorOutType)outError;
+- (NSData *)encryptData:(NSData *)plaintext error:(OBNSErrorOutType)outError;
 
 @end
 

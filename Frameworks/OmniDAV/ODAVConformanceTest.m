@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,8 @@ static NSString * const rcs_id = @"$Id$";
  These get run for server conformance validation as well as being hooked up as unit tests by ODAVDynamicTestCase.
  */
 
-// Our ETag tests are off since stock Apache 2.4.x fails them. See <https://github.com/omnigroup/Apache/> for patches that make these work better. At some point we gave up on ETags though since there are no guarantees about what will make them change.
+// Our ETag tests are off since stock Apache 2.4.x fails them. See <https://github.com/omnigroup/Apache/> for patches that make these work better. At some point we gave up on ETags though since there are no guarantees that a collection's GET-ETag is useful for tracking changes to the collection membership (PROPFIND results).
+// If we really want to do collection change tracking we could look into RFC6578 (Collection sychronization), which defines both an etag-like token for collection membership, and formats for getting deep change information about a hierarchy.
 #define TEST_ETAG_SUPPORT 0
 
 NSString * const ODAVConformanceFailureErrors = @"com.omnigroup.OmniFileExchange.ConformanceFailureErrors";
@@ -591,6 +592,7 @@ static BOOL retry(NSError **outError, BOOL (^op)(NSError **))
 #endif
 
 // This is slow, but we'd like to have some confidence that the ETag of a directory reliably changes when new files are added.
+// (This fails because a directory doesn't have an ETag, only GET-resources have ETags. See RFC2518[8.4]: "[It] is possible that the result of a GET on a collection will bear no correlation to the membership of the collection.")
 #if 0
 - (BOOL)testCollectionETagDistributionVsAddMultipleFiles:(NSError **)outError;
 {
@@ -946,6 +948,7 @@ static BOOL retry(NSError **outError, BOOL (^op)(NSError **))
 }
 
 // This doesn't work in Apache. They only validate the If headers vs a small set of resources, not including those only mentioned in the If headers. To me the spec says they should, but fixing this is likely to be hard enough that we'll just avoid using it: "Additionally, the mere fact that a state token appears in an If header means that it has been "submitted" with the request. In general, this is used to indicate that the client has knowledge of that state token. The semantics for submitting a state token depend on its type (for lock tokens, please refer to Section 6).
+// [wiml]: The behavior is described in sec. 9.4.2 of rfc2518. In specific, the example 9.4.2.1 has an example of using the tagged-list format, mentioning a random third resource, and saying that that part of the If: header should have no effect. This is obviously not the most useful semantics for If: to have, but it is clearly part of the spec.
 #if 0
 // <http://www.webdav.org/specs/rfc4918.html#rfc.section.10.4> "The If request header is intended to have similar functionality to the If-Match header defined in Section 14.24 of [RFC2616]"
 // <http://tools.ietf.org/html/rfc2616#section-14.24> "or if "*" is given and any current entity exists for that resource, then the server MAY perform the requested method as if the If-Match header field did not exist."

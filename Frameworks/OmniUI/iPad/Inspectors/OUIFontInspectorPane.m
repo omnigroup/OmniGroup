@@ -311,10 +311,11 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice];
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice undoManager:self.undoManager];
             }
         }
     }
+//    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
     [inspector didEndChangingInspectedObjects];
     
     // Our -updateInterfaceFromInspectedObjects: won't reload data when getting called due to an edit, which is good since it lets us fade the selection.

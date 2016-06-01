@@ -22,6 +22,7 @@
 #import <OmniFoundation/OFUTI.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniUI/OUIDrawing.h>
+#import <OmniUI/OUIImages.h>
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 
@@ -626,8 +627,8 @@ static NSString *cacheKeyForFileURL(NSURL *fileURL)
 static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area) CF_RETURNS_RETAINED;
 static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area)
 {
-    NSString *placeholderImageName = [documentClass placeholderPreviewImageNameForFileURL:fileURL area:area];
-    if (!placeholderImageName) {
+    OUIImageLocation *placeholderImage = [documentClass placeholderPreviewImageForFileURL:fileURL area:area];
+    if (!placeholderImage) {
         OBASSERT_NOT_REACHED("No default preview image registered?");
         return NULL;
     }
@@ -640,7 +641,7 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
         // Cache a single copy of the badged placeholder preview image in this orientation
         CGImageRef badgedImage;
         {
-            NSString *cacheKey = [NSString stringWithFormat:@"%@-%@", AreaCacheSuffix[area], placeholderImageName];
+            NSString *cacheKey = [NSString stringWithFormat:@"%@-%@", AreaCacheSuffix[area], placeholderImage.name];
             
             if (BadgedPlaceholderPreviewImageCache)
                 badgedImage = (CGImageRef)CFDictionaryGetValue(BadgedPlaceholderPreviewImageCache, (__bridge const void *)(cacheKey));
@@ -662,10 +663,8 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
                     [[UIColor whiteColor] set];
                     UIRectFill(paperRect);
                     
-                    CGImageRef previewImage = [[UIImage imageNamed:placeholderImageName] CGImage]; // Allow the main bundle to override
-                    if (!previewImage)
-                        previewImage = [[UIImage imageNamed:placeholderImageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] CGImage];
-                    
+                    CGImageRef previewImage = [placeholderImage.image CGImage];
+
                     if (!previewImage) {
                         // We'll just end up with a white rectangle in this case
                         OBASSERT_NOT_REACHED("No image found for default image name returned");
@@ -714,77 +713,6 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
     
     return result;
 }
-
-static NSString *_placeholderStringForFileType(NSString *fileType)
-{
-    // This presumes we have the file type defined in this application. We could also add a path extension check (maybe just based on building UTIs here from the expected path extensions/directory info, yielding dyn. types to compare against incoming dyn. types).
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.omnigraffle.graffle") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.omnigraffle.graffle-package"))
-        return @"Graffle";
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.omnigraffle.gstencil") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.omnigraffle.gstencil-package"))
-        return @"Stencil";
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.stencil") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.template") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.xml") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.xml.stencil") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.xml.template") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.new-xml") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.new-xml.stencil") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.foreign-types.ms-visio.new-xml.template")
-        )
-
-        return @"Visio";
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.omnioutliner.oo3") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.omnioutliner.oo3-package"))
-        return @"Outliner";
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.omnioutliner.oo3template") ||
-        OFTypeConformsTo(fileType, @"com.omnigroup.omnioutliner.oo3template"))
-        return @"Outliner";
-    
-    if (OFTypeConformsTo(fileType, @"com.omnigroup.omniplan.oplx"))
-        return @"Plan";
-    
-    if (OFTypeConformsTo(fileType, @"com.microsoft.mpp"))
-        return @"Project";
-    
-    if (OFTypeConformsTo(fileType, kUTTypeText))
-        return @"Text";
-    
-    return nil;
-}
-
-+ (NSString *)documentPreviewPlaceholderImageNameForType:(NSString *)fileType area:(OUIDocumentPreviewArea)area;
-{
-    NSString *areaString;
-    switch (area) {
-        case OUIDocumentPreviewAreaLarge:
-            areaString = @"Large";
-            break;
-        case OUIDocumentPreviewAreaMedium:
-            areaString = @"Medium";
-            break;
-        case OUIDocumentPreviewAreaSmall:
-            areaString = @"Small";
-            break;
-        default:
-            OBASSERT_NOT_REACHED("Unknown area");
-            return nil;
-    }
-    
-    NSString *placeholderString = _placeholderStringForFileType(fileType);
-    if (!placeholderString)
-        return nil;
-    
-    return [NSString stringWithFormat:@"OUIDocumentPlaceholder-%@-%@.png", placeholderString, areaString];
-}
-
 
 + (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
 {

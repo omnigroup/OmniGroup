@@ -391,7 +391,7 @@ static void _xmlStringAdder(id container, NSString *key, NSString *string)
 static void _xmlDataAdder(id container, NSString *key, NSData *data)
 {
     OBPRECONDITION([container isKindOfClass:[OFXMLDocument class]]);
-    [container setAttribute:key string:[data base64String]];
+    [container setAttribute:key string:[data base64EncodedStringWithOptions:0]];
 }
 
 - (void)appendXML:(OFXMLDocument *)doc;
@@ -435,7 +435,7 @@ static NSData *_xmlCursorDataGetter(void *container, NSString *key)
     NSString *string = [(OFXMLCursor *)container attributeNamed:key];
     if (!string)
         return nil;
-    return [[[NSData alloc] initWithBase64String:string] autorelease];
+    return [[[NSData alloc] initWithBase64EncodedString:string options:NSDataBase64DecodingIgnoreUnknownCharacters] autorelease];
 }
 
 + (OAColor *)colorFromXML:(OFXMLCursor *)cursor;

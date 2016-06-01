@@ -14,10 +14,10 @@
 #import <OmniUI/OUIMenuOption.h>
 #import <OmniUI/OUIAppController.h>
 
-#import "OSUPreferences.h"
-#import "OSUChecker.h"
-#import "OSUCheckOperation.h"
-#import "OSUHardwareInfo.h"
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUChecker.h>
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
+#import <OmniSoftwareUpdate/OSUHardwareInfo.h>
 #import "OSURunOperation.h"
 
 #import <mach-o/arch.h>

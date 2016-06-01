@@ -1,17 +1,17 @@
-// Copyright 1997-2006, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "ONSocketStream.h"
+#import <OmniNetworking/ONSocketStream.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <CoreFoundation/CoreFoundation.h>
 
-#import "ONSocket.h"
+#import <OmniNetworking/ONSocket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 

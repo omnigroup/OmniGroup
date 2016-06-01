@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,13 +19,13 @@
 #import <Carbon/Carbon.h>
 #import <ExceptionHandling/NSExceptionHandler.h>
 
-#import "NSEvent-OAExtensions.h"
-#import "NSView-OAExtensions.h"
-#import "NSWindow-OAExtensions.h"
-#import "NSImage-OAExtensions.h"
-#import "OAAppKitQueueProcessor.h"
-#import "OAPreferenceController.h"
-#import "OAWebPageViewer.h"
+#import <OmniAppKit/NSEvent-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
+#import <OmniAppKit/NSImage-OAExtensions.h>
+#import <OmniAppKit/OAAppKitQueueProcessor.h>
+#import <OmniAppKit/OAPreferenceController.h>
+#import <OmniAppKit/OAWebPageViewer.h>
 
 RCS_ID("$Id$")
 
@@ -254,6 +254,8 @@ static NSArray *flagsChangedRunLoopModes;
             [localException raise];
         [self reportException:localException];
     }
+
+    [[OFScheduler mainSchedulerIfCreated] scheduleEvents]; // Ping the scheduler, in case NSConditionLock doesn't wake up on schedule
 }
 
 BOOL OADebugTargetSelection = NO;

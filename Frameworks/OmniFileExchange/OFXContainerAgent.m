@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 #import <OmniFoundation/OFFileMotionResult.h>
 
 #import "OFXAccountAgent-Internal.h"
-#import "OFXAccountClientParameters.h"
+#import <OmniFileExchange/OFXAccountClientParameters.h>
 #import "OFXContainerDocumentIndex.h"
 #import "OFXContainerScan.h"
 #import "OFXContentIdentifier.h"
@@ -26,7 +26,7 @@
 #import "OFXFileItem-Internal.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXFileSnapshotTransfer.h"
-#import "OFXRegistrationTable.h"
+#import <OmniFileExchange/OFXRegistrationTable.h>
 
 RCS_ID("$Id$")
 

@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,10 +17,13 @@
 @class NSColor;
 @class NSAppleEventDescriptor;
 #else
+#import <UIKit/UIColor.h>
 #import <CoreGraphics/CGGeometry.h>
 #import <CoreGraphics/CGColor.h>
 @class OAColor;
 #endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OA_PLATFORM_COLOR_CLASS UIColor
@@ -69,30 +72,31 @@ static inline OALinearRGBA OABlendLinearRGBAColors(OALinearRGBA A, OALinearRGBA 
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern BOOL OACompositeColors(NSColor **ioTopColor, NSColor *bottomColor);
+extern NSColor *OACompositeColors(NSColor *topColor, NSColor *bottomColor, BOOL * _Nullable isOpaque);
 #else
-extern BOOL OACompositeColors(OAColor **ioTopColor, OAColor *bottomColor);
+extern OAColor *OACompositeColors(OAColor *topColor, OAColor *bottomColor, BOOL * _Nullable isOpaque);
 #endif
 
-extern CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque) CF_RETURNS_RETAINED;
+extern CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL * _Nullable isOpaque) CF_RETURNS_RETAINED;
 
 CGColorRef OACreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors) CF_RETURNS_RETAINED; // Bottom-most color goes first and must be opaque
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern CGColorRef OACreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c) CF_RETURNS_RETAINED;
-extern NSColor *OAColorFromColorRef(CGColorRef c);
+extern CGColorRef __nullable OACreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c) CF_RETURNS_RETAINED;
+extern NSColor * __nullable OAColorFromColorRef(CGColorRef c);
 
-extern CGColorRef OACreateGrayColorRefFromColor(NSColor *c) CF_RETURNS_RETAINED;
+extern CGColorRef __nullable OACreateGrayColorRefFromColor(NSColor *c) CF_RETURNS_RETAINED;
 #endif
 
-typedef enum {
+typedef NS_ENUM(NSInteger, OAColorSpace) {
     OAColorSpaceRGB,
     OAColorSpaceWhite, // 0=black, 1=white
     OAColorSpaceCMYK,
-    OAColorSpaceHSV,
+    OAColorSpaceHSB,
     OAColorSpacePattern,
     OAColorSpaceNamed,
-} OAColorSpace;
+};
+#define OAColorSpaceHSV OAColorSpaceHSB
 
 typedef struct {
     CGFloat h, s, v, a;
@@ -124,14 +128,21 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithCalibratedHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
 + (OAColor *)colorWithCalibratedWhite:(CGFloat)white alpha:(CGFloat)alpha;
 
-+ (OAColor *)clearColor;
-+ (OAColor *)whiteColor;
 + (OAColor *)blackColor;
-+ (OAColor *)blueColor;
-+ (OAColor *)purpleColor;
-+ (OAColor *)redColor;
-+ (OAColor *)yellowColor;
++ (OAColor *)darkGrayColor;
++ (OAColor *)lightGrayColor;
++ (OAColor *)whiteColor;
 + (OAColor *)grayColor;
++ (OAColor *)redColor;
++ (OAColor *)greenColor;
++ (OAColor *)blueColor;
++ (OAColor *)cyanColor;
++ (OAColor *)yellowColor;
++ (OAColor *)magentaColor;
++ (OAColor *)orangeColor;
++ (OAColor *)purpleColor;
++ (OAColor *)brownColor;
++ (OAColor *)clearColor;
 
 + (OAColor *)keyboardFocusIndicatorColor;
 + (OAColor *)selectedTextBackgroundColor;
@@ -144,22 +155,24 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
 // Concrete subclases, and claim that all instances should conform.
 @protocol OAColor
-- (OAColorSpace)colorSpace;
+
+@property(nonatomic, readonly) OAColorSpace colorSpace;
 
 - (OAColor *)colorUsingColorSpace:(OAColorSpace)colorSpace;
 - (OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
 - (OAColor *)colorWithAlphaComponent:(CGFloat)fraction;
 
-- (CGFloat)whiteComponent;
-- (CGFloat)redComponent;
-- (CGFloat)greenComponent;
-- (CGFloat)blueComponent;
-- (OALinearRGBA)toRGBA;
+@property(nonatomic, readonly) CGFloat whiteComponent;
+@property(nonatomic, readonly) CGFloat redComponent;
+@property(nonatomic, readonly) CGFloat greenComponent;
+@property(nonatomic, readonly) CGFloat blueComponent;
+@property(nonatomic, readonly) OALinearRGBA toRGBA;
 
-- (CGFloat)hueComponent;
-- (CGFloat)saturationComponent;
-- (CGFloat)brightnessComponent;
-- (CGFloat)alphaComponent;
+@property(nonatomic, readonly) CGFloat hueComponent;
+@property(nonatomic, readonly) CGFloat saturationComponent;
+@property(nonatomic, readonly) CGFloat brightnessComponent;
+@property(nonatomic, readonly) CGFloat alphaComponent;
+
 - (OAHSV)toHSV;
 
 // Caller guarantees that color is non-nil and in the same colorspace as the receiver.
@@ -220,7 +233,6 @@ static inline BOOL __attribute__((overloadable)) OAColorsEqual(OAWhiteAlpha c1, 
 }
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <UIKit/UIColor.h>
 static inline UIColor * __attribute__((overloadable)) OAMakeUIColor(OALinearRGBA c)
 {
     return [UIColor colorWithRed:c.r green:c.g blue:c.b alpha:c.a];
@@ -247,3 +259,6 @@ extern void OAFillRGBAColorPair(OARGBAColorPair *pair, NSColor *color1, NSColor 
 extern const CGFunctionCallbacks OALinearFunctionCallbacks;
 
 #endif
+
+NS_ASSUME_NONNULL_END
+

@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ static NSData *utf8(NSString *str)
     TEST_DATA([NSData data]); // Empty; handled by loop below
 
     // Some random inputs that failed before...
-    TEST_DATA([NSData dataWithBase64String:@"G6B5+eO/FuPsuhBxgZZL/zcnv/i+IBUaDwNbmznaATz5tLa7rTRIpo4HWecJaxXUlol4WxYsUl9QgB2S1pUHaeBSpvW/ao17o9e96kbYZdOK3X2ydg7nKJvtcJz4Lsa4OiQGFoTTs3iZG9GFXHSX1Eruk90DYHY7RrbWmWFRvcXxmYonLBaZw1gir7sdKXr2PfnTqczcn3jfsMI4N24LgmZPG4WIM37KSdf21xQfgyiVRlP516PV2sD2DmG/pJBy2PB7UU4X6MYEBAQL18o3d/KCigNPbTQbfX6sdY365JmeSFa5tVC7LzUdk2aHsnJzMbUX9mLcvrAcMNytIZjz3LPPPVizRuEKivQBG6TZMCZKD7gd4N7YB+CN5lbnkOEAA7gFWcZp69uDKxYl8MeH9BkebipV8aS5OeTfK+4NTLBIv5KvI6Ffg1ffqslsMsJBnvMdAp0gcW4gRxCbBO5awCJytL5wGJ9iWEfsv2tXmoEm+djuxEy03KUZVp7Sd2ypRsHBtIFb2xAot/UnxBs3sSOA78ebffcjCEv9SZTbHicmGQSh1IMrP/VQ8DqzY7YiDkgpc3wzCSIU6VkoR6BAjz+DP4PeMUNJqamR4W5MJoHmVDQJDonzcmhQW2aOEuB+MgpkA7fVFxwRYGLEnxSsIpQHKazCFlU4hPay5mCC1NJdHv38J/Cdt7pp/QIAr7g3DTp2P1hqHwLRfYuq7Z7gJWmUNZwc0TeMKkMybMoRnSmnOz2FALArlnFbym6MOfqcRxeCm/Dqvj1qmOn9kqMeSXA364go0hSG0JPfP2RbW6ktYQ5FGm3XvQKSSvgjq1E+/TebSM+2kcTqertzzi95DwpDJTiYTFJAUDqnaJaIitl2EGYK3s9J4Q/SN636puVa3PgJdUjNhGGAWTNQon/h6VeK6/5td8szd/sj2NQ7q4gFhLdTxTUrV/iJrJdKc/XDyrLtFcnnIrwFOcSJ2RTy124KRWH+flmEY+Ch3O8aAH5l1JWA9e07tA=="]);
+    TEST_DATA([[NSData alloc] initWithBase64EncodedString:@"G6B5+eO/FuPsuhBxgZZL/zcnv/i+IBUaDwNbmznaATz5tLa7rTRIpo4HWecJaxXUlol4WxYsUl9QgB2S1pUHaeBSpvW/ao17o9e96kbYZdOK3X2ydg7nKJvtcJz4Lsa4OiQGFoTTs3iZG9GFXHSX1Eruk90DYHY7RrbWmWFRvcXxmYonLBaZw1gir7sdKXr2PfnTqczcn3jfsMI4N24LgmZPG4WIM37KSdf21xQfgyiVRlP516PV2sD2DmG/pJBy2PB7UU4X6MYEBAQL18o3d/KCigNPbTQbfX6sdY365JmeSFa5tVC7LzUdk2aHsnJzMbUX9mLcvrAcMNytIZjz3LPPPVizRuEKivQBG6TZMCZKD7gd4N7YB+CN5lbnkOEAA7gFWcZp69uDKxYl8MeH9BkebipV8aS5OeTfK+4NTLBIv5KvI6Ffg1ffqslsMsJBnvMdAp0gcW4gRxCbBO5awCJytL5wGJ9iWEfsv2tXmoEm+djuxEy03KUZVp7Sd2ypRsHBtIFb2xAot/UnxBs3sSOA78ebffcjCEv9SZTbHicmGQSh1IMrP/VQ8DqzY7YiDkgpc3wzCSIU6VkoR6BAjz+DP4PeMUNJqamR4W5MJoHmVDQJDonzcmhQW2aOEuB+MgpkA7fVFxwRYGLEnxSsIpQHKazCFlU4hPay5mCC1NJdHv38J/Cdt7pp/QIAr7g3DTp2P1hqHwLRfYuq7Z7gJWmUNZwc0TeMKkMybMoRnSmnOz2FALArlnFbym6MOfqcRxeCm/Dqvj1qmOn9kqMeSXA364go0hSG0JPfP2RbW6ktYQ5FGm3XvQKSSvgjq1E+/TebSM+2kcTqertzzi95DwpDJTiYTFJAUDqnaJaIitl2EGYK3s9J4Q/SN636puVa3PgJdUjNhGGAWTNQon/h6VeK6/5td8szd/sj2NQ7q4gFhLdTxTUrV/iJrJdKc/XDyrLtFcnnIrwFOcSJ2RTy124KRWH+flmEY+Ch3O8aAH5l1JWA9e07tA==" options:NSDataBase64DecodingIgnoreUnknownCharacters]);
 }
 
 - (void)testCompressionLongRuns
@@ -100,7 +100,7 @@ static NSData *utf8(NSString *str)
                 TEST_DATA(data);
             } NS_HANDLER {
                 [data writeToFile:@"/tmp/fail.dat" atomically:YES];
-                NSLog(@"Failed on random vector (base-64): <%@>", [data base64String]);
+                NSLog(@"Failed on random vector (base-64): <%@>", [data base64EncodedStringWithOptions:0]);
                 [localException raise];
             } NS_ENDHANDLER;
         }

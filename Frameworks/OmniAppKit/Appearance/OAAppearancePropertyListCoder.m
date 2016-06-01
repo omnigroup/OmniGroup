@@ -148,11 +148,88 @@ NSString * const OAAppearanceMissingKeyKey = @"OAAppearanceMissingKeyKey";
     return result;
 }
 
+- (BOOL)validatePropertyListValuesWithError:(NSError **)error;
+{
+    NSSet *keyPaths = [self.keyExtractor _keyPaths];
+    for (NSString *keyPath in keyPaths) {
+        BOOL success = [self.codeable validateValueAtKeyPath:keyPath error:error];
+        if (!success) {
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+static NSString *keyPathByAppendingKey(NSString *keyPath, NSString *key)
+{
+    if ([NSString isEmptyString:keyPath]) {
+        return key;
+    }
+    return [NSString stringWithFormat:@"%@.%@", keyPath, key];
+}
+
++ (void)_buildMissingKeySetForExpectedKeyPathComponents:(NSDictionary *)expectedKeyPathComponentsTree propertyList:(NSDictionary *)propertyList missingKeys:(NSMutableSet *)missingKeys baseExpectedKeyPath:(NSString *)baseExpectedKeyPath
+{
+    if (![propertyList isKindOfClass:[NSDictionary class]]) {
+        // recursion bottomed out in property list, treat it as empty
+        propertyList = @{};
+    }
+    
+    for (NSString *expectedKeyPathComponent in expectedKeyPathComponentsTree.allKeys) {
+        id subPropertyList = propertyList[expectedKeyPathComponent];
+        NSString *keyPath = keyPathByAppendingKey(baseExpectedKeyPath, expectedKeyPathComponent);
+        if (subPropertyList == nil) {
+            [missingKeys addObject:keyPath];
+        } else {
+            [self _buildMissingKeySetForExpectedKeyPathComponents:expectedKeyPathComponentsTree[expectedKeyPathComponent] propertyList:subPropertyList missingKeys:missingKeys baseExpectedKeyPath:keyPath];        }
+    }
+}
+
+
++ (void)_buildUnknownKeySetForExpectedKeyPathComponents:(NSDictionary *)expectedKeyPathComponentsTree propertyList:(NSDictionary *)propertyList unknownKeys:(NSMutableSet *)unknownKeys basePropertyListKeyPath:(NSString *)basePropertyListKeyPath
+{
+    if (![propertyList isKindOfClass:[NSDictionary class]]) {
+        // recursion bottomed out in property list, so we're done
+        return;
+    }
+    
+    if (expectedKeyPathComponentsTree.count == 0) {
+        // there are no key path components at this level, so assume that any remaining subtree of the property list represents the encoding of a value as a dictionary
+        return;
+    }
+
+    for (NSString *propertyListKey in propertyList.allKeys) {
+        NSDictionary *subPathComponentsTree = expectedKeyPathComponentsTree[propertyListKey];
+        NSString *keyPath = keyPathByAppendingKey(basePropertyListKeyPath, propertyListKey);
+        if (subPathComponentsTree == nil) {
+            [unknownKeys addObject:keyPath];
+        } else {
+            [self _buildUnknownKeySetForExpectedKeyPathComponents:subPathComponentsTree propertyList:propertyList[propertyListKey] unknownKeys:unknownKeys basePropertyListKeyPath:keyPath];
+        }
+    }
+}
+
 - (NSDictionary <NSString *, NSArray <NSString *> *> * _Nullable)invalidKeysInPropertyList:(NSDictionary <NSString *, NSObject *> *)propertyList;
 {
-    // TODO: Return missing keys (OAAppearanceMissingKeyKey) and extra keys (OAAppearanceUnknownKeyKey) <bug:///126282> (Feature: Present list of any extra and missing keys to user when importing style file)
-    // TODO: return nil if ok
-    return nil;
+    NSSet *expectedKeyPaths = [self.keyExtractor _keyPaths];
+    NSDictionary *expectedKeyPathComponentsTree = [[self class] _pathComponentsTreeFromKeyPaths:expectedKeyPaths.allObjects];
+    
+    NSMutableSet *missingKeys = [NSMutableSet new];
+    NSMutableSet *unknownKeys = [NSMutableSet new];
+    
+    [[self class] _buildMissingKeySetForExpectedKeyPathComponents:expectedKeyPathComponentsTree propertyList:propertyList missingKeys:missingKeys baseExpectedKeyPath:@""];
+    [[self class] _buildUnknownKeySetForExpectedKeyPathComponents:expectedKeyPathComponentsTree propertyList:propertyList unknownKeys:unknownKeys basePropertyListKeyPath:@""];
+    
+    if (missingKeys.count == 0 && unknownKeys.count == 0) {
+        return nil;
+    }
+    
+    NSDictionary *result = @{
+                             OAAppearanceMissingKeyKey: missingKeys.allObjects,
+                             OAAppearanceUnknownKeyKey: unknownKeys.allObjects,
+                             };
+    return result;
 }
 
 #pragma mark Private API
@@ -236,6 +313,29 @@ NSString * const OAAppearanceMissingKeyKey = @"OAAppearanceMissingKeyKey";
         _keyExtractor = [[OAAppearancePropertyListClassKeypathExtractor alloc] initWithClass:cls];
     }
     return _keyExtractor;
+}
+
++ (NSDictionary *)_pathComponentsTreeFromKeyPaths:(NSArray <NSString *> *)keyPaths
+{
+    // Sort by increasing key path lengths, so we don't overwrite existing subdictionaries.
+    NSArray *sortedKeyPaths = [keyPaths sortedArrayUsingComparator:^NSComparisonResult(NSString * _Nonnull path1, NSString * _Nonnull path2) {
+        NSUInteger path1Length = path1.length;
+        NSUInteger path2Length = path2.length;
+        
+        if (path1Length < path2Length) {
+            return NSOrderedAscending;
+        } else if (path1Length == path2Length) {
+            return NSOrderedSame;
+        } else {
+            return NSOrderedDescending;
+        }
+    }];
+    
+    NSMutableDictionary *result = [NSMutableDictionary new];
+    for (NSString *keyPath in sortedKeyPaths) {
+        [result setObject:[NSMutableDictionary new] forKeyPath:keyPath];
+    }
+    return result;
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,7 +96,7 @@ static id _commonInit(OUIScalingView *self)
     return [self viewPointForTouchPoint:[touch locationInView:self]];
 }
 
-- (CGAffineTransform)transformToRenderingSpace;
+- (CGAffineTransform)transformFromViewSpaceToUnscaledSpace
 {
     CGRect bounds = self.bounds;
     
@@ -114,60 +114,33 @@ static id _commonInit(OUIScalingView *self)
         };
 }
 
-- (CGAffineTransform)transformFromRenderingSpace;
+- (CGRect)convertRectFromViewSpaceToUnscaledSpace:(CGRect)rect;
 {
-    CGRect bounds = self.bounds;
-    CGFloat invscale = 1 / _scale;
-    
-    // This returns the inverse transform from -transformToRenderingSpace.
-    // (You could equivalently use CGAffineTransformInvert() on the transform returned by -transformToRenderingSpace, but this should be faster and more accurate)
-        
-    if (self.wantsUnflippedCoordinateSystem)
-        return (CGAffineTransform){
-            invscale, 0, 0, -invscale,
-            -1 * invscale * bounds.origin.x, invscale * ( bounds.size.height + bounds.origin.y )
-        };
-    else
-        return (CGAffineTransform){
-            invscale, 0, 0, invscale,
-            -1 * invscale * bounds.origin.x, -1 * invscale * bounds.origin.y
-        };
-}
-
-- (CGRect)convertRectFromRenderingSpace:(CGRect)rect;
-{
-    CGAffineTransform xform = [self transformToRenderingSpace];
+    CGAffineTransform xform = [self transformFromViewSpaceToUnscaledSpace];
     return CGRectApplyAffineTransform(rect, CGAffineTransformInvert(xform));
 }
 
-- (CGRect)convertRectToRenderingSpace:(CGRect)rect;
+- (CGRect)convertRectFromUnscaledSpaceToViewSpace:(CGRect)rect;
 {
-    CGAffineTransform xform = [self transformToRenderingSpace];
+    CGAffineTransform xform = [self transformFromViewSpaceToUnscaledSpace];
     return CGRectApplyAffineTransform(rect, xform);
 }
 
-- (CGPoint)convertPointFromRenderingSpace:(CGPoint)point;
+- (CGPoint)convertPointFromViewSpaceToUnscaledSpace:(CGPoint)point;
 {
-    CGAffineTransform xform = [self transformToRenderingSpace];
+    CGAffineTransform xform = [self transformFromViewSpaceToUnscaledSpace];
     return CGPointApplyAffineTransform(point, CGAffineTransformInvert(xform));
 }
 
-- (CGPoint)convertPointToRenderingSpace:(CGPoint)point;
+- (CGPoint)convertPointFromUnscaledSpaceToViewSpace:(CGPoint)point;
 {
-    CGAffineTransform xform = [self transformToRenderingSpace];
+    CGAffineTransform xform = [self transformFromViewSpaceToUnscaledSpace];
     return CGPointApplyAffineTransform(point, xform);
 }
 
-- (void)establishTransformToRenderingSpace:(CGContextRef)ctx;
+- (void)establishTransformFromViewSpaceToUnscaledSpace:(CGContextRef)ctx;
 {
-    CGContextConcatCTM(ctx, [self transformToRenderingSpace]);
-}
-
-- (CGRect)viewRectWithCenter:(CGPoint)center size:(CGSize)size;
-{
-    CGPoint newCenter = [self convertPointToRenderingSpace:center];
-    CGRect frame = CGRectMake(newCenter.x - size.width / 2, newCenter.y - size.height / 2, size.width, size.height);
-    return CGRectIntegral(frame);
+    CGContextConcatCTM(ctx, [self transformFromViewSpaceToUnscaledSpace]);
 }
 
 - (void)drawScaledContent:(CGRect)rect;
@@ -212,7 +185,7 @@ static id _commonInit(OUIScalingView *self)
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSaveGState(ctx); // for subclasses that draw unscaled content atop the scaled content (like the border in OO/iPad text cells).
     {
-        [self establishTransformToRenderingSpace:ctx];
+        [self establishTransformFromViewSpaceToUnscaledSpace:ctx];
         [self drawScaledContent:rect];
     }
     CGContextRestoreGState(ctx);
