@@ -121,19 +121,19 @@ static ColorSyncTransformRef grayColorWorld = NULL;
 static bool deviceListIterator(CFDictionaryRef deviceInfo,
                                void* refCon)
 {
-	ColorSyncProfileRef cmProfile;
+    ColorSyncProfileRef cmProfile;
     CMAppleProfileHeader header;
-	OAColorProfile *profile;
-	NSString *deviceName, *profileName;
-	
-	if (resetDeviceList) {
-		[deviceProfileDictionary release];
-		[deviceNameDictionary release];
-		deviceProfileDictionary = [[NSMutableDictionary alloc] init];
-		deviceNameDictionary = [[NSMutableDictionary alloc] init];
-		resetDeviceList = NO;
-	}
-	
+    OAColorProfile *profile;
+    NSString *deviceName, *profileName;
+    
+    if (resetDeviceList) {
+        [deviceProfileDictionary release];
+        [deviceNameDictionary release];
+        deviceProfileDictionary = [[NSMutableDictionary alloc] init];
+        deviceNameDictionary = [[NSMutableDictionary alloc] init];
+        resetDeviceList = NO;
+    }
+    
     CFStringRef deviceClass = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceClass);
     if (!CFEqual(deviceClass, kColorSyncPrinterDeviceClass) && !CFEqual(deviceClass, CFSTR("pruf"))) {
         return true;
@@ -142,64 +142,64 @@ static bool deviceListIterator(CFDictionaryRef deviceInfo,
     
     cmProfile = ColorSyncProfileCreateWithURL(profileURL, NULL);
     if (cmProfile == NULL)
-		return true;
-	
+        return true;
+    
     CFDataRef cfHeader = ColorSyncProfileCopyHeader(cmProfile);
     if (cfHeader == NULL) {
         CFRelease(cmProfile);
-		return 0;
-	}
-	
-	profile = [[OAColorProfile alloc] init];
+        return 0;
+    }
+    
+    profile = [[OAColorProfile alloc] init];
     CFDataGetBytes(cfHeader, CFRangeMake(0, sizeof(CMAppleProfileHeader)), (UInt8*)&header);
     CFRelease(cfHeader);
-
+    
     switch(header.cm2.dataColorSpace) {
-		case cmRGBData:
-			profile->rgbProfile = cmProfile;
-			break;
-		case cmCMYKData:
-			profile->cmykProfile = cmProfile;
-			break;
-		case cmGrayData:
-			profile->grayProfile = cmProfile;
-			break;
-		default:
-			CFRelease(cmProfile);
-			[profile release];
-			return 0;
-	}
-	
-	if (CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescription) || CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions)) {
-		NSDictionary *nameDictionary = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions);
-		NSArray *languages = [NSBundle preferredLocalizationsFromArray:[nameDictionary allKeys]];
-		
-		if ([languages count])
-			deviceName = [nameDictionary objectForKey:[languages objectAtIndex:0]];
-		else if ([nameDictionary count])
-			deviceName = [[nameDictionary allValues] lastObject]; // any random language, if none match
-		else
-			deviceName = nil;
-	} else
-		deviceName = nil;
-	
-	profileName = [profile _getProfileName:cmProfile];
-	if (deviceName != nil) {
-		deviceName = [[deviceName componentsSeparatedByString:@"_"] componentsJoinedByString:@" "];
-		if (![deviceName isEqualToString:profileName])
-			profileName = [NSString stringWithFormat:@"%@: %@", deviceName, profileName];
-	}
-	[deviceProfileDictionary setObject:profile forKey:profileName];
-	if (deviceName)
-		[deviceNameDictionary setObject:profile forKey:deviceName];
-	[profile release];
-	return 0;
+        case cmRGBData:
+            profile->rgbProfile = cmProfile;
+            break;
+        case cmCMYKData:
+            profile->cmykProfile = cmProfile;
+            break;
+        case cmGrayData:
+            profile->grayProfile = cmProfile;
+            break;
+        default:
+            CFRelease(cmProfile);
+            [profile release];
+            return 0;
+    }
+    
+    if (CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescription) || CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions)) {
+        NSDictionary *nameDictionary = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions);
+        NSArray *languages = [NSBundle preferredLocalizationsFromArray:[nameDictionary allKeys]];
+        
+        if ([languages count])
+            deviceName = [nameDictionary objectForKey:[languages objectAtIndex:0]];
+        else if ([nameDictionary count])
+            deviceName = [[nameDictionary allValues] lastObject]; // any random language, if none match
+        else
+            deviceName = nil;
+    } else
+        deviceName = nil;
+    
+    profileName = [profile _getProfileName:cmProfile];
+    if (deviceName != nil) {
+        deviceName = [[deviceName componentsSeparatedByString:@"_"] componentsJoinedByString:@" "];
+        if (![deviceName isEqualToString:profileName])
+            profileName = [NSString stringWithFormat:@"%@: %@", deviceName, profileName];
+    }
+    [deviceProfileDictionary setObject:profile forKey:profileName];
+    if (deviceName)
+        [deviceNameDictionary setObject:profile forKey:deviceName];
+    [profile release];
+    return 0;
 }
 
 + (NSArray *)proofingDeviceProfileNames;
 {
     resetDeviceList = YES;
-	ColorSyncIterateDeviceProfiles(deviceListIterator, NULL);
+    ColorSyncIterateDeviceProfiles(deviceListIterator, NULL);
     return [deviceProfileDictionary allKeys];
 }
 
