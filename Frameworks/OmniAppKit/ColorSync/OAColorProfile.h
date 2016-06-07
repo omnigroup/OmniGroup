@@ -57,14 +57,14 @@
 - (void)_setRGBColor:(NSColor *)aColor;
 - (void)_setCMYKColor:(NSColor *)aColor;
 - (void)_setGrayColor:(NSColor *)aColor;
-- (void *)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
-- (void *)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
-- (void *)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 
 // For use by subclasses
-- (void **)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
-- (void **)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
-- (void **)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef*)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef*)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef*)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
 - (ColorSyncProfileRef)_rgbProfile;
 - (ColorSyncProfileRef)_cmykProfile;
 - (ColorSyncProfileRef)_grayProfile;
