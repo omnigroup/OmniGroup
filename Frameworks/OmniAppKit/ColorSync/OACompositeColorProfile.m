@@ -56,7 +56,7 @@ RCS_ID("$Id$");
 }
 
 #if OA_USE_COLOR_MANAGER
-- (CMWorldRef)_colorWorldForOutput:(OAColorProfile *)aProfile componentSelector:(SEL)componentSelector;
+- (ColorSyncTransformRef)_colorWorldForOutput:(OAColorProfile *)aProfile componentSelector:(SEL)componentSelector;
 {
     CMWorldRef result;
     NSUInteger profileIndex, profileCount = [profiles count];
@@ -83,7 +83,7 @@ RCS_ID("$Id$");
 }
 #endif
 
-- (void *)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
 #if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedRGBColorWorldForOutput:aProfile];
@@ -96,7 +96,7 @@ RCS_ID("$Id$");
 #endif
 }
 
-- (void *)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
 #if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedCMYKColorWorldForOutput:aProfile];
@@ -109,7 +109,7 @@ RCS_ID("$Id$");
 #endif
 }
 
-- (void *)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
 #if OA_USE_COLOR_MANAGER
     CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedGrayColorWorldForOutput:aProfile];
