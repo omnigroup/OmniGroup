@@ -101,15 +101,10 @@ static ColorSyncTransformRef grayColorWorld = NULL;
 
 + (OAColorProfile *)workingCMYKProfile;
 {
-#if OA_USE_COLOR_MANAGER
     OAColorProfile *result = [[self alloc] init];
     
-    result->cmykProfile = [[self defaultDocumentProfile] _cmykProfile];
-    CMCloneProfileRef((CMProfileRef)result->cmykProfile);
+    result->cmykProfile = ColorSyncProfileCreateMutableCopy([[self defaultDocumentProfile] _cmykProfile]);
     return [result autorelease];
-#else
-    OBFinishPorting;
-#endif
 }
 
 + (OAColorProfile *)currentProfile;
@@ -301,7 +296,7 @@ static bool nameListIterator(CFDictionaryRef profileInfo, void *refCon)
 
 + (OAColorProfile *)colorProfileWithRGBNamed:(NSString *)rgbName cmykNamed:(NSString *)cmykName grayNamed:(NSString *)grayName;
 {
-#if OA_USE_COLOR_MANAGER
+    // ColorSyncProfileCreateMutableCopy is the closest I could find to a copy function :/
     OAColorProfile *profile = [[self alloc] init];
     OAColorProfile *match;
 
@@ -310,100 +305,85 @@ static bool nameListIterator(CFDictionaryRef profileInfo, void *refCon)
     if (rgbName) {
         match = [rgbProfileDictionary objectForKey:rgbName];
         if (match) {
-            profile->rgbProfile = match->rgbProfile;
-            CMCloneProfileRef((CMProfileRef)profile->rgbProfile);
+            profile->rgbProfile = ColorSyncProfileCreateMutableCopy(match->rgbProfile);
         } else {
             NSLog(@"Warning: can't find profile \"%@\", using default RGB profile", rgbName);
-            CMGetDefaultProfileBySpace(cmRGBData, (CMProfileRef *)&profile->rgbProfile);
+            profile->rgbProfile = ColorSyncProfileCreateWithName(kColorSyncGenericRGBProfile);
         }
     }
     if (cmykName) {
         match = [cmykProfileDictionary objectForKey:cmykName];
         if (match) {
-            profile->cmykProfile = match->cmykProfile;
-            CMCloneProfileRef((CMProfileRef)profile->cmykProfile);
+            profile->cmykProfile = ColorSyncProfileCreateMutableCopy(match->cmykProfile);
         } else {
             NSLog(@"Warning: can't find profile \"%@\", using default CMYK profile", cmykName);
-            CMGetDefaultProfileBySpace(cmCMYKData, (CMProfileRef *)&profile->cmykProfile);
+            profile->cmykProfile = ColorSyncProfileCreateWithName(kColorSyncGenericCMYKProfile);
         }
     }
     if (grayName) {
         match = [grayProfileDictionary objectForKey:grayName];
         if (match) {
-            profile->grayProfile = match->grayProfile;
-            CMCloneProfileRef((CMProfileRef)profile->grayProfile);
+            profile->grayProfile = ColorSyncProfileCreateMutableCopy(match->grayProfile);
         } else {
             NSLog(@"Warning: can't find profile \"%@\", using default grayscale profile", grayName);
-            CMGetDefaultProfileBySpace(cmGrayData, (CMProfileRef *)&profile->grayProfile);
+            profile->grayProfile = ColorSyncProfileCreateWithName(kColorSyncGenericGrayProfile);
         }
     }
     
     return [profile autorelease];
-#else
-    OBFinishPorting;
-#endif
 }
 
-#if OA_USE_COLOR_MANAGER
-static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data, OSType fallbackToDefault)
+static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data, CFStringRef fallbackToDefault)
 {
     if (data && [data length]) {
-        CMProfileRef profile = NULL;
-        CMProfileLocation profileLocation;
-        profileLocation.locType = cmBufferBasedProfile;
-        profileLocation.u.bufferLoc.buffer = (void *)[data bytes];
+        ColorSyncProfileRef profile = NULL;
+        CFErrorRef err = NULL;
         
         // Buffer limited to UInt32.
-        OBASSERT(strcmp(@encode(typeof(profileLocation.u.bufferLoc.size)), @encode(UInt32)) == 0);
+        //OBASSERT(strcmp(@encode(typeof(profileLocation.u.bufferLoc.size)), @encode(UInt32)) == 0);
         OBASSERT([data length] <= UINT_MAX);
-        profileLocation.u.bufferLoc.size = (UInt32)[data length];
+        //profileLocation.u.bufferLoc.size = (UInt32)[data length];
         
-        CMError err = CMOpenProfile(&profile, &profileLocation);
-        if (err == noErr) {
+        profile = ColorSyncProfileCreate((CFDataRef)data, &err);
+        if (profile != nil) {
             if (*cmProfilePointer)
-                CMCloseProfile(*cmProfilePointer);
+                CFRelease(*cmProfilePointer);
             *cmProfilePointer = profile;  // transfer the ref count
             return YES;
         } else {
-            NSLog(@"CMOpenProfile(<%lu bytes>) returns error %ld", [data length], (long)err);
+            NSLog(@"CMOpenProfile(<%lu bytes>) returns error %@", [data length], err);
         }
     }
     
     if (fallbackToDefault != 0 && *cmProfilePointer == NULL) {
-        CMProfileRef profile = NULL;
-        CMError err = CMGetDefaultProfileBySpace(fallbackToDefault, &profile);
-        if (err == noErr) {
-            NSLog(@"Warning: using default color profile for %@", [NSString stringWithFourCharCode:fallbackToDefault]);
+        ColorSyncProfileRef profile = NULL;
+        profile = ColorSyncProfileCreateWithName(fallbackToDefault);
+        if (profile != nil) {
+            NSLog(@"Warning: using default color profile for %@", fallbackToDefault);
             *cmProfilePointer = profile;
         } else {
-            NSLog(@"Warning: can't even find default profile for color space %@!", [NSString stringWithFourCharCode:fallbackToDefault]);
+            NSLog(@"Warning: can't even find default profile for color space %@!", fallbackToDefault);
         }
     }
     
     return NO;
 }
-#endif
 
 + (OAColorProfile *)colorProfileFromPropertyListRepresentation:(NSDictionary *)dict;
 {
-#if OA_USE_COLOR_MANAGER
     // If the Name key doesn't exist, +colorProfileWithRGBNamed: will just keep the default entry, and we'll overwrite it below
     OAColorProfile *colorProfile = [self colorProfileWithRGBNamed:[dict objectForKey:@"rgbName"]
                                                         cmykNamed:[dict objectForKey:@"cmykName"]
                                                         grayNamed:[dict objectForKey:@"grayName"]];
     
     // Use any embedded profiles from the plist
-    loadProfileData((CMProfileRef *)&colorProfile->rgbProfile, [dict objectForKey:@"rgb"], cmRGBData);
-    loadProfileData((CMProfileRef *)&colorProfile->cmykProfile, [dict objectForKey:@"cmyk"], cmCMYKData);
-    loadProfileData((CMProfileRef *)&colorProfile->grayProfile, [dict objectForKey:@"gray"], cmGrayData);
+    loadProfileData(&colorProfile->rgbProfile, [dict objectForKey:@"rgb"], kColorSyncGenericRGBProfile);
+    loadProfileData(&colorProfile->cmykProfile, [dict objectForKey:@"cmyk"], kColorSyncGenericCMYKProfile);
+    loadProfileData(&colorProfile->grayProfile, [dict objectForKey:@"gray"], kColorSyncGenericGrayProfile);
     
     // NSLog(@"Read profiles %p %p %p from %@", colorProfile->rgbProfile, colorProfile->cmykProfile, colorProfile->grayProfile, dict);
     
     return colorProfile;
-#else
-    OBFinishPortingLater("deprecated");
-    return nil;
-#endif
 }
 
 - (void)dealloc;
@@ -426,32 +406,22 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-#if OA_USE_COLOR_MANAGER
+    // ColorSyncProfileCreateMutableCopy is the closest I could find to a copy function :/
     if (isMutable) {
         OAColorProfile *result = [[OAColorProfile alloc] init];
         
         if (rgbProfile) {
-            result->rgbProfile = rgbProfile;
-            CMCloneProfileRef((CMProfileRef)rgbProfile);
+            result->rgbProfile = ColorSyncProfileCreateMutableCopy(rgbProfile);
         }
         if (cmykProfile) {
-            result->cmykProfile = cmykProfile;
-            CMCloneProfileRef((CMProfileRef)cmykProfile);
+            result->cmykProfile = ColorSyncProfileCreateMutableCopy(cmykProfile);
         }
         if (grayProfile) {
-            result->grayProfile = grayProfile;
-            CMCloneProfileRef((CMProfileRef)grayProfile);
+            result->grayProfile = ColorSyncProfileCreateMutableCopy(grayProfile);
         }
         return result;
     } else
         return [self retain];
-#else
-    if (isMutable) {
-        OBFinishPorting;
-    } else {
-        return [self retain];
-    }
-#endif
 }
 
 - (NSMutableDictionary *)propertyListRepresentation;
