@@ -3,13 +3,13 @@
 
 /* title format for color component slider */
 
-"<alpha title+value>" = "Opacidad: %d%%";
+"<alpha title+value>" = "Opacidad: %d %%";
 
 /* title format for color component slider */
 "<blue title+value>" = "Azul: %d";
 
 /* title format for color component slider */
-"<brightness title+value>" = "Brillo: %d%%";
+"<brightness title+value>" = "Brillo: %d %%";
 
 /* title format for color component slider */
 "<green title+value>" = "Verde: %d";
@@ -21,10 +21,10 @@
 "<red title+value>" = "Rojo: %d";
 
 /* title format for color component slider */
-"<saturation title+value>" = "Saturación: %d%%";
+"<saturation title+value>" = "Saturación: %d %%";
 
 /* title format for color component slider */
-"<white title+value>" = "Blanco: %d%%";
+"<white title+value>" = "Blanco: %d %%";
 
 /* Title for section of font list */
 "All Fonts" = "Todos los tipos de letra";
@@ -36,10 +36,14 @@
 "Color" = "Color";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "Tipo de letra";
 
 /* Increment font size button accessibility label */
 "Font bigger" = "Tipo de letra más grande";
+
+/* Font size description accessibility label */
+"Font size" = "Tamaño de letra";
 
 /* Decrement font size button accessibility label */
 "Font smaller" = "Tipo de letra más pequeña";

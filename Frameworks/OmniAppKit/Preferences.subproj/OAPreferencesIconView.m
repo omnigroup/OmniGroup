@@ -1,4 +1,4 @@
-// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,11 +12,11 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
 
-#import "NSImage-OAExtensions.h"
-#import "NSView-OAExtensions.h"
-#import "OAPreferenceClient.h"
-#import "OAPreferenceClientRecord.h"
-#import "OAPreferenceController.h"
+#import <OmniAppKit/NSImage-OAExtensions.h>
+#import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/OAPreferenceClient.h>
+#import <OmniAppKit/OAPreferenceClientRecord.h>
+#import <OmniAppKit/OAPreferenceController.h>
 
 RCS_ID("$Id$")
 

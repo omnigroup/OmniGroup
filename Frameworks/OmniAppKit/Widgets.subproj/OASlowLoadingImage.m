@@ -1,11 +1,11 @@
-// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OASlowLoadingImage.h"
+#import <OmniAppKit/OASlowLoadingImage.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
@@ -120,7 +120,12 @@ RCS_ID("$Id$");
 
 - (void)_update:(BOOL)final error:(NSError *)err
 {
-    if (!final && imageParser) {
+    if (imageParser == NULL) {
+        OBASSERT_NOT_REACHED("Updating after finishing or before starting?");
+        return;
+    }
+
+    if (!final) {
         CGImageSourceStatus stat = CGImageSourceGetStatus(imageParser);
         if (stat == kCGImageStatusReadingHeader || stat == kCGImageStatusIncomplete || stat == kCGImageStatusComplete) {
             // Fall through
@@ -132,7 +137,7 @@ RCS_ID("$Id$");
         }
     }
     
-    if (final && imageParser) {
+    if (final) {
 #if 1
         CGImageSourceUpdateData(imageParser, (CFDataRef)dataBuffer, TRUE);
 #else

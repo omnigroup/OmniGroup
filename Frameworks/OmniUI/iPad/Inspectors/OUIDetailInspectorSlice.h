@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <OmniUI/OUIActionInspectorSlice.h>
+#import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 
 /*
  Presents a table view of navigation items, each with a title and an optional value for the current state of some setting.
@@ -26,7 +26,7 @@
 @property(nonatomic,assign) BOOL boldValue; //Defaults to NO
 @end
 
-@interface OUIDetailInspectorSlice : OUIInspectorSlice <UITableViewDataSource, UITableViewDelegate>
+@interface OUIDetailInspectorSlice : OUIAbstractTableViewInspectorSlice <UITableViewDataSource, UITableViewDelegate>
 
 // Defaults to 1
 @property(nonatomic,readonly) NSUInteger itemCount;

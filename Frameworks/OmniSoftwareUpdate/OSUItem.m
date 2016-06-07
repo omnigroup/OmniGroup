@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import "OSUErrors.h"
 #import "OSUInstaller.h"
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUPreferences-Items.h"
 
 #import <OmniAppKit/NSFileManager-OAExtensions.h>
@@ -30,6 +30,11 @@ NSString * const OSUItemIgnoredBinding = @"ignored";
 NSString * const OSUItemOldStableBinding = @"oldStable";
 
 BOOL OSUItemDebug = NO;
+
+#ifdef DEBUG
+static off_t OSUItemSizeAdjustment = 0;
+static BOOL OSURejectChecksums = NO;
+#endif
 
 static NSArray *_requireNodes(NSXMLElement *base, NSString *namespace, NSString *tag, NSError **outError)
 {
@@ -123,6 +128,13 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     
     // Turns on debug logs about RSS items read/ignored.
     OSUItemDebug = [[NSUserDefaults standardUserDefaults] boolForKey:@"OSUItemDebug"];
+#ifdef DEBUG
+    NSNumber *itemSizeAdjustment = [[NSUserDefaults standardUserDefaults] objectForKey:@"OSUItemSizeAdjustment"];
+    if (itemSizeAdjustment != nil) {
+        OSUItemSizeAdjustment = (off_t)[itemSizeAdjustment integerValue];
+    }
+    OSURejectChecksums = [[NSUserDefaults standardUserDefaults] boolForKey:@"OSURejectChecksums"];
+#endif
     
     NSFont *font = [NSFont controlContentFontOfSize:[NSFont systemFontSize]];
     
@@ -283,6 +295,8 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         _price = [[NSDecimalNumber zero] copy]; // display 'free' in the price column for users with a valid license
     }
     
+    _publishDateString = _optionalStringNode(element, @"pubDate", nil);
+    
     // Get the associated link for this item; failing that, use the link for the feed as a whole
     NSString *linkText = _optionalStringNode(element, @"link", nil);
     NSString *feedLinkText = _optionalStringNode((NSXMLElement *)[element parent], @"link", nil);
@@ -364,6 +378,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
             OBASSERT(![NSString isEmptyString:_notionalItemOrigin]);
         }
     }
+    
     
     NSString *releaseNotesURLString = _optionalStringNode(element, @"releaseNotesLink", OSUAppcastXMLNamespace);
     if (releaseNotesURLString) {
@@ -508,6 +523,13 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     return [NSString abbreviatedStringForBytes:_downloadSize];
 }
 
+@synthesize publishDateString = _publishDateString;
+
+- (BOOL)isNewsItem;
+{
+    return (_releaseNotesURL != nil && [NSString isEmptyString:self.downloadSizeString]);
+}
+
 #pragma mark Item state
 
 @synthesize available = _available;
@@ -564,6 +586,9 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         }
         
         off_t actualSize = [attrs fileSize];
+#ifdef DEBUG
+        actualSize += OSUItemSizeAdjustment;
+#endif
         
         if (actualSize < _downloadSize) {
             return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The file is the wrong size (%@ too short). It might be corrupted.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"caution text - we downloaded a file, but it's smaller than it's supposed to be - warn that it might be damaged or even maliciously replaced"), [NSString abbreviatedStringForBytes:_downloadSize - actualSize]];
@@ -586,13 +611,18 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
             if (hash) {
                 NSData *expected;
                 if ([expectedString length] < (2 * [hash length]))
-                    expected = [NSData dataWithBase64String:expectedString];
+                    expected = [[NSData alloc] initWithBase64EncodedString:expectedString options:NSDataBase64DecodingIgnoreUnknownCharacters];
                 else
                     expected = [NSData dataWithHexString:expectedString error:NULL];
                 if (![hash isEqualToData:expected])
                     [badSums addObject:algo];
                 if (![algo isEqualToString:@"md5"])  /* MD5 doesn't really count any more. */
                     didVerify = YES;
+#ifdef DEBUG
+                if (OSURejectChecksums) {
+                    [badSums addObject:algo];
+                }
+#endif
             } else {
 #ifdef DEBUG
                 NSLog(@"%@: (%@): Unknown hash algorithm \"%@\"", [self class], _title, algo);
@@ -951,6 +981,7 @@ static NSXMLNode *_attr(NSXMLElement *elt, NSString *localName, NSString *URI)
     if (_notionalItemOrigin)
         [dict setObject:_notionalItemOrigin forKey:@"link"];
     
+    [dict setBoolValue:self.isNewsItem forKey:@"isNewsItem"];
     [dict setBoolValue:_available forKey:@"available"];
     [dict setBoolValue:_superseded forKey:@"superseded"];
     [dict setBoolValue:_ignored forKey:@"ignored" defaultValue:NO];

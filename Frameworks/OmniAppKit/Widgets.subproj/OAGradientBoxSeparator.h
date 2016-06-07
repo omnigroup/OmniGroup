@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OABoxSeparator.h"
+#import <OmniAppKit/OABoxSeparator.h>
 
 // This subclass extends the color customization of OABoxSeparator further to
 // allow you to assign an NSGradient for line and background drawing. If

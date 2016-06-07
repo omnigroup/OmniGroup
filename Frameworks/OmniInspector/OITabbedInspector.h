@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,6 @@
     IBOutlet OITabMatrix *buttonMatrix;
     NSArray *_tabControllers;
     NSMutableArray *_trackingRectTags;
-    __weak OIInspectorController *_weak_inspectorController;
     BOOL _singleSelection;
     BOOL _shouldInspectNothing;
     BOOL _autoSelection;
@@ -47,7 +46,7 @@
 - (void)setSelectedTabIdentifiers:(NSArray *)selectedIdentifiers pinnedTabIdentifiers:(NSArray *)pinnedIdentifiers;
 
 - (OIInspectorTabController *)tabWithIdentifier:(NSString *)identifier;
-- (OIInspector *)inspectorWithIdentifier:(NSString *)tabIdentifier;
+- (OIInspector <OIConcreteInspector> *)inspectorWithIdentifier:(NSString *)tabIdentifier;
 - (void)switchToInspectorWithIdentifier:(NSString *)tabIdentifier;
 
 // Actions

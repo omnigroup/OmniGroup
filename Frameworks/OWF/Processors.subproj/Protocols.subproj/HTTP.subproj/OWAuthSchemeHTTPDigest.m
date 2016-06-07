@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -246,7 +246,7 @@ static NSString *computeDigest_2617(NSString *username,
     [entropy_buf appendData:[OWAuthorizationRequest entropy]];
 
     [client_nonce autorelease];
-    client_nonce = [[[[entropy_buf sha1Signature] base64String] substringToIndex:20] retain];
+    client_nonce = [[[[entropy_buf sha1Signature] base64EncodedStringWithOptions:0] substringToIndex:20] retain];
     [entropy_buf release];
     client_nonce_count ++;
     client_nonce_use_count = 0;

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 // $Id$
 
 #import <AppKit/NSView.h>
-#import "OAMouseTipWindow.h"
+#import <OmniAppKit/OAMouseTipWindow.h>
 
 @class NSAttributedString, NSDictionary, NSString; // Foundation
 @class NSTextView; // AppKit

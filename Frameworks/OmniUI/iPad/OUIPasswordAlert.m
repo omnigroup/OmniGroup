@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,21 +147,12 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (void)setPassword:(NSString *)password;
 {
-    // OUIPasswordAlert has support for a placeholder password (to indicate that you've previously typed a value, and simply pressing return will retry that value. If a client sets the password to OUIPasswordAlertObfuscatedPasswordPlaceholder, we display a placeholder, and clear it when the first character is typed.
+    // Previously we disabled support for the obfuscated password placholder due to:
     //
-    // This is currently disabled when running on iOS 7 due to 2 bugs:
+    //     rdar://problem/14515061 - Programmatically set text for field in secure style UIAlertView isn't drawn
+    //     rdar://problem/14517882 - Regression: UITextField in secure mode drops input when delegate changes text value
     //
-    // rdar://problem/14515061 - Programmatically set text for field in secure style UIAlertView isn't drawn
-    // rdar://problem/14517882 - Regression: UITextField in secure mode drops input when delegate changes text value
-    //
-    // The second is more serious, because it drops the first character after you've typed the second, and you probably won't have noticed it did that.
-    
-    OBFinishPortingLater("Recheck whether the password field needs this hack in iOS 8");
-
-    if ([password isEqualToString:OUIPasswordAlertObfuscatedPasswordPlaceholder]) {
-        self.passwordTextField.text = nil;
-        return;
-    }
+    // This is fixed on iOS 9.0 and later, so we've removed the workaround (where we specifically passed through nil if password was isEqualToString:OUIPasswordAlertObfuscatedPasswordPlaceholder).
 
     self.passwordTextField.text = password;
 }
@@ -195,7 +186,6 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     OBPRECONDITION(textField == self.passwordTextField);
 
     if ([self isUsingObfuscatedPasswordPlaceholder]) {
-        OBASSERT_NOT_REACHED("We shouldn't be taking this code path on iOS 7; see comment in -setPassword:.");
         return YES;
     }
     

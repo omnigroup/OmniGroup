@@ -56,7 +56,7 @@
 "Documents" = "Dokumente";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Synchr. Omni-Dokumente mühelos. Die Anmeldung ist kostenlos!";
+"Easily sync Omni documents. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos. Kostenlose Anmeldung!";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportieren nach „%@“";

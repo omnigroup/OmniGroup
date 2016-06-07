@@ -293,7 +293,6 @@
 				348969CD179D9C90007978EC /* ODSScope-Subclass.h */,
 				348969CE179D9C90007978EC /* ODSScope.h */,
 				348969CF179D9C90007978EC /* ODSScope.m */,
-				348969D0179D9C90007978EC /* ODSStore-Internal.h */,
 			);
 			name = Scopes;
 			sourceTree = "<group>";
@@ -302,6 +301,7 @@
 			isa = PBXGroup;
 			children = (
 				348969D1179D9C90007978EC /* ODSStore.h */,
+				348969D0179D9C90007978EC /* ODSStore-Internal.h */,
 				348969D2179D9C90007978EC /* ODSStore.m */,
 				348969D3179D9C90007978EC /* ODSStoreDelegate.h */,
 			);
@@ -372,7 +372,7 @@
 		3489691D179D99DD007978EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					344F78B51B56F98A003BB98D = {

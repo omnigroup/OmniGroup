@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -109,19 +109,39 @@ static OUIScalingView *_scalingView(OUIScalingViewTile *self)
         return;
     }
     
-    // Our frame is the rect in the scaling view that we are responsible for caching. Our bounds, will be zero-based, though.
-    CGRect frame = self.frame;
-    DEBUG_TILE_DRAW(1, "Tile %p with frame %@", self, NSStringFromCGRect(frame));
+    DEBUG_TILE_DRAW(1, "Tile %p with frame %@", self, NSStringFromCGRect(self.frame));
                   
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
     CGContextSaveGState(ctx);
     {
-        CGContextTranslateCTM(ctx, -frame.origin.x, -frame.origin.y);
-        [view establishTransformToRenderingSpace:ctx];
-        [view drawScaledContent:frame];
+        // translate the context for our frame
+        CGAffineTransform tileFrameTranslation = CGAffineTransformMakeTranslation(-self.frame.origin.x, -self.frame.origin.y);
+        CGContextConcatCTM(ctx, tileFrameTranslation);
+        
+        // and do the inverse for the drawing rect
+        CGRect drawingRect = CGRectApplyAffineTransform(rect, CGAffineTransformInvert(tileFrameTranslation));
+        
+        // context and rect are now in "ViewSpace", meaning the coordinate space belonging to the scaling view which this tile is a part of
+        
+        // and allow scaling view to deal with scale (or anything else it wants, really, but probably it's just a scale)
+        [view establishTransformFromViewSpaceToUnscaledSpace:ctx];
+        
+        // and apply the inverse to the rect
+        drawingRect = [view convertRectFromViewSpaceToUnscaledSpace:drawingRect];
+        
+        if (CGRectEqualToRect(drawingRect, CGRectZero)) {
+            OBASSERT_NOT_REACHED("something wrong with a transform?");
+        }
+        // and ask the view to draw
+        [view drawScaledContent:drawingRect];
     }
     CGContextRestoreGState(ctx);
+    
+#ifdef DEBUG_shannon
+    [[UIColor redColor] set];
+    UIRectFrame(self.bounds);
+#endif
     
     if (OUIScalingTileViewDebugDrawing > 0) {
         [[UIColor redColor] set];

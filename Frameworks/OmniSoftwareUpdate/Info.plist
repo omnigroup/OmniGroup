@@ -1,87 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
- // XML comment around #defines so this will validate with plutil before preprocessing.
- #include "InfoPlist.h"
- -->
 <plist version="1.0">
-  <dict>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>English</string>
-    <key>CFBundleExecutable</key>
-    <string>OmniSoftwareUpdate</string>
-    <key>CFBundleGetInfoString</key>
-    <string></string>
-    <key>CFBundleIconFile</key>
-    <string></string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string></string>
-    <key>CFBundlePackageType</key>
-    <string>FMWK</string>
-    <key>CFBundleShortVersionString</key>
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>OmniSoftwareUpdate</string>
+	<key>CFBundleGetInfoString</key>
+	<string></string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string></string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleVersion</key>
-    <string>2015</string>
-    <key>OFRegistrations</key>
-    <dict>
-<!--
-#if defined(OMNI_BUILDING_FOR_MAC)
--->        
-      <key>OAPreferenceController</key>
-      <dict>
-        <key>OSUPreferenceClient</key>
-        <dict>
-          <key>category</key>
-          <string>Basic</string>
-          <key>defaultsArray</key>
-          <array>
-            <string>OSUCheckInterval</string>
-            <string>OSUIncludeHardwareDetails</string>
-            <string>OSUSendSystemInfoEnabled</string>
-            <string>AutomaticSoftwareUpdateCheckEnabled</string>
-          </array>
-          <key>helpURL</key>
-          <string>anchor:updatepreferences</string>
-          <key>icon</key>
-          <string>OSUPreferences</string>
-          <key>identifier</key>
-          <string>$(PRODUCT_BUNDLE_IDENTIFIER).preferences</string>
-          <key>nib</key>
-          <string>OSUPreferences</string>
-          <key>ordering</key>
-          <integer>200</integer>
-          <key>shortTitle</key>
-          <string>Update</string>
-          <key>title</key>
-          <string>Automatic Software Update</string>
-        </dict>
-      </dict>
-<!--
-#elif defined(OMNI_BUILDING_FOR_IOS)
-#else
-#error Unknown platform
-#endif
--->        
-    </dict>
-<!--
-#if defined(OMNI_BUILDING_FOR_MAC)
--->        
-    <key>OFRequiredSoftwareVersions</key>
-    <dict>
-      <key>OmniAppKit</key>
-      <string>2004A</string>
-    </dict>
-<!--
-#elif defined(OMNI_BUILDING_FOR_IOS)
-#else
-#error Unknown platform
-#endif
--->        
-  </dict>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>2015</string>
+	<key>OFRegistrations</key>
+	<dict>
+		<key>OAPreferenceController</key>
+		<dict>
+			<key>OSUPreferenceClient</key>
+			<dict>
+				<key>category</key>
+				<string>Basic</string>
+				<key>defaultsArray</key>
+				<array>
+					<string>OSUCheckInterval</string>
+					<string>OSUIncludeHardwareDetails</string>
+					<string>OSUSendSystemInfoEnabled</string>
+					<string>AutomaticSoftwareUpdateCheckEnabled</string>
+					<string>OSUUnreadNews</string>
+					<string>OSUCurrentNewsURL</string>
+                                        <string>OSUNewsPublishDate</string>
+				</array>
+				<key>helpURL</key>
+				<string>anchor:updatepreferences</string>
+				<key>icon</key>
+				<string>OSUPreferences</string>
+				<key>identifier</key>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER).preferences</string>
+				<key>nib</key>
+				<string>OSUPreferences</string>
+				<key>ordering</key>
+				<integer>200</integer>
+				<key>shortTitle</key>
+				<string>Update</string>
+				<key>title</key>
+				<string>Automatic Software Update</string>
+			</dict>
+		</dict>
+	</dict>
+	<key>OFRequiredSoftwareVersions</key>
+	<dict>
+		<key>OmniAppKit</key>
+		<string>2004A</string>
+	</dict>
+</dict>
 </plist>

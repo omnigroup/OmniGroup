@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,8 +42,6 @@ This class maintains an in memory and disk cache of decoded preview images for u
 
 + (void)cachePreviewImagesForFileEdit:(OFFileEdit *)targetFileEdit
             byDuplicatingFromFileEdit:(OFFileEdit *)sourceFileEdit;
-
-+ (NSString *)documentPreviewPlaceholderImageNameForType:(NSString *)fileType area:(OUIDocumentPreviewArea)area;
 
 // A background queue for preparing for preview generation. None of the OUIDocumentPreview methods should be called within an operation. This is intended for things like thread-safe pre-flighting of document state that will be needed when generating previews, but that can be loaded while we are not on the main thread.
 + (void)performAsynchronousPreviewPreparation:(void (^)(void))block;

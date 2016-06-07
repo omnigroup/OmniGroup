@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,6 +32,15 @@ typedef NS_OPTIONS(NSUInteger, OFRectCorner) {
     OFRectCornerMinXMaxY = 1 << 3,
     OFRectCornerAllCorners = ~0UL
 };
+
+typedef NS_OPTIONS(NSUInteger, OFRectEdge) {
+    OFRectEdgeMinX = 1 << 0,
+    OFRectEdgeMaxX = 1 << 1,
+    OFRectEdgeMinY = 1 << 2,
+    OFRectEdgeMaxY = 1 << 3,
+    OFRectEdgeAllEdges = ~0UL
+};
+
 
 /*" Returns the centerpoint of the circle passing through the three specified points. "*/
 extern CGPoint OFCenterOfCircleFromThreePoints(CGPoint point1, CGPoint point2, CGPoint point3);

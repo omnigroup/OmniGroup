@@ -36,10 +36,14 @@
 "Color" = "Colore";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "Font";
 
 /* Increment font size button accessibility label */
 "Font bigger" = "Font più grande";
+
+/* Font size description accessibility label */
+"Font size" = "Dimensioni font";
 
 /* Decrement font size button accessibility label */
 "Font smaller" = "Font più piccolo";

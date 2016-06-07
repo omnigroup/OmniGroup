@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2009, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 
 #import <Carbon/Carbon.h> // For shiftKey, controlKey, etc.  Must be imported early so that IOGraphicsTypes.h knows that Point is already defined by Carbon's MacTypes.h.
 
-#import "NSEvent-OAExtensions.h"
+#import <OmniAppKit/NSEvent-OAExtensions.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>

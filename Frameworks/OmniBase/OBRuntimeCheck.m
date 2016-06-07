@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -100,7 +100,21 @@ static char *_copyNormalizeMethodSignature(const char *sig)
 	dst++;
         src++;
     } while (c);
-    
+
+    // Implicitly created constructors in Swift subclasses of ObjC superclasses can end up with '^v' instead of '^{SomeStruct=}'
+    // Being a bit conserviative here...
+    char *opaqueTagStart;
+    while ((opaqueTagStart = strstr(copy, "^{Opaque"))) {
+        char *opaqueTagEnd = strstr(opaqueTagStart, "}");
+        assert(opaqueTagEnd != NULL);
+
+        char *tail = opaqueTagEnd+1;
+        size_t length = strlen(tail) + 1; // copy the '\0'
+
+        opaqueTagStart[1] = 'v'; // Make the tag '^v'
+        memmove(opaqueTagStart + 2, tail, length);
+    }
+
     //if (strcmp(sig, copy)) NSLog(@"Normalized '%s' to '%s'", sig, copy);
     
     return copy;
@@ -505,7 +519,9 @@ static BOOL _uncached_isSystemClass(Class cls)
         return YES;
     if (HAS_PREFIX(className, "_NSViewAnimator_"))
         return YES;
-    if (HAS_PREFIX(className, "_TtGCSs")) // Swift standard library stuff that gets specialized at runtime?
+//    if (HAS_PREFIX(className, "_TtGCSs")) // Swift standard library stuff that gets specialized at runtime?
+//        return YES;
+    if (HAS_PREFIX(className, "_TtGCs")) // Swift standard library stuff that gets specialized at runtime? (The 's' seems to mean 'Swift.')
         return YES;
 
     // It is an implementation detail whether the class structure is embedded in the library or whether a new block of memory in the heap is registered, but for now this works.
@@ -522,6 +538,8 @@ static BOOL _uncached_isSystemClass(Class cls)
 
     // Sandboxed iOS app container
     if (strstr(libraryPath, "/Containers/Bundle/Application/"))
+        return NO;
+    if (strstr(libraryPath, "/var/containers/Bundle/Application")) // iOS 9.3.1
         return NO;
 
     // System frameworks
@@ -549,6 +567,18 @@ static BOOL _uncached_isSystemClass(Class cls)
     // Running OS X debugger
     if (strstr(libraryPath, "/Contents/PlugIns/DebuggerUI.ideplugin/"))
         return YES;
+    if (strstr(libraryPath, "/MacOSX.platform/Developer/Library/Debugger/"))
+        return YES;
+
+    // Running OS X unit tests
+    if (strstr(libraryPath, "/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework/"))
+        return YES;
+    if (strstr(libraryPath, "/MacOSX.platform/Developer/Library/Xcode/Agents/xctest"))
+        return YES;
+    if (strstr(libraryPath, "/SharedFrameworks/DTXConnectionServices.framework/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/Users/Shared"))
+        return NO;
 
 #ifdef DEBUG_bungi
     NSLog(@"Don't know whether class %s is from a system framework or not (it is in %s)", class_getName(cls), info.dli_fname);
@@ -560,7 +590,13 @@ static BOOL _uncached_isSystemClass(Class cls)
 static BOOL _isSystemClass(Class cls)
 {
     // dladdr() is relatively expensive. But class structs often appear on the same vm page, so we can cache results (we could also look at the mach header and add is ranges...)
-    vm_address_t classPage = mach_vm_trunc_page(cls);
+    vm_address_t classPageCacheKey = mach_vm_trunc_page(cls);
+
+    // NSMutableIndexSet will throw for indexes that are greater than NSNotFound - 1. Sadly, NSNotFound is in the middle of the address space (0x7fff... instead of 0xffff...).
+    // But since this is page aligned, we can make a cache key by shifting off a few bits.
+    OBASSERT((classPageCacheKey & 0xff) == 0);
+    classPageCacheKey >>= 8;
+    OBASSERT(classPageCacheKey < NSNotFound - 1);
 
     OBPRECONDITION([NSThread isMainThread]); // using mutable state here
 
@@ -573,16 +609,16 @@ static BOOL _isSystemClass(Class cls)
         appClassPageIndexSet = [[NSMutableIndexSet alloc] init];
     });
 
-    if ([systemClassPageIndexSet containsIndex:classPage])
+    if ([systemClassPageIndexSet containsIndex:classPageCacheKey])
         return YES;
-    if ([appClassPageIndexSet containsIndex:classPage])
+    if ([appClassPageIndexSet containsIndex:classPageCacheKey])
         return NO;
 
     BOOL uncachedResult = _uncached_isSystemClass(cls);
     if (uncachedResult)
-        [systemClassPageIndexSet addIndex:classPage];
+        [systemClassPageIndexSet addIndex:classPageCacheKey];
     else
-        [appClassPageIndexSet addIndex:classPage];
+        [appClassPageIndexSet addIndex:classPageCacheKey];
 
     return uncachedResult;
 }

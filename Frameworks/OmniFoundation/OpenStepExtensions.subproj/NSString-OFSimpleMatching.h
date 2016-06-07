@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,3 +29,9 @@
 - (NSRange)rangeOfCharactersNotRepresentableInCFEncoding:(CFStringEncoding)anEncoding;
 
 @end
+
+// clang doesn't understand that +isEmptyString: is returns YES for nils, and so nullabilty warnings are emitted for cases where they shouldn't.
+static inline BOOL OFIsEmptyString(NSString *string) {
+    // Note that [string length] == 0 can be false when [string isEqualToString:@""] is true, because these are Unicode strings.
+    return string == nil || [string isEqualToString:@""];
+}

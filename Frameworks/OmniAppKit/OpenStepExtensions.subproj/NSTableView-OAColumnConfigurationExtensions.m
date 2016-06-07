@@ -1,11 +1,11 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSTableView-OAColumnConfigurationExtensions.h"
+#import <OmniAppKit/NSTableView-OAColumnConfigurationExtensions.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -13,7 +13,7 @@
 #import <OmniBase/macros.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OAApplication.h"
+#import <OmniAppKit/OAApplication.h>
 
 
 RCS_ID("$Id$")
@@ -240,6 +240,26 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
 
 @implementation NSTableView (OAColumnConfigurationPrivate)
 
+- (BOOL)_removeDuplicateColumns;
+{
+    NSMutableSet *existingIdentifiers = [NSMutableSet set];
+    NSMutableArray *duplicateColumns = [NSMutableArray array];
+    for (NSTableColumn *tableColumn in self.tableColumns) {
+        NSString *identifier = tableColumn.identifier;
+        if ([existingIdentifiers containsObject:identifier]) {
+            [duplicateColumns addObject:tableColumn];
+            continue;
+        }
+        [existingIdentifiers addObject:identifier];
+    }
+
+    for (NSTableColumn *duplicateColumn in duplicateColumns) {
+        [self removeTableColumn:duplicateColumn];
+    }
+
+    return duplicateColumns.count != 0;
+}
+
 - (void)_setupColumnsAndMenu;
 {
     id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
@@ -247,13 +267,14 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
         return;
     
     BOOL loadingAutosavedColumns = NO;
-    if ([self autosaveTableColumns]) {
-        NSString *autosaveName;
-        NSString *columnAutosaveName;
-        
-        autosaveName = [self autosaveName];
-        columnAutosaveName = [NSString stringWithFormat:@"NSTableView Columns %@", autosaveName];
+    if (self.autosaveTableColumns) {
+        NSString *autosaveName = self.autosaveName;
+        NSString *columnAutosaveName = [NSString stringWithFormat:@"NSTableView Columns %@", autosaveName];
         loadingAutosavedColumns = ([[NSUserDefaults standardUserDefaults] objectForKey:columnAutosaveName] != nil);
+        self.autosaveTableColumns = NO; self.autosaveTableColumns = YES; // Load our saved column configuration
+        if ([self _removeDuplicateColumns]) {
+            self.autosaveName = nil; self.autosaveName = autosaveName; // Update our saved column configuration
+        }
     }
         
     NSMenu *columnsMenu = [[NSMenu alloc] initWithTitle:@"Configure Columns"];
@@ -276,15 +297,20 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
     // Add menu items for all the columns.  For columns that aren't currently displayed, this will be where we store the pointer to the column.
     // Also deactivate any columns that aren't supposed to show up in the default configuration.
     NSArray *defaultColumnIdentifiers = [self _defaultColumnIdentifiers];
-    
-    for (NSTableColumn *tableColumn in [NSArray arrayWithArray:self.tableColumns]) { // avoid mutation while enumeration exception
+    NSMutableArray *deactivateColumns = [NSMutableArray array];
+    for (NSTableColumn *tableColumn in self.tableColumns) {
         [self _addItemWithTableColumn:tableColumn toMenu:columnsMenu];
-        if (!loadingAutosavedColumns && ![defaultColumnIdentifiers containsObject:[tableColumn identifier]])
-            [self deactivateTableColumn:tableColumn];
+        if (!loadingAutosavedColumns && ![defaultColumnIdentifiers containsObject:tableColumn.identifier]) {
+            [deactivateColumns addObject:tableColumn];
+        }
     }
-    
+
+    for (NSTableColumn *tableColumn in deactivateColumns) {
+        [self deactivateTableColumn:tableColumn];
+    }
+
     [self sizeToFit];
-        
+
     [[self headerView] setMenu:columnsMenu];
 }
 
@@ -372,16 +398,14 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
 - (BOOL)_columnConfigurationEnabled;
 {
     id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
-    return [dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)];
+    return [dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)] && [dataSource tableViewDefaultColumnIdentifiers:self] != nil;
 }
 
 - (NSArray *)_defaultColumnIdentifiers;
 {
     id <OATableViewColumnConfigurationDataSource> dataSource = (id)self.dataSource;
     if ([dataSource respondsToSelector:@selector(tableViewDefaultColumnIdentifiers:)]) {
-        NSArray *identifiers;
-
-        identifiers = [dataSource tableViewDefaultColumnIdentifiers:self];
+        NSArray *identifiers = [dataSource tableViewDefaultColumnIdentifiers:self];
         if ([identifiers count] < 1)
             [NSException raise:NSInvalidArgumentException format:@"-tableViewDefaultColumnIdentifiers: must return at least one valid column identifier"];
         else

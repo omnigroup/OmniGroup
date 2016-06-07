@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>%news_title%</title>
+<style>
+	/* DO NOT LOCALIZE ANYTHING IN BETWEEN THE STYLE TAGS */
+	* {
+		margin: 0;
+		padding: 0;
+	}
+	body {
+		background: #ffffff;
+		font-family: "-apple-system", sans-serif;
+		color: #999999;
+		display: -webkit-flex;
+		-webkit-align-items: center;
+		-webkit-justify-content: center;
+		height: 100vh;	
+	}
+	.content {
+		width: 70vw;
+		text-align: center;
+		-webkit-align-items: center;
+		font-size: 2vw;
+	}
+	h1 {
+		margin-bottom: .05em;
+		color: #333333;
+	}
+	@media only screen 
+		and (max-device-width : 568px) {
+			.content {
+				font-size: 3vw;
+			}
+			.error {
+				font-size: 4vw;
+			
+			}
+		}
+</style>
+</head>
+<body>
+<div class="content">
+<h1>%news_error_header%</h1>
+<p class="error">%news_error%</p>
+</div>
+</body>
+</html>

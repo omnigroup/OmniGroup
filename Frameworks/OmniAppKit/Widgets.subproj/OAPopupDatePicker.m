@@ -1,11 +1,11 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAPopupDatePicker.h"
+#import <OmniAppKit/OAPopupDatePicker.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -13,11 +13,11 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
 
-#import "NSEvent-OAExtensions.h"
-#import "NSImage-OAExtensions.h"
-#import "OAWindowCascade.h"
+#import <OmniAppKit/NSEvent-OAExtensions.h>
+#import <OmniAppKit/NSImage-OAExtensions.h>
+#import <OmniAppKit/OAWindowCascade.h>
 #import "OADatePicker.h"
-#import "OAVersion.h"
+#import <OmniAppKit/OAVersion.h>
 
 NSString * const OAPopupDatePickerWillShowNotificationName = @"OAPopupDatePickerWillShow";
 NSString * const OAPopupDatePickerDidHideNotificationName = @"OAPopupDatePickerDidHide";
@@ -50,9 +50,9 @@ RCS_ID("$Id$");
     
     BOOL _startedWithNilDate;
     
-    IBOutlet OADatePicker *datePicker;
 }
 
+@property (nonatomic, retain) IBOutlet OADatePicker *datePicker;
 @property (nonatomic, retain) IBOutlet NSDatePicker *timePicker;
 
 - (void)_configureTimePickerFromFormatter:(NSFormatter *)formatter;
@@ -167,8 +167,8 @@ static NSSize calendarImageSize;
 
 - (void)setCalendar:(NSCalendar *)calendar;
 {
-    [datePicker setCalendar:calendar];
-    [self.timePicker setCalendar:calendar];
+    [_datePicker setCalendar:calendar];
+    [_timePicker setCalendar:calendar];
 }
 
 - (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl dateUpdateSelector:(SEL)dateUpdateSelector defaultDate:(NSDate *)defaultDate;
@@ -202,12 +202,12 @@ static NSSize calendarImageSize;
 
 - (id)destinationObject;
 {
-    return [[datePicker infoForBinding:@"value"] objectForKey:NSObservedObjectKey];
+    return [[_datePicker infoForBinding:@"value"] objectForKey:NSObservedObjectKey];
 }
 
 - (NSString *)bindingKeyPath;
 {
-    return [[datePicker infoForBinding:@"value"] objectForKey:NSObservedKeyPathKey];
+    return [[_datePicker infoForBinding:@"value"] objectForKey:NSObservedKeyPathKey];
 }
 
 - (BOOL)isKey;
@@ -228,14 +228,14 @@ static NSSize calendarImageSize;
 
 - (NSDatePicker *)datePicker;
 {
-    OBASSERT(datePicker);
-    return datePicker;
+    OBASSERT(_datePicker != nil);
+    return _datePicker;
 }
 
 - (IBAction)datePickerAction:(id)sender;
 {
     if (_boundObject && ![_boundObject valueForKeyPath:_boundObjectKeyPath]) {
-        [_boundObject setValue:[datePicker objectValue] forKeyPath:_boundObjectKeyPath];
+        [_boundObject setValue:[_datePicker objectValue] forKeyPath:_boundObjectKeyPath];
     }
     
     if (!_boundObject) {
@@ -340,8 +340,8 @@ static NSSize calendarImageSize;
     if ([_boundObject respondsToSelector:@selector(datePicker:willUnbindFromKeyPath:)])
         [_boundObject datePicker:self willUnbindFromKeyPath:_boundObjectKeyPath];
     
-    [datePicker unbind:NSValueBinding];
-    [self.timePicker unbind:NSValueBinding];
+    [_datePicker unbind:NSValueBinding];
+    [_timePicker unbind:NSValueBinding];
     
     [_boundObject release];
     _boundObject = nil;
@@ -368,16 +368,16 @@ static NSSize calendarImageSize;
     // we want to display the time for all custom date formatters.
     BOOL isCustomDateFormatter = ([formatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)formatter dateStyle] == kCFDateFormatterNoStyle && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle);
     if ([formatter isKindOfClass:[NSDateFormatter class]] && (!isCustomDateFormatter) && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle) {
-        if ([self.timePicker superview]) {
+        if ([_timePicker superview]) {
             NSRect frame = popupWindow.frame;
-            frame.size.height -= NSHeight([self.timePicker frame]);
-            [self.timePicker removeFromSuperview];
+            frame.size.height -= NSHeight([_timePicker frame]);
+            [_timePicker removeFromSuperview];
             [popupWindow setFrame:frame display:YES];
         }
-    } else if (![self.timePicker superview]) {
-        [[popupWindow contentView] addSubview:self.timePicker];
+    } else if (![_timePicker superview]) {
+        [[popupWindow contentView] addSubview:_timePicker];
         NSRect frame = popupWindow.frame;
-        frame.size.height += NSHeight([self.timePicker frame]);
+        frame.size.height += NSHeight([_timePicker frame]);
         [popupWindow setFrame:frame display:YES];
     }
 }
@@ -402,20 +402,20 @@ static NSSize calendarImageSize;
     if (_datePickerObjectValue == nil)
 	_datePickerObjectValue = [defaultDate copy]; // NB: don't update _startedWithNilDate, because a "default" is not the same as an "original" value
     
-    [datePicker reset];
+    [_datePicker reset];
 }
 
 - (void)_prepareBindingsForPopupWindowPresentation;
 {
     // bind the date picker to our local object value
-    [datePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
-    [datePicker setTarget:self];
-    [datePicker setAction:@selector(datePickerAction:)];
+    [_datePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
+    [_datePicker setTarget:self];
+    [_datePicker setAction:@selector(datePickerAction:)];
     
-    [self.timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
+    [_timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
     
     [self setDatePickerObjectValue:_datePickerObjectValue];
-    [datePicker setClicked:NO];
+    [_datePicker setClicked:NO];
 }
 
 - (void)_showPopupWindowWithTitle:(NSString *)title fromRect:(NSRect)viewRect ofView:(NSView *)emergeFromView;
@@ -424,7 +424,15 @@ static NSSize calendarImageSize;
     
     NSWindow *emergeFromWindow = [emergeFromView window];
     NSWindow *popupWindow = [self window];
-    
+    NSAppearance *appearance = emergeFromView.window.appearance;
+    popupWindow.appearance = appearance;
+    BOOL isDark = OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    if (isDark) {
+        _timePicker.bordered = YES;
+    } else {
+        _timePicker.bezeled = YES;
+    }
+
     /* Finally, place the editor window on-screen */
     [popupWindow setTitle:title];
     
@@ -492,7 +500,7 @@ static NSSize calendarImageSize;
         calendar = adjustedCalendar;
     }
     
-    [datePicker setCalendar:calendar];
+    [_datePicker setCalendar:calendar];
     [calendar release];
 }
 
@@ -571,3 +579,21 @@ static NSSize calendarImageSize;
 
 @end
 
+@interface OAPopupDatePickerBackgroundView : NSView
+@end
+
+@implementation OAPopupDatePickerBackgroundView
+
+- (void)drawRect:(NSRect)dirtyRect;
+{
+    NSAppearance *appearance = self.effectiveAppearance;
+    BOOL isDark = OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    if (isDark) {
+        [[NSColor controlBackgroundColor] set]; // windowBackgroundColor blends in with the black calendar days
+    } else {
+        [[NSColor windowBackgroundColor] set];
+    }
+    NSRectFill(dirtyRect);
+}
+
+@end

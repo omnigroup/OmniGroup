@@ -324,7 +324,7 @@ static int OGRunParser(struct scanContext *scanContext, NSString *str)
 }
 
 #if 0
-BOOL OGScaleParse(OGScale *into, NSString *str)
+BOOL OGScaleSetFromString(OGScale *into, NSString *str)
 {
     struct scanContext scanContext;
     

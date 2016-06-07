@@ -1,28 +1,28 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OWCookieDomain.h"
+#import <OWF/OWCookieDomain.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSDate-OWExtensions.h"
-#import "OWAddress.h"
-#import "OWContentInfo.h"
-#import "OWCookiePath.h"
-#import "OWCookie.h"
-#import "OWHeaderDictionary.h"
-#import "OWHTTPSession.h"
-#import "OWNetLocation.h"
-#import "OWProcessor.h"
-#import "OWSitePreference.h"
-#import "OWURL.h"
-#import "OWWebPipeline.h"
+#import <OWF/NSDate-OWExtensions.h>
+#import <OWF/OWAddress.h>
+#import <OWF/OWContentInfo.h>
+#import <OWF/OWCookiePath.h>
+#import <OWF/OWCookie.h>
+#import <OWF/OWHeaderDictionary.h>
+#import <OWF/OWHTTPSession.h>
+#import <OWF/OWNetLocation.h>
+#import <OWF/OWProcessor.h>
+#import <OWF/OWSitePreference.h>
+#import <OWF/OWURL.h>
+#import <OWF/OWWebPipeline.h>
 
 
 RCS_ID("$Id$")
@@ -37,12 +37,12 @@ static NSTimeInterval distantPastInterval;
 
 static id classDelegate;
 
-static NSString *OW5CookieFileName = @"Cookies.xml";
+static NSString * const OW5CookieFileName = @"Cookies.xml";
 NSString * const OWCookiesChangedNotification = @"OWCookiesChangedNotification";
 
-NSString *OWAcceptCookiePreferenceKey = @"OWAcceptCookies";
-NSString *OWRejectThirdPartyCookiesPreferenceKey = @"OWRejectThirdPartyCookies";
-NSString *OWExpireCookiesAtEndOfSessionPreferenceKey = @"OWExpireCookiesAtEndOfSession";
+NSString * const OWAcceptCookiePreferenceKey = @"OWAcceptCookies";
+NSString * const OWRejectThirdPartyCookiesPreferenceKey = @"OWRejectThirdPartyCookies";
+NSString * const OWExpireCookiesAtEndOfSessionPreferenceKey = @"OWExpireCookiesAtEndOfSession";
 
 #ifdef DEBUG_len0
 BOOL OWCookiesDebug = YES;
@@ -50,7 +50,7 @@ BOOL OWCookiesDebug = YES;
 BOOL OWCookiesDebug = NO;
 #endif
 
-NSString *OWSetCookieHeader = @"set-cookie";
+NSString * const OWSetCookieHeader = @"set-cookie";
 
 
 static inline void _locked_checkCookiesLoaded()

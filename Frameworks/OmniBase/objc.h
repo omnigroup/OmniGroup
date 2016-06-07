@@ -1,4 +1,4 @@
-// Copyright 2007-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,6 +44,8 @@
     #endif
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 // For use with OBJC_OLD_DISPATCH_PROTOTYPES=0 where we must cast objc_msgSend to a function pointer type
 
 static inline void OBCallVoidIMP(IMP imp, id self, SEL _cmd)
@@ -52,21 +54,21 @@ static inline void OBCallVoidIMP(IMP imp, id self, SEL _cmd)
     f(self, _cmd);
 }
 
-static inline void OBCallVoidIMPWithObject(IMP imp, id self, SEL _cmd, id object)
+static inline void OBCallVoidIMPWithObject(IMP imp, id self, SEL _cmd, id _Nullable object)
 {
-    void (*f)(id, SEL, id) = (typeof(f))imp;
+    void (*f)(id, SEL, id _Nullable) = (typeof(f))imp;
     f(self, _cmd, object);
 }
 
-static inline void OBCallVoidIMPWithObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2)
+static inline void OBCallVoidIMPWithObjectObject(IMP imp, id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
 {
-    void (*f)(id, SEL, id, id) = (typeof(f))imp;
+    void (*f)(id, SEL, id _Nullable, id _Nullable) = (typeof(f))imp;
     f(self, _cmd, object1, object2);
 }
 
-static inline void OBCallVoidIMPWithObjectObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2, id object3)
+static inline void OBCallVoidIMPWithObjectObjectObject(IMP imp, id self, SEL _cmd, id _Nullable object1, id _Nullable object2, id _Nullable object3)
 {
-    void (*f)(id, SEL, id, id, id) = (typeof(f))imp;
+    void (*f)(id, SEL, id _Nullable, id _Nullable, id _Nullable) = (typeof(f))imp;
     f(self, _cmd, object1, object2, object3);
 }
 
@@ -76,15 +78,15 @@ static inline id OBCallObjectReturnIMP(IMP imp, id self, SEL _cmd)
     return f(self, _cmd);
 }
 
-static inline id OBCallObjectReturnIMPWithObject(IMP imp, id self, SEL _cmd, id object)
+static inline id OBCallObjectReturnIMPWithObject(IMP imp, id self, SEL _cmd, id _Nullable object)
 {
-    id (*f)(id, SEL, id) = (typeof(f))imp;
+    id (*f)(id, SEL, id _Nullable) = (typeof(f))imp;
     return f(self, _cmd, object);
 }
 
-static inline BOOL OBCallBoolReturnIMPWithObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2)
+static inline BOOL OBCallBoolReturnIMPWithObjectObject(IMP imp, id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
 {
-    BOOL (*f)(id, SEL, id, id) = (typeof(f))imp;
+    BOOL (*f)(id, SEL, id _Nullable, id _Nullable) = (typeof(f))imp;
     return f(self, _cmd, object1, object2);
 }
 
@@ -93,17 +95,17 @@ static inline void OBSendVoidMessage(id self, SEL _cmd)
     OBCallVoidIMP(objc_msgSend, self, _cmd);
 }
 
-static inline void OBSendVoidMessageWithObject(id self, SEL _cmd, id object)
+static inline void OBSendVoidMessageWithObject(id self, SEL _cmd, id _Nullable object)
 {
     OBCallVoidIMPWithObject(objc_msgSend, self, _cmd, object);
 }
 
-static inline void OBSendVoidMessageWithObjectObject(id self, SEL _cmd, id object1, id object2)
+static inline void OBSendVoidMessageWithObjectObject(id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
 {
     OBCallVoidIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
 }
 
-static inline void OBSendVoidMessageWithObjectObjectObject(id self, SEL _cmd, id object1, id object2, id object3)
+static inline void OBSendVoidMessageWithObjectObjectObject(id self, SEL _cmd, id _Nullable object1, id _Nullable object2, id _Nullable object3)
 {
     OBCallVoidIMPWithObjectObjectObject(objc_msgSend, self, _cmd, object1, object2, object3);
 }
@@ -113,17 +115,42 @@ static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
     return OBCallObjectReturnIMP(objc_msgSend, self, _cmd);
 }
 
-static inline id OBSendObjectReturnMessageWithObject(id self, SEL _cmd, id object)
+static inline id OBSendObjectReturnMessageWithObject(id self, SEL _cmd, id _Nullable object)
 {
     return OBCallObjectReturnIMPWithObject(objc_msgSend, self, _cmd, object);
 }
 
-static inline BOOL OBSendBoolReturnMessageWithObjectObject(id self, SEL _cmd, id object1, id object2)
+static inline BOOL OBSendBoolReturnMessageWithObjectObject(id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
 {
     return OBCallBoolReturnIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
 }
+
+//
+// Runtime enumeration
+//
+
+typedef void (^OBProtocolAction)(Protocol * _Nonnull protocol);
+extern void OBEnumerateProtocolsForClassConformingToProtocol(Class cls, Protocol * _Nullable conformingToProtocol, OBProtocolAction action);
+
+typedef void (^OBPropertyAction)(objc_property_t property);
+extern void OBEnumeratePropertiesInProtocol(Protocol *protocol, OBPropertyAction action);
+
+typedef void (^OBMethodDescriptionAction)(struct objc_method_description methodDescription);
+extern void OBEnumerateMethodDescriptionsInProtocol(Protocol *protocol, BOOL isInstanceMethod, OBMethodDescriptionAction action);
 
 // In a few cases we retain and release things in ways that clang-sa isn't happy about (e.g., callbacks and state machines). These macros let us hide the retain/release from the static analyzer.
 #define OBAnalyzerProofRetain(obj) OBSendObjectReturnMessage((obj), @selector(retain))
 #define OBAnalyzerProofRelease(obj) OBSendVoidMessage((obj), @selector(release))
 #define OBAnalyzerProofAutorelease(obj) OBSendVoidMessage((obj), @selector(autorelease))
+
+extern SEL OBRegisterSelectorIfAbsent(const char *selName);
+
+// Common conversion for making a 'setFoo:' selector from a getter name.
+extern SEL OBSetterForName(const char *name);
+
+//
+
+// Any.Type doesn't have a `superclass` property in Swift.
+extern _Nullable Class OBSuperclass(Class cls);
+
+NS_ASSUME_NONNULL_END

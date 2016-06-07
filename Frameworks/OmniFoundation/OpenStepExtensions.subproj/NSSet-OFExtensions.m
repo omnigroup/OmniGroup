@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,15 @@ RCS_ID("$Id$");
 + (BOOL)isEmptySet:(NSSet *)set;
 {
     return set == nil || set.count == 0;
+}
+
++ (instancetype)setByEnumerating:(NSEnumerator *)enumerator;
+{
+    NSMutableSet *set = [NSMutableSet set];
+    for (id obj in enumerator) {
+        [set addObject:obj];
+    }
+    return [self setWithSet:set];
 }
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
@@ -46,7 +55,9 @@ RCS_ID("$Id$");
     
     if (resultSet)
         return resultSet;
-    return [NSSet setWithObjects:singleResult, nil];
+    if (singleResult)
+        return [NSSet setWithObject:singleResult];
+    return [NSSet set];
 }
 
 - (NSSet *)setByRemovingObject:(id)anObject;

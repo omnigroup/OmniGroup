@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,16 +30,14 @@
 - (CGPoint)viewPointForTouchPoint:(CGPoint)point;
 - (CGPoint)viewPointForTouch:(UITouch *)touch;
 
-// These methods are confusingly named; -transformToRenderingSpace actually returns a transform that will take you *from* rendering space to UIKit's  view coordinate system, but that's the transform you want to concat with the CTM in order to "be in" rendering space when you draw (that is, to "go to rendering space"). Likewise -transformFromRenderingSpace returns a transform that will convert a point's coordinates in UIKit's space *to* the same point's coordinates in rendering space.
-- (CGAffineTransform)transformToRenderingSpace;
-- (CGAffineTransform)transformFromRenderingSpace;
+// These methods are confusingly named; -transformToViewSpace actually returns a transform that will take you *from* rendering space to UIKit's  view coordinate system, but that's the transform you want to concat with the CTM in order to "be in" rendering space when you draw (that is, to "go to rendering space"). Likewise -transformFromViewSpace returns a transform that will convert a point's coordinates in UIKit's space *to* the same point's coordinates in rendering space.
+- (CGAffineTransform)transformFromViewSpaceToUnscaledSpace;
 
-- (CGRect)convertRectFromRenderingSpace:(CGRect)rect;
-- (CGRect)convertRectToRenderingSpace:(CGRect)rect;
-- (CGPoint)convertPointFromRenderingSpace:(CGPoint)point;
-- (CGPoint)convertPointToRenderingSpace:(CGPoint)point;
-- (void)establishTransformToRenderingSpace:(CGContextRef)ctx;
-- (CGRect)viewRectWithCenter:(CGPoint)center size:(CGSize)size;
+- (CGRect)convertRectFromViewSpaceToUnscaledSpace:(CGRect)rect;
+- (CGRect)convertRectFromUnscaledSpaceToViewSpace:(CGRect)rect;
+- (CGPoint)convertPointFromViewSpaceToUnscaledSpace:(CGPoint)point;
+- (CGPoint)convertPointFromUnscaledSpaceToViewSpace:(CGPoint)point;
+- (void)establishTransformFromViewSpaceToUnscaledSpace:(CGContextRef)ctx;
 
 // Subclass this to draw w/in a scaled (and possibly flipped) coordinate system.
 - (void)drawScaledContent:(CGRect)rect;

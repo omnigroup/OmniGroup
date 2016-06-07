@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,10 +101,8 @@
 
 @end
 
-#import <OWF/FrameworkDefines.h>
-
-OWF_EXTERN NSTimeInterval OWContentTypeNeverExpireTimeInterval;
-OWF_EXTERN NSTimeInterval OWContentTypeExpireWhenFlushedTimeInterval;
-OWF_EXTERN NSString *OWContentTypeNeverExpireString;
-OWF_EXTERN NSString *OWContentTypeExpireWhenFlushedString;
-OWF_EXTERN NSString *OWContentTypeReloadExpirationTimeIntervalsNotificationName;
+extern const NSTimeInterval OWContentTypeNeverExpireTimeInterval;
+extern const NSTimeInterval OWContentTypeExpireWhenFlushedTimeInterval;
+extern NSString * const OWContentTypeNeverExpireString;
+extern NSString * const OWContentTypeExpireWhenFlushedString;
+extern NSString * const OWContentTypeReloadExpirationTimeIntervalsNotificationName;

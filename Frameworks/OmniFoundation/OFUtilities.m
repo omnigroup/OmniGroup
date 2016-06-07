@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,30 +33,9 @@ void OFLog(NSString *messageFormat, ...)
     fputs([message UTF8String], stdout);
 }
 
-/*"
-Ensures that the given selName maps to a registered selector.  If it doesn't, a copy of the string is made and it is registered with the runtime.  The registered selector is returned, in any case.
-"*/
 SEL OFRegisterSelectorIfAbsent(const char *selName)
 {
-    SEL sel;
-
-    if (!(sel = sel_getUid(selName))) {
-        // The documentation isn't clear on whether the input string is copied or not.
-        // On NS4.0 and later, sel_registerName copies the selector name.  But
-        // we won't assume that is the case -- we'll make a temporary copy
-        // and get the assertion rather than crashing the runtime (in case they
-        // change this in the future).
-        char *newSel = strdup(selName);
-        sel = sel_registerName(newSel);
-
-        // Make sure the copy happened
-        OBASSERT((void *)sel_getUid(selName) != (void *)newSel);
-        OBASSERT((void *)sel != (void *)newSel);
-
-        free(newSel);
-    }
-
-    return sel;
+    return OBRegisterSelectorIfAbsent(selName);
 }
 
 void OFWithLock(NSLock *lock, void (^block)(void))

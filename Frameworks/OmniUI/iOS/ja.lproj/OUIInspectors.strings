@@ -1,27 +1,26 @@
 /* font size label format string in points */
 "%@ points" = "%@ ポイント";
 
-/* title format for color component slider
-   title format for color component slider - alpha component, 0-100 */
+/* title format for color component slider */
 
 "<alpha title+value>" = "不透明度： %d%%";
 
-/* title format for color component slider - blue component in RGB model, 0-255 */
+/* title format for color component slider */
 "<blue title+value>" = "ブルー: %d";
 
-/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+/* title format for color component slider */
 "<brightness title+value>" = "明度： %d%%";
 
-/* title format for color component slider - green component in RGB model, 0-255 */
+/* title format for color component slider */
 "<green title+value>" = "グリーン： %d";
 
-/* title format for color component slider - hue angle in HSV model, degrees */
+/* title format for color component slider */
 "<hue title+value>" = "色相： %d°";
 
-/* title format for color component slider - red component in RGB model, 0-255 */
+/* title format for color component slider */
 "<red title+value>" = "レッド： %d";
 
-/* title format for color component slider - saturation component in HSV model, 0-100 */
+/* title format for color component slider */
 "<saturation title+value>" = "彩度： %d%%";
 
 /* title format for color component slider */
@@ -37,10 +36,14 @@
 "Color" = "色";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "フォント";
 
 /* Increment font size button accessibility label */
 "Font bigger" = "フォントを大きく";
+
+/* Font size description accessibility label */
+"Font size" = "フォントサイズ";
 
 /* Decrement font size button accessibility label */
 "Font smaller" = "フォントを小さく";

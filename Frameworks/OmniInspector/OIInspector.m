@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,27 +19,12 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 static OFEnumNameTable *ModifierMaskNameTable = nil;
 static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 @implementation OIInspector
-{
-@private
-    NSString *_identifier;
-    NSString *_displayName;
-    OIVisibilityState _defaultVisibilityState;
-    NSString *_shortcutKey;
-    NSUInteger _shortcutModifierFlags;
-    NSBundle *resourceBundle;
-    BOOL _allowImagesFromApplication;
-    NSString *_imageName, *tabImageName;
-    NSImage  *_image;
-    NSUInteger _defaultOrderingWithinGroup;
-    OIInspectorInterfaceType _preferredInterfaceType;
-    
-    BOOL wantsHeader;
-    BOOL isCollapsible;
-}
 
 + (void)initialize;
 {
@@ -66,12 +51,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return OIVisibilityStateNameTable;
 }
 
-//+ newInspectorWithDictionary:(NSDictionary *)dict;
-//{
-//    return [self newInspectorWithDictionary:dict bundle:nil];
-//}
-
-+ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
++ (nullable __kindof OIInspector <OIConcreteInspector> *)inspectorWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(nullable NSBundle *)sourceBundle;
 {
     // Do the OS version check before allocating an instance
     NSString *minimumOSVersionString = [dict objectForKey:@"minimumOSVersion"];
@@ -104,8 +84,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     Class cls = NSClassFromString(className);
     if (!cls)
         [NSException raise:NSInvalidArgumentException format:@"Inspector dictionary specified class that doesn't exist: %@", dict];
-    
-    return [[cls alloc] initWithDictionary:dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:inspectorResourceBundle];
+
+    OIInspector *inspector = [[cls alloc] initWithDictionary:dict inspectorRegistry:inspectorRegistry bundle:inspectorResourceBundle];
+
+    // The init method asserts this is the case
+    return (OIInspector <OIConcreteInspector> *)inspector;
 }
 
 // Make sure inspector subclasses are calling [super initWithDictionary:bundle:]
@@ -115,7 +98,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return nil;
 }
 
-- (id)initWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
+- (nullable id)initWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(nullable NSBundle *)sourceBundle;
 {
     OBPRECONDITION(dict);
     OBPRECONDITION([self conformsToProtocol:@protocol(OIConcreteInspector)]);
@@ -138,7 +121,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         OBASSERT_NOT_IMPLEMENTED(self, tabGroupImage);
         OBASSERT_NOT_IMPLEMENTED(self, tabImageName);
         
-        // ... or deprecated methods from NSObject (OIInspectorOptionalMethods)
+        // ... or deprecated optional methods from OIConcreteInspector
         OBASSERT_NOT_IMPLEMENTED(self, inspectorWillResizeToSize:); // Now called -inspectorWillResizeToHeight:
         OBASSERT_NOT_IMPLEMENTED(self, inspectorMinimumSize); // Now called -inspectorMinimumHeight
         OBASSERT_NOT_IMPLEMENTED(self, inspectorDesiredWidth); // Totally deprecated
@@ -147,22 +130,22 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         OBASSERT_NOT_IMPLEMENTED(self, initWithDictionary:); // Now called -initWithDictionary:bundle:
     }
     
-    resourceBundle = sourceBundle;
-    if (!resourceBundle)
-        resourceBundle = [[self class] bundle]; // need something non-nil, but this likely won't work very well.
+    _resourceBundle = sourceBundle;
+    if (!_resourceBundle)
+        _resourceBundle = [[self class] bundle]; // need something non-nil, but this likely won't work very well.
     
     _allowImagesFromApplication = [dict boolForKey:@"allowImagesFromApplication" defaultValue:NO];
     
-    _identifier = [[dict objectForKey:@"identifier"] copy];
-    if (!_identifier) {
-        _identifier = [NSString stringWithStrings:[resourceBundle bundleIdentifier], @".", NSStringFromClass([self class]), nil];
+    _inspectorIdentifier = [[dict objectForKey:@"identifier"] copy];
+    if (!_inspectorIdentifier) {
+        _inspectorIdentifier = [NSString stringWithStrings:[_resourceBundle bundleIdentifier], @".", NSStringFromClass([self class]), nil];
     }
-    OBASSERT(_identifier != nil);
+    OBASSERT(_inspectorIdentifier != nil);
     
-    _displayName = [resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"];
-    if ([_displayName isEqualToString:_identifier])
-        // _identifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
-        NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _identifier, resourceBundle);
+    _displayName = [_resourceBundle localizedStringForKey:_inspectorIdentifier value:nil table:@"OIInspectors"];
+    if ([_displayName isEqualToString:_inspectorIdentifier])
+        // _inspectorIdentifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
+        NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _inspectorIdentifier, _resourceBundle);
     
     NSString *visibilityString = [dict objectForKey:@"visibilityState"];
     if (visibilityString != nil) {
@@ -181,14 +164,14 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         _shortcutModifierFlags = 0;
     }
     
-    _imageName = [[dict objectForKey:@"image"] copy];
-    if (_imageName) {
-        _image = [self imageNamed:_imageName]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
+    _inspectorImageName = [[dict objectForKey:@"image"] copy];
+    if (_inspectorImageName) {
+        _image = [self imageNamed:_inspectorImageName]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
 	if (!_image)
-	    NSLog(@"Unable to find image '%@' for %@ in bundle %@", _imageName, self, resourceBundle);
+	    NSLog(@"Unable to find image '%@' for %@ in bundle %@", _inspectorImageName, self, _resourceBundle);
     }
     
-    tabImageName = [[dict objectForKey:@"tabImage"] copy];
+    _inspectorTabImageName = [[dict objectForKey:@"tabImage"] copy];
     
     if ([dict objectForKey:@"order"])
         _defaultOrderingWithinGroup = [dict unsignedIntForKey:@"order"];
@@ -202,77 +185,40 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         _preferredInterfaceType = OIInspectorInterfaceTypeFloating;
     }
     
-    wantsHeader =  YES;
+    _wantsHeader =  YES;
     if ([dict objectForKey:@"wantsHeader"])
-        wantsHeader = [dict boolForKey:@"wantsHeader"];
-    isCollapsible = YES;
+        _wantsHeader = [dict boolForKey:@"wantsHeader"];
+    _isCollapsible = YES;
     if ([dict objectForKey:@"isCollapsible"])
-        isCollapsible = [dict boolForKey:@"isCollapsible"];
+        _isCollapsible = [dict boolForKey:@"isCollapsible"];
     
     return self;
 }
 
-- (NSString *)identifier;
-{
-    return _identifier;
-}
+@dynamic identifier; // Marked NS_UNAVAILABLE in our header to avoid conflicting with the one NSViewController has due to NSUserInterfaceItemIdentification.
 
-- (OIVisibilityState)defaultVisibilityState;
-{
-    return _defaultVisibilityState;
-}
-
-- (NSString *)shortcutKey;
-{
-    return _shortcutKey;
-}
-
-- (NSUInteger)shortcutModifierFlags;
-{
-    return _shortcutModifierFlags;
-}
-
-- (NSImage *)imageNamed:(NSString *)imageName;
+- (nullable NSImage *)imageNamed:(NSString *)imageName;
 {
     NSImage *image = nil;
-    BOOL checkAppWrapperFirst = (_allowImagesFromApplication && (resourceBundle != [NSBundle mainBundle])); // NO if the resourceBundle is the mainBundle, to avoid checking the app wrapper twice
+    BOOL checkAppWrapperFirst = (_allowImagesFromApplication && (_resourceBundle != [NSBundle mainBundle])); // NO if the resourceBundle is the mainBundle, to avoid checking the app wrapper twice
     if (checkAppWrapperFirst) {
         image = [NSImage imageNamed:imageName];
     }
     if (image == nil) {
-        image = [NSImage imageNamed:imageName inBundle:resourceBundle];
+        image = [NSImage imageNamed:imageName inBundle:_resourceBundle];
     }
     return image;
 }
 
-- (NSImage *)image;
+- (nullable NSImage *)tabImage;
 {
-    return _image;
-}
-
-- (NSImage *)tabImage;
-{
-    NSImage *image = [self imageNamed:tabImageName];
-    if (tabImageName && !image)
-        NSLog(@"Unable to find image '%@' for %@ in bundle %@", tabImageName, self, resourceBundle);
+    NSImage *image = [self imageNamed:_inspectorTabImageName];
+    if (_inspectorTabImageName && !image)
+        NSLog(@"Unable to find image '%@' for %@ in bundle %@", _inspectorTabImageName, self, _resourceBundle);
     return image;
 }
 
-- (NSString *)inspectorImageName;
-{
-    return _imageName;
-}
-
-- (NSString *)inspectorTabImageName;
-{
-    return tabImageName;
-}
-
-- (NSString *)displayName;
-{
-    return _displayName;
-}
-
+@synthesize defaultOrderingWithinGroup = _defaultOrderingWithinGroup;
 - (NSUInteger)defaultOrderingWithinGroup;
 {
     return ( _defaultOrderingWithinGroup != NSNotFound )? _defaultOrderingWithinGroup : 0;
@@ -282,16 +228,6 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 {
     if (_defaultOrderingWithinGroup != NSNotFound)
         _defaultOrderingWithinGroup = defaultOrderingWithinGroup;
-}
-
-- (NSBundle *)resourceBundle
-{
-    return resourceBundle;
-}
-
-- (BOOL)allowImagesFromApplication;
-{
-    return _allowImagesFromApplication;
 }
 
 // TODO: Get rid of this
@@ -310,7 +246,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return 0.0f;
 }
 
-- (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
+- (NSMenuItem *)menuItemForTarget:(nullable id)target action:(SEL)action;
 {
     OBPRECONDITION(!target || [target respondsToSelector:action]);
 
@@ -331,7 +267,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return menuItem;
 }
 
-- (NSArray *)menuItemsForTarget:(id)target action:(SEL)action;
+- (NSArray *)menuItemsForTarget:(nullable id)target action:(SEL)action;
 {
     NSMenuItem *singleItem = [self menuItemForTarget:target action:action];
     return singleItem ? [NSArray arrayWithObject:singleItem] : nil;
@@ -365,7 +301,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 - (BOOL)shouldBeUsedForObject:(id)object;
 {
-    if (![[self inspectedObjectsPredicate] evaluateWithObject:object])
+    if (![[(id <OIConcreteInspector>)self inspectedObjectsPredicate] evaluateWithObject:object])
         return NO;
         
     // Optional finer grain predicate.
@@ -386,27 +322,12 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     OBASSERT_NOT_REACHED("This should only be called on inspectors which are ancestors of the resized inspector.");
 }
 
-- (OIInspectorInterfaceType)preferredInterfaceType;
-{
-    return _preferredInterfaceType;
-}
+#pragma mark - Debugging
 
-- (BOOL)wantsHeader
-{
-    return wantsHeader;
-}
-
-- (BOOL)isCollapsible
-{
-    return isCollapsible;
-}
-
-#pragma mark -
-#pragma mark Debugging
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
-    [dict setObject:_identifier forKey:@"identifier"];
+    [dict setObject:_inspectorIdentifier forKey:@"identifier"];
     [dict setObject:_displayName forKey:@"displayName"];
     [dict setObject:[NSNumber numberWithInt:_defaultVisibilityState] forKey:@"defaultVisibilityState"];
     if (_shortcutKey)
@@ -415,8 +336,8 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         OBASSERT(_shortcutModifierFlags < UINT32_MAX); // Need to make OFEnumNameTable do NSInteger instead of int?
         [dict setObject:[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] forKey:@"shortcutModifierFlags"];
     }
-    if (_imageName) {
-        [dict setObject:_imageName forKey:@"imageName"];
+    if (_inspectorImageName) {
+        [dict setObject:_inspectorImageName forKey:@"imageName"];
         if (_image)
             [dict setObject:_image forKey:@"image"];
     }
@@ -425,3 +346,5 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

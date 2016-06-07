@@ -1,11 +1,11 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSDocument-OAExtensions.h"
+#import <OmniAppKit/NSDocument-OAExtensions.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -13,8 +13,8 @@
 #import <OmniBase/OBUtilities.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "NSWindowController-OAExtensions.h"
-#import "NSWindow-OAExtensions.h"
+#import <OmniAppKit/NSWindowController-OAExtensions.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 
 RCS_ID("$Id$");
 

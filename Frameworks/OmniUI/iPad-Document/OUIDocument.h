@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,8 @@
 #import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
 @class UIResponder, UIView, UIViewController;
-@class ODSFileItem, OUIDocumentViewController, OUIDocumentPreview;
+@class ODSFileItem, OUIDocumentViewController;
+@class OUIDocumentPreview, OUIImageLocation;
 
 @protocol OUIDocumentViewController;
 
@@ -47,6 +48,7 @@
 @property(nonatomic,readonly) UIResponder *defaultFirstResponder; // Defaults to the documentViewController, or if that view controller implements -defaultFirstResponder, returns the result of that.
 
 - (void)finishUndoGroup;
+- (void)forceUndoGroupClosed;
 - (IBAction)undo:(id)sender;
 - (IBAction)redo:(id)sender;
 
@@ -100,7 +102,7 @@
 - (void)didRebuildViewController:(NSDictionary *)state;
 
 // Support for previews
-+ (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
++ (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 
 // UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).

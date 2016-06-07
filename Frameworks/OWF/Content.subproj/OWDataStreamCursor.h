@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,9 +108,7 @@ typedef long OFByteOrder;
 
 @end
 
-#import <OWF/FrameworkDefines.h>
-
-OWF_EXTERN NSException *OWDataStreamCursor_UnderflowException;
-// OWF_EXTERN NSException *OWDataStreamCursor_EndOfDataException; // apparently unused --wim
-OWF_EXTERN NSString *OWDataStreamCursor_UnknownEncodingException;
+extern NSException *OWDataStreamCursor_UnderflowException;
+// extern NSException *OWDataStreamCursor_EndOfDataException; // apparently unused --wim
+extern NSString * const OWDataStreamCursor_UnknownEncodingException;
 

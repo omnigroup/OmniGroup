@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,19 +14,19 @@ RCS_ID("$Id$");
 
 @implementation OUIFileListViewController
 {
-    NSArray *_files;
+    OUIDocumentExporter *_exporter;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        self.shouldShowLastModifiedDate = YES;
-    }
+    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
+        return nil;
+
+    self.shouldShowLastModifiedDate = YES;
+
     return self;
 }
 
-@synthesize files = _files;
 - (void)setFiles:(NSArray *)newFiles;
 {
     _files = newFiles;
@@ -57,7 +57,7 @@ RCS_ID("$Id$");
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    
+
     static NSString *CellIdentifier = @"Cell";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
@@ -101,7 +101,11 @@ RCS_ID("$Id$");
     
     UIImage *icon = nil;
     if (isDocument) {
-        icon = [[OUIDocumentExporter exporterForViewController:self] iconForUTI:[fileInfo UTI]];
+        if (_exporter == nil) {
+            _exporter = [OUIDocumentExporter exporterForViewController:self];
+        }
+        
+        icon = [_exporter iconForUTI:[fileInfo UTI]];
         OBASSERT(icon);
     }
     if (isFolder) {

@@ -33,4 +33,3 @@
 
 /* time display format for yesterday */
 "Yesterday, %@ <day name>" = "昨天，%@";
-

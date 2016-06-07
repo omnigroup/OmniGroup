@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,18 +8,28 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <Foundation/NSOperation.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFAsynchronousOperation.h>
 
-@class OUICertificateTrustAlert;
+@interface OUICertificateTrustAlert : OFAsynchronousOperation <OFCertificateTrustDisposition>
 
-@interface OUICertificateTrustAlert : NSObject
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initForChallenge:(NSURLAuthenticationChallenge *)challenge NS_DESIGNATED_INITIALIZER;
+- (instancetype)initForError:(NSError *)error NS_DESIGNATED_INITIALIZER;
 
-- (id)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
+/* Tells OUICertificateTrustAlert what view controller to present the alert from. This block will be invoked on the main thread right before the alert is to be shown. */
+- (void)findViewController:(UIViewController *(^)(void))finder;
 
 @property (copy, nonatomic) void (^cancelBlock)(void);
 @property (copy, nonatomic) void (^trustBlock)(OFCertificateTrustDuration duration);
 @property (assign, nonatomic) BOOL shouldOfferTrustAlwaysOption;
 
-- (void)showFromViewController:(UIViewController *)viewController;
+// These interact with the certificate trust exception list maintained in OmniFoundation.
+@property (assign, nonatomic) BOOL shortCircuitIfTrusted;  // Checks OFHasTrustForChallenge() before prompting the user. Does not call cancelBlock if it short-circuits.
+@property (assign, nonatomic) BOOL storeResult;            // Calls OFAddTrustForChallenge() on completion/acceptance
+
+@property (readwrite,nonatomic) OFCertificateTrustDuration result;
 
 @end
+

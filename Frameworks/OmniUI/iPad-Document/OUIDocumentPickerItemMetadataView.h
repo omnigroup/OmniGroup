@@ -9,10 +9,11 @@
 
 #import <UIKit/UIView.h>
 
+@class OUIDocumentNameTextField;
+
 // Flatten the view hierarchy for the name/date and possible iCloud status icon for fewer composited layers while scrolling.
 @interface OUIDocumentPickerItemMetadataView : UIView
 + (UIColor *)defaultBackgroundColor;
-+ (UIColor *)defaultEditingBackgroundColor;
 
 @property(nonatomic,copy) NSString *name;
 @property(nonatomic,strong) UIImage *nameBadgeImage;
@@ -23,7 +24,7 @@
 @property(nonatomic,assign) BOOL isSmallSize;
 
 // OUIDocumentRenameSession becomes the delegate of this while renaming
-@property(nonatomic,retain) IBOutlet UITextField *nameTextField;
+@property(nonatomic,retain) IBOutlet OUIDocumentNameTextField *nameTextField;
 @property(nonatomic,retain) IBOutlet UILabel *dateLabel;
 @property(nonatomic,readonly) UIImageView *nameBadgeImageView;
 @property(nonatomic, retain) IBOutlet UIProgressView *transferProgressView;
@@ -32,11 +33,14 @@
 @property(nonatomic, retain) UIView *endSnap; // for animating to/from large size when renaming
 
 // constraints
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *padding;
+@property (nonatomic,retain) IBOutlet NSLayoutConstraint *leadingHorizPadding;
+@property (nonatomic,retain) IBOutlet NSLayoutConstraint *trailingHorizPadding;
 @property (nonatomic,retain) IBOutlet NSLayoutConstraint *nameToDatePadding;
 @property (nonatomic,retain) IBOutlet NSLayoutConstraint *nameHeightConstraint;
 @property (nonatomic,retain) IBOutlet NSLayoutConstraint *dateHeightConstraint;
-@property (nonatomic,retain) IBOutletCollection(NSLayoutConstraint) NSArray<NSLayoutConstraint*>* topAndBottomPadding;
+@property (nonatomic,retain) IBOutlet NSLayoutConstraint *imageAspectRatioConstraint;
+@property (nonatomic,retain) IBOutlet NSLayoutConstraint *topPadding;
+@property (nonatomic,retain) IBOutlet NSLayoutConstraint *bottomPadding;
 
 @property (nonatomic) BOOL doubleSizeFonts;
 
@@ -50,3 +54,10 @@
 - (void)documentPickerItemNameStartedEditing:(id)sender;
 - (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
 @end
+
+@interface OUIDocumentNameTextField : UITextField
+
+@property (nonatomic) BOOL useLargerClearButton;
+
+@end
+

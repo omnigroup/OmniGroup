@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,19 +9,9 @@
 
 #import <AppKit/NSDatePicker.h>
 
-@class /* Foundation */ NSDate;
-
 @interface OADatePicker : NSDatePicker
-{
-    BOOL _clicked;
-    BOOL sentAction;
-    NSDate *_lastDate;
-    BOOL ignoreNextDateRequest; // <bug://bugs/38625> (Selecting date selects current date first when switching between months, disappears (with some filters) before proper date can be selected)
-}
 
-- (void)setClicked:(BOOL)clicked;
-- (BOOL)clicked;
-
+@property (nonatomic, assign) BOOL clicked;
 
 - (void)reset;
 

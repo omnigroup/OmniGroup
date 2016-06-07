@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,7 +56,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     // Bridge the delegate methods we do have to blocks on the connection. Make sure to avoid strong references back from the connection to us or our delegate (which we assume owns us).
     if ([delegate respondsToSelector:@selector(fileManager:findCredentialsForChallenge:)]) {
         __weak OFSDAVFileManager *weakSelf = self;
-        _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+        _connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
             OFSDAVFileManager *strongSelf = weakSelf;
             if (!strongSelf)
                 return nil;
@@ -67,13 +67,13 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     }
     if ([delegate respondsToSelector:@selector(fileManager:validateCertificateForChallenge:)]) {
         __weak OFSDAVFileManager *weakSelf = self;
-        _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+        _connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
             OFSDAVFileManager *strongSelf = weakSelf;
             if (!strongSelf)
-                return;
+                return nil;
             id <OFSFileManagerDelegate> blockDelegate = strongSelf.delegate;
             OBASSERT(blockDelegate, "File manager delegate deallocated while DAV connection still in use.");
-            [blockDelegate fileManager:strongSelf validateCertificateForChallenge:challenge];
+            return [blockDelegate fileManager:strongSelf validateCertificateForChallenge:challenge];
         };
     }
     return self;
@@ -86,9 +86,22 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return [_connection asynchronousGetContentsOfURL:url];
 }
 
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfFile:(ODAVFileInfo *)f range:(NSString *)range;
+{
+    return [_connection asynchronousGetContentsOfURL:f.originalURL withETag:f.ETag range:range];
+}
+
 - (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
 {
     return [_connection asynchronousPutData:data toURL:url];
+}
+
+- (id <ODAVAsynchronousOperation>)asynchronousDeleteFile:(ODAVFileInfo *)f;
+{
+    OBPRECONDITION(f);
+    NSURL *url = f.originalURL;
+    OBPRECONDITION(url);
+    return [_connection asynchronousDeleteURL:url withETag:f.ETag];
 }
 
 #pragma mark OFSConcreteFileManager
@@ -115,12 +128,17 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return [_connection synchronousGetContentsOfURL:url ETag:ETag error:outError];
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
+- (NSMutableArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError *__autoreleasing *)outError
 {
     return [self directoryContentsAtURL:url withETag:nil collectingRedirects:redirections serverDate:NULL error:outError];
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag collectingRedirects:(NSMutableArray *)redirections serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections machineDate:(NSDate **)outMachineDate error:(NSError **)outError;
+{
+    return [self directoryContentsAtURL:url withETag:nil collectingRedirects:redirections serverDate:outMachineDate error:outError];
+}
+
+- (NSMutableArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag collectingRedirects:(NSMutableArray *)redirections serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
     OBPRECONDITION(url);
 
@@ -133,10 +151,10 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
         [redirections addObjectsFromArray:results.redirects];
     if (outServerDate)
         *outServerDate = results.serverDate;
-    return results.fileInfos;
+    return [results.fileInfos mutableCopy];
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
 {
     NSArray *fileInfos = [self directoryContentsAtURL:url withETag:nil collectingRedirects:nil serverDate:NULL error:outError];
     if (!fileInfos)
@@ -191,6 +209,29 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     return [_connection synchronousPutData:data toURL:url error:outError];
 }
 
+- (NSURL *)writeData:(NSData *)data atomicallyReplacing:(ODAVFileInfo *)destination error:(NSError **)outError;
+{
+    // Do a non-atomic PUT to a temporary location.  The name needs to be something that won't get picked up by XMLTransactionGraph or XMLSynchronizer (which use file extensions).  We don't have a temporary directory on the DAV server.
+    // TODO: Use the "POST to unique filename" feature if this DAV server supports it --- we'll need to do discovery, but we can do that for free in our initial PROPFIND. See ftp://ftp.ietf.org/internet-drafts/draft-reschke-webdav-post-08.txt.
+    NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
+    NSURL *temporaryURL = OFURLWithNameAffix(destination.originalURL, temporaryNameSuffix, NO, YES);
+    
+    NSURL *actualTemporaryURL = [self writeData:data toURL:temporaryURL atomically:NO error:outError];
+    if (!actualTemporaryURL)
+        return nil;
+    
+    NSURL *finalURL = destination.originalURL;
+    if (!OFURLEqualsURL(actualTemporaryURL,temporaryURL)) {
+        NSString *rewrittenFinalURL = OFURLAnalogousRewrite(temporaryURL, [finalURL absoluteString], actualTemporaryURL);
+        if (rewrittenFinalURL)
+            finalURL = [NSURL URLWithString:rewrittenFinalURL];
+    }
+    
+    // MOVE the fully written data into place.
+    // TODO: Try to delete the temporary file if MOVE fails?
+    return [_connection synchronousMoveURL:actualTemporaryURL toURL:finalURL withDestinationETag:destination.ETag overwrite:destination.exists error:outError];
+}
+
 - (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
 {
     OBPRECONDITION(url);
@@ -211,6 +252,13 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 {
     OBPRECONDITION(url);
     return [_connection synchronousDeleteURL:url withETag:nil error:outError];
+}
+
+- (BOOL)deleteFile:(ODAVFileInfo *)fileinfo error:(NSError **)outError;
+{
+    NSURL *url = fileinfo.originalURL;
+    OBPRECONDITION(url);
+    return [_connection synchronousDeleteURL:url withETag:fileinfo.ETag error:outError];
 }
 
 @end

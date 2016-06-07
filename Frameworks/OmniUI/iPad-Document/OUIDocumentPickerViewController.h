@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,14 +53,17 @@
 @property(nonatomic,readonly) NSSet *selectedFolders;
 
 - (void)clearSelectionAndEndEditing;
+- (void)scrollTopControlsToVisibleWithCompletion:(void (^)(BOOL))completion;
 
 - (void)addDocumentFromURL:(NSURL *)url completionHandler:(void (^)(void))completionHandler;
 - (void)addDocumentFromURL:(NSURL *)url;
 - (void)addSampleDocumentFromURL:(NSURL *)url;
 - (void)exportedDocumentToURL:(NSURL *)url;
     // For exports to iTunes, it's possible that we'll want to show the result of the export in our document picker, e.g., Outliner can export to OPML or plain text, but can also work with those document types. This method is called after a successful export to give the picker a chance to update if necessary.
+- (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)())completion;
 
 - (NSArray *)availableFilters;
+- (void)animateFilterChangeTo:(NSString *)filterIdentifier withCompletion:(void (^)(void))completion;
 
 - (void)scrollToTopAnimated:(BOOL)animated;
 - (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;

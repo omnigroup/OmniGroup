@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,12 +11,13 @@
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 
+@class OIInspectorSection;
+
 @interface OISectionedInspector : OIInspector <OIConcreteInspector> 
 {
     NSView *inspectionView;
     
-    NSArray *_sectionInspectors;
-    __weak OIInspectorController *_weak_inspectorController;
+    NSArray <OIInspectorSection <OIConcreteInspector> *> *_sectionInspectors;
 }
 
 @end

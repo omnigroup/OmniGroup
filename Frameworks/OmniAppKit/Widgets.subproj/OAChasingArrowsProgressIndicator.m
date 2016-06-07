@@ -1,17 +1,17 @@
-// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OAChasingArrowsProgressIndicator.h"
+#import <OmniAppKit/OAChasingArrowsProgressIndicator.h>
 
 #import <Cocoa/Cocoa.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <OmniBase/OmniBase.h>
 
-#import "NSImage-OAExtensions.h"
+#import <OmniAppKit/NSImage-OAExtensions.h>
 
 
 RCS_ID("$Id$")

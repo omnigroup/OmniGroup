@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 // Like +addObserver:selector:forPreference:, the notification will be delivered on the thread where the preference was changed.
 extern NSString * const OFPreferenceObjectValueBinding;
 
+// OFPreference instances should be readable in a thread-safe way from any queue, but writing to them should happen on the main queue.
+// See <bug:///122290> (Bug: OFPreference deadlock) and _setValueUnderlyingValue from implementation.
 @interface OFPreference : NSObject
 
 // API
@@ -113,7 +115,12 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 #import <Foundation/NSDate.h>
 
+@class OFConfigurationValue;
+typedef void (^OFConfigurationValueObserver)(OFConfigurationValue *configurationValue);
+
 @interface OFConfigurationValue : NSObject
+
+- initWithKey:(NSString *)key integral:(BOOL)integral defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
 
 + (NSArray *)configurationValues;
 + (void)restoreAllConfigurationValuesToDefaults;
@@ -122,7 +129,8 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (NSURL *)URLForConfigurationValues:(NSArray *)configurationValues;
 
 @property(nonatomic,readonly) NSString *key;
-@property(nonatomic,readonly) const char *objcType;
+
+- (void)addValueObserver:(OFConfigurationValueObserver)observer;
 
 @property(nonatomic,readonly) double currentValue; // KVO observable, but probably only OAChangeConfigurationValuesWindowController should observe (really this whole class is not for general use).
 @property(nonatomic,readonly) double defaultValue;
@@ -149,6 +157,8 @@ static void _InitializeConfigurationValue ## counter(void) { \
 // If you want your log level/time interval variable to be static, you can insert 'static' before using these macros.
 #define OFDeclareDebugLogLevel(name) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, 0, 0, 10)
 #define OFDeclareTimeInterval(name, default_value, min_value, max_value) _OFDeclareConfigurationValue(TimeInterval, name, __COUNTER__, (default_value), (min_value), (max_value))
+
+#define OFDeclareIntegerConfigurationValue(name, value, min, max) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, (value), (min), (max))
 
 // Handle URLs of the form "scheme:///change-configuration-value?name=level. We ignore the scheme each app will have their own scheme.
 typedef void (^OFConfigurationValueChangeConfirmationCallback)(BOOL confirmed, NSError *confirmError);

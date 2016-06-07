@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -164,6 +164,9 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     for (ODSItem *item in _items) {
         [self _endObservingSortKeysForItem:item];
     }
+    for (ODSItem *item in _itemsBeingObserved) {
+        [self _endObservingSortKeysForItem:item];
+    }
 }
 
 
@@ -279,8 +282,9 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
 - (CGFloat)contentOffsetYToShowTopControls;
 {
-    CGFloat offset = _topControls.frame.origin.y - self.contentInset.top;
-    return ceilf(offset);
+    return -self.contentInset.top;
+//    CGFloat offset = _topControls.frame.origin.y - self.contentInset.top;
+//    return ceilf(offset);
 }
 
 - (void)retileItems;
@@ -416,7 +420,7 @@ static void * ItemSortKeyContext = &ItemSortKeyContext;
         }
         [_itemsBeingObserved addObject:item];
     } else {
-        OBASSERT_NOT_REACHED(@"Almost tried to add observer for item %@ when we weren't already observing it!", item);
+        OBASSERT_NOT_REACHED(@"Almost tried to add observer for item %@ when we were already observing it!", item);
     }
 }
 
@@ -600,39 +604,7 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
 - (CGRect)frameForItem:(ODSItem *)item;
 {
     LayoutInfo layoutInfo = _updateLayout(self);
-    CGSize itemSize = layoutInfo.itemSize;
-
-    if (itemSize.width <= 0 || itemSize.height <= 0) {
-        // We aren't sized right yet
-        OBASSERT_NOT_REACHED("Asking for the frame of an item before we are laid out.");
-        return CGRectZero;
-    }
-
-    NSUInteger positionIndex;
-    if ([_itemsIgnoredForLayout count] > 0) {
-        positionIndex = NSNotFound;
-        
-        NSUInteger itemIndex = 0;
-        for (ODSItem *sortedItem in _sortedItems) {
-            if ([_itemsIgnoredForLayout member:sortedItem])
-                continue;
-            if (sortedItem == item) {
-                positionIndex = itemIndex;
-                break;
-            }
-            itemIndex++;
-        }
-    } else {
-        positionIndex = [_sortedItems indexOfObjectIdenticalTo:item];
-    }
-    
-    if (positionIndex == NSNotFound) {
-        OBASSERT([_items member:item] == nil); // If we didn't find the positionIndex it should mean that the item isn't in _items or _sortedItems. If the item is in _items but not _sortedItems, its probably becase we havn't yet called -sortItems.
-        OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
-        return CGRectZero;
-    }
-
-    return _frameForPositionAtIndex(positionIndex, layoutInfo);
+    return [self _frameForItem:item layoutInfo:layoutInfo];
 }
 
 - (OUIDocumentPickerItemView *)itemViewForPoint:(CGPoint)point;
@@ -811,8 +783,12 @@ static OUIDocumentPickerItemView *_itemViewHitByRecognizer(NSArray *itemViews, U
 }
 
 #pragma mark - UIView
-
 static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
+{
+    return _updateLayoutAndSetContentSize(self, YES);
+}
+
+static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *self, BOOL setContentSize)
 {
     CGSize gridSize = [self _gridSize];
     OBASSERT(gridSize.width >= 1);
@@ -852,11 +828,10 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     }
     
     CGRect contentRect;
-    {
+    if (setContentSize) {
         NSUInteger itemCount = [self->_sortedItems count];
         NSUInteger rowCount = (itemCount / itemsPerRow) + ((itemCount % itemsPerRow) == 0 ? 0 : 1);
     
-        CGRect bounds = self.bounds;
         CGSize contentSize = CGSizeMake(layoutSize.width, rowCount * (itemSize.height + [self _verticalPadding]) + topControlsHeight + [self _verticalPadding]);
         contentSize.height = MAX(contentSize.height, layoutSize.height);
         
@@ -867,16 +842,16 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         //        NSLog(@"self.bounds = %@", NSStringFromCGRect(bounds));
         //        NSLog(@"self.contentSize = %@", NSStringFromCGSize(contentSize));
         //        NSLog(@"self.contentOffset = %@", NSStringFromCGPoint(self.contentOffset));
-        
-        CGPoint contentOffset = self.contentOffset;
-        CGPoint clampedContentOffset = _clampContentOffset(self, contentOffset);
-        if (!CGPointEqualToPoint(contentOffset, clampedContentOffset))
-            self.contentOffset = contentOffset; // Don't reset if it is the same, or this'll kill off any bounce animation
-        
-        contentRect.origin = contentOffset;
-        contentRect.size = bounds.size;
-        DEBUG_LAYOUT(@"contentRect = %@", NSStringFromCGRect(contentRect));
     }
+
+    CGPoint contentOffset = self.contentOffset;
+    CGPoint clampedContentOffset = _clampContentOffset(self, contentOffset);
+    if (!CGPointEqualToPoint(contentOffset, clampedContentOffset))
+    self.contentOffset = contentOffset; // Don't reset if it is the same, or this'll kill off any bounce animation
+    
+    contentRect.origin = contentOffset;
+    contentRect.size = self.bounds.size;
+    DEBUG_LAYOUT(@"contentRect = %@", NSStringFromCGRect(contentRect));
     
     return (LayoutInfo){
         .topControlsHeight = topControlsHeight,
@@ -969,6 +944,9 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     // Expand the visible content rect to preload nearby previews
     CGRect previewLoadingRect = CGRectInset(contentRect, 0, -contentRect.size.height);
     
+    // We need to recalculate the top margin now that we have set the frame of any top controls or the title view. But we don't want to change our contentOffset
+    layoutInfo = _updateLayoutAndSetContentSize(self, NO);
+
     // The newly created views need to get laid out the first time w/o animation on.
     OUIWithAnimationsDisabled(_flags.isAnimatingRotationChange, ^{
         // Keep track of which item views are in use by visible items
@@ -1089,7 +1067,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 // Make the view start out at the "original" position instead of flying from where ever it was last left.
                 [UIView performWithoutAnimation:^{
                     itemView.hidden = NO;
-                    itemView.frame = [self frameForItem:item];
+                    itemView.frame = [self _frameForItem:item layoutInfo:layoutInfo];
                     itemView.shrunken = ([_itemsBeingAdded member:item] != nil);
                     [itemView setEditing:_flags.isEditing animated:NO];
                     itemView.item = item;
@@ -1170,6 +1148,43 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 
 #pragma mark - Private
 
+- (CGRect)_frameForItem:(ODSItem *)item layoutInfo:(LayoutInfo)layoutInfo;
+{
+    CGSize itemSize = layoutInfo.itemSize;
+    
+    if (itemSize.width <= 0 || itemSize.height <= 0) {
+        // We aren't sized right yet
+        OBASSERT_NOT_REACHED("Asking for the frame of an item before we are laid out.");
+        return CGRectZero;
+    }
+    
+    NSUInteger positionIndex;
+    if ([_itemsIgnoredForLayout count] > 0) {
+        positionIndex = NSNotFound;
+        
+        NSUInteger itemIndex = 0;
+        for (ODSItem *sortedItem in _sortedItems) {
+            if ([_itemsIgnoredForLayout member:sortedItem])
+                continue;
+            if (sortedItem == item) {
+                positionIndex = itemIndex;
+                break;
+            }
+            itemIndex++;
+        }
+    } else {
+        positionIndex = [_sortedItems indexOfObjectIdenticalTo:item];
+    }
+    
+    if (positionIndex == NSNotFound) {
+        OBASSERT([_items member:item] == nil); // If we didn't find the positionIndex it should mean that the item isn't in _items or _sortedItems. If the item is in _items but not _sortedItems, its probably becase we havn't yet called -sortItems.
+        OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
+        return CGRectZero;
+    }
+    
+    return _frameForPositionAtIndex(positionIndex, layoutInfo);
+}
+
 - (void)_itemViewTapped:(OUIDocumentPickerItemView *)itemView;
 {
     // should be one of ours, not some other temporary animating item view
@@ -1180,6 +1195,9 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 
 - (void)_itemViewLongpressed:(UIGestureRecognizer*)gesture
 {
+    if (self.renameSession) {
+        return;
+    }
     if (gesture.state == UIGestureRecognizerStateBegan) {        
         OUIDocumentPickerItemView *itemView = OB_CHECKED_CAST(OUIDocumentPickerItemView, gesture.view);
         

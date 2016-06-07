@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -827,19 +827,21 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     return YES;
 }
 
+- (NSString *)accessibilityLabel;
+{
+    return _label;
+}
+
 - (NSString *)accessibilityValue;
 {
-    NSString *accessibilityValue = nil;
+    if (self.editing)
+        return _textField.accessibilityValue;
+
+    NSString *text = _getText(self, _text, NULL);
     
-    if (self.editing) {
-        accessibilityValue = _textField.accessibilityValue;
-    }
-    else {
-        // Calling _defaultStyleFormattedText to get the appropriate combination of _text and _label, then we just strip the NSString from the NSAttributedString
-        accessibilityValue = [[self _defaultStyleFormattedText] string];
-    }
-    
-    return accessibilityValue;
+    if (_suffix)
+        text = [text stringByAppendingString:_suffix];
+    return text;
 }
 
 @end

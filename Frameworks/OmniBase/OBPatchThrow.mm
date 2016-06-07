@@ -11,7 +11,7 @@
 
 extern "C" {
 
-#import "OBPatchTrap.h"
+#import <OmniBase/OBPatchTrap.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBBacktraceBuffer.h>
     

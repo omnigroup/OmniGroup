@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -343,11 +343,12 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     _remoteBaseURL = [accountRemoteBaseURL URLByAppendingPathComponent:_remoteDirectoryName isDirectory:YES];
     
     ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:[ODAVConnectionConfiguration new] baseURL:_remoteBaseURL];
-    connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+    connection.validateCertificateForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         // Trust all certificates for these tests.
         OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
+        return nil;
     };
-    connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+    connection.findCredentialsForChallenge = ^NSOperation <OFCredentialChallengeDisposition> *(NSURLAuthenticationChallenge *challenge){
         if ([challenge previousFailureCount] <= 2) {
             // Use the account credential if we have an account added. We might be clearing out the remote directory before an account has been added to this test's account registry, though
             NSURLCredential *credential;
@@ -359,7 +360,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
                 credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone]; // Fallback.
             
             OBASSERT(credential);
-            return credential;
+            return OFImmediateCredentialResponse(NSURLSessionAuthChallengeUseCredential, credential);
         }
         return nil;
     };
@@ -724,7 +725,7 @@ static void _logAgentState(OFXAgent *agent)
 
     for (OFXAgent *agent in otherAgents) {
         NSURL *localDocumentsForOtherAgent = [self singleAccountInAgent:agent].localDocumentsURL;
-        OFDiffFiles(self, [localDocumentsForFirstAgent path], [localDocumentsForOtherAgent path], nil/*filter*/);
+        OFDiffFiles(self, [localDocumentsForFirstAgent path], [localDocumentsForOtherAgent path], nil/*operations*/);
     }
 }
 
@@ -749,7 +750,7 @@ static void _logAgentState(OFXAgent *agent)
         for (OFXFileMetadata *metadata in metadataItems) {
             OFXFileMetadata *firstMetadata = firstAgentFileIdentifierToMetadata[metadata.fileIdentifier];
             XCTAssertEqualObjects(metadata.editIdentifier, firstMetadata.editIdentifier, @"should be on the same version");
-            OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*filter*/);
+            OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*operations*/);
         }
     }
 }

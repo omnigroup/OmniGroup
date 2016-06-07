@@ -11,9 +11,6 @@
       location = "group:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:../Frameworks/OIF/OIF.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
    </FileRef>
    <FileRef
@@ -58,7 +55,14 @@
    <FileRef
       location = "group:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:../Frameworks/OWF/OWF.xcodeproj">
-   </FileRef>
+   <Group
+      location = "container:"
+      name = "Deprecated">
+      <FileRef
+         location = "group:../Frameworks/OIF/OIF.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:../Frameworks/OWF/OWF.xcodeproj">
+      </FileRef>
+   </Group>
 </Workspace>

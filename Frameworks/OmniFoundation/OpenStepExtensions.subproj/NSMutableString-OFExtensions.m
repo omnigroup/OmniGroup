@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,8 +101,7 @@ RCS_ID("$Id$")
 {
     unichar utf16[2];
     
-    OBASSERT(sizeof(aCharacter)*CHAR_BIT >= 21);
-    /* aCharacter must be at least 21 bits to contain a full Unicode character */
+    _Static_assert(sizeof(aCharacter)*CHAR_BIT >= 21, "aCharacter must be at least 21 bits to contain a full Unicode character");
     
     if (aCharacter <= 0xFFFF) {
         utf16[0] = (unichar)aCharacter;

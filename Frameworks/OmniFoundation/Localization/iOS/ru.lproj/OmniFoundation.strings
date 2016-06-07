@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Библиотека bzip2 при записи данных вернула ошибку с кодом %1$d. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Отмена";
 
 /* error recovery option */
@@ -122,7 +122,7 @@
 /* local bundle path readable string */
 "local configuration file" = "файл локальной конфигурации";
 
-/* time span formatter span (minute) */
+/* time span formatter span */
 "m" = "мин.";
 
 /* time span formatter span */
@@ -131,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "мин.";
 
-/* time span formatter span (month) */
+/* time span formatter span */
 "mo" = "мес.";
 
 /* time span formatter span */
@@ -146,7 +146,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Недопустимый пакет";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Перезаписать блокировку";
 
 /* alert message format when clicking on a configuration value URL */
@@ -186,10 +186,10 @@
 "This configuration link will make the following changes:" = "Эта ссылка конфигурации внесет следующие изменения:";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ с компьютера %2$@ %3$@ в %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера “%2$@” %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
 
 /* compression error description */
 "Unable to compress data." = "Не удается сжать данные.";
@@ -208,6 +208,9 @@
 
 /* error description */
 "Unable to lock document." = "Не удается заблокировать документ.";
+
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "Неизвестно";
 
 /* decompression error reason */
 "unrecognized compression format." = "неизвестный формат сжатия.";
@@ -237,4 +240,4 @@
 "zlib returned error code %d." = "возвращенный код ошибки zlib %d.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";
+"zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";

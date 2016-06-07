@@ -31,25 +31,6 @@
 #define PBKDFPRFSHA512                      "sha512"
 
 
-/* The format of the wrapped data is a sequence of key slots. Each slot contains:
-   - key type (1 byte)
-   - key length in quads (1 byte)
-   - key index (2 bytes)
-   - key data (keylength*4 bytes)
- 
-   Any unused trailing space is filled with 0s; key type 0 is reserved to avoid ambiguity.
-*/
-enum OFSDocumentKeySlotType {
-    SlotTypeNone                = 0,    // Trailing padding
-    
-    SlotTypeActiveAESWRAP       = 1,    // Currently-active AES key
-    SlotTypeRetiredAESWRAP      = 2,    // Old AES key used after rollover
-    
-    SlotTypeActiveAES_CTR_HMAC  = 3,    // Currently-active CTR+HMAC key
-    SlotTypeRetiredAES_CTR_HMAC = 4,    // Old key used after rollover
-};
-
-
 /* Constants describing the segemented encryption format */
 #define SEGMENTED_IV_LEN                12        /* The length of the IV stored in front of each encrypted segment */
 #define SEGMENTED_MAC_LEN               20        /* The length of the HMAC value stored with each encrypted segment */
@@ -62,4 +43,3 @@ enum OFSDocumentKeySlotType {
 
 #define SEGMENT_HEADER_LEN              (SEGMENTED_IV_LEN + SEGMENTED_MAC_LEN)
 #define SEGMENT_ENCRYPTED_PAGE_SIZE     (SEGMENT_HEADER_LEN + SEGMENTED_PAGE_SIZE)
-

@@ -22,6 +22,19 @@ RCS_ID("$Id$");
 
 #pragma mark - UIView subclass
 
+- (void)setUseBlur:(BOOL)useBlur
+{
+    if (useBlur != _useBlur) {
+        if (useBlur) {
+            UIVisualEffectView *blurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]];
+            blurView.frame = self.bounds;
+            blurView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            [self addSubview:blurView];
+            OBASSERT(self.autoresizesSubviews);
+        }
+    }
+}
+
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
 {
     if (self.shouldForwardAllEvents) {

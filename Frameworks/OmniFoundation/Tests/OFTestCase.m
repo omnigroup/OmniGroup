@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 
 RCS_ID("$Id$")
 
+OB_REQUIRE_ARC
+
 @implementation OFTestCase
 
 + (XCTest *)dataDrivenTestSuite
@@ -26,7 +28,7 @@ RCS_ID("$Id$")
         return nil;
     }
     
-    XCTestSuite *suite = OB_AUTORELEASE([[XCTestSuite alloc] initWithName:[casesPath lastPathComponent]]);
+    XCTestSuite *suite = [[XCTestSuite alloc] initWithName:[casesPath lastPathComponent]];
     
     [allTestCases enumerateKeysAndObjectsUsingBlock:^(NSString *methodName, NSArray *cases, BOOL *stop) {
         [suite addTest:[self testSuiteForMethod:methodName cases:cases]];
@@ -54,7 +56,7 @@ RCS_ID("$Id$")
         [NSException raise:NSGenericException format:@"Method -[%@ %@] referenced in test case file has incorrect signature", [self description], NSStringFromSelector(testSelector)];
     }
     
-    XCTestSuite *suite = OB_AUTORELEASE([[XCTestSuite alloc] initWithName:suiteName]);
+    XCTestSuite *suite = [[XCTestSuite alloc] initWithName:suiteName];
     
     for (__unsafe_unretained id testArguments in testCases) {
         NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
@@ -161,13 +163,13 @@ static BOOL _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDif
     return YES;
 }
 
-static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
+static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFileOperations *operations)
 {
     __autoreleasing NSError *error = nil;
 
     // Collect all the files, as relative paths from the two inputs
     NSMutableSet *files1 = [NSMutableSet set];
-    if (!_addRelativePaths(files1, path1, pathFilter, &error)) {
+    if (!_addRelativePaths(files1, path1, operations.pathFilter, &error)) {
         NSLog(@"Missing expected output:\n\n\tcp -r \"%@\" \"%@\"\n\n", path2, path1);
         XCTFail(@"Unable to find files at \"%@\": %@", path1, error);
         return NO;
@@ -181,7 +183,7 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
     }
     
     NSMutableSet *files2 = [NSMutableSet set];
-    if (!_addRelativePaths(files2, path2, pathFilter, &error)) {
+    if (!_addRelativePaths(files2, path2, operations.pathFilter, &error)) {
         XCTFail(@"Unable to find files at \"%@\": %@", path2, error);
         return NO;
     }
@@ -240,27 +242,31 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
             
             NSData *data2 = [[NSData alloc] initWithContentsOfFile:map2 options:0 error:&error];
             if (!data2) {
-                OB_RELEASE(data1);
                 if (requireSame)
                     XCTFail(@"Unable to read data");
                 return NO;
             }
-            
+
+            BOOL same = [data1 isEqual:data2];
+            if (!same) {
+                // Might still mean the same thing as far as the caller is concerned.
+                OFDiffFileCompareData compare = operations.compareData;
+                if (compare) {
+                    same = compare(map1, data1, map2, data2);
+                }
+            }
+
+            if (!same) {
+                if (requireSame) {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-            if (OFNOTEQUAL(data1, data2)) {
-                OB_RELEASE(data1);
-                OB_RELEASE(data2);
-                if (requireSame)
                     XCTFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
+#else
+                    XCTFail(@"Files differ!");
+                    OFDiffDataFiles(self, map1, map2);
+#endif
+                }
                 return NO;
             }
-#else
-            if (requireSame)
-                OFFileDataShouldBeEqual(data1, map1, data2, map2);
-#endif
-            
-            OB_RELEASE(data1);
-            OB_RELEASE(data2);
         } else if (OFISEQUAL(fileType1, NSFileTypeDirectory)) {
             // could maybe compare attributes...
         } else if (OFISEQUAL(fileType1, NSFileTypeSymbolicLink)) {
@@ -293,7 +299,7 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
     return YES;
 }
 
-static BOOL OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
+static BOOL OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFileOperations *operations)
 {
     OBPRECONDITION(path1);
     OBPRECONDITION(path2);
@@ -312,7 +318,7 @@ static BOOL OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2,
         return [coordinator readItemAtURL:fileURL1 withChanges:YES error:outPrepareError byAccessor:^BOOL(NSURL *newURL1, NSError **outRead1Error) {
             return [coordinator readItemAtURL:fileURL2 withChanges:YES error:outRead1Error byAccessor:^BOOL(NSURL *newURL2, NSError **outRead2Error) {
                 @try {
-                    return _OFCheckFilesSame(self, [[newURL1 absoluteURL] path], [[newURL2 absoluteURL] path], requireSame, pathFilter);
+                    return _OFCheckFilesSame(self, [[newURL1 absoluteURL] path], [[newURL2 absoluteURL] path], requireSame, operations);
                 }
                 @catch (NSException *exception) {
                     raisedException = exception;
@@ -328,14 +334,16 @@ static BOOL OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2,
     return success;
 }
 
-BOOL OFSameFiles(XCTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+BOOL OFSameFiles(XCTestCase *self, NSString *path1, NSString *path2, OFDiffFileOperations *operations)
 {
-    return OFCheckFilesSame(self, path1, path2, NO/*requireSame*/, pathFilter);
+    return OFCheckFilesSame(self, path1, path2, NO/*requireSame*/, operations);
 }
 
 
-void OFDiffFiles(XCTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)
+void OFDiffFiles(XCTestCase *self, NSString *path1, NSString *path2, OFDiffFileOperations *operations)
 {
-    OFCheckFilesSame(self, path1, path2, YES/*requireSame*/, pathFilter);
+    OFCheckFilesSame(self, path1, path2, YES/*requireSame*/, operations);
 }
 
+@implementation OFDiffFileOperations
+@end

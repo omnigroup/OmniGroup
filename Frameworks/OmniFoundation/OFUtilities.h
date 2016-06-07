@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <Foundation/NSString.h>
 #import <CoreFoundation/CFNumber.h>
 
-@class NSDictionary, NSLock;
+@class NSLock;
 
 extern void OFLog(NSString *messageFormat, ...) __attribute__((format(__NSString__, 1, 2)));
 

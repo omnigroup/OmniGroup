@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@ RCS_ID("$Id$");
 @implementation OUIUndoIndicator
 {
     UIView *_parentView;
+    CALayer *_indicatorDot;
 }
 
 - initWithParentView:(UIView *)parentView;
@@ -48,24 +49,46 @@ RCS_ID("$Id$");
     [self _update];
 }
 
+- (void)setUndoIsEnabled:(BOOL)undoIsEnabled
+{
+    if (_undoIsEnabled == undoIsEnabled) {
+        return;
+    }
+    
+    _undoIsEnabled = undoIsEnabled;
+    [self _update];
+}
+
 - (void)_update;
 {
-    if (_groupingLevel > 0 || _hasUnsavedChanges) {
-        OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
-        if (view.superview != _parentView)
-            [_parentView addSubview:view];
-        
-        if (_hasUnsavedChanges)
-            view.backgroundColor = [UIColor redColor];
-        else
-            view.backgroundColor = [UIColor greenColor];
-        
+    OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
+    if (view.superview != _parentView){
+        [_parentView addSubview:view];
+        view.frame = CGRectMake(0, self.frameYOffset, 50, 50);
+    }
+    
+    // grouping level controls size and color of the indicator dot
+    if (_groupingLevel > 0){
         CGFloat size = 20 + 10*_groupingLevel;
-        view.frame = CGRectMake(0, 0, size, size);
-    } else if ([self isViewLoaded]) {
-        OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
-        if (view.superview)
-            [view removeFromSuperview];
+        _indicatorDot.frame = CGRectMake((view.frame.size.width - size)/2, (view.frame.size.height - size)/2, size, size);
+        _indicatorDot.cornerRadius = size/2;
+        _indicatorDot.backgroundColor = [UIColor redColor].CGColor;
+    } else {
+        _indicatorDot.backgroundColor = [UIColor greenColor].CGColor;
+    }
+    
+    // _hasUnsavedChanges puts a red border around the whole view
+    view.layer.borderWidth = 2;
+    if (_hasUnsavedChanges)
+        view.layer.borderColor = [UIColor redColor].CGColor;
+    else
+        view.layer.borderColor = [UIColor darkGrayColor].CGColor;
+    
+    // if the undo manager is disabled, the background of the view should be grey
+    if (_undoIsEnabled) {
+        view.backgroundColor = [UIColor clearColor];
+    } else {
+        view.backgroundColor = [UIColor darkGrayColor];
     }
 }
 
@@ -74,8 +97,10 @@ RCS_ID("$Id$");
 - (void)loadView;
 {
     OUIUndoIndicatorView *view = [[OUIUndoIndicatorView alloc] init];
-    view.layer.zPosition = CGFLOAT_MAX;
+    view.layer.zPosition = FLT_MAX;
     self.view = view;
+    _indicatorDot = [CALayer layer];
+    [self.view.layer addSublayer:_indicatorDot];
 }
 
 @end

@@ -63,7 +63,8 @@ $SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m,swift "$PROJECT_FILE_PAT
 done
 
 if [ $#source_files -gt 0 ]; then
-	/usr/bin/genstrings -u -q -o "$TMP_OUTPUT" $source_files
+    # genstrings doesn't handle Swift files. Radar 22761905.
+	xcrun extractLocStrings -u -q -o "$TMP_OUTPUT" $source_files
 fi
 
 # Build English strings for every xib using base localizations
@@ -110,8 +111,9 @@ while [ $#EXPECTED_STRINGS_FILES != 0 ]; do
     if [ -x "$FIX_STRINGS_FILE" ]; then
     	"$FIX_STRINGS_FILE" "$table_file"
     else
-        # Probably a local build from Xcode rather than our build scripts.
-        echo "FixStringsFile isn't built -- skipping (this will result in ASCII to Unicode conversions not happening)"
+        # Probably a missing target dependency on the tool.
+        echo "error: *** FixStringsFile isn't built -- skipping (this would result in ASCII to Unicode conversions not happening) ***"
+        exit 1
     fi
     
 	if [ "${STRINGS_FILE_OUTPUT_ENCODING-}" = "binary" ]; then

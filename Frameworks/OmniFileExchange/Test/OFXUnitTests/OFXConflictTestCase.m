@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,7 +163,7 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     }];
     
     XCTAssertTrue(OFXTraceHasSignal(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot"), @"should have removed the old snapshot");
-    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
+    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], nil/*operations*/), @"Updated contents should have been restored");
 }
 
 - (void)testDeleteVsUnsavedEditConflict;
@@ -186,7 +186,7 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
 
     XCTAssertTrue(OFXTraceHasSignal(@"OFXFileItem.incoming_delete.removed_local_snapshot"), @"should have removed the old snapshot");
     XCTAssertTrue(OFXTraceSignalCount(@"OFXFileItem.incoming_delete.removed_local_document") == 0, @"should not have removed the local document");
-    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
+    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], nil/*operations*/), @"Updated contents should have been restored");
 }
 
 - (void)testTwoDifferentFilesCreatedWithSameName;

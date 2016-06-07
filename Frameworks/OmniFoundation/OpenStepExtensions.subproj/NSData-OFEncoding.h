@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,9 +26,9 @@ typedef struct OFQuotedPrintableMapping {
 - initWithASCII85String:(NSString *)ascii85String;
 - (NSString *)ascii85String;
 
-+ (id)dataWithBase64String:(NSString *)base64String;
-- initWithBase64String:(NSString *)base64String;
-- (NSString *)base64String;
++ (id)dataWithBase64String:(NSString *)base64String NS_DEPRECATED(10_9, 10_9, 7_0, 7_0, "Use -initWithBase64EncodedString:options:");
+- initWithBase64String:(NSString *)base64String NS_DEPRECATED(10_9, 10_9, 7_0, 7_0, "Use -initWithBase64EncodedString:options:");
+- (NSString *)base64String NS_DEPRECATED(10_9, 10_9, 7_0, 7_0, "Use -base64EncodedStringWithOptions:");
 
 // This is our own coding method, not a standard.  This is good
 // for NSData strings that users have to type in.

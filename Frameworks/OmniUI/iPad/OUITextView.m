@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,15 @@
 #import <OmniUI/OUIKeyCommands.h>
 #import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
-#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontFamilyInspectorSlice.h>
+#import <OmniUI/OUIFontSizeInspectorSlice.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIScalingTextStorage.h>
 #import <OmniUI/OUISingleViewInspectorPane.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/OUITextSelectionSpan.h>
 #import <OmniUI/OUIFontUtilities.h>
+#import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -662,7 +664,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     if ([delegate respondsToSelector:@selector(textViewDidChange:)])
         [delegate textViewDidChange:self];
     
-    [[self.undoManager prepareWithInvocationTarget:self] _replaceAttributedStringInRange:selectedRange withAttributedString:originalString isUndo:YES];
+    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:selectedRange withAttributedString:originalString isUndo:YES];
 }
 
 - (void)performUndoableReplacementOnSelectedRange:(NSAttributedString *)replacement;
@@ -723,7 +725,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     NSRange originalRange = NSMakeRange(editedRange.location, editedRange.length - changeInLength);
     NSAttributedString *originalString = [fullOriginalString attributedSubstringFromRange:originalRange];
 
-    [[self.undoManager prepareWithInvocationTarget:self] _replaceAttributedStringInRange:editedRange withAttributedString:originalString];
+    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:editedRange withAttributedString:originalString];
 }
 #endif
 
@@ -734,7 +736,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     
     NSAttributedString *existingAttributedString = [textStorage attributedSubstringFromRange:range];
     NSRange afterEditRange = NSMakeRange(range.location, [attributedString length]);
-    [[self.undoManager prepareWithInvocationTarget:self] _replaceAttributedStringInRange:afterEditRange withAttributedString:existingAttributedString isUndo:!isUndo];
+    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:afterEditRange withAttributedString:existingAttributedString isUndo:!isUndo];
 
     NSRange selectedRange = self.selectedRange;
     
@@ -1363,7 +1365,8 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     [slices addObject:[[OUITextColorAttributeInspectorSlice alloc] initWithLabel:NSLocalizedStringFromTableInBundle(@"Background color", @"OUIInspectors", OMNI_BUNDLE, @"Title above color swatch picker for the text color.")
                                                                     attributeName:NSBackgroundColorAttributeName]];
     [slices addObject:[[OUIFontAttributesInspectorSlice alloc] init]];
-    [slices addObject:[[OUIFontInspectorSlice alloc] init]];
+    [slices addObject:[[OUIFontSizeInspectorSlice alloc] init]];
+    [slices addObject:[[OUIFontFamilyInspectorSlice alloc] init]];
     [slices addObject:[[OUIParagraphStyleInspectorSlice alloc] init]];
     
     return slices;

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -104,14 +104,14 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 @class OAColor;
 @protocol OUIColorInspection <NSObject>
 - (OAColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager;
 - (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 
 @class OAFontDescriptor;
 @protocol OUIFontInspection <NSObject>
 - (OAFontDescriptor *)fontDescriptorForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setFontDescriptor:(OAFontDescriptor *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setFontDescriptor:(OAFontDescriptor *)fontDescriptor fromInspectorSlice:(OUIInspectorSlice *)inspector undoManager:(NSUndoManager *)undoManager;
 - (CGFloat)fontSizeForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setFontSize:(CGFloat)fontSize fromInspectorSlice:(OUIInspectorSlice *)inspector;
 

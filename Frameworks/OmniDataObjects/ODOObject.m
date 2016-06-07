@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,6 @@
 #import "ODOInternal.h"
 
 RCS_ID("$Id$")
-
-NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
 
 @implementation ODOObject
 
@@ -322,6 +320,11 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     }
 }
 
+- (BOOL)isAwakingFromInsert;
+{
+    return _flags.isAwakingFromInsert;
+}
+
 // Subclasses should call this before doing anything in their own implementation, otherwise, this might override any setup they do.
 - (void)awakeFromInsert;
 {
@@ -342,10 +345,16 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     }
 }
 
+- (BOOL)isAwakingFromFetch;
+{
+    return _flags.isAwakingFromFetch;
+}
+
 - (void)awakeFromFetch;
 {
     OBPRECONDITION(_flags.changeProcessingDisabled); // set by ODOObjectAwakeFromFetchWithoutRegisteringEdits
     OBPRECONDITION(!_flags.isFault);
+    OBPRECONDITION(_flags.isAwakingFromFetch);
     
     // Nothing for us to do, I think; for subclasses
 }
@@ -360,6 +369,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 {
     OBPRECONDITION(!_flags.changeProcessingDisabled); // set by ODOObjectAwakeFromFetchWithoutRegisteringEdits
     OBPRECONDITION(!_flags.isFault);
+    OBPRECONDITION(!_flags.isAwakingFromFetch);
 
     // Nothing for us to do; for subclasses to add observers after change processing (re)enabled
 }
@@ -760,12 +770,33 @@ static void _validateRelatedObjectClass(const void *value, void *context)
                 continue;
         }
 
-        if (OFISNULL(newValue))
+        // Checking for OFISNULL ought to be good enough, but without the additional nil check the static analyzer warns:
+        //    ODOObject.m:904:9: Value argument to 'setObject:forKey:' cannot be nil
+        if (newValue == nil || OFISNULL(newValue))
             newValue = [NSNull null];
+        
         [changes setObject:newValue forKey:[prop name]];
     }
     
     return changes;
+}
+
+- (NSDictionary *)changedNonDerivedValues;
+{
+    NSDictionary *changedValues = [self changedValues];
+    if ([changedValues count] == 0) {
+        return changedValues;
+    }
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    
+    NSSet *derivedPropertyNameSet = [[self entity] derivedPropertyNameSet];
+    for (NSString *key in changedValues) {
+        if (![derivedPropertyNameSet member:key]) {
+            result[key] = changedValues[key];
+        }
+    }
+    
+    return result;
 }
 
 - (id)committedValueForKey:(NSString *)key;
@@ -773,7 +804,12 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
 
-    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
+    return ODOObjectSnapshotValueForKey(self, _editingContext, [_editingContext _committedPropertySnapshotForObjectID:_objectID], key, NULL);
+}
+
+id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
+{
+    ODOProperty *prop = [[self.objectID entity] propertyNamed:key];
     if (!prop) {
         OBASSERT(prop);
         return nil;
@@ -781,10 +817,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 
     // Not sure how to handle to-many properties.  So let's not until we need it
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    if (flags.relationship && flags.toMany)
-        OBRequestConcreteImplementation(self, _cmd);
-        
-    NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
+    if (flags.relationship && flags.toMany) {
+        [NSException exceptionWithName:OBAbstractImplementation reason:[NSString stringWithFormat:@"%s needs a concrete implementation at %s:%d", __PRETTY_FUNCTION__, __FILE__, __LINE__] userInfo:nil];
+    }
+    
     if (!snapshot) {
         // Inserted or never modified.  This may perform lazy creation on a fault.
         [self willAccessValueForKey:key];
@@ -802,7 +838,16 @@ static void _validateRelatedObjectClass(const void *value, void *context)
             ODOEntity *destEntity = [rel destinationEntity];
             OBASSERT([value isKindOfClass:[[destEntity primaryKeyAttribute] valueClass]]);
             ODOObjectID *destID = [[ODOObjectID alloc] initWithEntity:destEntity primaryKey:value];
-            value = ODOEditingContextLookupObjectOrRegisterFaultForObjectID(_editingContext, destID);
+            
+            value = [editingContext objectRegisteredForID:destID];
+            // If the object has been deleted, we won't be able to look it up in the context.
+            // In that case, use the fallback handler. An XMLExporter should be able to find the object for us.
+            // That object is going to be deleted/invalidated, so we can't touch an ODOObject aspects of it, but it is still useful for XML exporting.
+            if (value == nil && fallbackLookupHandler != NULL) {
+                value = fallbackLookupHandler(destID);
+            }
+            
+            OBASSERT(value != nil);
             [destID release];
         }
     }

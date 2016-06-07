@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,40 +27,42 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
 // API
 
-- (id)initWithInspector:(OIInspector *)anInspector;
+- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector;
 
 @property (nonatomic, assign) OIInspectorInterfaceType interfaceType;
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
 
 @property(nonatomic,weak) OIInspectorGroup *group;
 
-- (OIInspector *)inspector;
+@property(nonatomic,readonly) OIInspector <OIConcreteInspector> *inspector;
 
-- (OIInspectorWindow *)buildWindow; // Subclasses can make their own window
+@property(nonatomic,readonly) OIInspectorWindow *buildWindow; // Subclasses can make their own window
 
 /// This is the window directly managed by the controller for floating inspectors; it is not necessarily the same as the containerView's window. Notably, for embedded inspectors, -window will return nil, and calling -window on the -containerView will return the window in which the inspector view is embedded.
-- (NSWindow *)window;
+@property(nonatomic,readonly) NSWindow *window;
 /**
  An inspector controller's container view depends on its interface type. For floating inspectors, this is the same as its window's contentView; for embedded inspectors, it is a custom view.
  
  For embedded inspectors, you should access this view and install it in your app's view hierarchy in the appropriate place. You may inspect the view hierarchy of an inspector starting at this view, regardless of interface type; however, you should never attempt to modify this view's subviews.
  */
-- (NSView *)containerView;
-- (OIInspectorHeaderView *)headingButton;
+@property(nonatomic,readonly) NSView *containerView;
+@property(nonatomic,readonly) OIInspectorHeaderView *headingButton;
 
 @property(nonatomic,readonly) BOOL isExpanded;
 @property(nonatomic,readonly) BOOL isSettingExpansion;
 - (void)setExpanded:(BOOL)newState withNewTopLeftPoint:(NSPoint)topLeftPoint;
-- (NSString *)identifier;
-- (CGFloat)headingHeight;
-- (CGFloat)desiredHeightWhenExpanded;
+
+@property(nonatomic,readonly) NSString *inspectorIdentifier;
+
+@property(nonatomic,readonly) CGFloat headingHeight;
+@property(nonatomic,readonly) CGFloat desiredHeightWhenExpanded;
 
 - (void)prepareWindowForDisplay;
 - (void)displayWindow;
 - (void)toggleDisplay;
 - (void)showInspector;
 - (void)updateTitle;
-- (BOOL)isVisible;
+@property(nonatomic,readonly,getter=isVisible) BOOL visible;
 
 - (void)setBottommostInGroup:(BOOL)isBottom;
 

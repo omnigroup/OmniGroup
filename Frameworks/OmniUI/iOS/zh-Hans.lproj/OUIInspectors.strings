@@ -3,28 +3,28 @@
 
 /* title format for color component slider */
 
-"<alpha title+value>" = "透明度：%d%%";
+"<alpha title+value>" = "不透明度：%d%%";
 
 /* title format for color component slider */
-"<blue title+value>" = "蓝：%d";
+"<blue title+value>" = "蓝色：%d";
 
 /* title format for color component slider */
 "<brightness title+value>" = "亮度：%d%%";
 
 /* title format for color component slider */
-"<green title+value>" = "绿：%d%%";
+"<green title+value>" = "绿色：%d";
 
 /* title format for color component slider */
 "<hue title+value>" = "色调：%d°";
 
 /* title format for color component slider */
-"<red title+value>" = "红：%d";
+"<red title+value>" = "红色：%d";
 
 /* title format for color component slider */
 "<saturation title+value>" = "饱和度：%d%%";
 
 /* title format for color component slider */
-"<white title+value>" = "白：%d%%";
+"<white title+value>" = "白色：%d%%";
 
 /* Title for section of font list */
 "All Fonts" = "所有字体";
@@ -36,10 +36,14 @@
 "Color" = "颜色";
 
 /* Title for the font family list in the inspector */
+
 "Font" = "字体";
 
 /* Increment font size button accessibility label */
 "Font bigger" = "调大字体";
+
+/* Font size description accessibility label */
+"Font size" = "字体大小";
 
 /* Decrement font size button accessibility label */
 "Font smaller" = "调小字体";

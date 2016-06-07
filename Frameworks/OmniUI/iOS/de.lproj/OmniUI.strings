@@ -1,13 +1,8 @@
-/* In App Store pricing option format - placeholders are product's price and product's name */
-"%@ %@" = "%1$@ %2$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ von %2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ gekauft";
-
 /* Default title for the About menu item */
+
 "About %@" = "Über %@";
 
 /* No purchases found message format */
@@ -16,15 +11,13 @@
 /* Bold button accessibility label */
 "Bold" = "Fett";
 
-/* Disabled 'Buy' button title string */
-"Buy" = "Kaufen";
-
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
-"Buy %@" = "%@ kaufen";
+"Buy %@" = "Für %@ kaufen";
 
 /* button title
    cancel button title
    toolbar item title */
+
 
 
 
@@ -38,6 +31,9 @@
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "Einstellung „%1$@“ wurde von „%2$@“ in „%3$@“ geändert";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "Nach kostenlosem Upgrade suchen";
 
 /* Certificate trust alert button title */
 "Continue" = "Fortfahren";
@@ -56,14 +52,14 @@
 /* toolbar item title */
 "Edit" = "Bearbeiten";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "Zu kostenlosem Upgrade berechtigt";
+
 /* In app Buy button error title */
 "Error" = "Fehler";
 
-/* Alert title for error loading product information */
-"Error Loading Store" = "Fehler beim Laden des Stores";
-
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funktion nicht aktiviert für diese Demoversion";
+"Feature not enabled for this demo" = "Funktion ist für diese Demo nicht aktiviert";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Anpassen";
@@ -95,8 +91,13 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
 
-/* Buy button title while app store is loading */
-"Loading" = "Laden";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "Weitere Informationen";
+
+/* News menu item
+   News view title */
+
+"News" = "Neuigkeiten";
 
 /* empty value cell placeholder */
 "None" = "Ohne";
@@ -113,6 +114,7 @@
 
 
 
+
 "OK" = "OK";
 
 /* placeholder text */
@@ -120,9 +122,6 @@
 
 /* alert title */
 "Preference changed" = "Einstellung wurde geändert";
-
-/* title for successful in app purchase */
-"Purchase %@" = "%@ kaufen";
 
 /* Purchase failed alert title */
 "Purchase Failed" = "Fehler beim Kaufen";
@@ -160,10 +159,13 @@
 "Strike Through" = "Durchgestrichen";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "Beim Laden von Daten aus dem App Store ist ein Fehler aufgetreten.";
+"This device might not be connected to the Internet." = "Dieses Gerät ist möglicherweise nicht mit dem Internet verbunden.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Immer vertrauen";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "App Store konnte nicht erreicht werden";
 
 /* Underline button accessibility label */
 "Underline" = "Unterstrichen";
@@ -173,9 +175,6 @@
 
 /* placeholder text */
 "username" = "Benutzername";
-
-/* in app purchase verify button title */
-"Verify" = "Überprüfen";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Sie haben auf einen Link getippt, der die folgenden Einstellungen ändert:\n\n„%@“\n\nMöchten Sie diese Änderungen akzeptieren?";

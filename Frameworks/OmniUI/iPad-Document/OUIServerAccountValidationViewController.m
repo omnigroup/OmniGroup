@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,15 +92,17 @@ RCS_ID("$Id$")
             if ([errorOrNil hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted]) {
                 NSURLAuthenticationChallenge *challenge = [[errorOrNil userInfo] objectForKey:ODAVCertificateTrustChallengeErrorKey];
                 OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
+                certAlert.storeResult = YES;
+                certAlert.shouldOfferTrustAlwaysOption = YES;
                 certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
-                    OFAddTrustForChallenge(challenge, trustDuration);
                     [strongSelf startValidation]; // ... and try again!
                 };
                 certAlert.cancelBlock = ^{
                     // We already posted an alert, don't pass back the certificate failure error here.
                     [strongSelf _finishedAddingAccount:nil withError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
                 };
-                [certAlert showFromViewController:weakSelf];
+                [certAlert findViewController:^{ return strongSelf; }];
+                [[[OUIAppController sharedController] backgroundPromptQueue] addOperation:certAlert];
             } else {
                 [strongSelf _finishedAddingAccount:nil withError:errorOrNil];
             }

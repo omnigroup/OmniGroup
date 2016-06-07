@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,12 @@ static id _commonInit(OUIColorSwatchPicker *self)
 {
     if (OFISEQUAL(colors, _colors))
         return;
-    _colors = [[NSMutableArray alloc] initWithArray:colors];
+    
+    if (colors != nil)
+        _colors = [[NSMutableArray alloc] initWithArray:colors];
+    else
+        _colors = [[NSMutableArray alloc] init];
+    
     [self setNeedsLayout];
 }
 
@@ -176,8 +181,10 @@ static BOOL _colorsMatch(OAColor *color1, OAColor *color2)
 
     _swatchSelectionColor = color;
 
-    for (OUIColorSwatch *swatch in _colorSwatches)
+    for (OUIColorSwatch *swatch in _colorSwatches) {
         swatch.selected = _colorsMatch(swatch.color, _swatchSelectionColor);
+        //NSLog(@"%@: %@", swatch.selected ? @"SELECTED" : @"----", [swatch.color shortDescription]);
+    }
 }
 
 - (BOOL)hasSelectedSwatch;
@@ -241,8 +248,13 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OAColor *color, CG
     if (_showsSingleSwatch || swatch == _navigationButton) {
         if (![[UIApplication sharedApplication] sendAction:@selector(showDetails:) to:target from:swatch forEvent:nil])
             NSLog(@"Unable to find target for -showDetails: on color swatch tap.");
-    } else if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:target from:swatch forEvent:nil])
-        NSLog(@"Unable to find target for -changeColor: on color swatch tap.");
+    } else {
+        [self sendActionsForControlEvents:UIControlEventTouchDown];
+        _selectedColor = swatch.color;
+        [self setSwatchSelectionColor:swatch.color];
+        [self sendActionsForControlEvents:UIControlEventValueChanged];
+        [self sendActionsForControlEvents:UIControlEventTouchUpInside];
+    }
 }
 
 - (void)layoutSubviews;

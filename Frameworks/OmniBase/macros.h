@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,11 +186,17 @@
 
 /* Mark overrides of a method as required a message to super */
 #define OB_REQUIRES_SUPER __attribute__((objc_requires_super))
- 
+
+/* Convert class to string, accepting a nil argument */
+#define OB_STRING_FROM_CLASS_OR_NIL(CLS_) ({ \
+    typeof(CLS_) CLS__ = (CLS_); \
+    (CLS__ != nil ? NSStringFromClass(CLS__) : @"(null)"); \
+})
+
 /* Assert that the given value is of the given class and return it after casting */
 #define OB_CHECKED_CAST(CLS_, VALUE_) ({ \
     CLS_ *tmp__ = (CLS_ *)(VALUE_); \
-    OBASSERT([tmp__ isKindOfClass:[CLS_ class]], @"Expression %s resulted in instance of %@; expected %@", #VALUE_, NSStringFromClass([tmp__ class]), NSStringFromClass([CLS_ class])); \
+    OBASSERT([tmp__ isKindOfClass:[CLS_ class]], @"Expression %s resulted in instance of %@; expected %@", #VALUE_, OB_STRING_FROM_CLASS_OR_NIL([tmp__ class]), NSStringFromClass([CLS_ class])); \
     (CLS_ *)(tmp__); \
 })
 

@@ -15,6 +15,7 @@
 RCS_ID("$Id$")
 
 @interface OUIColorAttributeInspectorSlice ()
+@property (strong, nonatomic) UIView *bottomSeparator;
 @end
 
 @implementation OUIColorAttributeInspectorSlice
@@ -60,11 +61,10 @@ RCS_ID("$Id$")
 
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[containerView.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:buffer]];
+    [constraintsToActivate addObject:[_textWell.leadingAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leadingAnchor constant:0]];
     [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1]];
     [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:containerView.topAnchor]];
     [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]];
-
     [NSLayoutConstraint activateConstraints:constraintsToActivate];
 
     self.view = containerView;

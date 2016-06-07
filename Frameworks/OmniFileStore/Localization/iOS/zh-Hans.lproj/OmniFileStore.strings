@@ -2,6 +2,18 @@
 "An error has occurred." = "发生错误。";
 
 /* error description */
+"Cannot create directory." = "无法创建目录。";
+
+/* error description */
+"Cannot delete file." = "无法删除文件。";
+
+/* error description */
+"Cannot move file." = "无法移动文件。";
+
+/* error description */
+"Could not decrypt file." = "无法解密文件。";
+
+/* error description */
 "Could not find \"%@\"." = "未发现“%@”。";
 
 /* error description */
@@ -21,6 +33,9 @@
 "No document exists at \"%@\"." = "“%@”无文稿。";
 
 /* error reason */
+"No such directory \"%@\"" = "没有目录“%@”";
+
+/* error reason */
 "No such file \"%@\"." = "没有文件“%@”。";
 
 /* error reason */
@@ -34,3 +49,12 @@
 
 /* error description */
 "Unable to read document." = "不能读取文稿。";
+
+/* error description */
+"Unable to read file." = "无法读取文件。";
+
+/* error description */
+"Unable to write file." = "无法写入文件。";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "加密标头中有无法识别的设置";

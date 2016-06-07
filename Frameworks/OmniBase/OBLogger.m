@@ -207,18 +207,23 @@ static void _setPOSIXError(NSError **error, NSString *description)
 
     __weak OBLogger *weakSelf = self;
     [_fileLoggingQueue addOperationWithBlock:^{
-        NSString *timeStamp = [weakSelf.messageDateFormatter stringFromDate:[NSDate date]];
+        __strong OBLogger *strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+
+        NSString *timeStamp = [strongSelf.messageDateFormatter stringFromDate:[NSDate date]];
         NSString *timeStampedMessage = [[NSString alloc] initWithFormat:@"%@: %@\n", timeStamp, message];
         
-        NSURL *logFileURL = [weakSelf _currentLogFile];
+        NSURL *logFileURL = [strongSelf _currentLogFile];
         if (logFileURL == nil) {
-            NSLog(@"No log file URL for %@", weakSelf.name);
+            NSLog(@"No log file URL for %@", strongSelf.name);
             return;
         }
         
         OB_AUTORELEASING NSError *error = nil;
         if (![timeStampedMessage appendToURL:logFileURL atomically:YES error:&error]) {
-            NSLog(@"Error logging for %@: %@", weakSelf.name, error);
+            NSLog(@"Error logging for %@: %@", strongSelf.name, error);
         }
     }];
 }

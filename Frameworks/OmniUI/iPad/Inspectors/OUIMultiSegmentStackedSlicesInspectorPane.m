@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,7 @@ RCS_ID("$Id$");
     [self.titleTabBar setSelectedTabIndex:[_segments indexOfObject:segment]];
     self.availableSlices = segment.slices;
     [self setToolbarItems:_toolbarItemsForSegment(_selectedSegment) animated:NO];
-    [self.view setNeedsLayout];
+    [self.viewIfLoaded setNeedsLayout];
 }
 
 - (NSArray *)makeAvailableSegments; // For subclasses
@@ -107,9 +107,8 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     [super loadView];
     _contentView = self.view;
     
-    UIScrollView *container = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0, [OUIInspector defaultInspectorContentWidth], 50.0)];
+    UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0,0, [OUIInspector defaultInspectorContentWidth], 50.0)];
     container.autoresizesSubviews = YES;
-    container.scrollEnabled = NO;
     container.backgroundColor = [OUIInspector backgroundColor];
     
     CGRect newFrame = CGRectInset(_titleTabBar.frame, 0.0, -VERTICAL_SPACING_AROUND_TABS);
@@ -117,20 +116,39 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     newFrame.size.width = [OUIInspector defaultInspectorContentWidth];
     
     OUIInspectorBackgroundView *tabBackground = [[OUIInspectorBackgroundView alloc] initWithFrame:newFrame];
-    tabBackground.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin|UIViewAutoresizingFlexibleWidth;
+    tabBackground.translatesAutoresizingMaskIntoConstraints = NO;
     [container addSubview:tabBackground];
     
     _titleTabBar.frame = CGRectInset(tabBackground.bounds, 0.0, VERTICAL_SPACING_AROUND_TABS);
-    _titleTabBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _titleTabBar.translatesAutoresizingMaskIntoConstraints = NO;
     [tabBackground addSubview:_titleTabBar];
-    
+
+    self.view = container;
+
+    // Set up space for the OUIStackedSlicesInspectorPane
     newFrame.origin.y = CGRectGetMaxY(newFrame);
     newFrame.size.height = CGRectGetMaxY(container.bounds) - newFrame.origin.y;
     _contentView.frame = newFrame;
-    _contentView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [container addSubview:_contentView];
     
-    self.view = container;
+    [NSLayoutConstraint activateConstraints:
+     @[
+       // put the tab bar in its place
+       [tabBackground.heightAnchor constraintEqualToConstant:30.0],
+       [tabBackground.widthAnchor constraintEqualToAnchor:container.widthAnchor],
+       [_titleTabBar.heightAnchor constraintEqualToConstant:30.0],
+       [_titleTabBar.widthAnchor constraintEqualToAnchor:container.widthAnchor],
+       [_titleTabBar.centerYAnchor constraintEqualToAnchor: tabBackground.centerYAnchor],
+       // topLayoutGuide gets updated when we get (or lose?) a nav bar.
+       [tabBackground.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
+       // constrain the inspector slices to be as big as possible, but below the tabs.
+       [_contentView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor constant:_titleTabBar.frame.size.height],
+       [_contentView.widthAnchor constraintEqualToAnchor:container.widthAnchor],
+       [_contentView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor],
+       [_contentView.leftAnchor constraintEqualToAnchor:container.leftAnchor],
+       [_contentView.rightAnchor constraintEqualToAnchor:container.rightAnchor],
+       ]];
 }
 
 

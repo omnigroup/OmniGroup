@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,6 @@
 
 @protocol OUIColorValue <NSObject>
 @property(readonly,nonatomic) OAColor *color;
-@property(readonly,nonatomic) BOOL isContinuousColorChange;
 @end
 
 // Not implemented, but color editing controls send this up the responder chain.

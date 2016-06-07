@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -236,6 +236,29 @@ NSDate *OFSyncClientLastSyncDate(NSDictionary *clientState)
     return date;
 }
 
+NSString *OFSyncClientApplicationIdentifier(NSDictionary *clientState)
+{
+    NSString *bundleID = [clientState objectForKey:OFSyncClientApplicationIdentifierKey];
+    OBASSERT(![NSString isEmptyString:bundleID]);
+    return bundleID;
+}
+
+OFVersionNumber *OFSyncClientVersion(NSDictionary *clientState)
+{
+    NSString *versionString = [clientState objectForKey:OFSyncClientVersionKey];
+    OBASSERT(![NSString isEmptyString:versionString]);
+    OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
+    OBASSERT(versionNumber != nil);
+    return versionNumber;
+}
+
+NSString *OFSyncClientHardwareModel(NSDictionary *clientState)
+{
+    NSString *hardwareModel = [clientState objectForKey:OFSyncClientHardwareModelKey];
+    OBASSERT(![NSString isEmptyString:hardwareModel]);
+    return hardwareModel;
+}
+
 // Testing support.
 NSDate *OFSyncClientDateWithTimeIntervalSinceNow(NSTimeInterval sinceNow)
 {
@@ -467,6 +490,11 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
         name = @"Unnamed";
     }
     return name;
+}
+
+- (NSString *)hardwareModel;
+{
+    return OFSyncClientHardwareModel(_propertyList);
 }
 
 - (BOOL)lastSyncDatePastLimitDate:(NSDate *)limitDate;

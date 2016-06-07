@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,7 +71,7 @@ static NSString *stringForAttributeTag(FourCharCode aTag)
 /* NOTE: KCGetAttribute() will do invisible silent *format conversions* on some attributes if you say you have an 8-byte buffer! What was Apple smoking? */
 #define INITIAL_TRY_LENGTH 128  /* change to 9 or so for debug */
 
-OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItemAttr attrTag)
+NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItemAttr attrTag)
 {
     SecKeychainAttribute attr;
     OSStatus keychainStatus;
@@ -219,7 +219,7 @@ static const FourCharCode inetPasswordItemAttributes[INET_PSW_ATTRIBUTES_COUNT] 
     kSecProtocolItemAttr, kSecPortItemAttr, kSecPathItemAttr, kSecAccountItemAttr
 };
 
-OWF_PRIVATE_EXTERN NSMutableDictionary *OWKCExtractItemAttributes(SecKeychainItemRef itemRef)
+NSMutableDictionary *OWKCExtractItemAttributes(SecKeychainItemRef itemRef)
 {
     NSMutableDictionary *dict = [[[NSMutableDictionary alloc] initWithCapacity:13] autorelease];
     OSStatus osErr;
@@ -384,7 +384,7 @@ static SecKeychainAttribute *KeychainAttributesFromDictionary(NSDictionary *para
 }
 #endif
 
-OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *params, SecKeychainSearchRef *grepstate)
+OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *params, SecKeychainSearchRef *grepstate)
 {
     OBFinishPorting; // Uses keychain API that was deprecated in 10.7
 #if 0
@@ -408,7 +408,7 @@ OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictiona
 
 #endif
 
-OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData)
+OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData)
 {
     SecKeychainRef keychain = NULL; // default keychain
     const char *serverName = [hostname UTF8String];
@@ -431,7 +431,7 @@ OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSStr
     return err;
 }
 
-OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password)
+OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password)
 {
     UInt32 dataLength = 0;
     void *dataBuf = NULL;

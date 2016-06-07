@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,11 +15,12 @@
 extern NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey;
 extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 
-@interface OUIColorSwatchPicker : UIView
+@interface OUIColorSwatchPicker : UIControl
 
 @property(copy,nonatomic) NSString *palettePreferenceKey;
 
 @property(copy,nonatomic) NSArray *colors;
+@property(weak, readonly) OAColor *selectedColor;
 @property(strong,nonatomic) OAColor *color; // Simple cover for 'colors' when using a single color
 
 @property(weak,nonatomic) id target; // We'll send -changeColor: (or to changeDetails: if showsSingleSwatch or if tap is on navigation swatch) to this when swatches are tapped

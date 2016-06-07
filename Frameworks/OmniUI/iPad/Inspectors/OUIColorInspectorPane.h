@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,13 +8,14 @@
 // $Id$
 
 #import <OmniUI/OUISingleViewInspectorPane.h>
+#import <OmniUI/OUIColorPicker.h>
 
-@class OUISegmentedControl, OUIColorPicker;
+@class OUISegmentedControl;
 
 // posts a change whenever the colorTypeSegmentedControl is changed via the UI
 #define OUIColorTypeChangeNotification @"OUIColorTypeChangeNotification" 
 
-@interface OUIColorInspectorPane : OUISingleViewInspectorPane
+@interface OUIColorInspectorPane : OUISingleViewInspectorPane <OUIColorPickerTarget>
 {
 @private
     OUISegmentedControl *_colorTypeSegmentedControl;
@@ -31,6 +32,7 @@
     BOOL disableAutoPickingPanes;
 }
 
+@property(weak,nonatomic) OUIInspectorSlice <OUIColorPickerTarget> *parentSlice; // Set by the parent slice, if any.
 @property(strong,nonatomic) IBOutlet OUISegmentedControl *colorTypeSegmentedControl;
 @property(strong,nonatomic) IBOutlet UIView *shadowDivider;
 

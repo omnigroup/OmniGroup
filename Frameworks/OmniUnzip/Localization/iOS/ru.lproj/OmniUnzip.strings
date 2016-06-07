@@ -34,4 +34,4 @@
 "Unable to read zip file." = "Не удается прочитать файл zip.";
 
 /* error description */
-"Unable to write zip file." = "Не удается записать файл .zip.";
+"Unable to write zip file." = "Не удается записать файл zip.";

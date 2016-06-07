@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUI/OUIFullScreenNoteTextViewController.h>
 
 #import <OmniUI/OUINoteTextView.h>
+#import <OmniUI/OUIKeyboardNotifier.h>
 
 RCS_ID("$Id$")
 
@@ -23,6 +24,11 @@ RCS_ID("$Id$")
     return self;
 }
 
+- (void)dealloc;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -32,6 +38,8 @@ RCS_ID("$Id$")
     UINavigationItem *navigationItem = self.fullScreenNavigationBar.topItem;
     navigationItem.title = NSLocalizedStringFromTableInBundle(@"Note", @"OmniUI", OMNI_BUNDLE, @"Full screen note editor title");
     navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(exitFullScreen:)];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardHeightWillChange:) name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
@@ -39,6 +47,19 @@ RCS_ID("$Id$")
     [super viewWillAppear:animated];
 
     self.textView.text = self.text;
+}
+
+- (void)_keyboardHeightWillChange:(NSNotification *)keyboardNotification;
+{
+    OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
+    UIEdgeInsets insets = self.textView.contentInset;
+    insets.bottom = notifier.lastKnownKeyboardHeight;
+    
+    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:0 animations:^{
+        [UIView setAnimationCurve:notifier.lastAnimationCurve];
+        
+        self.textView.contentInset = insets;
+    } completion:nil];
 }
 
 - (IBAction)exitFullScreen:(id)sender;

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,7 +120,7 @@ extern BOOL OFXIsConflict(OFXFileMetadata *metadata);
 
 @end
 
-#define ITEM_MATCHES_FIXTURE(i,f) OFSameFiles(self, [(i).fileURL path], [[self fixtureNamed:(f)] path], NULL)
+#define ITEM_MATCHES_FIXTURE(i,f) OFSameFiles(self, [(i).fileURL path], [[self fixtureNamed:(f)] path], nil)
 
 // These might move to NSFileCoordinator(OFExtensions) if they turn out to be useful/clear enough.
 @interface NSFileCoordinator (OFXTestCaseExtensions)

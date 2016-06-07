@@ -1,17 +1,20 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSWindowController-OAExtensions.h"
+#import <OmniAppKit/NSWindowController-OAExtensions.h>
 
 #import <Cocoa/Cocoa.h>
+#import <Quartz/Quartz.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSWindowController (OAExtensionsPrivate)
 + (void)_longIndicatorThread:(id)arg;
@@ -27,7 +30,7 @@ RCS_ID("$Id$");
     #define DEBUG_LONG_OPERATION_INDICATOR(format, ...)
 #endif
 
-static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
+static BOOL LongOperationIndicatorEnabledForWindow(NSWindow * _Nullable window)
 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LongOperationIndicatorDisabled"])
         return NO;
@@ -124,7 +127,9 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
 {
     OBPRECONDITION(_progressIndicator);
     OBPRECONDITION(_attributes);
-    
+
+    OBASSERT_NOTNULL(title); // This is the default since we are default-nonnull in this file, but OFISEQUAL checks for nil.
+
     [_titleLock lock];
     if (OFISEQUAL(title, _title)) {
         [_titleLock unlock];
@@ -257,7 +262,7 @@ enum {
 
 @implementation NSWindowController (OAExtensions)
 
-static NSWindow *RootlessProgressWindow = nil;
+static NSWindow * _Nullable RootlessProgressWindow = nil;
 
 + (void)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle inWindow:(NSWindow *)documentWindow automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
@@ -492,6 +497,11 @@ static NSWindow *RootlessProgressWindow = nil;
                 pool = [[NSAutoreleasePool alloc] init];
 
                 [operationWindow setAlphaValue:MIN(MAX_ALPHA, MAX_ALPHA*(elapsedTime/FADE_IN_TIME))];
+                
+                // Per feedback from Apple Engineering in <bug:///126185>
+                // -setAlphaValue: makes an implicit layer modification (on modern OS releases which have more pervasive use of CALayer.
+                // Since we did this on a background thread, we opened an implicit transaction, and it is our job to flush it.
+                [CATransaction flush];
 
                 // Check the lock to see if we've been told to buzz off
                 if ([indicatorLock lockWhenCondition:IndicatorStopping beforeDate:[NSDate dateWithTimeIntervalSinceNow:TIME_PER_FRAME]]) {
@@ -514,3 +524,5 @@ static NSWindow *RootlessProgressWindow = nil;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -17,6 +17,7 @@
 #import "OUICustomSubclass.h"
 #import "OUIInspectorSlice-Internal.h"
 #import "OUIParameters.h"
+#import "OUISliceSeparatorView.h"
 
 RCS_ID("$Id$");
 
@@ -36,6 +37,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 @implementation OUIInspectorSlice
 {
     OUIInspectorPane *_detailPane;
+    OUISliceSeparatorView *_bottomSeparator;
 }
 
 + (void)initialize;
@@ -166,16 +168,28 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 - (void)setGroupPosition:(OUIInspectorSliceGroupPosition)newValue;
 {
-    if (_groupPosition == newValue) {
-        return;
-    }
-    
     _groupPosition = newValue;
     
     if (self.isViewLoaded) {
         UIView *view = self.view;
         if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
             [(id)view setInspectorSliceGroupPosition:_groupPosition];
+        }
+        
+        if ([self wantsAutoConfiguredBottomSeparator]) {
+            if (!_bottomSeparator) {
+                _bottomSeparator = [[OUISliceSeparatorView alloc] initWithFrame:view.bounds];
+                _bottomSeparator.translatesAutoresizingMaskIntoConstraints = NO;
+                [view addSubview:_bottomSeparator];
+
+                NSMutableArray *constraintsToActivate = [NSMutableArray array];
+                [constraintsToActivate addObject:[_bottomSeparator.leadingAnchor constraintEqualToAnchor:view.layoutMarginsGuide.leadingAnchor]];
+                [constraintsToActivate addObject:[_bottomSeparator.bottomAnchor constraintEqualToAnchor:view.bottomAnchor]];
+                [constraintsToActivate addObject:[_bottomSeparator.heightAnchor constraintEqualToConstant:1.0]];
+                [constraintsToActivate addObject:[_bottomSeparator.rightAnchor constraintEqualToAnchor:view.rightAnchor]];
+                [NSLayoutConstraint activateConstraints:constraintsToActivate];
+            }
+            _bottomSeparator.hidden = (_groupPosition == OUIInspectorSliceGroupPositionLast || _groupPosition == OUIInspectorSliceGroupPositionAlone);
         }
     }
 }
@@ -236,6 +250,11 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         }
     }
     return NO;
+}
+
+- (BOOL)wantsAutoConfiguredBottomSeparator;
+{
+    return ![self includesInspectorSliceGroupSpacerOnBottom];
 }
 
 + (void)configureTableViewBackground:(UITableView *)tableView;

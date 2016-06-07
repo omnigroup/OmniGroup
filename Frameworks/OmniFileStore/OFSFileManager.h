@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 @class NSMutableArray;
 
 @protocol ODAVAsynchronousOperation;
+@class ODAVFileInfo;
 @protocol OFByteProvider;
 
 extern NSInteger OFSFileManagerDebug;
@@ -33,12 +34,11 @@ extern NSInteger OFSFileManagerDebug;
 
 - (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
 - (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
+- (id <ODAVAsynchronousOperation>)asynchronousDeleteFile:(ODAVFileInfo *)f;
 
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)directoryURL error:(NSError **)outError;
 
 @end
-
-@class ODAVFileInfo;
 
 @protocol OFSConcreteFileManager
 
@@ -51,12 +51,16 @@ extern NSInteger OFSFileManagerDebug;
 //   Directory operation on nonexistent directory  -->  OFSNoSuchDirectory
 // 
 
-// Returns an array of OFSFileInfos for the immediate children of the given URL.  The results are in no particular order.
+// Returns an array of ODAVFileInfos for the immediate children of the given URL.  The results are in no particular order.
 // Returns nil and sets *outError if the URL does not refer to a directory/folder/collection (among other possible reasons).
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+
+// Returns an array of ODAVFileInfos for the immediate children of the given URL.  The results are in no particular order. Also returns an approximation of the current machine date at the time of the request via `outMachineDate`.
+// Returns nil and sets *outError if the URL does not refer to a directory/folder/collection (among other possible reasons).
+- (NSArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections machineDate:(NSDate **)outMachineDate error:(NSError **)outError;
 
 // Only published since OmniFocus was using this method on a generic OFSFileManager (for test cases that run vs. file: URLs). Once we switch that to always using DAV, this could go away
-- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
+- (NSMutableArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 
@@ -68,11 +72,15 @@ extern NSInteger OFSFileManagerDebug;
 
 // Failure due to the URL not existing will be mapped to OFSNoSuchFile (with an underlying Cocoa/POSIX or HTTP error).
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;
+- (BOOL)deleteFile:(ODAVFileInfo *)fileinfo error:(NSError **)outError;
 
 @optional
 
-- (NSObject <OFByteProvider> *)byteProviderWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
+- (NSURL *)writeData:(NSData *)data atomicallyReplacing:(ODAVFileInfo *)destination error:(NSError **)outError;
 
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfFile:(ODAVFileInfo *)f range:(NSString *)range;
+
+- (NSObject <OFByteProvider> *)byteProviderWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 
 @end
 

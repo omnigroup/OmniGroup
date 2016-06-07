@@ -96,6 +96,11 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     return [[OFSFileOperation alloc] initWithFileManager:self writingData:data atomically:NO toURL:url];
 }
 
+- (id <ODAVAsynchronousOperation>)asynchronousDeleteFile:(ODAVFileInfo *)f;
+{
+    return [[OFSFileOperation alloc] initWithFileManager:self deletingURL:f.originalURL];
+}
+
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)requestedDirectoryURL error:(NSError **)outError;
 {
     __autoreleasing NSError *directoryInfoError = nil;
@@ -143,6 +148,11 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     if (outError)
         *outError = error;
     return nil;
+}
+
+- (BOOL)deleteFile:(ODAVFileInfo *)fileinfo error:(NSError **)outError;
+{
+    return [self deleteURL:fileinfo.originalURL error:outError];
 }
 
 @end

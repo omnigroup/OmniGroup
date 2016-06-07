@@ -1,4 +1,4 @@
-// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,34 +11,34 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
-#import "OWContentCacheProtocols.h"
-#import "OWContentInfo.h"
-#import "OWContentType.h"
-#import "OWContentTypeLink.h"
-#import "OWConversionPathElement.h"
-#import "OWDocumentTitle.h"
-#import "OWPipeline.h"
-#import "OWProcessorDescription.h"
-#import "OWProxyServer.h"
-#import "OWSitePreference.h"
-#import "OWUnknownDataStreamProcessor.h"
-#import "OWURL.h"
+#import <OWF/OWContentCacheProtocols.h>
+#import <OWF/OWContentInfo.h>
+#import <OWF/OWContentType.h>
+#import <OWF/OWContentTypeLink.h>
+#import <OWF/OWConversionPathElement.h>
+#import <OWF/OWDocumentTitle.h>
+#import <OWF/OWPipeline.h>
+#import <OWF/OWProcessorDescription.h>
+#import <OWF/OWProxyServer.h>
+#import <OWF/OWSitePreference.h>
+#import <OWF/OWUnknownDataStreamProcessor.h>
+#import <OWF/OWURL.h>
 
 RCS_ID("$Id$")
 
-NSString *OWAddressContentDataMethodKey = @"Content-Data";
-NSString *OWAddressContentAdditionalHeadersMethodKey = @"Additional-Headers";
-NSString *OWAddressContentStringMethodKey = @"Content-String";
-NSString *OWAddressContentTypeMethodKey = @"Content-Type";
-NSString *OWAddressBoundaryMethodKey = @"Boundary";
+NSString * const OWAddressContentDataMethodKey = @"Content-Data";
+NSString * const OWAddressContentAdditionalHeadersMethodKey = @"Additional-Headers";
+NSString * const OWAddressContentStringMethodKey = @"Content-String";
+NSString * const OWAddressContentTypeMethodKey = @"Content-Type";
+NSString * const OWAddressBoundaryMethodKey = @"Boundary";
 
-NSString *OWAddressContentTypeContextKey = @"Content-Type";
-NSString *OWAddressSourceRangeContextKey = @"Range";
+NSString * const OWAddressContentTypeContextKey = @"Content-Type";
+NSString * const OWAddressSourceRangeContextKey = @"Range";
 
-NSString *OWAddressesToFilterDefaultName = @"OWAddressesToFilter";
-NSString *OWAddressesToAllowDefaultName = @"OWAddressesToAllow";
-NSString *OWAddressFilteringEnabledDefaultName = @"OWAddressFilteringEnabled";
-NSString *OWAddressShortcutsDidChange = @"OWAddressShortcutsDidChange";
+NSString * const OWAddressesToFilterDefaultName = @"OWAddressesToFilter";
+NSString * const OWAddressesToAllowDefaultName = @"OWAddressesToAllow";
+NSString * const OWAddressFilteringEnabledDefaultName = @"OWAddressFilteringEnabled";
+NSString * const OWAddressShortcutsDidChange = @"OWAddressShortcutsDidChange";
 
 static NSDictionary *_shortcutDictionary = nil;
 static NSLock *_filterRegularExpressionLock = nil;

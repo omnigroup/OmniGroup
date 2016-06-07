@@ -1,4 +1,4 @@
-// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,16 +35,17 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
     NSLock *observerLock;
     NSMutableArray <OFControllerStatusObserverReference> *_observerReferences; // OFWeakReferences holding the observers
     NSMutableSet *postponingObservers;
-    NSMutableDictionary *queues;
+    NSMutableDictionary *_queues;
     
     OFPreference *_crashOnAssertionOrUnhandledExceptionPreference;
 
-    NSLock *_noficiationOwnersLock;
+    NSLock *_notificationOwnersLock;
     NSMutableArray *_locked_notificationOwnerReferences;
 }
 
 static OFController *sharedController = nil;
 static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
+static BOOL IsRunningUnitTests;
 
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
@@ -62,12 +63,22 @@ static void _OFControllerCheckTerminated(void)
 }
 #endif
 
++ (void)initialize;
+{
+    OBINITIALIZE;
+
+    // Grabbing this up front so that OFCrashImmediately() can read it w/o fear of causing another exception.
+    NSString *pathExtension = [[[self controllingBundle] bundlePath] pathExtension];
+    IsRunningUnitTests = [pathExtension isEqual:@"xctest"];
+}
+
 // If we are running a bundled app, this will return the main bundle.  Otherwise, if we are running unit tests, this will return the unit test bundle.
 + (NSBundle *)controllingBundle;
 {
     static NSBundle *controllingBundle = nil;
-    
-    if (!controllingBundle) {
+    static dispatch_once_t onceToken;
+
+    dispatch_once(&onceToken, ^{
         if (NSClassFromString(@"XCTestCase")) {
             // There should be exactly one test bundle with an extension of either 'xctest'.
             NSBundle *candidateBundle = nil;
@@ -103,10 +114,15 @@ static void _OFControllerCheckTerminated(void)
             }
         }
 #endif
-    }
+    });
     
     OBPOSTCONDITION(controllingBundle);
     return controllingBundle;
+}
+
++ (BOOL)isRunningUnitTests;
+{
+    return IsRunningUnitTests;
 }
 
 + (instancetype)sharedController;
@@ -201,7 +217,7 @@ static void _OFControllerCheckTerminated(void)
     _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
-    _noficiationOwnersLock = [[NSLock alloc] init];
+    _notificationOwnersLock = [[NSLock alloc] init];
     _locked_notificationOwnerReferences = [[NSMutableArray alloc] init];
     
 #ifdef OMNI_ASSERTIONS_ON
@@ -222,10 +238,10 @@ static void _OFControllerCheckTerminated(void)
     
     [_observerReferences release];
     [postponingObservers release];
-    [queues release];
+    [_queues release];
     
     [_locked_notificationOwnerReferences release];
-    [_noficiationOwnersLock release];
+    [_notificationOwnersLock release];
 
     [super dealloc];
 }
@@ -325,24 +341,32 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 /*" Enqueues an invocation to occur when the controller enters a specific state. If the controller is already in that state (or a later state), then the action will happen immediately. Unlike the observer protocol, this method retains the receiver (via the invocation) until the message is sent. "*/
 - (void)queueInvocation:(OFInvocation *)action whenStatus:(OFControllerStatus)state;
 {
-    if (!action)
+    if (action == nil)
+        return;
+
+    [self performBlock:^{ [action invoke]; } whenStatus:state];
+}
+
+- (void)performBlock:(void (^)(void))block whenStatus:(OFControllerStatus)state;
+{
+    if (block == NULL)
         return;
     
     [observerLock lock];
     if (state <= _status) {
         [observerLock unlock];
-        [action invoke];
+        block();
     } else {
         NSNumber *key = [NSNumber numberWithInt:state];
-        NSMutableArray *queue = [queues objectForKey:key];
-        if (!queue) {
-            if (!queues)
-                queues = [[NSMutableDictionary alloc] init];
+        NSMutableArray *queue = [_queues objectForKey:key];
+        if (queue == nil) {
+            if (_queues == nil)
+                _queues = [[NSMutableDictionary alloc] init];
             queue = [NSMutableArray array];
-            [queues setObject:queue forKey:key];
+            [_queues setObject:queue forKey:key];
         }
 
-        [queue addObject:action];
+        [queue addObject:block];
         
         [observerLock unlock];
     }
@@ -481,6 +505,11 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 
 static void OFCrashImmediately(void)
 {
+    if (IsRunningUnitTests) {
+        // When running unit tests on our build server, with a loopback ssh connection to allow opening keychains, xctest can hang on a crash of a unit test (it's trying to connect to Xcode it seems).
+        exit(1);
+    }
+
     unsigned int *bad = (unsigned int *)sizeof(unsigned int);
     bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!
 }
@@ -750,12 +779,12 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 #pragma mark - Notification owner registration
 
-- (void)addNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)addNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 {
     OBPRECONDITION(notificationOwner != nil);
-    OBPRECONDITION(_noficiationOwnersLock);
+    OBPRECONDITION(_notificationOwnersLock);
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     
     OBASSERT([self _locked_indexOfNotificationOwner:notificationOwner] == NSNotFound, "Adding the same notification owner twice is very likely a bug");
     
@@ -763,15 +792,15 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     [_locked_notificationOwnerReferences addObject:ref];
     [ref release];
     
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
 }
 
-- (void)removeNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)removeNotificationOwner:(id <OFNotificationOwner>)notificationOwner;
 {
     OBPRECONDITION(notificationOwner != nil);
-    OBPRECONDITION(_noficiationOwnersLock);
+    OBPRECONDITION(_notificationOwnersLock);
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     
     NSUInteger ownerIndex = [self _locked_indexOfNotificationOwner:notificationOwner];
     
@@ -779,7 +808,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     if (ownerIndex != NSNotFound)
         [_locked_notificationOwnerReferences removeObjectAtIndex:ownerIndex];
     
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
 }
 
 
@@ -889,24 +918,24 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
 - (void)_runQueues
 {
-    for(;;) {
+    for (;;) {
         NSMutableArray *toRun = nil;
         [observerLock lock];
-        for (NSNumber *targetState in [queues keyEnumerator]) {
+        for (NSNumber *targetState in [_queues keyEnumerator]) {
             if ([targetState intValue] <= (int)_status) {
-                toRun = [[queues objectForKey:targetState] retain];
-                [queues removeObjectForKey:targetState];
+                toRun = [[_queues objectForKey:targetState] retain];
+                [_queues removeObjectForKey:targetState];
                 break;
             }
         }
         [observerLock unlock];
         
         if (toRun) {
-            for (OFInvocation *anAction in toRun) {
+            for (void (^block)(void) in toRun) {
                 @try {
-                    [anAction invoke];
+                    block();
                 } @catch (NSException *exc) {
-                    NSLog(@"Ignoring exception raised during %@: %@", [anAction shortDescription], [exc reason]);
+                    NSLog(@"Ignoring exception raised during controller initialization block: %@", exc.reason);
                 };
             }
             [toRun release];
@@ -930,7 +959,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     NSMutableArray *owners = [[NSMutableArray alloc] init];
     
-    [_noficiationOwnersLock lock];
+    [_notificationOwnersLock lock];
     {
         for (OFControllerStatusObserverReference ref in _locked_notificationOwnerReferences) {
             id object = ref.object;
@@ -938,7 +967,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
                 [owners addObject:object];
         }
     }
-    [_noficiationOwnersLock unlock];
+    [_notificationOwnersLock unlock];
     
     return [owners autorelease];
 }

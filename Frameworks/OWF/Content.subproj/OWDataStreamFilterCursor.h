@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,6 @@
 //
 // In addition, it might want to extend -processBegin to perform its own setup.
 
-OWF_EXTERN NSString *OWDataStreamCursor_SeekExceptionName;
+extern NSString * const OWDataStreamCursor_SeekExceptionName;
 
 @end

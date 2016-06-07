@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "La libreria bzip2 ha restituito il codice errore %1$d durante la scrittura dei dati. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Annulla";
 
 /* error recovery option */
@@ -122,7 +122,7 @@
 /* local bundle path readable string */
 "local configuration file" = "documento configurazione locale";
 
-/* time span formatter span (minute) */
+/* time span formatter span */
 "m" = "m";
 
 /* time span formatter span */
@@ -131,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "minuti";
 
-/* time span formatter span (month) */
+/* time span formatter span */
 "mo" = "mm";
 
 /* time span formatter span */
@@ -146,11 +146,11 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Non è un pacchetto valido";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Sostituisci blocco";
 
 /* alert message format when clicking on a configuration value URL */
-"Restore \"%@\" to its default value" = "Ripristinare il valore di default per “%@”";
+"Restore \"%@\" to its default value" = "Ripristinare il valore di default per \"%@\"";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Ripristinare i valori di default di tutte le impostazioni di configurazione interne";
@@ -165,7 +165,7 @@
 "seconds" = "secondi";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Impostare “%1$@” su “%2$@”";
+"Set \"%@\" to \"%@\"" = "Impostare \"%1$@\" su \"%2$@\"";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
@@ -208,6 +208,9 @@
 
 /* error description */
 "Unable to lock document." = "Impossibile bloccare il documento.";
+
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "Sconosciuto";
 
 /* decompression error reason */
 "unrecognized compression format." = "formato di compressione non riconosciuto.";

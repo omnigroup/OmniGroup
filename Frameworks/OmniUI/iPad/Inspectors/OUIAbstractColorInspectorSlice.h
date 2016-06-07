@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,15 +9,15 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIColorInspectorPaneParentSlice.h>
+#import <OmniUI/OUIColorPicker.h>
 
 @class OAColor;
 @class OUIInspectorSelectionValue;
 
-@interface OUIAbstractColorInspectorSlice : OUIInspectorSlice <OUIColorInspectorPaneParentSlice>
+@interface OUIAbstractColorInspectorSlice : OUIInspectorSlice <OUIColorInspectorPaneParentSlice, OUIColorPickerTarget>
 {
 @private
     OUIInspectorSelectionValue *_selectionValue;
-    BOOL _inContinuousChange;
     BOOL _allowsNone;
     OAColor *_defaultColor;
 }

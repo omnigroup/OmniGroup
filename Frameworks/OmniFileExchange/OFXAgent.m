@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -223,15 +223,18 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
                 // We do NOT sync folder-based types as if they were packages. For example, OmniOutliner has a HTML export that writes a directory of files (index.html, attachments, JavaScript). This conforms to kUTTypeFolder and the user can navigate into it in Finder (to open the index.html). We want to sync these individual items as files since that is how the user sees them in Finder.
                 if (isPackage) {
                     NSArray *pathExtensions = fileType[@"UTTypeTagSpecification"][@"public.filename-extension"];
-                    OBASSERT(pathExtensions);
-                    if (![pathExtensions isKindOfClass:[NSArray class]]) {
-                        OBASSERT([pathExtensions isKindOfClass:[NSString class]]);
-                        pathExtensions = @[pathExtensions];
-                    }
-                    OBASSERT([pathExtensions count] > 0);
-                    for (NSString *pathExtension in pathExtensions) {
-                        OBASSERT([pathExtension isEqual:[pathExtension lowercaseString]]);
-                        [localPackagePathExtensions addObject:[pathExtension lowercaseString]];
+
+                    // Might be an abstract type w/o any path extensions.
+                    if (pathExtensions) {
+                        if (![pathExtensions isKindOfClass:[NSArray class]]) {
+                            OBASSERT([pathExtensions isKindOfClass:[NSString class]]);
+                            pathExtensions = @[pathExtensions];
+                        }
+                        OBASSERT([pathExtensions count] > 0);
+                        for (NSString *pathExtension in pathExtensions) {
+                            OBASSERT([pathExtension isEqual:[pathExtension lowercaseString]]);
+                            [localPackagePathExtensions addObject:[pathExtension lowercaseString]];
+                        }
                     }
                 }
             }

@@ -27,6 +27,10 @@ class Xcode::Object
     @identifier = identifier
     @dict = dict
   end
+  
+  def sourceTree
+    dict['sourceTree']
+  end
 end
 
 module Xcode
@@ -312,8 +316,17 @@ module Xcode
       }
       @containingGroup[@root['mainGroup'].to_s] = root_identifier
 
-      # Build source tree map
-      @sourceTrees = {'SOURCE_ROOT' => File.dirname(@path)}
+      # Build source tree map. The top level object can contain a path to consider the root of the project (otherwise, it is the directory containing the project)
+      sourceRoot = File.dirname(@path)
+      projectDirPath =  @root['projectDirPath'].to_s
+      if projectDirPath
+        if Pathname.new(projectDirPath).absolute?
+          sourceRoot = projectDirPath
+        else
+          sourceRoot = Pathname.new(sourceRoot + "/" + projectDirPath).cleanpath.to_s
+        end
+      end
+      @sourceTrees = {'SOURCE_ROOT' => sourceRoot}
 
       @configuration_list = self.get(@root['buildConfigurationList'], Xcode::XCConfigurationList)
 
@@ -360,12 +373,12 @@ module Xcode
       obj = get(key, Xcode::PBXFileReference, Xcode::PBXVariantGroup, Xcode::PBXGroup, Xcode::PBXProject, Xcode::PBXReferenceProxy)
       return @sourceTrees['SOURCE_ROOT'] if obj == self
 
-      sourceTree = obj.dict['sourceTree']
+      sourceTree = obj.sourceTree
 
       if ENV['DEVELOPER_DIR'].nil?
         ENV['DEVELOPER_DIR'] = `xcode-select -print-path`.chomp
       end
-      variables = ['DEVELOPER_DIR', 'BUILT_PRODUCTS_DIR', 'DEVELOPER_DIR', 'SDKROOT', 'DERIVED_FILE_DIR', 'PROJECT_DERIVED_FILE_DIR']
+      variables = ['DEVELOPER_DIR', 'BUILT_PRODUCTS_DIR', 'DEVELOPER_DIR', 'SDKROOT', 'DERIVED_FILE_DIR', 'PROJECT_DERIVED_FILE_DIR', 'DERIVED_SOURCES_DIR']
       
       case sourceTree
       when '<group>'

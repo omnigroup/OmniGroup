@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,15 +7,16 @@
 
 #import "OSUAvailableUpdateController.h"
 
-#import "OSUChecker.h"
+#import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUItem.h"
-#import "OSUController.h"
+#import <OmniSoftwareUpdate/OSUController.h>
 #import "OSUPreferences-Items.h"
 #import "OSUFlippedView.h"
 #import "OSUThinBorderView.h"
 
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSPopUpButton-OAExtensions.h>
+#import <OmniAppKit/NSStackView-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
 #import <OmniAppKit/OAConstraintBasedStackView.h>
@@ -45,7 +46,7 @@ RCS_ID("$Id$");
 
 
 @interface OSUAvailableUpdateControllerMessageTextField : NSTextField
-// This text field subclass is required in order to get the vertical resizing behavior we want. (Which is nothing special — we just want it to be tall enough to accommodate its content, and no taller. I was unable to accomplish that with a standard text field and layout constraints:
+// This text field subclass is required in order to get the vertical resizing behavior we want. Which is nothing special — we just want it to be tall enough to accommodate its content, and no taller. I was unable to accomplish that with a standard text field and layout constraints:
 // • When configured appropriately (set to wrap and to not use its initial layout width; no border or background), the field will size vertically as if it were the width it is in the nib: it will clip or leave extraneous vertical space if resized so that the content needs more or less vertical space. This is despite content hugging and compression settings which should cause it to grow vertically and prevent it from clipping vertically. (If the field's content is changed programmatically, it will again resize to the height needed to encompass its content at the field's width in the nib.)
 // • When the field is configured to draw its border or a background color (which is inconvenient, but usually not a show-stopper), it *does* grow and shrink as appropriate. Indeed, it almost works correctly: unfortunately, when the string value (and thus length) is changed programmatically at runtime, the field does not resize to reflect this until some other action (such as resizing the window) forces a layout.
 @end
@@ -96,10 +97,22 @@ RCS_ID("$Id$");
 @property(nonatomic,strong) IBOutlet NSButton *installButton;
 @property(nonatomic,strong) IBOutlet NSButton *cancelButton;
 
+@property(nonatomic,strong) IBOutlet OAConstraintBasedStackView *stackView;
+@property(nonatomic,strong) IBOutlet NSView *statusView;
+@property(nonatomic,strong) IBOutlet NSView *availableUpdatesView;
+@property(nonatomic,strong) IBOutlet NSView *releaseNotesView;
+@property(nonatomic,strong) IBOutlet NSView *actionButtonsView;
+@property(nonatomic,strong) IBOutlet NSView *okButtonView;
+
 @property(nonatomic,strong) IBOutlet NSView *itemAlertPane;
 @property(nonatomic,strong) IBOutlet NSTextField *itemAlertMessage;
 
-- (void)_resizeInterface;
+@property(nonatomic) BOOL loadingReleaseNotes;
+@property(nonatomic) BOOL checkInProgress;
+@property(nonatomic) BOOL lastCheckFailed;
+@property(nonatomic) BOOL lastCheckExplicit;
+
+- (void)_updateWindowLayout;
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
 - (void)_loadReleaseNotes;
@@ -107,9 +120,6 @@ RCS_ID("$Id$");
 
 @implementation OSUAvailableUpdateController
 {
-    CGFloat _minimumAlertPaneHeight;
-    CGSize _buttonExtraSize;
-    
     BOOL _displayingWarningPane;
     
     // KVC
@@ -118,10 +128,6 @@ RCS_ID("$Id$");
     NSArray *_availableItems;
     NSIndexSet *_selectedItemIndexes;
     OSUItem *_selectedItem;
-    BOOL _loadingReleaseNotes;
-    BOOL _checkInProgress;
-    BOOL _lastCheckFailed;
-    BOOL _lastCheckExplicit;
 }
 
 + (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;
@@ -130,6 +136,13 @@ RCS_ID("$Id$");
     if (!availableUpdateController && shouldCreate)
         availableUpdateController = [[self alloc] init];
     return availableUpdateController;
+}
+
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+    // The stack view's animation works by shrinking the individual subviews to zero height (as appropriate). The autoresizing-mask layout constraints for clip views (or at least those inside scroll views) conflict with this, so we need to turn it off. (And I can't figure out how to do that inside IB.)
+    [[(NSScrollView *)self.availableUpdatesView contentView] setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
 
 #pragma mark -
@@ -194,17 +207,6 @@ RCS_ID("$Id$");
 {
     [super windowDidLoad];
 
-    _minimumAlertPaneHeight = [_itemAlertPane frame].size.height;
-    
-    {
-        NSRect oldFrame = [_installButton frame];
-        [_installButton sizeToFit];
-        NSRect newFrame = [_installButton frame];
-        _buttonExtraSize.width = oldFrame.size.width - newFrame.size.width;
-        _buttonExtraSize.height = oldFrame.size.height - newFrame.size.height;
-        [_installButton setFrame:oldFrame];
-    }
-        
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
     
@@ -220,8 +222,7 @@ RCS_ID("$Id$");
     [_availableItemController bind:NSContentArrayBinding toObject:self withKeyPath:OSUAvailableUpdateControllerAvailableItemsBinding options:nil];
     [self didChangeValueForKey:OSUAvailableUpdateControllerMessageBinding];
 
-    [self _resizeInterface];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
+    [self _updateWindowLayout];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
@@ -250,9 +251,9 @@ RCS_ID("$Id$");
     NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
     
     if ([[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue]) {
-        format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
+        format = NSLocalizedStringFromTableInBundle(@"Checking for %1$@ updates…", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when in the process of checking for updates - text is name of application");
         return [NSString stringWithFormat:format, appName];
-    } else if (_lastCheckFailed) {
+    } else if (self.lastCheckFailed) {
         format = NSLocalizedStringFromTableInBundle(@"Unable to check for updates.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "title of new versions available dialog, when check failed");
         return [NSString stringWithFormat:format, appName];
     } else {
@@ -309,7 +310,7 @@ RCS_ID("$Id$");
         formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
     }
     
-    if (newerVersionsAvailable && !_lastCheckExplicit) {
+    if (newerVersionsAvailable && !self.lastCheckExplicit) {
         format = NSLocalizedStringFromTableInBundle(@"If you're not ready to update now, you can use the [Update preference pane] to check for updates later or adjust the frequency of automatic checking.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "detail message of new versions available dialog, with [link] to preference pane");
         formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
     }
@@ -340,13 +341,29 @@ RCS_ID("$Id$");
     return detailText;
 }
 
++ (NSSet *)keyPathsForValuesAffectingDismissButtonTitle;
+{
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerCheckInProgressBinding, nil];
+}
+
+- (NSString *)dismissButtonTitle;
+{
+    if (self.checkInProgress) {
+        return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
+    }
+    return NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
+}
+
 - (void)setAvailableItems:(NSArray *)items;
 {
     if (OFISEQUAL(items, _availableItems))
         return;
     
     [self willChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
-    _availableItems = [[NSArray alloc] initWithArray:items];
+    if (items)
+        _availableItems = [[NSArray alloc] initWithArray:items];
+    else
+        _availableItems = [[NSArray alloc] init];
     [self didChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
     
     /* The code below adjusts some ui state according to _availableItems, so we need to make sure the nib has been loaded. Our callers try not to even create us if our window won't be shown, so this bit of non-laziness shouldn't incur any extra cost. */
@@ -357,7 +374,7 @@ RCS_ID("$Id$");
     OFForEachInArray(_availableItems, OSUItem *, anItem, { if([anItem price] != nil) haveAnyPrices = YES; });
     [[_itemTableView tableColumnWithIdentifier:@"price"] setHidden:([_availableItems count] > 0 && !haveAnyPrices)];
     
-    [self _resizeInterface];
+    [self _updateWindowLayout];
     
     /* Select the first available update */
     NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]];
@@ -388,7 +405,7 @@ RCS_ID("$Id$");
     [self willChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
     _checkInProgress = yn;
     [self didChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
-    [self _resizeInterface];
+    [self _updateWindowLayout];
     [self _refreshDefaultAction];
 }
 
@@ -418,7 +435,7 @@ RCS_ID("$Id$");
     }
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
+    if (!self.checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 #else
@@ -468,7 +485,7 @@ RCS_ID("$Id$");
         [_availableItemController removeSelectedObjects:[NSArray arrayWithObject:curSelection]];
     
     // If the user just ignored the last non-ignored item, then assume they're not interested in upgrading and close the window
-    if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
+    if (!self.checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
 }
@@ -592,40 +609,37 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 #pragma mark -
 #pragma mark Private
 
-static CGFloat _heightOfItemTableViewForRowCount(NSTableView *itemTableView, NSUInteger rowCount)
+- (NSArray *)_visibleStackedViews;
 {
-    rowCount = MAX(rowCount, (NSUInteger)1);
-    CGFloat height = rowCount * (itemTableView.rowHeight + itemTableView.intercellSpacing.height); // Seems like we should need one fewer intercell spacings than rows (no spacing if just one row, for instance), but that results in a scrollbar.
-    if (rowCount < (NSUInteger)itemTableView.numberOfRows) {
-        height += (itemTableView.rowHeight / 2.0);
+    NSMutableArray *views = [NSMutableArray array];
+    [views addObject:self.statusView];
+    if (self.updatesAreAvailable) {
+        [views addObject:self.availableUpdatesView];
+        [views addObject:self.releaseNotesView];
+        [views addObject:self.actionButtonsView];
+        if (_displayingWarningPane) {
+            [views addObject:self.itemAlertPane];
+        }
+    } else {
+        [views addObject:self.okButtonView];
     }
-    return height;
+    return views;
 }
 
-static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableView)
+- (void)_updateWindowLayout;
 {
-    NSUInteger rowCount = MAX(1, itemTableView.numberOfRows);
-    rowCount = MIN((NSUInteger) 5, rowCount);
-    NSScrollView *scrollView = itemTableView.enclosingScrollView;
-    NSSize contentSize = NSMakeSize(100.0, ceil(_heightOfItemTableViewForRowCount(itemTableView, rowCount)));
-    NSScroller *horizontalScroller = nil;
-    NSScroller *verticalScroller = [scrollView verticalScroller];
-    if (rowCount >= (NSUInteger)itemTableView.numberOfRows) {
-        verticalScroller = nil;
-    }
-    NSControlSize controlSize = verticalScroller != nil ? verticalScroller.controlSize : (horizontalScroller != nil ? horizontalScroller.controlSize : NSRegularControlSize);
-    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize horizontalScrollerClass:[horizontalScroller class] verticalScrollerClass:[verticalScroller class] borderType:[scrollView borderType] controlSize:controlSize scrollerStyle:scrollView.scrollerStyle];
-    return frame.height;
-}
-
-- (void)_resizeInterface;
-{
-    _itemAlertPane.hidden = !_displayingWarningPane;
     if (![self isWindowLoaded])
         return;
+    
+    [self.stackView setUnhiddenSubviews:[self _visibleStackedViews] animated:YES];
 
-    _itemTableViewHeightConstraint.constant = _heightOfItemTableScrollViewForRowCount(_itemTableView);
-    return;
+    if (self.checkInProgress) {
+        self.spinner.hidden = NO;
+        [self.spinner startAnimation:nil];
+    } else {
+        self.spinner.hidden = YES;
+        [self.spinner stopAnimation:nil];
+    }
 }
 
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
@@ -640,7 +654,7 @@ static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableVie
     
     [self setValue:item forKey:OSUAvailableUpdateControllerSelectedItemBinding];
     
-    BOOL shouldResizeUI = NO;
+    BOOL shouldUpdateLayout = NO;
     
     BOOL shouldDisplayStabilityWarning;
     if (!item)
@@ -663,13 +677,12 @@ static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableVie
                                                         "title of new versions available dialog, when in the process of checking for updates - text is name of application - only used if this downgrade does not have a more specific warning message available");
         if (![[_itemAlertMessage stringValue] isEqual:msgText]) {
             [_itemAlertMessage setStringValue:msgText];
-            shouldResizeUI = YES;
         }
     }
     
     if (shouldDisplayStabilityWarning != _displayingWarningPane) {
         _displayingWarningPane = shouldDisplayStabilityWarning;
-        shouldResizeUI = YES;
+        shouldUpdateLayout = YES;
     }
     
     NSString *installButtonTitle;
@@ -693,12 +706,11 @@ static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableVie
     if (![installButtonTitle isEqual:[_installButton title]] || !sel_isEqual(installButtonAction, [_installButton action])) {
         [_installButton setTitle:installButtonTitle];
         [_installButton setAction:installButtonAction];
-        shouldResizeUI = YES;
     }
     [_installButton setEnabled:installButtonEnable];
     
-    if (shouldResizeUI)
-        [self _resizeInterface];
+    if (shouldUpdateLayout)
+        [self _updateWindowLayout];
     
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
@@ -714,7 +726,7 @@ static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableVie
     // The cancel button's key equivalent is set to ESC in the nib, but making it be the default button cell (as happens in some branches of this if) clobbers the key equivalent. So we set it back in the other branches.
     // (Note that ESC is also documented to catch cmd-period, as a special case in NSWindow.)
     
-    if ([visibleItems count] == 0 && !_checkInProgress) {
+    if ([visibleItems count] == 0 && !self.checkInProgress) {
         [[self window] setDefaultButtonCell:[_cancelButton cell]];
     } else if (_displayingWarningPane && !sel_isEqual([_installButton action], @selector(showMoreInformation:))) {
         [[self window] setDefaultButtonCell:nil];
@@ -742,11 +754,6 @@ static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableVie
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:releaseNotesURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:120.0];
     [[_releaseNotesWebView mainFrame] loadRequest:request];
-}
-
-- (void)_adjustViewLayout:(NSNotification *)note
-{
-    [self _resizeInterface];
 }
 
 @end

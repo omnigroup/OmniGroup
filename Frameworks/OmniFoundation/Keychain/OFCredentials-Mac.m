@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -232,7 +232,7 @@ void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertifica
 {
     OBPRECONDITION(duration == OFCertificateTrustDurationSession, @"For persistent trust, use SFCertificateTrustPanel.");
     
-    NSData *data = _OFDataForLeafCertificateInChallenge(challenge);
+    NSData *data = _OFDataForLeafCertificateInTrust(_OFTrustForChallenge(challenge));
     if (!data)
         return;
     
@@ -246,7 +246,7 @@ void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertifica
 
 BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
 {
-    NSData *data = _OFDataForLeafCertificateInChallenge(challenge);
+    NSData *data = _OFDataForLeafCertificateInTrust(_OFTrustForChallenge(challenge));
     if (!data)
         return NO;
     

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,11 +62,15 @@ RCS_ID("$Id$");
         __autoreleasing NSError *error = nil;
         NSURL *appSupportURL = [[[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
         if (!appSupportURL) {
-            NSLog(@"Error creating trash directory: %@", [error toPropertyList]);
+            NSLog(@"Error creating application support directory: %@", [error toPropertyList]);
+        } else {
+            trashDirectoryURL = [[appSupportURL URLByAppendingPathComponent:@"Trash" isDirectory:YES] URLByAppendingPathComponent:@"Documents" isDirectory:YES];
+
+            error = nil;
+            if (![[NSFileManager defaultManager] createDirectoryAtURL:trashDirectoryURL withIntermediateDirectories:YES attributes:nil error:&error]) {
+                NSLog(@"Error creating trash directory: %@", [error toPropertyList]);
+            }
         }
-        
-        trashDirectoryURL = [[appSupportURL URLByAppendingPathComponent:@"Trash" isDirectory:YES] URLByAppendingPathComponent:@"Documents" isDirectory:YES];
-        [[NSFileManager defaultManager] createDirectoryAtURL:trashDirectoryURL withIntermediateDirectories:YES attributes:nil error:NULL];
     }
     
     return trashDirectoryURL;

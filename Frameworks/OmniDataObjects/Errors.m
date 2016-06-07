@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,28 @@ RCS_ID("$Id$")
 
 NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain"; // could be building for iOS, where OMNI_BUNDLE is unavailable
 NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
+NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
+
+BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors)
+{
+    OBPRECONDITION(outError != NULL);
+    
+    if (errors.count > 0) {
+        if (outError != NULL) {
+            if (errors.count == 1) {
+                *outError = errors.firstObject;
+            } else {
+                NSDictionary *userInfo = @{
+                    NSLocalizedDescriptionKey: NSLocalizedStringFromTableInBundle(@"Multiple Errors", @"OmniDataObjects", OMNI_BUNDLE, @"Multiple Delete Errors"),
+                    ODODetailedErrorsKey: errors,
+                };
+                *outError = [NSError errorWithDomain:ODOErrorDomain code:ODOMultipleDeleteErrorsError userInfo:userInfo];
+            }
+        }
+    }
+
+    return YES;
+}
 
 NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite)
 {

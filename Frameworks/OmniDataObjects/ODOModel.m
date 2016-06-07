@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,9 @@
 #import "ODODatabase-Internal.h"
 #import "ODOObject-Accessors.h"
 
-RCS_ID("$Id$")
+@import Foundation;
+
+RCS_ID("$Id$");
 
 @implementation ODOModel
 
@@ -59,7 +61,7 @@ ODOModel *ODOModelCreate(NSString *modelName, NSArray *entities)
         
         model->_name = [modelName copy];
         
-        NSMutableDictionary *entitiesByName = [NSMutableDictionary dictionary];
+        NSMutableDictionary <NSString *, ODOEntity *> *entitiesByName = [NSMutableDictionary dictionary];
         for (ODOEntity *entity in entities) {
             NSString *entityName = [entity name];
             
@@ -78,7 +80,8 @@ ODOModel *ODOModelCreate(NSString *modelName, NSArray *entities)
 
 void ODOModelFinalize(ODOModel *model)
 {
-    for (ODOEntity *entity in [model->_entitiesByName objectEnumerator]) {
+    for (NSString *key in model->_entitiesByName) {
+        ODOEntity *entity = model->_entitiesByName[key];
         [entity finalizeModelLoading];
         Class cls = [entity instanceClass];
         if (cls != [ODOObject class]) {
@@ -89,6 +92,11 @@ void ODOModelFinalize(ODOModel *model)
         }
     }
     
+    model->_entitiesByImplementationClass = [[NSMapTable strongToWeakObjectsMapTable] retain];
+    [model->_entitiesByName enumerateKeysAndObjectsUsingBlock:^(NSString *entityName, ODOEntity *entity, BOOL *stop) {
+        [model->_entitiesByImplementationClass setObject:entity forKey:entity.instanceClass];
+    }];
+
 #ifdef OMNI_ASSERTIONS_ON
     // Only 'leaf' instance classes should be registered.
     for (ODOEntity *entity in [model->_entitiesByName objectEnumerator]) {
@@ -109,11 +117,12 @@ void ODOModelFinalize(ODOModel *model)
     OBRejectUnusedImplementation(self, _cmd);
     [_name release];
     [_entitiesByName release];
+    [_entitiesByImplementationClass release];
     [super dealloc];
 }
 #pragma clang diagnostic pop
 
-- (NSDictionary *)entitiesByName;
+- (NSDictionary<NSString *, ODOEntity *> *)entitiesByName;
 {
     OBPRECONDITION(_entitiesByName);
     return _entitiesByName;
@@ -122,6 +131,11 @@ void ODOModelFinalize(ODOModel *model)
 - (ODOEntity *)entityNamed:(NSString *)name;
 {
     return [_entitiesByName objectForKey:name];
+}
+
+- (ODOEntity *)entityForClass:(Class)implementationClass;
+{
+    return [_entitiesByImplementationClass objectForKey:implementationClass];
 }
 
 #ifdef DEBUG

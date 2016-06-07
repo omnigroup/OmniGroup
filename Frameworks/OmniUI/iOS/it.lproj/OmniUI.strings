@@ -1,23 +1,15 @@
-/* In App Store pricing option format - placeholders are product's price and product's name */
-"%@ %@" = "%1$@ %2$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ di %2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ acquistato";
-
 /* Default title for the About menu item */
+
 "About %@" = "Info su %@";
 
 /* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Sono stati ripristinati tutti gli acquisti associati al tuo account App Store, ma %@ non era tra questi.";
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Tutti gli acquisti per l'account App Store corrente sono stati ripristinati, ma %@ non era incluso.";
 
 /* Bold button accessibility label */
 "Bold" = "Grassetto";
-
-/* Disabled 'Buy' button title string */
-"Buy" = "Acquista";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Acquista %@";
@@ -25,6 +17,7 @@
 /* button title
    cancel button title
    toolbar item title */
+
 
 
 
@@ -37,16 +30,19 @@
 "Certificate Trust" = "Certificati attendibili";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferenza “%1$@” modificata da “%2$@” in “%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferenza “%1$@” modificata da “%2$@” a “%3$@”";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "Cerca aggiornamento gratuito";
 
 /* Certificate trust alert button title */
 "Continue" = "Continua";
 
 /* increment button accessibility label */
-"Decrement" = "Decremento";
+"Decrement" = "Riduci";
 
 /* Button is disabled due to purchase restrictions */
-"Disabled" = "Disabilitato";
+"Disabled" = "Disattivato";
 
 /* Done
    toolbar item title */
@@ -56,14 +52,14 @@
 /* toolbar item title */
 "Edit" = "Modifica";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "Idoneo per l'aggiornamento gratuito";
+
 /* In app Buy button error title */
 "Error" = "Errore";
 
-/* Alert title for error loading product information */
-"Error Loading Store" = "Errore di caricamento Store";
-
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funzione non abilitata per questa demo";
+"Feature not enabled for this demo" = "Funzione non abilitata in questa demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Adatta";
@@ -72,10 +68,10 @@
 "Help and Settings" = "Aiuto e impostazioni";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L'acquisto dall'app non è disponibile o non è consentito su questo dispositivo. Per abilitare l'acquisto, verifica le restrizioni nelle Impostazioni.";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L'acquisto dall'app non è disponibile o non è consentito su questo dispositivo. Per abilitare l'acquisto, verifica le restrizioni nelle impostazioni di iOS.";
 
 /* increment button accessibility label */
-"Increment" = "Incremento";
+"Increment" = "Aumenta";
 
 /* default special URL confirm button title */
 "Invoke" = "Richiama";
@@ -95,8 +91,13 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le restrizioni di Safari nelle Impostazioni.";
 
-/* Buy button title while app store is loading */
-"Loading" = "Carico";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "Ulteriori informazioni";
+
+/* News menu item
+   News view title */
+
+"News" = "Notizie";
 
 /* empty value cell placeholder */
 "None" = "Nessuno";
@@ -113,6 +114,7 @@
 
 
 
+
 "OK" = "OK";
 
 /* placeholder text */
@@ -120,9 +122,6 @@
 
 /* alert title */
 "Preference changed" = "Preferenza modificata";
-
-/* title for successful in app purchase */
-"Purchase %@" = "Acquista %@";
 
 /* Purchase failed alert title */
 "Purchase Failed" = "Acquisto non riuscito";
@@ -160,10 +159,13 @@
 "Strike Through" = "Barrato";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "Errore durante il caricamento delle informazioni da App Store";
+"This device might not be connected to the Internet." = "Questo dispositivo potrebbe non essere connesso a Internet.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Ritieni sempre attendibile";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "Impossibile connettersi all'App Store";
 
 /* Underline button accessibility label */
 "Underline" = "Sottolineato";
@@ -174,9 +176,6 @@
 /* placeholder text */
 "username" = "nome utente";
 
-/* in app purchase verify button title */
-"Verify" = "Verifica";
-
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Hai toccato un link che modificherà le preferenze seguenti:\n\n“%@”\n\nAccettare queste modifiche?";
 
@@ -184,7 +183,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL di Omni speciale:\n\n\"%@\"\n\nEseguire questo comando?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL speciale di Omni:\n\n“%@”\n\nEseguire questo comando?";
 
 /* zoom label */
 "Zoom" = "Ridimensiona";

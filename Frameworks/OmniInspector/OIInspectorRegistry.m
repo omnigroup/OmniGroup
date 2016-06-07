@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,7 +65,7 @@ static NSMutableArray *additionalPanels = nil;
 	unsigned int appIsTerminating:1;
     } registryFlags;
     
-    NSMutableArray *inspectorControllers;
+    NSMutableArray <OIInspectorController *> *inspectorControllers;
     float inspectorWidth;
 
     BOOL _applicationDidFinishRestoringWindows;	// for document based app on 10.7, this means that the app has loaded its documents
@@ -91,7 +91,7 @@ static NSMutableArray *additionalPanels = nil;
     }
 }
 
-- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
+- (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 {
     // This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry
     OIInspectorController *controller = [[self.defaultInspectorControllerClass alloc] initWithInspector:inspector];
@@ -130,7 +130,7 @@ static NSMutableArray *additionalPanels = nil;
         }
         [(OITabbedInspector *)parent registerInspectorDictionary:descriptionDictionary inspectorRegistry:registry bundle:bundle];
     } else {
-        OIInspector *inspector = [OIInspector newInspectorWithDictionary:descriptionDictionary inspectorRegistry:registry bundle:bundle];
+        OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:descriptionDictionary inspectorRegistry:registry bundle:bundle];
         [registry _registerInspector:inspector];
     }
 }
@@ -298,15 +298,15 @@ static NSMutableArray *hiddenPanels = nil;
 
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 {
-    OFForEachInArray(inspectorControllers, OIInspectorController *, anInspector, {
-        if ([[anInspector identifier] isEqualToString:anIdentifier])
+    for (OIInspectorController *anInspector in inspectorControllers) {
+        if ([anInspector.inspectorIdentifier isEqualToString:anIdentifier])
             return anInspector;
-    });
+    }
     
     return nil;
 }
 
-- (NSArray *)controllers;
+- (NSArray <OIInspectorController *> *)controllers;
 {
     return [inspectorControllers copy];
 }
@@ -352,7 +352,7 @@ static NSMutableArray *hiddenPanels = nil;
                 [inspectorGroup setSelectedTabIdentifiers:selectedInspectors pinnedTabIdentifiers:nil];
                 [controller showInspector];
             }
-        } else if ([preferred containsObject:[panel identifier]]) {
+        } else if ([preferred containsObject:panel.inspectorIdentifier]) {
             [controller showInspector];
         }
     }
@@ -415,7 +415,7 @@ static NSMutableArray *hiddenPanels = nil;
     unsigned inspectorOrder = 0;
     for (NSDictionary *inspectorPlist in inspectorPlists) {
         @try {
-            OIInspector *inspector = [OIInspector newInspectorWithDictionary:inspectorPlist inspectorRegistry:self bundle:nil];
+            OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:inspectorPlist inspectorRegistry:self bundle:nil];
             [inspector setDefaultOrderingWithinGroup:inspectorOrder++];
             [self _registerInspector:inspector];
         } @catch (NSException *exc) {
@@ -441,7 +441,7 @@ static NSMutableArray *hiddenPanels = nil;
     return self;
 }
 
-- (NSArray *)copyObjectsInterestingToInspector:(OIInspector *)anInspector;
+- (NSArray *)copyObjectsInterestingToInspector:(OIInspector <OIConcreteInspector> *)anInspector;
 {
     if ([anInspector respondsToSelector:@selector(mayInspectObject:)]) {
         return [inspectionSet copyObjectsSatisfyingPredicateBlock:^BOOL(id object){
@@ -520,7 +520,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
 }
 
 #define INSPECTOR_PADDING OIInspectorStartingHeaderButtonHeight
-- (void)restoreInspectorGroupsWithInspectors:(NSArray *)inspectorList;
+- (void)restoreInspectorGroupsWithInspectors:(NSArray <OIInspectorController *> *)inspectorList;
 {
     @autoreleasepool {
         NSArray *groups = [[OIWorkspace.sharedWorkspace objectForKey:@"_groups"] copy];
@@ -534,7 +534,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         
         // load controllers
         for (OIInspectorController *controller in inspectorList)
-            [inspectorById setObject:controller forKey:[controller identifier]];
+            [inspectorById setObject:controller forKey:controller.inspectorIdentifier];
         
         // restore existing groups from defaults
         for (NSString *identifier in groups) {
@@ -546,7 +546,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         
         // build new groups out of any new inspectors
         NSMutableDictionary *inspectorGroupsByNumber = [NSMutableDictionary dictionary];
-        NSMutableArray *inspectorListSorted = [NSMutableArray arrayWithArray:[inspectorById allValues]];
+        NSMutableArray <OIInspectorController *> *inspectorListSorted = [NSMutableArray arrayWithArray:[inspectorById allValues]];
         
         [inspectorListSorted sortUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
             return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
@@ -1155,7 +1155,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
 }
 
-- (OIInspectorController *)_registerInspector:(OIInspector *)inspector;
+- (OIInspectorController *)_registerInspector:(OIInspector <OIConcreteInspector> *)inspector;
 {
     OBPRECONDITION(inspector);
     OIInspectorController *controller = [self controllerWithInspector:inspector];    
@@ -1416,7 +1416,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     for (OIInspectorController *controller in inspectorControllers)
         if ([[controller inspector] respondsToSelector:@selector(configuration)])
-            [config setObject:[[controller inspector] configuration] forKey:[controller identifier]];
+            [config setObject:[[controller inspector] configuration] forKey:controller.inspectorIdentifier];
 
     [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
         [dictionary setObject:config forKey:@"_Configurations"];
@@ -1430,7 +1430,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     for (OIInspectorController *controller in inspectorControllers)
         if ([[controller inspector] respondsToSelector:@selector(loadConfiguration:)])
-            [[controller inspector] loadConfiguration:[config objectForKey:[controller identifier]]];
+            [[controller inspector] loadConfiguration:[config objectForKey:controller.inspectorIdentifier]];
 }
 
 - (void)_applicationDidFinishRestoringWindowsNotification:(NSNotification *)notification;

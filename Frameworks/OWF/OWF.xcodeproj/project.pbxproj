@@ -33,7 +33,6 @@
 		4A5027610944C16E0035E67F /* OWSitePreference.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C0A5405474D3C0097A10E /* OWSitePreference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A50276E0944C3390035E67F /* OWFTPListingProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A23D75A404DF27750097A146 /* OWFTPListingProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA5358408B27DE600F0872D /* OWF.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E5205DFE8AB39F11C9CC38 /* OWF.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA5358508B27DE600F0872D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E5205CFE8AB39F11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA5358608B27DE600F0872D /* OWCacheControlSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AED1FE206495D3C0097A149 /* OWCacheControlSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA5358708B27DE600F0872D /* OWCacheSearch.h in Headers */ = {isa = PBXBuildFile; fileRef = A2A2F5BF05F65C210097A146 /* OWCacheSearch.h */; };
 		4AA5358808B27DE600F0872D /* OWContentCacheGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C3608E054DE2280097A146 /* OWContentCacheGroup.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -470,7 +469,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00E5205CFE8AB39F11C9CC38 /* FrameworkDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkDefines.h; sourceTree = "<group>"; };
 		00E5205DFE8AB39F11C9CC38 /* OWF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWF.h; sourceTree = "<group>"; };
 		00E52064FE8AB39F11C9CC38 /* OWAbstractContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWAbstractContent.m; sourceTree = "<group>"; };
 		00E52065FE8AB39F11C9CC38 /* OWCompoundObjectStreamCursor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWCompoundObjectStreamCursor.m; sourceTree = "<group>"; };
@@ -1233,7 +1231,6 @@
 			children = (
 				4AA5364308B27DE600F0872D /* Info.plist */,
 				00E5212EFE8AB39F11C9CC38 /* OmniSourceLicense.html */,
-				00E5205CFE8AB39F11C9CC38 /* FrameworkDefines.h */,
 				00E5205DFE8AB39F11C9CC38 /* OWF.h */,
 				0440AFA9FFCFB94CC697A14E /* OWF.strings */,
 				A2DD694405C6EAF00097A146 /* OWF_Prefix.h */,
@@ -1430,7 +1427,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AA5358408B27DE600F0872D /* OWF.h in Headers */,
-				4AA5358508B27DE600F0872D /* FrameworkDefines.h in Headers */,
 				4AA5358608B27DE600F0872D /* OWCacheControlSettings.h in Headers */,
 				4AA5358708B27DE600F0872D /* OWCacheSearch.h in Headers */,
 				4AA5358808B27DE600F0872D /* OWContentCacheGroup.h in Headers */,
@@ -1687,7 +1683,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0730;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2147,6 +2143,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OWF;
 				PRODUCT_NAME = OWF;
 			};
 			name = Debug;
@@ -2158,6 +2155,7 @@
 				CLANG_ENABLE_MODULES = NO;
 				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OWF;
 				PRODUCT_NAME = OWF;
 			};
 			name = Release;

@@ -1,5 +1,5 @@
 /* error reason */
-"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Una voce del documento compresso ha un nome che non può essere convertito in un percorso di documento di sistema.";
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Una voce del documento compresso possiede un nome che non può essere convertito in un percorso del documento di sistema.";
 
 /* error description */
 "Duplicate zip member name \"%@\"." = "Nome utente compresso “%@” duplicato.";
@@ -34,4 +34,4 @@
 "Unable to read zip file." = "Impossibile leggere il documento compresso.";
 
 /* error description */
-"Unable to write zip file." = "Impossibile scrivere il documento compresso.";
+"Unable to write zip file." = "Impossibile scrivere nel documento compresso.";

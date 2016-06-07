@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@ RCS_ID("$Id$")
 #import <CoreServices/CoreServices.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 static NSLock *tempFilenameLock = nil;
 
@@ -364,7 +366,9 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     OBPRECONDITION(OFNOTEQUAL(originalFile, newFile));
-    
+    OBASSERT_NOTNULL(originalFile);
+    OBASSERT_NOTNULL(newFile);
+
     NSDictionary *originalAttributes = [self attributesOfItemAtPath:originalFile error:outError];
     if (!originalAttributes)
         return NO;
@@ -496,3 +500,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+

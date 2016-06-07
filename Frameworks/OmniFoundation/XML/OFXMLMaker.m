@@ -1,4 +1,4 @@
-// Copyright 2004-2005,2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -514,7 +514,7 @@ RCS_ID("$Id$");
 /* OFXMLSink API which can optionally be overridden with a more efficient implementation */
 - (void)addBase64Data:(NSData *)someBytes of:(OFXMLMaker *)container;
 {
-    [self addString:[someBytes base64String] of:container asComment:NO];
+    [self addString:[someBytes base64EncodedStringWithOptions:0] of:container asComment:NO];
 }
 
 @end

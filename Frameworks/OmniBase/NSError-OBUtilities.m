@@ -1,4 +1,4 @@
-// Copyright 2005-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -118,5 +118,19 @@ NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, 
     va_end(kvargs);
     
     return [NSError errorWithDomain:NSPOSIXErrorDomain code:errno_value userInfo:userInfo];
+}
+
+enum OBErrorWellKnownInfoKey OBErrorWellKnownInfoKey(NSString *key)
+{
+    if ([key isEqualToString:NSLocalizedDescriptionKey])
+        return OBErrorKeyDescription;
+    else if ([key isEqualToString:NSLocalizedFailureReasonErrorKey])
+        return OBErrorKeyFailureReason;
+    else if ([key isEqualToString:NSHelpAnchorErrorKey])
+        return OBErrorKeyHelpAnchor;
+    else if ([key isEqualToString:NSLocalizedRecoverySuggestionErrorKey])
+        return OBErrorKeyRecoverySuggestion;
+    else
+        return OBErrorKeyUnknown;
 }
 

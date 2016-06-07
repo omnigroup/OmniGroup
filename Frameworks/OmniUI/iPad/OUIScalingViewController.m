@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -303,7 +303,11 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     CGRect bounds = stableView.bounds;
     if (self.navigationController) {
         bounds = [self.navigationController visibleRectOfContainedView:_scalingView(self)];
-        bounds = [_scalingView(self) convertRect:bounds toView:stableView];
+        if (!CGRectEqualToRect(bounds, CGRectZero)) {
+            bounds = [_scalingView(self) convertRect:bounds toView:stableView];
+        } else {
+            bounds = stableView.bounds;
+        }
     }
     // This automatically falls back to something sensible if the gesture recognizer is nil:
     [overlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView withinBounds:bounds];

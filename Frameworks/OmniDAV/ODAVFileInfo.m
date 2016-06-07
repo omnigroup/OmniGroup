@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,6 @@ RCS_ID("$Id$");
     return [self initWithOriginalURL:url name:name exists:exists directory:directory size:size lastModifiedDate:date ETag:nil];
 }
 
-
 @synthesize originalURL = _originalURL;
 @synthesize name = _name;
 @synthesize exists = _exists;
@@ -151,6 +150,29 @@ RCS_ID("$Id$");
     return YES;
 }
 
+- (BOOL)mayBeSameAsFileInfo:(ODAVFileInfo *)otherInfo;
+{
+    if (!_exists || !otherInfo.exists)
+        return NO;
+
+    if (_lastModifiedDate && otherInfo.lastModifiedDate && ![_lastModifiedDate isEqual:otherInfo.lastModifiedDate])
+        return NO;
+    
+    if (self.isDirectory) {
+        if (!otherInfo.isDirectory)
+            return NO;
+        // ETag and size validators don't apply to directories
+        return YES;
+    }
+    
+    if (self.size && otherInfo.size && self.size != otherInfo.size)
+        return NO;
+    if (_ETag && otherInfo.ETag && ![_ETag isEqualToString:otherInfo.ETag])
+        return NO;
+
+    return YES;
+}
+
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
@@ -163,18 +185,18 @@ RCS_ID("$Id$");
     return [self shortDescription];
 }
 
-#ifdef DEBUG
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
     [dict setObject:_originalURL forKey:@"url" defaultObject:nil];
     [dict setObject:_name forKey:@"name" defaultObject:nil];
-    [dict setObject:[NSNumber numberWithBool:_exists] forKey:@"exists"];
-    [dict setObject:[NSNumber numberWithBool:_directory] forKey:@"directory"];
-    [dict setObject:[NSNumber numberWithUnsignedLongLong:_size] forKey:@"size"];
+    [dict setBoolValue:_exists forKey:@"exists"];
+    [dict setBoolValue:_directory forKey:@"directory"];
+    [dict setUnsignedLongLongValue:_size forKey:@"size"];
+    [dict setObject:_lastModifiedDate forKey:@"lastModifiedDate" defaultObject:nil];
+    [dict setObject:_ETag forKey:@"ETag" defaultObject:nil];
     return dict;
 }
-#endif
 
 #pragma mark - NSCopying
 

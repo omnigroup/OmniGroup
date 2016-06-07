@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -543,69 +543,50 @@ static mode_t permissionsMask = 0022;
 
 - (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
 {
-    // <bug:///98805> (Stop using deprecated CFURLGetFSRef() in NSFileManager(OFExtensions) [quarantine])
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    FSRef carbonRef;
-    bzero(&carbonRef, sizeof(carbonRef));
-    
     NSURL *url = [NSURL fileURLWithPath:path];
-    if (!CFURLGetFSRef((CFURLRef)url, &carbonRef)) {
-        if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCannotGetQuarantineProperties userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
-        return NO;
-    }
 
-    OSStatus err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, (__bridge CFDictionaryRef)quarantineDictionary);
-    if (err != noErr)
-        goto errorReturn;
+    // As of 10.10.5, LaunchServices looks at the following dictionary keys:
+    //  "LSQuarantineEventIdentifier"
+    //  kLSQuarantineTimeStampKey
+    //  kLSQuarantineAgentBundleIdentifierKey
+    //  kLSQuarantineAgentNameKey
+    //  "LSQuarantineDataURLString"
+    //  "LSQuarantineSenderName"
+    //  "LSQuarantineSenderAddress"
+    //  "LSQuarantineTypeNumber"
+    //  "LSQuarantineOriginTitle"
+    //  "LSQuarantineOriginURLString"
+    //  "LSQuarantineOriginAlias"
     
-    return YES;
-    
-errorReturn:
-    if (outError)
-        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, quarantineDictionary, kLSItemQuarantineProperties, nil]];
-    return NO;
-#pragma clang diagnostic pop
+    // The following keys are set automatically if not passed in:
+    //  kLSQuarantineAgentNameKey -> NSString
+    //  kLSQuarantineAgentBundleIdentifierKey -> NSString
+    //  kLSQuarantineTimeStampKey -> NSDate
+    //  "LSQuarantineDataURLString" -> stringified value of kLSQuarantineDataURLKey
+    //  "LSQuarantineTypeNumber"  -> derived from kLSQuarantineTypeKey
+    //  kLSQuarantineOriginURLKey -> converted to a CFURL from string if needed; populated from kLSQuarantineOriginURLKey and/or LSQuarantineOriginAlias
+    //  "LSQuarantineEventIdentifier" -> a new CFUUID
+    //
+
+    return [url setResourceValue:quarantineDictionary forKey:NSURLQuarantinePropertiesKey error:outError];
 }
 
 - (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
 {
-    // <bug:///98805> (Stop using deprecated CFURLGetFSRef() in NSFileManager(OFExtensions) [quarantine])
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    FSRef carbonRef;
-    bzero(&carbonRef, sizeof(carbonRef));
-    
     NSURL *url = [NSURL fileURLWithPath:path];
-    if (!CFURLGetFSRef((CFURLRef)url, &carbonRef)) {
+
+    id __nullable __autoreleasing value = NULL;
+    if (![url getResourceValue:&value forKey:NSURLQuarantinePropertiesKey error:outError])
+        return nil;
+    
+    // Nil is a valid result, meaning it successfully determined that the property isn't there.
+    if (!value) {
         if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCannotGetQuarantineProperties userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
+            *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:ENOATTR userInfo:@{ NSURLErrorKey: url, @"property": NSURLQuarantinePropertiesKey }];
         return nil;
     }
-        
-    CFTypeRef quarantineDictionary = NULL;
-    OSStatus err = LSCopyItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, &quarantineDictionary);
-    if (err != noErr)
-        goto errorReturn;
-    if (!quarantineDictionary) {
-        // This doesn't appear to happen in practice (we get kLSAttributeNotFoundErr instead), but just to be safe...
-        err = kLSAttributeNotFoundErr;
-        goto errorReturn;
-    }
-    if (CFGetTypeID(quarantineDictionary) != CFDictionaryGetTypeID()) {
-        CFRelease(quarantineDictionary);
-        err = kLSUnknownErr;
-        goto errorReturn;
-    }
     
-    return CFBridgingRelease(quarantineDictionary);
-    
-errorReturn:
-    if (outError)
-        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
-    return nil;
-#pragma clang diagnostic pop
+    return value;
 }
 
 #pragma mark Code signing

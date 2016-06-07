@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,11 @@
 
 #import <OmniFoundation/OFCredentials.h>
 
-#import <Security/Security.h>
-#import <Security/SecTrust.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
-#import <Foundation/NSURLCredential.h>
-#import <Foundation/NSURLAuthenticationChallenge.h>
-#import <Foundation/NSURLProtectionSpace.h>
-#import <Foundation/NSURLError.h>
+#import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
+
+@import Foundation;
+@import Security;
 
 #import "OFCredentials-Internal.h"
 
@@ -22,6 +20,7 @@ RCS_ID("$Id$")
 NSString * const OFCredentialsErrorDomain = @"com.omnigroup.OmniFoundation.Credentials.ErrorDomain";
 NSString * const OFCredentialsSecurityErrorDomain = @"com.omnigroup.OmniFoundation.Credentials.Security.ErrorDomain";
 
+static NSString *_OFCertificateTrustPromptForErrorCode(NSInteger, NSString *);
 
 void _OFSecError(const char *caller, const char *function, OSStatus code, NSError **outError)
 {
@@ -77,9 +76,8 @@ SecTrustRef _OFTrustForChallenge(NSURLAuthenticationChallenge *challenge)
     return [protectionSpace serverTrust];
 }
 
-NSData *_OFDataForLeafCertificateInChallenge(NSURLAuthenticationChallenge *challenge)
+NSData *_OFDataForLeafCertificateInTrust(SecTrustRef trustRef)
 {
-    SecTrustRef trustRef = _OFTrustForChallenge(challenge);
     if (!trustRef) {
         OBASSERT(trustRef);
         return nil;
@@ -98,6 +96,8 @@ NSData *_OFDataForLeafCertificateInChallenge(NSURLAuthenticationChallenge *chall
 
 NSString * const OFCertificateTrustUpdatedNotification = @"OFCertificateTrustUpdated";
 
+#if 0
+// This was only ever called with the result of -underlyingErrorWithDomain:NSURLErrorDomain, meaning only the first if was taken
 static NSInteger _OFURLErrorCodeForTrustRef(NSURLAuthenticationChallenge *challenge)
 {
     NSError *error = [[challenge error] underlyingErrorWithDomain:NSURLErrorDomain];
@@ -133,17 +133,32 @@ static NSInteger _OFURLErrorCodeForTrustRef(NSURLAuthenticationChallenge *challe
     // Generic fallback...
     return NSURLErrorSecureConnectionFailed;
 }
+#endif
 
 NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *challenge)
 {
     NSError *error = [[challenge error] underlyingErrorWithDomain:NSURLErrorDomain];
-
     NSString *failedURLString = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];
     if ([NSString isEmptyString:failedURLString])
         failedURLString = [[challenge protectionSpace] host];
-
-    NSInteger errorCode = _OFURLErrorCodeForTrustRef(challenge);
     
+    return _OFCertificateTrustPromptForErrorCode([error code], failedURLString);
+}
+
+NSString *OFCertificateTrustPromptForError(NSError *error)
+{
+    error = [error underlyingErrorWithDomain:NSURLErrorDomain];
+    NSString *failedURLString = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];
+    if ([NSString isEmptyString:failedURLString]) {
+        NSURL *url = [[error userInfo] objectForKey:NSURLErrorFailingURLErrorKey];
+        failedURLString = [url host];
+    }
+    
+    return _OFCertificateTrustPromptForErrorCode([error code], failedURLString);
+}
+
+static NSString *_OFCertificateTrustPromptForErrorCode(NSInteger errorCode, NSString *failedURLString)
+{
     switch (errorCode) {
         case NSURLErrorServerCertificateHasUnknownRoot:
             return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate has unknown root"), failedURLString];
@@ -163,3 +178,44 @@ NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *cha
     }
 }
 
+#if DEBUG
+NSString *OFCertificateTrustDurationName(OFCertificateTrustDuration disposition)
+{
+    switch (disposition) {
+        case OFCertificateTrustDurationSession: return @"TrustDurationSession";
+        case OFCertificateTrustDurationAlways: return @"TrustDurationAlways";
+        case OFCertificateTrustDurationNotEvenBriefly: return @"TrustDurationNotEvenBriefly";
+//        case OFCertificateTrustSettingsModified: return @"TrustSettingsModified";
+    }
+    return [NSString stringWithFormat:@"<Unexpected TrustDuration %d>", (int)disposition];
+}
+#endif
+
+@interface _OFImmediateCredentialOp : NSOperation <OFCredentialChallengeDisposition>
+@property(readwrite,nonatomic) NSURLSessionAuthChallengeDisposition disposition;
+@property(readwrite,retain,atomic) NSURLCredential *credential;
+@end
+
+@implementation _OFImmediateCredentialOp
+{
+    NSURLSessionAuthChallengeDisposition disposition;
+    NSURLCredential *credential;
+}
+
+@synthesize disposition, credential;
+
+- (void)main
+{
+    /* nothing to do */
+}
+
+@end
+
+NSOperation <OFCredentialChallengeDisposition> *OFImmediateCredentialResponse(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential)
+{
+    _OFImmediateCredentialOp *op = [[_OFImmediateCredentialOp alloc] init];
+    op.disposition = disposition;
+    op.credential = credential;
+    [op start];
+    return op;
+}

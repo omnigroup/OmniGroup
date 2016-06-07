@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,7 +82,7 @@ static inline NSString *sgmlTagValueForAttributeAtIndex(OWSGMLTag *tag, NSUInteg
     if (index >= tag->attributeCount)
         return nil;
     value = tag->attributes[index];
-    if (value == OFNullStringObject)
+    if (value == [OFNull nullStringObject])
         return nil;
     return value;
 }

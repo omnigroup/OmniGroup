@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -439,31 +439,35 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
     ODOObjectID *objectID = [[ODOObjectID alloc] initWithEntity:ctx->entity primaryKey:value];
     [value release];
     
-    ODOEditingContext *editingContext = ctx->editingContext;
-    ODOObject *object = [editingContext objectRegisteredForID:objectID];
-    if (!object) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@' and no such object was registered.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToFetchFault, description, reason);
-    } else if ([object isFault]) {
-        // Create the values array to take the values we are about to fetch
-        _ODOObjectCreateNullValues(object);
+    @try {
+        ODOEditingContext *editingContext = ctx->editingContext;
+        ODOObject *object = [editingContext objectRegisteredForID:objectID];
+        if (!object) {
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@' and no such object was registered.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            ODOError(outError, ODOUnableToFetchFault, description, reason);
+            return NO;
+        } else if ([object isFault]) {
+            // Create the values array to take the values we are about to fetch
+            _ODOObjectCreateNullValues(object);
 
-        // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
-        if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError)) {
-            [objectID release];
-            return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
+            // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
+            if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError)) {
+                [objectID release];
+                return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
+            }
+            [object _setIsFault:NO];
+            [ctx->results addObject:object];
+        } else {
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            ODOError(outError, ODOUnableToFetchFault, description, reason);
+            return NO;
         }
-        [object _setIsFault:NO];
-        [ctx->results addObject:object];
-    } else {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOError(outError, ODOUnableToFetchFault, description, reason);
+    } @finally {
+        [objectID release];
     }
-    
-    [objectID release];
-    
+
     return YES;
 }
 
@@ -494,12 +498,20 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
     if (!ODOSQLStatementRun(sqlite, query, callbacks, ctx, outError))
         return NO;
 
+    // Was the object reachable?
+    if ([object isFault]) {
+        OBASSERT([ctx->results count] == 0);
+        return NO;
+    }
+    
+    // Assert that if we did unfault the object, we got back a single result
+    OBASSERT([ctx->results count] == 1);
+    OBASSERT(object == [ctx->results lastObject]);
+
     // Wait until the fetch is done and reset before awaking the object, in case it causes further fetching/faulting in its subclass method.
     OBASSERT([object isFault] == NO);
     ODOObjectAwakeSingleObjectFromFetch(object);
 
-    OBASSERT([ctx->results count] == 1);
-    OBASSERT(object == [ctx->results lastObject]);
     return YES;
 }
 

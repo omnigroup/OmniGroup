@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,9 @@ extern NSMutableDictionary *OFSyncBaseClientState(NSString *domain, NSString *cl
 
 extern NSString *OFSyncClientIdentifier(NSDictionary *clientState);
 extern NSDate *OFSyncClientLastSyncDate(NSDictionary *clientState);
+extern NSString *OFSyncClientApplicationIdentifier(NSDictionary *clientState);
+extern OFVersionNumber *OFSyncClientVersion(NSDictionary *clientState);
+extern NSString *OFSyncClientHardwareModel(NSDictionary *clientState);
 
 extern NSDate *OFSyncClientDateWithTimeIntervalSinceNow(NSTimeInterval sinceNow);
 
@@ -55,6 +58,7 @@ extern NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameter
 @property(nonatomic,readonly) NSDate *registrationDate;
 @property(nonatomic,readonly) NSDate *lastSyncDate;
 @property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) NSString *hardwareModel;
 
 - (BOOL)lastSyncDatePastLimitDate:(NSDate *)limitDate;
 - (NSComparisonResult)compareByLastSyncDate:(OFSyncClient *)otherClient;

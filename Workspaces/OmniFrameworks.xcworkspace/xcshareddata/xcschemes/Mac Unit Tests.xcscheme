@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0710"
+   LastUpgradeVersion = "0730"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -88,20 +88,6 @@
                BuildableName = "ONUnitTests.xctest"
                BlueprintName = "ONUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4AA5366808B27DE600F0872D"
-               BuildableName = "OWF.xctest"
-               BlueprintName = "OWFUnitTests"
-               ReferencedContainer = "container:../Frameworks/OWF/OWF.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry

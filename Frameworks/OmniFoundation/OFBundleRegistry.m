@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -224,14 +224,18 @@ static NSString * const OFBundleRegistryConfigSearchPaths = @"SearchPaths";
 static NSString * const OFBundleRegistryConfigAppWrapperPath = @"AppWrapper";
 static NSString * const OFBundleRegistryConfigBundleExtensions = @"BundleExtensions";
 static NSString * const OFBundleRegistryConfigAdditionalRegistrations = @"AdditionalRegistrations";
-static NSString * const OFBundleRegistryConfigLogBundleRegistration = @"LogBundleRegistration";
+
+static OFDeclareDebugLogLevel(OFBundleRegistryDebug)
+#define DEBUG_REGISTRY(level, format, ...) do { \
+    if (OFBundleRegistryDebug >= (level)) \
+        NSLog(@"BUNDLE REGISTRY: " format, ## __VA_ARGS__); \
+    } while (0)
 
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 NSString * const OFBundleRegistryDisabledBundlesDefaultsKey = @"DisabledBundles";
 #endif
 
 static NSDictionary *configDictionary = nil;
-static BOOL OFBundleRegistryDebug = NO;
 
 static NSString *_normalizedPath(NSString *path)
 {
@@ -240,8 +244,6 @@ static NSString *_normalizedPath(NSString *path)
 
 + (void)readConfigDictionary;
 {
-    NSString *logBundleRegistration;
-
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     NSBundle *bundle = [OFController controllingBundle];
 #else
@@ -251,10 +253,6 @@ static NSString *_normalizedPath(NSString *path)
     configDictionary = [[[bundle infoDictionary] objectForKey:OFBundleRegistryConfig] retain];
     if (!configDictionary)
         configDictionary = [[NSDictionary alloc] init];
-
-    logBundleRegistration = [configDictionary objectForKey:OFBundleRegistryConfigLogBundleRegistration];
-    if (logBundleRegistration != nil && [logBundleRegistration boolValue] == YES)
-        OFBundleRegistryDebug = YES;
 
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     oldDisabledBundleNames = [[[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey] copy];
@@ -637,23 +635,20 @@ static NSString *_normalizedPath(NSString *path)
             // Look up the bundle's required software
             requiredVersionsDictionary = [infoDictionary objectForKey:OFRequiredSoftwareVersions];
             if (!requiredVersionsDictionary) {
-                if (OFBundleRegistryDebug)
-                    NSLog(@"OFBundleRegistry: Skipping %@ (obsolete)", bundlePath);
+                DEBUG_REGISTRY(1, @"Skipping %@ (obsolete)", bundlePath);
                 [description setObject:NSLocalizedStringFromTableInBundle(@"Bundle is obsolete", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];
                 continue;
             }
             // Check whether we have the bundle's required software
             if (![self haveSoftwareVersionsInDictionary:requiredVersionsDictionary]) {
-                if (OFBundleRegistryDebug)
-                    NSLog(@"OFBundleRegistry: Skipping %@ (requires software)", bundlePath);
+                DEBUG_REGISTRY(1, @"Skipping %@ (requires software)", bundlePath);
                 [description setObject:NSLocalizedStringFromTableInBundle(@"Bundle requires additional software", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];
                 continue;
             }
             // Check whether we've already registered another copy of this bundle
             if ([registeredBundleNames containsObject:bundleName]) {
                 // A possible enhancement would be to keep track of the duplicates rather than just throwing them out, and fall back on loading them if the first copy fails to load.
-                if (OFBundleRegistryDebug)
-                    NSLog(@"OFBundleRegistry: Skipping %@ (duplicate bundle name)", bundlePath);
+                DEBUG_REGISTRY(1, @"Skipping %@ (duplicate bundle name)", bundlePath);
                 [description setObject:NSLocalizedStringFromTableInBundle(@"Duplicate bundle name", @"OmniFoundation", [OFBundleRegistry bundle], @"invalid bundle reason") forKey:@"invalid"];
                 continue;
             }
@@ -718,8 +713,7 @@ static NSString *_normalizedPath(NSString *path)
         // Lastly, register the bundle (which will look not only at the passed in dictionary, but also at the bundle's resources).
         // If this is the main bundle, it is important that this is after the "registraitons" files so that it can override them.
         NSDictionary *registrationDictionary = [infoDictionary objectForKey:OFRegistrations];
-        if (OFBundleRegistryDebug)
-            NSLog(@"OFBundleRegistry: Registering %@ (version %@) (%ld registrations)", bundlePath, softwareVersion, [registrationDictionary count]);
+        DEBUG_REGISTRY(1, @"Registering %@ (version %@) (%ld registrations)", bundlePath, softwareVersion, [registrationDictionary count]);
         [self registerDictionary:registrationDictionary forBundle:description];
     }
 }
@@ -759,8 +753,7 @@ static NSString *_normalizedPath(NSString *path)
 
         requiredVersion = [requiredVersionEnumerator nextObject];
         softwareVersion = [softwareVersionDictionary objectForKey:software];
-        if (OFBundleRegistryDebug)
-            NSLog(@"OFBundleRegistry: Looking for version %@ of %@, found %@", requiredVersion, software, softwareVersion);
+        DEBUG_REGISTRY(1, @"Looking for version %@ of %@, found %@", requiredVersion, software, softwareVersion);
         if ([NSString isEmptyString:requiredVersion]) {
             // Match any version of the software
             if (softwareVersion == nil)

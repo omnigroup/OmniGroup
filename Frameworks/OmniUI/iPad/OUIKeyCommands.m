@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -140,8 +140,14 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
             else
                 OBASSERT([inputString length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
             
-            UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
-            [result addObject:command];
+            UIKeyCommand *command = nil;
+            
+            if (discoverabilityTitle != nil && discoverabilityTitle.length > 0)
+                command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
+            else
+                command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName)];
+            
+             [result addObject:command];
         }
     }
 

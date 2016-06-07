@@ -56,15 +56,15 @@
 "Bundle requires additional software" = "包要求附加软件";
 
 /* compression error reason */
-"bzip2 library returned error code %d when finishing compression. %s." = "bzip2 资源库在完成压缩时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when finishing compression. %s." = "bzip2 资源库在完成压缩时返回错误代码 %1$d。%2$s。";
 
 /* decompression error reason */
-"bzip2 library returned error code %d when reading data. %s." = "bzip2 资源库在读取数据时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when reading data. %s." = "bzip2 资源库在读取数据时返回错误代码 %1$d。%2$s。";
 
 /* compression error reason */
-"bzip2 library returned error code %d when writing data. %s." = "bzip2 资源库在写入数据时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when writing data. %s." = "bzip2 资源库在写入数据时返回错误代码 %1$d。%2$s。";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "取消";
 
 /* error recovery option */
@@ -84,7 +84,7 @@
 "Could not create directory" = "无法创建目录";
 
 /* time span formatter span */
-"d" = "天";
+"d" = "d";
 
 /* time span formatter span */
 "day" = "天";
@@ -96,7 +96,7 @@
 "Duplicate bundle name" = "复制包的名称";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "以下路径不允许元素“%1$@”：%2$@";
+"Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "针对位于“%@”的锁定文件创建目录失败。";
@@ -108,7 +108,7 @@
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
 /* time span formatter span */
-"h" = "小时";
+"h" = "h";
 
 /* time span formatter span */
 "hour" = "小时";
@@ -122,8 +122,8 @@
 /* local bundle path readable string */
 "local configuration file" = "本地配置文件";
 
-/* time span formatter span (minute) */
-"m" = "分钟";
+/* time span formatter span */
+"m" = "m";
 
 /* time span formatter span */
 "minute" = "分钟";
@@ -131,8 +131,8 @@
 /* time span formatter span */
 "minutes" = "分钟";
 
-/* time span formatter span (month) */
-"mo" = "月";
+/* time span formatter span */
+"mo" = "mo";
 
 /* time span formatter span */
 "month" = "月";
@@ -146,7 +146,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "不是有效的包";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "覆盖锁定";
 
 /* alert message format when clicking on a configuration value URL */
@@ -156,7 +156,7 @@
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
 /* time span formatter span */
-"s" = "秒";
+"s" = "s";
 
 /* time span formatter span */
 "second" = "秒";
@@ -168,19 +168,19 @@
 "Set \"%@\" to \"%@\"" = "将“%1$@”设置为“%2$@”";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。该证书可能已过期，或尚未激活。是否仍要连接？";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。 该证书可能已过期，或尚未激活。 是否仍要连接？";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。 此站点不受信任。 是否仍要连接？";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "本配置链接会进行以下更改：";
@@ -209,11 +209,14 @@
 /* error description */
 "Unable to lock document." = "不能锁定文稿。";
 
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "未知的";
+
 /* decompression error reason */
 "unrecognized compression format." = "无法识别的压缩格式。";
 
 /* time span formatter span */
-"w" = "周";
+"w" = "w";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
@@ -225,7 +228,7 @@
 "weeks" = "周";
 
 /* time span formatter span */
-"y" = "年";
+"y" = "y";
 
 /* time span formatter span */
 "year" = "年";

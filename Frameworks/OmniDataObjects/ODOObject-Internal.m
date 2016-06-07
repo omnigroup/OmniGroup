@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,6 +83,16 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _ODOObjectCreateValuesFromSnapshot(self, snapshot);
     
     return self;
+}
+
+- (BOOL)_isAwakingFromInsert;
+{
+    return _flags.isAwakingFromInsert;
+}
+
+- (void)_setIsAwakingFromInsert:(BOOL)isAwakingFromInsert;
+{
+    _flags.isAwakingFromInsert = isAwakingFromInsert;
 }
 
 - (void)_setIsFault:(BOOL)isFault;
@@ -331,13 +341,21 @@ void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self)
     // Allow edits w/o marking the object as edited or making a committed property snapshot, at least to base properties (editing relationships might be a terrible idea ... not sure).
     // This should really only set non-persistent properties (transient properties & local ivar caches of some sort).  So, when this flag is set, -setValue:forKey: will assert if any modeled property is poked.
 
-    if (self->_flags.needsAwakeFromFetch == NO)
+    if (self->_flags.needsAwakeFromFetch == NO) {
         // Some access from *another* awaking object caused this one to wake up already
         return;
+    }
     
     self->_flags.needsAwakeFromFetch = NO;
-    
-    [self awakeFromFetch]; // Could possibly raise, do all our work first
+
+    OBASSERT(!self->_flags.isAwakingFromFetch);
+    self->_flags.isAwakingFromFetch = YES;
+    @try {
+        // Could possibly raise
+        [self awakeFromFetch];
+    } @finally {
+        self->_flags.isAwakingFromFetch = NO;
+    }
 }
 
 void ODOObjectFinalizeAwakeFromFetch(ODOObject *self)

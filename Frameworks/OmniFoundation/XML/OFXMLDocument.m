@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,18 +27,28 @@
 
 RCS_ID("$Id$");
 
-@interface OFXMLDocument (/*Private*/)
-- (void)_preInit;
-- (id)_initCommonSuffix:(NSError **)outError;
-- (BOOL)_parseData:(NSData *)xmlData defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
-@end
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFXMLDocument
+{
+    // For the initial XML PI
+    NSString *_versionString;
+    BOOL _standalone;
 
-- initWithRootElement:(OFXMLElement *)rootElement
-          dtdSystemID:(CFURLRef)dtdSystemID
-          dtdPublicID:(NSString *)dtdPublicID
-   whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior
+    // Custom PIs
+    NSMutableArray *_processingInstructions;
+
+    // Building
+    NSMutableArray *_elementStack;
+
+    // Support for callers to squirrel away state and then extract it again.
+    NSMutableDictionary *_userObjects;
+}
+
+- (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
+          dtdSystemID:(nullable CFURLRef)dtdSystemID
+          dtdPublicID:(nullable NSString *)dtdPublicID
+   whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
        stringEncoding:(CFStringEncoding)stringEncoding
                 error:(NSError **)outError;
 {
@@ -70,13 +80,13 @@ RCS_ID("$Id$");
     
     [_elementStack addObject:_rootElement];
     
-    return [self _initCommonSuffix:outError];
+    return [self _commonSetupSuffix:outError];
 }
 
-- initWithRootElementName:(NSString *)rootElementName
-              dtdSystemID:(CFURLRef)dtdSystemID
-              dtdPublicID:(NSString *)dtdPublicID
-       whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior
+- (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
+              dtdSystemID:(nullable CFURLRef)dtdSystemID
+              dtdPublicID:(nullable NSString *)dtdPublicID
+       whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
            stringEncoding:(CFStringEncoding)stringEncoding
                     error:(NSError **)outError;
 {
@@ -91,9 +101,9 @@ RCS_ID("$Id$");
     return self;
 }
 
-- initWithRootElementName:(NSString *)rootElementName
-             namespaceURL:(NSURL *)rootElementNameSpace
-       whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior
+- (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
+             namespaceURL:(nullable NSURL *)rootElementNameSpace
+       whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
            stringEncoding:(CFStringEncoding)stringEncoding
                     error:(NSError **)outError;
 {
@@ -105,18 +115,18 @@ RCS_ID("$Id$");
     return self;
 }
 
-- initWithContentsOfFile:(NSString *)path whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithContentsOfFile:(NSString *)path whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
     return [self initWithData:[NSData dataWithContentsOfFile:path] whitespaceBehavior:whitespaceBehavior error:outError];
 }
 
-- initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
     // Preserve whitespace by default
     return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve error:outError];
 }
 
-- initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
     if (!(self = [super init]))
         return nil;
@@ -132,7 +142,7 @@ RCS_ID("$Id$");
         return nil;
     }
         
-    return [self _initCommonSuffix:outError];
+    return [self _commonSetupSuffix:outError];
 }
 
 - (void) dealloc;
@@ -150,52 +160,27 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-- (OFXMLWhitespaceBehavior *) whitespaceBehavior;
-{
-    return _whitespaceBehavior;
-}
-
-- (CFURLRef) dtdSystemID;
-{
-    return _dtdSystemID;
-}
-
-- (NSString *) dtdPublicID;
-{
-    return _dtdPublicID;
-}
-
-- (CFStringEncoding) stringEncoding;
-{
-    return _stringEncoding;
-}
-
-- (NSArray *)loadWarnings;
-{
-    return _loadWarnings;
-}
-
-- (NSData *)xmlData:(NSError **)outError;
+- (nullable NSData *)xmlData:(NSError **)outError;
 {
     return [self xmlDataForElements:[NSArray arrayWithObjects: _rootElement, nil] asFragment:NO error:outError];
 }
 
-- (NSData *)xmlDataWithDefaultWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhiteSpaceBehavior error:(NSError **)outError;
+- (nullable NSData *)xmlDataWithDefaultWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhiteSpaceBehavior error:(NSError **)outError;
 {
     return [self xmlDataForElements:[NSArray arrayWithObjects: _rootElement, nil] asFragment:NO defaultWhiteSpaceBehavior:defaultWhiteSpaceBehavior startingLevel:0 error:outError];
 }
 
-- (NSData *)xmlDataAsFragment:(NSError **)outError;
+- (nullable NSData *)xmlDataAsFragment:(NSError **)outError;
 {
     return [self xmlDataForElements:[NSArray arrayWithObjects: _rootElement, nil] asFragment:YES error:outError];
 }
 
-- (NSData *)xmlDataForElements:(NSArray *)elements asFragment:(BOOL)asFragment error:(NSError **)outError;
+- (nullable NSData *)xmlDataForElements:(NSArray *)elements asFragment:(BOOL)asFragment error:(NSError **)outError;
 {
     return [self xmlDataForElements:elements asFragment:asFragment defaultWhiteSpaceBehavior:OFXMLWhitespaceBehaviorTypePreserve startingLevel:0 error:outError];
 }
 
-- (NSData *)xmlDataForElements:(NSArray *)elements asFragment:(BOOL)asFragment defaultWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhiteSpaceBehavior startingLevel:(unsigned int)level error:(NSError **)outError;
+- (nullable NSData *)xmlDataForElements:(NSArray *)elements asFragment:(BOOL)asFragment defaultWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhiteSpaceBehavior startingLevel:(unsigned int)level error:(NSError **)outError;
 {
     // This is not true if we are on 10.3, and Keynote files don't have a DOCTYPE definition
     //OBPRECONDITION(asFragment || (_dtdSystemID && _dtdPublicID)); // Otherwise CFXMLParser will generate an error on load (which we'll ignore, but still...)
@@ -326,14 +311,8 @@ RCS_ID("$Id$");
     [processingInstruction release];
 }
 
-- (OFXMLElement *) rootElement;
-{
-    return _rootElement;
-}
+#pragma mark - User objects
 
-//
-// User objects
-//
 - (id)userObjectForKey:(NSString *)key;
 {
     return [_userObjects objectForKey:key];
@@ -349,9 +328,8 @@ RCS_ID("$Id$");
         [_userObjects removeObjectForKey:key];
 }
 
-//
-// Writing conveniences
-//
+#pragma mark - Writing conveniences
+
 - (OFXMLElement *) pushElement: (NSString *) elementName;
 {
     OFXMLElement *child, *top;
@@ -487,7 +465,7 @@ RCS_ID("$Id$");
     return [[[OFXMLCursor alloc] initWithDocument:self] autorelease];
 }
 
-#pragma mark Partial OFXMLParserTarget
+#pragma mark - Partial OFXMLParserTarget
 
 - (void)parser:(OFXMLParser *)parser setSystemID:(NSURL *)systemID publicID:(NSString *)publicID;
 {
@@ -609,9 +587,7 @@ RCS_ID("$Id$");
     OBPOSTCONDITION([_elementStack count] == parser.elementDepth);
 }
 
-//
-// Debugging
-//
+#pragma mark - Debugging
 
 - (NSMutableDictionary *) debugDictionary;
 {
@@ -639,7 +615,7 @@ RCS_ID("$Id$");
     return debugDictionary;
 }
 
-#pragma mark Private
+#pragma mark - Private
 
 - (void) _preInit;
 {
@@ -649,7 +625,7 @@ RCS_ID("$Id$");
     _processingInstructions = [[NSMutableArray alloc] init];
 }
 
-- (id)_initCommonSuffix:(NSError **)outError;
+- (nullable id)_commonSetupSuffix:(NSError **)outError NS_REPLACES_RECEIVER;
 {
     if (!_rootElement) {
         OFError(outError, OFXMLDocumentNoRootElementError, NSLocalizedStringFromTableInBundle(@"No root element was found", @"OmniFoundation", OMNI_BUNDLE, @"error reason"), nil);
@@ -687,3 +663,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

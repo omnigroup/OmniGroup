@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,39 +8,89 @@
 #import <Foundation/Foundation.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import "OFTestCase.h"
+#import "ODAVTestServer.h"
 #import <XCTest/XCTest.h>
 
 #import <OmniFileStore/OFSDocumentKey.h>
-#import <OmniFileStore/OFSSegmentedEncryption.h>
+#import <OmniFileStore/OFSSegmentedEncryptionWorker.h>
+#import <OmniFileStore/OFSSegmentedEncryptionProviderAcceptor.h>
 #import <OmniFileStore/OFSFileByteAcceptor.h>
+#import <OmniFileStore/OFSEncryptionConstants.h>
 #import <OmniFileStore/Errors.h>
+
+#import <OmniFileStore/OFSFileManager.h>
+#import <OmniFileStore/OFSEncryptingFileManager.h>
+#import <OmniDAV/ODAVFileInfo.h>
+
 
 RCS_ID("$Id$");
 
-@interface OFSEncryptionTests : XCTestCase
+#define ENCRYPTION_FILE @"encrypted"
 
+@interface OFSEncryptionTests : XCTestCase
+@property (atomic) NSString *subname;
+@end
+
+@interface OFSEncryptedDAVTests : XCTestCase <OFSFileManagerDelegate>
 @end
 
 @implementation OFSEncryptionTests
 
-#if 0
-- (void)setUp {
-    [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
++ (XCTestSuite * __nonnull)defaultTestSuite;
+{
+    XCTestSuite *suite = [XCTestSuite testSuiteForTestCaseClass:self];
+    
+    unsigned int methodCount;
+    Method *methods = class_copyMethodList(self, &methodCount);
+    for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex++) {
+        Method m = methods[methodIndex];
+        
+        /* We're looking for methods of the form - (void)testFoo:(enum OFSDocumentKeySlotType)tp; */
+        
+        if (method_getNumberOfArguments(m) != 3  /* Includes the self and _cmd arguments */)
+            continue;
+        NSString *nm = NSStringFromSelector(method_getName(m));
+        if (![nm hasPrefix:@"test"])
+            continue;
+        BOOL typesMatch = YES;
+        char *tp = method_copyReturnType(m);
+        if (strcmp(tp, "v")) typesMatch = NO;
+        free(tp);
+        tp = method_copyArgumentType(m, 2);
+        if (strcmp(tp, @encode(enum OFSDocumentKeySlotType))) typesMatch = NO;
+        free(tp);
+        
+        if (!typesMatch)
+            continue;
+        NSMethodSignature *sig = [self instanceMethodSignatureForSelector:method_getName(m)];
+        
+        XCTestSuite *subsuite = [XCTestSuite testSuiteWithName:nm];
+        [suite addTest:subsuite];
+        
+#define NUM_SLOTTYPES 2
+        static const enum OFSDocumentKeySlotType slottypes[NUM_SLOTTYPES] = { SlotTypeActiveAESWRAP, SlotTypeActiveAES_CTR_HMAC };
+        
+        for (int i = 0; i < NUM_SLOTTYPES; i++) {
+            NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+            [inv setSelector:method_getName(m)];
+            [inv setArgument:(void *)&(slottypes[i]) atIndex:2];
+            OFSEncryptionTests *tst = [self testCaseWithInvocation:inv];
+            tst.subname = [NSString stringWithFormat:@"%@%d", nm, slottypes[i]];
+            [subsuite addTest:tst];
+        }
+#undef NUM_SLOTTYPES
+    }
+    free(methods);
+    
+    return suite;
 }
 
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
+- name;
+{
+    if (self.subname)
+        return self.subname;
+    return [super name];
 }
-
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
-}
-#endif
 
 static const char *thing1 = "Thing one.\n";
 static const char *thing2 = "Thing two...\n";
@@ -85,18 +135,17 @@ static const char *thing3 = "Thing three\n";
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     NSMutableData *backing = [NSMutableData data];
     size_t prefixLen;
-    NSData *blob;
     
     {
         OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
         
-        OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
+        XCTAssertNotNil(cryptWorker.wrappedKey);
         
-        [backing appendData:blob];
+        [backing appendData:cryptWorker.wrappedKey];
         prefixLen = [backing length];
         
         OFSSegmentEncryptingByteAcceptor *writer = [[OFSSegmentEncryptingByteAcceptor alloc] initWithByteAcceptor:backing cryptor:cryptWorker offset:prefixLen];
@@ -126,22 +175,21 @@ static const char *thing3 = "Thing three\n";
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2"];
     NSFileManager *fm = [NSFileManager defaultManager];
     
     size_t prefixLen;
-    NSData *blob;
     
     {
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
         OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
-        
-        OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
+        NSData *blob = cryptWorker.wrappedKey;
+        XCTAssertNotNil(blob);
         
         [backing setLength:[blob length]];
         [backing replaceBytesInRange:(NSRange){0, [blob length]} withBytes:[blob bytes]];
@@ -237,22 +285,20 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2Large"];
     NSFileManager *fm = [NSFileManager defaultManager];
     
     size_t prefixLen;
-    NSData *blob;
     
     {
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
         OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
-        
-        OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
+        NSData *blob = cryptWorker.wrappedKey;
         
         prefixLen = [blob length];
         [backing setLength:prefixLen];
@@ -317,22 +363,21 @@ static void wrXY(char *into, int x, int y)
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test3Large"];
     NSFileManager *fm = [NSFileManager defaultManager];
     
     size_t prefixLen;
-    NSData *blob;
+    ;
     
     {
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
         OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
-        
-        OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
+        NSData *blob = cryptWorker.wrappedKey;
         
         prefixLen = [blob length];
         [backing setLength:prefixLen];
@@ -397,17 +442,19 @@ static void wrXY(char *into, int x, int y)
     
 }
 
-- (void)testOneShotSmall
+- (void)testOneShotSmall:(enum OFSDocumentKeySlotType)keyType;
 {
     NSError * __autoreleasing error = nil;
     
     OFSDocumentKey *docKey, *otherDocKey;
+    OFSSegmentDecryptWorker *decryptor;
+    size_t offset = 0;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
     OBShouldNotError(otherDocKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [otherDocKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [otherDocKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
     for (int whichCiphertext = 0; whichCiphertext < 3; whichCiphertext ++) {
         NSData *plaintext, *ciphertext, *decrypted;
@@ -424,13 +471,31 @@ static void wrXY(char *into, int x, int y)
                 break;
         }
         
-        OBShouldNotError(ciphertext = [OFSSegmentEncryptWorker encryptData:plaintext withKey:docKey error:&error]);
+        OBShouldNotError(ciphertext = [docKey.encryptionWorker encryptData:plaintext error:&error]);
         
         // Assert that encryption grew the ciphertext by a reasonable amount. We have two 128-bit session keys, a 96-bit IV, a 160-bit segment MAC, and a 256-bit file MAC: 96 bytes. There's also the magic number, key diversification, and padding overhead.
-        XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 96);
+        NSUInteger keyInfoBlobSizeMinimum;
+        switch(keyType) {
+            case SlotTypeActiveAESWRAP:
+                //
+                keyInfoBlobSizeMinimum = 42;
+                break;
+            case SlotTypeActiveAES_CTR_HMAC:
+                keyInfoBlobSizeMinimum = 2;
+                break;
+            default:
+                abort();
+        }
+        XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 64);
         
         // We should be able to decrypt the ciphertext.
-        OBShouldNotError(decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:docKey error:&error]);
+        offset = 0;
+        NSRange derivationInfoLocation = { 0, 0 };
+        OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
+        XCTAssertGreaterThan(derivationInfoLocation.location, 0u);
+        XCTAssertGreaterThanOrEqual(derivationInfoLocation.length, keyInfoBlobSizeMinimum);
+        OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]);
+        OBShouldNotError(decrypted = [decryptor decryptData:ciphertext dataOffset:offset error:&error]);
         XCTAssertEqualObjects(plaintext, decrypted);
         
         // No byte should be changeable and still allow decryption to succeed.
@@ -443,30 +508,43 @@ static void wrXY(char *into, int x, int y)
                 [damagedCiphertext appendBytes:"\x00" length:1];
             }
             
+            // Depending on where the changed byte is, decryption might fail when parsing the header, when getting the decryption key from the OFSDocumentKey, or when actually decrypting the buffer.
+            offset = 0;
             error = nil;
-            decrypted = [OFSSegmentEncryptWorker decryptData:damagedCiphertext withKey:docKey error:&error];
-            XCTAssertNil(decrypted, @"Decryption should fail: damage at index %zu undetected", ix);
+            derivationInfoLocation = (NSRange){ 0, 0 };
+            if (![OFSSegmentDecryptWorker parseHeader:damagedCiphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]) {
+                XCTAssertNotNil(error);
+            } else if ((decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[damagedCiphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]) == nil) {
+                XCTAssertNotNil(error);
+            } else {
+                XCTAssertNil(error);
+                decrypted = [decryptor decryptData:damagedCiphertext dataOffset:offset error:&error];
+                XCTAssertNil(decrypted, @"Decryption should fail: damage at index %zu undetected", ix);
+                XCTAssertNotNil(error);
+            }
+            decryptor = nil;
         }
         
         // Also verify failure when decrypting with a different document key
-        decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:otherDocKey error:&error];
+        offset = 0;
+        derivationInfoLocation = (NSRange){ 0, 0 };
+        OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
+        // We might fail when getting the file key (if the two docKeys have different keyslot identifiers) or when decrypting (if they have the same key identifiers, but different keys).
+        decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:otherDocKey error:&error];
+        decrypted = decryptor? [decryptor decryptData:ciphertext dataOffset:offset error:&error] : nil;
         XCTAssertNil(decrypted, @"Decryption should fail: wrong key");
     }
 }
 
-
-
 - (void)testOneShotMed
 {
     /* This test is similar to -testOneShotSmall, but makes sure we have correct behavior near the edges of segment boundaries. */
-#define SEGMENTED_PAGE_SIZE 65536     /* From OFSSegmentedEncryption - Size of one encrypted segment */
-
     NSError * __autoreleasing error = nil;
     
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
 
     for (unsigned  npages = 1; npages < 4; npages ++) {
@@ -478,7 +556,7 @@ static void wrXY(char *into, int x, int y)
             NSData *plaintext = OFRandomCreateDataOfLength(plaintextLength);
             NSData *ciphertext, *decrypted;
 
-            OBShouldNotError(ciphertext = [OFSSegmentEncryptWorker encryptData:plaintext withKey:docKey error:&error]);
+            OBShouldNotError(ciphertext = [docKey.encryptionWorker encryptData:plaintext error:&error]);
             XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 96);
             
             if (previousCiphertextLength != 0) {
@@ -489,16 +567,22 @@ static void wrXY(char *into, int x, int y)
             }
             
             // We should be able to decrypt the ciphertext.
-            OBShouldNotError(decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:docKey error:&error]);
+            OFSSegmentDecryptWorker *decryptor;
+            size_t offset = 0;
+            NSRange derivationInfoLocation = { 0, 0 };
+            OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
+            OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]);
+            OBShouldNotError(decrypted = [decryptor decryptData:ciphertext dataOffset:offset error:&error]);
             XCTAssertEqualObjects(plaintext, decrypted);
             
             previousCiphertextLength = [ciphertext length];
         }
-        XCTAssertEqual(sizeJumps, 1);
+        
+        XCTAssertEqual(sizeJumps, 1);  /* Make sure we did actually cross a segment-number boundary */
     }
 }
 
-- (void)testRollover
+- (void)testRollover:(enum OFSDocumentKeySlotType)slotType;
 {
     OFSDocumentKey *docKey, *intermediateDocKey, *otherDocKey, *futureDocKey;
     NSData *intermediateData = nil;
@@ -508,19 +592,33 @@ static void wrXY(char *into, int x, int y)
     const char *sekrit = "DOOMDOOMDOOMDOOM";
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:slotType];
+    XCTAssertEqual(docKey.keySlots.count, (NSUInteger)1);
 
     OBShouldNotError([docKey setPassword:passwd error:&error]);
     
     /* Generate a bunch of wrapped keys, keeping track of the slot numbers they have */
     NSMutableArray *keyblobs = [NSMutableArray array];
     NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
+    NSInteger docKeyChangecount = [docKey changeCount];
     for(int i = 0; i < 25; i ++) {
         for(int j = 0; j < 2; j++) {
             NSData *kb;
-            OBShouldNotError(kb = [docKey wrapFileKey:(const void *)sekrit length:16 error:&error]);
+            
+            if (slotType == SlotTypeActiveAESWRAP) {
+                // For AESWRAP slots, we provide the material we want wrapped, and it gives us back a blob wrapping it.
+                OBShouldNotError(kb = [docKey wrapFileKey:(void *)sekrit length:16 error:&error]);
+            } else if (slotType == SlotTypeActiveAES_CTR_HMAC) {
+                // For CTR+HMAC slots, we don't actually have any wrapped material.
+                kb = docKey.encryptionWorker.wrappedKey;
+            } else {
+                XCTFail(@"Unexpected slot type here.");
+                return;
+            }
             [keyblobs addObject:kb];
             uint16_t theIndex = OSReadBigInt16([kb bytes], 0);
+            XCTAssertTrue([docKey.keySlots containsIndex:theIndex]);
+            XCTAssertFalse([docKey.retiredKeySlots containsIndex:theIndex]);
             if (j == 0) {
                 XCTAssertFalse([indices containsIndex:theIndex]);
                 [indices addIndex:theIndex];
@@ -534,7 +632,10 @@ static void wrXY(char *into, int x, int y)
             intermediateIndices = [indices copy];
         }
         
-        [docKey discardKeysExceptSlots:indices retireCurrent:YES];
+        XCTAssertEqual(docKeyChangecount, [docKey changeCount]);
+        [docKey discardKeysExceptSlots:indices retireCurrent:YES generate:slotType];
+        XCTAssertNotEqual(docKeyChangecount, [docKey changeCount]);
+        docKeyChangecount = [docKey changeCount];
     }
     
     XCTAssertNotNil(intermediateData);
@@ -544,6 +645,16 @@ static void wrXY(char *into, int x, int y)
     OBShouldNotError([otherDocKey deriveWithPassword:passwd error:&error]);
     OBShouldNotError(intermediateDocKey = [[OFSDocumentKey alloc] initWithData:intermediateData error:&error]);
     OBShouldNotError([intermediateDocKey deriveWithPassword:passwd error:&error]);
+    
+#define TEST_UNW_SUCCEEDED if(slotType == SlotTypeActiveAESWRAP) { \
+    XCTAssertTrue(unw == 16, @"outError = %@", error); \
+    if (unw != 16)                                     \
+        break;                                         \
+    XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);      \
+    } else if (slotType == SlotTypeActiveAES_CTR_HMAC) { \
+    XCTAssertTrue(unw == 32, @"outError = %@", error); \
+    } else { XCTFail(); }
+
     for(NSData *kb in keyblobs) {
         uint16_t thisBlobIndex = OSReadBigInt16([kb bytes], 0);
         uint8_t obuf[32];
@@ -552,30 +663,21 @@ static void wrXY(char *into, int x, int y)
         /* Should succeed */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [otherDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
-        XCTAssertTrue(unw == 16, @"outError = %@", error);
-        if (unw != 16)
-            break;
-        XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        unw = [otherDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        TEST_UNW_SUCCEEDED;
         
         /* Should succeed */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [docKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
-        XCTAssertTrue(unw == 16, @"outError = %@", error);
-        if (unw != 16)
-            break;
-        XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        unw = [docKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        TEST_UNW_SUCCEEDED;
 
         /* May succeed or fail */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [intermediateDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        unw = [intermediateDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([intermediateIndices containsIndex:thisBlobIndex]) {
-            XCTAssertTrue(unw == 16, @"outError = %@", error);
-            if (unw != 16)
-                break;
-            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+            TEST_UNW_SUCCEEDED;
         } else {
             XCTAssertTrue(unw < 0);
             if (unw < 0) {
@@ -594,9 +696,14 @@ static void wrXY(char *into, int x, int y)
     }];
     
     /* Check that behavior */
-    [docKey discardKeysExceptSlots:keptSlots retireCurrent:NO];
+    XCTAssertEqual(docKeyChangecount, [docKey changeCount]);
+    [docKey discardKeysExceptSlots:keptSlots retireCurrent:NO generate:SlotTypeNone];
+    XCTAssertNotEqual(docKeyChangecount, [docKey changeCount]);
+    docKeyChangecount = [docKey changeCount];
+    
     OBShouldNotError(futureDocKey = [[OFSDocumentKey alloc] initWithData:[docKey data] error:&error]);
     OBShouldNotError([futureDocKey deriveWithPassword:passwd error:&error]);
+    XCTAssertEqual(0, [futureDocKey changeCount]);
     for(NSData *kb in keyblobs) {
         uint16_t thisBlobIndex = OSReadBigInt16([kb bytes], 0);
         uint8_t obuf[32];
@@ -604,13 +711,10 @@ static void wrXY(char *into, int x, int y)
         
         memset(obuf, '*', 32);
         error = nil;
-        unw = [docKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        unw = [docKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([keptSlots containsIndex:thisBlobIndex]) {
             /* Should succeed */
-            XCTAssertTrue(unw == 16, @"outError = %@", error);
-            if (unw != 16)
-                break;
-            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+            TEST_UNW_SUCCEEDED;
         } else {
             /* Should fail */
             XCTAssertTrue(unw < 0);
@@ -622,13 +726,10 @@ static void wrXY(char *into, int x, int y)
         
         memset(obuf, '*', 32);
         error = nil;
-        unw = [futureDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        unw = [futureDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([keptSlots containsIndex:thisBlobIndex]) {
             /* Should succeed */
-            XCTAssertTrue(unw == 16, @"outError = %@", error);
-            if (unw != 16)
-                break;
-            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+            TEST_UNW_SUCCEEDED;
         } else {
             /* Should fail */
             XCTAssertTrue(unw < 0);
@@ -641,3 +742,285 @@ static void wrXY(char *into, int x, int y)
 }
 
 @end
+
+@implementation OFSEncryptedDAVTests
+
+static ODAVTestServer *srv;
+
++ (void)setUp;
+{
+    if (srv && !(srv.process.running)) {
+        [srv stop];
+        srv = nil;
+    }
+    
+    if (!srv) {
+        srv = [[ODAVTestServer alloc] init];
+        NSMutableString *configfile = [NSMutableString stringWithContentsOfURL:[[NSBundle bundleForClass:[OFSEncryptedDAVTests class]] URLForResource:@"template-simpledav" withExtension:@"conf"] encoding:NSUTF8StringEncoding error:NULL];
+        
+        [srv startWithConfiguration:[configfile stringByReplacingKeysInDictionary:[srv substitutions]
+                                                                startingDelimiter:@"$("
+                                                                  endingDelimiter:@")"]];
+    }
+}
+
++ (void)tearDown;
+{
+    [srv stop];
+    srv = nil;
+}
+
+- (NSString *)password
+{
+    return @"password";
+}
+
+- (OFSFileManager *)emptyTestDirectory;
+{
+    NSError * __autoreleasing error;
+    NSURL *baseURL = srv.baseURL;
+    OFSFileManager *baseFm = [[OFSFileManager alloc] initWithBaseURL:baseURL delegate:self error:&error];
+    if (!baseFm) {
+        XCTFail(@"Could not create file manager for base url: %@ error: %@", baseURL, error);
+        return nil;
+    }
+    
+    NSURL *testBaseURL = [baseURL URLByAppendingPathComponent:NSStringFromSelector(self.invocation.selector)];
+    
+    ODAVFileInfo *dirstat = [baseFm fileInfoAtURL:testBaseURL error:&error];
+    if (!dirstat) {
+        XCTFail(@"Could not check for pre-existence of url %@: error=%@", testBaseURL, error);
+    } else if (dirstat.exists) {
+        NSLog(@"Removing old item at %@", testBaseURL);
+        BOOL did = [baseFm deleteURL:dirstat.originalURL error:&error];
+        if (!did) {
+            NSLog(@"Warning: could not remove old item: %@", error);
+        }
+    }
+    
+    NSURL *made = [baseFm createDirectoryAtURL:testBaseURL attributes:nil error:&error];
+    if (!made) {
+        XCTFail(@"Could not create directory: %@ error: %@", baseURL, error);
+        return nil;
+    }
+    
+    OFSFileManager *fm = [[OFSFileManager alloc] initWithBaseURL:made delegate:self error:&error];
+    if (!fm) {
+        XCTFail(@"Could not create file manager for test directory url: %@ error: %@", made, error);
+    }
+    
+    return fm;
+}
+
+- (OFSEncryptingFileManager *)initializedWrapper:(OFSFileManager *)fm
+{
+    OFSDocumentKey *keys = [[OFSDocumentKey alloc] initWithData:nil error:NULL];
+    [keys discardKeysExceptSlots:nil retireCurrent:NO generate:SlotTypeActiveAES_CTR_HMAC];
+    if (![keys setPassword:self.password error:NULL]) {
+        XCTFail(@"Could not generate document key");
+        return nil;
+    }
+    
+    NSError * __autoreleasing error;
+    
+    if (![fm writeData:[keys data] toURL:[fm.baseURL URLByAppendingPathComponent:ENCRYPTION_FILE] atomically:NO error:&error]) {
+        XCTFail(@"Could not store initial keyblob");
+    }
+    
+    OFSEncryptingFileManager *efm = [[OFSEncryptingFileManager alloc] initWithFileManager:fm keyStore:keys error:&error];
+    if (!efm) {
+        XCTFail(@"Could not create OFSEncryptingFileManager: %@", error);
+        return nil;
+    }
+    
+    return efm;
+}
+
+- (OFSEncryptingFileManager *)openedWrapper:(OFSFileManager *)fm
+{
+    NSError * __autoreleasing error;
+    NSURL *blobURL = [fm.baseURL URLByAppendingPathComponent:ENCRYPTION_FILE];
+    NSData *kmblob = [fm dataWithContentsOfURL:blobURL error:&error];
+    if (!kmblob) {
+        XCTFail(@"Could not read key management info from %@", blobURL);
+        return nil;
+    }
+    
+    OFSDocumentKey *keys = [[OFSDocumentKey alloc] initWithData:kmblob error:&error];
+    if (!keys) {
+        XCTFail(@"Could not parse key management info: %@", error);
+        return nil;
+    }
+    
+    if (![keys deriveWithPassword:[self password] error:&error]) {
+        XCTFail(@"Could not decrypt key management info: %@", error);
+        return nil;
+    }
+    
+    OFSEncryptingFileManager *efm = [[OFSEncryptingFileManager alloc] initWithFileManager:fm keyStore:keys error:&error];
+    if (!efm) {
+        XCTFail(@"Could not create OFSEncryptingFileManager: %@", error);
+        return nil;
+    }
+
+    return efm;
+}
+
+- (void)testSimple;
+{
+    OFSFileManager *fm = [self emptyTestDirectory];
+    if (!fm)
+        return;
+    
+    OFSEncryptingFileManager *efm = [self initializedWrapper:fm];
+    if (!efm)
+        return;
+    
+    NSError * __autoreleasing error;
+    NSArray <ODAVFileInfo *> *infos;
+    NSData *testData1 = [@"Some test text." dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *roundtrip;
+    
+    OBShouldNotError(infos = [efm directoryContentsAtURL:efm.baseURL collectingRedirects:nil error:&error]);
+    XCTAssertEqual([infos count], (NSUInteger)1);
+    
+    OBShouldNotError([efm writeData:testData1 toURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] atomically:NO error:&error]);
+    
+    OBShouldNotError(roundtrip = [efm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
+    XCTAssertEqualObjects(testData1, roundtrip);
+    
+    OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
+    XCTAssertEqualObjects(efm.keyStore.keySlots, rfm.keyStore.keySlots);
+    
+    OBShouldNotError(roundtrip = [rfm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
+    XCTAssertEqualObjects(testData1, roundtrip);
+    
+    OBShouldNotError(infos = [rfm directoryContentsAtURL:rfm.baseURL collectingRedirects:nil error:&error]);
+    XCTAssertEqual([infos count], (NSUInteger)2 /* One test file and the key-metadata file */);
+    XCTAssertTrue([infos[0].name isEqualToString:@"test1"] || [infos[1].name isEqualToString:@"test1"]);
+}
+
+- (void)testTaste;
+{
+    OFSFileManager *fm = [self emptyTestDirectory];
+    if (!fm)
+        return;
+    
+    OFSEncryptingFileManager *efm = [self initializedWrapper:fm];
+    if (!efm)
+        return;
+    
+    NSError * __autoreleasing error;
+    NSData *testData1 = [@"Some test text." dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *testData2 = [@"Some more test text — this is a little longer, right?\n" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *roundtrip;
+    
+    OBShouldNotError([efm writeData:testData1 toURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] atomically:NO error:&error]);
+    OBShouldNotError([efm writeData:testData2 toURL:[efm.baseURL URLByAppendingPathComponent:@"test2"] atomically:YES error:&error]);
+    
+    OBShouldNotError(roundtrip = [efm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
+    XCTAssertEqualObjects(testData1, roundtrip);
+    
+    OBShouldNotError(roundtrip = [efm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test2"] error:&error]);
+    XCTAssertEqualObjects(testData2, roundtrip);
+    
+    OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
+    NSIndexSet *activeKeys = efm.keyStore.keySlots;
+    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots);
+    XCTAssertEqual(activeKeys.count, (NSUInteger)1);
+    NSInteger expectedKeySlot = [activeKeys firstIndex];
+    
+    OBShouldNotError(roundtrip = [rfm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
+    XCTAssertEqualObjects(testData1, roundtrip);
+    
+    OBShouldNotError(roundtrip = [rfm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test2"] error:&error]);
+    XCTAssertEqualObjects(testData2, roundtrip);
+    
+    NSArray *infos;
+    OBShouldNotError(infos = [rfm directoryContentsAtURL:rfm.baseURL collectingRedirects:nil error:&error]);
+    
+    XCTAssertEqual([infos count], (NSUInteger)3 /* Two test files and the key-metadata file */);
+    NSMutableArray *ops = [NSMutableArray array];
+    for(ODAVFileInfo *inf in infos) {
+        if ([inf.name isEqualToString:ENCRYPTION_FILE])
+            continue;
+        
+        [ops addObject:[rfm asynchronouslyTasteKeySlot:inf]];
+        [ops addObject:[efm asynchronouslyTasteKeySlot:inf]];
+    }
+    
+    NSOperationQueue *opq = [[NSOperationQueue alloc] init];
+    [opq addOperations:ops waitUntilFinished:NO];
+    
+    for (OFSEncryptingFileManagerTasteOperation *op in ops) {
+        [op waitUntilFinished];
+        NSLog(@" op %@: ks=%@ err=%@",
+              [op shortDescription],
+              [op valueForKey:@"keySlot"],
+              [op valueForKey:@"error"]);
+        XCTAssertNil(op.error);
+        if (!op.error) {
+            XCTAssertEqual(op.keySlot, expectedKeySlot);
+        }
+    }
+}
+
+- (void)testTastingLarge;
+{
+    OFSFileManager *fm = [self emptyTestDirectory];
+    if (!fm)
+        return;
+    
+    OFSEncryptingFileManager *efm = [self initializedWrapper:fm];
+    if (!efm)
+        return;
+    
+    NSError * __autoreleasing error;
+    NSMutableData *testData1 = [NSMutableData dataWithCapacity:100000];
+    for(int i = 0; i < 10000; i++) {
+        [testData1 appendData:[[NSString stringWithFormat:@"%u: Some test text.\n", i] dataUsingEncoding:NSUTF8StringEncoding]];
+    }
+    NSData *roundtrip;
+    
+    OBShouldNotError([efm writeData:testData1 toURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] atomically:NO error:&error]);
+    
+    OBShouldNotError(roundtrip = [efm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
+    XCTAssertEqualObjects(testData1, roundtrip);
+    
+    OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
+    NSIndexSet *activeKeys = efm.keyStore.keySlots;
+    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots);
+    NSArray *infos;
+    OBShouldNotError(infos = [rfm directoryContentsAtURL:rfm.baseURL collectingRedirects:nil error:&error]);
+
+    XCTAssertEqual(activeKeys.count, (NSUInteger)1);
+    NSInteger expectedKeySlot = [activeKeys firstIndex];
+
+    XCTAssertEqual([infos count], (NSUInteger)2 /* One test file and the key-metadata file */);
+    NSMutableArray *ops = [NSMutableArray array];
+    for(ODAVFileInfo *inf in infos) {
+        if ([inf.name isEqualToString:ENCRYPTION_FILE])
+            continue;
+        
+        [ops addObject:[rfm asynchronouslyTasteKeySlot:inf]];
+        [ops addObject:[efm asynchronouslyTasteKeySlot:inf]];
+    }
+    
+    NSOperationQueue *opq = [[NSOperationQueue alloc] init];
+    [opq addOperations:ops waitUntilFinished:YES];
+    
+    for (OFSEncryptingFileManagerTasteOperation *op in ops) {
+        NSLog(@" op %@: ks=%@ err=%@",
+              [op shortDescription],
+              [op valueForKey:@"keySlot"],
+              [op valueForKey:@"error"]);
+        XCTAssertNil(op.error);
+        if (!op.error) {
+            XCTAssertEqual(op.keySlot, expectedKeySlot);
+        }
+    }
+}
+
+@end
+
+

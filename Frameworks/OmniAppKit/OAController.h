@@ -1,4 +1,4 @@
-// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,7 @@
 - (IBAction)showMessageOfTheDay:(id)sender;
 - (IBAction)openApplicationScriptsFolder:(id)sender;
 
+/// returns the the display name of the application without file extension.
 - (NSString *)appName;
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
@@ -38,6 +39,8 @@
 - (BOOL)openURL:(NSURL *)url; // Passes this off to -[NSWorkspace openURL:] if the local app doesn't intercept the URL
 
 - (void)checkMessageOfTheDay; // This will display the message of the day if it has changed since the last time it was displayed.
+
+- (NSOperationQueue *)backgroundPromptQueue;
 
 // OAController has concrete implementations of the following NSApplicationDelegate methods. They're responsible for driving the OFController behavior at appropriate times during the app's lifecycle. If you override these methods, be sure to call super's implementation.
 - (void)applicationWillFinishLaunching:(NSNotification *)notification NS_REQUIRES_SUPER;

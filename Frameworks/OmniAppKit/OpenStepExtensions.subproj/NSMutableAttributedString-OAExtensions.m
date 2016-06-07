@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,10 +33,8 @@ RCS_ID("$Id$");
     NSParagraphStyle *currentParagraphStyle  = [self attribute:NSParagraphStyleAttributeName atIndex:0 effectiveRange:&styleRange];
     NSMutableParagraphStyle *paragraphStyle = currentParagraphStyle != nil ? [currentParagraphStyle mutableCopy] : [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     [paragraphStyle setTextBlocks:[NSArray arrayWithObjects:block, nil]];
-    [block release];
 
     [self addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [self length])];
-    [paragraphStyle release];
 }
 
 + (NSMutableAttributedString *)tableFromDict:(NSDictionary *)dict keyAttributes:(NSDictionary *)keyAttributes valueAttributes:(NSDictionary *)valueAttributes keySeparatorString:(NSString *)separator indent:(BOOL)flag
@@ -58,7 +56,6 @@ RCS_ID("$Id$");
         if (width > maxKeyWidth)
             maxKeyWidth = width;
         [attKeys addObject:cellString];
-        [cellString release];
     }
     NSInteger startColumn = flag ? 2 : 1;
     for (i = 0; i < count; i++) {
@@ -73,16 +70,13 @@ RCS_ID("$Id$");
             NSMutableAttributedString *attributedIndent =  [[NSMutableAttributedString alloc] initWithString:@"\n" attributes:nil];
             [attributedIndent setTableCellParagraphStyle:table row:row column:1 width:16.0f padding:0];
             [tableString appendAttributedString:attributedIndent];
-            [attributedIndent release];
         }
         [attributedKey setTableCellParagraphStyle:table row:row column:startColumn width:maxKeyWidth padding:CELL_PADDING];
         [tableString appendAttributedString:attributedKey];
         [attributedValue setTableCellParagraphStyle:table row:row column:startColumn+1 width:0 padding:0];
         [tableString appendAttributedString:attributedValue];
-        [attributedValue release];
     }
-    [table release];
-    return [tableString autorelease];
+    return tableString;
 }
 
 + (NSMutableAttributedString *)tableFromDict:(NSDictionary *)dict keyAttributes:(NSDictionary *)keyAttributes valueAttributes:(NSDictionary *)valueAttributes indent:(BOOL)flag

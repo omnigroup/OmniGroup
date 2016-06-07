@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 
 @implementation OIInspectorGroup
 {
-    NSMutableArray *_inspectors;
+    NSMutableArray <OIInspectorController *> *_inspectors;
     OIInspectorController *_resizingInspector;
     struct {
         unsigned int	ignoreResizing:1;
@@ -81,24 +81,29 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (void)dealloc;
 {
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_inspectors makeObjectsPerformSelector:@selector(setGroup:) withObject:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    for (OIInspectorController *controller in _inspectors) {
+        controller.group = nil;
+    }
 }
 
 // API
 
 - (BOOL)defaultGroupVisibility;
 {
-    for (OIInspectorController *inspector in _inspectors)
-        if ([[inspector inspector] defaultVisibilityState] != OIHiddenVisibilityState)
+    for (OIInspectorController *controller in _inspectors) {
+        if ([controller.inspector defaultVisibilityState] != OIHiddenVisibilityState)
             return YES;
+    }
     return NO;
 }
 
 - (void)clear;
 {
     [self hideGroup];
-    [_inspectors makeObjectsPerformSelector:@selector(setGroup:) withObject:nil];
+    for (OIInspectorController *controller in _inspectors) {
+        controller.group = nil;
+    }
     [_inspectors removeAllObjects];
 }
 
@@ -123,7 +128,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     // make sure group is visible on screen
     [self screensDidChange:nil];
     
-    [[(OIInspectorController *)[_inspectors firstObject] window] orderFront:self];
+    [[[_inspectors firstObject] window] orderFront:self];
 }
 
 - (void)addInspector:(OIInspectorController *)aController;
@@ -186,7 +191,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     _inspectorGroupFlags.ignoreResizing = NO;
 
 #ifdef OMNI_ASSERTIONS_ON
-    NSWindow *topWindow = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *topWindow = [[_inspectors firstObject] window];
 #endif
     OIInspectorGroup *newGroup = [[OIInspectorGroup alloc] init];
     newGroup.inspectorRegistry = self.inspectorRegistry;
@@ -197,10 +202,10 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     [self disconnectWindows];
     
     for (NSUInteger inspectorIndex = originalIndex; inspectorIndex < inspectorCount; inspectorIndex++) {
-        OIInspectorController *controller = [_inspectors objectAtIndex:inspectorIndex];
+        OIInspectorController *controller = _inspectors[inspectorIndex];
         [newGroup addInspector:controller];
     }
-    [_inspectors removeObjectsInRange:NSMakeRange(originalIndex, inspectorCount - originalIndex)];  
+    [_inspectors removeObjectsInRange:NSMakeRange(originalIndex, inspectorCount - originalIndex)];
     
     [self connectWindows];
     [newGroup connectWindows];
@@ -224,7 +229,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     return YES;
 }
 
-- (NSArray *)inspectors;
+- (NSArray <OIInspectorController *> *)inspectors;
 {
     return _inspectors;
 }
@@ -257,7 +262,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     if (_inspectorGroupFlags.isShowing)
         return YES;
     else
-        return [[(OIInspectorController *)[_inspectors firstObject] window] isVisible];
+        return [[[_inspectors firstObject] window] isVisible];
 }
 
 - (BOOL)isBelowOverlappingGroup;
@@ -353,12 +358,12 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (void)setTopLeftPoint:(NSPoint)aPoint;
 {
-    NSWindow *topWindow = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *topWindow = [[_inspectors firstObject] window];
     NSUInteger index, count = [_inspectors count];
 
     [topWindow setFrameTopLeftPoint:aPoint];
     for (index = 1; index < count; index++) {
-        NSWindow *bottomWindow = [(OIInspectorController *)[_inspectors objectAtIndex:index] window];
+        NSWindow *bottomWindow = [[_inspectors objectAtIndex:index] window];
         
         [bottomWindow setFrameTopLeftPoint:[topWindow frame].origin];
         topWindow = bottomWindow;
@@ -541,8 +546,8 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         
         OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
         for (index = 0; index < count; index++) {
-            OIInspectorController *controller = [_inspectors objectAtIndex:index];
-            NSString *identifier = [controller identifier];
+            OIInspectorController *controller = _inspectors[index];
+            NSString *identifier = controller.inspectorIdentifier;
 
             [controller loadInterface];
             if (controller.interfaceType == OIInspectorInterfaceTypeFloating) {
@@ -563,9 +568,9 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     
     index = count;
     while (index--) {
-        OIInspectorController *inspectorcontroller = [_inspectors objectAtIndex:index];
+        OIInspectorController *inspectorcontroller = _inspectors[index];
         if (inspectorcontroller.inspector.preferredInterfaceType == OIInspectorInterfaceTypeFloating)
-            [[_inspectors objectAtIndex:index] prepareWindowForDisplay];
+            [_inspectors[index] prepareWindowForDisplay];
     }
     [self setTopLeftPoint:[self topLeftPoint]];
 
@@ -606,12 +611,12 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (void)disconnectWindows;
 {
-    NSWindow *topWindow = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *topWindow = [[_inspectors firstObject] window];
     NSUInteger index = [_inspectors count];
     
     OBPRECONDITION(!topWindow || ([[topWindow childWindows] count] == index-1));
     while (index-- > 1) 
-        [topWindow removeChildWindow:[(OIInspectorController *)[_inspectors objectAtIndex:index] window]];
+        [topWindow removeChildWindow:[[_inspectors objectAtIndex:index] window]];
         
     OBPOSTCONDITION([[topWindow childWindows] count] == 0);
 }
@@ -619,7 +624,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 - (void)connectWindows;
 {
     NSUInteger index, count = [_inspectors count];
-    NSWindow *topWindow = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *topWindow = [[_inspectors firstObject] window];
     NSWindow *lastWindow = topWindow;
     
     if (![topWindow isVisible])
@@ -627,7 +632,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     
     OBPRECONDITION([[topWindow childWindows] count] == 0);
     for (index = 1; index < count; index++) {
-        NSWindow *window = [(OIInspectorController *)[_inspectors objectAtIndex:index] window];
+        NSWindow *window = [[_inspectors objectAtIndex:index] window];
         
         [window orderWindow:NSWindowAbove relativeTo:[lastWindow windowNumber]];
         [topWindow addChildWindow:window ordered:NSWindowAbove];
@@ -637,12 +642,12 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (NSString *)identifier;
 {
-    return [[_inspectors firstObject] identifier];
+    return [[_inspectors firstObject] inspectorIdentifier];
 }
 
 - (BOOL)hasFirstFrame;
 {
-    return [(OIInspectorController *)[_inspectors firstObject] window] != nil;
+    return [[_inspectors firstObject] window] != nil;
 }
 
 - (NSPoint)topLeftPoint;
@@ -653,7 +658,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (NSRect)firstFrame;
 {
-    NSWindow *window = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *window = [[_inspectors firstObject] window];
     OBASSERT(window);
 
     return window ? [window frame] : NSZeroRect;
@@ -668,7 +673,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     if (![self getGroupFrame:&groupRect])
         return;
     
-    NSScreen *screen = [[(OIInspectorController *)[_inspectors firstObject] window] screen];
+    NSScreen *screen = [[[_inspectors firstObject] window] screen];
     
     if (screen == nil) 
         screen = [NSScreen mainScreen];
@@ -742,7 +747,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     
     insertionPosition = NSMaxY(aFrame) - (OIInspectorStartingHeaderButtonHeight / 2);
     
-    inspectorBreakpoint = NSMaxY(groupFrame) - NSHeight([[(OIInspectorController *)[_inspectors firstObject] window] frame]);
+    inspectorBreakpoint = NSMaxY(groupFrame) - NSHeight([[[_inspectors firstObject] window] frame]);
     NSUInteger index, count = [_inspectors count];
     for (index = 1; index < count; index++) {
         if (ABS(inspectorBreakpoint - insertionPosition) <= INSERTION_CLOSENESS) {
@@ -752,7 +757,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
                 *aPosition = inspectorBreakpoint;
             return YES;
         }
-        inspectorBreakpoint -= NSHeight([[(OIInspectorController *)[_inspectors objectAtIndex:index] window] frame]);
+        inspectorBreakpoint -= NSHeight([[_inspectors[index] window] frame]);
     }    
     return NO;    
 }
@@ -791,7 +796,10 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
 - (void)saveInspectorOrder;
 {
-    NSArray *identifiers = [_inspectors valueForKey:@"identifier"];
+    NSArray *identifiers = [_inspectors arrayByPerformingBlock:^(OIInspectorController *inspector){
+        return inspector.inspectorIdentifier;
+    }];
+
     OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
     [sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
         [dictionary setObject:identifiers forKey:[NSString stringWithFormat:@"%@-Order", [self identifier]]];
@@ -867,7 +875,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     if (_inspectorGroupFlags.ignoreResizing)
         return aFrame;
 
-    NSWindow *firstWindow = [(OIInspectorController *)[_inspectors firstObject] window];
+    NSWindow *firstWindow = [[_inspectors firstObject] window];
     NSRect firstWindowFrame = [firstWindow frame];
     NSRect returnValue = aFrame;
     NSPoint topLeft;
@@ -919,7 +927,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 {
     NSRect firstFrame = [self firstFrame];
     NSUInteger index = [self.inspectorRegistry.existingGroups count];
-    CGFloat result = NSMinY([[[(OIInspectorController *)[_inspectors firstObject] window] screen] visibleFrame]);
+    CGFloat result = NSMinY([[[[_inspectors firstObject] window] screen] visibleFrame]);
     CGFloat ignoreAbove = (NSMaxY(firstFrame) - ((CGFloat)([_inspectors count] - 1) * OIInspectorStartingHeaderButtonHeight) - singleControllerHeight);
     
     while (index--) {

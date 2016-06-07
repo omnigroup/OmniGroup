@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <AppKit/NSWindowController.h>
 
 #import <AppKit/NSCell.h> // For NSControlSize
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSWindowController (OAExtensions)
 
@@ -24,7 +26,7 @@
 @end
 
 @interface NSObject (OALongOperationIndicatorApplicationDelegate)
-- (BOOL)shouldShowLongOperationIndicatorForWindow:(NSWindow *)window;
+- (BOOL)shouldShowLongOperationIndicatorForWindow:(NSWindow * _Nullable)window;
 @end
 
 @protocol OAMetadataTracking
@@ -32,3 +34,5 @@
 - (void)metadataChanged;
 - (void)clearMetadataChanges;
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,8 @@ RCS_ID("$Id$")
 @interface OUIWebViewController () <MFMailComposeViewControllerDelegate>
 
 @property (nonatomic, strong) OFOrderedMutableDictionary *onLoadJavaScripts;
+@property (nonatomic, strong) UIActivityIndicatorView *spinner;
+@property (nonatomic, strong) UILabel *errorLabel;
 
 @end
 
@@ -78,6 +80,7 @@ RCS_ID("$Id$")
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:aURL];
     [self.webView loadRequest:request];
     [self _updateBarButtonItemForURL:aURL];
+    [self startSpinner];
 }
 
 - (NSURL *)URL;
@@ -193,7 +196,73 @@ RCS_ID("$Id$")
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
 {
+    [self endSpinner];
     [self _runOnLoadJavaScripts];
+}
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    [self endSpinner];
+    [self showError:error];
+}
+
+- (void)webView:(WKWebView *)webView didFailProvisionalNavigation:(WKNavigation *)navigation withError:(NSError *)error
+{
+    [self endSpinner];
+    [self showError:error];
+}
+
+- (void)startSpinner
+{
+    if (!self.spinner) {
+        self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+        self.spinner.translatesAutoresizingMaskIntoConstraints = NO;
+    }
+    if (self.spinner.superview != self.webView) {
+        [self.webView addSubview:self.spinner];
+        NSArray *layoutConstraints = @[
+                                       [self.spinner.centerXAnchor constraintEqualToAnchor:self.spinner.superview.centerXAnchor],
+                                       [self.spinner.centerYAnchor constraintEqualToAnchor:self.spinner.superview.centerYAnchor]
+                                       ];
+        [NSLayoutConstraint activateConstraints:layoutConstraints];
+    }
+    [self.spinner startAnimating];
+    self.spinner.hidden = NO;
+}
+
+- (void)endSpinner
+{
+    [self.spinner stopAnimating];
+}
+
+- (void)showError:(NSError *)error
+{
+    if (!self.errorLabel) {
+        self.errorLabel = [[UILabel alloc] init];
+        self.errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    }
+    
+    self.errorLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    self.errorLabel.textAlignment = NSTextAlignmentCenter;
+    self.errorLabel.numberOfLines = 0;
+    self.errorLabel.text = error.localizedDescription;
+    
+    if (self.errorLabel.superview != self.webView) {
+        [self.webView addSubview:self.errorLabel];
+        CGFloat reasonableWidth = fmin(250, self.webView.frame.size.width * 0.75);
+        NSArray *constraints = @[
+                                 [self.errorLabel.centerXAnchor constraintEqualToAnchor:self.errorLabel.superview.centerXAnchor],
+                                 [self.errorLabel.centerYAnchor constraintEqualToAnchor:self.errorLabel.superview.centerYAnchor],
+                                 [NSLayoutConstraint constraintWithItem:self.errorLabel
+                                                              attribute:NSLayoutAttributeWidth
+                                                              relatedBy:NSLayoutRelationEqual
+                                                                 toItem:nil
+                                                              attribute:NSLayoutAttributeNotAnAttribute
+                                                             multiplier:1
+                                                               constant:reasonableWidth]
+                                 ];
+        [NSLayoutConstraint activateConstraints:constraints];
+    }
 }
 
 #pragma mark - UIViewController subclass
@@ -204,6 +273,13 @@ RCS_ID("$Id$")
     webView.navigationDelegate = self;
     
     self.view = webView;
+}
+
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+    
+    [self.webView stopLoading];
 }
 
 - (BOOL)shouldAutorotate;
@@ -233,16 +309,27 @@ RCS_ID("$Id$")
         return;
     }
     
+    // Avoid creating a retain cycle here; we don't want to keep the web view alive and processing onload scripts when this view controller has been dismissed
+    __weak typeof(self) weakSelf = self;
     NSString *javaScript = OB_CHECKED_CAST(NSString, [self.onLoadJavaScripts keyAtIndex:0]);
     [self.webView evaluateJavaScript:javaScript completionHandler:^(id _Nullable result, NSError * _Nullable error) {
-        void (^completionHandler)(id, NSError*) = self.onLoadJavaScripts[javaScript];
-        [self.onLoadJavaScripts removeObjectForKey:javaScript];
+        __strong typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
         
-        if (!OFISNULL(completionHandler)) {
+        // We must check whether the value is [NSNull null] before assigning it to a local variable typed as a block.
+        // As soon as we assign it to a local typed as a block, the compiler may try to copy the block on our behalf, which will crash if the object is not a block.
+        if (!OFISNULL(strongSelf.onLoadJavaScripts[javaScript])) {
+            void (^completionHandler)(id, NSError*) = strongSelf.onLoadJavaScripts[javaScript];
             completionHandler(result, error);
         }
         
-        [self _runOnLoadJavaScripts];
+        // Remove the script that we just ran
+        [strongSelf.onLoadJavaScripts removeObjectForKey:javaScript];
+
+        // Recurse and run any remaining onLoad scripts
+        [strongSelf _runOnLoadJavaScripts];
     }];
 }
 

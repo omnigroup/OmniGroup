@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
     return nil;
 }
 
-- initWithName:(NSString *)name date:(NSDate *)date;
+- initWithName:(NSString *)name date:(NSDate * _Nullable)date;
 {
     // TODO: Convert some of these to error/exceptions
     OBPRECONDITION(![NSString isEmptyString:name]);

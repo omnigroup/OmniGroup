@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@ RCS_ID("$Id$")
     if (!(self = [super initWithDictionary:dict inspectorRegistry:inspectorRegistry bundle:sourceBundle]))
 	return nil;
     
-    NSMutableArray *sectionInspectors = [[NSMutableArray alloc] init];
+    NSMutableArray <OIInspectorSection <OIConcreteInspector> *> *sectionInspectors = [[NSMutableArray alloc] init];
     
     // Read our sub-inspectors from the plist
     for (NSDictionary *sectionPlist in [dict objectForKey:@"sections"]) {
@@ -72,7 +72,7 @@ RCS_ID("$Id$")
             }
         }
         
-        OIInspector *inspector = [OIInspector newInspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
+        OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
         if (!inspector)
             // Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
             continue;
@@ -81,8 +81,9 @@ RCS_ID("$Id$")
             NSLog(@"%@ is not a subclass of OIInspectorSection.", inspector);
             continue;
         }
-        
-	[sectionInspectors addObject:inspector];
+        OIInspectorSection <OIConcreteInspector> *section = (typeof(section))inspector;
+
+        [sectionInspectors addObject:section];
     }
     
     _sectionInspectors = [[NSArray alloc] initWithArray:sectionInspectors];
@@ -104,6 +105,16 @@ RCS_ID("$Id$")
         }
     }
     [self _layoutSections];
+}
+
+- (void)setInspectorController:(OIInspectorController *)aController;
+{
+    [super setInspectorController:aController];
+
+    // Set the controller on all of our child inspectors as well
+    for (OIInspectorSection <OIConcreteInspector> *inspector in _sectionInspectors) {
+        inspector.inspectorController = aController;
+    }
 }
 
 #pragma mark -
@@ -132,23 +143,8 @@ RCS_ID("$Id$")
 
 - (void)inspectObjects:(NSArray *)list 
 {
-    for (OIInspector *inspector in _sectionInspectors)
+    for (OIInspectorSection <OIConcreteInspector> *inspector in _sectionInspectors)
         [inspector inspectObjects:[list filteredArrayUsingPredicate:[inspector inspectedObjectsPredicate]]];
-}
-
-#pragma mark -
-#pragma mark NSObject (OIInspectorOptionalMethods)
-
-- (void)setInspectorController:(OIInspectorController *)aController;
-{
-    _weak_inspectorController = aController;
-
-    // Set the controller on all of our child inspectors as well
-    for (OIInspector *inspector in _sectionInspectors) {
-        if ([inspector respondsToSelector:_cmd]) {
-            [inspector setInspectorController:aController];
-        }
-    }
 }
 
 #pragma mark -
@@ -156,7 +152,8 @@ RCS_ID("$Id$")
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-    BOOL isVisible = [_weak_inspectorController isExpanded] && [_weak_inspectorController isVisible];
+    OIInspectorController *inspectorController = self.inspectorController;
+    BOOL isVisible = [inspectorController isExpanded] && [inspectorController isVisible];
     
     if  (!isVisible) {
         [item setState:NSOffState];
@@ -240,7 +237,7 @@ RCS_ID("$Id$")
     [inspectionView setFrame:contentFrame];
     
     [inspectionView setNeedsDisplay:YES];
-    [_weak_inspectorController prepareWindowForDisplay];
+    [self.inspectorController prepareWindowForDisplay];
     
     
 }

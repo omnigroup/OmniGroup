@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,14 +11,17 @@
 
 @class CIImage;
 
+
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSView (OQExtensions)
 
 - (CIImage *)newImage;
 - (CIImage *)newImageFromRect:(NSRect)rect;
-- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(NSWindow *)targetWindow;
-- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(NSWindow *)targetWindow opaque:(BOOL)opaque;
+- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(nullable NSWindow *)targetWindow;
+- (CIImage *)newImageFromRect:(NSRect)rect compatibleWithWindow:(nullable NSWindow *)targetWindow opaque:(BOOL)opaque;
 
-- (void)fadeOutAndReplaceSubview:(NSView *)oldSubview withView:(NSView *)newSubview; // Uses NSViewAnimation
+- (void)fadeOutAndReplaceSubview:(nullable NSView *)oldSubview withView:(nullable NSView *)newSubview; // Uses NSViewAnimation
 
 // Uses CIFilter and a custom animation.
 - (void)transitionOutAndReplaceSubview:(NSView *)oldSubview withView:(NSView *)newSubview;
@@ -31,3 +34,4 @@
 
 @end
 
+NS_ASSUME_NONNULL_END

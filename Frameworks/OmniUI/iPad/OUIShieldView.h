@@ -15,6 +15,7 @@
 
 @property (nonatomic, strong) NSArray *passthroughViews;
 @property (nonatomic, weak) id<OUIShieldViewDelegate> delegate;
+@property (nonatomic) BOOL useBlur;
 
 /// Setting this flag to YES will always return nil from -hitTest:... to forward the event up the stream. Before that, we check to see if the hit fell within us and if so, we send the -shieldViewWasTouched: delegate message. Setting this flag also makes the passthroughViews array irrelevant.
 @property (nonatomic, assign) BOOL shouldForwardAllEvents;

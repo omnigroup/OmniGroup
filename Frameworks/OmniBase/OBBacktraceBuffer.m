@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,12 +30,12 @@ const struct OBBacktraceBufferInfo OBBacktraceBufferInfo = {
     backtraces, &next_available_backtrace
 };
 
-void OBRecordBacktrace(const char *message, unsigned int optype)
+void OBRecordBacktrace(const char *message, OBBacktraceBufferType optype)
 {
     OBRecordBacktraceWithContext(message, optype, NULL);
 }
 
-void OBRecordBacktraceWithContext(const char *message, unsigned int optype, const void *context)
+void OBRecordBacktraceWithContext(const char *message, OBBacktraceBufferType optype, const void *context)
 {
     assert(optype != OBBacktraceBuffer_Unused && optype != OBBacktraceBuffer_Allocated); // 0 and 1 reserved for us
     
@@ -89,3 +89,38 @@ static struct OBBacktraceBuffer *OBAcquireBacktraceBuffer(void)
     
     return buf;
 }
+
+#ifdef DEBUG
+
+static const char *OBBacktraceOpTypeName(enum OBBacktraceBufferType op)
+{
+#define CASE(x) case OBBacktraceBuffer_ ## x: return #x
+    switch (op) {
+        CASE(Unused);
+        CASE(Allocated);
+        CASE(OBAssertionFailure);
+        CASE(NSAssertionFailure);
+        CASE(NSException);
+        CASE(Generic);
+        CASE(CxxException);
+        CASE(PerformSelector);
+        default: {
+            return "???";
+        }
+    }
+}
+
+void OBBacktraceDumpEntries(void)
+{
+    for (int32_t slot = 0; slot < OBBacktraceBufferTraceCount; slot++) {
+        struct OBBacktraceBuffer *buf = &backtraces[slot];
+        const char *opName = OBBacktraceOpTypeName(buf->type);
+
+        fprintf(stderr, "slot:%d %s", slot, opName);
+        if (buf->type > OBBacktraceBuffer_Allocated) {
+            // Not printing the stack snapshot addresses for the time being, but we could.
+            fprintf(stderr, " message:\"%s\", context:%p\n", buf->message, buf->context);
+        }
+    }
+}
+#endif

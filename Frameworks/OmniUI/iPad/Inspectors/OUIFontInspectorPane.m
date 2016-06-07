@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
-#import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
@@ -311,10 +311,11 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice];
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice undoManager:self.undoManager];
             }
         }
     }
+//    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
     [inspector didEndChangingInspectedObjects];
     
     // Our -updateInterfaceFromInspectedObjects: won't reload data when getting called due to an edit, which is good since it lets us fade the selection.
@@ -336,7 +337,7 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
 
     UIFont *font = [item objectForKey:ItemFont];
     
-    [(OUIFontInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
+    [(OUIFontFamilyInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
 }
 
 #pragma mark - Private

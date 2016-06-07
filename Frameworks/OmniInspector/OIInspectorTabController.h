@@ -1,4 +1,4 @@
-// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,14 +12,15 @@
 #import <OmniInspector/OIInspector.h>
 #import <OmniInspector/OIInspectorRegistry.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSArray, NSBundle; // Foundation
 @class NSBox, NSImage, NSMenuItem, NSView; // AppKit
 @class OITabbedInspector;
 
-@interface OIInspectorTabController : OFObject
+@interface OIInspectorTabController : NSObject
 {
     NSArray *_currentlyInspectedObjects;
-    OIInspector *_inspector;
     NSImage *_image;
     NSBox *_dividerView;
     struct {
@@ -31,7 +32,7 @@
 
 - initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
 
-- (OIInspector *)inspector;
+@property(nonatomic,readonly) OIInspector <OIConcreteInspector> *inspector;
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
 
 - (NSImage *)image;
@@ -49,11 +50,12 @@
 - (void)loadConfiguration:(NSDictionary *)config;
 
 // Covers for OIInspector methods
-- (NSString *)identifier;
+- (NSString *)inspectorIdentifier;
 - (NSString *)displayName;
 - (NSString *)shortcutKey;
 - (NSUInteger)shortcutModifierFlags;
-- (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
+- (NSMenuItem *)menuItemForTarget:(nullable id)target action:(SEL)action;
 
 @end
 
+NS_ASSUME_NONNULL_END

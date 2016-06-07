@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,4 +39,7 @@
 + (NSArray<NSString *> *)visibleTracks;
 + (void)setVisibleTracks:(NSArray<NSString *> *)orderedTrackList;
 
++ (OFPreference *)unreadNews; // bool
++ (OFPreference *)currentNewsURL; // read or unread.
++ (OFPreference *)newsPublishDate; // date the news item was published by OSU.
 @end

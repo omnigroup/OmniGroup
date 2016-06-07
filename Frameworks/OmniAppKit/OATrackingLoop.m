@@ -1,4 +1,4 @@
-// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -263,9 +263,9 @@ static BOOL OATrackingLoopDebug = YES;
                 _modifierFlagsChanged(self, oldFlags);
         } else if (eventType == NSPeriodic) {
             OBASSERT(_shouldAutoscroll);
-            if ([_view autoscroll:lastMouseEvent]) {
+            OBASSERT_NOTNULL(lastMouseEvent);
+            if (lastMouseEvent != nil && [_view autoscroll:lastMouseEvent]) {
                 // visible rect has scrolled from under our even location, so need to adjust mouseDraggedPoint
-                OBASSERT_NOTNULL(lastMouseEvent);
                 self.currentMouseDraggedPointInWindow = [lastMouseEvent locationInWindow];
                 self.currentMouseDraggedPointInView = [_view convertPoint:self.currentMouseDraggedPointInWindow fromView:nil];
 

@@ -1,0 +1,5 @@
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "Wert vom Typ „%@“ wurde erwartet";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "Unerwarteter Wert für Schlüssel „%@“";

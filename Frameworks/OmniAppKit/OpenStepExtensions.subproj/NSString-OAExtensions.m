@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/OAFindPattern.h>
 
 RCS_ID("$Id$")
 
@@ -71,6 +72,59 @@ RCS_ID("$Id$")
     rectangle.origin.x += xOffset;
     rectangle.origin.y += yOffset;
     [self drawInRect:rectangle withAttributes:attributes];
+}
+
+// Replacement
+
+- (BOOL)findPattern:(id <OAFindPattern>)pattern foundRange:(NSRangePointer)foundRangePointer;
+{
+    return [pattern findInString:self foundRange:foundRangePointer];
+}
+
+- (BOOL)findPattern:(id <OAFindPattern>)pattern inRange:(NSRange)range foundRange:(NSRangePointer)foundRangePointer;
+{
+    return [pattern findInRange:range ofString:self foundRange:foundRangePointer];
+}
+
+- (NSString *)stringByReplacingAllOfPattern:(id <OAFindPattern>)pattern;
+{
+    NSRange foundRange = NSMakeRange(0, 0);
+    if ([self findPattern:pattern foundRange:&foundRange]) {
+        NSMutableString *mutableCopy = [self mutableCopy];
+        [mutableCopy replaceAllOfPattern:pattern];
+        return mutableCopy;
+    }
+    
+    return self;
+}
+
+@end
+
+#pragma mark -
+
+@implementation NSMutableString (OAExtensions)
+
+- (BOOL)replaceAllOfPattern:(id <OAFindPattern>)pattern;
+{
+    NSUInteger location = 0;
+    NSUInteger length = self.length;
+    BOOL madeReplacements = NO;
+    
+    while (location < length) {
+        NSRange range = NSMakeRange(0, 0);
+        if (![pattern findInRange:NSMakeRange(location, length - location) ofString:self foundRange:&range]) {
+            break;
+        }
+        
+        NSString *replacement = [pattern replacementStringForLastFind];
+        [self replaceCharactersInRange:range withString:replacement];
+
+        madeReplacements = YES;
+        length = self.length;
+        location = range.location + replacement.length;
+    }
+
+    return madeReplacements;
 }
 
 @end

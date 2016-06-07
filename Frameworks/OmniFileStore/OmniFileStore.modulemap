@@ -1,0 +1,8 @@
+framework module OmniFileStore {
+    umbrella header "OmniFileStore.h"
+    
+    // Headers that most clients don't need (only used by the unit test target)
+    module "OFSEncryptionConstants" {
+        header "OFSEncryptionConstants.h"
+    }
+}

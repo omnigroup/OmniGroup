@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,8 @@ RCS_ID("$Id$");
     [_colorTypeSegmentedControl removeFromSuperview];
     [_colorTypeSegmentedControl removeAllSegments];
 }
+
+@dynamic parentSlice;
 
 @synthesize colorTypeSegmentedControl = _colorTypeSegmentedControl;
 @synthesize shadowDivider = _shadowDivider;
@@ -236,13 +238,39 @@ RCS_ID("$Id$");
     [super viewWillAppear:animated];
 }
 
+#pragma mark Enforce Protocol on ParentSlice
+
+- (void)setParentSlice:(OUIInspectorSlice<OUIColorPickerTarget> *)parentSlice
+{
+    OBASSERT_IF(parentSlice != nil, [parentSlice conformsToProtocol:@protocol(OUIColorPickerTarget)]);
+    [super setParentSlice:parentSlice];
+}
+
+- (OUIInspectorSlice<OUIColorPickerTarget> *)parentSlice
+{
+    id supersParentSlice = [super parentSlice];
+    OBASSERT_IF(supersParentSlice != nil, [supersParentSlice conformsToProtocol:@protocol(OUIColorPickerTarget)]);
+    return supersParentSlice;
+}
+
 #pragma mark -
 #pragma mark NSObject (OUIColorSwatch)
+#pragma mark <OUIColorPickerTarget>
+
+- (void)beginChangingColor
+{
+    [self.parentSlice beginChangingColor];
+}
 
 - (void)changeColor:(id <OUIColorValue>)colorValue;
 {
     // The responder chain doesn't leap back up the nav controller stack.
     [self.parentSlice changeColor:colorValue];
+}
+
+- (void)endChangingColor
+{
+    [self.parentSlice endChangingColor];
 }
 
 @end

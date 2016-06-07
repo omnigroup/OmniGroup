@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,7 @@ RCS_ID("$Id$");
 
 @interface OUIMenuOptionTableViewCell : UITableViewCell
 @property (nonatomic) BOOL showsFullwidthSeparator;
+@property (nonatomic, strong) UIView *iconView;
 @end
 
 @implementation OUIMenuOptionTableViewCell
@@ -40,6 +41,22 @@ RCS_ID("$Id$");
 {
     [super layoutSubviews];
     
+    CGFloat horizontalPadding = 16;
+    CGFloat verticalPadding = 8;
+    CGFloat iconWidth = 36;
+    // it would be nice to put these constant in an OAAppearance class at some point.
+    // ditto for the red color
+
+    if (self.iconView) {
+        // we're using our own view instead of the built in imageView because we need to be able to put things other than just images in there (for attention dots, which are implemented via buttons at the moment)
+        if (!self.iconView.superview) {
+            [self.imageView removeFromSuperview];
+            [self.contentView addSubview:self.iconView];
+        }
+        self.iconView.frame = CGRectMake(horizontalPadding, verticalPadding, iconWidth, self.contentView.frame.size.height - 2 * verticalPadding);
+        self.textLabel.frame = CGRectMake(iconWidth + 2 * horizontalPadding, self.textLabel.frame.origin.y, self.textLabel.frame.size.width - (iconWidth + 2 * horizontalPadding), self.textLabel.frame.size.height);
+    }
+        
     if (_showsFullwidthSeparator) {
         CGRect ourBounds = self.bounds;
         CGFloat lineSize = 1/[[UIScreen mainScreen] scale];        
@@ -248,7 +265,12 @@ RCS_ID("$Id$");
     UILabel *label = cell.textLabel;
     label.text = option.title;
     
-    cell.imageView.image = [option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    if (option.attentionDotView) {
+        cell.iconView = option.attentionDotView;
+    } else if (option.image) {
+        cell.iconView = [[UIImageView alloc] initWithImage:[option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+        cell.iconView.contentMode = UIViewContentModeScaleAspectFit;
+    }
     
     OBASSERT_IF(option.destructive, option.action, "Cannot have a disabled destructive action");
     if (option.destructive) {

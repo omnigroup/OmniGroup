@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ RCS_ID("$Id$")
     NSString *moveToPath2 = [fileManager tempFilenameFromHashesTemplate:@"/tmp/OFAliasTest-######"];
     XCTAssertTrue([fileManager moveItemAtPath:moveToPath1 toPath:moveToPath2 error:NULL]);
     
-    NSData *movedAliasData = [[NSData alloc] initWithBase64String:[[restoredAlias data] base64String]];
+    NSData *movedAliasData = [[NSData alloc] initWithASCII85String:[[restoredAlias data] ascii85String]];
     OFAlias *movedAliasFromData = [[OFAlias alloc] initWithData:movedAliasData];
     XCTAssertTrue([movedAliasFromData path] != nil);
     

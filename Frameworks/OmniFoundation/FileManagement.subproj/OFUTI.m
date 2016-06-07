@@ -1,4 +1,4 @@
-// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -128,6 +128,7 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                         if ((conformsToPublicData && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeData))
                             || (conformsToPublicDirectory && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeDirectory))) {
                             OFUTI_DIAG(@"Conflict detected registering type \"%@\": type \"%@\" has already claimed tag \"%@\" for class \"%@\". Which one is used is undefined.", identifier, existingIdentifier, value, tagClass);
+                            OFUTI_DIAG(@"If these types are for export only, consider using the %@ key with value %@ in the type definition in your Info.plist to silence this warning.", OFTUTIDeclarationUsageType, OFExportOnlyDeclaration);
                             break;
                         }
                     }

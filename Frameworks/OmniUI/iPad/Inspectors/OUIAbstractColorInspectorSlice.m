@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,40 +83,34 @@ RCS_ID("$Id$");
     [self.inspector endChangeGroup];
 }
 
+- (void)beginChangingColor
+{
+    [self.inspector willBeginChangingInspectedObjects];
+}
+
 - (void)changeColor:(id)sender;
 {
     OBPRECONDITION([sender conformsToProtocol:@protocol(OUIColorValue)]);
     id <OUIColorValue> colorValue = sender;
     
     OAColor *color = colorValue.color;
-    
-    //NSLog(@"setting color %@, continuous %d", [colorValue.color shortDescription], colorValue.isContinuousColorChange);
-    
-    BOOL isContinuousChange = colorValue.isContinuousColorChange;
-    
-    OUIInspector *inspector = self.inspector;
-    
-    if (isContinuousChange && !_inContinuousChange) {
-        //NSLog(@"will begin");
-        _inContinuousChange = YES;
-        [inspector willBeginChangingInspectedObjects];
-    }
-    
+        
     [self handleColorChange:color];
     
     // Pre-populate our selected color before querying back from the objects. This will allow us to keep the original colorspace if the colors are equivalent enough.
     // Do this before calling -updateInterfaceFromInspectedObjects: or -didEndChangingInspectedObjects (which will also update the interface) since that'll read the current selectionValue.
     _selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:color];
     
-    if (!isContinuousChange) {
-        //NSLog(@"will end");
-        _inContinuousChange = NO;
-        [inspector didEndChangingInspectedObjects];
-    } else if (inspector.topVisiblePane == self.containingPane) {
+    if (self.inspector.topVisiblePane == self.containingPane) {
         // -didEndChangingInspectedObjects will update the interface for us
         // Only need to update if we are the visible inspector (not our detail). Otherwise we'll update when the detail closes.
         [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
     }
+}
+
+- (void)endChangingColor
+{
+    [self.inspector didEndChangingInspectedObjects];
 }
 
 @end

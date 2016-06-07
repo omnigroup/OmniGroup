@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -165,8 +165,8 @@ Calls OBReplaceMethodImplementationFromMethod with aClass's metaclass as the cla
 
 extern Class OBClassImplementingMethod(Class cls, SEL sel);
 
-// This returns YES if the given pointer is a class object
-static inline BOOL OBPointerIsClass(id object)
+// This returns YES if the given object is a class object
+static inline BOOL OBObjectIsClass(id object)
 {
     if (object) {
         Class cls = object_getClass(object);
@@ -175,18 +175,31 @@ static inline BOOL OBPointerIsClass(id object)
     return NO;
 }
 
-// This returns the class object for the given pointer.  For an instance, that means getting the class.  But for a class object, that means returning the pointer itself 
+static inline BOOL OBObjectIsMetaClass(id object)
+{
+    // Calling class_isMetaClass() on a plain object isn't valid.
+    return OBObjectIsClass(object) && class_isMetaClass(object);
+}
 
-static inline Class OBClassForPointer(id object)
+// This returns the class object for the given pointer.  For an instance, that means getting the class.  But for a class object, that means returning the pointer itself
+static inline Class OBClassForObject(id object)
 {
     if (!object)
-	return object;
+        return object;
 
-    if (OBPointerIsClass(object))
-	return object;
+    if (OBObjectIsClass(object))
+        return object;
     else
-	return object_getClass(object);
+        return object_getClass(object);
 }
+
+// Backwards compatibility
+#define OBPointerIsClass OBObjectIsClass
+#define OBPointerIsMetaClass OBObjectIsMetaClass
+#define OBClassForPointer OBClassForObject
+
+extern BOOL OBObjectIsKindOfClass(id object, Class cls); // Useful in Swift when dealing with a type *variable*
+
 
 static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
 {
@@ -297,7 +310,7 @@ OB_UNUSED_VALUE_FOR_TYPE(CGRect)
         static BOOL warned = NO; \
             if (!warned) { \
                 warned = YES; \
-                    NSLog(@"Warning: obsolete method %c[%@ %@] invoked", OBPointerIsClass(self)?'+':'-', OBClassForPointer(self), NSStringFromSelector(_cmd)); \
+                    NSLog(@"Warning: obsolete method %c[%@ %@] invoked", OBObjectIsClass(self)?'+':'-', OBClassForObject(self), NSStringFromSelector(_cmd)); \
             } \
             OBASSERT_NOT_REACHED("obsolete method called"); \
     } while(0)

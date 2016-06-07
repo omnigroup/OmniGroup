@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,6 @@
 @class OWCacheControlSettings;
 
 #import <OmniFoundation/OFSimpleLock.h>
-#import <OWF/FrameworkDefines.h>
 #import <OWF/OWDataStream.h>
 
 @interface OWContent : OFObject
@@ -133,5 +132,5 @@
 @end
 
 // Currently unused:
-//OWF_EXTERN NSString *OWContentHasNewMetadataNotificationName;
+//extern  NSString * const OWContentHasNewMetadataNotificationName;
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,8 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(void);
 @property(nonatomic, readonly) UIImage *image;
 @property(nonatomic, readonly) OUIMenuOptionAction action;
 @property(nonatomic, readonly) OUIMenuOptionValidatorAction validator;
+@property(nonatomic, strong) UIView *attentionDotView;
+
 /*!
  @discussion An option is considered enabled if it does not have a validator or if it's validator action returns YES. If a validator action is set, it will be called each time isEnabled is called.
  */

@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 
 @class OIInspector, OIInspectorController;
 
+@protocol OIConcreteInspector;
+
 #import <OmniAppKit/OAWindowCascade.h> // For the OAWindowCascadeDataSource protocol
 
 @interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
@@ -29,7 +31,7 @@
 - (BOOL)showAllInspectors;
 - (BOOL)hideAllInspectors;
 - (void)toggleAllInspectors;
-- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
+- (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 - (void)invalidate;
@@ -54,11 +56,11 @@
 - (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
 
 /// Return all the OIInspectorController instances registered with this registry.
-- (NSArray *)controllers;
+- (NSArray <OIInspectorController *> *)controllers;
 - (void)removeInspectorController:(OIInspectorController *)controller;
 
 - (NSArray *)inspectedObjects;
-- (NSArray *)copyObjectsInterestingToInspector:(OIInspector *)anInspector;
+- (NSArray *)copyObjectsInterestingToInspector:(OIInspector <OIConcreteInspector> *)anInspector;
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 - (NSArray *)inspectedObjectsOfClass:(Class)aClass;
 

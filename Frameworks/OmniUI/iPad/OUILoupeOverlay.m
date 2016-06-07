@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -298,7 +298,7 @@ RCS_ID("$Id$");
         
         /* Our _touchPoint ivar is expressed in our subject's bounds coordinate system (usually == our frame coordinate system). */
         
-        CGAffineTransform subjectTransform = [subject transformToRenderingSpace];
+        CGAffineTransform subjectTransform = [subject transformFromViewSpaceToUnscaledSpace];
         CGAffineTransform loupeTransform;
         loupeTransform.a = _scale;
         loupeTransform.b = 0;
@@ -354,9 +354,9 @@ RCS_ID("$Id$");
             }
             
             if ([subject respondsToSelector:@selector(drawScaledContentForLoupe:)])
-                [subject drawScaledContentForLoupe:[subject convertRectToRenderingSpace:drawRect]];
+                [subject drawScaledContentForLoupe:[subject convertRectFromUnscaledSpaceToViewSpace:drawRect]];
             else
-                [subject drawScaledContent:[subject convertRectToRenderingSpace:drawRect]];
+                [subject drawScaledContent:[subject convertRectFromUnscaledSpaceToViewSpace:drawRect]];
 #endif
         }
     }

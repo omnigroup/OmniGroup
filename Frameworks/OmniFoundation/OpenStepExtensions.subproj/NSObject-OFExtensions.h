@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,13 +12,15 @@
 
 @class NSArray, NSBundle, NSMutableDictionary;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSObject (OFExtensions)
 
-+ (Class)classImplementingSelector:(SEL)aSelector;
++ (nullable Class)classImplementingSelector:(SEL)aSelector;
 
 + (NSBundle *)bundle;
 
-- (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
+- (BOOL)satisfiesCondition:(SEL)sel withObject:(nullable id)object;
 
 - (NSMutableDictionary *)dictionaryWithNonNilValuesForKeys:(NSArray<NSString *> *)keys;
 
@@ -37,4 +39,25 @@ typedef NS_ENUM(NSUInteger, OFRunLoopRunType) {
     OFRunLoopRunTypePolling,
 };
 
-extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^predicate)(void));
+typedef BOOL (^OFRunLoopRunPredicate)(void);
+extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate _Nullable predicate);
+
+extern NSString * _Nullable OFInstanceMethodReturnTypeEncoding(Class cls, SEL sel);
+
+@protocol OFInvokeMethodSignature <NSObject>
+@property (readonly) NSUInteger numberOfArguments;
+- (const char *)getArgumentTypeAtIndex:(NSUInteger)idx;
+@property (readonly) const char *methodReturnType;
+@end
+@protocol OFInvokeMethodInvocation <NSObject>
+@property(nonatomic,readonly) id <OFInvokeMethodSignature> methodSignature;
+- (void)retainArguments;
+- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx;
+- (void)getReturnValue:(void *)retLoc;
+@end
+
+typedef BOOL (^OFInvokeMethodHandler)(id <OFInvokeMethodSignature> _Nonnull methodSignature, id <OFInvokeMethodInvocation> _Nonnull invocation);
+
+extern BOOL OFInvokeMethod(id _Nonnull object, SEL _Nonnull selector, OFInvokeMethodHandler _Nonnull provideArguments, OFInvokeMethodHandler _Nonnull collectResults);
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,6 +105,20 @@ RCS_ID("$Id$");
     [view flashScrollIndicators];
 }
 
+#pragma mark Receiving Control Events from Swatch Pickers
+
+- (void)_colorSelectionChanged:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    OBASSERT([sender isKindOfClass:[OUIColorSwatchPicker class]]);
+    [[UIApplication sharedApplication] sendAction:@selector(beginChangingColor) to:self.target from:self forEvent:nil];  // we need to send begin and end so self.target has a change to deal with undo groupings if it needs to
+    
+    OUIColorSwatchPicker *picker = (OUIColorSwatchPicker *)sender;
+    self.selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:picker.selectedColor];
+    
+    [[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:self.target from:self forEvent:nil];
+    [[UIApplication sharedApplication] sendAction:@selector(endChangingColor) to:self.target from:self forEvent:nil];
+}
+
 #pragma mark -
 #pragma mark Private
 
@@ -152,6 +166,7 @@ RCS_ID("$Id$");
         
         {
             OUIColorSwatchPicker *swatchPicker = [[OUIColorSwatchPicker alloc] initWithFrame:CGRectMake(xOffset, yOffset, viewBounds.size.width - xOffset, 0)];
+            [swatchPicker addTarget:self action:@selector(_colorSelectionChanged:) forControlEvents:UIControlEventValueChanged];
             swatchPicker.target = self;
             swatchPicker.wraps = YES;
             swatchPicker.colors = theme.colors;
@@ -167,6 +182,13 @@ RCS_ID("$Id$");
     view.contentSize = CGSizeMake(viewBounds.size.width, yOffset);
     
     _themeViews = [themeViews copy];
+}
+
+#pragma mark <OUIColorValue>
+
+-(OAColor *)color
+{
+    return  self.selectionValue.firstValue;
 }
 
 @end

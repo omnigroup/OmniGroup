@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -332,9 +332,9 @@ static void _OFAccessCertificateTrustExceptions(void (^accessor)(NSMutableDictio
     });
 }
 
-static NSString *_OFTrustExceptionKeyForChallenge(NSURLAuthenticationChallenge *challenge)
+static NSString *_OFTrustExceptionKeyForTrust(SecTrustRef trust)
 {
-    NSData *certificateData = _OFDataForLeafCertificateInChallenge(challenge);
+    NSData *certificateData = _OFDataForLeafCertificateInTrust(trust);
     if (!certificateData) {
         OBASSERT_NOT_REACHED("Should not have even been called");
         return nil;
@@ -344,15 +344,17 @@ static NSString *_OFTrustExceptionKeyForChallenge(NSURLAuthenticationChallenge *
 
 void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertificateTrustDuration duration)
 {
-    NSString *trustExceptionKey = _OFTrustExceptionKeyForChallenge(challenge);
+    return OFAddTrustExceptionForTrust(_OFTrustForChallenge(challenge), duration);
+}
+
+void OFAddTrustExceptionForTrust(CFTypeRef trust_, OFCertificateTrustDuration duration)
+{
+    SecTrustRef trust = (SecTrustRef)trust_;
+
+    NSString *trustExceptionKey = _OFTrustExceptionKeyForTrust(trust);
     if (!trustExceptionKey)
         return;
-    
-    SecTrustRef trust = _OFTrustForChallenge(challenge);
-    if (!trust) {
-        OBASSERT_NOT_REACHED("Should have stopped before this.");
-        return;
-    }
+
     NSData *exceptionData = CFBridgingRelease(SecTrustCopyExceptions(trust));
     if (!exceptionData) {
         OBASSERT_NOT_REACHED("Unrecoverable trust failure?");
@@ -376,7 +378,20 @@ void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertifica
 
 BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
 {
-    NSString *trustExceptionKey = _OFTrustExceptionKeyForChallenge(challenge);
+    SecTrustRef trust = _OFTrustForChallenge(challenge);
+    if (!trust) {
+        OBASSERT_NOT_REACHED("Should have stopped before this.");
+        return NO;
+    }
+    
+    return OFHasTrustExceptionForTrust(trust);
+}
+
+BOOL OFHasTrustExceptionForTrust(CFTypeRef trust_)
+{
+    SecTrustRef trust = (SecTrustRef)trust_;
+    
+    NSString *trustExceptionKey = _OFTrustExceptionKeyForTrust(trust);
     if (!trustExceptionKey)
         return NO;
 
@@ -397,11 +412,6 @@ BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
         return NO;
     
     // The exception might not solve the challenge problem we are hitting right now. For example, we might have OK'd an expiring certificate from foo.com, but if bar.com vends that certificate to us we don't want to automatically allow it.
-    SecTrustRef trust = _OFTrustForChallenge(challenge);
-    if (!trust) {
-        OBASSERT_NOT_REACHED("Should have stopped before this.");
-        return NO;
-    }
     
     if (!SecTrustSetExceptions(trust, (__bridge CFDataRef)exceptionData)) {
         OBASSERT_NOT_REACHED("SecTrustSetExceptions failed."); // Maybe if the data is corrupted somehow?

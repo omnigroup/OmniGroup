@@ -1,4 +1,4 @@
-// Copyright 2001-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <Foundation/NSUndoManager.h>
+
+extern NSString * const OFUndoManagerEnablednessDidChangeNotification;
 
 enum {
     OFUndoManagerNoLogging = 0,
@@ -39,3 +41,9 @@ extern void _OFUndoManagerPopCallSite(NSUndoManager *undoManager);
 
 #define OFUndoManagerPushCallSite(undoManager) _OFUndoManagerPushCallSite(undoManager, self, _cmd)
 #define OFUndoManagerPopCallSite(undoManager) _OFUndoManagerPopCallSite(undoManager)
+
+
+@interface NSObject (OFUndoExtensions)
+// Preserves the type-checking ability by casting the result of -prepareWithInvocationTarget: instead of casting it to id.
+- (instancetype)prepareInvocationWithUndoManager:(NSUndoManager *)undoManager;
+@end

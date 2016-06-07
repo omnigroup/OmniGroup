@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,6 +42,7 @@ NSString * const ODAVContentTypeHeader = @"Content-Type";
     
     BOOL _finished;
     BOOL _shouldCollectDetailsForError;
+    BOOL _authChallengeCancelled;
     NSMutableData *_errorData;
     NSError *_error;
     NSMutableArray *_redirects;
@@ -216,6 +217,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     return bareHeader;
 }
 
+- (NSInteger)statusCode;
+{
+    if (!_response)
+        OBRejectInvalidCall(self, _cmd, @"No response");
+    return [_response statusCode];
+}
+
 - (NSString *)valueForResponseHeader:(NSString *)header;
 {
     OBPRECONDITION(_response);
@@ -243,6 +251,8 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 @synthesize didReceiveData = _didReceiveData;
 @synthesize didReceiveBytes = _didReceiveBytes;
 @synthesize didSendBytes = _didSendBytes;
+
+@synthesize resultData = _resultData;
 
 - (NSURL *)url;
 {
@@ -314,12 +324,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 #pragma mark - Internal
 
-- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge disposition:(NSURLSessionAuthChallengeDisposition)disposition;
 {
     // Keep around the response that says something about the failure, and set the flag indicating we want details recorded for this error
     OBASSERT(_response == nil);
     _response = [[challenge failureResponse] copy];
     _shouldCollectDetailsForError = YES;
+    _authChallengeCancelled = (disposition == NSURLSessionAuthChallengeCancelAuthenticationChallenge);
 }
 
 - (void)_didCompleteWithError:(NSError *)error;
@@ -735,7 +746,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     OBPRECONDITION(!_finished);
     
     if (_shouldCollectDetailsForError) {
-        _error = [self _generateErrorForResponse];
+        // If we've already recorded a cancellation error in _error, don't overwrite that. In that case, include the detailed error response as the underlying error.
+        if (_error != nil && ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication] || ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled] && _authChallengeCancelled))) {
+            NSDictionary *userInfo = @{NSUnderlyingErrorKey: [self _generateErrorForResponse]};
+            _error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:userInfo];
+        } else {
+            _error = [self _generateErrorForResponse];
+        }
     }
     
     if (_error != nil) {
@@ -909,3 +926,48 @@ void ODAVAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, 
     [entries addObject:redirect];
 }
 
+/*
+ Handles the Content-Range header in the specific case that it is a byte-content-range:
+ 
+ Content-Range = byte-content-range / other-content-range
+ 
+ byte-content-range = "bytes" SP ( byte-range-resp / unsatisfied-range )
+
+ byte-range-resp = first-byte-pos "-" last-byte-pos "/" ( complete-length / "*" )
+ unsatisfied-range = "*" "/" complete-length
+
+ first-byte-pos, last-byte-pos, complete-length = 1*DIGIT
+*/
+BOOL ODAVParseContentRangeBytes(NSString *contentRange, unsigned long long *outFirstByte, unsigned long long *outLastByte, unsigned long long *outTotalLength)
+{
+    if (!contentRange)
+        return NO;
+    
+    NSScanner *scan = [NSScanner scannerWithString:contentRange];
+    scan.charactersToBeSkipped = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+    
+    if (![scan scanString:@"bytes" intoString:NULL])
+        return NO;
+    
+    if ([scan scanString:@"*" intoString:NULL]) {
+        // unsatisfied-range
+    } else {
+        if (![scan scanUnsignedLongLong:outFirstByte] ||
+            ![scan scanString:@"-" intoString:NULL] ||
+            ![scan scanUnsignedLongLong:outLastByte])
+            return NO;
+    }
+    
+    if (![scan scanString:@"/" intoString:NULL])
+        return NO;
+    
+    if ([scan scanString:@"*" intoString:NULL]) {
+        // unspecified complete-length
+    } else if ([scan scanUnsignedLongLong:outTotalLength]) {
+        // specified complete-length
+    } else {
+        return NO;
+    }
+
+    return YES;
+}

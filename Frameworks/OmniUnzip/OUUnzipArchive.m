@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray <OUUnzipEntry *> *_entries;
 }
 
-static id _unzipError(id self, const char *func, int err, NSError **outError)
+// This always returns nil, so that callers can 'return UNZIP_ERROR(...);'
+static _Nullable id _unzipError(id self, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err];
@@ -199,7 +200,8 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
     return matches;
 }
 
-static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int err, NSError **outError)
+// This always returns nil, so that callers can 'return UNZIP_DATA_ERROR(...);'
+static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
     NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, [entry name], [self path]];
@@ -355,6 +357,91 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
         return nil;
 
     return [writeURL URLByAppendingPathComponent:topLevelEntryName];
+}
+
+- (NSFileWrapper *)_wrapperForUnzipEntry:(OUUnzipEntry *)entry inArchive:(OUUnzipArchive *)unzipArchive error:(NSError **)outError;
+{
+    NSData *data = [unzipArchive dataForEntry:entry error:outError];
+    if (!data) {
+        NSLog(@"Unable to find zip entry %@ for attachment %@", entry, self);
+        // TODO: Create error
+        return nil;
+    }
+    
+    NSString *name = [entry name];
+    NSString *fileType = [entry fileType];
+#ifdef DEBUG_kc
+    NSLog(@"Building file wrapper for %@ (%@)", name, fileType);
+#endif
+    NSFileWrapper *fileWrapper = nil;
+    if ([fileType isEqualToString:NSFileTypeDirectory]) {
+        fileWrapper = [[NSFileWrapper alloc] initDirectoryWithFileWrappers:[NSDictionary dictionary]];
+        if ([name hasSuffix:@"/"])
+            name = [name stringByRemovingSuffix:@"/"];
+    } else if ([fileType isEqualToString:NSFileTypeSymbolicLink]) {
+        NSURL *fileURL = [NSURL fileURLWithPath:[NSString stringWithData:data encoding:NSUTF8StringEncoding]];
+        fileWrapper = [[NSFileWrapper alloc] initSymbolicLinkWithDestinationURL:fileURL];
+    } else {
+        fileWrapper = [[NSFileWrapper alloc] initRegularFileWithContents:data];
+    }
+    [fileWrapper setPreferredFilename:[name lastPathComponent]];
+    
+    return fileWrapper;
+}
+
+static NSFileWrapper *_rootWrapperForWrapperWithPath(NSMutableDictionary *wrappers, NSFileWrapper *wrapper, NSString *path)
+{
+    [wrappers setObject:wrapper forKey:path];
+
+    NSString *parentPath = [path stringByDeletingLastPathComponent];
+    if ([NSString isEmptyString:parentPath])
+        return wrapper; // No parent, we're done!
+
+    NSFileWrapper *rootWrapper;
+    NSFileWrapper *parentWrapper = [wrappers objectForKey:parentPath];
+    if (parentWrapper == nil) {
+        parentWrapper = [[NSFileWrapper alloc] initDirectoryWithFileWrappers:[NSDictionary dictionary]];
+        [parentWrapper setPreferredFilename:[parentPath lastPathComponent]];
+        rootWrapper = _rootWrapperForWrapperWithPath(wrappers, parentWrapper, parentPath);
+    } else {
+        rootWrapper = [wrappers objectForKey:path.pathComponents[0]];
+    }
+
+    [parentWrapper addFileWrapper:wrapper];
+    return rootWrapper;
+}
+
+- (NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
+{
+    return [self fileWrapperWithTopLevelWrapper:NO outError:outError];
+}
+
+- (NSFileWrapper *)fileWrapperWithTopLevelWrapper:(BOOL)shouldIncludeTopLevelWrapper outError:(NSError **)outError;
+{
+    NSArray *entries = self.entries;
+    if (!entries)
+        return nil;
+
+    NSMutableDictionary *wrappers = [NSMutableDictionary dictionary];
+    NSMutableDictionary *rootWrappers = [NSMutableDictionary dictionary];
+    for (OUUnzipEntry *entry in entries) {
+        NSString *path = entry.name;
+        if ([path hasSuffix:@"/"])
+            path = [path stringByRemovingSuffix:@"/"];
+        NSFileWrapper *wrapper = [self _wrapperForUnzipEntry:entry inArchive:self error:outError];
+        if (wrapper == nil)
+            return nil;
+        NSFileWrapper *rootWrapper = _rootWrapperForWrapperWithPath(wrappers, wrapper, path);
+        OBASSERT(rootWrapper != nil);
+        [rootWrappers setObject:rootWrapper forKey:rootWrapper.preferredFilename];
+    }
+
+    if (rootWrappers.count > 1) {
+        NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initDirectoryWithFileWrappers:rootWrappers];
+        return fileWrapper;
+    } else {
+        return [rootWrappers anyObject];
+    }
 }
 
 @end
