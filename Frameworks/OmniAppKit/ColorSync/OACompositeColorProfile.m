@@ -55,71 +55,58 @@ RCS_ID("$Id$");
     return [[profiles objectAtIndex:0] _hasGraySpace];
 }
 
-#if OA_USE_COLOR_MANAGER
 - (ColorSyncTransformRef)_colorWorldForOutput:(OAColorProfile *)aProfile componentSelector:(SEL)componentSelector;
 {
-    CMWorldRef result;
+    ColorSyncTransformRef result;
     NSUInteger profileIndex, profileCount = [profiles count];
-    NCMConcatProfileSet *profileSet = alloca(sizeof(NCMConcatProfileSet) + sizeof(NCMConcatProfileSpec) * (profileCount + 1));
-    bzero(profileSet, sizeof(NCMConcatProfileSet) + sizeof(NCMConcatProfileSpec) * (profileCount + 1));
-    
-    profileSet->cmm = 0; // Use default CMM
-    profileSet->flags = 0;
-    profileSet->flagsMask = 0;
-    
-    OBASSERT(strcmp(@encode(typeof(profileSet->profileCount)), @encode(UInt32)) == 0);
-    OBASSERT(profileCount < UINT_MAX);
-    profileSet->profileCount = (UInt32)profileCount + 1;
+    NSMutableArray *profileSet = [NSMutableArray arrayWithCapacity:(profileCount + 1) * 2];
     
     for (profileIndex = 0; profileIndex <= profileCount; profileIndex++) {
         OAColorProfile *profile = ( profileIndex < profileCount ) ? [profiles objectAtIndex:profileIndex] : aProfile;
-        profileSet->profileSpecs[profileIndex].renderingIntent = kUseProfileIntent;
-        profileSet->profileSpecs[profileIndex].transformTag = kPCSToDevice;
-        profileSet->profileSpecs[profileIndex].profile = (CMProfileRef)[profile performSelector:componentSelector];
+        NSMutableDictionary *to = [[NSMutableDictionary alloc] initWithCapacity:3];
+        NSMutableDictionary *from = [[NSMutableDictionary alloc] initWithCapacity:3];
+        
+        [to setObject:[profile performSelector:componentSelector] forKey:(NSString*)kColorSyncProfile];
+        [to setObject:(NSString*)kColorSyncRenderingIntentUseProfileHeader forKey:(NSString*)kColorSyncRenderingIntent];
+        [to setObject:(NSString*)kColorSyncTransformPCSToDevice forKey:(NSString*)kColorSyncTransformTag];
+        [from setObject:[profile performSelector:componentSelector] forKey:(NSString*)kColorSyncProfile];
+        [from setObject:(NSString*)kColorSyncRenderingIntentUseProfileHeader forKey:(NSString*)kColorSyncRenderingIntent];
+        [from setObject:(NSString*)kColorSyncTransformDeviceToPCS forKey:(NSString*)kColorSyncTransformTag];
+        [profileSet addObject:to];
+        [profileSet addObject:from];
+        [to release];
+        [from release];
     }
 
-    NCWConcatColorWorld(&result, profileSet, NULL, NULL);
-    return result;
+    result = ColorSyncTransformCreate((CFArrayRef)profileSet, NULL);
+    return (ColorSyncTransformRef)CFAutorelease(result);
 }
-#endif
 
 - (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
-#if OA_USE_COLOR_MANAGER
-    CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedRGBColorWorldForOutput:aProfile];
+    ColorSyncTransformRef *colorWorld = [self _cachedRGBColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_rgbProfile)];
     return *colorWorld;
-#else
-    OBFinishPorting;
-#endif
 }
 
 - (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
-#if OA_USE_COLOR_MANAGER
-    CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedCMYKColorWorldForOutput:aProfile];
+    ColorSyncTransformRef *colorWorld = [self _cachedCMYKColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_cmykProfile)];
     return *colorWorld;
-#else
-    OBFinishPorting;
-#endif
 }
 
 - (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
-#if OA_USE_COLOR_MANAGER
-    CMWorldRef *colorWorld = (CMWorldRef *)[self _cachedGrayColorWorldForOutput:aProfile];
+    ColorSyncTransformRef *colorWorld = [self _cachedGrayColorWorldForOutput:aProfile];
 
     if (!*colorWorld)  
         *colorWorld = [self _colorWorldForOutput:aProfile componentSelector:@selector(_grayProfile)];
     return *colorWorld;
-#else
-    OBFinishPorting;
-#endif
 }
 
 #pragma mark NSCopying

@@ -21,7 +21,7 @@ RCS_ID("$Id$");
     }
     
     CFStringRef string = CFURLCopyPath(url);
-    BOOL isBuiltIn = [(NSString *)string hasPrefix:@"/System/Library/ColorSync/Profiles"];
+    BOOL isBuiltIn = [(OB_BRIDGE NSString *)string hasPrefix:@"/System/Library/ColorSync/Profiles"];
     CFRelease(string);
     
     return isBuiltIn;

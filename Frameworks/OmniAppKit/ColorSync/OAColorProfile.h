@@ -14,29 +14,31 @@
 @class NSDictionary, NSMutableDictionary;
 @class NSPrintInfo;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OAColorProfile : NSObject <NSCopying>
 {
     BOOL isMutable;
     ColorSyncProfileRef rgbProfile, cmykProfile, grayProfile;
 }
 
-+ (instancetype)defaultDocumentProfile;
-+ (instancetype)defaultDisplayProfile;
-+ (instancetype)currentProfile;
++ (OAColorProfile*)defaultDocumentProfile;
++ (OAColorProfile*)defaultDisplayProfile;
++ (OAColorProfile*)currentProfile;
 
-+ (instancetype)defaultProofProfile;
-+ (instancetype)workingCMYKProfile;
-+ (NSArray *)proofingDeviceProfileNames;
-+ (instancetype)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
-+ (instancetype)proofProfileForPrintInfo:(NSPrintInfo *)printInfo;
++ (OAColorProfile*)defaultProofProfile;
++ (OAColorProfile*)workingCMYKProfile;
++ (NSArray<NSString*> *)proofingDeviceProfileNames;
++ (OAColorProfile*)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
++ (OAColorProfile*)proofProfileForPrintInfo:(NSPrintInfo *)printInfo;
 
-+ (NSArray *)rgbProfileNames;
-+ (NSArray *)cmykProfileNames;
-+ (NSArray *)grayProfileNames;
-+ (instancetype)colorProfileWithRGBNamed:(NSString *)rgbName cmykNamed:(NSString *)cmykName grayNamed:(NSString *)grayName;
++ (NSArray<NSString*> *)rgbProfileNames;
++ (NSArray<NSString*> *)cmykProfileNames;
++ (NSArray<NSString*> *)grayProfileNames;
++ (instancetype)colorProfileWithRGBNamed:(nullable NSString *)rgbName cmykNamed:(nullable NSString *)cmykName grayNamed:(nullable NSString *)grayName;
 
-+ (instancetype)colorProfileFromPropertyListRepresentation:(NSDictionary *)dict;
-- (NSMutableDictionary *)propertyListRepresentation;
++ (instancetype)colorProfileFromPropertyListRepresentation:(NSDictionary<NSString*,id> *)dict;
+- (NSMutableDictionary<NSString*,id> *)propertyListRepresentation;
 
 - (void)set;
 - (void)unset;
@@ -46,9 +48,9 @@
 - (NSString *)rgbName;
 - (NSString *)cmykName;
 - (NSString *)grayName;
-- (NSData *)rgbData;
-- (NSData *)cmykData;
-- (NSData *)grayData;
+- (nullable NSData *)rgbData;
+- (nullable NSData *)cmykData;
+- (nullable NSData *)grayData;
 
 // For use by conversions
 - (BOOL)_hasRGBSpace;
@@ -57,19 +59,21 @@
 - (void)_setRGBColor:(NSColor *)aColor;
 - (void)_setCMYKColor:(NSColor *)aColor;
 - (void)_setGrayColor:(NSColor *)aColor;
-- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
-- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
-- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
 
 // For use by subclasses
-- (ColorSyncTransformRef*)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
-- (ColorSyncTransformRef*)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
-- (ColorSyncTransformRef*)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
-- (ColorSyncProfileRef)_rgbProfile;
-- (ColorSyncProfileRef)_cmykProfile;
-- (ColorSyncProfileRef)_grayProfile;
+- (ColorSyncTransformRef __nullable*__nullable)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef __nullable*__nullable)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef __nullable*__nullable)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncProfileRef)_rgbProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncProfileRef)_cmykProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncProfileRef)_grayProfile CF_RETURNS_NOT_RETAINED;
 @end
 
 extern NSString * const OADefaultDocumentColorProfileDidChangeNotification;
 extern NSString * const OAColorProofingDevicesDidChangeNotification;
+
+NS_ASSUME_NONNULL_END
 

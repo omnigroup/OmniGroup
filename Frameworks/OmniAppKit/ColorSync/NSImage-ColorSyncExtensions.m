@@ -30,8 +30,7 @@ RCS_ID("$Id$");
     return NO;
 }
 
-#if OA_USE_COLOR_MANAGER
-- (void)_convertUsingColorWorld:(CMWorldRef)world;
+- (void)_convertUsingColorWorld:(ColorSyncTransformRef)world;
 {
     for (NSImageRep *rep in [self representations]) {
         if (![rep isKindOfClass:[NSBitmapImageRep class]])
@@ -42,46 +41,45 @@ RCS_ID("$Id$");
             return;
 
         OBASSERT(![bitmap isPlanar]);
-        
-        CMBitmap cmBitmap;
-        cmBitmap.image = (void *)[bitmap bitmapData];
-        cmBitmap.width = [bitmap pixelsWide];
-        cmBitmap.height = [bitmap pixelsHigh];
-        cmBitmap.rowBytes = [bitmap bytesPerRow];
-        cmBitmap.pixelSize = [bitmap bitsPerPixel];
+		
+		
+		//FIXME: this is an ugly hck to make it work similar to the old ColorSync APIs.
+        ColorSyncDataDepth aDepth;
+        ColorSyncDataLayout layout = kColorSyncAlphaLast | kColorSyncByteOrderDefault;
         if (![bitmap hasAlpha]) {
+            layout = kColorSyncAlphaNone | kColorSyncByteOrderDefault;
             switch([bitmap bitsPerSample]) {
             case 5:
-                cmBitmap.space = cmRGB16Space; break;
+                aDepth = kColorSync16BitInteger; break;
             case 8:
-                cmBitmap.space = [bitmap bitsPerPixel] == 24 ? cmRGB24Space : cmRGB32Space; break;
+                aDepth = kColorSync32BitInteger;
+                if ([bitmap bitsPerPixel] == 24) {
+                    layout = kColorSyncAlphaNone | kColorSyncByteOrderDefault;
+                } else {
+                    layout = kColorSyncAlphaNoneSkipLast | kColorSyncByteOrderDefault;
+                }
+                break;
             default:
                 OBASSERT_NOT_REACHED("don't know how to support this sample size");
             }
         } else {
             OBASSERT([bitmap bitsPerSample] == 8);
-            cmBitmap.space = cmRGBA32PmulSpace;
+            layout = kColorSyncAlphaLast | kColorSyncByteOrderDefault;
+            aDepth = kColorSync32BitInteger;
         }
-        cmBitmap.user1 = 0;
-        cmBitmap.user2 = 0;
 
-        CWMatchBitmap(world, &cmBitmap, NULL, NULL, NULL);//&cmNewBitmap);
+        ColorSyncTransformConvert(world, [bitmap pixelsWide], [bitmap pixelsHigh], [bitmap bitmapData], aDepth, layout, [bitmap bytesPerRow], [bitmap bitmapData], aDepth, layout, [bitmap bytesPerRow], nil);
         break;
     }
 }
-#endif
 
 - (void)convertFromProfile:(OAColorProfile *)inProfile toProfile:(OAColorProfile *)outProfile;
 {
-#if OA_USE_COLOR_MANAGER
-    CMWorldRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
+    ColorSyncTransformRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
     
     if (!world)
         return;
     [self _convertUsingColorWorld:world];
-#else
-    OBFinishPorting;
-#endif
 }
 
 @end
