@@ -13,10 +13,10 @@
 
 @interface OACompositeColorProfile : OAColorProfile
 {
-    NSArray *profiles;
+    NSArray<OAColorProfile*> *profiles;
 }
 
 // API
-- initWithProfiles:(NSArray *)someProfiles;
+- (instancetype)initWithProfiles:(NSArray<OAColorProfile*> *)someProfiles;
 
 @end

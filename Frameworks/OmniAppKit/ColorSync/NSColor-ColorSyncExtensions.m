@@ -167,67 +167,87 @@ static void (*originalDeviceCMYKImp)(NSColor *color, SEL _cmd);
         originalDeviceCMYKImp(self, @selector(set));
 }
 
-#define MAXUINT16 ((1 << 16) - 1)
-
-#if OA_USE_COLOR_MANAGER
-- (NSColor *)_rgbConvertUsingColorWorld:(CMWorldRef)colorWorldRef;
+- (NSColor *)_rgbConvertUsingColorWorld:(ColorSyncTransformRef)colorWorldRef;
 {
-    CMColor cmColor;
-    
     if (colorWorldRef == NULL)
         return self;
 
-    cmColor.rgb.red = [self redComponent] * MAXUINT16;
-    cmColor.rgb.green = [self greenComponent] * MAXUINT16;
-    cmColor.rgb.blue = [self blueComponent] * MAXUINT16;
-    CWMatchColors(colorWorldRef, &cmColor, 1);
-    return [NSColor colorWithDeviceRed:((float)cmColor.rgb.red / (float)MAXUINT16) green:((float)cmColor.rgb.green / (float)MAXUINT16) blue:((float)cmColor.rgb.blue / (float)MAXUINT16) alpha:[self alphaComponent]];
+    float colorFrom[3] = {self.redComponent, self.greenComponent, self.blueComponent};
+    float colorTo[3];
+    
+    BOOL success = ColorSyncTransformConvert(colorWorldRef, 1, 1, colorTo, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorTo), colorFrom, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorFrom), NULL);
+    
+    if (!success) {
+        return self;
+    } else {
+        return [NSColor colorWithDeviceRed:colorTo[0] green:colorTo[1] blue:colorTo[2] alpha:[self alphaComponent]];
+    }
 }
 
-- (NSColor *)_cmykConvertUsingColorWorld:(CMWorldRef)colorWorldRef intoRGB:(BOOL)intoRGB;
+- (NSColor *)_cmykConvertUsingColorWorld:(ColorSyncTransformRef)colorWorldRef intoRGB:(BOOL)intoRGB;
 {
-    CMColor cmColor;
-    
     if (colorWorldRef == NULL)
         return self;
     
-    cmColor.cmyk.cyan = [self cyanComponent] * MAXUINT16;
-    cmColor.cmyk.magenta = [self magentaComponent] * MAXUINT16;
-    cmColor.cmyk.yellow = [self yellowComponent] * MAXUINT16;
-    cmColor.cmyk.black = [self blackComponent] * MAXUINT16;
-    
-    CWMatchColors(colorWorldRef, &cmColor, 1);
-    if (intoRGB)
-        return [NSColor colorWithDeviceRed:((float)cmColor.rgb.red / (float)MAXUINT16) green:((float)cmColor.rgb.green / (float)MAXUINT16) blue:((float)cmColor.rgb.blue / (float)MAXUINT16) alpha:[self alphaComponent]];
-    else
-        return [NSColor colorWithDeviceCyan:((float)cmColor.cmyk.cyan / (float)MAXUINT16) magenta:((float)cmColor.cmyk.magenta / (float)MAXUINT16) yellow:((float)cmColor.cmyk.yellow / (float)MAXUINT16) black:((float)cmColor.cmyk.black / (float)MAXUINT16) alpha:[self alphaComponent]];
+    float colorFrom[4] = {self.cyanComponent, self.magentaComponent, self.yellowComponent, self.blackComponent};
+
+    if (intoRGB) {
+        float colorTo[3];
+        BOOL success = ColorSyncTransformConvert(colorWorldRef, 1, 1, colorTo, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorTo), colorFrom, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorFrom), NULL);
+
+        if (success) {
+            return [NSColor colorWithDeviceRed:colorTo[0] green:colorTo[1] blue:colorTo[2] alpha:[self alphaComponent]];
+        } else {
+            return [self colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+        }
+    } else {
+        float colorTo[4];
+        
+        BOOL success = ColorSyncTransformConvert(colorWorldRef, 1, 1, colorTo, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorTo), colorFrom, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorFrom), NULL);
+
+        if (success) {
+            return [NSColor colorWithDeviceCyan:colorTo[0] magenta:colorTo[1] yellow:colorTo[2] black:colorTo[3] alpha:self.alphaComponent];
+        } else {
+            return self;
+        }
+    }
 }
 
-- (NSColor *)_grayConvertUsingColorWorld:(CMWorldRef)colorWorldRef intoRGB:(BOOL)intoRGB;
+- (NSColor *)_grayConvertUsingColorWorld:(ColorSyncTransformRef)colorWorldRef intoRGB:(BOOL)intoRGB;
 {
-    CMColor cmColor;
-    
     if (colorWorldRef == NULL)
         return self;
-
-    cmColor.gray.gray = [self whiteComponent] * MAXUINT16;
     
-    CWMatchColors(colorWorldRef, &cmColor, 1);
-    if (intoRGB)
-        return [NSColor colorWithDeviceRed:((float)cmColor.rgb.red / (float)MAXUINT16) green:((float)cmColor.rgb.green / (float)MAXUINT16) blue:((float)cmColor.rgb.blue / (float)MAXUINT16) alpha:[self alphaComponent]];
-    else
-        return [NSColor colorWithDeviceWhite:((float)cmColor.gray.gray / (float)MAXUINT16) alpha:[self alphaComponent]];
+    float colorFrom[1] = {self.whiteComponent};
+
+    if (intoRGB) {
+        float colorTo[3];
+        BOOL success = ColorSyncTransformConvert(colorWorldRef, 1, 1, colorTo, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorTo), colorFrom, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorFrom), NULL);
+        
+        if (success) {
+            return [NSColor colorWithDeviceRed:colorTo[0] green:colorTo[1] blue:colorTo[2] alpha:[self alphaComponent]];
+        } else {
+            return [self colorUsingColorSpaceName:NSDeviceRGBColorSpace];
+        }
+    } else {
+        float colorTo[1];
+        BOOL success = ColorSyncTransformConvert(colorWorldRef, 1, 1, colorTo, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorTo), colorFrom, kColorSync32BitFloat, kColorSyncByteOrderDefault | kColorSyncAlphaNone, sizeof(colorFrom), NULL);
+        
+        if (success) {
+            return [NSColor colorWithDeviceWhite:colorTo[0] alpha:self.alphaComponent];
+        } else {
+            return self;
+        }
+    }
 }
-#endif
 
 - (NSColor *)convertFromProfile:(OAColorProfile *)inProfile toProfile:(OAColorProfile *)outProfile;
 {
-#if OA_USE_COLOR_MANAGER
     NSString *colorSpaceName;
         
     colorSpaceName = [self colorSpaceName];
     if (colorSpaceName == NSPatternColorSpace) {
-        CMWorldRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
+        ColorSyncTransformRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
         NSImage *newImage;
         NSColor *result;
         
@@ -237,25 +257,22 @@ static void (*originalDeviceCMYKImp)(NSColor *color, SEL _cmd);
         newImage = [[self patternImage] copy];
         [newImage convertFromProfile:inProfile toProfile:outProfile];
         result = [NSColor colorWithPatternImage:newImage];
-        [newImage release];
+        OB_RELEASE(newImage);
         return result;
     } else if (colorSpaceName == NSDeviceCMYKColorSpace) {
         return [self _cmykConvertUsingColorWorld:[inProfile _cmykConversionWorldForOutput:outProfile] intoRGB:![outProfile _hasCMYKSpace]];
     } else if (colorSpaceName == NSDeviceWhiteColorSpace || colorSpaceName == NSCalibratedWhiteColorSpace) {
         return [self _grayConvertUsingColorWorld:[inProfile _grayConversionWorldForOutput:outProfile] intoRGB:![outProfile _hasGraySpace]];
     } else {
-        CMWorldRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
+        ColorSyncTransformRef world = [inProfile _rgbConversionWorldForOutput:outProfile];
         
         if (!world)
             return self;
-        if (colorSpaceName == NSDeviceRGBColorSpace || NSCalibratedRGBColorSpace)
+        if (colorSpaceName == NSDeviceRGBColorSpace || colorSpaceName == NSCalibratedRGBColorSpace)
             return [self _rgbConvertUsingColorWorld:world];
         else
             return [[self colorUsingColorSpaceName:NSDeviceRGBColorSpace] _rgbConvertUsingColorWorld:world];
     }
-#else
-    OBFinishPorting;
-#endif
 }
 
 @end
