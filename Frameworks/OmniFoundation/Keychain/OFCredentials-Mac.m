@@ -230,9 +230,16 @@ static void _OFAccessTrustedCertificateDataSet(void (^accessor)(NSMutableSet *))
 
 void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertificateTrustDuration duration)
 {
+    return OFAddTrustExceptionForTrust(_OFTrustForChallenge(challenge), duration);
+}
+
+void OFAddTrustExceptionForTrust(CFTypeRef trust_, OFCertificateTrustDuration duration)
+{
     OBPRECONDITION(duration == OFCertificateTrustDurationSession, @"For persistent trust, use SFCertificateTrustPanel.");
     
-    NSData *data = _OFDataForLeafCertificateInTrust(_OFTrustForChallenge(challenge));
+    SecTrustRef trust = (SecTrustRef)trust_;
+
+    NSData *data = _OFDataForLeafCertificateInTrust(trust);
     if (!data)
         return;
     
@@ -246,7 +253,20 @@ void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertifica
 
 BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
 {
-    NSData *data = _OFDataForLeafCertificateInTrust(_OFTrustForChallenge(challenge));
+    SecTrustRef trust = _OFTrustForChallenge(challenge);
+    if (!trust) {
+        OBASSERT_NOT_REACHED("Should have stopped before this.");
+        return NO;
+    }
+    
+    return OFHasTrustExceptionForTrust(trust);
+}
+
+BOOL OFHasTrustExceptionForTrust(CFTypeRef trust_)
+{
+    SecTrustRef trust = (SecTrustRef)trust_;
+
+    NSData *data = _OFDataForLeafCertificateInTrust(trust);
     if (!data)
         return NO;
     

@@ -18,9 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
 
-// Invoked from our -[NSURLConnectionDelegate connectionShouldUseCredentialStorage:] implementation, which isn't called any more (especially since we've moved from NSURLConnection to NSURLSession), so this is never called either
-- (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
-
 // These are called to satisfy NSURLSession's authentication delegate methods. See ODAVConnection's documentation for details.
 - (NSOperation <OFCredentialChallengeDisposition> * _Nullable)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 - (NSURLCredential * _Nullable)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;

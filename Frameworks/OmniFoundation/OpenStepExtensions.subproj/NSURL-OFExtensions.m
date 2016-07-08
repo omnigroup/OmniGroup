@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,8 @@
 RCS_ID("$Id$")
 
 OB_REQUIRE_ARC
+
+NS_ASSUME_NONNULL_BEGIN
 
 #if 0 && defined(DEBUG_bungi)
 // Patch -[NSURL isEqual:] and -hash to asssert. Don't use these as dictionary keys due to their issues with comparison (standardized paths for /var/private, trailing slash, case comparison bugs with hex-encoded octets).
@@ -570,7 +572,7 @@ static BOOL OFURLIsStillBeingCreatedOrHasGoneMissing(NSURL *fileURL)
 
 // We no longer use an NSFileCoordinator when scanning the documents directory. NSFileCoordinator doesn't make writers of documents wait if there is a coordinator of their containing directory, so this doesn't help. We *could*, as we find documents, do a coordinated read on each document to make sure we get its most recent timestamp, but this seems wasteful in most cases.
 void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
-                     OFScanDirectoryFilter filterBlock,
+                     _Nullable OFScanDirectoryFilter filterBlock,
                      OFScanPathExtensionIsPackage pathExtensionIsPackage,
                      OFScanDirectoryItemHandler itemHandler,
                      OFScanErrorHandler errorHandler)
@@ -652,7 +654,7 @@ void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
     }
 }
 
-OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet *packageExtensions)
+OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Nullable packageExtensions)
 {
     DEBUG_PACKAGE(1, @"Creating block with extensions %@", [[packageExtensions allObjects] sortedArrayUsingSelector:@selector(compare:)]);
     
@@ -691,3 +693,4 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet *packag
     return [isPackage copy];
 }
 
+NS_ASSUME_NONNULL_END

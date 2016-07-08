@@ -15,7 +15,8 @@ OB_REQUIRE_ARC
 @implementation OACertificateTrustPrompt
 {
     NSURLAuthenticationChallenge *_challenge;
-    NSWindow *(^_findPresenter)(void);
+    NSError *_error;
+
     OFCertificateTrustDuration _result;
 }
 
@@ -23,27 +24,45 @@ OB_REQUIRE_ARC
 {
     OBINVARIANT([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]);
 
-    if ((self = [super init]) != nil) {
-        _challenge = challenge;
-        _result = OFCertificateTrustDurationNotEvenBriefly;
+    self = [super init];
+    if (self == nil)
+        return nil;
+
+    _challenge = challenge;
+    _result = OFCertificateTrustDurationNotEvenBriefly;
+
+    return self;
+}
+
+- (instancetype)initForError:(NSError *)error;
+{
+    self = [super init];
+    if (self == nil)
+        return nil;
+
+    while (error != nil) {
+        NSDictionary *userInfo = error.userInfo;
+        if ([userInfo valueForKey:NSURLErrorFailingURLPeerTrustErrorKey] || [userInfo objectForKey:(__bridge NSString *)kCFStreamPropertySSLPeerTrust]) {
+            _error = error;
+            break;
+        }
+        error = userInfo[NSUnderlyingErrorKey];
     }
+
+    _result = OFCertificateTrustDurationNotEvenBriefly;
+
     return self;
 }
 
 @synthesize result = _result;
 
-- (void)findParentWindow:(NSWindow *(^)(void))finder;
+static OFCertificateTrustDuration _currentTrustDuration(SecTrustRef serverTrust)
 {
-    _findPresenter = finder;
-}
-
-static OFCertificateTrustDuration _currentTrustDuration(NSURLAuthenticationChallenge *challenge)
-{
-    if (OFHasTrustForChallenge(challenge))
+    if (OFHasTrustExceptionForTrust(serverTrust))
         return OFCertificateTrustDurationSession;
     
     SecTrustResultType tr = kSecTrustResultOtherError;
-    if ((errSecSuccess == SecTrustEvaluate(challenge.protectionSpace.serverTrust, &tr)) &&
+    if ((errSecSuccess == SecTrustEvaluate(serverTrust, &tr)) &&
         (tr == kSecTrustResultProceed || tr == kSecTrustResultUnspecified)) {
         return OFCertificateTrustDurationAlways;
     }
@@ -56,45 +75,51 @@ static OFCertificateTrustDuration _currentTrustDuration(NSURLAuthenticationChall
     [super start];
     
     if (self.cancelled) {
-        _findPresenter = NULL;
-        _result = _currentTrustDuration(_challenge);
+        _findParentWindowBlock = NULL;
+        _result = _currentTrustDuration(self.serverTrust);
         [self finish];
         return;
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SFCertificateTrustPanel *trustPanel = [[SFCertificateTrustPanel alloc] init];
-        SecTrustRef trust = [[_challenge protectionSpace] serverTrust];
+        SecTrustRef trust = self.serverTrust;
         
         NSWindow *presentingWindow;
         
-        if (_findPresenter) {
-            presentingWindow = _findPresenter();
-            _findPresenter = NULL;
+        if (_findParentWindowBlock) {
+            presentingWindow = _findParentWindowBlock();
+            _findParentWindowBlock = NULL;
         } else {
             presentingWindow = nil;
         }
         
-        NSString *prompt = OFCertificateTrustPromptForChallenge(_challenge);
-        
-        [trustPanel setDefaultButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - cancel the operation")];
-        [trustPanel setAlternateButtonTitle:NSLocalizedStringFromTableInBundle(@"Continue", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - continue with operation despite certificate problem")];
+        NSString *prompt = _challenge != nil ? OFCertificateTrustPromptForChallenge(_challenge) : OFCertificateTrustPromptForError(_error);
+        [trustPanel setDefaultButtonTitle:NSLocalizedStringFromTableInBundle(@"Continue", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - continue with operation despite certificate problem")];
+        [trustPanel setAlternateButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - cancel the operation")];
         [trustPanel setShowsHelp:YES];
-        
         [trustPanel beginSheetForWindow:presentingWindow modalDelegate:self didEndSelector:@selector(_certPanelSheetDidEnd:returnCode:contextInfo:) contextInfo:NULL trust:trust message:prompt];
     });
 }
 
 - (void)_certPanelSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)userChoice contextInfo:(void *)contextInfo
 {
-    // Totally unclear what values we get in "userChoice", since the documented values are deprecated and the replacements have counterintuitive names (RADAR 25585645)
-    // Experimentally, "default button" (which is "Cancel") produces NSModalResponseOK, and "alternate button" (which is "Continue") produces NSModalResponseCancel.
-    if (userChoice == NSModalResponseCancel /* NSModalResponseCancel means "Continue" here */ ) {
+    if (userChoice == NSModalResponseOK) {
         // The user might have used the UI in the SFCertificateTrustPanel to mark this certificate or host as always trusted. We could determine that by running trust evaluation again to avoid this. But if they didn't, the "OK" button means to trust for this session.
         _result = OFCertificateTrustDurationSession;
-        // TODO: Chase recipient of this, call add trust etc.
+        SecTrustRef trust = self.serverTrust;
+        OFAddTrustExceptionForTrust(trust, _result); // Creates and stores the exception.
+        OFHasTrustExceptionForTrust(trust); // Adds the exception to this trust object.
+        if (_trustBlock != NULL) {
+            _trustBlock(_result);
+            _trustBlock = NULL;
+        }
     } else {
         _result = OFCertificateTrustDurationNotEvenBriefly;
+        if (_cancelBlock != NULL) {
+            _cancelBlock();
+            _cancelBlock = NULL;
+        }
     }
     
     [self finish];
@@ -102,7 +127,21 @@ static OFCertificateTrustDuration _currentTrustDuration(NSURLAuthenticationChall
 
 - (SecTrustRef)serverTrust;
 {
-    return _challenge.protectionSpace.serverTrust;
+    if (_challenge != nil) {
+        return _challenge.protectionSpace.serverTrust;
+    } else if (_error != nil) {
+        NSDictionary *userInfo = _error.userInfo;
+        id trustRef = [userInfo valueForKey:NSURLErrorFailingURLPeerTrustErrorKey];
+        if (trustRef)
+            return (__bridge SecTrustRef)trustRef;
+        trustRef = [userInfo objectForKey:(__bridge NSString *)kCFStreamPropertySSLPeerTrust];
+        if (trustRef)
+            return (__bridge SecTrustRef)trustRef;
+        return NULL;
+    } else {
+        OBASSERT_NOT_REACHED("Either challenge or error should be non-nil");
+        return nil;
+    }
 }
 
 #if 0

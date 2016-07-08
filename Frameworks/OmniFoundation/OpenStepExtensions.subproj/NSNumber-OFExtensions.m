@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,47 +78,6 @@ static NSCharacterSet *dotCharacterSet = nil;
     }
 }
 
-@end
-
-
-@implementation OFNaN
-
-+ (OFNaN *)sharedNaN;
-{
-    static OFNaN *sharedNaN = nil;
-    if (!sharedNaN) {
-        sharedNaN = [[OFNaN alloc] init];
-    }
-    return sharedNaN;
-}
-- (const char *)objCType;
-{
-    return @encode(float);
-}
-- (CGFloat)cgFloatValue;
-{
-    return NAN;
-}
-- (float)floatValue;
-{
-    return NAN;
-}
-- (double)doubleValue;
-{
-    return NAN;
-}
-- (id)copyWithZone:(NSZone *)zone;
-{
-    return [self retain];
-}
-- (NSString *)description;
-{
-    return @"NaN";
-}
-- (NSString *)stringValue
-{
-    return @"NaN";
-}
 @end
 
 static struct numericTypeAttributes numericTypeAttributes(NSNumber *n)

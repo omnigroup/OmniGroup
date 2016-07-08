@@ -16,6 +16,7 @@
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSDocumentKey.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
+#import <OmniBase/OmniBase.h>
 #import "OFSEncryption-Internal.h"
 #import <OmniFileStore/Errors.h>
 #import <OmniDAV/ODAVFileInfo.h>
@@ -79,9 +80,18 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
     return verifySegment(_keydata + EW_KEYDATA_MAC_OFFSET, segmentIndex, segmentBegins, segmentBegins + SEGMENT_HEADER_LEN, segmentLength - SEGMENT_HEADER_LEN);
 }
 
+/* This decrypts r.length bytes from `ciphertext` to `plaintext`. The range is the range within the encrypted segment, which determines the CTR values used; regardless of r.location the data is read from the beginning of `ciphertext` and written to the beginning of `plaintext`. */
 - (BOOL)decryptBuffer:(const uint8_t *)ciphertext range:(NSRange)r index:(uint32_t)order into:(uint8_t *)plaintext header:(const uint8_t *)hdr error:(NSError **)outError;
 {
     CCCryptorRef cryptor;
+    
+    if (r.length == 0) {
+        return YES;
+    }
+    
+    if (r.location > UINT32_MAX) {
+        OBRejectInvalidCall(self, _cmd, @"Excessively long block");
+    }
     
     /* Fetch the already-set-up cryptor instance, if we have one and can use it */
     if (canResetCTRIV) {
@@ -110,16 +120,24 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
     }
     
     /* Actually process the data */
+    
+    /* Handle the situation where we're not starting on a block boundary */
     if (initialBlockCounter*kCCBlockSizeAES128 != r.location) {
         unsigned discard = (uint32_t)r.location - initialBlockCounter*kCCBlockSizeAES128;
-        uint8_t partialBlock[ kCCBlockSizeAES128 ];
-        cryptOrCrash(cryptor, ciphertext + initialBlockCounter*kCCBlockSizeAES128, kCCBlockSizeAES128, partialBlock, __LINE__);
         size_t copylen = MIN(r.length, kCCBlockSizeAES128 - discard);
-        memcpy(plaintext, partialBlock + discard, copylen);
+        uint8_t partialBlockIn[ kCCBlockSizeAES128 ];
+        uint8_t partialBlockOut[ kCCBlockSizeAES128 ];
+        memset(partialBlockIn, 0, kCCBlockSizeAES128);
+        memcpy(partialBlockIn + discard, ciphertext, copylen);
+        cryptOrCrash(cryptor, partialBlockIn, kCCBlockSizeAES128, partialBlockOut, __LINE__);
+        memcpy(plaintext, partialBlockOut + discard, copylen);
         r.location += copylen;
         r.length -= copylen;
+        ciphertext += copylen;
         plaintext += copylen;
     }
+    
+    /* Process any complete blocks (often this will be the only branch taken) */
     if (r.length >= kCCBlockSizeAES128) {
         size_t fullBlocks = (r.length / kCCBlockSizeAES128) * kCCBlockSizeAES128;
         cryptOrCrash(cryptor, ciphertext, fullBlocks, plaintext, __LINE__);
@@ -128,11 +146,16 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
         ciphertext += fullBlocks;
         plaintext += fullBlocks;
     }
+    
+    /* Process any fractional block at the end of the buffers */
     if (r.length) {
         assert(r.length < kCCBlockSizeAES128);
-        uint8_t partialBlock[ kCCBlockSizeAES128 ];
-        cryptOrCrash(cryptor, ciphertext, kCCBlockSizeAES128, partialBlock, __LINE__);
-        memcpy(plaintext, partialBlock, r.length);
+        uint8_t partialBlockIn[ kCCBlockSizeAES128 ];
+        uint8_t partialBlockOut[ kCCBlockSizeAES128 ];
+        memset(partialBlockIn, 0, kCCBlockSizeAES128);
+        memcpy(partialBlockIn, ciphertext, r.length);
+        cryptOrCrash(cryptor, partialBlockIn, kCCBlockSizeAES128, partialBlockOut, __LINE__);
+        memcpy(plaintext, partialBlockOut, r.length);
     }
     
     /* Stash the cryptor for later re-use (key-schedule setup is relatively expensive) */
@@ -494,7 +517,24 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
 
 - (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)segmentsBegin error:(NSError * __autoreleasing *)outError;
 {
-    size_t segmentsLength = [ciphertext length] - segmentsBegin - SEGMENTED_FILE_MAC_LEN;
+    // Some amusing facts:
+    //   - Calling -subdataWithRange: on a mutable data will (often/always?) call -copy on the receiver in order to get an immutable subrange, instead of copying out just the relevant bytes.
+    //   - That copy will apparently be autoreleased, even if you're in ARC, because of course your ARC code is several stack frames away from the copy.
+    //   - dispatch_apply() is not autorelease-pool aware.
+    // So, if our passed-in data is mutable, our decryption loop below will end up creating a large number of inaccessible autoreleased immutable copies of it, which easily exhausts the address space of a 32-bit machine. Instead, we do one copy up-front, here.
+    // (If the passed-in data is already immutable, this effectively a no-op of course.)
+    ciphertext = [ciphertext copy];
+    
+    size_t totalCiphertextLength = [ciphertext length];
+    
+    if (totalCiphertextLength <= (segmentsBegin + SEGMENTED_FILE_MAC_LEN)) {
+        // Impossible file length
+        // we must have at least one segment, even if it's empty it will contain the segment MAC
+        if (outError) *outError = headerError("file too short");
+        return nil;
+    }
+    
+    size_t segmentsLength = totalCiphertextLength - segmentsBegin - SEGMENTED_FILE_MAC_LEN;
     size_t segmentCount = ( segmentsLength + SEGMENT_ENCRYPTED_PAGE_SIZE - 1 ) / SEGMENT_ENCRYPTED_PAGE_SIZE;
     size_t plaintextLength = segmentsLength - (SEGMENT_HEADER_LEN * segmentCount);
     size_t lastSegmentLength = segmentsLength - (SEGMENT_ENCRYPTED_PAGE_SIZE * (segmentCount-1));

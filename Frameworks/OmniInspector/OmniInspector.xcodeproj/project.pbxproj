@@ -157,7 +157,7 @@
 		34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderView.h; sourceTree = "<group>"; };
 		34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderView.m; sourceTree = "<group>"; };
 		34B2543908D0DCEE00DD2070 /* OIInspectorRegistry.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorRegistry.h; sourceTree = "<group>"; };
-		34B2543A08D0DCEE00DD2070 /* OIInspectorRegistry.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorRegistry.m; sourceTree = "<group>"; };
+		34B2543A08D0DCEE00DD2070 /* OIInspectorRegistry.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OIInspectorRegistry.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		34B2543F08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorVerticalResizer.h; sourceTree = "<group>"; };
 		34B2544008D0DCEE00DD2070 /* OIInspectorVerticalResizer.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorVerticalResizer.m; sourceTree = "<group>"; };
 		34B2544108D0DCEE00DD2070 /* OIInspectorWindow.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorWindow.h; sourceTree = "<group>"; };

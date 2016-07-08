@@ -1,3 +1,5 @@
+
+#line 1 "OQSVGPath.rl"
 // Copyright 2011-2016 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
@@ -53,85 +55,9 @@ struct svg_state {
    input or if Quartz hates the path, we return false. */
 #define NOTREACHED 0
 
-%%{
 
-machine svgpath;
-alphtype unsigned char;
+#line 134 "OQSVGPath.rl"
 
-#
-#  Parse actions. Most of the work happens in got_number, if it sees that we've
-#  accumulated emough operands in the operands[] array to satisfy the current
-#  SVG operator.
-#
-#  Note that these are inlined directly into the body of OQScanSVGPath(), so if we
-#  hit a failure condition we can just return 'false'.
-#
-action start_number {
-    /* Note position */
-    number_start = (const char *)p;
-    /* printf(" Began number at %u (op='%c')\n", (unsigned)(p-d), svg.current_op); */
-}
-action got_number {
-    /* Parse the number into the operand buffer */
-    if (p < eof && (*p == ' ' || *p == ',')) {
-        /* The number is delimited; we can call strtod() directly */
-        operands[operands_seen++] = strtod(number_start, NULL);
-    } else {
-        char strtod_buffer[MAX_NUMBER_LENGTH];
-        size_t number_len = ((const char *)p - number_start);
-        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
-            /* An unreasonably long number. */
-            return false;
-        } else {
-            memcpy(strtod_buffer, number_start, number_len);
-            strtod_buffer[number_len] = 0x00;
-            operands[operands_seen++] = strtod(strtod_buffer, NULL);
-        }
-    }
-    
-    /* If we have a full set of operands, perform the operation */
-    if (operands_seen == operands_expected) {
-        if (!svg_path_operation(&svg, operands, performer, ctxt))
-            return false;
-        operands_seen = 0;
-    }
-}
-action got_parameter {
-    /* Parse the parameter number */
-    unsigned long parameter_index;
-    
-    if (p < eof && (*p == ' ' || *p == ',')) {
-        /* The number is delimited; we can call strtoul() directly */
-        parameter_index = strtoul(number_start, NULL, 10);
-    } else {
-        char strtoul_buffer[MAX_NUMBER_LENGTH];
-        size_t number_len = ((const char *)p - number_start);
-        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
-            /* An unreasonably long number. */
-            return false;
-        } else {
-            memcpy(strtoul_buffer, number_start, number_len);
-            strtoul_buffer[number_len] = 0x00;
-            parameter_index = strtoul(strtoul_buffer, NULL, 10);
-        }
-    }
-    
-    if (parameter_index >= parameter_count) {
-        /* Index is past last parameter */
-        return false;
-    }
-    
-    operands[operands_seen++] = parameters[parameter_index];
-    
-    /* If we have a full set of operands, perform the operation */
-    if (operands_seen == operands_expected) {
-        if (!svg_path_operation(&svg, operands, performer, ctxt))
-            return false;
-        operands_seen = 0;
-    }
-}
-
-}%%
 
 static bool svg_path_operation(struct svg_state *svg, double *operands, perform_op_fun performer, void *ctxt)
 {
@@ -332,80 +258,135 @@ static bool svg_path_operation(struct svg_state *svg, double *operands, perform_
     return true;
 }
 
-%%{
 
-# When we see an operator we record how many operands it takes per invocation.
-action op_expect_1operand  { svg.current_op = *p; operands_expected = 1; operands_seen = 0; }
-action op_expect_2operands { svg.current_op = *p; operands_expected = 2; operands_seen = 0; }
-action op_expect_4operands { svg.current_op = *p; operands_expected = 4; operands_seen = 0; }
-action op_expect_6operands { svg.current_op = *p; operands_expected = 6; operands_seen = 0; }
-action op_expect_7operands { svg.current_op = *p; operands_expected = 7; operands_seen = 0; }
-# Except for closepath, which takes no operands, so we just execute it when we see it.
-action op_closepath {
-    bool ok = (*performer)(SVGc_closepath, NULL, ctxt );
-    if (!ok)
-        return false;
-    svg.have_currentpoint = false;
-    svg.have_previous_control_point = controlpoint_none;
-}
-action assert_operands_consumed {
-    if (operands_seen != 0) {
-        return false;
-    }
-}
+#line 406 "OQSVGPath.rl"
 
-# We use Ragel to recognize a number but not to actually parse it. It's more compact
-# (and probably faster) to pass that task off to strtod().
-digits = digit+ ;
-sign = '+' | '-' ;
-exponent = ( 'e' | 'E' ) sign? digits ;
-inner_number = digits
-             | digits '.' digits?
-             | '.' digits
-             ;
-number_literal = ( sign? inner_number exponent? ) >start_number %got_number ;
-number_parameter = '$' ( digits >start_number %got_parameter ) ;
-number = number_literal | number_parameter ;
 
-# This is the tricky part of the SVG path spec: adjacent numbers may
-# be separated by whitespace, an optional comma, or nothing at all if
-# the concatenation is unambiguous.
-#
-# The Ragel left-guarded concatenation operator almost does what we
-# want here: any transition which begins to recognize a subsequent
-# number while simultaneously recognizing more of the current number
-# is trimmed. Unfortunately it's hard to use that while including the
-# numbersep rule, so we use roughly equivalent priority assignments
-# instead. Transitions within a number are given a high priority and
-# entering/leaving transitions are given a low priority.
-#
-# This will accept some truly ambiguous strings like '3.2.3' (parsed
-# as 3.2 followed by .3). I'm not sure what the SVG spec requires for
-# that, but I suspect we're supposed to reject it.  OTOH, it's not a
-# big problem if we accept some malformed input as long as we accept
-# all correctly-formed input.
 
-numbersep = space* ','? space* ;
-numbers = number $(numbers,1) %(numbers,-1) ( numbersep number $(numbers,1) %(numbers,-1) >(numbers,-1) )* ;
+#line 267 "OQSVGPath.m"
+static const char _svgpath_actions[] = {
+	0, 1, 0, 1, 1, 1, 2, 1, 
+	3, 1, 4, 1, 5, 1, 6, 1, 
+	7, 1, 8, 1, 9, 2, 1, 0, 
+	2, 1, 9, 2, 2, 0, 2, 2, 
+	9, 2, 9, 3, 2, 9, 4, 2, 
+	9, 5, 2, 9, 6, 2, 9, 7, 
+	2, 9, 8, 3, 1, 9, 3, 3, 
+	1, 9, 4, 3, 1, 9, 5, 3, 
+	1, 9, 6, 3, 1, 9, 7, 3, 
+	1, 9, 8, 3, 2, 9, 3, 3, 
+	2, 9, 4, 3, 2, 9, 5, 3, 
+	2, 9, 6, 3, 2, 9, 7, 3, 
+	2, 9, 8
+};
 
-svg_noarg_operator = [Zz] >op_closepath;
-svg_arg_operator = [HhVv] >op_expect_1operand
-                 | [MmLlTt] >op_expect_2operands
-                 | [SsQq] >op_expect_4operands
-                 | [Cc] >op_expect_6operands
-                 | [Aa] >op_expect_7operands
-                 ;
+static const unsigned char _svgpath_key_offsets[] = {
+	0, 0, 9, 11, 14, 16, 20, 22, 
+	45, 75, 105, 137, 167
+};
 
-svgpath := space*  (
-             ( 
-                ( svg_arg_operator space* numbers space* ) %assert_operands_consumed |
-                ( svg_noarg_operator space* )
-             )
-           )* ;
+static const unsigned char _svgpath_trans_keys[] = {
+	32u, 36u, 43u, 45u, 46u, 9u, 13u, 48u, 
+	57u, 48u, 57u, 46u, 48u, 57u, 48u, 57u, 
+	43u, 45u, 48u, 57u, 48u, 57u, 32u, 65u, 
+	67u, 72u, 81u, 83u, 84u, 86u, 90u, 97u, 
+	99u, 104u, 113u, 115u, 116u, 118u, 122u, 9u, 
+	13u, 76u, 77u, 108u, 109u, 32u, 36u, 44u, 
+	46u, 65u, 67u, 72u, 81u, 83u, 84u, 86u, 
+	90u, 97u, 99u, 104u, 113u, 115u, 116u, 118u, 
+	122u, 9u, 13u, 43u, 45u, 48u, 57u, 76u, 
+	77u, 108u, 109u, 32u, 36u, 44u, 46u, 65u, 
+	67u, 72u, 81u, 83u, 84u, 86u, 90u, 97u, 
+	99u, 104u, 113u, 115u, 116u, 118u, 122u, 9u, 
+	13u, 43u, 45u, 48u, 57u, 76u, 77u, 108u, 
+	109u, 32u, 36u, 44u, 46u, 65u, 67u, 69u, 
+	72u, 81u, 83u, 84u, 86u, 90u, 97u, 99u, 
+	101u, 104u, 113u, 115u, 116u, 118u, 122u, 9u, 
+	13u, 43u, 45u, 48u, 57u, 76u, 77u, 108u, 
+	109u, 32u, 36u, 44u, 46u, 65u, 67u, 72u, 
+	81u, 83u, 84u, 86u, 90u, 97u, 99u, 104u, 
+	113u, 115u, 116u, 118u, 122u, 9u, 13u, 43u, 
+	45u, 48u, 57u, 76u, 77u, 108u, 109u, 32u, 
+	36u, 44u, 46u, 65u, 67u, 69u, 72u, 81u, 
+	83u, 84u, 86u, 90u, 97u, 99u, 101u, 104u, 
+	113u, 115u, 116u, 118u, 122u, 9u, 13u, 43u, 
+	45u, 48u, 57u, 76u, 77u, 108u, 109u, 0
+};
 
-}%%
+static const char _svgpath_single_lengths[] = {
+	0, 5, 0, 1, 0, 2, 0, 17, 
+	20, 20, 22, 20, 22
+};
 
-%%write data;
+static const char _svgpath_range_lengths[] = {
+	0, 2, 1, 1, 1, 1, 1, 3, 
+	5, 5, 5, 5, 5
+};
+
+static const unsigned char _svgpath_index_offsets[] = {
+	0, 0, 8, 10, 13, 15, 19, 21, 
+	42, 68, 94, 122, 148
+};
+
+static const char _svgpath_indicies[] = {
+	0, 2, 3, 3, 4, 0, 5, 1, 
+	6, 1, 7, 8, 1, 9, 1, 10, 
+	10, 11, 1, 11, 1, 12, 13, 14, 
+	15, 17, 17, 16, 15, 18, 13, 14, 
+	15, 17, 17, 16, 15, 18, 12, 16, 
+	16, 1, 19, 20, 22, 23, 25, 26, 
+	27, 29, 29, 28, 27, 30, 25, 26, 
+	27, 29, 29, 28, 27, 30, 19, 21, 
+	24, 28, 28, 1, 31, 2, 0, 4, 
+	32, 33, 34, 36, 36, 35, 34, 37, 
+	32, 33, 34, 36, 36, 35, 34, 37, 
+	31, 3, 5, 35, 35, 1, 38, 39, 
+	41, 42, 43, 44, 45, 46, 48, 48, 
+	47, 46, 49, 43, 44, 45, 46, 48, 
+	48, 47, 46, 49, 38, 40, 9, 47, 
+	47, 1, 38, 39, 41, 42, 43, 44, 
+	46, 48, 48, 47, 46, 49, 43, 44, 
+	46, 48, 48, 47, 46, 49, 38, 40, 
+	11, 47, 47, 1, 38, 39, 41, 9, 
+	43, 44, 45, 46, 48, 48, 47, 46, 
+	49, 43, 44, 45, 46, 48, 48, 47, 
+	46, 49, 38, 40, 8, 47, 47, 1, 
+	0
+};
+
+static const char _svgpath_trans_targs[] = {
+	1, 0, 2, 3, 4, 12, 8, 4, 
+	12, 10, 6, 11, 7, 1, 1, 1, 
+	1, 1, 7, 9, 2, 3, 1, 4, 
+	8, 1, 1, 1, 1, 1, 7, 9, 
+	1, 1, 1, 1, 1, 7, 9, 2, 
+	3, 1, 4, 1, 1, 5, 1, 1, 
+	1, 7
+};
+
+static const char _svgpath_trans_actions[] = {
+	0, 0, 0, 1, 1, 1, 1, 0, 
+	0, 0, 0, 0, 0, 15, 13, 7, 
+	9, 11, 17, 5, 5, 27, 5, 27, 
+	0, 91, 87, 75, 79, 83, 95, 0, 
+	45, 42, 33, 36, 39, 48, 3, 3, 
+	21, 3, 21, 67, 63, 0, 51, 55, 
+	59, 71
+};
+
+static const char _svgpath_eof_actions[] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	30, 19, 24, 24, 24
+};
+
+static const int svgpath_start = 7;
+static const int svgpath_first_final = 7;
+static const int svgpath_error = 0;
+
+static const int svgpath_en_svgpath = 7;
+
+
+#line 409 "OQSVGPath.rl"
 
 static int OQScanSVGPath(const unsigned char *d, size_t d_length,
                          perform_op_fun performer, void *ctxt,
@@ -428,7 +409,14 @@ static int OQScanSVGPath(const unsigned char *d, size_t d_length,
     /* Initial state */
     svg.have_currentpoint = false;
     svg.have_previous_control_point = controlpoint_none;
-    %%{ write init; }%%
+    
+#line 414 "OQSVGPath.m"
+	{
+	cs = svgpath_start;
+	}
+
+#line 431 "OQSVGPath.rl"
+
 
     /* None of these actually need to be initialized, but (except for Ragel output style -G2)
        the compiler can't analyze the state tables in order to prove it. */
@@ -440,18 +428,296 @@ static int OQScanSVGPath(const unsigned char *d, size_t d_length,
     svg.controlpoint_x = NAN;
     svg.controlpoint_y = NAN;
 
-    %%{
-        # Tell Ragel that the buffer continues to the end of the input
-        variable pe eof;
+    
+#line 433 "OQSVGPath.m"
+	{
+	int _klen;
+	unsigned int _trans;
+	const char *_acts;
+	unsigned int _nacts;
+	const unsigned char *_keys;
 
-        # Run the state machine on the input
-        write exec;
-    }%%
+	if ( p == ( eof) )
+		goto _test_eof;
+	if ( cs == 0 )
+		goto _out;
+_resume:
+	_keys = _svgpath_trans_keys + _svgpath_key_offsets[cs];
+	_trans = _svgpath_index_offsets[cs];
+
+	_klen = _svgpath_single_lengths[cs];
+	if ( _klen > 0 ) {
+		const unsigned char *_lower = _keys;
+		const unsigned char *_mid;
+		const unsigned char *_upper = _keys + _klen - 1;
+		while (1) {
+			if ( _upper < _lower )
+				break;
+
+			_mid = _lower + ((_upper-_lower) >> 1);
+			if ( (*p) < *_mid )
+				_upper = _mid - 1;
+			else if ( (*p) > *_mid )
+				_lower = _mid + 1;
+			else {
+				_trans += (unsigned int)(_mid - _keys);
+				goto _match;
+			}
+		}
+		_keys += _klen;
+		_trans += _klen;
+	}
+
+	_klen = _svgpath_range_lengths[cs];
+	if ( _klen > 0 ) {
+		const unsigned char *_lower = _keys;
+		const unsigned char *_mid;
+		const unsigned char *_upper = _keys + (_klen<<1) - 2;
+		while (1) {
+			if ( _upper < _lower )
+				break;
+
+			_mid = _lower + (((_upper-_lower) >> 1) & ~1);
+			if ( (*p) < _mid[0] )
+				_upper = _mid - 2;
+			else if ( (*p) > _mid[1] )
+				_lower = _mid + 2;
+			else {
+				_trans += (unsigned int)((_mid - _keys)>>1);
+				goto _match;
+			}
+		}
+		_trans += _klen;
+	}
+
+_match:
+	_trans = _svgpath_indicies[_trans];
+	cs = _svgpath_trans_targs[_trans];
+
+	if ( _svgpath_trans_actions[_trans] == 0 )
+		goto _again;
+
+	_acts = _svgpath_actions + _svgpath_trans_actions[_trans];
+	_nacts = (unsigned int) *_acts++;
+	while ( _nacts-- > 0 )
+	{
+		switch ( *_acts++ )
+		{
+	case 0:
+#line 69 "OQSVGPath.rl"
+	{
+    /* Note position */
+    number_start = (const char *)p;
+    /* printf(" Began number at %u (op='%c')\n", (unsigned)(p-d), svg.current_op); */
+}
+	break;
+	case 1:
+#line 74 "OQSVGPath.rl"
+	{
+    /* Parse the number into the operand buffer */
+    if (p < eof && (*p == ' ' || *p == ',')) {
+        /* The number is delimited; we can call strtod() directly */
+        operands[operands_seen++] = strtod(number_start, NULL);
+    } else {
+        char strtod_buffer[MAX_NUMBER_LENGTH];
+        size_t number_len = ((const char *)p - number_start);
+        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
+            /* An unreasonably long number. */
+            return false;
+        } else {
+            memcpy(strtod_buffer, number_start, number_len);
+            strtod_buffer[number_len] = 0x00;
+            operands[operands_seen++] = strtod(strtod_buffer, NULL);
+        }
+    }
+    
+    /* If we have a full set of operands, perform the operation */
+    if (operands_seen == operands_expected) {
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
+            return false;
+        operands_seen = 0;
+    }
+}
+	break;
+	case 2:
+#line 99 "OQSVGPath.rl"
+	{
+    /* Parse the parameter number */
+    unsigned long parameter_index;
+    
+    if (p < eof && (*p == ' ' || *p == ',')) {
+        /* The number is delimited; we can call strtoul() directly */
+        parameter_index = strtoul(number_start, NULL, 10);
+    } else {
+        char strtoul_buffer[MAX_NUMBER_LENGTH];
+        size_t number_len = ((const char *)p - number_start);
+        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
+            /* An unreasonably long number. */
+            return false;
+        } else {
+            memcpy(strtoul_buffer, number_start, number_len);
+            strtoul_buffer[number_len] = 0x00;
+            parameter_index = strtoul(strtoul_buffer, NULL, 10);
+        }
+    }
+    
+    if (parameter_index >= parameter_count) {
+        /* Index is past last parameter */
+        return false;
+    }
+    
+    operands[operands_seen++] = parameters[parameter_index];
+    
+    /* If we have a full set of operands, perform the operation */
+    if (operands_seen == operands_expected) {
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
+            return false;
+        operands_seen = 0;
+    }
+}
+	break;
+	case 3:
+#line 338 "OQSVGPath.rl"
+	{ svg.current_op = *p; operands_expected = 1; operands_seen = 0; }
+	break;
+	case 4:
+#line 339 "OQSVGPath.rl"
+	{ svg.current_op = *p; operands_expected = 2; operands_seen = 0; }
+	break;
+	case 5:
+#line 340 "OQSVGPath.rl"
+	{ svg.current_op = *p; operands_expected = 4; operands_seen = 0; }
+	break;
+	case 6:
+#line 341 "OQSVGPath.rl"
+	{ svg.current_op = *p; operands_expected = 6; operands_seen = 0; }
+	break;
+	case 7:
+#line 342 "OQSVGPath.rl"
+	{ svg.current_op = *p; operands_expected = 7; operands_seen = 0; }
+	break;
+	case 8:
+#line 344 "OQSVGPath.rl"
+	{
+    bool ok = (*performer)(SVGc_closepath, NULL, ctxt );
+    if (!ok)
+        return false;
+    svg.have_currentpoint = false;
+    svg.have_previous_control_point = controlpoint_none;
+}
+	break;
+	case 9:
+#line 351 "OQSVGPath.rl"
+	{
+    if (operands_seen != 0) {
+        return false;
+    }
+}
+	break;
+#line 618 "OQSVGPath.m"
+		}
+	}
+
+_again:
+	if ( cs == 0 )
+		goto _out;
+	if ( ++p != ( eof) )
+		goto _resume;
+	_test_eof: {}
+	if ( p == eof )
+	{
+	const char *__acts = _svgpath_actions + _svgpath_eof_actions[cs];
+	unsigned int __nacts = (unsigned int) *__acts++;
+	while ( __nacts-- > 0 ) {
+		switch ( *__acts++ ) {
+	case 1:
+#line 74 "OQSVGPath.rl"
+	{
+    /* Parse the number into the operand buffer */
+    if (p < eof && (*p == ' ' || *p == ',')) {
+        /* The number is delimited; we can call strtod() directly */
+        operands[operands_seen++] = strtod(number_start, NULL);
+    } else {
+        char strtod_buffer[MAX_NUMBER_LENGTH];
+        size_t number_len = ((const char *)p - number_start);
+        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
+            /* An unreasonably long number. */
+            return false;
+        } else {
+            memcpy(strtod_buffer, number_start, number_len);
+            strtod_buffer[number_len] = 0x00;
+            operands[operands_seen++] = strtod(strtod_buffer, NULL);
+        }
+    }
+    
+    /* If we have a full set of operands, perform the operation */
+    if (operands_seen == operands_expected) {
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
+            return false;
+        operands_seen = 0;
+    }
+}
+	break;
+	case 2:
+#line 99 "OQSVGPath.rl"
+	{
+    /* Parse the parameter number */
+    unsigned long parameter_index;
+    
+    if (p < eof && (*p == ' ' || *p == ',')) {
+        /* The number is delimited; we can call strtoul() directly */
+        parameter_index = strtoul(number_start, NULL, 10);
+    } else {
+        char strtoul_buffer[MAX_NUMBER_LENGTH];
+        size_t number_len = ((const char *)p - number_start);
+        if (number_len >= (MAX_NUMBER_LENGTH-1)) {
+            /* An unreasonably long number. */
+            return false;
+        } else {
+            memcpy(strtoul_buffer, number_start, number_len);
+            strtoul_buffer[number_len] = 0x00;
+            parameter_index = strtoul(strtoul_buffer, NULL, 10);
+        }
+    }
+    
+    if (parameter_index >= parameter_count) {
+        /* Index is past last parameter */
+        return false;
+    }
+    
+    operands[operands_seen++] = parameters[parameter_index];
+    
+    /* If we have a full set of operands, perform the operation */
+    if (operands_seen == operands_expected) {
+        if (!svg_path_operation(&svg, operands, performer, ctxt))
+            return false;
+        operands_seen = 0;
+    }
+}
+	break;
+	case 9:
+#line 351 "OQSVGPath.rl"
+	{
+    if (operands_seen != 0) {
+        return false;
+    }
+}
+	break;
+#line 707 "OQSVGPath.m"
+		}
+	}
+	}
+
+	_out: {}
+	}
+
+#line 449 "OQSVGPath.rl"
+
 
     /* At this point, we could be in a final state (success), an error state (failure),
     ** or a non-final state (also failure, because we require a complete path spec on input).
     */
-    if (cs >= %%{ write first_final; }%% ) {
+    if (cs >= 7 ) {
         return true;
     } else {
         return false;

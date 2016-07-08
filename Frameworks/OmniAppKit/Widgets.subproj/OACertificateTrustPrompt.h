@@ -17,13 +17,17 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OACertificateTrustPrompt : OFAsynchronousOperation <OFCertificateTrustDisposition>
 
 - (instancetype)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (instancetype)initForError:(NSError *)error;
+
+@property (copy, nonatomic) void (^cancelBlock)(void); // called if the OFCertificateTrustDuration result == OFCertificateTrustDurationNotEvenBriefly
+@property (copy, nonatomic) void (^trustBlock)(OFCertificateTrustDuration duration);
 
 /* Tells OACertificateTrustPrompt how to find the window to attach the sheet to. This block will be invoked on the main thread right before the panel is to be shown. */
-- (void)findParentWindow:(NSWindow *(^)(void))finder;
+@property (copy, nonatomic) NSWindow *(^findParentWindowBlock)(void);
 
 /* Result. Valid only once the operation is finished. */
 /* Note that on OSX we only return TrustDurationSession, not TrustDurationAlways: the "always" behavior is implemented by allowing the user to modify the certificate trust settings directly with SFCertificateView. On iOS, the equivalent class (OUICertificateTrustAlert) can return both Session and Always depending on the users response. */
-@property (readonly,nonatomic) OFCertificateTrustDuration result;
+@property (readonly, nonatomic) OFCertificateTrustDuration result;
 - (SecTrustRef)serverTrust;    // The trust ref we've evaluated and possibly modified
 
 @end

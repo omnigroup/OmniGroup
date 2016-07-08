@@ -486,6 +486,11 @@ enum {
 
 - (void)_toggleEnabled:(UISwitch *)sender;
 {
+    if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
+        sender.on = NO;
+        return;
+    }
+    
     BOOL enabled = [[OSUPreferences includeHardwareDetails] boolValue];
     
     enabled = !enabled;

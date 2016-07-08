@@ -45,6 +45,7 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
     __weak id <OUIUndoBarButtonItemTarget>  _weak_undoBarButtonItemTarget;
     
     BOOL _canUndo, _canRedo;
+    NSInteger _tempDisabledCount;
 }
 
 - (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
@@ -73,6 +74,7 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
 
 static id _commonInit(OUIUndoBarButtonItem *self)
 {
+    self->_tempDisabledCount = 0;
     self->_undoButton = [OUIUndoButton buttonWithType:UIButtonTypeSystem];
     self->_undoButton.contentMode = UIViewContentModeCenter;
 
@@ -170,6 +172,19 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 @synthesize button = _undoButton;
 
+- (void)setDisabledTemporarily:(BOOL)disabledTemporarily {
+    
+    if (disabledTemporarily) {
+        _tempDisabledCount += 1;
+    } else {
+        _tempDisabledCount -= 1;
+    }
+    OBASSERT(_tempDisabledCount >= 0, "Unmatched calls to disableTemporarily");
+    
+    _disabledTemporarily = _tempDisabledCount > 0;
+    [self _updateState];
+}
+
 - (void)updateButtonForCompact:(BOOL)isCompact;
 {
     if (isCompact) {
@@ -225,16 +240,18 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     _canUndo = [target canPerformAction:@selector(undo:) withSender:self];
     _canRedo = [target canPerformAction:@selector(redo:) withSender:self];
         
-    BOOL enabled = (_canUndo || _canRedo);
+    BOOL enabled = (!self.disabledTemporarily && (_canUndo || _canRedo));
     
-    if (_canUndo) {
-        // Tap should undo, press and hold should give menu
-        _tapRecognizer.enabled = YES;
-        _longPressRecognizer.enabled = YES;
-    } else if (_canRedo) {
-        // Touch-down should do menu
-        _tapRecognizer.enabled = NO;
-        _longPressRecognizer.enabled = NO; // our touch-down will do it.
+    if (enabled) {
+        if (_canUndo) {
+            // Tap should undo, press and hold should give menu
+            _tapRecognizer.enabled = YES;
+            _longPressRecognizer.enabled = YES;
+        } else if (_canRedo) {
+            // Touch-down should do menu
+            _tapRecognizer.enabled = NO;
+            _longPressRecognizer.enabled = NO; // our touch-down will do it.
+        }
     } else {
         // Nothing
         _tapRecognizer.enabled = NO;

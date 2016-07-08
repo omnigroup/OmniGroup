@@ -1,4 +1,4 @@
-// Copyright 2007-2013 The Omni Group.  All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,10 @@
 #endif
 
 #if OF_LOCK_FILE_AVAILABLE
+
+extern NSString * const OFLockExistingLockKey;
+extern NSString * const OFLockProposedLockKey;
+extern NSString * const OFLockLockUnavailableHandlerKey;
 
 @protocol OFLockUnavailableHandler;
 

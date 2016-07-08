@@ -788,6 +788,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (void)_scheduleNextCheck;
 {
+    
+#if IPAD_RETAIL_DEMO
+    return;
+#endif
     // Make sure we haven't been disabled
     if (![[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue])
         _flags.shouldCheckAutomatically = 0;

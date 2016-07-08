@@ -1,4 +1,4 @@
-// Copyright 2004-2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,6 +84,8 @@ extern NSArray *OFKeysForKeyPath(NSString *keyPath);
 extern NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths);
 
 extern void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set);
+extern void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set);
+
 extern void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set);
 
 #define OFSetSetProperty(self, key, set) OFSetMutableSet(self, (NO && self.key ? @#key : @#key), &_##key, set)

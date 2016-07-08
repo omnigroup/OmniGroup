@@ -1,4 +1,4 @@
-// Copyright 2011-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,7 +116,6 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     CFTypeRef result = SecTransformExecute(transform, cfError);
     // NB: The example code (such as it is) seems to test the *error argument to determine success, instead of checking the result. Not sure whether this means the example code is wrong or SecTransform uses a different convention from the rest of the system. The documentation is not informative.
     //
-    // !!!:correia:20120622
     // The example code must be wrong in the error case. The documentation does say, about the errorRef:
     //    "An optional pointer to a CFErrorRef. This value will be set if an error occurred during initialization or execution of the transform or group. If not NULL the caller will be responsible for releasing the returned CFErrorRef."
     // The return value, therefore, must indicate success or failure.

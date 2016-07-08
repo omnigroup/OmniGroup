@@ -104,7 +104,6 @@ typedef enum {
 
 @interface NSError (ODAVExtensions)
 + (NSError *)certificateTrustErrorForChallenge:(NSURLAuthenticationChallenge *)challenge;
-- (NSError *)serverCertificateError;  // Returns self or underlying server certificate error; or nil.
 - (BOOL)causedByPermissionFailure;
 @end
 

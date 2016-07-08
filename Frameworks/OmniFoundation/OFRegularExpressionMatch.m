@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,7 @@
 RCS_ID("$Id$")
 
 @implementation OFRegularExpressionMatch
-{
-    NSTextCheckingResult *_textCheckingResult;
-    
+{    
     NSString *_string; // Always set
     OFStringScanner *_stringScanner; // Might be set if we are operating with a scanner
 }

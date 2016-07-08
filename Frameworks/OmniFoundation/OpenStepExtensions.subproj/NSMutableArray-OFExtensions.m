@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,6 +73,18 @@ RCS_ID("$Id$")
             [self removeObjectAtIndex:objectIndex];
     }
 }
+
+- (void)removeObjectsSatisfyingPredicate:(BOOL (^)(id))predicate;
+{
+    // Index based iteration since we'll be altering the array (and fast enumeration / block based enumeration will assert in that case).
+    NSUInteger objectIndex = [self count];
+    while (objectIndex--) {
+        if (predicate(self[objectIndex])) {
+            [self removeObjectAtIndex:objectIndex];
+        }
+    }
+}
+
 
 - (BOOL)addObjectIfAbsent:(id)anObject;
 {

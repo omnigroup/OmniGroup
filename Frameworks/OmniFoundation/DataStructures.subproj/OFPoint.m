@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 #import <UIKit/UIGeometry.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
 
 RCS_ID("$Id$");
 
@@ -34,7 +35,7 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
 
-    _value = point;
+    _point = point;
     return self;
 }
 
@@ -44,38 +45,33 @@ RCS_ID("$Id$");
         return nil;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    _value = NSPointFromString(string);
+    _point = NSPointFromString(string);
 #else
-    _value = CGPointFromString(string);
+    _point = CGPointFromString(string);
 #endif
     return self;
-}
-
-- (CGPoint)point;
-{
-    return _value;
 }
 
 - (BOOL)isEqual:(id)otherObject;
 {
     if (![otherObject isKindOfClass:[OFPoint class]])
         return NO;
-    return CGPointEqualToPoint(_value, ((OFPoint *)otherObject)->_value);
+    return CGPointEqualToPoint(_point, ((OFPoint *)otherObject)->_point);
 }
 
 - (NSString *)description;
 {
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    return NSStringFromPoint(_value);
+    return NSStringFromPoint(_point);
 #else
-    return NSStringFromCGPoint(_value);
+    return NSStringFromCGPoint(_point);
 #endif
 }
 
 //
 // NSCopying
 //
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(NSZone * _Nullable)zone;
 {
     // We are immutable!
     return [self retain];
@@ -89,12 +85,12 @@ RCS_ID("$Id$");
 
 - (void)encodeWithCoder:(NSCoder *)aCoder;
 {
-    [aCoder encodeValueOfObjCType:@encode(typeof(_value)) at:&_value];
+    [aCoder encodeValueOfObjCType:@encode(typeof(_point)) at:&_point];
 }
 
 - (id)initWithCoder:(NSCoder *)aCoder;
 {
-    [aCoder decodeValueOfObjCType:@encode(typeof(_value)) at:&_value];
+    [aCoder decodeValueOfObjCType:@encode(typeof(_point)) at:&_point];
     return self;
 }
 #endif
@@ -106,8 +102,8 @@ RCS_ID("$Id$");
 - (NSMutableDictionary *)propertyListRepresentation;
 {
     return [NSMutableDictionary dictionaryWithObjectsAndKeys:
-        [NSNumber numberWithDouble:_value.x], @"x", 
-        [NSNumber numberWithDouble:_value.y], @"y", 
+        [NSNumber numberWithDouble:_point.x], @"x",
+        [NSNumber numberWithDouble:_point.y], @"y",
         nil];
 }
 
@@ -147,14 +143,14 @@ NSString * const OFPointToPropertyListTransformerName = @"OFPointToPropertyListT
     return YES;
 }
 
-- (id)transformedValue:(id)value;
+- (nullable id)transformedValue:(nullable id)value;
 {
     if ([value isKindOfClass:[OFPoint class]])
 	return [(OFPoint *)value propertyListRepresentation];
     return nil;
 }
 
-- (id)reverseTransformedValue:(id)value;
+- (nullable id)reverseTransformedValue:(nullable id)value;
 {
     if ([value isKindOfClass:[NSDictionary class]])
 	return [OFPoint pointFromPropertyListRepresentation:value];
@@ -162,3 +158,5 @@ NSString * const OFPointToPropertyListTransformerName = @"OFPointToPropertyListT
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

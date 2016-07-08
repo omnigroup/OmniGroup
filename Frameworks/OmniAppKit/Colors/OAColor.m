@@ -1002,26 +1002,32 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
 {
     if (!color)
         return nil;
-    
-    NSString *colorSpaceName = [color colorSpaceName];
-    NSColor *toConvert = nil; // Initializer only needed for <http://llvm.org/bugs/show_bug.cgi?id=9076>
-    
-    if (([colorSpaceName isEqualToString:NSCalibratedRGBColorSpace] && (toConvert = color)) ||
-        ([colorSpaceName isEqualToString:NSDeviceRGBColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace])) ||
-        ([colorSpaceName isEqualToString:NSNamedColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace]))) {
+
+    // Can't call colorSpace on a named color; it will throw.
+    if ([color.colorSpaceName isEqual:NSNamedColorSpace]) {
+        color = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+    }
+
+    NSColorSpace *colorSpace = color.colorSpace;
+    NSColorSpaceModel colorSpaceModel = colorSpace.colorSpaceModel;
+
+    if (colorSpaceModel == NSRGBColorSpaceModel) {
+        NSColor *toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+
         OALinearRGBA rgba;
         [toConvert getRed:&rgba.r green:&rgba.g blue:&rgba.b alpha:&rgba.a];
         return OARGBAColorCreate(rgba); // TODO: Could reuse the input color here for the platform color.
     }
-    
-    if (([colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] && (toConvert = color)) ||
-        ([colorSpaceName isEqualToString:NSDeviceWhiteColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedWhiteColorSpace]))) {
+
+    if (colorSpaceModel == NSGrayColorSpaceModel) {
+        NSColor *toConvert = [color colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+
         CGFloat white, alpha;
         [toConvert getWhite:&white alpha:&alpha];
         return OAWhiteColorCreate(white, alpha);
     }
-    
-    OBASSERT_NOT_REACHED("Unknown color space");
+
+    OBASSERT_NOT_REACHED("Unknown color space %@, model %ld", colorSpace, colorSpaceModel);
     return [OAColor blackColor];
 }
 #endif

@@ -244,8 +244,8 @@ static NSMutableArray *hiddenPanels = nil;
         OBASSERT([[controller inspector] isKindOfClass:[OITabbedInspector class]]);
         OITabbedInspector *inspector = OB_CHECKED_CAST(OITabbedInspector, [controller inspector]);
         [inspector switchToInspectorWithIdentifier:identifier];
-        
-        NSWindow *window = [[[NSApplication sharedApplication] delegate] windowForInspectorRegistry:self];
+        NSObject *appDelegate = (NSObject *)[[NSApplication sharedApplication] delegate];
+        NSWindow *window = [appDelegate windowForInspectorRegistry:self];
         if ([window.delegate respondsToSelector:@selector(inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:)]) {
             [(id)window.delegate inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:self];
         }
@@ -424,7 +424,7 @@ static NSMutableArray *hiddenPanels = nil;
     }
     
     OFController *appController = [OFController sharedController];
-    if ([appController status] < OFControllerRunningStatus)
+    if ([appController status] < OFControllerStatusRunning)
         [appController addStatusObserver:self];
     else
         [self queueSelectorOnce:@selector(controllerStartedRunning:) withObject:nil];

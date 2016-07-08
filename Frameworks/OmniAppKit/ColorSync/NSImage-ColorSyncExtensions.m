@@ -41,26 +41,27 @@ RCS_ID("$Id$");
             return;
 
         OBASSERT(![bitmap isPlanar]);
-		
-		
-		//FIXME: this is an ugly hck to make it work similar to the old ColorSync APIs.
+
+
+        //FIXME: this is an ugly hack to make it work similar to the old ColorSync APIs.
         ColorSyncDataDepth aDepth;
         ColorSyncDataLayout layout = kColorSyncAlphaLast | kColorSyncByteOrderDefault;
         if (![bitmap hasAlpha]) {
             layout = kColorSyncAlphaNone | kColorSyncByteOrderDefault;
             switch([bitmap bitsPerSample]) {
-            case 5:
-                aDepth = kColorSync16BitInteger; break;
-            case 8:
-                aDepth = kColorSync32BitInteger;
-                if ([bitmap bitsPerPixel] == 24) {
-                    layout = kColorSyncAlphaNone | kColorSyncByteOrderDefault;
-                } else {
-                    layout = kColorSyncAlphaNoneSkipLast | kColorSyncByteOrderDefault;
-                }
-                break;
-            default:
-                OBASSERT_NOT_REACHED("don't know how to support this sample size");
+                case 5:
+                    aDepth = kColorSync16BitInteger; break;
+                case 8:
+                    aDepth = kColorSync32BitInteger;
+                    if ([bitmap bitsPerPixel] == 24) {
+                        layout = kColorSyncAlphaNone | kColorSyncByteOrderDefault;
+                    } else {
+                        layout = kColorSyncAlphaNoneSkipLast | kColorSyncByteOrderDefault;
+                    }
+                    break;
+                default:
+                    OBASSERT_NOT_REACHED("don't know how to support this sample size");
+                    continue;
             }
         } else {
             OBASSERT([bitmap bitsPerSample] == 8);

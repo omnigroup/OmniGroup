@@ -56,7 +56,8 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
 @implementation OSUController
 {
     OSUDownloadController *_currentDownloadController;
-    
+    OSUAvailableUpdateController *_pendingAvailableUpdateController;
+
 #if USE_NOTIFICATION_CENTER
     // Info gathered from the most recent check if we opted to display a user notification instead
     void (^_displayAvailbleVersionsFromPreviouslyFinishedOperation)(void);
@@ -87,7 +88,8 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
 #if USE_NOTIFICATION_CENTER
     [[OAController sharedController] addNotificationOwner:self];
 #endif
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NSApplicationDidBecomeActiveNotification object:nil];
+
     return self;
 }
 
@@ -214,8 +216,9 @@ static NSString * const OSUUserNotificationInstallURLInfoKey = @"url";
             [availableUpdateController setValue:@NO forKey:OSUAvailableUpdateControllerLastCheckFailedBinding];
         }
         
-        if (!quiet)
-            [availableUpdateController showWindow:nil];
+        if (!quiet) {
+            [self _showAvailableUpdateWhenActive:availableUpdateController];
+        }
     };
     
 #if USE_NOTIFICATION_CENTER
@@ -319,5 +322,25 @@ static NSString * const OSUUserNotificationInstallURLInfoKey = @"url";
 }
 
 #endif
+
+- (void)_showAvailableUpdateWhenActive:(OSUAvailableUpdateController *)availableUpdateController;
+{
+    _pendingAvailableUpdateController = availableUpdateController;
+    [self _showPendingAvailableUpdateIfActive];
+}
+
+- (void)_showPendingAvailableUpdateIfActive;
+{
+    if (_pendingAvailableUpdateController == nil || ![[NSApplication sharedApplication] isActive])
+        return;
+
+    [_pendingAvailableUpdateController showWindow:nil];
+    _pendingAvailableUpdateController = nil;
+}
+
+- (void)applicationDidBecomeActive:(NSNotification *)notification;
+{
+    [self _showPendingAvailableUpdateIfActive];
+}
 
 @end

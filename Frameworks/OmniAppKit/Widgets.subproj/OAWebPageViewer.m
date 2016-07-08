@@ -209,20 +209,21 @@ static NSMutableDictionary *sharedViewerCache = nil;
 
 - (BOOL)_urlIsFromAllowedBundle:(NSURL *)url;
 {
-    NSString *path = nil;
-    if ([url isFileURL])
-        path = [[[url path] stringByStandardizingPath] stringByResolvingSymlinksInPath];
-    
-    if ([path hasPrefix:[[[[NSBundle mainBundle] bundlePath] stringByStandardizingPath] stringByResolvingSymlinksInPath]])
+    if (OFISEQUAL(url.scheme, @"about") || OFISEQUAL(url.scheme, @"applewebdata"))
         return YES;
-    else 
-        return NO;
+
+    if ([url isFileURL]) {
+        NSString *path = [[[url path] stringByStandardizingPath] stringByResolvingSymlinksInPath];
+        return [path hasPrefix:[[[[NSBundle mainBundle] bundlePath] stringByStandardizingPath] stringByResolvingSymlinksInPath]];
+    }
+
+    return NO;
 }
 
 - (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 {
     NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
-    if (OFISEQUAL([url scheme], @"help")) {
+    if (OFISEQUAL(url.scheme, @"help")) {
         [[OAApplication sharedApplication] showHelpURL:[url resourceSpecifier]];
         [listener ignore];
         return;

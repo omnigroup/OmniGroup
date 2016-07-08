@@ -186,6 +186,14 @@
     "name": "iPad Air 2 (LTE)",
     "platform": "iPad5,4"
   },
+  "J127AP": {
+    "name": "iPad Pro",
+    "platform": "iPad6,3"
+  },
+  "J128AP": {
+    "name": "iPad Pro",
+    "platform": "iPad6,4"
+  },
   "J98aAP": {
     "name": "iPad Pro",
     "platform": "iPad6,7"
@@ -378,6 +386,10 @@
   },
   "MacBook8,1": {
     "name": "MacBook"
+  },
+  "MacBook9,1": {
+    "name": "MacBook",
+    "comment": "Early 2016 12-inch Core m3/m5/m7"
   },
   "MacBookAir1,1": {
     "name": "MacBook Air"

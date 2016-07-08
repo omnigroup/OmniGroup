@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -159,7 +159,7 @@ RCS_ID("$Id$");
                 [path fill];
             }
         }
-    } else {
+    } else if (highlightStyle == OITabMatrixCellsHighlightStyle) {
         // Used to be done by OITabCell; now we draw all the backgrounds first before drawing any cells, and all the foregrounds after drawing all cells
         NSUInteger cellIndex;
         [[NSColor colorWithCalibratedWhite:.85f alpha:1.0f] set];

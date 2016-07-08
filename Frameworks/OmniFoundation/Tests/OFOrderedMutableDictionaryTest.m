@@ -33,4 +33,22 @@ RCS_ID("$Id$");
     XCTAssertThrows([dict setObject:@2 index:100 forKey:@"baz"], @"Expected exception inserting object past end of ordered dictionary");
 }
 
+- (void)testInitializers;
+{
+    OFOrderedMutableDictionary<NSString *, NSNumber *> *directInit = [[OFOrderedMutableDictionary alloc] init];
+    XCTAssertNotNil(directInit);
+    [directInit setObject:@1 forKey:@"foo"];
+    
+    OFOrderedMutableDictionary<NSString *, NSNumber *> *capacityInit = [[OFOrderedMutableDictionary alloc] initWithCapacity:1];
+    XCTAssertNotNil(capacityInit);
+    [capacityInit setObject:@1 forKey:@"foo"];
+    
+    OFOrderedMutableDictionary<NSString *, NSNumber *> *keyObjectInit = [[OFOrderedMutableDictionary alloc] initWithObjects:@[ @1 ] forKeys:@[ @"foo" ]];
+    XCTAssertNotNil(keyObjectInit);
+    
+    XCTAssertEqualObjects(@1, directInit[@"foo"]);
+    XCTAssertEqualObjects(@1, capacityInit[@"foo"]);
+    XCTAssertEqualObjects(@1, keyObjectInit[@"foo"]);
+}
+
 @end

@@ -9,6 +9,10 @@
 
 #import <Foundation/NSObject.h>
 
+#import <Foundation/NSDate.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
 @class OFEnumNameTable;
 @class NSArray, NSDictionary, NSData, NSSet, NSString;
 
@@ -24,58 +28,47 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 + (BOOL)hasPreferenceForKey:(NSString *)key;
 + (OFPreference *)preferenceForKey:(NSString *)key;
-+ (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable *)enumeration;
++ (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable * _Nullable)enumeration;
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 
 + (NSSet <NSString *> *)registeredKeys;
 + (void)recacheRegisteredKeys;
 
-+ (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference *)aPreference;
-+ (void)removeObserver:(id)anObserver forPreference:(OFPreference *)aPreference;
++ (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
++ (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 
 + (id)coerceStringValue:(NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
 
 @property(nonatomic,readonly) NSString *key;
-- (OFEnumNameTable *) enumeration;
+@property(nonatomic,readonly,nullable) OFEnumNameTable *enumeration;
 
-- (id)controller;
-- (NSString *)controllerKey;
+@property(nonatomic,readonly) id controller;
+@property(nonatomic,readonly) NSString *controllerKey;
+
 - (void)setController:(id)controller key:(NSString *)controllerKey;
 
-- (id) defaultObjectValue;
-- (BOOL) hasNonDefaultValue;
+@property(nonatomic,readonly) id defaultObjectValue;
+@property(nonatomic,readonly) BOOL hasNonDefaultValue;
+
 - (void) restoreDefaultValue;
 
-- (BOOL) hasPersistentValue;
+@property(nonatomic,readonly) BOOL hasPersistentValue;
 
-- (id)objectValue;
-- (NSString *)stringValue;
-- (NSArray *)arrayValue;
-- (NSDictionary *)dictionaryValue;
-- (NSData *)dataValue;
-- (int)intValue;
-- (NSInteger)integerValue;
-- (unsigned int)unsignedIntValue;
-- (NSUInteger)unsignedIntegerValue;
-- (float)floatValue;
-- (double)doubleValue;
-- (BOOL)boolValue;
-- (NSArray *)stringArrayValue;
-- (NSInteger)enumeratedValue;
+@property(nonatomic,strong,nullable) id objectValue;
+@property(nonatomic,copy,nullable) NSString *stringValue;
+@property(nonatomic,copy,nullable) NSArray *arrayValue;
+@property(nonatomic,copy,nullable) NSDictionary *dictionaryValue;
+@property(nonatomic,copy,nullable) NSData *dataValue;
+@property(nonatomic,copy,readonly,nullable) NSArray <NSString *> *stringArrayValue;
 
-- (void)setObjectValue:(id)value;
-- (void)setStringValue:(NSString *)value;
-- (void)setArrayValue:(NSArray *)value;
-- (void)setDictionaryValue:(NSDictionary *)value;
-- (void)setDataValue:(NSData *)value;
-- (void)setIntValue:(int)value;
-- (void)setIntegerValue:(NSInteger)value;
-- (void)setUnsignedIntValue:(unsigned int)value;
-- (void)setUnsignedIntegerValue:(NSUInteger)value;
-- (void)setFloatValue:(float)value;
-- (void)setDoubleValue:(double)value;
-- (void)setBoolValue:(BOOL)value;
-- (void)setEnumeratedValue:(NSInteger)value;
+@property(nonatomic,assign) int intValue;
+@property(nonatomic,assign) NSInteger integerValue;
+@property(nonatomic,assign) unsigned int unsignedIntValue;
+@property(nonatomic,assign) NSUInteger unsignedIntegerValue;
+@property(nonatomic,assign) float floatValue;
+@property(nonatomic,assign) double doubleValue;
+@property(nonatomic,assign) BOOL boolValue;
+@property(nonatomic,assign) NSInteger enumeratedValue;
 
 @end
 
@@ -85,14 +78,14 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 - (OFPreference *) preferenceForKey: (NSString *) key;
 
-- (id)objectForKey:(NSString *)defaultName;
-- (void)setObject:(id)value forKey:(NSString *)defaultName;
+- (_Nullable id)objectForKey:(NSString *)defaultName;
+- (void)setObject:(_Nullable id)value forKey:(NSString *)defaultName;
 - (void)removeObjectForKey:(NSString *)defaultName;
-- (NSString *)stringForKey:(NSString *)defaultName;
-- (NSArray *)arrayForKey:(NSString *)defaultName;
-- (NSDictionary *)dictionaryForKey:(NSString *)defaultName;
-- (NSData *)dataForKey:(NSString *)defaultName;
-- (NSArray *)stringArrayForKey:(NSString *)defaultName;
+- (NSString * _Nullable)stringForKey:(NSString *)defaultName;
+- (NSArray * _Nullable)arrayForKey:(NSString *)defaultName;
+- (NSDictionary * _Nullable)dictionaryForKey:(NSString *)defaultName;
+- (NSData * _Nullable)dataForKey:(NSString *)defaultName;
+- (NSArray * _Nullable)stringArrayForKey:(NSString *)defaultName;
 - (int)intForKey:(NSString *)defaultName;
 - (NSInteger)integerForKey:(NSString *)defaultName;
 - (float)floatForKey:(NSString *)defaultName; 
@@ -112,8 +105,6 @@ extern NSString * const OFPreferenceObjectValueBinding;
  
  These configuration values are defined in code and not intended to be changed by users typically, so we don't register them in plists like we do for user defaults. See also the OmniAppKit function OAHandleChangeConfigurationValueURL() for running a confirmation alert.
  */
-
-#import <Foundation/NSDate.h>
 
 @class OFConfigurationValue;
 typedef void (^OFConfigurationValueObserver)(OFConfigurationValue *configurationValue);
@@ -161,7 +152,10 @@ static void _InitializeConfigurationValue ## counter(void) { \
 #define OFDeclareIntegerConfigurationValue(name, value, min, max) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, (value), (min), (max))
 
 // Handle URLs of the form "scheme:///change-configuration-value?name=level. We ignore the scheme each app will have their own scheme.
-typedef void (^OFConfigurationValueChangeConfirmationCallback)(BOOL confirmed, NSError *confirmError);
+typedef void (^OFConfigurationValueChangeConfirmationCallback)(BOOL confirmed, NSError * _Nullable confirmError);
 typedef void (^OFConfigurationValueChangeConfirmation)(NSString *title, NSString *message, OFConfigurationValueChangeConfirmationCallback callback);
 extern NSString * const OFChangeConfigurationValueURLPath;
 extern BOOL OFHandleChangeConfigurationValueURL(NSURL *url, NSError **outError, OFConfigurationValueChangeConfirmation confirm);
+
+NS_ASSUME_NONNULL_END
+

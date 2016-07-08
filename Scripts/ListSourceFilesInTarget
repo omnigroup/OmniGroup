@@ -30,7 +30,8 @@ $IgnoreDerived = false
 
 GetoptLong.new(
   [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ],
-  [ "--ignore-derived", "-D", GetoptLong::NO_ARGUMENT ]
+  [ "--ignore-derived", "-D", GetoptLong::NO_ARGUMENT ],
+  [ "--no-cache", "-I", GetoptLong::NO_ARGUMENT ]
 
 ).each do |opt,arg|
   case opt
@@ -84,7 +85,7 @@ def do_target(target)
 
       next unless $RequiredAttributes.all? {|attr| buildFile.has_attribute?(attr) }
 
-      next if $IgnoreDerived && (fileRef.sourceTree == "BUILT_PRODUCTS_DIR" || fileRef.sourceTree == "DERIVED_SOURCES_DIR") # Other dirs that this could be too...
+      next if $IgnoreDerived && fileRef.isDerived?
       
       fullpath = $Project.resolvepath(fileRef.identifier)
       $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"

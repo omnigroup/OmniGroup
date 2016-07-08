@@ -34,6 +34,7 @@
 #import <OmniFoundation/OFExtent.h>
 #import <OmniFoundation/OFFileEdit.h>
 #import <OmniFoundation/OFFileMotionResult.h>
+#import <OmniFoundation/OFFileTypeDescription.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <OmniFoundation/OFHTTPState.h>
 #import <OmniFoundation/OFHTTPStateMachine.h>
@@ -164,7 +165,9 @@
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
 #import <OmniFoundation/NSInvocation-OFExtensions.h>
@@ -193,7 +196,6 @@
     #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
     #import <OmniFoundation/NSComparisonPredicate-OFExtensions.h>
     #import <OmniFoundation/NSData-OFFileIO.h>
-    #import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
     #import <OmniFoundation/NSException-OFExtensions.h>
     #import <OmniFoundation/NSFileManager-OFExtensions.h>
     #import <OmniFoundation/NSMutableData-OFExtensions.h>

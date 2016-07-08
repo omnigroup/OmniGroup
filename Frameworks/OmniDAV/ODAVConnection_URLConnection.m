@@ -124,20 +124,6 @@ RCS_ID("$Id$")
     [op _didCompleteWithError:error];
 }
 
-#if 0 // As far as I can tell, this never gets called (maybe since we implement -connection:willSendRequestForAuthenticationChallenge:.
-- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
-{
-    OFSFileManager *fileManager = _weak_fileManager;
-    OBASSERT(fileManager, "File manager deallocated before operations finished");
-    
-    id <OFSFileManagerDelegate> delegate = fileManager.delegate;
-    if ([delegate respondsToSelector:@selector(fileManagerShouldUseCredentialStorage:)])
-        return [delegate fileManagerShouldUseCredentialStorage:fileManager];
-    else
-        return YES;
-}
-#endif
-
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     OBASSERT([challenge sender], "NSURLConnection-based challenged need the old 'sender' calls.");

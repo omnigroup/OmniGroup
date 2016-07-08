@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -490,8 +490,9 @@ NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths)
 
 // Directly modifies the set, publishing KVO changes
 // Computes the delta operations necessary to transition to the new set.  NSController has a bug where whole-property replacement doesn't send the right KVO, so this can be a workaround for that problem, as well as possibly being more efficient.
-void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
-{
+
+static void _OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set, BOOL processRemovalsFirst) {
+
     OBPRECONDITION(self);
     OBPRECONDITION(key);
     OBPRECONDITION(ivar); // Allow it to point to nil since we can fill in the set.
@@ -500,7 +501,7 @@ void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSe
 
     if (!ivar)
         [NSException raise:NSInvalidArgumentException format:@"Must pass a non-NULL ivar pointer to %s.", __PRETTY_FUNCTION__];
-    
+
     // If the two sets are disjoint, it'll be just as fast and maybe faster to do a single set.
     // A NSKeyValueSetSetMutation change would send a NSKeyValueChangeReplacement change, with the old and new values but without any way of knowing it was a complete replacement (we don't want to read the destination in OFSetBinding).  So, we take a pointer to a set and do NSKeyValueChangeSetting.
     if (![*ivar intersectsSet:set]) {
@@ -514,30 +515,56 @@ void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSe
         [self didChangeValueForKey:key];
         return;
     }
-    
+
     NSMutableSet *ivarValue = *ivar;
-    
+
     // Add everything in the new set that we don't already have
     NSMutableSet *toAdd = [NSMutableSet setWithSet:set];
     [toAdd minusSet:ivarValue];
-    
+
     // Remove everything in the existing set that isn't in the new one
     NSMutableSet *toRemove = [NSMutableSet setWithSet:ivarValue];
     [toRemove minusSet:set];
-    
-    // Do the add first; this will prevent the target set from being empty temporarily, which is important for cases where that has special meaning.  If we need the opposite, an argument must be added to this function or a new function added to allow the caller to specify what they want.
-    if ([toAdd count] > 0) {
-        [self willChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
-        [ivarValue unionSet:toAdd];
-        [self didChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
-    }
-    
-    if ([toRemove count] > 0) {
-        [self willChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
-        [ivarValue minusSet:toRemove];
-        [self didChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
+
+    void(^processAdds)(void) = ^(void) {
+
+        if ([toAdd count] > 0) {
+            [self willChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
+            [ivarValue unionSet:toAdd];
+            [self didChangeValueForKey:key withSetMutation:NSKeyValueUnionSetMutation usingObjects:toAdd];
+        }
+    };
+
+    void(^processRemovals)(void) = ^(void) {
+
+        if ([toRemove count] > 0) {
+            [self willChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
+            [ivarValue minusSet:toRemove];
+            [self didChangeValueForKey:key withSetMutation:NSKeyValueMinusSetMutation usingObjects:toRemove];
+        }
+    };
+
+    // Most of the time, processRemovalsFirst will be NO -- processing insertions first will prevent the target set from being empty temporarily, which is important for cases where that has special meaning.
+
+    if (processRemovalsFirst) {
+        processRemovals();
+        processAdds();
+    } else {
+        processAdds();
+        processRemovals();
     }
 }
+
+void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
+{
+    _OFSetMutableSet(self, key, ivar, set, NO);
+}
+
+void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
+{
+    _OFSetMutableSet(self, key, ivar, set, YES);
+}
+
 
 // Modifies the set by calling the KVO proxy methods, depending on those to send KVO.  Useful if you've implemented -{add,remove}Foos:
 void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set)

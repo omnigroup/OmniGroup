@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,10 @@
 RCS_ID("$Id$");
 
 // Somewhat inspired by the NSFileManager(OFExtensions), but with a cleaner API and support for sandboxing.
+
+NSString * const OFLockExistingLockKey = @"OFLockExistingLock";
+NSString * const OFLockProposedLockKey = @"OFLockProposedLock";
+NSString * const OFLockLockUnavailableHandlerKey = @"OFLockLockUnavailableHandler";
 
 static NSString * const LockFileInstanceIdentifierKey = @"lock_id";
 static NSString * const LockFileShortUserNameKey = @"login";
@@ -399,9 +403,9 @@ static NSString *BundleIdentifierForPID(pid_t pid)
         OFErrorWithInfo(&error, OFLockUnavailable, description, reason,
                         NSLocalizedRecoveryOptionsErrorKey, recoveryOptions,
                         NSRecoveryAttempterErrorKey, self,
-                        @"OFLockExistingLock", existingLock,
-                        @"OFLockProposedLock", proposedLock,
-                        @"OFLockLockUnavailableHandler", (lockUnavailableHandler != nil ? (id)lockUnavailableHandler : (id)[NSNull null]),
+                        OFLockExistingLockKey, existingLock,
+                        OFLockProposedLockKey, proposedLock,
+                        OFLockLockUnavailableHandlerKey, (lockUnavailableHandler != nil ? (id)lockUnavailableHandler : (id)[NSNull null]),
                         nil);
     } else {
         NSString *reason = [[self class] localizedCannotCreateLockErrorReason];
@@ -412,8 +416,8 @@ static NSString *BundleIdentifierForPID(pid_t pid)
         
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description");
         OFErrorWithInfo(&error, OFCannotCreateLock, description, reason,
-                        @"OFLockExistingLock", existingLock,
-                        @"OFLockProposedLock", proposedLock,
+                        OFLockExistingLockKey, existingLock,
+                        OFLockProposedLockKey, proposedLock,
                         nil);
     }
     

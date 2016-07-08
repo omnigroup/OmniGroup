@@ -38,6 +38,7 @@
 		3433C1FB1A12BB920021318A /* OSUSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433C1F71A12BB920021318A /* OSUSettings.h */; };
 		3433C1FC1A12BB920021318A /* OSUSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433C1F81A12BB920021318A /* OSUSettings.m */; };
 		3433C1FE1A12BB920021318A /* OSUSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433C1F81A12BB920021318A /* OSUSettings.m */; };
+		3440A01D1D2796E000298619 /* OSUInstallerPrivilegedHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 3440A01C1D2796E000298619 /* OSUInstallerPrivilegedHelper.h */; };
 		34469268186284E200FBDD73 /* OSUPrivacyAlertWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34469266186284E200FBDD73 /* OSUPrivacyAlertWindowController.h */; };
 		34469269186284E200FBDD73 /* OSUPrivacyAlertWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34469266186284E200FBDD73 /* OSUPrivacyAlertWindowController.h */; };
 		3446926A186284E200FBDD73 /* OSUPrivacyAlertWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */; };
@@ -516,6 +517,8 @@
 		3424B2230636F5DB0097A113 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		3433C1F71A12BB920021318A /* OSUSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUSettings.h; sourceTree = "<group>"; };
 		3433C1F81A12BB920021318A /* OSUSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUSettings.m; sourceTree = "<group>"; };
+		3440A01C1D2796E000298619 /* OSUInstallerPrivilegedHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstallerPrivilegedHelper.h; sourceTree = "<group>"; };
+		3440A0291D28721700298619 /* CheckVersionNumber */ = {isa = PBXFileReference; lastKnownFileType = text; path = CheckVersionNumber; sourceTree = "<group>"; };
 		34469266186284E200FBDD73 /* OSUPrivacyAlertWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPrivacyAlertWindowController.h; sourceTree = "<group>"; };
 		34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPrivacyAlertWindowController.m; sourceTree = "<group>"; };
 		345478850635F5FD0097A113 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
@@ -1279,6 +1282,8 @@
 			isa = PBXGroup;
 			children = (
 				5FF0FACD16E7E83D00F87CB7 /* main.m */,
+				3440A01C1D2796E000298619 /* OSUInstallerPrivilegedHelper.h */,
+				3440A0291D28721700298619 /* CheckVersionNumber */,
 				5FF0FACF16E7E83D00F87CB7 /* Supporting Files */,
 			);
 			name = "Privileged Helper Tool";
@@ -1403,6 +1408,7 @@
 				3479A3981AB8D8590077BB01 /* OSURunOperationParameters.h in Headers */,
 				34D5FE711264F09D00FDFEBB /* OSUPreferences.h in Headers */,
 				3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */,
+				3440A01D1D2796E000298619 /* OSUInstallerPrivilegedHelper.h in Headers */,
 				34775A241266672800FCDD2D /* InfoPlist.h in Headers */,
 				5F234F4916EAAF4B000E2C0E /* OSUInstallerPrivilegedHelperRights.h in Headers */,
 				34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */,
@@ -1508,6 +1514,7 @@
 				4A40EBFA08AB009A00E1769D /* Sources */,
 				4A40EBFF08AB009A00E1769D /* Frameworks */,
 				5F1C024C16DC8FA8006F9D51 /* Copy XPC Services */,
+				3440A02A1D28790D00298619 /* Check Version Number */,
 			);
 			buildRules = (
 			);
@@ -1812,6 +1819,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		3440A02A1D28790D00298619 /* Check Version Number */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Version Number";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = ./OSUInstallerPrivilegedHelper/CheckVersionNumber;
+			showEnvVarsInLog = 0;
+		};
 		348A790C1B5847FE0082D55D /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

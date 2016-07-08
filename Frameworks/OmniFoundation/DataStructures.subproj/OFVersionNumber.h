@@ -33,7 +33,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) NSUInteger componentCount;
 - (NSUInteger)componentAtIndex:(NSUInteger)componentIndex;
 
+@property(nonatomic,readonly) NSUInteger majorComponent;
+@property(nonatomic,readonly) NSUInteger minorComponent;
+@property(nonatomic,readonly) NSUInteger bugFixComponent;
+
 - (NSComparisonResult)compareToVersionNumber:(OFVersionNumber *)otherVersion;
+
+- (BOOL)isAtLeast:(OFVersionNumber *)otherVersion;
+- (BOOL)isAfter:(OFVersionNumber *)otherVersion;
+- (BOOL)isBefore:(OFVersionNumber *)otherVersion;
 
 @end
 

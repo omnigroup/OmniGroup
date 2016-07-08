@@ -10,6 +10,9 @@
 /* error description */
 "Cannot move file." = "ファイルを移動できません。";
 
+/* bad password error reason */
+"Could not decode encryption document key." = "暗号化書類キーをデコードできませんでした。";
+
 /* error description */
 "Could not decrypt file." = "ファイルを暗号解除できませんでした。";
 
@@ -28,6 +31,12 @@
 /* error reason */
 "Failed to move \"%@\" to \"%@\"." = "“%1$@” を “%2$@” に移動できませんでした。";
 
+/* bad password error description */
+"Incorrect encryption password." = "暗号化パスワードが間違っています。";
+
+/* error description */
+"Internal error updating keychain" = "キーチェーンを更新する際に内部エラー発生";
+
 /* error reason - listing a directory that doesn't exist */
 "No document exists at \"%@\"." = "“%@” に書類はありません。";
 
@@ -39,6 +48,9 @@
 
 /* error reason */
 "Please make sure that the destination folder exists." = "移動先のフォルダが存在することを確認してください。";
+
+/* keychain item description - used in keychain access control prompt */
+"Sync Encryption Key" = "同期暗号化キー";
 
 /* error description */
 "Unable to delete file." = "ファイルを削除できません。";

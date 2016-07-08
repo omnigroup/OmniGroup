@@ -217,7 +217,9 @@ void testRADAR18222014(void *dummy)
         /* Everything looks good! */
         canResetCTRIV = YES;
     } else {
+#if defined(DEBUG)
         NSLog(@"Working around RADAR 12680772 and 18222014 - performance may suffer");
+#endif
         canResetCTRIV = NO;
     }
 }

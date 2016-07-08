@@ -22,7 +22,7 @@ RCS_ID("$Id$");
 
 static BOOL OSUInstallerHasReceivedApplicationWillTerminate;
 
-@interface OSUInstaller () {
+@interface OSUInstaller () <OFControllerStatusObserver> {
   @private
     __weak id <OSUInstallerDelegate> _weak_delegate;
 
@@ -152,6 +152,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
     if (_terminationObserver)
         [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
+    
+    [[OFController sharedController] removeStatusObserver:self];
 }
 
 @synthesize delegate = _weak_delegate;
@@ -235,7 +237,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
             // Ask NSApplication to terminate. During the termination sequence, replace ourselves and relaunch
             void (^willTerminate)(NSNotification *notification) = ^(NSNotification *notification){
-                
+                [[OFController sharedController] removeStatusObserver:self];
                 [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
                 self.terminationObserver = nil;
                 
@@ -266,13 +268,20 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                 // We won't normally reach here
                 OBASSERT_NOT_REACHED("Should not be able to reach the end of the termination handler in -[OSUInstaller run].");
             };
-            
-            if (self.terminationObserver == nil)
+
+            UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Waiting to Install\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
+
+            OBASSERT(self.terminationObserver == nil);
+            if (self.terminationObserver == nil) {
+                [[OFController sharedController] addStatusObserver:self];
                 self.terminationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationWillTerminateNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:willTerminate];
+            }
             
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 [[NSProcessInfo processInfo] disableSuddenTermination];
-                [[NSApplication sharedApplication] terminate:self];
+                
+                // Termination may run a modal event loop, so we need to perform-delay it; running it from within a dispatch block may cause a hang.
+                [[NSApplication sharedApplication] performSelector:@selector(terminate:) withObject:nil afterDelay:0];
             }];
         }
     }];
@@ -683,6 +692,40 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }
     
     return YES;
+}
+
+#pragma mark -
+#pragma mark OFControllerStatusObserver
+
+- (void)controllerCancelledTermnation:(OFController *)controller;
+{
+    if (self.terminationObserver != nil) {
+        // If we were waiting for termination, cancel our observers and abort this installation.
+        //
+        // We don't want to finish the installation at an arbitrary point in the future if the user explicitly cancelled termination. This is problematic because:
+        // - Installing and relaunching at an arbitrary future point is unexpected.
+        //   - Certainly the relaunch is; we could arrange to install without relaunch.
+        //   - We could arrange to install without relaunch, but we'd need coordination with the rest of OSU so it knows it had an update pending.
+        // - We need more coordination with the rest of OSU so that we can possibly
+        //   - Install this update at termination without relaunch if appropriate
+        //   - Abandon the queued update if we get a newer one in the meantime
+        //   - Deal with the eventuality that we held onto an update so long it might be expired
+        //   - Avoid preventing subsequent software update checks
+        
+        [[OFController sharedController] removeStatusObserver:self];
+        [[NSNotificationCenter defaultCenter] removeObserver:self.terminationObserver];
+        self.terminationObserver = nil;
+        
+        // Re-enabled sudden termination; we disabled it when we requested that the app terminate
+        [[NSProcessInfo processInfo] enableSuddenTermination];
+        
+        // Close our host window.
+        // !!!:correia
+        [self.delegate close];
+        
+        // Balance the strong retain we held on ourselves at the beginning of -run
+        OBAutorelease(self);
+    }
 }
 
 #pragma mark -

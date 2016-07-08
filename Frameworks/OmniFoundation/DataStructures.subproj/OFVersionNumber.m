@@ -69,16 +69,16 @@ NS_ASSUME_NONNULL_BEGIN
     return userVisibleOperatingSystemVersionNumber;
 }
 
-static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString) __attribute__((unused)); // Can end up being unused when we require the latest version available of a platform's OS.
+static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString) __attribute__((unused)); // Can end up being unused when we require the latest version available of a platform's OS.
 
-static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
+static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     // NOTE: Don't expose this directly! Instead, declare a new method (such as +isOperatingSystemLionOrLater) which caches its result (and which will give us nice warnings to find later when we decide to retire support for pre-Lion).
     // This implementation is meant to be called during initialization, not repeatedly, since this allocates and discards an instance.
 {
     OFVersionNumber *version = [[OFVersionNumber alloc] initWithVersionString:versionString];
-    BOOL isLater = ([[OFVersionNumber userVisibleOperatingSystemVersionNumber] compareToVersionNumber:version] != NSOrderedAscending);
+    BOOL result = [[OFVersionNumber userVisibleOperatingSystemVersionNumber] isAtLeast:version];
     [version release];
-    return isLater;
+    return result;
 }
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -90,7 +90,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     static BOOL isEarlier;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        isEarlier = isOperatingSystemLaterThanVersionString(@"9.3");
+        isEarlier = isOperatingSystemAtLeastVersionString(@"9.3");
     });
     
     return isEarlier;
@@ -103,7 +103,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     static BOOL isLater;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"10.11");
+        isLater = isOperatingSystemAtLeastVersionString(@"10.11");
     });
 
     return isLater;
@@ -193,7 +193,6 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     [super dealloc];
 }
 
-
 #pragma mark - API
 
 - (NSString *)originalVersionString;
@@ -234,6 +233,21 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     if (componentIndex < _componentCount)
         return _components[componentIndex];
     return 0;
+}
+
+- (NSUInteger)majorComponent;
+{
+    return [self componentAtIndex:0];
+}
+
+- (NSUInteger)minorComponent;
+{
+    return [self componentAtIndex:1];
+}
+
+- (NSUInteger)bugFixComponent;
+{
+    return [self componentAtIndex:2];
 }
 
 #pragma mark - NSCopying
@@ -290,7 +304,27 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     return NSOrderedSame;
 }
 
+- (BOOL)isAtLeast:(OFVersionNumber *)otherVersion;
+{
+    return [self compareToVersionNumber: otherVersion] != NSOrderedAscending;
+}
+
+- (BOOL)isAfter:(OFVersionNumber *)otherVersion;
+{
+    return [self compareToVersionNumber: otherVersion] == NSOrderedDescending;
+}
+
+- (BOOL)isBefore:(OFVersionNumber *)otherVersion;
+{
+    return [self compareToVersionNumber: otherVersion] == NSOrderedAscending;
+}
+
 #pragma mark - Debugging
+
+- (NSString *)description;
+{
+    return [self debugDescription];
+}
 
 - (NSString *)debugDescription;
 {

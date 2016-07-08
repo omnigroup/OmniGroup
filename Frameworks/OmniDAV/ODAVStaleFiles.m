@@ -156,6 +156,11 @@ static const NSUInteger DeletionTriggerCount = 7;
 
     do { // using single turn do-loop so we can use `break` to skip subsequent checks on validation failure
         NSDictionary *allInfoByIdentifier = [[self _defaults] objectForKey:ODAVStaleFilesPreferenceKey];
+        
+        if (allInfoByIdentifier == nil) { // missing is OK
+            break;
+        }
+        
         if (![allInfoByIdentifier isKindOfClass:[NSDictionary class]]) {
             isInvalid = YES;
             break;

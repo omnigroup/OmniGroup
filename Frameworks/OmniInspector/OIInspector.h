@@ -29,9 +29,6 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
     OIInspectorInterfaceTypeEmbedded, // no windows; suitable for sticking in e.g. a sidebar
 };
 
-// This uses rendering code that is only available on 10.5, but this whole framework is 10.5+ now
-#define OITabbedInspectorUnifiedLookDefaultsKey (@"OITabbedInspectorUnifiedLook")
-
 @interface OIInspector : NSViewController
 
 + (OFEnumNameTable *)visibilityStateNameTable;

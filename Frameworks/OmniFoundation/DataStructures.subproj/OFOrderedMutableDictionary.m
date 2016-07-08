@@ -78,18 +78,22 @@ RCS_ID("$Id$");
 
 #pragma mark - NSMutableDictionary subclass
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 - (id)init;
 {
     return [self initWithCapacity:0];
 }
-#pragma clang diagnostic pop
+
+- (id)initWithCoder:(NSCoder *)aDecoder;
+{
+    OBRejectInvalidCall(self, _cmd, @"%@ instances don't support NS(Secure)Coding", NSStringFromClass([self class]));
+    return [self init];
+}
 
 - (id)initWithCapacity:(NSUInteger)numItems;
 {
     // Calling [super initWithCapacity:numItems] here will throw an exception, since -initWithCapacity: is only defined on the abstract superclass in this cluster.
-    // Instead, we blithely discard the capacity and just use a default -init. See rdar://problem/14294287
+    // Instead, we blithely discard the capacity for the super call and just use a default -init. See rdar://problem/14294287
+    // This is fine because we're not actually using the superclass's storage anyway – we set up our own dictionary and array right away, using the capacity we're passed.
     
     if (!(self = [super init]))
         return nil;
@@ -118,7 +122,7 @@ RCS_ID("$Id$");
 
 - (id)initWithObjects:(NSArray *)objects forKeys:(NSArray *)keys;
 {
-    if (!(self = [super initWithObjects:objects forKeys:keys]))
+    if (!(self = [self initWithCapacity:[keys count]]))
         return nil;
     
     _dictionary = [[NSMutableDictionary alloc] initWithObjects:objects forKeys:keys];

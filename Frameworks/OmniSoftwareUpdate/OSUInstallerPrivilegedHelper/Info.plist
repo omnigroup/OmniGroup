@@ -12,6 +12,7 @@
     <string>${OSUInstallerPrivilegedHelperVersion}</string>
     <key>SMAuthorizedClients</key>
     <array>
+        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group"</string>
 <!--
 #ifdef DEBUG
   -->
@@ -19,7 +20,6 @@
 <!--
 #endif
   -->
-        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group"</string>
     </array>
 </dict>
 </plist>

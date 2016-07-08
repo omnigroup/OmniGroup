@@ -26,7 +26,7 @@ RCS_ID("$Id$")
 
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 {
-    if ([self status] == OFControllerPostponingTerminateStatus)
+    if ([self status] == OFControllerStatusPostponingTerminate)
         [[NSApplication sharedApplication] replyToApplicationShouldTerminate:isReadyToTerminate];
     
     [super gotPostponedTerminateResult:isReadyToTerminate];

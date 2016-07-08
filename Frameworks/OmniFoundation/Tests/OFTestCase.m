@@ -261,8 +261,8 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
                     XCTFail(@"Files differ!\ndiff \"%@\" \"%@\"", map1, map2);
 #else
-                    XCTFail(@"Files differ!");
                     OFDiffDataFiles(self, map1, map2);
+                    XCTFail(@"Files differ!"); // This can raise if the test is set to not continue after failures.
 #endif
                 }
                 return NO;

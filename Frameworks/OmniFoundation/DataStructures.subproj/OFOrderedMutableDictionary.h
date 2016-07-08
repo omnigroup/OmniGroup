@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OFOrderedMutableDictionary<KeyType, ObjectType> : NSMutableDictionary<KeyType, ObjectType>
 
+- (id)initWithCapacity:(NSUInteger)numItems NS_DESIGNATED_INITIALIZER;
+
 - (KeyType)keyAtIndex:(NSUInteger)index;
 - (NSUInteger)indexOfKey:(KeyType)aKey;
 

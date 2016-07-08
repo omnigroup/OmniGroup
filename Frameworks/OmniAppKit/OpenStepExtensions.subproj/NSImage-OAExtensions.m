@@ -12,7 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <pthread.h>
-#import <QuartzCore/CIContext.h>
+#import <CoreImage/CIContext.h>
 
 #import <OmniAppKit/OAVersion.h>
 
@@ -242,10 +242,6 @@ static id (*original_setSize)(id __attribute((ns_consumed)) self, SEL _cmd, NSSi
 
     image = [imageDictionary objectForKey:fileType];
     if (image == nil) {
-#ifdef DEBUG
-        // Make sure that our caching doesn't go insane (and that we don't ask it to cache insane stuff)
-        NSLog(@"Caching workspace image for file type '%@'", fileType);
-#endif
         image = [[NSWorkspace sharedWorkspace] iconForFileType:fileType];
         if (image == nil)
             image = [NSNull null];

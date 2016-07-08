@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,11 @@
 //
 // $Id$
 
-#import <CoreImage/CIColor.h>
+#import <Foundation/NSError.h>
 
-@interface CIColor (OQExtensions)
+@interface NSError (OFExtensions)
 
-+ (CIColor *)clearColor;
+- (NSError *)serverCertificateError;  // Returns self or underlying server certificate error; or nil.
 
 @end
+

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,10 @@
 
 - (void)addObjects:(ObjectType)firstObject, ... NS_REQUIRES_NIL_TERMINATION;
 - (void)addObjectsFromSet:(NSSet<ObjectType> *)aSet;
+
 - (void)removeObjectsInSet:(NSSet<ObjectType> *)aSet;
+- (void)removeObjectsSatisfyingPredicate:(BOOL (^)(ObjectType))predicate;
+
 - (void)addObjectIgnoringNil:(ObjectType)object; // adds the object if it is not nil, ignoring otherwise.
 
 // Returns YES if the object was absent (and was added), returns NO if object was already in array. Uses -isEqual:.

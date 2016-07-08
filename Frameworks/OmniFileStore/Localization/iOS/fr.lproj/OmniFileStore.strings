@@ -10,6 +10,9 @@
 /* error description */
 "Cannot move file." = "Impossible de déplacer le fichier.";
 
+/* bad password error reason */
+"Could not decode encryption document key." = "Impossible de décoder la clé de document de cryptage.";
+
 /* error description */
 "Could not decrypt file." = "Impossible de décrypter le fichier.";
 
@@ -28,6 +31,12 @@
 /* error reason */
 "Failed to move \"%@\" to \"%@\"." = "Le déplacement de “%1$@” vers “%2$@” a échoué.";
 
+/* bad password error description */
+"Incorrect encryption password." = "Mot de passe de cryptage incorrect.";
+
+/* error description */
+"Internal error updating keychain" = "Erreur interne lors de la mise à jour du trousseau";
+
 /* error reason - listing a directory that doesn't exist */
 "No document exists at \"%@\"." = "Aucun document n’existe dans “%@”.";
 
@@ -39,6 +48,9 @@
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Assurez-vous que le dossier de destination existe.";
+
+/* keychain item description - used in keychain access control prompt */
+"Sync Encryption Key" = "Clé de cryptage de synchronisation";
 
 /* error description */
 "Unable to delete file." = "Impossible de supprimer le fichier.";

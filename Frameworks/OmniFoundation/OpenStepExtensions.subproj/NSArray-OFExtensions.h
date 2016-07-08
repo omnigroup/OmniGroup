@@ -16,6 +16,7 @@
 
 @interface NSArray <__covariant ObjectType> (OFExtensions)
 
+#define COMPARE_BLOCK NSComparisonResult(^)(ObjectType, ObjectType)
 #define PREDICATE_BLOCK BOOL(^)(ObjectType)
 #define MAP_BLOCK id(^)(ObjectType)
 
@@ -68,6 +69,9 @@
 - (NSDictionary <id,ObjectType> *)indexByBlock:(MAP_BLOCK)blk;
 
 - (NSArray *)flattenedArray;
+
+- (ObjectType)min:(COMPARE_BLOCK)comparator;
+- (ObjectType)max:(COMPARE_BLOCK)comparator;
 
 - (NSArray <ObjectType> *)select:(PREDICATE_BLOCK)predicate;
 - (NSArray <ObjectType> *)reject:(PREDICATE_BLOCK)predicate;

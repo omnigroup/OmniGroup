@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,22 @@
 
 #import <AppKit/NSPopUpButton.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 // As a special case, NSViews in the responder chain can implement -menuForContextControl: and not -targetViewForContextControl: (and they will be used for the view).
 @protocol OAContextControlDelegate <NSObject>
-- (NSMenu *)menuForContextControl:(NSControl *)control;
-- (NSView *)targetViewForContextControl:(NSControl *)control;
+- (NSMenu * _Nullable)menuForContextControl:(NSControl *)control;
+- (NSView * _Nullable)targetViewForContextControl:(NSControl *)control;
 @end
 
 extern NSString *OAContextControlToolTip(void);
 extern NSMenu *OAContextControlNoActionsMenu(void);
-extern void OAContextControlGetMenu(id <OAContextControlDelegate> delegate, NSControl *control, NSMenu **outMenu, NSView **outTargetView);
+
+@interface OAContextControlMenuAndView : NSObject
+@property(nonatomic,strong,nullable) NSMenu *menu;
+@property(nonatomic,strong,nullable) NSView *targetView;
+@end
+
+extern OAContextControlMenuAndView *OAContextControlGetMenu(id <OAContextControlDelegate> delegate, NSControl *control);
+
+NS_ASSUME_NONNULL_END

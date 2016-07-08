@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,10 @@
 // $Id$
 
 #import <Foundation/NSURL.h>
+
+#import <OmniFoundation/NSString-OFURLEncoding.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSFileManager;
 
@@ -26,8 +30,6 @@ extern BOOL OFURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2);
 extern NSString *OFStandardizedPathForFileURL(NSURL *url, BOOL followFinalSymlink);
 extern BOOL OFURLContainsURL(NSURL *containerURL, NSURL *url);
 extern NSString *OFFileURLRelativePath(NSURL *baseURL, NSURL *fileURL);
-
-#import <OmniFoundation/NSString-OFURLEncoding.h>
 
 extern BOOL OFGetBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSError **outError);
 
@@ -66,11 +68,12 @@ typedef BOOL (^OFScanPathExtensionIsPackage)(NSString *pathExtension);
 typedef void (^OFScanDirectoryItemHandler)(NSFileManager *fileManager, NSURL *fileURL);
 typedef BOOL (^OFScanErrorHandler)(NSURL *fileURL, NSError *error); // Return YES to continue scan, NO to stop.
 extern void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
-                            OFScanDirectoryFilter filterBlock,
+                            _Nullable OFScanDirectoryFilter filterBlock,
                             OFScanPathExtensionIsPackage pathExtensionIsPackage,
                             OFScanDirectoryItemHandler itemHandler,
                             OFScanErrorHandler errorHandler);
 
 // Returns a new block that will report the given extensions as packages and use OFUTI functions to determine the others (caching them). The block returned should be used for only a short period (like a call to OFScanDirectory) since the set of known package extensions may change based on what other clients know about (in OmniFileExchange, anyway).
-extern OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet *packageExtensions);
+extern OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Nullable packageExtensions);
 
+NS_ASSUME_NONNULL_END

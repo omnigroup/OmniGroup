@@ -199,6 +199,9 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 {
+    // Treat URL schemes as case insensitive
+    urlScheme = [urlScheme lowercaseString];
+    
     NSArray *urlTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleURLTypes"];
     for (NSDictionary *urlType in urlTypes) {
         NSArray *urlSchemes = [urlType objectForKey:@"CFBundleURLSchemes"];

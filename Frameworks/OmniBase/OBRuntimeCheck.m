@@ -167,6 +167,11 @@ static BOOL _methodSignaturesCompatible(Class cls, SEL sel, const char *sig1, co
             _signaturesMatch(sig1, sig2, "v24@0:4@8{CGPoint=ff}12I20", "v24@0:4@8{CGPoint=ff}12L20"))
             return YES;
         
+        if (sel == FIND_SEL(initWithLeftExpressions:rightExpressions:modifier:operators:options:) || sel == FIND_SEL(initWithLeftExpressions:rightExpressionAttributeType:modifier:operators:options:)) {
+            // Swift subclass of NSPredicateEditorRowTemplate. The difference is a Q versus a q. "@56@0:8@16Q24Q32@40Q48" vs. "@56@0:8@16Q24Q32@40q48".
+            return strcasecmp(sig1, sig2) == 0;
+        }
+
         // <bug:///122392> (Bug: Swift subclass of Obj-C class:  .cxx_destruct has conflicting type signatures between class and its superclass)
         // Swift generated code includes a cxx_destruct method that mismatches some superclasses (e.g. UIGestureRecognizer)
         // This method shouldn't be our problem, regardless of where it appears or what signature it has
@@ -850,12 +855,12 @@ static void _checkCopyWithZoneImplementations(void)
 // We don't need these to happen immediately, and they can happen multiple times while bundles are loading, so we queue them up.
 static void _OBPerformRuntimeChecks(void)
 {
-    NSLog(@"*** Starting OBPerformRuntimeChecks");
+//    NSLog(@"*** Starting OBPerformRuntimeChecks");
 
     NSString *executableName = [[[NSBundle mainBundle] executablePath] lastPathComponent];
     BOOL shouldCheck = ![@"ibtool" isEqualToString:executableName] && ![@"Interface Builder" isEqualToString:executableName] && ![@"IBCocoaSimulator" isEqualToString:executableName];
     if (shouldCheck) {
-        NSTimeInterval runtimeChecksStart = [NSDate timeIntervalSinceReferenceDate];
+//        NSTimeInterval runtimeChecksStart = [NSDate timeIntervalSinceReferenceDate];
 
         // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
         MethodSignatureConflictCount = 0;
@@ -896,14 +901,14 @@ static void _OBPerformRuntimeChecks(void)
         OBASSERT(MethodSignatureConflictCount == 0);
         OBASSERT(MethodMultipleImplementationCount == 0);
 
-        if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
-            NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
+//        if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
+//            NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
 
         OBASSERT(DeprecatedMethodImplementationCount == 0);
 
         free(classes);
 
-        NSLog(@"*** OBPerformRuntimeChecks finished in %.2f seconds.", [NSDate timeIntervalSinceReferenceDate] - runtimeChecksStart);
+//        NSLog(@"*** OBPerformRuntimeChecks finished in %.2f seconds.", [NSDate timeIntervalSinceReferenceDate] - runtimeChecksStart);
     }
 }
 

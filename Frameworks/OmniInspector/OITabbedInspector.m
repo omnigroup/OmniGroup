@@ -55,26 +55,22 @@ RCS_ID("$Id$")
 - (void)awakeFromNib;
 {
     NSView *inspectorView = self.view;
-#ifdef OITabbedInspectorUnifiedLookDefaultsKey
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
-        NSArray *subviews = [inspectorView subviews];
-        for(NSView *aView in subviews) {
-            if ([aView isKindOfClass:[NSBox class]]) {
-                [aView setHidden:YES];
-                break;
-            }
+    NSArray *subviews = [inspectorView subviews];
+    for(NSView *aView in subviews) {
+        if ([aView isKindOfClass:[NSBox class]]) {
+            [aView setHidden:YES];
+            break;
         }
     }
-#endif
-
+    
     float inspectorWidth;
-
+    
     OIInspectorController *inspectorController = self.inspectorController;
     if (inspectorController)
         inspectorWidth = [inspectorController.inspectorRegistry inspectorWidth];
     else
         inspectorWidth = [[OIInspectorRegistry inspectorRegistryForMainWindow] inspectorWidth];
-
+    
     NSRect inspectionFrame = [inspectorView frame];
     OBASSERT(inspectionFrame.size.width <= inspectorWidth); // OK to make views from nibs wider, but probably indicates a problem if we are making them smaller.
     inspectionFrame.size.width = inspectorWidth;
@@ -97,20 +93,7 @@ RCS_ID("$Id$")
     
     OIButtonMatrixBackgroundView *buttonMatrixBackground = (id)[buttonMatrix superview];
     OBASSERT([buttonMatrixBackground isKindOfClass:[OIButtonMatrixBackgroundView class]]);
-#ifdef OITabbedInspectorUnifiedLookDefaultsKey
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
-        [buttonMatrixBackground setBackgroundColor:nil];
-    } else
-#endif
-    {
-        NSColor *toolbarBackgroundColor;
-        if ([[NSColor class] respondsToSelector:@selector(toolbarBackgroundColor)])
-            toolbarBackgroundColor = [(id)[NSColor class] performSelector:@selector(toolbarBackgroundColor)];
-        else
-            toolbarBackgroundColor = [NSColor windowBackgroundColor];
-        [buttonMatrixBackground setBackgroundColor:toolbarBackgroundColor];
-        [(OITabMatrix *)buttonMatrix setTabMatrixHighlightStyle:OITabMatrixCellsHighlightStyle];
-    }
+    [buttonMatrixBackground setBackgroundColor:nil];
     
     [self _createButtonCellForAllTabs];
     [self _layoutSelectedTabs]; // updates the inspection set in the tabs

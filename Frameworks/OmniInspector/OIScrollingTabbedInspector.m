@@ -76,7 +76,7 @@ RCS_ID("$Id$")
         [contentView addConstraint:self.topConstraint];
     }
     
-    if (self.bottomConstraint.secondItem != firstInspectorView) {
+    if (self.bottomConstraint.secondItem != lastInspectorView) {
         if (self.bottomConstraint)
             [contentView removeConstraint:self.bottomConstraint];
         

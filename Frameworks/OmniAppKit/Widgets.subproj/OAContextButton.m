@@ -132,9 +132,7 @@ RCS_ID("$Id$");
 - (NSMenu *)locateActionMenu;
 {
     id <OAContextControlDelegate> delegate = _weak_delegate;
-    NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, NULL);
-    return menu;
+    return OAContextControlGetMenu(delegate, self).menu;
 }
 
 /*" Returns YES if the receiver can find a menu to pop up.  Useful if you have an instance in a toolbar and wish to validate whether it can pop up anything. "*/
@@ -151,9 +149,9 @@ RCS_ID("$Id$");
         return;
     
     id <OAContextControlDelegate> delegate = _weak_delegate;
-    NSView *targetView;
-    NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, &targetView);
+    OAContextControlMenuAndView *menuAndView = OAContextControlGetMenu(delegate, self);
+    NSMenu *menu = menuAndView.menu;
+    NSView *targetView = menuAndView.targetView;
     
     if (targetView == nil)
         menu = OAContextControlNoActionsMenu();

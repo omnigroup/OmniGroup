@@ -133,8 +133,9 @@ static inline CGFloat OQAffineTransformGetDilation(CGAffineTransform m)
 }
 
 // SVG-style paths
-CGPathRef OQCGPathCreateFromSVGPath(const unsigned char *d, size_t d_length);
-int OQCGContextAddSVGPath(CGContextRef cgContext, const unsigned char *d, size_t d_length);
+extern CGPathRef OQCGPathCreateFromSVGPath(const unsigned char *d, size_t d_length) CF_RETURNS_RETAINED;
+extern CGPathRef OQCGPathCreateFromSVGPathString(NSString *string) CF_RETURNS_RETAINED;
+extern int OQCGContextAddSVGPath(CGContextRef cgContext, const unsigned char *d, size_t d_length);
 
 // SVG-style arcs
 struct OQEllipseParameters {

@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,9 +26,3 @@ typedef enum {
 - (BOOL)isExact;  // Returns YES for integers and (precise) rationals; returns NO for floating point
 
 @end
-
-// This class exists due to Radar #3478597 where NaN numbers aren't correctly compared.  This returns something that is truly 'Not a Number' and thus the CF comparison works out better.  Of course, it really isn't a NSNumber, so care must be taken that it isn't used as one.
-@interface OFNaN : NSObject
-+ (OFNaN *)sharedNaN;
-@end
-

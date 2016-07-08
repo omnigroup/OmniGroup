@@ -106,6 +106,7 @@ RCS_ID("$Id$");
         }
         
         icon = [_exporter iconForUTI:[fileInfo UTI]];
+        // Not so sure about this assert. For example when we're browing through a WebDAV there is no reason to think we will have an icon for every UTI.
         OBASSERT(icon);
     }
     if (isFolder) {

@@ -96,8 +96,8 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)didLoad;
 {
-    [[OFController sharedController] queueSelector:@selector(_loadCookies) forObject:(id)self whenStatus:OFControllerInitializedStatus];
-    [[OFController sharedController] queueSelector:@selector(saveCookies) forObject:(id)self whenStatus:OFControllerTerminatingStatus];
+    [[OFController sharedController] queueSelector:@selector(_loadCookies) forObject:(id)self whenStatus:OFControllerStatusInitialized];
+    [[OFController sharedController] queueSelector:@selector(saveCookies) forObject:(id)self whenStatus:OFControllerStatusTerminating];
 }
 
  + (void)readDefaults;

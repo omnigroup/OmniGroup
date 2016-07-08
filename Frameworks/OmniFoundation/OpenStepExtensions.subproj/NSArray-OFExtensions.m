@@ -470,6 +470,26 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
+- (id)min:(NSComparator)comparator;
+{
+    id minimumValue = nil;
+    for (id value in self) {
+        if (!minimumValue || comparator(minimumValue, value) == NSOrderedDescending)
+            minimumValue = value;
+    }
+    return minimumValue;
+}
+
+- (id)max:(NSComparator)comparator;
+{
+    id maximumValue = nil;
+    for (id value in self) {
+        if (!maximumValue || comparator(maximumValue, value) == NSOrderedAscending)
+            maximumValue = value;
+    }
+    return maximumValue;
+}
+
 - (NSArray *)select:(OFPredicateBlock)predicate;
 {
     NSMutableArray *result = [NSMutableArray array];

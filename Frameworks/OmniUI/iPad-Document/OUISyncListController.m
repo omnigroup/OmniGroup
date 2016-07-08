@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerFilter.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniUIDocument/OUIReplaceRenameDocumentAlertController.h>
 #import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 
@@ -28,8 +29,6 @@ RCS_ID("$Id$");
     /* these are used when the download is delayed in order to scroll the view to the visible */
     NSURL *_exportURL;
     NSIndexPath *_exportIndexPath;
-    
-    OUIReplaceDocumentAlert *_replaceDocumentAlert;
 }
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
@@ -191,39 +190,19 @@ RCS_ID("$Id$");
     // Should override in subclass.
 }
 
-#pragma mark - OUIReplaceDocumentAlert
-
-- (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
-{
-    _replaceDocumentAlert = nil;
-    
-    switch (buttonIndex) {
-        case 0: /* Cancel */
-            self.navigationItem.rightBarButtonItem.enabled = YES;
-            break;
-            
-        case 1: /* Replace */
-        {
-            [self _exportToURL:documentURL];
-            break;
-        }
-        case 2: /* Add */
-        {
-            [self _exportToNewPathGeneratedFromURL:documentURL];
-            break;
-        }
-        default:
-            break;
-    }
-}
-
 #pragma mark - Private
 
 - (void)_displayDuplicateFileAlertForFile:(NSURL *)fileURL;
 {
-    OBASSERT(_replaceDocumentAlert == nil); // this should never happen
-    _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:fileURL];
-    [_replaceDocumentAlert showFromViewController:self];
+    OUIReplaceRenameDocumentAlertController *replaceDocumentAlert = [OUIReplaceRenameDocumentAlertController replaceRenameAlertForURL:fileURL withCancelHandler:^{
+        self.navigationItem.rightBarButtonItem.enabled = YES;
+    } replaceHandler:^{
+        [self _exportToURL:fileURL];
+    } renameHandler:^{
+        [self _exportToNewPathGeneratedFromURL:fileURL];
+    }];
+
+    [self presentViewController:replaceDocumentAlert animated:YES completion:^{}];
 }
 
 - (void)_cancelDownloadEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;

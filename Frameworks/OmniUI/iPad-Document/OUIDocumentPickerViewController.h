@@ -19,7 +19,7 @@
 
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate, OUIDocumentExporterHost>
+@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIDocumentExporterHost>
 
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker scope:(ODSScope *)scope;
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker folderItem:(ODSFolderItem *)folderItem;

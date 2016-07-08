@@ -10,6 +10,9 @@
 /* error description */
 "Cannot move file." = "无法移动文件。";
 
+/* bad password error reason */
+"Could not decode encryption document key." = "无法解码加密文档密钥。";
+
 /* error description */
 "Could not decrypt file." = "无法解密文件。";
 
@@ -28,6 +31,12 @@
 /* error reason */
 "Failed to move \"%@\" to \"%@\"." = "未能将“%1$@”移至“%2$@”。";
 
+/* bad password error description */
+"Incorrect encryption password." = "加密密码不正确。";
+
+/* error description */
+"Internal error updating keychain" = "更新密钥链时发生内部错误";
+
 /* error reason - listing a directory that doesn't exist
    error reason - listing contents of a nonexistent directory */
 "No document exists at \"%@\"." = "“%@”无文稿。";
@@ -40,6 +49,9 @@
 
 /* error reason */
 "Please make sure that the destination folder exists." = "请确保目标文件夹存在。";
+
+/* keychain item description - used in keychain access control prompt */
+"Sync Encryption Key" = "同步加密密钥";
 
 /* error description */
 "Unable to delete file." = "无法删除文件。";

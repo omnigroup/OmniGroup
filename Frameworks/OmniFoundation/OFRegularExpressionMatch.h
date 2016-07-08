@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012, 2013 The Omni Group. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
 - initWithTextCheckingResult:(NSTextCheckingResult *)textCheckingResult string:(NSString *)string;
 - initWithTextCheckingResult:(NSTextCheckingResult *)textCheckingResult stringScanner:(OFStringScanner *)stringScanner;
 
+@property(nonatomic,readonly) NSTextCheckingResult *textCheckingResult;
 @property(nonatomic,readonly) NSRange matchRange; // Range of the full match
 @property(nonatomic,readonly) NSString *matchString;
 

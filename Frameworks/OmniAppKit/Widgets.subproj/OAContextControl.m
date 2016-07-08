@@ -15,6 +15,19 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
+@implementation OAContextControlMenuAndView
+
+- (void)dealloc;
+{
+    [_menu release];
+    [_targetView release];
+    [super dealloc];
+}
+
+@end
+
 NSString *OAContextControlToolTip(void)
 {
     NSBundle *bundle = [NSBundle bundleWithIdentifier:@"com.omnigroup.OmniAppKit"];
@@ -36,41 +49,42 @@ NSMenu *OAContextControlNoActionsMenu(void)
     return noActionsMenu;
 }
 
-void OAContextControlGetMenu(id delegate, NSControl *control, NSMenu **outMenu, NSView **outTargetView)
+OAContextControlMenuAndView *OAContextControlGetMenu(id <OAContextControlDelegate> delegate, NSControl *control)
 {
-    NSMenu *menu = nil;
-    NSView *targetView = nil;
+    OAContextControlMenuAndView *result = [[[OAContextControlMenuAndView alloc] init] autorelease];
 
     if (delegate) {
         // The delegate must respond to both
-        targetView = [delegate targetViewForContextControl:control];
-        menu       = [delegate menuForContextControl:control];
-    } else {
-        // TODO: Check if any of the menu items in the resulting menu are valid?
+        result.targetView = [delegate targetViewForContextControl:control];
+        result.menu = [delegate menuForContextControl:control];
+        return result;
+    }
 
-        id <OAContextControlDelegate> target = [[NSApplication sharedApplication] targetForAction:@selector(menuForContextControl:)];
-        if (target) {
-            if ([target isKindOfClass:[NSView class]]) {
-                // Only needs to implement the menu generating method (and we checked for that with -targetForAction:).
-                targetView = (NSView *)target;
-                menu       = [(id <OAContextControlDelegate>)targetView menuForContextControl:control];
-            } else {
-                // Not a view, must respond to both
-                targetView = [target targetViewForContextControl:control];
-                menu       = [target menuForContextControl:control];
-            }
-        } else if ((target = [[NSApplication sharedApplication] targetForAction:@selector(menu)])) {
-            if ([target isKindOfClass:[NSView class]]) {
-                targetView = (NSView *)target;
-                menu       = [targetView menu];
-            } else {
-                // This can happen when the responder we get to -menu is the shared NSApplication
-            }
+    // TODO: Check if any of the menu items in the resulting menu are valid?
+
+    id <OAContextControlDelegate> target = [[NSApplication sharedApplication] targetForAction:@selector(menuForContextControl:)];
+    if (target) {
+        if ([target isKindOfClass:[NSView class]]) {
+            // Only needs to implement the menu generating method (and we checked for that with -targetForAction:).
+            NSView *targetView = (NSView *)target;
+            result.targetView = targetView;
+            result.menu = [(id <OAContextControlDelegate>)targetView menuForContextControl:control];
+        } else {
+            // Not a view, must respond to both
+            result.targetView = [target targetViewForContextControl:control];
+            result.menu = [target menuForContextControl:control];
+        }
+    } else if ((target = [[NSApplication sharedApplication] targetForAction:@selector(menu)])) {
+        if ([target isKindOfClass:[NSView class]]) {
+            NSView *targetView = (NSView *)target;
+            result.targetView = targetView;
+            result.menu = [targetView menu];
+        } else {
+            // This can happen when the responder we get to -menu is the shared NSApplication
         }
     }
 
-    if (outMenu)
-        *outMenu = menu;
-    if (outTargetView)
-        *outTargetView = targetView;
+    return result;
 }
+
+NS_ASSUME_NONNULL_END

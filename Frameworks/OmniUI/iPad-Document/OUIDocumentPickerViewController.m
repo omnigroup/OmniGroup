@@ -33,6 +33,7 @@
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 #import <OmniUIDocument/OmniUIDocumentAppearance.h>
 #import <OmniUIDocument/OUIDocumentPreviewingViewController.h>
+#import <OmniUIDocument/OUIReplaceRenameDocumentAlertController.h>
 #import "OUIDocumentOpenAnimator.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocument-Internal.h"
@@ -88,8 +89,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 @implementation OUIDocumentPickerViewController
 {
-    OUIReplaceDocumentAlert *_replaceDocumentAlert;
- 
     UILabel *_titleLabelToUseInCompactWidth;
     UIToolbar *_toolbar;
     
@@ -691,22 +690,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
-{
-    if (buttonIndex == 0) {
-        return;
-    }
-    
-    if (buttonIndex == 1) {
-        [self addDocumentToSelectedScopeFromURL:documentURL withOption:ODSStoreAddByCopyingSourceToReplaceDestinationURL openNewDocumentWhenDone:!alert.dontOpenSampleDocuments completion:nil];
-    }
-    if (buttonIndex == 2) {
-        [self addDocumentToSelectedScopeFromURL:documentURL withOption:ODSStoreAddByCopyingSourceToAvailableDestinationURL openNewDocumentWhenDone:!alert.dontOpenSampleDocuments completion:nil];
-     }
-    
-    _replaceDocumentAlert = nil;
-}
-
 - (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)())completion
 {
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
@@ -752,9 +735,13 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     ODSItem *existingItem = [_folderItem childItemWithFilename:[url lastPathComponent]];
     if (existingItem) {
-        OBASSERT(_replaceDocumentAlert == nil); // this should never happen
-        _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:url];
-        [_replaceDocumentAlert showFromViewController:self];
+        OUIReplaceRenameDocumentAlertController *replaceDocumentAlert = [OUIReplaceRenameDocumentAlertController replaceRenameAlertForURL:url withCancelHandler:nil replaceHandler:^{
+            [self addDocumentToSelectedScopeFromURL:url withOption:ODSStoreAddByCopyingSourceToReplaceDestinationURL openNewDocumentWhenDone:YES completion:nil];
+        } renameHandler:^{
+            [self addDocumentToSelectedScopeFromURL:url withOption:ODSStoreAddByCopyingSourceToAvailableDestinationURL openNewDocumentWhenDone:YES completion:nil];
+        }];
+
+        [self presentViewController:replaceDocumentAlert animated:YES completion:^{}];
         completionHandler();
         return;
     }
@@ -815,10 +802,13 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     if (!copyAndOpen) {
         ODSItem *existingItem = [_folderItem childItemWithFilename:localizedFileName];
         if (existingItem) {
-            OBASSERT(_replaceDocumentAlert == nil); // this should never happen
-            _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:url];
-            _replaceDocumentAlert.dontOpenSampleDocuments = YES;
-            [_replaceDocumentAlert showFromViewController:self];
+            OUIReplaceRenameDocumentAlertController *replaceDocumentAlert = [OUIReplaceRenameDocumentAlertController replaceRenameAlertForURL:url withCancelHandler:nil replaceHandler:^{
+                [self addDocumentToSelectedScopeFromURL:url withOption:ODSStoreAddByCopyingSourceToReplaceDestinationURL openNewDocumentWhenDone:NO completion:nil];
+            } renameHandler:^{
+                [self addDocumentToSelectedScopeFromURL:url withOption:ODSStoreAddByCopyingSourceToAvailableDestinationURL openNewDocumentWhenDone:NO completion:nil];
+            }];
+            
+            [self presentViewController:replaceDocumentAlert animated:YES completion:^{}];
             return;
         }
     }

@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,20 +15,18 @@
 #import <CoreGraphics/CGGeometry.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSMutableDictionary, NSDictionary;
 
 @interface OFPoint : NSObject <NSCopying /*, NSCoding*/>
-{
-@private
-    CGPoint _value;
-}
 
 + (OFPoint *)pointWithPoint:(CGPoint)point;
 
 - initWithPoint:(CGPoint)point;
 - initWithString:(NSString *)string;
 
-- (CGPoint)point;
+@property(nonatomic,readonly) CGPoint point;
 
 - (NSMutableDictionary *)propertyListRepresentation;
 + (OFPoint *)pointFromPropertyListRepresentation:(NSDictionary *)dict;
@@ -37,3 +35,6 @@
 
 // Value transformer
 extern NSString * const OFPointToPropertyListTransformerName;
+
+NS_ASSUME_NONNULL_END
+

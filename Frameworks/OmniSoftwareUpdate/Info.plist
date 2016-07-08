@@ -26,6 +26,9 @@
 	<string>2015</string>
 	<key>OFRegistrations</key>
 	<dict>
+<!--
+#ifdef OMNI_BUILDING_FOR_MAC
+-->
 		<key>OAPreferenceController</key>
 		<dict>
 			<key>OSUPreferenceClient</key>
@@ -58,6 +61,9 @@
 				<string>Automatic Software Update</string>
 			</dict>
 		</dict>
+<!--
+#endif
+-->
 	</dict>
 	<key>OFRequiredSoftwareVersions</key>
 	<dict>

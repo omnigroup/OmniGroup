@@ -30,6 +30,7 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/NSError-OFExtensions.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFBindingPoint.h>
 #import <OmniFoundation/OFCredentials.h>
@@ -1179,9 +1180,9 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
 {
     OBPRECONDITION(viewController);
     
-    if ([syncError hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted]) {
-        NSURLAuthenticationChallenge *challenge = [[syncError userInfo] objectForKey:ODAVCertificateTrustChallengeErrorKey];
-        OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
+    NSError *serverCertificateError = syncError.serverCertificateError;
+    if (serverCertificateError != nil) {
+        OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForError:serverCertificateError];
         certAlert.shouldOfferTrustAlwaysOption = YES;
         certAlert.storeResult = YES;
         if (retryBlock) {

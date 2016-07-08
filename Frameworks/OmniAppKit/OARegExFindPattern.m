@@ -16,6 +16,8 @@ RCS_ID("$Id$")
 @implementation OARegExFindPattern
 {
     NSRegularExpression *_regularExpression;
+
+    NSString *_lastString;
     OFRegularExpressionMatch *_lastMatch;
     BOOL _isBackwards;
     NSInteger _selectedCaptureGroup;
@@ -52,9 +54,12 @@ RCS_ID("$Id$")
 - (BOOL)findInString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
 {
     _lastMatch = nil;
-    
+    _lastString = nil;
+
     if (aString == nil)
         return NO;
+
+    _lastString = [aString copy];
 
     OFRegularExpressionMatch *match;
     if (!(match = [_regularExpression of_firstMatchInString:aString]))
@@ -92,61 +97,11 @@ RCS_ID("$Id$")
 
 - (NSString *)replacementStringForLastFind;
 {
-    OBFinishPortingLater("Use the NSRegularExpression template replacement methods? These take $0 instead of \0");
-    
-    OFStringScanner *scanner;
-    NSMutableString *interpolatedString = [NSMutableString string];
-    
-    scanner = [[OFStringScanner alloc] initWithString:_replacementString];
-    while (scannerHasData(scanner)) {
-        NSUInteger captureGroupIndex = 0;
-        BOOL readNumber = NO;
-        unichar c;
+    OBPRECONDITION(_lastMatch);
+    OBPRECONDITION(_lastString);
 
-        [interpolatedString appendString:[scanner readFullTokenWithDelimiterCharacter:'\\']];
-        if (scannerReadCharacter(scanner) != '\\')
-            break;
-        
-        c = scannerPeekCharacter(scanner);
-        if ((c >= '0') && (c <= '9')) {
-            scannerSkipPeekedCharacter(scanner);
-            captureGroupIndex = (c - '0');
-            readNumber = YES;
-        } else if (c == '{') {
-            scannerSkipPeekedCharacter(scanner);
-            while ((c = scannerPeekCharacter(scanner)) && (c >= '0') && (c <= '9')) {
-                scannerSkipPeekedCharacter(scanner);
-                captureGroupIndex *= 10;
-                captureGroupIndex += (c - '0');
-                readNumber = YES;
-            }
-            if (c == '}')
-                scannerSkipPeekedCharacter(scanner);
-        } else if (c == 't') {
-            scannerSkipPeekedCharacter(scanner);
-            [interpolatedString appendString:@"\t"];
-        } else if (c == 'n') {
-            scannerSkipPeekedCharacter(scanner);
-            [interpolatedString appendString:@"\n"];
-        } else if (c == 'r') {
-            scannerSkipPeekedCharacter(scanner);
-            [interpolatedString appendString:@"\r"];
-        } else if (c == '\\') {
-            scannerSkipPeekedCharacter(scanner);
-            [interpolatedString appendString:@"\\"];
-        }
-        
-        if (readNumber && captureGroupIndex <= [_regularExpression numberOfCaptureGroups]) {
-            NSString *subString;
-            
-            if (captureGroupIndex)
-                subString = [_lastMatch captureGroupAtIndex:(captureGroupIndex - 1)];
-            else	
-                subString = [_lastMatch matchString];
-            [interpolatedString appendString:subString];
-        } 
-    }
-    return interpolatedString;
+    // Our previous hand-coded support for this used '\0' style patterns, while NSRegularExpression uses '$0' style.
+    return [_regularExpression replacementStringForResult:_lastMatch.textCheckingResult inString:_lastString offset:0 template:_replacementString];
 }
 
 // Allow the caller to inspect the contents of the find pattern (very helpful when they cannot efficiently reduce their target content to a string)

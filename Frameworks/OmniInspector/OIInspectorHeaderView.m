@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,6 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniInspector/OIInspectorGroup.h>
 #import <OmniInspector/OIInspectorRegistry.h>
-#import <OmniInspector/OITabbedInspector.h>  // For OITabbedInspectorUnifiedLookDefaultsKey
 
 RCS_ID("$Id$")
 
@@ -207,43 +206,19 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (void)drawBackgroundImageForBounds:(NSRect)backgroundBounds inRect:(NSRect)dirtyRect;
 {
-    OIInspectorHeaderImageHeight heightIndex = NSHeight(self.bounds) == OIInspectorStartingHeaderButtonHeight ? OIInspectorHeaderImageHeightNormal : OIInspectorHeaderImageHeightTall;
     OIInspectorKeyStatus keyStatus = (OIInspectorKeyStatus)[[self window] isKeyWindow];
-    OIInspectorHeaderImageState state = isClicking && [self _allowToggleExpandedness] && !overClose ? OIInspectorHeaderImageStatePressed : OIInspectorHeaderImageStateNormal;
     
-#ifdef OITabbedInspectorUnifiedLookDefaultsKey
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
-        NSRect gradient = backgroundBounds;
-        gradient.origin.y += 1;
-        gradient.size.height -= 2;
-        
-        NSGradient *blend = keyStatus? unifiedGradientKey : unifiedGradientNonKey;
-        [blend drawInRect:gradient angle:90];
-        
-        [[NSColor colorWithCalibratedWhite:(keyStatus) ? 0.86f : 0.91f alpha:1.0f] set];
-        NSRectFill(NSMakeRect(0,0, backgroundBounds.size.width, 1));
-        [[NSColor colorWithCalibratedWhite:(keyStatus) ? .25f : .53f  alpha:1.0f] set];
-        NSRectFill(NSMakeRect(0,backgroundBounds.size.height-1, backgroundBounds.size.width, 1));
-        return;
-    }
-#endif
+    NSRect gradient = backgroundBounds;
+    gradient.origin.y += 1;
+    gradient.size.height -= 2;
     
-    NSImage *backgroundImage = _headerImages[heightIndex][keyStatus][state];
+    NSGradient *blend = keyStatus? unifiedGradientKey : unifiedGradientNonKey;
+    [blend drawInRect:gradient angle:90];
     
-    // Kludge: Don't stretch the bottom 1px of the header image, because it's a hairline instead of a gradient. Might want to do this a different way.
-    NSSize gradientSize = [backgroundImage size];
-    if (gradientSize.height < backgroundBounds.size.height) {
-        NSRect gradient, hairline, hairline2;
-        NSDivideRect(backgroundBounds, &hairline, &gradient, 1.0f, NSMinYEdge);
-        NSDivideRect(gradient, &hairline2, &gradient, 1.0f, NSMaxYEdge);
-        [backgroundImage drawFlippedInRect:gradient fromRect:(NSRect){{0,1},{gradientSize.width,gradientSize.height-2}} operation:NSCompositeCopy];
-        if (NSIntersectsRect(hairline, dirtyRect))
-            [backgroundImage drawFlippedInRect:hairline fromRect:(NSRect){{0,gradientSize.height-1},{gradientSize.width,1}} operation:NSCompositeCopy];
-        if (NSIntersectsRect(hairline2, dirtyRect))
-            [backgroundImage drawFlippedInRect:hairline2 fromRect:(NSRect){{0,0},{gradientSize.width,1}} operation:NSCompositeCopy];
-    } else {
-        [backgroundImage drawFlippedInRect:backgroundBounds operation:NSCompositeCopy];
-    }
+    [[NSColor colorWithCalibratedWhite:(keyStatus) ? 0.86f : 0.91f alpha:1.0f] set];
+    NSRectFill(NSMakeRect(0,0, backgroundBounds.size.width, 1));
+    [[NSColor colorWithCalibratedWhite:(keyStatus) ? .25f : .53f  alpha:1.0f] set];
+    NSRectFill(NSMakeRect(0,backgroundBounds.size.height-1, backgroundBounds.size.width, 1));
 }
 
 - (void)drawRect:(NSRect)aRect;

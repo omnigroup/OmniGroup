@@ -35,29 +35,19 @@ RCS_ID("$Id$");
     }];
 }
 
-- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
+- (NSSet *)setByPerformingBlock:(OFSetObjectMap)block
 {
-    NSMutableSet *resultSet = nil;
-    id singleResult = nil;
-    
-    for (id object in self) {
-        id result = block(object);
-        if (!result)
-            continue;
-        
-        if (resultSet)
-            [resultSet addObject:result];
-        else if (singleResult)
-            resultSet = [NSMutableSet setWithObjects:singleResult, result, nil];
-        else
-            singleResult = result;
+    NSMutableSet *result = [NSMutableSet set];
+
+    for (id oneObject in self) {
+
+        id oneResult = block(oneObject);
+        if (oneResult) {
+            [result addObject:oneResult];
+        }
     }
-    
-    if (resultSet)
-        return resultSet;
-    if (singleResult)
-        return [NSSet setWithObject:singleResult];
-    return [NSSet set];
+
+    return result;
 }
 
 - (NSSet *)setByRemovingObject:(id)anObject;
@@ -77,7 +67,7 @@ RCS_ID("$Id$");
     return into;
 }
 
-- (NSArray *)sortedArrayUsingComparator:(NSComparator)comparator;
+- (NSArray *)sortedArrayUsingComparator:(OFSetObjectComparator)comparator;
 {
     NSMutableArray *into = [NSMutableArray arrayWithCapacity:[self count]];
     for (id object in self) {
@@ -93,7 +83,7 @@ RCS_ID("$Id$");
     CFSetApplyFunction((CFSetRef)self, applier, context);
 }
 
-- (id)any:(OFPredicateBlock)predicate;
+- (id)any:(OFSetObjectPredicate)predicate;
 {
     for (id obj in self) {
         if (predicate(obj))
@@ -102,7 +92,7 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- (BOOL)all:(OFPredicateBlock)predicate;
+- (BOOL)all:(OFSetObjectPredicate)predicate;
 {
     for (id obj in self) {
         if (!predicate(obj))
@@ -111,7 +101,7 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (id)min:(NSComparator)comparator;
+- (id)min:(OFSetObjectComparator)comparator;
 {
     id minimumValue = nil;
     for (id value in self) {
@@ -121,7 +111,7 @@ RCS_ID("$Id$");
     return minimumValue;
 }
 
-- (id)max:(NSComparator)comparator;
+- (id)max:(OFSetObjectComparator)comparator;
 {
     id maximumValue = nil;
     for (id value in self) {
@@ -131,7 +121,7 @@ RCS_ID("$Id$");
     return maximumValue;
 }
 
-- (id)minValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+- (id)minValueForKey:(NSString *)key comparator:(OFSetObjectComparator)comparator;
 {
     id minimumValue = nil;
     for (id object in self) {
@@ -142,7 +132,7 @@ RCS_ID("$Id$");
     return minimumValue;
 }
 
-- (id)maxValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+- (id)maxValueForKey:(NSString *)key comparator:(OFSetObjectComparator)comparator;
 {
     id maximumValue = nil;
     for (id object in self) {
@@ -153,7 +143,7 @@ RCS_ID("$Id$");
     return maximumValue;
 }
 
-- (NSSet *)select:(OFPredicateBlock)predicate;
+- (NSSet *)select:(OFSetObjectPredicate)predicate;
 {
     NSMutableSet *matches = [NSMutableSet set];
     for (id obj in self)
@@ -162,7 +152,7 @@ RCS_ID("$Id$");
     return matches;
 }
 
-- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+- (NSDictionary *)indexByBlock:(OFSetObjectMap)blk;
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     
