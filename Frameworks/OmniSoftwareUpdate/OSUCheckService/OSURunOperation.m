@@ -114,14 +114,13 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     return url;
 }
 
-@interface OSUFetchOperation : NSObject <NSURLConnectionDelegate, NSURLConnectionDataDelegate>
+@interface OSUFetchOperation : NSObject <NSURLSessionDataDelegate>
 
 - initWithURL:(NSURL *)requestURL lookupCredential:(id <OSULookupCredential>)lookupCredential completionHandler:(OSURunOperationCompletionHandler)completionHandler;
 
 @property(nonatomic,readonly) id <OSULookupCredential> lookupCredential;
 @property(nonatomic,readonly) NSData *resourceData;
 @property(nonatomic,readonly) NSError *error;
-@property(nonatomic,readonly) NSURLResponse *response;
 @end
 
 // When running in the XPC service, we can't read the calling app's keychain (yay!). So, it needs to pass down the credential to use. Right now we have very minimal support for password-protected feeds -- you need to have visited the feed in Safari to get a password prompt, and then the calling app can see that and pass it down.
@@ -130,7 +129,8 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
 {
     NSURLRequest *_request;
     NSOperationQueue *_delegateQueue;
-    NSURLConnection *_connection;
+    NSURLSession *_session;
+    NSURLSessionDataTask *_dataTask;
     NSMutableData *_resourceData;
     OSURunOperationCompletionHandler _completionHandler;
     NSURLCredential *_credential;
@@ -155,7 +155,7 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
 
 - (void)start;
 {
-    OBPRECONDITION(_connection == nil);
+    OBPRECONDITION(_dataTask == nil);
     
     _delegateQueue = [[NSOperationQueue alloc] init];
     _delegateQueue.maxConcurrentOperationCount = 1;
@@ -163,16 +163,16 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     
     OSU_DEBUG_QUERY(1, "Performing check with URL %@", _request.URL);
 
-    _connection = [[NSURLConnection alloc] initWithRequest:_request delegate:self startImmediately:NO];
-    [_connection setDelegateQueue:_delegateQueue];
-    
-    [_connection start];
+    _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:_delegateQueue];
+    _dataTask = [_session dataTaskWithRequest:_request];
+    [_dataTask resume];
 }
 
 - (void)_finished;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    OBPRECONDITION(_connection, "Shouldn't be finished yet");
+    OBPRECONDITION(_session, "Shouldn't be finished yet");
+    OBPRECONDITION(_dataTask, "Shouldn't be finished yet");
     OBPRECONDITION(_completionHandler, "Shouldn't be finished yet");
     
     NSURL *url = _request.URL;
@@ -182,15 +182,18 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     [resultDict setObject:[url absoluteString] forKey:OSUCheckResultsURLKey];
     
     OBASSERT_IF(_resourceData == nil, _error);
-    
-    if ([_response MIMEType])
-        [resultDict setObject:[_response MIMEType] forKey:OSUCheckResultsMIMETypeKey];
-    if ([_response textEncodingName])
-        [resultDict setObject:[_response textEncodingName] forKey:OSUCheckResultsTextEncodingNameKey];
+
+    NSURLResponse *response = _dataTask.response;
+    OBASSERT(response);
+
+    if ([response MIMEType])
+        [resultDict setObject:[response MIMEType] forKey:OSUCheckResultsMIMETypeKey];
+    if ([response textEncodingName])
+        [resultDict setObject:[response textEncodingName] forKey:OSUCheckResultsTextEncodingNameKey];
     
     NSError *error = _error;
-    if ([_response isKindOfClass:[NSHTTPURLResponse class]]) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)_response;
+    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         
         NSInteger statusCode = [httpResponse statusCode];
         
@@ -235,59 +238,34 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     // Clean up possible retain cycles
     _completionHandler = nil;
     _delegateQueue = nil;
-    _connection = nil;
+
+    _dataTask = nil;
+    _session = nil;
     
     handler(resultDict, nil);
 }
 
-#pragma mark - NSURLConnectionDelegate
+#pragma mark - NSURLSessionTaskDelegate
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
+didCompleteWithError:(nullable NSError *)error;
 {
-    OBPRECONDITION(connection == _connection);
+    OBPRECONDITION(session == _session);
+    OBPRECONDITION(task == _dataTask);
     OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    OBPRECONDITION(_error == nil);
-    OBPRECONDITION(error);
-    
+
     _error = error;
     [self _finished];
 }
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection;
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 {
-    OBPRECONDITION(connection == _connection);
+    OBPRECONDITION(session == _session);
+    OBPRECONDITION(task == _dataTask);
     OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    OBPRECONDITION(_error == nil);
 
-    [self _finished];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;
-{
-    OBPRECONDITION(connection == _connection);
-    OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    OBPRECONDITION(_error == nil);
-    OBPRECONDITION(response);
-    
-    _response = response;
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;
-{
-    OBPRECONDITION(connection == _connection);
-    OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    OBPRECONDITION(data);
-    
-    [_resourceData appendData:data];
-}
-
-
-- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    OBPRECONDITION(connection == _connection);
-    OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
-    
-    OBASSERT([challenge sender], "NSURLConnection-based challenged need the old 'sender' calls.");
+    OBPRECONDITION(completionHandler != nil, "We aren't using the challenge -sender methods now");
+    //OBPRECONDITION([challenge sender], "NSURLConnection-based challenged need the old 'sender' calls.");
     
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
     NSString *challengeMethod = [protectionSpace authenticationMethod];
@@ -311,7 +289,10 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
 #endif
 
         // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
-        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+        if (completionHandler) {
+            completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+        }
+        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
         return;
     }
     
@@ -335,7 +316,10 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     
     if (_credential && _alreadyOfferedCredential == NO) {
         _alreadyOfferedCredential = YES;
-        [[challenge sender] useCredential:_credential forAuthenticationChallenge:challenge];
+        if (completionHandler) {
+            completionHandler(NSURLSessionAuthChallengeUseCredential, _credential);
+        }
+        //[[challenge sender] useCredential:_credential forAuthenticationChallenge:challenge];
     } else {
         if (_alreadyOfferedCredential) {
             NSLog(@"Offered credentials didn't work, continuing without credentials.");
@@ -346,8 +330,25 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
         
         // We'd prefer to cancel here, but if we do, we might deadlock (based on experience with queue-based scheduling in OmniDAV).
         //[[challenge sender] cancelAuthenticationChallenge:challenge];
-        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+
+        if (completionHandler) {
+            completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
+        }
+        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
+}
+
+#pragma mark - NSURLSessionDataDelegate
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
+    didReceiveData:(NSData *)data;
+{
+    OBPRECONDITION(session == _session);
+    OBPRECONDITION(dataTask == _dataTask);
+    OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
+    OBPRECONDITION(data);
+
+    [_resourceData appendData:data];
 }
 
 @end
@@ -361,10 +362,10 @@ static void OSUPerformCheck(NSURL *url, id <OSULookupCredential> lookupCredentia
     [op start];
 }
 
-void OSURunOperation(OSURunOperationParameters *params, NSDictionary *runtimeStatsAndProbes, id <OSULookupCredential> lookupCredential, OSURunOperationCompletionHandler completionHandler)
+void OSURunOperation(OSURunOperationParameters *params, NSDictionary *runtimeStats, NSDictionary *probes, id <OSULookupCredential> lookupCredential, OSURunOperationCompletionHandler completionHandler)
 {
     @try {
-        NSMutableDictionary *hardwareInfo = CFBridgingRelease(OSUCopyHardwareInfo(params.appIdentifier, params.uuidString, runtimeStatsAndProbes, params.includeHardwareInfo, params.licenseType, params.reportMode));
+        NSMutableDictionary *hardwareInfo = CFBridgingRelease(OSUCopyHardwareInfo(params.appIdentifier, params.uuidString, runtimeStats, probes, params.includeHardwareInfo, params.licenseType, params.reportMode));
         
         NSURL *url = OSUMakeCheckURL(params.baseURLString, params.appIdentifier, params.appVersionString, params.track, params.osuVersionString, params.reportMode ? NULL : hardwareInfo);
         

@@ -5,20 +5,100 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OSUSystemConfigurationController.h"
+#if OSU_FULL
+#import <OmniSoftwareUpdate/OSUSystemConfigurationController.h>
+#import <OmniSoftwareUpdate/OSUChecker.h>
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUCheckOperation.h>
+#import <OmniSoftwareUpdate/OSUProbe.h>
+#else
+#import <OmniSystemInfo/OSUSystemConfigurationController.h>
+#import <OmniSystemInfo/OSUChecker.h>
+#import <OmniSystemInfo/OSUCheckOperation.h>
+#import <OmniSystemInfo/OSUProbe.h>
+#import "OSUPreferences.h" // Not public in this version
+#endif
 
 #import <WebKit/WebKit.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <mach-o/arch.h>
-#import <OmniSoftwareUpdate/OSUProbe.h>
 #import <OmniAppKit/OAController.h>
 
-#import <OmniSoftwareUpdate/OSUChecker.h>
-#import <OmniSoftwareUpdate/OSUPreferences.h>
-#import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import "OSURunOperation.h"
 
 RCS_ID("$Id$");
+
+@interface OSUSystemHTMLReport ()
+@property (nonatomic, strong) NSMutableString *body;
+@end
+
+@implementation OSUSystemHTMLReport
+
+- (id)init;
+{
+    if (!(self = [super init])) {
+        return nil;
+    }
+    
+    _body = [NSMutableString string];
+    
+    __weak typeof(self) weakSelf = self;
+    
+    _str = ^(NSString *text) {
+        [weakSelf.body appendString:text];
+    };
+    _p = ^(NSString *line){
+        [weakSelf.body appendString:@"<p>"];
+        [weakSelf.body appendString:line];
+        [weakSelf.body appendString:@"</p>"];
+    };
+    
+    _table = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<table class=\"toptable\">"];
+        guts();
+        [weakSelf.body appendString:@"</table>"];
+    };
+    _tr = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<tr>"];
+        guts();
+        [weakSelf.body appendString:@"</tr>"];
+    };
+    _th_section = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<th colspan=2 class=\"section\">"];
+        guts();
+        [weakSelf.body appendString:@"</th>"];
+    };
+    _th = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<th>"];
+        guts();
+        [weakSelf.body appendString:@"</th>"];
+    };
+    _td = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<td>"];
+        guts();
+        [weakSelf.body appendString:@"</td>"];
+    };
+    _td_right = ^(void (^guts)(void)) {
+        [weakSelf.body appendString:@"<td align=\"right\">"];
+        guts();
+        [weakSelf.body appendString:@"</td>"];
+    };
+    
+    _infoRow = ^(NSString *title, NSString *value){
+        weakSelf.tr(^{
+            weakSelf.th(^{
+                [weakSelf.body appendString:title];
+            });
+            weakSelf.td(^{
+                [weakSelf.body appendString:value];
+            });
+        });
+    };
+    
+    return self;
+}
+
+@end
 
 @interface OSUSystemConfigurationController ()
 @property(nonatomic,strong) IBOutlet WebView *systemConfigurationWebView;
@@ -26,6 +106,18 @@ RCS_ID("$Id$");
 @end
 
 @implementation OSUSystemConfigurationController
+
+static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters;
+
++ (void)setFormatter:(id<OSUProbeDataFormatter>)formatter forProbeKey:(NSString *)probeKey;
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OSUProbeDataFormatters = [NSMapTable strongToWeakObjectsMapTable];
+    });
+    
+    [OSUProbeDataFormatters setObject:formatter forKey:probeKey];
+}
 
 - (NSString *)frameworkDisplayName;
 {
@@ -69,58 +161,10 @@ RCS_ID("$Id$");
     
     
     NSString *appName = [[OAController sharedController] appName];
-    NSMutableString *body = [NSMutableString string];
-    
-    void (^p)(NSString *) = ^(NSString *line){
-        [body appendString:@"<p>"];
-        [body appendString:line];
-        [body appendString:@"</p>"];
-    };
-
-    void (^table)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<table class=\"toptable\">"];
-        guts();
-        [body appendString:@"</table>"];
-    };
-    void (^tr)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<tr>"];
-        guts();
-        [body appendString:@"</tr>"];
-    };
-    void (^th_section)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<th colspan=2 class=\"section\">"];
-        guts();
-        [body appendString:@"</th>"];
-    };
-    void (^th)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<th>"];
-        guts();
-        [body appendString:@"</th>"];
-    };
-    void (^td)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<td>"];
-        guts();
-        [body appendString:@"</td>"];
-    };
-    void (^td_right)(void (^)(void)) = ^(void (^guts)(void)) {
-        [body appendString:@"<td align=\"right\">"];
-        guts();
-        [body appendString:@"</td>"];
-    };
-    
-    void (^infoRow)(NSString *title, NSString *value) = ^(NSString *title, NSString *value){
-        tr(^{
-            th(^{
-                [body appendString:title];
-            });
-            td(^{
-                [body appendString:value];
-            });
-        });
-    };
+    OSUSystemHTMLReport *html = [[OSUSystemHTMLReport alloc] init];
 
     void (^infoRow_b)(NSString *title, NSString *(^value)(void)) = ^(NSString *title, NSString *(^value)(void)){
-        infoRow(title, value());
+        html.infoRow(title, value());
     };
 
     NSString *(^getValue)(NSString *) = ^(NSString *key){
@@ -133,26 +177,26 @@ RCS_ID("$Id$");
     {
         NSString *line;
         
-        p([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line one."), appName]);
-        p(NSLocalizedStringFromTableInBundle(@"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two. Note the <b> HTML tag around 'never'."));
-        p(NSLocalizedStringFromTableInBundle(@"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two."));
+        html.p([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line one."), appName]);
+        html.p(NSLocalizedStringFromTableInBundle(@"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two. Note the <b> HTML tag around 'never'."));
+        html.p(NSLocalizedStringFromTableInBundle(@"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line two."));
 
         NSString *linkString = [NSString stringWithFormat:@"<a href=\"https://update.omnigroup.com/\">%@</a>", self.frameworkDisplayName];
         
         line = NSLocalizedStringFromTableInBundle(@"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime.");
         
-        p([line stringByReplacingOccurrencesOfString:@"LINK_PLACEHOLDER" withString:linkString options:0 range:NSMakeRange(0, [line length])]);
+        html.p([line stringByReplacingOccurrencesOfString:@"LINK_PLACEHOLDER" withString:linkString options:0 range:NSMakeRange(0, [line length])]);
     }
     
-    table(^{
-        tr(^{
-            th_section(^{
+    html.table(^{
+        html.tr(^{
+            html.th_section(^{
 #if OSU_FULL
                 NSString *format = NSLocalizedStringFromTableInBundle(@"When you check for updates, the following information about your copy of %@ is always sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Format string for the information sent header when using the full framework.");
 #else
                 NSString *format = NSLocalizedStringFromTableInBundle(@"When you check for updates, the following information about your copy of %@ is sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Format string for the information sent header when using the mini framework.");
 #endif
-                [body appendFormat:format, appName];
+                [html.body appendFormat:format, appName];
             });
         });
         
@@ -162,51 +206,51 @@ RCS_ID("$Id$");
         NSString *versionTitle = NSLocalizedStringFromTableInBundle(@"OmniSystemInfo version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for framework version in info table, when using the mini framework.");
 #endif
         
-        infoRow(versionTitle, [[OSUChecker OSUVersionNumber] originalVersionString]);
+        html.infoRow(versionTitle, [[OSUChecker OSUVersionNumber] originalVersionString]);
 
     
-        infoRow(NSLocalizedStringFromTableInBundle(@"Application ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application identifier in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"Application ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application identifier in the info table."),
                 [checker applicationIdentifier]);
 
-        infoRow(NSLocalizedStringFromTableInBundle(@"Application Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application version in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"Application Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application version in the info table."),
                 [checker applicationEngineeringVersion]);
         
-        infoRow(NSLocalizedStringFromTableInBundle(@"Update Track", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application current update track in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"Update Track", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application current update track in the info table."),
                 [checker applicationTrack]);
-        infoRow(NSLocalizedStringFromTableInBundle(@"Visible Update Tracks", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application visible update tracks in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"Visible Update Tracks", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for application visible update tracks in the info table."),
                 [[OSUPreferences visibleTracks] componentsJoinedByString:@", "]);
         
 #if OSU_FULL
-        tr(^{
-            th_section(^{
-                [body appendFormat:NSLocalizedStringFromTableInBundle(@"If you choose in %@ preferences to provide it, the following information is also sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line one."), appName];
+        html.tr(^{
+            html.th_section(^{
+                [html.body appendFormat:NSLocalizedStringFromTableInBundle(@"If you choose in %@ preferences to provide it, the following information is also sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update hardware description page intro line one."), appName];
             });
         });
 #endif
         
-        tr(^{
-            th(^{
-                [body appendString:@"UUID"]; // Probably doesn't need localizing.
+        html.tr(^{
+            html.th(^{
+                [html.body appendString:@"UUID"]; // Probably doesn't need localizing.
             });
-            td(^{
+            html.td(^{
                 NSString *explain = NSLocalizedStringFromTableInBundle(@"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Explanatory text for the UUID in the info table.");
-                [body appendFormat:@"%@<br><span class=\"explain\">%@</span>", getValue(@"uuid"), explain];
+                [html.body appendFormat:@"%@<br><span class=\"explain\">%@</span>", getValue(@"uuid"), explain];
             });
         });
         
 #if OSU_FULL
-        tr(^{
-            th(^{
-                [body appendString:NSLocalizedStringFromTableInBundle(@"License Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for license type row in the info table.")];
+        html.tr(^{
+            html.th(^{
+                [html.body appendString:NSLocalizedStringFromTableInBundle(@"License Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for license type row in the info table.")];
             });
-            td(^{
+            html.td(^{
                 NSString *explain = NSLocalizedStringFromTableInBundle(@"Your license key itself will never be sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Explanatory text for the license type row in the info table.");
-                [body appendFormat:@"%@<br><span class=\"explain\">%@</span>", getValue(@"license-type"), explain];
+                [html.body appendFormat:@"%@<br><span class=\"explain\">%@</span>", getValue(@"license-type"), explain];
             });
         });
 #endif
         
-        infoRow(NSLocalizedStringFromTableInBundle(@"OS Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the OS version row in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"OS Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the OS version row in the info table."),
                 getValue(@"os"));
 
         infoRow_b(NSLocalizedStringFromTableInBundle(@"Preferred Language", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the preferred language row in the info table."), ^{
@@ -220,7 +264,7 @@ RCS_ID("$Id$");
             return [NSString stringWithFormat:@"%@ (%@)", getValue(@"machine_name"), getValue(@"hw-model")];
         });
         
-        infoRow(NSLocalizedStringFromTableInBundle(@"CPU Count", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the CPU count row in the info table."),
+        html.infoRow(NSLocalizedStringFromTableInBundle(@"CPU Count", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the CPU count row in the info table."),
                 getValue(@"ncpu"));
         
         infoRow_b(NSLocalizedStringFromTableInBundle(@"CPU Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the CPU type row in the info table."), ^{
@@ -263,19 +307,40 @@ RCS_ID("$Id$");
                 if ([displays length])
                     [displays appendString:@"<br>"];
                 [report removeObjectForKey:displayKey];
-                
-                NSString *quartzExtremeKey = [NSString stringWithFormat:@"qe%d", displayIndex];
-                NSString *quartzExtreme = [report objectForKey:quartzExtremeKey];
-                if ([@"1" isEqualToString:quartzExtreme])
-                    [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Enabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if Quartz Extreme is enabled")];
-                else if ([@"0" isEqualToString:quartzExtreme])
-                    [displays appendString:NSLocalizedStringFromTableInBundle(@"Quartz Extreme Disabled", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if Quartz Extreme is not enabled")];
-                else {
-                    OBASSERT(NO);
+
+                if (displayIndex == 0) {
+                    NSString *dpi = report[@"dpi"];
+                    if (dpi) {
+                        [displays appendString:dpi];
+                        [displays appendString:@"<br>"];
+                        [report removeObjectForKey:@"dpi"];
+                    }
+                    NSString *bps = report[@"bps"];
+                    if (bps) {
+                        [displays appendString:bps];
+                        [displays appendString:@"<br>"];
+                        [report removeObjectForKey:@"bps"];
+                    }
+
+                    NSString *sRGB = report[@"sRGB"];
+                    if (sRGB) {
+                        if ([sRGB isEqual:@"1"]) {
+                            [displays appendString:NSLocalizedStringFromTableInBundle(@"sRGB color space supported", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if the sRGB colorspace is supported on the deepest display")];
+                            [displays appendString:@"<br>"];
+                        }
+                        [report removeObjectForKey:@"sRGB"];
+                    }
+
+                    NSString *p3 = report[@"p3"];
+                    if (p3) {
+                        if ([p3 isEqual:@"1"]) {
+                            [displays appendString:NSLocalizedStringFromTableInBundle(@"P3 color space supported", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel value - shown if the sRGB colorspace is supported on the deepest display")];
+                            [displays appendString:@"<br>"];
+                        }
+                        [report removeObjectForKey:@"p3"];
+                    }
+
                 }
-                if ([displays length])
-                    [displays appendString:@"<br>"];
-                [report removeObjectForKey:quartzExtremeKey];
                 
                 displayIndex++;
             }
@@ -471,79 +536,94 @@ RCS_ID("$Id$");
     });
     
     
-    table(^{
-        tr(^{
-            [body appendString:@"<th colspan=3 class=\"section\">"];
-            [body appendString:NSLocalizedStringFromTableInBundle(@"Run Count and Times", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Section header for the application run/count table in the info table.")];
-            [body appendString:@"</th>"];
+    html.table(^{
+        html.tr(^{
+            [html.body appendString:@"<th colspan=3 class=\"section\">"];
+            [html.body appendString:NSLocalizedStringFromTableInBundle(@"Run Count and Times", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Section header for the application run/count table in the info table.")];
+            [html.body appendString:@"</th>"];
         });
         
-        tr(^{
-            th(^{});
-            th(^{
-                [body appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for current version section in the run/count table of the info sheet")];
+        html.tr(^{
+            html.th(^{});
+            html.th(^{
+                [html.body appendString:NSLocalizedStringFromTableInBundle(@"Current Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for current version section in the run/count table of the info sheet")];
             });
-            th(^{
-                [body appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for all versions section in the run/count table of the info sheet")];
+            html.th(^{
+                [html.body appendString:NSLocalizedStringFromTableInBundle(@"All Versions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for all versions section in the run/count table of the info sheet")];
             });
             
-            tr(^{
-                th(^{
-                    [body appendString:NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of hours row in the run/count table of the info sheet")];
+            html.tr(^{
+                html.th(^{
+                    [html.body appendString:NSLocalizedStringFromTableInBundle(@"Hours Run", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of hours row in the run/count table of the info sheet")];
                 });
-                td_right(^{
+                html.td_right(^{
                     NSString *value = [NSString stringWithFormat:@"%.1f", [getValue(@"runmin") unsignedIntValue]/60.0];
-                    [body appendString:value];
+                    [html.body appendString:value];
                 });
-                td_right(^{
+                html.td_right(^{
                     NSString *value = [NSString stringWithFormat:@"%.1f", [getValue(@"trunmin") unsignedIntValue]/60.0];
-                    [body appendString:value];
+                    [html.body appendString:value];
                 });
             });
             
-            tr(^{
-                th(^{
-                    [body appendString:NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of launches row in the run/count table of the info sheet")];
+            html.tr(^{
+                html.th(^{
+                    [html.body appendString:NSLocalizedStringFromTableInBundle(@"# of Launches", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of launches row in the run/count table of the info sheet")];
                 });
-                td_right(^{
-                    [body appendString:getValue(@"nrun")];
+                html.td_right(^{
+                    [html.body appendString:getValue(@"nrun")];
                 });
-                td_right(^{
-                    [body appendString:getValue(@"tnrun")];
+                html.td_right(^{
+                    [html.body appendString:getValue(@"tnrun")];
                 });
             });
 
-            tr(^{
-                th(^{
-                    [body appendString:NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of crashes row in the run/count table of the info sheet")];
+            html.tr(^{
+                html.th(^{
+                    [html.body appendString:NSLocalizedStringFromTableInBundle(@"# of Crashes", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Header for number of crashes row in the run/count table of the info sheet")];
                 });
-                td_right(^{
-                    [body appendString:getValue(@"ndie")];
+                html.td_right(^{
+                    [html.body appendString:getValue(@"ndie")];
                 });
-                td_right(^{
-                    [body appendString:getValue(@"tndie")];
+                html.td_right(^{
+                    [html.body appendString:getValue(@"tndie")];
                 });
             });
 
         });
     });
+
+    NSMutableArray *probes = [[OSUProbe allProbes] mutableCopy];
+    [[probes copy] enumerateObjectsUsingBlock:^(OSUProbe * _Nonnull probe, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (probe.options & OSUProbeOptionHasAppSpecificDisplay) {
+            NSString *key = probe.key;
+            id<OSUProbeDataFormatter> formatter = [OSUProbeDataFormatters objectForKey:key];
+            OBASSERT(formatter != nil, @"Probe %@ is marked for app-specific display, but does not have a registered formatter", key);
+            if (formatter == nil) {
+                return;
+            }
+            
+            [formatter formatProbeWithKey:key forReport:html];
+            [probes removeObjectAtIndex:idx];
+            [report removeObjectForKey:key];
+        }
+    }];
     
-    // Append a table for application-specific probes. We include these here even if the values are currently zero (and we won't send the zeros) so that there is no surprise if we start sending non-zero data later.
-    NSArray *probes = [OSUProbe allProbes];
+    // Append a generic table for application-specific probes. We include these here even if the values are currently zero (and we won't send the zeros) so that there is no surprise if we start sending non-zero data later. We also include any probes that were marked for app-specific reports, but then didn't actually get included yet.
     if ([probes count] > 0) {
-        table(^{
-            tr(^{
-                th_section(^{
-                    [body appendString:NSLocalizedStringFromTableInBundle(@"Application Usage", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - header for application feature usage table")];
+        html.table(^{
+            html.tr(^{
+                html.th_section(^{
+                    [html.body appendString:NSLocalizedStringFromTableInBundle(@"Application Usage", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - header for application feature usage table")];
                 });
             });
             for (OSUProbe *probe in probes) {
-                tr(^{
-                    th(^{
-                        [body appendString:probe.title];
+                html.tr(^{
+                    html.th(^{
+                        [html.body appendString:probe.title];
                     });
-                    td_right(^{
-                        [body appendString:probe.displayString];
+                    html.td_right(^{
+                        [html.body appendString:probe.displayString];
                     });
                 });
                 [report removeObjectForKey:probe.key];
@@ -551,25 +631,24 @@ RCS_ID("$Id$");
         });
     }
     
-    
     // Append a table for unknown key/value pairs
     if ([report count] > 0) {
         OBASSERT_NOT_REACHED("Unknown keys in software update report: %@", report);
         
-        table(^{
-            tr(^{
-                th_section(^{
-                    [body appendString:@"Unknown Keys"]; // Not localized since this is a bug if it is hit anyway.
+        html.table(^{
+            html.tr(^{
+                html.th_section(^{
+                    [html.body appendString:@"Unknown Keys"]; // Not localized since this is a bug if it is hit anyway.
                 });
             });
 
             [report enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-                tr(^{
-                    th(^{
-                        [body appendString:key];
+                html.tr(^{
+                    html.th(^{
+                        [html.body appendString:key];
                     });
-                    td_right(^{
-                        [body appendString:value];
+                    html.td_right(^{
+                        [html.body appendString:value];
                     });
                 });
             }];
@@ -586,7 +665,7 @@ RCS_ID("$Id$");
         }
 
         if ([key isEqual:@"OSU_BODY"]) {
-            return body;
+            return html.body;
         }
         
         OBASSERT_NOT_REACHED("Unknown template key %@", key);

@@ -1,5 +1,4 @@
-// Copyright 2002-2012, 2014 Omni Development, Inc. All rights reserved.
-//
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
@@ -14,11 +13,13 @@
 
 RCS_ID("$Id$");
 
-/*"
+NS_ASSUME_NONNULL_BEGIN
+
+/**
 This class is intended for use in a bi-directional mapping between an integer enumeration and string representations for the elements of the enumeration.  This is useful, for example, when converting data structures to and from an external representation.  Instead of encoding internal enumeration values as integers, they can be encoded as string names.  This makes it easier to interpret the external representation and easier to rearrange the private enumeration values without impact to existing external representations in files, defaults property lists, databases, etc.
 
 The implementation does not currently assume anything about the range of the enumeration values.  It would simplify the implementation if we could assume that there was a small set of values, starting at zero and all contiguous.  This is the default for enumerations in C, but certainly isn't required.
-"*/
+*/
 @implementation OFEnumNameTable
 
 // Init and dealloc
@@ -189,7 +190,7 @@ The implementation does not currently assume anything about the range of the enu
 // Comparison
 
 /*" Compares the receiver's name/value pairs against another instance of OFEnumNameTable. This implementation does not require that the cyclical ordering of the two enumerations be the same for them to compare equal, but callers should probably not rely on this behavior.  This also doesn't require that the display names are equal -- this is intentional. "*/
-- (BOOL)isEqual:(id)anotherEnumeration_
+- (BOOL)isEqual:(nullable id)anotherEnumeration_;
 {
     NSUInteger associationCount, associationIndex;
     
@@ -218,3 +219,5 @@ The implementation does not currently assume anything about the range of the enu
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

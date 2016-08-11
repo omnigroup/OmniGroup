@@ -36,8 +36,6 @@
 #import <OmniFoundation/OFFileMotionResult.h>
 #import <OmniFoundation/OFFileTypeDescription.h>
 #import <OmniFoundation/OFGeometry.h>
-#import <OmniFoundation/OFHTTPState.h>
-#import <OmniFoundation/OFHTTPStateMachine.h>
 #import <OmniFoundation/OFIndexPath.h>
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 #import <OmniFoundation/OFLockFile.h>

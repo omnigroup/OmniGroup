@@ -1418,3 +1418,16 @@ NSString *OFCreateDecimalStringFromDouble(double value)
 }
 
 @end
+
+#import <math.h>
+#import <float.h>
+
+double OFFloatDigitsBaseE(void)
+{
+    static double floatDigitsBaseE;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        floatDigitsBaseE = log(exp2(FLT_MANT_DIG - 1));
+    });
+    return floatDigitsBaseE;
+}

@@ -525,7 +525,7 @@ static OALinearRGBA interpRGBA(OALinearRGBA c0, OALinearRGBA c1, CGFloat t)
 }
 
 // NSColor documents this method to to the blending in calibrated RGBA.
-- (OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
+- (nullable OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
 {
     OARGBAColor *otherRGBA = (OARGBAColor *)[otherColor colorUsingColorSpace:OAColorSpaceRGB];
     if (!otherRGBA)
@@ -687,7 +687,7 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
 }
 
 // NSColor documents this method to to the blending in calibrated RGBA.
-- (OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
+- (nullable OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
 {
     return [[self colorUsingColorSpace:OAColorSpaceRGB] blendedColorWithFraction:fraction ofColor:otherColor];
 }
@@ -843,7 +843,7 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
+- (nullable OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
 {
     return [[self colorUsingColorSpace:OAColorSpaceRGB] blendedColorWithFraction:fraction ofColor:otherColor];
 }
@@ -1074,7 +1074,7 @@ static void OAColorInitPlatformColor(OAColor *self)
     OBPOSTCONDITION(self->_platformColor != nil);
 }
 
-+ (OAColor *)colorFromRGBAString:(NSString *)rgbaString;
++ (nullable OAColor *)colorFromRGBAString:(NSString *)rgbaString;
 {
     OALinearRGBA rgba;
     if (!parseRGBAString(rgbaString, &rgba))
@@ -1088,7 +1088,7 @@ static void OAColorInitPlatformColor(OAColor *self)
     return rgbaStringFromRGBAColor([self toRGBA]);
 }
 
-+ (OAColor *)colorForPreferenceKey:(NSString *)preferenceKey;
++ (nullable OAColor *)colorForPreferenceKey:(NSString *)preferenceKey;
 {
     NSString *colorString = [[OFPreferenceWrapper sharedPreferenceWrapper] stringForKey:preferenceKey];
     return [self colorFromRGBAString:colorString];
@@ -1294,7 +1294,7 @@ static void OAColorInitPlatformColor(OAColor *self)
     [_platformColor set];
 }
 
-- (BOOL)isEqual:(id)otherObject;
+- (BOOL)isEqual:(nullable id)otherObject;
 {
     if (![otherObject isKindOfClass:[OAColor class]])
         return NO;

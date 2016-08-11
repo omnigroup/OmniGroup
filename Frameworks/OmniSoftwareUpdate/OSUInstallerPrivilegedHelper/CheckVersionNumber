@@ -1,4 +1,4 @@
-#!/bin/zsh -euf
+#!/bin/zsh -eu
 #
 # Copyright 2016 Omni Development, Inc. All rights reserved.
 #
@@ -32,9 +32,10 @@ if [ ! -x "$HELPER_EXPECTED_PATH" ]; then
     exit 1
 fi
 
-# The Info.plist for the priviledged helper is installed as a Mac-O section.
+# The Info.plist for the priviledged helper is installed as a Mach-O section.
 # Make sure its embedded bundle identifier, name, and version are as expected
-otool -X -P "$HELPER_EXPECTED_PATH" > "$TMPDIR/OSUCheckVersionNumber-$$.plist"
+# We `exec -c` here to clear the environment so that the override of DEVELOPER_DIR works, instead of having mismatched settings between what xcodebuild passes and manually selecting Xcode 7.3.1.
+(exec -c ../../Scripts/DumpEmbeddedPlist "$HELPER_EXPECTED_PATH") > "$TMPDIR/OSUCheckVersionNumber-$$.plist"
 
 if [ $(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$TMPDIR/OSUCheckVersionNumber-$$.plist") != "$HELPER_EXPECTED_NAME" ]; then
     echo "*** Error: CFBundleIdentifier should be $HELPER_EXPECTED_NAME"

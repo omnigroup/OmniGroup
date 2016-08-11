@@ -5,14 +5,19 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#if OSU_FULL
 #import <OmniSoftwareUpdate/NSApplication-OSUNewsSupport.h>
+#import <OmniSoftwareUpdate/OSUChecker.h>
+#else
+#import <OmniSystemInfo/NSApplication-OSUNewsSupport.h>
+#import <OmniSystemInfo/OSUChecker.h>
+#endif
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniAppKit/OAWebPageViewer.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniSoftwareUpdate/OSUChecker.h>
 
 #import <WebKit/WebKit.h>
 

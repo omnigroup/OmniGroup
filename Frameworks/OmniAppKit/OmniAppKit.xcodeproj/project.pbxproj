@@ -496,8 +496,6 @@
 		A25653B80ADDBFB400A2A25B /* OAControlTextColorTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = A25653B60ADDBFB400A2A25B /* OAControlTextColorTransformer.h */; };
 		A25653B90ADDBFB400A2A25B /* OAControlTextColorTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = A25653B70ADDBFB400A2A25B /* OAControlTextColorTransformer.m */; };
 		A268A98E09D1FE84005278DA /* OAGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A268A98509D1FDF3005278DA /* OAGeometryTests.m */; };
-		A27FE4600CAB033300EE72BA /* OASlowLoadingImage.h in Headers */ = {isa = PBXBuildFile; fileRef = A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A27FE4610CAB033300EE72BA /* OASlowLoadingImage.m in Sources */ = {isa = PBXBuildFile; fileRef = A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A2BB56380C9753BD00274A08 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2BB56370C9753BD00274A08 /* QuartzCore.framework */; };
 		A2C0C37F0E3596E600773D47 /* Catalog-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34C0E3596E600773D47 /* Catalog-number-full.plist */; };
 		A2C0C3800E3596E600773D47 /* Catalog-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34D0E3596E600773D47 /* Catalog-number-partial.plist */; };
@@ -557,6 +555,8 @@
 		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B69E15CC836000E162D6 /* OAToolbarButton.m */; };
+		E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E2A61BE01D41574900416AB5 /* OAAutosizingSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */; };
 		E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */; };
 		E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */; };
 		E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */; };
@@ -833,6 +833,9 @@
 		3434792411923B69007D0CE5 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		343F2CDC1D3EB32700E7C89D /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		343F2CDD1D3EB32700E7C89D /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		343F2CDE1D3EB32700E7C89D /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
 		343FC50419E334D0008756FF /* OmniAppKit.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = OmniAppKit.modulemap; sourceTree = "<group>"; };
 		34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstructionTitlebarAccessoryViewController.h; sourceTree = "<group>"; };
 		34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstructionTitlebarAccessoryViewController.m; sourceTree = "<group>"; };
@@ -1059,8 +1062,6 @@
 		A25653B60ADDBFB400A2A25B /* OAControlTextColorTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAControlTextColorTransformer.h; sourceTree = "<group>"; };
 		A25653B70ADDBFB400A2A25B /* OAControlTextColorTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAControlTextColorTransformer.m; sourceTree = "<group>"; };
 		A268A98509D1FDF3005278DA /* OAGeometryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGeometryTests.m; sourceTree = "<group>"; };
-		A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASlowLoadingImage.h; sourceTree = "<group>"; };
-		A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASlowLoadingImage.m; sourceTree = "<group>"; };
 		A2BB56370C9753BD00274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		A2C0C34C0E3596E600773D47 /* Catalog-number-full.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Catalog-number-full.plist"; sourceTree = "<group>"; };
 		A2C0C34D0E3596E600773D47 /* Catalog-number-partial.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Catalog-number-partial.plist"; sourceTree = "<group>"; };
@@ -1134,6 +1135,8 @@
 		E235B69E15CC836000E162D6 /* OAToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarButton.m; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
+		E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAutosizingSegmentedControl.h; sourceTree = "<group>"; };
+		E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingSegmentedControl.m; sourceTree = "<group>"; };
 		E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrow@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrowPressed@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrow@2x.png"; sourceTree = "<group>"; };
@@ -1666,6 +1669,8 @@
 				00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */,
 				3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */,
 				3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */,
+				E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */,
+				E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */,
 				B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */,
 				B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */,
 				94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */,
@@ -1696,8 +1701,6 @@
 				27495031182C955600BCBA6A /* OASubtleScroller.m */,
 				1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */,
 				1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */,
-				A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */,
-				A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */,
 				E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */,
 				E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */,
 				A2177CD404FEC4FF0097A146 /* OASwoopView.h */,
@@ -2258,6 +2261,9 @@
 				A207C2350AA3BC7F00C3A5EF /* Omni-Tool-Common.xcconfig */,
 				4AA1EBD408AA772700E2FF6B /* Omni-Tool-Debug.xcconfig */,
 				4AA1EBD508AA772700E2FF6B /* Omni-Tool-Release.xcconfig */,
+				343F2CDC1D3EB32700E7C89D /* Omni-XCTest-Common.xcconfig */,
+				343F2CDD1D3EB32700E7C89D /* Omni-XCTest-Debug.xcconfig */,
+				343F2CDE1D3EB32700E7C89D /* Omni-XCTest-Release.xcconfig */,
 				3434791E11923B69007D0CE5 /* Target-Mac-Common.xcconfig */,
 				3434791F11923B69007D0CE5 /* Target-Touch-Common.xcconfig */,
 				340E2C3B1C125E8800178E72 /* Target-Watch-Common.xcconfig */,
@@ -2567,6 +2573,7 @@
 				4AA1E6A208AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.h in Headers */,
 				4AA1E6A308AA764600E2FF6B /* NSAppleScript-OAExtensions.h in Headers */,
 				4AA1E6A408AA764600E2FF6B /* NSApplication-OAExtensions.h in Headers */,
+				E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */,
 				4AA1E6A508AA764600E2FF6B /* NSAttributedString-OAExtensions.h in Headers */,
 				4AA1E6A608AA764600E2FF6B /* NSBezierPath-OAExtensions.h in Headers */,
 				4AA1E6A808AA764600E2FF6B /* NSBundle-OAExtensions.h in Headers */,
@@ -2678,7 +2685,6 @@
 				9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */,
 				345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */,
 				4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */,
-				A27FE4600CAB033300EE72BA /* OASlowLoadingImage.h in Headers */,
 				34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */,
 				349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */,
 				34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */,
@@ -2838,13 +2844,15 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
 					};
 					34C12B05194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
+						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeamName = "The Omni Group";
 						TestTargetID = 34C12AFB194FF90F005CB70B;
 					};
 					4AA1E7FA08AA764600E2FF6B = {
@@ -3216,6 +3224,7 @@
 				4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */,
 				4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */,
 				4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */,
+				E2A61BE01D41574900416AB5 /* OAAutosizingSegmentedControl.m in Sources */,
 				4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */,
 				4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */,
 				4AA1E7C908AA764600E2FF6B /* OAHierarchicalPopUpController.m in Sources */,
@@ -3266,7 +3275,6 @@
 				9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */,
 				345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */,
 				420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */,
-				A27FE4610CAB033300EE72BA /* OASlowLoadingImage.m in Sources */,
 				34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */,
 				4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */,
 				349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */,
@@ -3458,6 +3466,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C3D1C125E8800178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
@@ -3473,6 +3482,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C3E1C125E8800178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
@@ -3538,15 +3548,16 @@
 		};
 		4AA1E80C08AA764600E2FF6B /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F09908AD0A0600DBB061 /* Omni-Bundle-Debug.xcconfig */;
+			baseConfigurationReference = 343F2CDD1D3EB32700E7C89D /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
 				);
 				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
 			};
@@ -3554,15 +3565,16 @@
 		};
 		4AA1E80D08AA764600E2FF6B /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F09A08AD0A0600DBB061 /* Omni-Bundle-Release.xcconfig */;
+			baseConfigurationReference = 343F2CDE1D3EB32700E7C89D /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
 				);
 				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
 			};

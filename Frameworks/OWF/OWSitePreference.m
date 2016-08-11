@@ -257,6 +257,16 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
     [[self _preferenceForWriting] setStringValue:value];
 }
 
+- (NSURL *)bookmarkURLValue;
+{
+    return [[self _preferenceForReading] bookmarkURLValue];
+}
+
+- (void)setBookmarkURLValue:(NSURL *)bookmarkURL;
+{
+    [[self _preferenceForWriting] setBookmarkURLValue:bookmarkURL];
+}
+
 - (BOOL)boolValue;
 {
     return [[self _preferenceForReading] boolValue];

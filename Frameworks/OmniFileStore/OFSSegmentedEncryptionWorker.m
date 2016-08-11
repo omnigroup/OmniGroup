@@ -294,7 +294,7 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 //   2. Transferring a file to/from an encrypted remote database to a file on disk. For this, we want something more like a stream filter. Unfortunately, NSStream and CFStream are unusably buggy, and they're the only way to interact with NSURLSession. We'll need to figure out how to do that, but not today. (Perhaps we'll end up having to just buffer the encrypted data on disk.)
 
 
-- (NSData *)encryptData:(NSData *)plaintext error:(NSError * __autoreleasing *)outError;
+- (nullable NSData *)encryptData:(NSData *)plaintext error:(NSError * __autoreleasing *)outError;
 {
     if (!plaintext)
         return nil;
@@ -498,7 +498,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     return YES;
 }
 
-+ (OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)keyblob documentKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
++ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)keyblob documentKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
 {
     OFSSegmentDecryptWorker *result = [[OFSSegmentDecryptWorker alloc] init];
     
@@ -515,7 +515,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     return result;
 }
 
-- (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)segmentsBegin error:(NSError * __autoreleasing *)outError;
+- (nullable NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)segmentsBegin error:(NSError * __autoreleasing *)outError;
 {
     // Some amusing facts:
     //   - Calling -subdataWithRange: on a mutable data will (often/always?) call -copy on the receiver in order to get an immutable subrange, instead of copying out just the relevant bytes.

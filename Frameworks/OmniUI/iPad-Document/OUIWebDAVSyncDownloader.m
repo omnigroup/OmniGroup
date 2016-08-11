@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -382,7 +382,7 @@ RCS_ID("$Id$");
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         for (NSString *childName in childWrappers) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childName];
-            NSURL *childURL = OFFileURLRelativeToDirectoryURL(parentURL, childName);;
+            NSURL *childURL = OFFileURLRelativeToDirectoryURL(parentURL, childName);
             if (![self _queueUploadFileWrapper:childWrapper atomically:NO toURL:childURL connection:connection error:outError])
                 return NO;
         }

@@ -9,6 +9,8 @@
 DSTROOT = /
 // INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
 
+SWIFT_OPTIMIZATION_LEVEL = -Owholemodule
+
 // Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
 OMNI_BUILD_FILE_SUFFIX=
 OMNI_BUILD_IDENTIFIER_SUFFIX=

@@ -102,7 +102,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     return [_pathForItemDictionary objectForKey:[item itemIdentifier]];
 }
 
-- (NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (nullable NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
     if (OAScriptToolbarItemsDisabled)
         return nil;

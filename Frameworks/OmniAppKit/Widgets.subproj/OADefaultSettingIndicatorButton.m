@@ -249,7 +249,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     return ([self state] == 1 || _flags.displaysEvenInDefaultState);
 }
 
-- (id)_objectValue;
+- (nullable id)_objectValue;
 {
     if ([delegate respondsToSelector:@selector(objectValueForSettingIndicatorButton:)])
         return [delegate objectValueForSettingIndicatorButton:self];
@@ -257,7 +257,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
         return nil;
 }
 
-- (id)_defaultObjectValue;
+- (nullable id)_defaultObjectValue;
 {
     if ([delegate respondsToSelector:@selector(defaultObjectValueForSettingIndicatorButton:)])
         return [delegate defaultObjectValueForSettingIndicatorButton:self];

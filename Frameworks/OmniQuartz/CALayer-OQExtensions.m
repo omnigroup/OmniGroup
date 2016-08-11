@@ -11,8 +11,9 @@
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #endif
 
-#import <Foundation/Foundation.h>
-#import <OmniBase/OmniBase.h>
+@import Foundation;
+@import OmniBase;
+@import QuartzCore;
 
 #import <OmniQuartz/OQDrawing.h>
 
@@ -502,8 +503,10 @@ static void _writeString(NSString *str)
     if (self.autoresizingMask != 0)
         [str appendFormat:@" autoresizingMask:%d", self.autoresizingMask];
     
-    if (self.layoutManager)
-        [str appendFormat:@" layout:%@", [self.layoutManager shortDescription]];
+    if (self.layoutManager) {
+        // Cast to id since this is returned as `id <CALayoutManager>` which the compiler doesn't know if is an NSObject.
+        [str appendFormat:@" layout:%@", [(id)self.layoutManager shortDescription]];
+    }
 #endif
     
     CATransform3D transform = self.transform;

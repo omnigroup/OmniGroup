@@ -12,6 +12,10 @@
 RCS_ID("$Id$")
 
 @implementation OFCharacterScanner
+{
+    BOOL freeInputBuffer; // Whether we should deallocate inputBuffer when we're done with it
+    OFCaseConversionBuffer caseBuffer;
+}
 
 const unichar OFCharacterScannerEndOfDataCharacter = '\0';
 static OFCharacterSet *endOfLineSet;
@@ -172,6 +176,11 @@ static inline int unicharDigitValue(unichar c)
         rewindMarkCount--;
 }
 
+- (BOOL)hasData;
+{
+    return scannerHasData(self);
+}
+
 - (NSUInteger)scanLocation;
 {
     return scannerScanLocation(self);
@@ -222,6 +231,16 @@ static inline int unicharDigitValue(unichar c)
 - (BOOL)scanUpToCharacter:(unichar)aCharacter;
 {
     return scannerScanUpToCharacter(self, aCharacter);
+}
+
+- (BOOL)scanUpToCharacterInOFCharacterSet:(OFCharacterSet *)delimiterBitmapRep;
+{
+    return scannerScanUpToCharacterInOFCharacterSet(self, delimiterBitmapRep);
+}
+
+- (BOOL)scanUpToCharacterNotInOFCharacterSet:(OFCharacterSet *)memberBitmapRep;
+{
+    return scannerScanUpToCharacterNotInOFCharacterSet(self, memberBitmapRep);
 }
 
 - (BOOL)scanUpToCharacterInSet:(NSCharacterSet *)delimiterCharacterSet;

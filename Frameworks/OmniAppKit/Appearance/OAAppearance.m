@@ -159,7 +159,7 @@ static NSString *_OUIAppearanceUserOverrideFolder = nil;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
-void OAAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
+void OAAppearanceSetUserOverrideFolder(NSString * _Nullable userOverrideFolder)
 {
     if (OFNOTEQUAL(_OUIAppearanceUserOverrideFolder, userOverrideFolder)) {
         _OUIAppearanceUserOverrideFolder = [userOverrideFolder copy];
@@ -1443,7 +1443,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
     return appearance;
 }
 
-+ (NSURL *)directoryURLForSwitchablePlist;
++ (NSURL * _Nullable)directoryURLForSwitchablePlist;
 {
     return nil;
 }
@@ -1457,7 +1457,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
     [InvalidatedClassesForSwitchedPlistURLDirectories addObject:cls];
 }
 
-+ (instancetype)appearanceForValidatingPropertyListInDirectory:(NSURL *)directoryURL forClass:(Class)cls;
++ (instancetype _Nullable)appearanceForValidatingPropertyListInDirectory:(NSURL *)directoryURL forClass:(Class)cls;
 {
     OAAppearance *appearance = [[cls alloc] _initForValidationWithDirectoryURL:directoryURL];
     NSURL *plistURL = [appearance _plistURL];

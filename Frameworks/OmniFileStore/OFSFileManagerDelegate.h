@@ -10,7 +10,7 @@
 #import <Foundation/NSObject.h>
 
 @class NSOperation, NSURLCredential, NSURLAuthenticationChallenge;
-@class ODAVFileInfo, OFSFileManager, OFSDocumentKey;
+@class ODAVFileInfo, OFSFileManager, OFSDocumentKey, OFSMutableDocumentKey;
 @protocol OFCredentialChallengeDisposition, OFCertificateTrustDisposition;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -31,10 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // This is called to satisfy client-side-encryption challenges
 - (OFSDocumentKey * _Nullable)fileManager:(OFSFileManager *)fileManager
-                                    getKey:(ODAVFileInfo *)encryptionInfo
-                                withChange:(BOOL)promptForChangedPassword
-                                     error:(NSError **)outError;
-- (OFSDocumentKey * _Nullable)fileManager:(OFSFileManager *)underlyingFileManager initialKeyWithError:(NSError **)outError;
+                                   getKey:(ODAVFileInfo *)encryptionInfo
+                             refreshCache:(BOOL)refreshing
+                                    error:(NSError **)outError;
+- (BOOL)fileManager:(OFSFileManager * __nonnull)fileManager changePasswordOfKey:(OFSMutableDocumentKey *)derivation originURL:(NSURL *)originURL error:(NSError **)outError;
+- (OFSMutableDocumentKey * _Nullable)fileManager:(OFSFileManager *)underlyingFileManager initialKeyWithError:(NSError **)outError;
 - (void)fileManagerDidStore:(NSURL *)where key:(OFSDocumentKey * _Nullable)keyStore data:(NSData *)d;
 
 // For keeping track of key slot usage

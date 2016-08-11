@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11185.3" systemVersion="15G31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11185.3"/>
+        <capability name="box content view" minToolsVersion="7.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OIScrollingTabbedInspector">
@@ -15,9 +17,8 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <customView id="cAD-sd-bcZ" userLabel="Custom View" customClass="OITabbedInspectorView">
+        <customView translatesAutoresizingMaskIntoConstraints="NO" id="cAD-sd-bcZ" userLabel="Custom View" customClass="OITabbedInspectorView">
             <rect key="frame" x="0.0" y="0.0" width="200" height="165"/>
-            <autoresizingMask key="autoresizingMask"/>
             <subviews>
                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="kmL-sk-geE" customClass="OIButtonMatrixBackgroundView">
                     <rect key="frame" x="0.0" y="118" width="200" height="47"/>
@@ -27,7 +28,7 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                             <size key="cellSize" width="34" height="31"/>
                             <size key="intercellSpacing" width="-1" height="2"/>
-                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="AA8E37CF-82B5-4AF7-9C90-7BB20F2A0916" imagePosition="only" alignment="center" tag="-1" inset="2" id="fpq-vn-UEj" customClass="OITabCell">
+                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="90B66B89-587B-4D5D-BEE3-1859CFEF682C" imagePosition="only" alignment="center" tag="-1" inset="2" id="fpq-vn-UEj" customClass="OITabCell">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                 <font key="font" metaFont="system" size="10"/>
                             </buttonCell>
@@ -79,9 +80,9 @@
                                 <action selector="selectInspector:" target="-2" id="Orl-PV-oby"/>
                             </connections>
                         </matrix>
-                        <box autoresizesSubviews="NO" title="Box" boxType="custom" borderType="none" translatesAutoresizingMaskIntoConstraints="NO" id="qZc-1G-pUh">
+                        <box autoresizesSubviews="NO" boxType="custom" borderType="none" title="Box" translatesAutoresizingMaskIntoConstraints="NO" id="qZc-1G-pUh">
                             <rect key="frame" x="0.0" y="0.0" width="200" height="16"/>
-                            <view key="contentView">
+                            <view key="contentView" id="gfX-JJ-5Qg">
                                 <rect key="frame" x="0.0" y="0.0" width="200" height="16"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
@@ -93,24 +94,20 @@
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                     </textField>
-                                    <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="mCU-rQ-A9B">
+                                    <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="mCU-rQ-A9B">
                                         <rect key="frame" x="0.0" y="-2" width="200" height="5"/>
-                                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <font key="titleFont" metaFont="system"/>
                                     </box>
                                 </subviews>
                             </view>
                             <constraints>
-                                <constraint firstItem="mCU-rQ-A9B" firstAttribute="leading" secondItem="qZc-1G-pUh" secondAttribute="leading" id="0ZF-Qv-9o6"/>
-                                <constraint firstAttribute="bottom" secondItem="mCU-rQ-A9B" secondAttribute="bottom" id="5Ex-xX-AYq"/>
-                                <constraint firstItem="OID-dd-Tlq" firstAttribute="top" secondItem="qZc-1G-pUh" secondAttribute="top" constant="1" id="Fu8-Ha-evx"/>
-                                <constraint firstAttribute="centerX" secondItem="OID-dd-Tlq" secondAttribute="centerX" placeholder="YES" id="beL-Hu-dhZ"/>
-                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="OID-dd-Tlq" secondAttribute="trailing" id="mtY-dE-Aff"/>
-                                <constraint firstAttribute="trailing" secondItem="mCU-rQ-A9B" secondAttribute="trailing" id="p8x-zp-SXu"/>
-                                <constraint firstItem="OID-dd-Tlq" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="qZc-1G-pUh" secondAttribute="leading" constant="4" id="uzR-hP-z9C"/>
+                                <constraint firstAttribute="centerX" secondItem="OID-dd-Tlq" secondAttribute="centerX" placeholder="YES" id="5OS-QN-CpG"/>
+                                <constraint firstAttribute="trailing" secondItem="mCU-rQ-A9B" secondAttribute="trailing" id="HCf-4V-Wer"/>
+                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="OID-dd-Tlq" secondAttribute="trailing" id="RBg-Nh-sfB"/>
+                                <constraint firstItem="mCU-rQ-A9B" firstAttribute="leading" secondItem="qZc-1G-pUh" secondAttribute="leading" id="hJZ-Lh-b8Z"/>
+                                <constraint firstAttribute="bottom" secondItem="mCU-rQ-A9B" secondAttribute="bottom" id="k6e-Rf-kG7"/>
+                                <constraint firstItem="OID-dd-Tlq" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="qZc-1G-pUh" secondAttribute="leading" constant="4" id="lxW-u3-JKa"/>
+                                <constraint firstItem="OID-dd-Tlq" firstAttribute="top" secondItem="qZc-1G-pUh" secondAttribute="top" constant="1" id="wSG-Ng-VT2"/>
                             </constraints>
-                            <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                             <color key="fillColor" white="0.0" alpha="0.070000000000000007" colorSpace="calibratedWhite"/>
                         </box>
                     </subviews>
@@ -124,29 +121,27 @@
                         <constraint firstItem="qZc-1G-pUh" firstAttribute="top" secondItem="qey-z5-6rk" secondAttribute="bottom" id="qUU-RF-bip"/>
                     </constraints>
                 </customView>
-                <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="1ij-T1-gZE">
+                <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="1ij-T1-gZE">
                     <rect key="frame" x="0.0" y="115" width="200" height="5"/>
-                    <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                    <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <font key="titleFont" metaFont="system"/>
                 </box>
                 <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8xw-V2-CE9">
                     <rect key="frame" x="0.0" y="0.0" width="200" height="117"/>
                     <clipView key="contentView" id="FBW-IF-cGl">
-                        <rect key="frame" x="1" y="1" width="166" height="79"/>
+                        <rect key="frame" x="0.0" y="0.0" width="185" height="102"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2pQ-su-wmc" customClass="OAFlippedView">
-                                <rect key="frame" x="0.0" y="0.0" width="200" height="134"/>
+                                <rect key="frame" x="0.0" y="23" width="200" height="134"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </customView>
                         </subviews>
                     </clipView>
                     <scroller key="horizontalScroller" verticalHuggingPriority="750" horizontal="YES" id="n5m-V7-b78">
-                        <rect key="frame" x="1" y="80" width="166" height="15"/>
+                        <rect key="frame" x="0.0" y="102" width="185" height="15"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
-                    <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="0.88235294117647056" horizontal="NO" id="jbT-YM-hkj">
-                        <rect key="frame" x="167" y="1" width="15" height="79"/>
+                    <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="0.53125" horizontal="NO" id="jbT-YM-hkj">
+                        <rect key="frame" x="185" y="0.0" width="15" height="102"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
@@ -169,10 +164,10 @@
         </customView>
     </objects>
     <resources>
-        <image name="AA8E37CF-82B5-4AF7-9C90-7BB20F2A0916" width="1" height="1">
+        <image name="90B66B89-587B-4D5D-BEE3-1859CFEF682C" width="1" height="1">
             <mutableData key="keyedArchiveRepresentation">
-YnBsaXN0MDDUAQIDBAUGPj9YJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoK4HCBMU
-GR4fIyQsLzI4O1UkbnVsbNUJCgsMDQ4PEBESVk5TU2l6ZVYkY2xhc3NcTlNJbWFnZUZsYWdzVk5TUmVw
+YnBsaXN0MDDUAQIDBAUGPT5YJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoK4HCBMU
+GR4fIyQrLjE3OlUkbnVsbNUJCgsMDQ4PEBESVk5TU2l6ZVYkY2xhc3NcTlNJbWFnZUZsYWdzVk5TUmVw
 c1dOU0NvbG9ygAKADRIgwAAAgAOAC1Z7MSwgMX3SFQoWGFpOUy5vYmplY3RzoReABIAK0hUKGh2iGxyA
 BYAGgAkQANIgCiEiXxAUTlNUSUZGUmVwcmVzZW50YXRpb26AB4AITxENtE1NACoAAAAOgAAgQAgIAA8B
 AAADAAAAAQABAAABAQADAAAAAQABAAABAgADAAAABAAAAMgBAwADAAAAAQAFAAABBgADAAAAAQACAAAB
@@ -233,13 +228,13 @@ x/pX+uf7d/wH/Jj9Kf26/kv+3P9t//9wYXJhAAAAAAADAAAAAmZmAADypwAADVkAABPQAAAKDnZjZ3QA
 AAAAAAAAAQABAAAAAAAAAAEAAAABAAAAAAAAAAEAAAABAAAAAAAAAAEAAG5kaW4AAAAAAAAANgAAp0AA
 AFWAAABMwAAAnsAAACWAAAAMwAAAUAAAAFRAAAIzMwACMzMAAjMzAAAAAAAAAABzZjMyAAAAAAABDHIA
 AAX4///zHQAAB7oAAP1y///7nf///aQAAAPZAADAcW1tb2QAAAAAAAAGEAAAkicWFwXUy/BZgAAAAAAA
-AAAAAAAAAAAAAADSJSYnKFokY2xhc3NuYW1lWCRjbGFzc2VzXxAQTlNCaXRtYXBJbWFnZVJlcKMpKitf
-EBBOU0JpdG1hcEltYWdlUmVwWk5TSW1hZ2VSZXBYTlNPYmplY3TSJSYtLldOU0FycmF5oi0r0iUmMDFe
-TlNNdXRhYmxlQXJyYXmjMC0r0zM0CjU2N1dOU1doaXRlXE5TQ29sb3JTcGFjZUQwIDAAEAOADNIlJjk6
-V05TQ29sb3KiOSvSJSY8PVdOU0ltYWdlojwrXxAPTlNLZXllZEFyY2hpdmVy0UBBVHJvb3SAAQAIABEA
-GgAjAC0AMgA3AEYATABXAF4AZQByAHkAgQCDAIUAigCMAI4AlQCaAKUApwCpAKsAsACzALUAtwC5ALsA
-wADXANkA2w6TDpgOow6sDr8Oww7WDuEO6g7vDvcO+g7/Dw4PEg8ZDyEPLg8zDzUPNw88D0QPRw9MD1QP
-Vw9pD2wPcQAAAAAAAAIBAAAAAAAAAEIAAAAAAAAAAAAAAAAAAA9zA
+AAAAAAAAAAAAAADSJSYnKFokY2xhc3NuYW1lWCRjbGFzc2VzXxAQTlNCaXRtYXBJbWFnZVJlcKMnKSpa
+TlNJbWFnZVJlcFhOU09iamVjdNIlJiwtV05TQXJyYXmiLCrSJSYvMF5OU011dGFibGVBcnJheaMvLCrT
+MjMKNDU2V05TV2hpdGVcTlNDb2xvclNwYWNlRDAgMAAQA4AM0iUmODlXTlNDb2xvcqI4KtIlJjs8V05T
+SW1hZ2WiOypfEA9OU0tleWVkQXJjaGl2ZXLRP0BUcm9vdIABAAgAEQAaACMALQAyADcARgBMAFcAXgBl
+AHIAeQCBAIMAhQCKAIwAjgCVAJoApQCnAKkAqwCwALMAtQC3ALkAuwDAANcA2QDbDpMOmA6jDqwOvw7D
+Ds4O1w7cDuQO5w7sDvsO/w8GDw4PGw8gDyIPJA8pDzEPNA85D0EPRA9WD1kPXgAAAAAAAAIBAAAAAAAA
+AEEAAAAAAAAAAAAAAAAAAA9gA
 </mutableData>
         </image>
     </resources>

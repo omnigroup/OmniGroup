@@ -120,6 +120,15 @@ void OBBacktraceDumpEntries(void)
         if (buf->type > OBBacktraceBuffer_Allocated) {
             // Not printing the stack snapshot addresses for the time being, but we could.
             fprintf(stderr, " message:\"%s\", context:%p\n", buf->message, buf->context);
+
+            int32_t frameCount = 0;
+            while (buf->frames[frameCount] != NULL) {
+                frameCount++;
+            }
+
+            backtrace_symbols_fd(buf->frames, frameCount, fileno(stderr));
+
+            fprintf(stderr, "\n\n");
         }
     }
 }

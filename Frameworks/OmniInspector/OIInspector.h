@@ -74,7 +74,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 - (BOOL)shouldBeUsedForObject:(id)object;
 // This method is called by OITabbedInspector whenever the selection changes if the inspector is in auto-tab-select mode
-@property(nonatomic,readonly) NSPredicate *shouldBeUsedForObjectPredicate;
+@property(nonatomic,readonly,nullable) NSPredicate *shouldBeUsedForObjectPredicate;
 
 // Subclasses should override this if they may need to do something in response to an inspector view programmatically resizing. They should also override this to pass it on to any inspectors they manage. (See OITabbedInspector and OISectionedInspector.) Inspectors which programmatically change the size of their inspectorView should then call this method on their inspectorController so it can notify the inspector chain. This allows an inspector view which contains a child inspector view to know to resize to accommodate changes in the size of that child.
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
@@ -103,7 +103,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 // If the inspector has any need to know its controller, it can implement this method
 - (CGFloat)inspectorWillResizeToHeight:(CGFloat)height; // height of window content rect, excluding header button view
-@property(nonatomic,readonly) CGFloat inspectorMinimumHeight; // returns minimum height of window content rect
+@property(nonatomic,readwrite) CGFloat inspectorMinimumHeight; // returns minimum height of window content rect
 - (id)windowTitle;
 // If implemented, this will be used instead of -inspectorName, to let the window title be dynamic. NSAttributedString or NSString are ok.
 

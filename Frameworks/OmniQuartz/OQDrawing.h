@@ -14,10 +14,12 @@
 #import <OmniBase/assertions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern void OQSetPatternColorReferencePoint(CGPoint point, NSView *view);
+extern void OQSetPatternColorReferencePoint(CGPoint point, NSView * _Nonnull view);
 #else
 #import <CoreGraphics/CoreGraphics.h>
 #endif
+
+CF_ASSUME_NONNULL_BEGIN
 
 // 
 // Rounded rect support.
@@ -132,25 +134,4 @@ static inline CGFloat OQAffineTransformGetDilation(CGAffineTransform m)
     return m.a * m.d - m.b * m.c;
 }
 
-// SVG-style paths
-extern CGPathRef OQCGPathCreateFromSVGPath(const unsigned char *d, size_t d_length) CF_RETURNS_RETAINED;
-extern CGPathRef OQCGPathCreateFromSVGPathString(NSString *string) CF_RETURNS_RETAINED;
-extern int OQCGContextAddSVGPath(CGContextRef cgContext, const unsigned char *d, size_t d_length);
-
-// SVG-style arcs
-struct OQEllipseParameters {
-    CGPoint center;              // Computed center of the ellipse.
-    unsigned int numSegments;    // At most 4 Bezier segments in the result.
-    CGPoint points[ 3 * 4 ];     // Three control points per segment; first segment's currentpoint is (0,0).
-};
-/*
- Computes the parameters of an elliptical arc as given by the SVG-style arc operator.
- delta is the vector from the start to the end of the arc.
- rMaj and rMin are the major and minor radii of the ellipse.
- theta is the angle of the major radius (0 -> towards positive X, pi/4 -> towards +X,+Y).
- largeSweep and posAngle disambiguate between the four possible fits to the above parameters.
- */
-void OQComputeEllipseParameters(CGFloat deltaX, CGFloat deltaY,
-                                CGFloat rMaj, CGFloat rMin, CGFloat theta,
-                                BOOL largeSweep, BOOL posAngle,
-                                struct OQEllipseParameters *result);
+CF_ASSUME_NONNULL_END

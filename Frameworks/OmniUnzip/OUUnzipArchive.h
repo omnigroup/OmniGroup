@@ -23,21 +23,21 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSString *path;
 @property (readonly, nonatomic) NSArray <OUUnzipEntry *> *entries;
 
-- (OUUnzipEntry * _Nullable)entryNamed:(NSString *)name;
+- (nullable OUUnzipEntry *)entryNamed:(NSString *)name;
 - (NSArray <OUUnzipEntry *> *)entriesWithNamePrefix:(NSString * _Nullable)prefix;
 
-- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
-- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
+- (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
+- (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 
 // Convenience methods for unarchiving to disk
 - (BOOL)unzipArchiveToURL:(NSURL *)targetURL error:(NSError **)outError;
 
 // Writes all entries prefixed with "name" to temp.
-- (NSURL * _Nullable)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)name error:(NSError **)outError;
+- (nullable NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)name error:(NSError **)outError;
 
 // Creates an NSFileWrapper representing the zip archive
-- (NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
-- (NSFileWrapper *)fileWrapperWithTopLevelWrapper:(BOOL)shouldIncludeTopLevelWrapper outError:(NSError **)outError;
+- (nullable NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
+- (nullable NSFileWrapper *)fileWrapperWithTopLevelWrapper:(BOOL)shouldIncludeTopLevelWrapper error:(NSError **)outError;
 
 @end
 

@@ -12,6 +12,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/macros.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     #define OSU_IPHONE 1
@@ -23,7 +24,7 @@
 #endif
 
 #if OSU_MAC
-#import <AppKit/NSOpenGL.h>
+#import <AppKit/AppKit.h>
 #import <IOKit/IOCFBundle.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
 #import <OpenGL/OpenGL.h>
@@ -239,18 +240,30 @@ static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info w
 static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what);
 #endif /* CL_VERSION_1_0 */
 
-CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSString *uuidString, NSDictionary *runtimeStatsAndProbes, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
+CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSString *uuidString, NSDictionary *runtimeStats, NSDictionary *probes, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
 {
     CFMutableDictionaryRef info = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    NSMutableDictionary *infoDict = (__bridge NSMutableDictionary *)info;
     
-    // Run time stats from OSURunTime (which the calling apps computes and passes in so that the XPC service doesn't need access to its preferences domain), and values for custom probes.
-    if (runtimeStatsAndProbes) {
-        [(__bridge NSMutableDictionary *)info addEntriesFromDictionary:runtimeStatsAndProbes];
+    // Run time stats from OSURunTime (which the calling apps computes and passes in so that the XPC service doesn't need access to its preferences domain)
+    if (runtimeStats) {
+        [runtimeStats enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            OBASSERT(infoDict[key] == nil, @"Unexpected duplicate runtime statistic key %@", key);
+            infoDict[key] = obj;
+        }];
     }
     
     if (!collectHardwareInformation)
         // The user has opted out.  We still send along the application name and bundle version.  We may use it someday to filter the result that is returned to just the pertinent info for that app.
     return info;
+    
+    // Custom probes
+    if (probes) {
+        [probes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            OBASSERT(infoDict[key] == nil, @"Unexpected duplicate probe key %@", key);
+            infoDict[key] = obj;
+        }];
+    }
     
     // License type (bundle, retail, demo, etc)
     {
@@ -533,36 +546,57 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
                 CFRelease(rendererMem);
             }
             
-            // Display mode and QuartzExtreme boolean for up to 4 displays            
+            // Display mode for up to 4 displays
             for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
                 CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
                 if (!mode)
                     continue;
-                size_t width, height;
-                double refreshRate;
-                CFStringRef pixelEncoding;
-                
-                width = CGDisplayModeGetWidth(mode);
-                height = CGDisplayModeGetHeight(mode);
-                refreshRate = CGDisplayModeGetRefreshRate(mode);
-                pixelEncoding = CGDisplayModeCopyPixelEncoding(mode);
-                
-                CFStringRef format = reportMode ? CFSTR("%ldx%ld, %@, %gHz") : CFSTR("%ld,%ld,%@,%g");
-                CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, (long)width, (long)height, pixelEncoding, refreshRate);
+
+                size_t width = CGDisplayModeGetWidth(mode);
+                size_t height = CGDisplayModeGetHeight(mode);
+                double refreshRate = CGDisplayModeGetRefreshRate(mode);
+
+                CFStringRef format = reportMode ? CFSTR("%ldx%ld, %gHz") : CFSTR("%ld,%ld,%g");
+                CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, (long)width, (long)height, refreshRate);
                 
                 CFRelease(mode);
-                CFRelease(pixelEncoding);
 
                 CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
                 CFDictionarySetValue(info, key, value);
                 CFRelease(key);
                 CFRelease(value);
-                
-                CFStringRef qe_key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("qe%d"), displayIndex);
-                CFStringRef qe_value = CGDisplayUsesOpenGLAcceleration(displays[displayIndex]) ? CFSTR("1") : CFSTR("0");
-                CFDictionarySetValue(info, qe_key, qe_value);
-                CFRelease(qe_key);
-                CFRelease(qe_value);
+            }
+
+            // Info about the color on the deepest screen
+            {
+                NSScreen *screen = [NSScreen deepestScreen];
+                NSDictionary<NSString *, id> *deviceDescription = screen.deviceDescription;
+
+                NSValue *resolutionValue = deviceDescription[NSDeviceResolution];
+                if ([resolutionValue isKindOfClass:[NSValue class]]) {
+                    NSSize resolution = resolutionValue.sizeValue;
+                    NSString *format = reportMode ? @"%g x %g DPI" : @"%g,%g";
+                    NSString *value = [[NSString alloc] initWithFormat:format, resolution.width, resolution.height];
+                    CFDictionarySetValue(info, CFSTR("dpi"), (__bridge CFStringRef)value);
+                }
+
+                NSNumber *bitsPerSampleValue = deviceDescription[NSDeviceBitsPerSample];
+                if ([bitsPerSampleValue isKindOfClass:[NSNumber class]]) {
+                    NSInteger bitsPerSample = bitsPerSampleValue.integerValue;
+                    NSString *format = reportMode ? @"%ld bps" : @"%ld";
+                    NSString *value = [[NSString alloc] initWithFormat:format, bitsPerSample];
+                    CFDictionarySetValue(info, CFSTR("bps"), (__bridge CFStringRef)value);
+                }
+
+                // We could report the color space name, but if someone has made a custom color profile, it might have identifying information in the name... Let's not.
+                // -canRepresentDisplayGamut: is 10.12 only.
+                if ([OFVersionNumber isOperatingSystemSierraOrLater]) {
+                    CFStringRef sRGB = [screen canRepresentDisplayGamut: NSDisplayGamutSRGB] ? CFSTR("1") : CFSTR("0");
+                    CFDictionarySetValue(info, CFSTR("sRGB"), sRGB);
+
+                    CFStringRef p3 = [screen canRepresentDisplayGamut: NSDisplayGamutP3] ? CFSTR("1") : CFSTR("0");
+                    CFDictionarySetValue(info, CFSTR("p3"), p3);
+                }
             }
         }
 #endif // OSU_MAC

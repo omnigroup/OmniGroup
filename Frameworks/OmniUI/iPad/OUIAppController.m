@@ -228,7 +228,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     [self presentError:error fromViewController:viewController file:NULL line:0];
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
 {
     if (error == nil || [error causedByUserCancelling])
         return;
@@ -263,7 +263,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     }];
 }
 
-+ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
 {
     [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:nil optionalAction:NULL];
 }
@@ -278,12 +278,12 @@ static void __iOS7B5CleanConsoleOutput(void)
     [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
-+ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
     [self _presentError:error fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
-+ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
     [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
@@ -382,7 +382,7 @@ static void __iOS7B5CleanConsoleOutput(void)
 }
 
 
-- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body;
+- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString * _Nullable)body;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
     NSString *feedbackAddress = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
@@ -559,7 +559,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self sendFeedbackWithSubject:subject body:nil];
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil)
@@ -578,7 +578,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return webController;
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title;
 {
     return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen];
 }
@@ -626,7 +626,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return newsURLToShow;
 }
 
-- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
+- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat
 {
 #if 0 && DEBUG_shannon
     NSLog(@"asked to show news.  root view controller is %@", self.window.rootViewController);
@@ -658,7 +658,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return foundIt;
 }
 
-- (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController;
 {
     OUIAboutThisAppViewController *aboutController = [[OUIAboutThisAppViewController alloc] init];
     [aboutController loadAboutPanelWithTitle:[self aboutScreenTitle] URL:[self aboutScreenURL] javascriptBindingsDictionary:[self aboutScreenBindingsDictionary]];

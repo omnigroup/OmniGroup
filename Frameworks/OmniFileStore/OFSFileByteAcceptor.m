@@ -9,7 +9,9 @@
 #import "OFSFileByteAcceptor.h"
 #import <OmniBase/macros.h>
 #import <OmniBase/rcsid.h>
-#import <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
 
 RCS_ID("$Id$");
 

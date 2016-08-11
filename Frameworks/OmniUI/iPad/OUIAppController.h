@@ -13,6 +13,8 @@
 #import <OmniUI/OUIFeatures.h>
 #import <OmniUI/OUIWebViewController.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class UIBarButtonItem;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
@@ -40,12 +42,12 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
-+ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^)(UIAlertAction *action))optionalAction;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
 
-+ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error file:(const char * _Nullable)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
 
-+ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 - (NSOperationQueue *)backgroundPromptQueue;
 
@@ -53,8 +55,8 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
-- (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
-- (void)showOnlineHelp:(id)sender;
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController;
+- (void)showOnlineHelp:(nullable id)sender;
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -76,8 +78,8 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 @property(nonatomic,readonly) NSString *fullReleaseString;
 
 // App menu support
-@property (nonatomic, strong) NSString *newsURLStringToShowWhenReady;
-@property (nonatomic, strong) NSString *newsURLCurrentlyShowing;
+@property (nonatomic, strong, nullable) NSString *newsURLStringToShowWhenReady;
+@property (nonatomic, strong, nullable) NSString *newsURLCurrentlyShowing;
 @property (nonatomic, weak) OUIWebViewController *newsViewController;
 - (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
 
@@ -87,7 +89,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 /// The most recent news URL, which could be an unread one or just the most recently shown one. Will be nil if there is no unread news and no already-read news stored in preferences.
 - (NSString *)mostRecentNewsURLString;
 
-- (OUIWebViewController *)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat;
+- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat;
 
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionAfterReleaseNotes,
@@ -107,10 +109,10 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (NSString *)feedbackMenuTitle;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
-- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
+- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 
 /// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title;
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
@@ -128,3 +130,5 @@ extern NSTimeInterval OUIElapsedTimeSinceProcessCreation(void); // For timing st
 extern NSTimeInterval OUIElapsedTimeSinceApplicationStarted(void); // Time since the beginning of -[OUIApplication initialize]
 
 #define OUILogPerformanceMetric(format, ...) if (OUIShouldLogPerformanceMetrics) NSLog((format), ## __VA_ARGS__)
+
+NS_ASSUME_NONNULL_END

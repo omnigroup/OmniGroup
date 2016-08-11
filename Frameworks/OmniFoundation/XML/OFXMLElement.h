@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
 #import <OmniFoundation/OFXMLBuffer.h>
+#import <OmniBase/OBUtilities.h>
 
 @class NSArray, NSMutableArray, NSDate, NSData, NSMutableDictionary, NSMutableString, NSError;
 @class OFXMLDocument, OFXMLElement;
@@ -19,10 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 
-
 @interface OFXMLElement : OFObject
 
 - initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
+- initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
 - initWithName:(NSString *)name;
 
 
@@ -30,7 +31,7 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (OFXMLElement *)deepCopyWithName:(NSString *)name NS_RETURNS_RETAINED;
 
 @property(nonatomic,readonly) NSString *name;
-@property(nonatomic,readonly) NSArray *children;
+@property(nullable,nonatomic,readonly) NSArray *children;
 @property(nonatomic,readonly) NSUInteger childrenCount;
 - (id)childAtIndex:(NSUInteger)childIndex;
 @property(nonatomic,readonly) id lastChild;
@@ -42,16 +43,20 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (void)removeAllChildren;
 - (void)setChildren:(NSArray *)children;
 - (void)sortChildrenUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
-- (OFXMLElement *)firstChildNamed:(NSString *)childName;
+- (nullable OFXMLElement *)firstChildNamed:(NSString *)childName;
 - (OFXMLElement *)firstChildAtPath:(NSString *)path;
-- (OFXMLElement *)firstChildWithAttribute:(NSString *)attribute value:(NSString *)value;
+- (nullable OFXMLElement *)firstChildWithAttribute:(NSString *)attribute value:(NSString *)value;
+
+// Gathers all the immediate and descendent string children and concatenates them into a single string.
+// This will ignore any children that are unparsed XML elements.
+@property(nonatomic, readonly) NSString *stringContents;
 
 @property(nonatomic,assign) BOOL ignoreUnlessReferenced;
 - (void)markAsReferenced;
 @property(nonatomic,readonly) BOOL shouldIgnore;
 
-@property(nonatomic,readonly) NSArray *attributeNames;
-- (NSString *) attributeNamed: (NSString *) name;
+@property(nullable,nonatomic,readonly) NSArray *attributeNames;
+- (nullable NSString *) attributeNamed: (NSString *) name;
 - (void) setAttribute: (NSString *) name string: (nullable NSString *) value;
 - (void) setAttribute: (NSString *) name value: (nullable id) value;
 - (void) setAttribute: (NSString *) name integer: (int) value;
@@ -73,11 +78,9 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDouble:(double) contents format:(NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingDate:(NSDate *)date;
 - (void) removeAttributeNamed: (NSString *) name;
-- (void)sortAttributesUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
-- (void)sortAttributesUsingSelector:(SEL)comparator;
 
 - (void)applyFunction:(OFXMLElementApplier)applier context:(void *)context;
-- (void)applyBlock:(OFXMLElementApplierBlock)applierBlock;
+- (void)applyBlock:(OFXMLElementApplierBlock NS_NOESCAPE)applierBlock;
 
 - (nullable NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 
@@ -90,7 +93,6 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 @interface NSObject (OFXMLWriting)
 - (BOOL)appendXML:(OFXMLBuffer)xml withParentWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)parentBehavior document:(OFXMLDocument *)doc level:(unsigned int)level error:(NSError **)outError;
 - (BOOL)xmlRepresentationCanContainChildren;
-- (NSObject *)copyFrozenElement;
 @end
 
 NS_ASSUME_NONNULL_END

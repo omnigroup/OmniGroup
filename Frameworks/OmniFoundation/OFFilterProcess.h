@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 typedef void (^OFFilterProcessFdAcceptor)(int fd);
 /* If OFFilterProcessInputBlockKey is set, it must be a block of type OFFilterProcessFdAcceptor. It is called once with the file descriptor opened to which the child's stdin should be written. It's the acceptor's responsibility to schedule further asynchronous activity if needed, close the descriptor when done, etc. */
 
-@interface OFFilterProcess : OFObject
+@interface OFFilterProcess : NSObject
 
 /* Keys for the parameters dictionary */
 #define OFFilterProcessCommandPathKey               (@"command")     /* NSString */

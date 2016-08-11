@@ -1,4 +1,4 @@
-// Copyright 2009-2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,7 +163,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
     animation.removedOnCompletion = NO;
     animation.fillMode = kCAFillModeForwards;
     animation.timingFunction = [CAMediaTimingFunction functionCompatibleWithDefault];
-    animation.delegate = self;
+    animation.delegate = (id <CAAnimationDelegate>)self;
     animation.duration = [CATransaction animationDuration];
     
     OBASSERT(parentLayer);

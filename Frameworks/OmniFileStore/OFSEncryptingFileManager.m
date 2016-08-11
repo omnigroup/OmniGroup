@@ -249,7 +249,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     return [underlying deleteFile:fileInfo error:outError];
 }
 
-- (OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
+- (nullable OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
 {
     if (!file || !file.exists)
         return nil;

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@ RCS_ID("$Id$");
 @end
 
 @implementation OFThreeValuedMask
+
 + (instancetype)maskWithSetBits:(NSUInteger)setBitMask label:(NSString *)label; // all other bits are "don't care"
 {
     return [OFThreeValuedMask maskWithSetBits:setBitMask clearBits:0 label:label];
@@ -71,6 +72,12 @@ RCS_ID("$Id$");
     _careMask = careMask;
     _label = [label copy];
     return self;
+}
+
+- (void)dealloc;
+{
+    [_label release];
+    [super dealloc];
 }
 
 #pragma mark NSObject subclass

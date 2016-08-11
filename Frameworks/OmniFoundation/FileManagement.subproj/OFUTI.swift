@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ public struct UTI {
 
     public static let Zip = UTI("com.pkware.zip-archive") // This is the base type for public.zip-archive, but the latter defines a 'zip' extension, while this is usable for zip-formatted files that don't use that extension.
 
-    public static func fileType(forFileURL fileURL:NSURL, preferringNative:Bool = true) throws -> UTI {
+    public static func fileType(forFileURL fileURL:URL, preferringNative:Bool = true) throws -> UTI {
         var error:NSError?
         if let rawFileType = OFUTIForFileURLPreferringNative(fileURL, &error) {
             return UTI(rawFileType)
@@ -72,17 +72,24 @@ public struct UTI {
 
 
     /// Checks if the receiver conforms to, or is equal to, the passed in type.
-    public func conformsTo(otherUTI:UTI) -> Bool {
+    public func conformsTo(_ otherUTI:UTI) -> Bool {
         return UTTypeConformsTo(self.rawFileType, otherUTI.rawFileType)
     }
 
-    public func conformsToAny<T where T : SequenceType, T.Generator.Element == UTI>(otherUTIs:T) -> Bool {
+    public func conformsToAny<T where T : Sequence, T.Iterator.Element == UTI>(_ otherUTIs:T) -> Bool {
         for e in otherUTIs {
             if self.conformsTo(e) {
                 return true
             }
         }
         return false
+    }
+    
+    public var preferredPathExtension: String? {
+        guard let unmanaged = UTTypeCopyPreferredTagWithClass(self.rawFileType, kUTTagClassFilenameExtension) else {
+            return nil
+        }
+        return String(unmanaged.takeRetainedValue())
     }
 }
 
@@ -92,7 +99,7 @@ extension UTI: CustomDebugStringConvertible {
     }
 }
 
-extension UTI: StringLiteralConvertible {
+extension UTI: ExpressibleByStringLiteral {
     public init(stringLiteral value:String) {
         self.init(value)
     }
@@ -104,7 +111,8 @@ extension UTI: StringLiteralConvertible {
     }
 }
 
-extension UTI: Equatable { }
-public func ==(type1:UTI, type2:UTI) -> Bool {
-    return UTTypeEqual(type1.rawFileType, type2.rawFileType)
+extension UTI: Equatable {
+    public static func ==(type1:UTI, type2:UTI) -> Bool {
+        return UTTypeEqual(type1.rawFileType, type2.rawFileType)
+    }
 }

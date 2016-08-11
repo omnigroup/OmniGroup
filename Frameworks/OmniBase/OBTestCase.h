@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,4 +39,14 @@ do { \
             _XCTRegisterFailure(self, msg, __VA_ARGS__);                \
         }                                                               \
     })
+
+// It isn't clear if XCTAssert{,Not}EqualObjects checks reflexivity.
+#define OBAssertEqualObjects(a,b) do { \
+    XCTAssertEqualObjects((a), (b)); \
+    XCTAssertEqualObjects((b), (a)); \
+} while(0)
+#define OBAssertNotEqualObjects(a,b) do { \
+    XCTAssertNotEqualObjects((a), (b)); \
+    XCTAssertNotEqualObjects((b), (a)); \
+} while(0)
 

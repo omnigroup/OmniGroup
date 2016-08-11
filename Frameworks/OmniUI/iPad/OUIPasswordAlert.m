@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUI/OUIPasswordAlert.h>
+#import <OmniUI/OUIPasswordAlert-Internal.h>
 
 #import <OmniFoundation/OFVersionNumber.h>
 
@@ -17,9 +17,6 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 {
   @private
     NSString *_username;
-    NSString *_password;
-    NSUInteger _options;
-    UIAlertController *_alertController;
     
     struct {
         NSUInteger dismissed:1;
@@ -56,11 +53,10 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     _options = options;
 
     if ([NSString isEmptyString:_title]) {
-        _title = nil;
-
         NSString *name = [protectionSpace realm];
-        if ([NSString isEmptyString:name])
+        if ([NSString isEmptyString:name]) {
             name = [protectionSpace host];
+        }
     
         _title = [name copy];
     }
@@ -81,11 +77,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     
     // Password field
     [_alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        weakSelf.passwordTextField = textField;
-        OBASSERT(weakSelf.passwordTextField.delegate == nil);
-        weakSelf.passwordTextField.delegate = weakSelf;
-        weakSelf.passwordTextField.secureTextEntry = YES;
-        weakSelf.passwordTextField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase field of login/password prompt");
+        [weakSelf configurePasswordTextField:textField];
     }];
     
     // Buttons
@@ -108,7 +100,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 {
     if (_title != title) {
         _title = [title copy];
-        _alertController.title = _title;
+        self.alertController.title = _title;
     }
 }
 
@@ -128,7 +120,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     
     if (showUsername && self.usernameTextField == nil)
-        _alertController.message = username;
+        self.alertController.message = username;
 
     self.usernameTextField.text = username;
     
@@ -166,17 +158,41 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 {
     OBPRECONDITION(self.delegate || _finished_callback); // Otherwise there's no point
     [[OUIPasswordAlert _visibleAlerts] addObject:self]; // we hold a reference to ourselves until -_didDismissWithAction:
-    [controller presentViewController:_alertController animated:YES completion:nil];
+    [controller presentViewController:self.alertController animated:YES completion:nil];
 }
 
 - (UIColor *)tintColor;
 {
-    return [[_alertController view] tintColor];
+    return [[self.alertController view] tintColor];
 }
 
 - (void)setTintColor:(UIColor *)tintColor;
 {
-    [[_alertController view] setTintColor:tintColor];
+    [[self.alertController view] setTintColor:tintColor];
+}
+
+#pragma mark Internal
+
+- (BOOL)isDismissed;
+{
+    return _flags.dismissed;
+}
+
+- (void)configurePasswordTextField:(UITextField *)textField;
+{
+    self.passwordTextField = textField;
+    OBASSERT(textField.delegate == nil);
+    textField.delegate = self;
+    textField.secureTextEntry = YES;
+    textField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase field of login/password prompt");
+}
+
+- (void)dismissWithAction:(OUIPasswordAlertAction)action;
+{
+    OBPRECONDITION(![self isDismissed]);
+    [self.alertController dismissViewControllerAnimated:YES completion:^{
+        [self _didDismissWithAction:action];
+    }];
 }
 
 #pragma mark -
@@ -199,10 +215,8 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     if (textField == self.passwordTextField && ![NSString isEmptyString:self.passwordTextField.text]) {
         
         // See discussion around alert dismissal in -_didDismissWithAction:.
-        if (!_flags.dismissed) {
-            [_alertController dismissViewControllerAnimated:YES completion:^{
-                [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
-            }];
+        if (![self isDismissed]) {
+            [self dismissWithAction:OUIPasswordAlertActionLogIn];
         }
 
         return NO;
@@ -222,8 +236,8 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     // Either way, we want this method to get called after the alert controller is already dismissed, but before it is released and gone. Assert that we haven't set our flag yet, and that the alert controller exists but is not being presented.
     
     OBPRECONDITION(!_flags.dismissed);
-    OBPRECONDITION(_alertController);
-    OBPRECONDITION([_alertController presentingViewController] == nil);
+    OBPRECONDITION(self.alertController != nil);
+    OBPRECONDITION([self.alertController presentingViewController] == nil);
     
     _flags.dismissed = 1;
 

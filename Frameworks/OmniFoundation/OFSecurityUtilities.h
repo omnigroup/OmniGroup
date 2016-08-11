@@ -91,6 +91,10 @@ BOOL OFSecKeyGeneratePairAndInfo(enum OFKeyAlgorithm keyType, int keyBits, BOOL 
 /* A low-level routine for generating a certificate signing request per PKCS#10 / RFC2314 / RFC2986. The caller is responsible for producing a correctly DER-formatted name, list of request attributes (see PKCS#9 / RFC2985 for values), and SubjectPublicKeyInfo structure (the pub key info can be generated using SecItemExport with format kSecFormatOpenSSL on OSX, or by OFSecKeyGeneratePairAndInfo() on iOS). The returned data is a DER-encoded CertificationRequest structure suitable for use in an application/pkcs10 message per RFC5967. */
 NSData *OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, SecKeyRef privateKey, NSArray<NSData *> *derAttributes, NSMutableString *log, NSError **outError);
 
+/* Returns the certificate's issuer (as a DER-encoded name), serial number (as the contents of a DER-encoded integer, without the tag), and subject key identifier (as a NSData, but only if the cert has the relevant extension). */
+BOOL OFSecCertificateGetIdentifiers(SecCertificateRef aCert,
+                                    NSData **outIssuer, NSData **outSerial, NSData **outSKI);
+
 /* This is internal to OmniFoundation */
 struct OFNamedCurveInfo {
     const char *name;

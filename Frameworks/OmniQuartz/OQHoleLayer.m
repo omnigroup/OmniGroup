@@ -1,4 +1,4 @@
-// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,16 @@
 RCS_ID("$Id$");
 
 @implementation OQHoleLayer
+{
+    CGGradientRef _gradient;
+    NSUInteger _shadowEdgeMask; // one bit set for each of the min/max x/y edge constants for the edges that should have shadows.
+
+    CGSize _shadowImageSize;
+    CGImageRef _shadowImage;
+
+    CALayer *_minXEdge, *_maxXEdge;
+    CALayer *_minYEdge, *_maxYEdge;
+}
 
 static const CGFloat kShadowRadius = 40.0f;
 

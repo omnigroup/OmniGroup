@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,12 @@ OFDeclareDebugLogLevel(OSUProbeDebug)
     if (OSUProbeDebug >= (level)) \
         NSLog(@"PROBE %@: " format, [self shortDescription], ## __VA_ARGS__); \
 } while (0)
+
+NSString * const OSUProbeFinalizeForQueryNotification = @"OSUProbeFinalizeForQuery";
+
+@interface OSUProbe ()
+@property (nonatomic, readwrite) id value;
+@end
 
 @implementation OSUProbe
 
@@ -41,6 +47,17 @@ static NSMutableDictionary *ProbeByKey;
     });
     
     return probes;
+}
+
++ (OSUProbe *)existingProbeWithKey:(NSString *)key;
+{
+    __block OSUProbe *probe = nil;
+    
+    dispatch_sync(ProbeQueue, ^{
+        probe = ProbeByKey[key];
+    });
+    
+    return probe;
 }
 
 + (instancetype)probeWithKey:(NSString *)key title:(NSString *)title;
@@ -68,13 +85,31 @@ static NSMutableDictionary *ProbeByKey;
     return probe;
 }
 
++ (NSString *)displayStringForValue:(id)value options:(OSUProbeOption)options;
+{
+    if ([value isKindOfClass:[NSString class]]) {
+        return value;
+    }
+    
+    if (options & OSUProbeOptionIsFileSize) {
+        return [NSByteCountFormatter stringFromByteCount:[value longLongValue] countStyle:NSByteCountFormatterCountStyleFile];
+    }
+    
+    // Don't expect this method to be called too often, so not caching this formatter
+    NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+    formatter.formattingContext = NSFormattingContextStandalone;
+    formatter.numberStyle = NSNumberFormatterDecimalStyle;
+    
+    return [formatter stringFromNumber:value];
+}
+
 - init;
 {
     OBRejectUnusedImplementation(self, _cmd);
 }
 
 // Our getters are read-only and immutable *except* for the current value.
-@synthesize value = _value;
+
 - (id)value;
 {
     __block id value;
@@ -88,22 +123,7 @@ static NSMutableDictionary *ProbeByKey;
 
 - (NSString *)displayString;
 {
-    id value = self.value;
-    
-    if ([value isKindOfClass:[NSString class]]) {
-        return value;
-    }
-    
-    if (_options & OSUProbeOptionIsFileSize) {
-        return [NSByteCountFormatter stringFromByteCount:[value longLongValue] countStyle:NSByteCountFormatterCountStyleFile];
-    }
-    
-    // Don't expect this method to be called too often, so not caching this formatter
-    NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-    formatter.formattingContext = NSFormattingContextStandalone;
-    formatter.numberStyle = NSNumberFormatterDecimalStyle;
-    
-    return [formatter stringFromNumber:value];
+    return [OSUProbe displayStringForValue:self.value options:self.options];
 }
 
 - (void)reset;
@@ -123,8 +143,13 @@ static NSMutableDictionary *ProbeByKey;
 
 - (void)setIntegerValue:(NSInteger)value;
 {
+    [self setNumberValue:[NSNumber numberWithInteger:value]];
+}
+
+- (void)setNumberValue:(NSNumber *)value;
+{
     dispatch_async(ProbeQueue, ^{
-        [self _setValue:[NSNumber numberWithInteger:value] action:@"Set"];
+        [self _setValue:value action:@"Set"];
     });
 }
 

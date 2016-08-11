@@ -13,6 +13,6 @@ extension OFSelectionSet {
     public func insertOrderSortedObjects<Class : NSObject>(ofClass cls: Class.Type) -> [Class] {
         // TODO: The guts of this method could be cleaner once the rest of the class is more type-safe.
         let instances:[Class] = (copyObjectsSatisfyingPredicateBlock { $0 is Class }) as! [Class]
-        return objectsSortedByInsertionOrder(instances) as! [Class]
+        return objectsSorted(byInsertionOrder: instances) as! [Class]
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/NSStream.h>
+#import <CommonCrypto/CommonCrypto.h>
+#import <CommonCrypto/CommonRandom.h>
 
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
@@ -32,7 +34,18 @@ RCS_ID("$Id$")
     return [OFRandomCreateDataOfLength(byteCount) autorelease];
 }
 
-+ dataWithDecodedURLString:(NSString *)urlString
++ (NSData *)cryptographicRandomDataOfLength:(NSUInteger)byteCount;
+{
+    void *buffer = malloc(byteCount);
+    CCRNGStatus rerr = CCRandomGenerateBytes(buffer, byteCount);
+    if (rerr) {
+        // CCRandomGenerateBytes() does not appear to have any failure modes that are recoverable or don't indicate something is seriously wrong with our process or the host system.
+        [NSException raise:NSInternalInconsistencyException format:@"CCRandomGenerateBytes() returns %d", (int)rerr];
+    }
+    return [NSData dataWithBytesNoCopy:buffer length:byteCount freeWhenDone:YES];
+}
+
++ (NSData *)dataWithDecodedURLString:(NSString *)urlString
 {
     if (urlString == nil)
         return [NSData data];

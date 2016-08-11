@@ -23,9 +23,9 @@
 
 /* Begin PBXBuildFile section */
 		3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; };
-		34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; };
-		34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */; };
+		34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416044A0C6913CC002839DF /* OSUCheckOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3416044D0C6913CC002839DF /* OSUCheckOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416044B0C6913CC002839DF /* OSUCheckOperation.m */; };
 		341605EC0C693324002839DF /* OSUItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 341605EA0C693324002839DF /* OSUItem.h */; };
@@ -143,8 +143,8 @@
 		34A5F563184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34A5F561184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib */; };
 		34A5F567184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F565184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h */; };
 		34A5F568184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A5F566184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m */; };
-		34A5F56B184E67C700E8BA9A /* OSUSystemConfigurationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F569184E67C700E8BA9A /* OSUSystemConfigurationController.h */; };
-		34A5F56C184E67C700E8BA9A /* OSUSystemConfigurationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F569184E67C700E8BA9A /* OSUSystemConfigurationController.h */; };
+		34A5F56B184E67C700E8BA9A /* OSUSystemConfigurationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F569184E67C700E8BA9A /* OSUSystemConfigurationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A5F56C184E67C700E8BA9A /* OSUSystemConfigurationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F569184E67C700E8BA9A /* OSUSystemConfigurationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A5F56D184E67C700E8BA9A /* OSUSystemConfigurationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A5F56A184E67C700E8BA9A /* OSUSystemConfigurationController.m */; };
 		34A5F56E184E67C700E8BA9A /* OSUSystemConfigurationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A5F56A184E67C700E8BA9A /* OSUSystemConfigurationController.m */; };
 		34B627C60C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html in Resources */ = {isa = PBXBuildFile; fileRef = 34B627C40C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html */; };
@@ -1608,7 +1608,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -2261,9 +2261,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
@@ -2277,9 +2277,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
@@ -2329,6 +2329,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
 				INSTALL_PATH = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
@@ -2340,6 +2341,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
 				INSTALL_PATH = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
@@ -2453,7 +2455,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
 			buildSettings = {
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
@@ -2474,7 +2476,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
 			buildSettings = {
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";

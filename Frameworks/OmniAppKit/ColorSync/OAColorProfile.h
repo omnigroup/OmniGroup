@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (OAColorProfile*)defaultDocumentProfile;
 + (OAColorProfile*)defaultDisplayProfile;
-+ (OAColorProfile*)currentProfile;
++ (nullable OAColorProfile*)currentProfile;
 
 + (OAColorProfile*)defaultProofProfile;
 + (OAColorProfile*)workingCMYKProfile;
@@ -59,9 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_setRGBColor:(NSColor *)aColor;
 - (void)_setCMYKColor:(NSColor *)aColor;
 - (void)_setGrayColor:(NSColor *)aColor;
-- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
-- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
-- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncTransformRef _Nullable)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncTransformRef _Nullable)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
+- (ColorSyncTransformRef _Nullable)_grayConversionWorldForOutput:(OAColorProfile *)aProfile CF_RETURNS_NOT_RETAINED;
 
 // For use by subclasses
 - (ColorSyncTransformRef __nullable*__nullable)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;

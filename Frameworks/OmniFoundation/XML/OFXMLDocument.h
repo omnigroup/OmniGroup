@@ -54,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,nullable) NSString *dtdPublicID;
 @property(nonatomic,readonly) CFStringEncoding stringEncoding;
 
-@property(nonatomic,readonly) NSArray *loadWarnings;
+@property(nonatomic,nullable,readonly) NSArray *loadWarnings;
 
 - (nullable NSData *)xmlData:(NSError **)outError;
 - (nullable NSData *)xmlDataWithDefaultWhiteSpaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhiteSpaceBehavior error:(NSError **)outError;
@@ -83,8 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) OFXMLElement *topElement;
 - (void) appendString: (NSString *) string;
 - (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (NSString *) newlineReplacment;
-- (void) setAttribute: (NSString *) name string: (NSString *) value;
-- (void) setAttribute: (NSString *) name value: (id) value;
+- (void) setAttribute: (NSString *) name string: (nullable NSString *) value;
+- (void) setAttribute: (NSString *) name value: (nullable id) value;
 - (void) setAttribute: (NSString *) name integer: (int) value;
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
@@ -105,7 +105,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Partial OFXMLParserTarget
 - (void)parser:(OFXMLParser *)parser setSystemID:(NSURL *)systemID publicID:(NSString *)publicID;
 - (void)parser:(OFXMLParser *)parser addProcessingInstructionNamed:(NSString *)piName value:(NSString *)piValue;
-- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues;
+- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
 - (void)parserEndElement:(OFXMLParser *)parser;

@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray <NSString *> *)paths error:(NSError **)outError;
 + (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
-+ (NSData *)zipDataFromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
++ (NSData * _Nullable)zipDataFromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
 
 - (instancetype _Nullable)initWithPath:(NSString *)path error:(NSError **)outError;
 - (instancetype _Nullable)initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;

@@ -708,15 +708,15 @@ static NSString *windowFrameSaveName = @"Preferences";
         initialClientRecordIdentifier = nil;
 
     switch (viewStyle) {
-        case OAPreferencesViewSingle:
-            initialClientRecordIdentifier = visibleClientRecordIdentifiers[0];
-            break;
         case OAPreferencesViewCustomizable:
             [self _createShowAllItemsView];
             [self _setupShowAllToolbar];
             [self _showAllIcons:nil];
+            return; // Not break: we don't have a current client record
+        case OAPreferencesViewSingle:
+            initialClientRecordIdentifier = visibleClientRecordIdentifiers[0];
             break;
-	default:
+        default:
         case OAPreferencesViewMultiple:
             [self _setupMultipleToolbar];
 	    if (initialClientRecordIdentifier == nil)

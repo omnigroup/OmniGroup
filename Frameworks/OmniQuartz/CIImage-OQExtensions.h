@@ -14,8 +14,6 @@
 extern const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping;
 
 @interface CIImage (OQExtensions)
-+ (CIImage *)imageWithAttributedString:(NSAttributedString *)attributedString maxWidth:(CGFloat)width targetContext:(CGContextRef)targetContext backgroundColor:(NSColor *)backgroundColor;
-+ (CIImage *)imageWithString:(NSString *)string font:(NSFont *)font color:(NSColor *)color maxWidth:(CGFloat)width targetContext:(CGContextRef)targetContext backgroundColor:(NSColor *)backgroundColor;
 
 + (CIImage *)oci_imageWithColor:(CIColor *)color;
 + (CIImage *)oci_imageWithColor:(CIColor *)color extent:(CGRect)extent;

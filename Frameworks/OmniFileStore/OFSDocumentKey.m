@@ -48,19 +48,39 @@ static OSStatus removeItemFromKeychain(SecKeychainItemRef keyRef);
 #endif
 
 #define unsupportedError(e, t) ofsUnsupportedError_(e, __LINE__, t)
+#define arraycount(a) (sizeof(a)/sizeof(a[0]))
 
 static const char * const zeroes = "\0\0\0\0\0\0\0\0";
 
+/* String names read/written to the file */
 static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfNames[] = {
     { CFSTR(PBKDFPRFSHA1),   kCCPRFHmacAlgSHA1   },
     { CFSTR(PBKDFPRFSHA256), kCCPRFHmacAlgSHA256 },
     { CFSTR(PBKDFPRFSHA512), kCCPRFHmacAlgSHA512 },
 };
 
-#define arraycount(a) (sizeof(a)/sizeof(a[0]))
+/* These are used for debugging / logging */
+static const char * const slotTypeNames[] = {
+    [SlotTypeNone]                 = "None",
+    [SlotTypeActiveAESWRAP]        = "AESWRAP",
+    [SlotTypeRetiredAESWRAP]       = "AESWRAP",
+    [SlotTypeActiveAES_CTR_HMAC]   = "AES_CTR_HMAC",
+    [SlotTypeRetiredAES_CTR_HMAC]  = "AES_CTR_HMAC",
+    [SlotTypePlaintextMask]        = "PlaintextMask",
+    [SlotTypeRetiredPlaintextMask] = "TemporaryPlaintextMask"
+};
+static const char *nameOfSlotType(enum OFSDocumentKeySlotType tp)
+{
+    if ((int)tp >= 0 && (size_t)tp < arraycount(slotTypeNames)) {
+        return slotTypeNames[tp];
+    } else {
+        return NULL;
+    }
+}
 
 @implementation OFSDocumentKey
 {
+@protected
     /* The contents of our saved blob */
     NSDictionary *passwordDerivation;
     
@@ -69,9 +89,6 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
 
     /* The decrypted key slots. buf is nil if we are not unlocked/valid. */
     NSData *buf;
-    
-    /* Incremented when -data changes */
-    NSInteger changeCount;
     
     /* We keep a copy of the wrapping key around so we can re-wrap after a rollover event such as a password change */
     struct skbuf wk;
@@ -136,23 +153,6 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
     return self;
 }
 
-/* Passphrase continuity: create a new document key with no keyslots, but the same authenticator (including the PBKDF2 salt, which allows stored authenticators on clients to continue working). */
-- initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;
-{
-    self = [super init];
-    
-    if (!(source.valid)) {
-        unsupportedError(outError, @"source.valid = NO");
-        return nil;
-    }
-    
-    passwordDerivation = source->passwordDerivation;
-    buf = [NSData data];
-    memcpy(&wk, &(source->wk), sizeof(wk));
-    
-    return self;
-}
-
 - (NSData *)data;
 {
     /* Return an NSData blob with the information we'll need to recover the document key in the future. The caller will presumably store this blob in the underlying file manager or somewhere related, and hand it back to us via -initWithData:error:. */
@@ -160,7 +160,28 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
     return [NSPropertyListSerialization dataWithPropertyList:docInfo format:NSPropertyListXMLFormat_v1_0 options:0 error:NULL];
 }
 
-@synthesize changeCount = changeCount;
+- (id)copyWithZone:(nullable NSZone *)zone
+{
+    OBASSERT([self isMemberOfClass:[OFSDocumentKey class]]);  // Make sure we're exactly an OFSDocumentKey, not an OFSMutableDocumentKey
+    return self;
+}
+
+- (id)mutableCopyWithZone:(nullable NSZone *)zone
+{
+    OFSDocumentKey *newInstance = [[OFSMutableDocumentKey alloc] init];
+    newInstance->passwordDerivation = [passwordDerivation copy];
+    newInstance->buf = [buf copy];
+    newInstance->wk = wk;
+    newInstance->_prefix = _prefix;
+    
+    return newInstance;
+}
+
+- (NSInteger)changeCount;
+{
+    return 0;
+}
+
 @dynamic valid, hasPassword;
 
 - (BOOL)valid;
@@ -252,83 +273,6 @@ static uint16_t derive(uint8_t derivedKey[MAX_SYMMETRIC_KEY_BYTES], NSString *pa
     }
     
     return outputLength;
-}
-
-- (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
-{
-    if (!buf)
-        OBRejectInvalidCall(self, _cmd, @"not currently valid");
-    
-    NSMutableDictionary *kminfo = [NSMutableDictionary dictionary];
-    
-    [kminfo setObject:KeyDerivationMethodPassword forKey:KeyDerivationMethodKey];
-    [kminfo setObject:PBKDFAlgPBKDF2_WRAP_AES forKey:PBKDFAlgKey];
-    
-    /* TODO: Choose a round count dynamically using CCCalibratePBKDF()? The problem is we don't know if we're on one of the user's faster machines or one of their slower machines, nor how much tolerance the user has for slow unlocking on their slower machines. On my current 2.4GHz i7, asking for a 1-second derive time results in a round count of roughly 2560000. */
-    dispatch_once_f(&calibrateRoundsOnce, NULL, calibrateRounds);
-    
-    [kminfo setUnsignedIntValue:calibratedRoundCount forKey:PBKDFRoundsKey];
-    
-    NSMutableData *salt = [NSMutableData data];
-    [salt setLength:saltLength];
-    if (!randomBytes([salt mutableBytes], saltLength, outError))
-        return NO;
-    [kminfo setObject:salt forKey:PBKDFSaltKey];
-    
-    wk.len = derive(wk.bytes, password, salt, kCCPRFHmacAlgSHA1, calibratedRoundCount, outError);
-    if (!wk.len) {
-        return NO;
-    }
-
-    if (buf) {
-        // Next, wrap our secrets with the new password-derived key
-        NSData *wrappedKey = [self _rewrap];
-        
-        [kminfo setObject:wrappedKey forKey:DocumentKeyKey];
-    }
-    
-    passwordDerivation = kminfo;
-    changeCount ++;
-    
-    return YES;
-}
-
-- (NSData *)_rewrap;
-{
-    if (!buf || !wk.len)
-        OBRejectInvalidCall(self, _cmd, @"not currently valid");
-    if (!validateSlots(buf))
-        [NSException raise:NSInternalInconsistencyException
-                    format:@"Inconsistent keyslot array"];
-    
-    NSData *toWrap = buf;
-    size_t toWrapLength = [toWrap length];
-    if (toWrapLength % 8 != 0) {
-        // AESWRAP is only defined for multiples of half the underlying block size.
-        // If necessary pad the end with 0s (the slot structure knows to ignore this).
-        NSMutableData *padded = [toWrap mutableCopy];
-        size_t more = ( (toWrapLength + 8) & ~ 0x07 ) - toWrapLength;
-        [padded appendBytes:zeroes length:more];
-        toWrap = padded;
-        toWrapLength = [toWrap length];
-    }
-    
-    NSMutableData *wrappedKey = [NSMutableData data];
-    size_t rapt = CCSymmetricWrappedSize(kCCWRAPAES, toWrapLength);
-    [wrappedKey setLength:rapt];
-    CCCryptorStatus cerr = CCSymmetricKeyWrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
-                                              wk.bytes, wk.len,
-                                              [toWrap bytes], toWrapLength,
-                                              [wrappedKey mutableBytes], &rapt);
-    
-    /* There's no reasonable situation in which CCSymmetricKeyWrap() fails here--- it should only happen if we have some serious bug elsewhere in OFSDocumentKey. So treat it as a fatal error. */
-    if (cerr) {
-        [NSException exceptionWithName:NSGenericException
-                                reason:[NSString stringWithFormat:@"CCSymmetricKeyWrap returned %d", cerr]
-                              userInfo:@{ @"klen": @(wk.len), @"twl": @(toWrapLength) }];
-    }
-    
-    return wrappedKey;
 }
 
 static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, struct skbuf *outWk, NSError **outError)
@@ -429,7 +373,7 @@ static NSData *unwrapData(const uint8_t *wrappingKey, size_t wrappingKeyLength, 
 }
 
 /* Return an encryption worker for an active key slot. Encryption workers can be used from multiple threads, so we can safely cache one and return it here. */
-- (OFSSegmentEncryptWorker *)encryptionWorker;
+- (nullable OFSSegmentEncryptWorker *)encryptionWorker;
 {
     @synchronized(self) {
         
@@ -571,81 +515,6 @@ static void fillSlot(NSMutableData *slotbuffer, uint8_t slottype, const char *sl
     }
 }
 
-- (void)discardKeysExceptSlots:(NSIndexSet *)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)ensureSlot;
-{
-    if (keepThese && !buf)
-        OBRejectInvalidCall(self, _cmd, @"not currently valid");
-    
-    @synchronized(self) {
-        reusableEncryptionWorker = nil;
-    }
-    
-    NSMutableIndexSet *usedSlots = [NSMutableIndexSet indexSet];
-    NSMutableData *newBuffer = [NSMutableData data];
-    __block BOOL seenActiveKey = NO;
-    traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
-        BOOL copyThis = (keepThese == nil) || ([keepThese containsIndex:sn] && ![usedSlots containsIndex:sn]);
-        if (retire && (tp == SlotTypeActiveAES_CTR_HMAC || tp == SlotTypeActiveAESWRAP)) {
-            tp += 1; // Retired slot types are paired with active
-            copyThis = YES;
-        }
-        // NSLog(@"In discardKeys: looking at slot %u, copy=%s", sn, copyThis?"YES":"NO");
-        if (copyThis) {
-            if (keylength % 4 != 0 || keylength > 4*255) {
-                [NSException raise:NSInternalInconsistencyException
-                            format:@"Invalid slot length %zu", keylength];
-                return NO;
-            }
-            if (tp == ensureSlot)
-                seenActiveKey = YES;
-            uint8_t slotheader[4];
-            slotheader[0] = tp;
-            slotheader[1] = (uint8_t)(keylength/4);
-            OSWriteBigInt16(slotheader, 2, sn);
-            [newBuffer appendBytes:slotheader length:4];
-            [newBuffer appendBytes:keydata length:keylength];
-        }
-        [usedSlots addIndex:sn];
-        return NO;
-    });
-    
-    /* Make sure we have an active key slot */
-    if (!seenActiveKey) {
-        switch (ensureSlot) {
-            case SlotTypeNone:
-                /* not asked to generate a key */
-                break;
-            case SlotTypeActiveAESWRAP:
-                fillSlot(newBuffer, SlotTypeActiveAESWRAP, NULL, kCCKeySizeAES128, chooseUnusedSlot(usedSlots));
-                break;
-            case SlotTypeActiveAES_CTR_HMAC:
-                fillSlot(newBuffer, SlotTypeActiveAES_CTR_HMAC, NULL, SEGMENTED_INNER_LENGTH, chooseUnusedSlot(usedSlots));
-                break;
-            default:
-                OBRejectInvalidCall(self, _cmd, @"bad ensureSlot value");
-                break;
-        }
-    }
-    
-    [self _updateInner:newBuffer];
-}
-
-- (void)_updateInner:(NSData *)newBuffer
-{
-    if (buf && [buf isEqual:newBuffer]) {
-        /* This can be a no-op if retire=NO and all keys are listed in keepThese */
-        return;
-    }
-    
-    buf = newBuffer;
-    changeCount ++;
-    
-    if (passwordDerivation) {
-        NSData *reWrapped = [self _rewrap];
-        passwordDerivation = [passwordDerivation dictionaryWithObject:reWrapped forKey:DocumentKeyKey];
-    }
-}
-
 - (NSIndexSet *)retiredKeySlots;
 {
     if (!buf)
@@ -730,36 +599,6 @@ static void fillSlot(NSMutableData *slotbuffer, uint8_t slottype, const char *sl
         *outSlotNumber = -1;
     
     return flags;
-}
-
-- (void)setDisposition:(enum OFSEncryptingFileManagerDisposition)disposition forSuffix:(NSString *)ext;
-{
-    if (!buf)
-        OBRejectInvalidCall(self, _cmd, @"not currently valid");
-
-    NSMutableData *newBuffer = [buf mutableCopy];
-
-    NSMutableIndexSet *usedSlots = [NSMutableIndexSet indexSet];
-    traverseSlots(newBuffer, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
-        [usedSlots addIndex:sn];
-        return NO;
-    });
-    
-    uint16_t slotnumber = chooseUnusedSlot(usedSlots);
-    NSData *contents = [[ext precomposedStringWithCanonicalMapping] dataUsingEncoding:NSUTF8StringEncoding];
-    if ([contents length] > 65535)
-        OBRejectInvalidCall(self, _cmd, @"excessively long mask");
-    
-    switch(disposition) {
-        case OFSEncryptingFileManagerDispositionPassthrough:
-            fillSlot(newBuffer, SlotTypePlaintextMask, [contents bytes], (unsigned)[contents length], slotnumber);
-            break;
-        case OFSEncryptingFileManagerDispositionTemporarilyReadPlaintext:
-            fillSlot(newBuffer, SlotTypeRetiredPlaintextMask, [contents bytes], (unsigned)[contents length], slotnumber);
-            break;
-    }
-    
-    [self _updateInner:newBuffer];
 }
 
 - (NSString *)suffixForSlot:(NSUInteger)slotnum;  // Only used by the unit tests
@@ -909,9 +748,15 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
             return YES;
         }
         
-        /* We found an applicable slot, but don't know how to use it. This could be due to a future version using an algorithm we don't know about. */
-        NSString *msg = [NSString stringWithFormat:@"Unknown key type (%d) for slot %u", tp, sn];
-        localError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSLocalizedDescriptionKey: msg }];
+        /* We found an applicable slot, but don't know how to use it. This could be due to a future version using an algorithm we don't know about, or it could be due to a file using a key slot that isn't applicable for encryption like the plaintext mask slots. */
+        const char *slotTypeName = nameOfSlotType(tp);
+        NSString *msg;
+        if (slotTypeName) {
+            msg = [NSString stringWithFormat:@"Unexpected key type (%s/%d) for encryption slot %u", slotTypeName, tp, sn];
+        } else {
+            msg = [NSString stringWithFormat:@"Unknown key type (%d) for slot %u", tp, sn];
+        }
+        localError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:@{ NSLocalizedDescriptionKey: msg }];
         return YES;
     })) {
         NSString *msg = [NSString stringWithFormat:@"No key in slot %u", keyslot];
@@ -1086,3 +931,239 @@ static int whined = 0;
 }
 
 @end
+
+@implementation OFSMutableDocumentKey
+{
+    /* Incremented when -data changes */
+    NSInteger changeCount;
+}
+
+- (instancetype)init
+{
+    return [super initWithData:nil error:NULL];
+}
+
+- (instancetype)initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;
+{
+    self = [self init];
+    
+    if (!(source.valid)) {
+        unsupportedError(outError, @"source.valid = NO");
+        return nil;
+    }
+    
+    passwordDerivation = source->passwordDerivation;
+    buf = [NSData data];
+    memcpy(&wk, &(source->wk), sizeof(wk));
+    
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    OFSDocumentKey *newInstance = [[OFSDocumentKey alloc] initWithData:nil error:NULL];
+    newInstance->passwordDerivation = [passwordDerivation copy];
+    newInstance->buf = [buf copy];
+    newInstance->wk = wk;
+    newInstance->_prefix = _prefix;
+    
+    return newInstance;
+}
+
+- (id)mutableCopyWithZone:(nullable NSZone *)zone
+{
+    OFSMutableDocumentKey *newInstance = [super mutableCopyWithZone:zone];
+    newInstance->changeCount = changeCount;
+    
+    return newInstance;
+}
+
+@synthesize changeCount = changeCount;
+
+- (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
+{
+    if (!buf)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    
+    NSMutableDictionary *kminfo = [NSMutableDictionary dictionary];
+    
+    [kminfo setObject:KeyDerivationMethodPassword forKey:KeyDerivationMethodKey];
+    [kminfo setObject:PBKDFAlgPBKDF2_WRAP_AES forKey:PBKDFAlgKey];
+    
+    /* TODO: Choose a round count dynamically using CCCalibratePBKDF()? The problem is we don't know if we're on one of the user's faster machines or one of their slower machines, nor how much tolerance the user has for slow unlocking on their slower machines. On my current 2.4GHz i7, asking for a 1-second derive time results in a round count of roughly 2560000. */
+    dispatch_once_f(&calibrateRoundsOnce, NULL, calibrateRounds);
+    
+    [kminfo setUnsignedIntValue:calibratedRoundCount forKey:PBKDFRoundsKey];
+    
+    NSMutableData *salt = [NSMutableData data];
+    [salt setLength:saltLength];
+    if (!randomBytes([salt mutableBytes], saltLength, outError))
+        return NO;
+    [kminfo setObject:salt forKey:PBKDFSaltKey];
+    
+    wk.len = derive(wk.bytes, password, salt, kCCPRFHmacAlgSHA1, calibratedRoundCount, outError);
+    if (!wk.len) {
+        return NO;
+    }
+    
+    if (buf) {
+        // Next, wrap our secrets with the new password-derived key
+        NSData *wrappedKey = [self _rewrap];
+        
+        [kminfo setObject:wrappedKey forKey:DocumentKeyKey];
+    }
+    
+    passwordDerivation = kminfo;
+    changeCount ++;
+    
+    return YES;
+}
+
+- (NSData *)_rewrap;
+{
+    if (!buf || !wk.len)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    if (!validateSlots(buf))
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"Inconsistent keyslot array"];
+    
+    NSData *toWrap = buf;
+    size_t toWrapLength = [toWrap length];
+    if (toWrapLength % 8 != 0) {
+        // AESWRAP is only defined for multiples of half the underlying block size.
+        // If necessary pad the end with 0s (the slot structure knows to ignore this).
+        NSMutableData *padded = [toWrap mutableCopy];
+        size_t more = ( (toWrapLength + 8) & ~ 0x07 ) - toWrapLength;
+        [padded appendBytes:zeroes length:more];
+        toWrap = padded;
+        toWrapLength = [toWrap length];
+    }
+    
+    NSMutableData *wrappedKey = [NSMutableData data];
+    size_t rapt = CCSymmetricWrappedSize(kCCWRAPAES, toWrapLength);
+    [wrappedKey setLength:rapt];
+    CCCryptorStatus cerr = CCSymmetricKeyWrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
+                                              wk.bytes, wk.len,
+                                              [toWrap bytes], toWrapLength,
+                                              [wrappedKey mutableBytes], &rapt);
+    
+    /* There's no reasonable situation in which CCSymmetricKeyWrap() fails here--- it should only happen if we have some serious bug elsewhere in OFSDocumentKey. So treat it as a fatal error. */
+    if (cerr) {
+        [NSException exceptionWithName:NSGenericException
+                                reason:[NSString stringWithFormat:@"CCSymmetricKeyWrap returned %d", cerr]
+                              userInfo:@{ @"klen": @(wk.len), @"twl": @(toWrapLength) }];
+    }
+    
+    return wrappedKey;
+}
+
+/* Key rollover: this updates the receiver to garbage-collect any slots not mentioned in keepThese, and if retireCurrent=YES, mark any active keys as inactive (and generate new active keys as needed). If keepThese is nil, no keys are discarded (if you want to discard everything, pass a non-nil index set containing no indices). */
+- (void)discardKeysExceptSlots:(NSIndexSet *)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)ensureSlot;
+{
+    if (keepThese && !buf)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    
+    @synchronized(self) {
+        reusableEncryptionWorker = nil;
+    }
+    
+    NSMutableIndexSet *usedSlots = [NSMutableIndexSet indexSet];
+    NSMutableData *newBuffer = [NSMutableData data];
+    __block BOOL seenActiveKey = NO;
+    traverseSlots(buf, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
+        BOOL copyThis = (keepThese == nil) || ([keepThese containsIndex:sn] && ![usedSlots containsIndex:sn]);
+        if (retire && (tp == SlotTypeActiveAES_CTR_HMAC || tp == SlotTypeActiveAESWRAP)) {
+            tp += 1; // Retired slot types are paired with active
+            copyThis = YES;
+        }
+        // NSLog(@"In discardKeys: looking at slot %u, copy=%s", sn, copyThis?"YES":"NO");
+        if (copyThis) {
+            if (keylength % 4 != 0 || keylength > 4*255) {
+                [NSException raise:NSInternalInconsistencyException
+                            format:@"Invalid slot length %zu", keylength];
+                return NO;
+            }
+            if (tp == ensureSlot)
+                seenActiveKey = YES;
+            uint8_t slotheader[4];
+            slotheader[0] = tp;
+            slotheader[1] = (uint8_t)(keylength/4);
+            OSWriteBigInt16(slotheader, 2, sn);
+            [newBuffer appendBytes:slotheader length:4];
+            [newBuffer appendBytes:keydata length:keylength];
+        }
+        [usedSlots addIndex:sn];
+        return NO;
+    });
+    
+    /* Make sure we have an active key slot */
+    if (!seenActiveKey) {
+        switch (ensureSlot) {
+            case SlotTypeNone:
+                /* not asked to generate a key */
+                break;
+            case SlotTypeActiveAESWRAP:
+                fillSlot(newBuffer, SlotTypeActiveAESWRAP, NULL, kCCKeySizeAES128, chooseUnusedSlot(usedSlots));
+                break;
+            case SlotTypeActiveAES_CTR_HMAC:
+                fillSlot(newBuffer, SlotTypeActiveAES_CTR_HMAC, NULL, SEGMENTED_INNER_LENGTH, chooseUnusedSlot(usedSlots));
+                break;
+            default:
+                OBRejectInvalidCall(self, _cmd, @"bad ensureSlot value");
+                break;
+        }
+    }
+    
+    [self _updateInner:newBuffer];
+}
+
+- (void)_updateInner:(NSData *)newBuffer
+{
+    if (buf && [buf isEqual:newBuffer]) {
+        /* This can be a no-op if retire=NO and all keys are listed in keepThese */
+        return;
+    }
+    
+    buf = newBuffer;
+    changeCount ++;
+    
+    if (passwordDerivation) {
+        NSData *reWrapped = [self _rewrap];
+        passwordDerivation = [passwordDerivation dictionaryWithObject:reWrapped forKey:DocumentKeyKey];
+    }
+}
+
+- (void)setDisposition:(enum OFSEncryptingFileManagerDisposition)disposition forSuffix:(NSString *)ext;
+{
+    if (!buf)
+        OBRejectInvalidCall(self, _cmd, @"not currently valid");
+    
+    NSMutableData *newBuffer = [buf mutableCopy];
+    
+    NSMutableIndexSet *usedSlots = [NSMutableIndexSet indexSet];
+    traverseSlots(newBuffer, ^(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *keydata, size_t keylength){
+        [usedSlots addIndex:sn];
+        return NO;
+    });
+    
+    uint16_t slotnumber = chooseUnusedSlot(usedSlots);
+    NSData *contents = [[ext precomposedStringWithCanonicalMapping] dataUsingEncoding:NSUTF8StringEncoding];
+    if ([contents length] > 65535)
+        OBRejectInvalidCall(self, _cmd, @"excessively long mask");
+    
+    switch(disposition) {
+        case OFSEncryptingFileManagerDispositionPassthrough:
+            fillSlot(newBuffer, SlotTypePlaintextMask, [contents bytes], (unsigned)[contents length], slotnumber);
+            break;
+        case OFSEncryptingFileManagerDispositionTemporarilyReadPlaintext:
+            fillSlot(newBuffer, SlotTypeRetiredPlaintextMask, [contents bytes], (unsigned)[contents length], slotnumber);
+            break;
+    }
+    
+    [self _updateInner:newBuffer];
+}
+
+
+@end
+
+

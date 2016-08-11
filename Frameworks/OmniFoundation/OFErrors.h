@@ -32,14 +32,16 @@ enum {
     OFXMLReaderCannotCreateXMLInputBuffer,
     OFXMLReaderCannotCreateXMLReader,
     OFXMLReaderUnexpectedNodeType,
-    
+    OFXMLReaderEndOfFile,
+
     OFUnableToCompressData,
     OFUnableToDecompressData,
     
     OFXMLSignatureValidationError,    // Signature information could not be parsed
     OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate
     OFASN1Error,                      // Problem parsing an ASN.1 BER or DER encoded value
-    OFKeyNotAvailable,
+    OFKeyNotAvailable,                // An encryption key or passphrase isn't available
+    OFUnsupportedCMSFeature,          // Some CMS identifier or version is unknown or not supported by us
     
     OFNetStateRegistrationCannotCreateSocket,
     
@@ -65,5 +67,6 @@ enum {
 
 extern NSString * const OFErrorDomain;
 
-#define OFErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OFErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
+#define OFErrorWithInfoAndDomain(error, domain, code, description, suggestion, ...) _OBError(error, domain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
+#define OFErrorWithInfo(error, code, description, suggestion, ...) OFErrorWithInfoAndDomain(error, OFErrorDomain, code, description, (suggestion), ## __VA_ARGS__)
 #define OFError(error, code, description, reason) OFErrorWithInfo((error), (code), (description), (reason), nil)

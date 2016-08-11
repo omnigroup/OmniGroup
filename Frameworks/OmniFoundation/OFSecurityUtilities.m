@@ -1,4 +1,4 @@
-// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFFeatures.h>
 #import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/OFASN1Utilities.h>
 #import <Foundation/NSData.h>
 #import <Foundation/NSDictionary.h>
 #import <Foundation/NSString.h>
@@ -751,6 +752,41 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CSSM(SecKeyRef aKey, SecItemClas
 }
 
 #endif
+
+BOOL OFSecCertificateGetIdentifiers(SecCertificateRef aCert, NSData **outIssuer, NSData **outSerial, NSData **outSKI)
+{
+    /* In theory we should be able to use SecCertificateCopyValues(), but it's not possible to do that without relying on lots of undocumented behavior. We already have OFASN1CertificateExtractFields() for other reasons, so use that. */
+    
+    if (!aCert)
+        return NO;
+    
+    CFDataRef certData = SecCertificateCopyData(aCert);
+    
+    if (!certData)
+        return NO;
+
+    NSData *ski __block = nil;
+    
+    /* RFC3280: id-ce-subjectKeyIdentifier OBJECT IDENTIFIER ::=  { joint-iso-ccitt(2) ds(5) ce(29) 14 } */
+    static const uint8_t oid_ext_subjectKeyIdentifier[] = { 0x55, 0x1D, 0x0E };
+    
+    int ret = OFASN1CertificateExtractFields((__bridge_transfer NSData *)certData, outSerial, outIssuer, NULL, NULL, NULL, ^(NSData *oid, BOOL critical, NSData *value){
+        if ([oid length] == sizeof(oid_ext_subjectKeyIdentifier) && !memcmp([oid bytes], oid_ext_subjectKeyIdentifier, sizeof(oid_ext_subjectKeyIdentifier))) {
+            /* The value is expected to be an OCTET STRING (which is then wrapped in another OCTET STRING, due to the format of certificate extensions, but our caller has already removed that layer of wrapping) */
+            ski = OFASN1UnwrapOctetString(value, (NSRange) {0, value.length});
+        }
+    });
+    
+    if (ret != 0) {
+        /* Unparsable. Possibly a bug in OFASN1CertificateExtractFields(). */
+        NSLog(@"OFASN1CertificateExtractFields() returned %d", ret);
+        return NO;
+    }
+    
+    *outSKI = ski;
+
+    return YES;
+}
 
 #define secp192r1OidByteCount 10
 static const uint8_t secp192r1OidBytes[secp192r1OidByteCount] = {

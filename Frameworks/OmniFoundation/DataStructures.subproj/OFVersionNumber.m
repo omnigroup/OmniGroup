@@ -109,6 +109,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return isLater;
 }
 
++ (BOOL)isOperatingSystemSierraOrLater; // 10.12
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"10.12");
+    });
+
+    return isLater;
+}
+
 #endif
 
 /* Initializes the receiver from a string representation of a version number.  The input string may have an optional leading 'v' or 'V' followed by a sequence of positive integers separated by '.'s.  Any trailing component of the input string that doesn't match this pattern is ignored.  If no portion of this string matches the pattern, nil is returned. */

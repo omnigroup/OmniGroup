@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,8 +147,12 @@ RCS_ID("$Id$");
                 } else {
                     targetResult = strongResult;
                 }
+            } else {
+                // We didn't have a targetResult and were not able/allowed to create one, so propagate the error out.
+                return NO;
             }
         }
+        
         if (targetURL == _baseURL) {
             _baseURLResult = targetResult;
         }
@@ -156,7 +160,7 @@ RCS_ID("$Id$");
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         for (NSString *childName in childWrappers) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childName];
-            NSURL *childURL = OFFileURLRelativeToDirectoryURL(targetResult.URL, childName);;
+            NSURL *childURL = OFFileURLRelativeToDirectoryURL(targetResult.URL, childName);
             if (![self _queueUploadFileWrapper:childWrapper toURL:childURL error:outError])
                 return NO;
         }

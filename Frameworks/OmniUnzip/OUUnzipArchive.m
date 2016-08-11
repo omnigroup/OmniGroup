@@ -213,7 +213,7 @@ static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *fu
 #define UNZIP_DATA_ERROR(f) _unzipDataError(self, entry, #f, err, outError)
 
 // We might want to return a read-stream later, but for now all the callers want a data.  This method should only be called for resources that can be opened on the device.  If you attach a 70MB satellite image and try to open it on your phone, you'll be sad (on many fronts).  So, returning a data here should be OK since we'll not create datas for every entry in the zip file.
-- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
+- (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
 {
     OBPRECONDITION(entry);
     
@@ -296,7 +296,7 @@ static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *fu
 }
 #undef UNZIP_DATA_ERROR
 
-- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
+- (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 {
     return [self dataForEntry:entry raw:NO error:outError];
 }
@@ -344,7 +344,7 @@ static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *fu
     return [self _writeEntriesWithPrefix:nil toURL:targetURL error:outError];
 }
 
-- (NSURL * _Nullable)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
+- (nullable NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
 {
     NSFileManager *defaultManager = [NSFileManager defaultManager];
     NSString *writeFileName = [NSString stringWithFormat:@"%@_temp", [topLevelEntryName stringByDeletingPathExtension]];
@@ -359,7 +359,7 @@ static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *fu
     return [writeURL URLByAppendingPathComponent:topLevelEntryName];
 }
 
-- (NSFileWrapper *)_wrapperForUnzipEntry:(OUUnzipEntry *)entry inArchive:(OUUnzipArchive *)unzipArchive error:(NSError **)outError;
+- (nullable NSFileWrapper *)_wrapperForUnzipEntry:(OUUnzipEntry *)entry inArchive:(OUUnzipArchive *)unzipArchive error:(NSError **)outError;
 {
     NSData *data = [unzipArchive dataForEntry:entry error:outError];
     if (!data) {
@@ -411,12 +411,12 @@ static NSFileWrapper *_rootWrapperForWrapperWithPath(NSMutableDictionary *wrappe
     return rootWrapper;
 }
 
-- (NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
+- (nullable NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
 {
-    return [self fileWrapperWithTopLevelWrapper:NO outError:outError];
+    return [self fileWrapperWithTopLevelWrapper:NO error:outError];
 }
 
-- (NSFileWrapper *)fileWrapperWithTopLevelWrapper:(BOOL)shouldIncludeTopLevelWrapper outError:(NSError **)outError;
+- (nullable NSFileWrapper *)fileWrapperWithTopLevelWrapper:(BOOL)shouldIncludeTopLevelWrapper error:(NSError **)outError;
 {
     NSArray *entries = self.entries;
     if (!entries)

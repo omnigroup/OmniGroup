@@ -29,9 +29,11 @@
 #define OA_SYSTEM_COLOR_CLASS NSColor
 #define OA_SYSTEM_EDGE_INSETS_STRUCT NSEdgeInsets
 
-void OAAppearanceSetUserOverrideFolder(NSString *userOverrideFolder);
+void OAAppearanceSetUserOverrideFolder(NSString * _Nullable userOverrideFolder);
 
 #endif
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// Subclasses can post this notification (with self as the object) when something happens that is about to cause the appearance instances values to change.
 extern NSString *const OAAppearanceValuesWillChangeNotification;
@@ -150,7 +152,7 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 /// This specialization point is generally useful for cases where the full set of plists to be used is not known at compile time, e.g., when users can customize appearance by providing different plists. If you need a fixed collection of specialized instances, it may be better to override `+appearance` to call `+appearanceForClass:` passing the class of the specific specialized instance.
 ///
 /// N.B., if the value that a subclass will return changes, you *MUST* arrange to call `+invalidateDirectoryURLForSwitchablePlist` on the subclass.
-+ (NSURL *)directoryURLForSwitchablePlist;
++ (NSURL * _Nullable)directoryURLForSwitchablePlist;
 
 /// Signals that the receiver will return a new value for `directoryURLForSwitchablePlist`.
 + (void)invalidateDirectoryURLForSwitchablePlist;
@@ -160,7 +162,7 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 /// N.B., the returned instance is *unsuitable* for dynamic property lookup. Attempting to do so will throw. Instead, the instance can be used for calling `-validateValueAtKeyPath: error:` or *type*`forKeyPath:`.
 ///
 /// Return `Nil` if there is no appropriate plist file in the given directory
-+ (instancetype)appearanceForValidatingPropertyListInDirectory:(NSURL *)directoryURL forClass:(Class)cls;
++ (instancetype _Nullable)appearanceForValidatingPropertyListInDirectory:(NSURL *)directoryURL forClass:(Class)cls;
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -193,3 +195,5 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 @end
 
 #endif
+
+NS_ASSUME_NONNULL_END

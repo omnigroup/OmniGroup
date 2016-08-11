@@ -10,10 +10,14 @@
 @class OSURunOperationParameters;
 @protocol OSULookupCredential;
 
+#if OSU_FULL
 #import <OmniSoftwareUpdate/OSUReportKeys.h>
+#else
+#import <OmniSystemInfo/OSUReportKeys.h>
+#endif
 
 typedef void (^OSURunOperationCompletionHandler)(NSDictionary *result, NSError *error);
-extern void OSURunOperation(OSURunOperationParameters *params, NSDictionary *runtimeStatsAndProbes, id <OSULookupCredential> lookupCredential, OSURunOperationCompletionHandler completionHandler);
+extern void OSURunOperation(OSURunOperationParameters *params, NSDictionary *runtimeStats, NSDictionary *probes, id <OSULookupCredential> lookupCredential, OSURunOperationCompletionHandler completionHandler);
 
 
 // A local error domain for the check operation itself. In particular, there are no localized descriptions or suggestions here. The caller to OSURunOperation() should add these if it cares.

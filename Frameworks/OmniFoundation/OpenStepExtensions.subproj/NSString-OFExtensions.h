@@ -151,5 +151,5 @@ extern char *OFASCIIDecimalStringFromDouble(double value);
    allowExponential indicates that an exponential representation may be returned if it's shorter than the plain decimal representation.
    forceLeadingZero forces a digit before the decimal point (e.g. 0.1 instead of .1). */
 extern char *OFShortASCIIDecimalStringFromDouble(double value, double eDigits, BOOL allowExponential, BOOL forceLeadingZero);
-#define OF_FLT_DIGITS_E (16.6355323334)  // equal to log(FLT_MANT_DIG) / log(FLT_RADIX)
-
+extern double OFFloatDigitsBaseE(void);
+#define OF_FLT_DIGITS_E (OFFloatDigitsBaseE()) // How many digits to preserve from a float

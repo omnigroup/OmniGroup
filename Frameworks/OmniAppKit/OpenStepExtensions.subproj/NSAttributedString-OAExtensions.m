@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -505,10 +505,12 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
     requiresEllipsis = lineTooLong || NSMaxRange(lineCharacterRange) < [self length];
     
     if (requiresEllipsis) {
+        NSRange lastGlyphRange = NSMakeRange([showStringLayoutManager numberOfGlyphs] - 1, 1);
+        unsigned char bidiLevel = 0xff;
+        [showStringLayoutManager getGlyphsInRange:lastGlyphRange glyphs:NULL properties:NULL characterIndexes:NULL bidiLevels:&bidiLevel];
+        isRightToLeft = (bidiLevel != 0);
+
         NSUInteger ellipsisAttributeCharacterIndex;
-
-        isRightToLeft = ([showStringLayoutManager intAttribute:NSGlyphAttributeBidiLevel forGlyphAtIndex:[showStringLayoutManager numberOfGlyphs] - 1] != 0);        
-
         if (lineCharacterRange.length != 0)
             ellipsisAttributeCharacterIndex = NSMaxRange(lineCharacterRange) - 1;
         else

@@ -121,6 +121,9 @@
 + (NSString *)spotlightIDForFileURL:(NSURL *)fileURL;
 + (NSURL *)fileURLForSpotlightID:(NSString *)uniqueID;
 
+// Available for subclasses to override, in case it's not always a good time to process special URLs.
+- (void)handleCachedSpecialURLIfNeeded;
+
 @end
 
 

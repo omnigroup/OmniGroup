@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,6 @@
 #import <Foundation/NSData.h>
 #import <stdio.h>
 
-@class NSArray, NSError;
-
 // Extra methods factored out into another category
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFCompression.h>
@@ -20,12 +18,17 @@
 #import <OmniFoundation/OFFilterProcess.h>
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSData (OFExtensions)
 
 + (NSData *)randomDataOfLength:(NSUInteger)byteCount;
 // Returns a new autoreleased instance that contains the number of requested random bytes.
 
-+ dataWithDecodedURLString:(NSString *)urlString;
++ (NSData *)cryptographicRandomDataOfLength:(NSUInteger)byteCount;
+// Similar to -randomDataOfKength:, but uses the CSPRNG from CommonCrypto
+
++ (NSData *)dataWithDecodedURLString:(NSString *)urlString;
 
 - (NSUInteger)indexOfFirstNonZeroByte;
     // Returns the index of the first non-zero byte in the receiver, or NSNotFound if if all the bytes in the data are zero.
@@ -38,11 +41,13 @@
 - (BOOL)hasPrefix:(NSData *)data;
 - (BOOL)containsData:(NSData *)data;
 
-- (NSRange)rangeOfData:(NSData *)data;
+- (NSRange)rangeOfData:(NSData *)data /* __attribute__((deprecated("Use -rangeOfData:options:range: instead"))) */;
 - (NSUInteger)indexOfBytes:(const void *)bytes length:(NSUInteger)patternLength;
 - (NSUInteger)indexOfBytes:(const void *)patternBytes length:(NSUInteger)patternLength range:(NSRange)searchRange;
 
-- propertyList;
+- (id __nullable)propertyList;
     // a cover for the CoreFoundation function call
 
 @end
+
+NS_ASSUME_NONNULL_END

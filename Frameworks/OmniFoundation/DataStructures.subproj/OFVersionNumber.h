@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isOperatingSystemiOS93OrLater;
 #else
 + (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
++ (BOOL)isOperatingSystemSierraOrLater; // 10.12
 #endif
 
 - (nullable instancetype)initWithVersionString:(NSString *)versionString;

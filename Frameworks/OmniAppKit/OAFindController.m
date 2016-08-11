@@ -241,7 +241,7 @@ RCS_ID("$Id$")
     return findText ? findText : @"";
 }
 
-- (id <OAFindControllerTarget>)target;
+- (nullable id <OAFindControllerTarget>)target;
 {
     NSWindow *mainWindow = [[NSApplication sharedApplication] mainWindow];
     id target = [(id)[mainWindow delegate] omniFindControllerTarget];
@@ -400,7 +400,7 @@ RCS_ID("$Id$")
 
 @implementation NSObject (OAFindControllerAware)
 
-- (id <OAFindControllerTarget>)omniFindControllerTarget;
+- (nullable id <OAFindControllerTarget>)omniFindControllerTarget;
 {
     return nil;
 }

@@ -193,7 +193,6 @@
 		34019F6F1B62ECC8003A5BE4 /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34019F701B62ECC8003A5BE4 /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34019F711B62ECC8003A5BE4 /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
-		34019F721B62ECC8003A5BE4 /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34019F731B62ECC8003A5BE4 /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
 		34019F741B62ECC8003A5BE4 /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34019F751B62ECC8003A5BE4 /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
@@ -231,6 +230,9 @@
 		341647610E971390006BF255 /* ODODynamicPropertyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODODynamicPropertyTests.m; sourceTree = "<group>"; };
 		341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOStringCompareFunctionTest.m; sourceTree = "<group>"; };
 		343BD2D81B62F35D002D09C6 /* ODOTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODOTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		343F2CDF1D3EB8F600E7C89D /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
 		344E7E861042FD6700C55C19 /* ODOInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOInternal.h; sourceTree = "<group>"; };
 		344FB1A70D89973500AA63FE /* ODOAttribute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOAttribute.h; sourceTree = "<group>"; };
 		344FB1A80D89973500AA63FE /* ODOEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOEntity.h; sourceTree = "<group>"; };
@@ -327,7 +329,6 @@
 		34ED2D9E19467D00005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		3EE8E4DC1937FDCB00616F0E /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		5FAA7789193E68F00017D662 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "zh-Hans.lproj"; sourceTree = "<group>"; };
 		5FAA778A193E68F00017D662 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ru.lproj; sourceTree = "<group>"; };
@@ -559,7 +560,6 @@
 				34A5E1290D89940F0006DF9F /* Omni-Framework-Common.xcconfig */,
 				34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */,
 				34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */,
-				34019F721B62ECC8003A5BE4 /* Omni-Global-Common-AppStore.xcconfig */,
 				34019F731B62ECC8003A5BE4 /* Omni-Global-Common-MacAppStore.xcconfig */,
 				34019F741B62ECC8003A5BE4 /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				34019F751B62ECC8003A5BE4 /* Omni-Global-Common-OmniStore.xcconfig */,
@@ -572,6 +572,9 @@
 				34A5E1330D89940F0006DF9F /* Omni-Tool-Common.xcconfig */,
 				34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */,
 				34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */,
+				343F2CDF1D3EB8F600E7C89D /* Omni-XCTest-Common.xcconfig */,
+				343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */,
+				343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */,
 				34D94D5011A1AD5600A9ACC1 /* Target-Mac-Common.xcconfig */,
 				34D94D5111A1AD5600A9ACC1 /* Target-Touch-Common.xcconfig */,
 				340E2C481C125EB600178E72 /* Target-Watch-Common.xcconfig */,
@@ -585,7 +588,6 @@
 				34019F7B1B62ECC8003A5BE4 /* Touch-Framework-Debug.xcconfig */,
 				34019F7C1B62ECC8003A5BE4 /* Touch-Framework-Release.xcconfig */,
 				3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */,
-				3EE8E4DC1937FDCB00616F0E /* Touch-Library-Debug.xcconfig */,
 				3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */,
 				340E2C491C125EB600178E72 /* Touch-XCTest-Common.xcconfig */,
 				340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */,
@@ -866,13 +868,20 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;
 					};
+					340D5DB40DAACED300BF27F8 = {
+						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeamName = "The Omni Group";
+						ProvisioningStyle = Automatic;
+					};
 					343BD2D71B62F35D002D09C6 = {
 						CreatedOnToolsVersion = 7.0;
+						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeamName = "The Omni Group";
 					};
 				};
 			};
@@ -1223,8 +1232,10 @@
 		};
 		340D5DB70DAACED300BF27F8 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34A5E1270D89940F0006DF9F /* Omni-Bundle-Debug.xcconfig */;
+			baseConfigurationReference = 343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1239,8 +1250,10 @@
 		};
 		340D5DB80DAACED300BF27F8 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34A5E1280D89940F0006DF9F /* Omni-Bundle-Release.xcconfig */;
+			baseConfigurationReference = 343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1257,6 +1270,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1273,6 +1287,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",

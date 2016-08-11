@@ -401,7 +401,6 @@ NSData *OFLibXMLNodeBase64Content(const xmlNode *node)
     return nil;
 }
 
-
 static int libxmlToNSData_write(void *context, const char *buffer, int len)
 {
     if (len < 0)
@@ -429,9 +428,15 @@ static xmlOutputBuffer *OFLibXMLOutputBufferToData(NSMutableData *destination)
     }
 }
 
-static void setNodeContentToString(xmlNode *node, NSString *toString)
+static void setNodeContentToBase64Data(xmlNode *node, NSData *rawData)
 {
-    xmlNodeSetContent(node, (const xmlChar *)[toString cStringUsingEncoding:NSUTF8StringEncoding]);
+#if (defined(MAC_OS_X_VERSION_10_9) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 70000)
+    NSData *encodedData = [rawData base64EncodedDataWithOptions:0];
+    xmlNodeSetContentLen(node, [encodedData bytes], (int)[encodedData length]);
+#else
+    NSString *encodedData = [rawData base64String];
+    xmlNodeSetContent(node, (const xmlChar *)[encodedData cStringUsingEncoding:NSUTF8StringEncoding]);
+#endif
 }
 
 static int isElementVisible(void *user_data, xmlNode *node)
@@ -548,7 +553,7 @@ static BOOL canonicalizeToBuffer(xmlDoc *owningDocument, xmlNode *cNode, xmlNode
             xmlChar *prefixList = lessBrokenGetAttribute(includes, "PrefixList", XMLExclusiveCanonicalizationNamespace);
             if (prefixList != NULL) {
                 /* It's easier to roundtrip this through Foundation than to write my own token splitter */
-                NSArray *prefixes = [[NSString stringWithCString:(const char *)prefixList encoding:NSUTF8StringEncoding] componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                NSArray<NSString *> *prefixes = [[NSString stringWithCString:(const char *)prefixList encoding:NSUTF8StringEncoding] componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
                 inclusiveNamespacePrefixList = malloc((1+[prefixes count]) * sizeof(*inclusiveNamespacePrefixList));
                 unsigned int actualPrefixCount = 0;
                 for(NSUInteger prefixIndex = 0; prefixIndex < [prefixes count]; prefixIndex ++) {
@@ -826,7 +831,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
                     goto failed;
 
                 success = YES;
-                setNodeContentToString(signatureValueNode, [generatedSignature base64EncodedStringWithOptions:0]);
+                setNodeContentToBase64Data(signatureValueNode, generatedSignature);
             } else {
                 signatureStructuralFailure(err, @"(bad op %d at line %u)", op, (unsigned)__LINE__);
                 success = NO;
@@ -1727,8 +1732,6 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         return NO;
     }
         
-    NSString *digestString = [digestValue base64EncodedStringWithOptions:0];
-    
     xmlNode *digestValueNode = OFLibXMLChildNamed(referenceNode, "DigestValue", XMLSignatureNamespace, &count);
     if (count > 1) {
         signatureStructuralFailure(outError, @"Found %d <DigestValue> nodes", count);
@@ -1736,11 +1739,9 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     } else if (count == 0) {
         digestValueNode = xmlNewChild(referenceNode, referenceNode->ns,
                                       (const xmlChar *)"DigestValue",
-                                      (const xmlChar *)[digestString cStringUsingEncoding:NSUTF8StringEncoding]);
-        (void)digestValueNode; /* dead store is OK here */
-    } else {
-        setNodeContentToString(digestValueNode, digestString);
+                                      NULL /* initial content */);
     }
+    setNodeContentToBase64Data(digestValueNode, digestValue);
 
     OBASSERT([digestValue isEqual:OFLibXMLNodeBase64Content(digestValueNode)]);
         

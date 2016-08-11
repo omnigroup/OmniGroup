@@ -34,6 +34,10 @@
     <!-- OUIAppController+InAppStore.m -->
 	<key>OUIVendorID</key>
 	<string></string>
+	
+	<!-- OUISecureWindowSettingsViewController.swift -->
+	<key>OUISecureWindowLearnMoreURL</key>
+	<string>https://support.omnigroup.com</string>
 
 </dict>
 </plist>

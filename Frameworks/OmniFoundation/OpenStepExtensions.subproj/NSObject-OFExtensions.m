@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
 {
     // In ObjC 2.0, it isn't documented whether class_getInstanceMethod/class_getClassMethod search the superclass or not.  Radar #5063446.
+    // NB:  class_getInstanceMethod() and class_getClassMethod() are now (OSX 10.10 / iOS 8.0) documented to search superclasses.
     // class_copyMethodList is documented to NOT look at the superclass, so we'll use that, even though it requires memory allocation/deallocation.
     
     unsigned int methodIndex;

@@ -35,10 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)parseHeader:(NSData *)ciphertext truncated:(BOOL)mayBeTruncated wrappedInfo:(NSRange *)outBlobLocation dataOffset:(size_t * __nullable)outHeaderLength error:(OBNSErrorOutType)outError;
 
-+ (OFSSegmentDecryptWorker * __nullable)decryptorForWrappedKey:(NSData *)wrappedKeyInfo documentKey:(OFSDocumentKey *)kek error:(OBNSErrorOutType)outError;
++ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)wrappedKeyInfo documentKey:(OFSDocumentKey *)kek error:(OBNSErrorOutType)outError;
 
 // Temporary non-incremental encrypt and decrypt methods
-- (NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)headerLength error:(OBNSErrorOutType)outError;
+- (nullable NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)headerLength error:(OBNSErrorOutType)outError;
 
 @end
 
@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithBytes:(const uint8_t *)bytes length:(NSUInteger)length NS_DESIGNATED_INITIALIZER;
 
 - (BOOL)encryptBuffer:(const uint8_t *)plaintext length:(size_t)len index:(uint32_t)order into:(uint8_t *)ciphertext header:(uint8_t *)hdr error:(OBNSErrorOutType)outError;
-- (NSData *)encryptData:(NSData *)plaintext error:(OBNSErrorOutType)outError;
+- (nullable NSData *)encryptData:(NSData *)plaintext error:(OBNSErrorOutType)outError;
 
 @end
 

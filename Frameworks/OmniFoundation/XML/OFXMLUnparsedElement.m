@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@ RCS_ID("$Id$")
 
 - (BOOL)isEqual:(id)otherObject;
 {
-    // This means we don't consider OFXMLElement, OFXMLFrozenElement or OFXMLUnparsedElement the same, even if they would produce the same output.  Not sure if this is a bug; let's catch this case here to see if it ever hits.
+    // This means we don't consider OFXMLElement and OFXMLUnparsedElement the same, even if they would produce the same output. Not sure if this is a bug; let's catch this case here to see if it ever hits.
     OBPRECONDITION([otherObject isKindOfClass:[OFXMLUnparsedElement class]]);
     if (![otherObject isKindOfClass:[OFXMLUnparsedElement class]])
         return NO;

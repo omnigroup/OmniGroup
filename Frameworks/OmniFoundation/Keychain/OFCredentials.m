@@ -197,12 +197,12 @@ NSString *OFCertificateTrustDurationName(OFCertificateTrustDuration disposition)
 @end
 
 @implementation _OFImmediateCredentialOp
-{
-    NSURLSessionAuthChallengeDisposition disposition;
-    NSURLCredential *credential;
-}
 
-@synthesize disposition, credential;
+- (void)dealloc;
+{
+    [_credential release];
+    [super dealloc];
+}
 
 - (void)main
 {

@@ -31,8 +31,11 @@
 
 - (BOOL)atomicallyCreateFileAtPath:(NSString *)path contents:(NSData *)data attributes:(NSDictionary *)attr;
 
-- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
-- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE;
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError OB_DEPRECATED_ATTRIBUTE;
+
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtURL:(NSURL *)url error:(NSError **)outError;
+- (NSDictionary *)quarantinePropertiesForItemAtURL:(NSURL *)url error:(NSError **)outError;
 
 // File locking
 // Note: these are *not* industrial-strength robust file locks, but will do for occasional use.

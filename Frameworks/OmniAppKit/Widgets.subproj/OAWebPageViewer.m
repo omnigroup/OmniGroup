@@ -199,7 +199,7 @@ static NSMutableDictionary *sharedViewerCache = nil;
 #pragma mark -
 #pragma mark NSObject (OAFindControllerAware)
 
-- (id <OAFindControllerTarget>)omniFindControllerTarget;
+- (nullable id <OAFindControllerTarget>)omniFindControllerTarget;
 {
     return self;
 }

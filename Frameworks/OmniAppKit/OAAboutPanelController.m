@@ -19,7 +19,7 @@
 
 RCS_ID("$Id$");
 
-static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundleContentVariants";
+static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundleContentVariants";
 
 @interface OAAboutPanelController () <NSTextViewDelegate>
 @end
@@ -144,14 +144,23 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     NSAttributedString *variant = nil;
     
     @try {
-	NSString *path = [[NSBundle mainBundle] pathForResource:name ofType:type];
-	if (!path)
+	NSURL *contentURL = [[NSBundle mainBundle] URLForResource:name withExtension:type];
+	if (!contentURL)
 	    return;
 	
 	if ([type isEqualToString:@"txt"]) {
-	    NSData *utf8Data = [[NSData alloc] initWithContentsOfFile:path];
+            __autoreleasing NSError *error = nil;
+            NSData *utf8Data = [[NSData alloc] initWithContentsOfURL:contentURL options:NSDataReadingUncached error:&error];
+            if (!utf8Data) {
+                [error log:@"Error reading %@", contentURL];
+                return;
+            }
 	    NSString *string = [[NSString alloc] initWithData:utf8Data encoding:NSUTF8StringEncoding];
-	    
+            if (!string) {
+                OBASSERT(string);
+                string = @"";
+            }
+
 	    // There is no NSFont class method for the 'mini' size.
 	    NSDictionary *attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
 		[NSFont systemFontOfSize:9.0f], NSFontAttributeName,
@@ -159,16 +168,12 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 		nil];
 	    variant = [[NSAttributedString alloc] initWithString:string attributes:attributes];
 	} else {
-	    variant = [[NSAttributedString alloc] initWithPath:path documentAttributes:NULL];
-	    
-#if 0 // Looks too tight in OmniGraffle
-	    // For some reason, HTML files seem to get a newline appended to their end even if we try to avoid it in the source.  Strip any trailing newlines.
-	    NSRange whitespaceRange = [[variant string] rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] options:NSBackwardsSearch];
-	    if (whitespaceRange.length) {
-		[variant autorelease];
-		variant = [[variant attributedSubstringFromRange:NSMakeRange(0, whitespaceRange.location)] retain];
-	    }
-#endif
+            __autoreleasing NSError *error = nil;
+            variant = [[NSAttributedString alloc] initWithURL:contentURL options:@{} documentAttributes:NULL error:&error];
+            if (!variant) {
+                [error log:@"Error reading %@", contentURL];
+                return;
+            }
 	}
     } @catch (NSException *exc) {
 	NSLog(@"Exception raised while trying to load about panel variant %@.%@ -- %@", name, type, exc);

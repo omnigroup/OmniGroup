@@ -87,7 +87,8 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
         return (existing == object) || (existing == nil); // Clean up any deallocated references at the same time.
     }];
 
-    OBASSERT(found, "Attempted to remove an observer that we not registered.");
+    // **NOTE** If you are hitting this, make sure you aren't trying to remove a reference to an object that is in the middle of its -dealloc. In that case, its wrapping OFWeakReference will return nil from -object and it will have been pruned automatically.
+    OBASSERT(found, "Attempted to remove an observer that is not registered.");
 }
 
 /// Calls the given block once for each still-valid object in the reference array. Any invalid references will be removed.
@@ -115,6 +116,35 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
     [references removeObjectsSatisfyingPredicate:^BOOL(OFWeakReference *reference){
         return (reference.object == nil);
     }];
+}
+
++ (BOOL)referencesEmpty:(NSArray *)references;
+{
+    for (OFWeakReference *ref in references) {
+        if (ref.object != nil)
+            return NO;
+    }
+    return YES;
+}
+
++ (NSUInteger)countReferences:(NSArray *)references;
+{
+    __block NSUInteger count = 0;
+
+    for (OFWeakReference *ref in references) {
+        if (ref.object != nil) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+#pragma mark - Debugging
+
+- (NSString *)debugDescription;
+{
+    return [NSString stringWithFormat:@"<%@: %p -- %@>", NSStringFromClass([self class]), self, OBShortObjectDescription(self.object)];
 }
 
 @end

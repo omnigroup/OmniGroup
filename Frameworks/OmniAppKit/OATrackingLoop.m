@@ -63,6 +63,9 @@ static BOOL OATrackingLoopDebug = YES;
     [_runLoopMode release];
     [_mouseDownEvent release];
     [_view release];
+    [_longPress release];
+    [_modifierFlagsChanged release];
+    [_shouldAutoscroll release];
 
     [super dealloc];
 }

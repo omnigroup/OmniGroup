@@ -12,9 +12,11 @@
 @class NSData, NSMutableData, NSString;
 
 /* These routines parse out interesting parts of some common DER/BER-encoded objects, which is especially useful on iOS where we can't rely on Security.framework to do it for us. */
-int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
+int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
 BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (^callback)(NSData *a, NSData *v, unsigned ix, BOOL *stop));
 BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(int attributeType, int attributeVersion, NSRange valueRange));
+
+/* PKCS#7 parsing */
 #if TARGET_OS_IPHONE
 NSData *OFPKCS7PluckContents(NSData *pkcs7);  /* (On OSX, use CMSDecoder) */
 #endif
@@ -27,6 +29,9 @@ NSData *OFASN1EnDERString(NSString *str);
 NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
 NSData *OFASN1OIDFromString(NSString *s);  // Return DER-encoded OID from a dotted-integers string - not really intended for user-supplied strings
 
+/* Octet strings */
+NSData *OFASN1UnwrapOctetString(NSData *derValue, NSRange r);
+
 /* This determines the algorithm and key size from an X.509 public key info structure */
 extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize);
 
@@ -34,4 +39,5 @@ extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformatio
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount);
 unsigned int OFASN1SizeOfTagLength(uint8_t tag, NSUInteger byteCount); // Number of bytes that OFASN1AppendTagLength() will produce
 NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...);
+void OFASN1AppendSet(NSMutableData *buffer, unsigned char tagByte, NSArray *derElements);
 

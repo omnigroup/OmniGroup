@@ -22,7 +22,9 @@
 #import <OmniSoftwareUpdate/OSUPreferencesViewController.h>
 #else
 #import <OmniSoftwareUpdate/NSApplication-OSUSupport.h>
+#import <OmniSoftwareUpdate/NSApplication-OSUNewsSupport.h>
 #import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import <OmniSoftwareUpdate/OSUDownloadController.h>
 #import <OmniSoftwareUpdate/OSURunTime.h>
+#import <OmniSoftwareUpdate/OSUSystemConfigurationController.h>
 #endif

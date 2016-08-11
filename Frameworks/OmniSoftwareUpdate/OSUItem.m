@@ -644,7 +644,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         // OSUInstaller.sh will remove the quarantine attribute as the final step of the install.
         // We ignore success/failure here.
         
-        [fm setQuarantineProperties:nil forItemAtPath:path error:NULL];
+        [fm setQuarantineProperties:nil forItemAtURL:[NSURL fileURLWithPath:path] error:NULL];
     }
     
     return nil;  // indicate no warnings

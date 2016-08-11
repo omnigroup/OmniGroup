@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -312,7 +312,6 @@ do { \
     XCTAssertEqualObjects(resultString, expectedResultString);
 }
 
-// We expect sequential string children under an element to get merged.
 - (void)testStringConcat;
 {
     NSString *xmlString = @"<root>a &amp; b</root>";
@@ -324,9 +323,8 @@ do { \
     OFXMLElement *rootElement = [doc rootElement];
     XCTAssertEqualObjects([rootElement name], @"root", @"root name");
     
-    // There will have been a 'characters', 'entity mapped to charaters' and then 'characters' callback.  These should all get merged.
-    XCTAssertTrue([[rootElement children] count] == 1);
-    XCTAssertEqualObjects([[rootElement children] lastObject], @"a & b", @"string concat");
+    // There will have been a 'characters', 'entity mapped to charaters' and then 'characters' callback.  These should all get merged with -stringContents
+    XCTAssertEqualObjects(rootElement.stringContents, @"a & b", @"string concat");
 }
 
 - (void) testEntityReading;
@@ -363,7 +361,12 @@ do { \
     NSString *composedSequence = [NSString stringWithCharacter:0x10000];
     //NSLog(@"composedSequence = %@", composedSequence);
     
-#define CHECK(i, s) XCTAssertEqualObjects([[elements objectAtIndex:i] childAtIndex:0], s, @"child node"); XCTAssertEqualObjects([[elements objectAtIndex:i] attributeNamed:@"attr"], s, @"attribute value")
+#define CHECK(i, s) do { \
+    OFXMLElement *child = elements[i]; \
+    XCTAssertEqualObjects(child.stringContents, s, @"child node"); \
+    XCTAssertEqualObjects([child attributeNamed:@"attr"], s, @"attribute value"); \
+} while(0)
+
     CHECK( 0, @"&");
     CHECK( 1, @"&amp;");
     CHECK( 2, @"<");

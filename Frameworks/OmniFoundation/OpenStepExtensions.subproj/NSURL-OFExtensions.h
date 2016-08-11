@@ -51,7 +51,7 @@ static inline NSURL *OFFileURLRelativeToDirectoryURL(NSURL *baseURL, NSString *n
 }
 
 /* Modifies the last path segment of the given URL by appending a suffix string to it (the suffix must already contain any necessary %-escapes). If addSlash=YES, the returned URL will end in a slash; if removeSlash=YES, the returned URL will not end in a slash; otherwise its trailing slash (or lack of same) is left alone. */
-extern NSURL *OFURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash);
+extern NSURL * _Nullable OFURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash);
 
 /* Finds the range of the last path component of a URL. Returns NO if it can't find it for some reason. The returned range will not include the trailing slash, if it existed in the source URL; the length of any trailing slash is returned in *andTrailingSlash. */
 extern BOOL OFURLRangeOfLastPathComponent(NSString *urlString, NSRange *lastComponentRange, unsigned *andTrailingSlash);

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,11 +87,5 @@ extern NSString * const OAInfoTemplateImageName;
 
 // For storing image tints
 + (OFEnumNameTable *)tintNameEnumeration;
-
-// CoreImage
-
-// Returns a CIImage containing this NSImage. If there is a NSCIImageRep or NSBitmapImageRep in the image, it will be used; otherwise the image will be rendered into a CGLayer and a CIImage created from that.
-- (CIImage *)ciImageForContext:(CIContext *)ctxt;   // defaults to scale = 1
-- (CIImage *)ciImageForContext:(CIContext *)ctxt scale:(CGFloat)scale;
 
 @end

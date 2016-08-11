@@ -1,4 +1,4 @@
-// Copyright 2009, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,12 +15,15 @@ RCS_ID("$Id$")
 @implementation OFMetricPrefixFormatter
 {
     BOOL binaryPrefixes;
-    NSString *baseUnit;
-    //    NSString *unprefixedBaseUnit;
+}
+
+- (void)dealloc;
+{
+    [_baseUnit release];
+    [super dealloc];
 }
 
 @synthesize useBinaryPrefixes = binaryPrefixes;
-@synthesize baseUnit;
 
 struct scale {
     double multiplier;
@@ -84,9 +87,9 @@ static const struct scale decimalSubmultiples[] = {
     
     double n = v / scale->multiplier;
     if (fabs(n) < 95)
-        return [NSString stringWithFormat:@"%.1f\u00A0%@%@", n, scale->prefix, baseUnit];
+        return [NSString stringWithFormat:@"%.1f\u00A0%@%@", n, scale->prefix, _baseUnit];
     else
-        return [NSString stringWithFormat:@"%.0f\u00A0%@%@", n, scale->prefix, baseUnit];
+        return [NSString stringWithFormat:@"%.0f\u00A0%@%@", n, scale->prefix, _baseUnit];
 }
 
 // - (BOOL)getObjectValue:(out id *)anObject forString:(NSString *)string errorDescription:(out NSString **)error;

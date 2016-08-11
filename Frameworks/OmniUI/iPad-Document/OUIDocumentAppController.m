@@ -538,11 +538,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 _window.rootViewController = _documentPicker;
                 [_window makeKeyAndVisible];
                 
-                if (_specialURLToHandle) {
-                    [self handleSpecialURL:_specialURLToHandle];
-                    _specialURLToHandle = nil;
-                }
-                
+                [self handleCachedSpecialURLIfNeeded];
                 animateDocument = NO;
             }
             
@@ -1027,6 +1023,12 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
         self.newsURLStringToShowWhenReady = urlString;
         return nil;
     }
+}
+
+- (void)handleCachedSpecialURLIfNeeded
+{
+    [self handleSpecialURL:_specialURLToHandle];
+    _specialURLToHandle = nil;
 }
 
 #pragma mark - UIResponder subclass
@@ -1898,10 +1900,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
         _window.rootViewController = _documentPicker;
         [_window makeKeyAndVisible];
         
-        if (_specialURLToHandle) {
-            [self handleSpecialURL:_specialURLToHandle];
-            _specialURLToHandle = nil;
-        }
+        [self handleCachedSpecialURLIfNeeded];
     }
 
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:setup];
@@ -1924,11 +1923,9 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
         DEBUG_LAUNCH(1, @"Did openURL:%@ sourceApplication:%@ annotation:%@", url, sourceApplication, annotation);
         
         if ([self isSpecialURL:url]) {
+            _specialURLToHandle = [url copy];
             if (self.window.rootViewController == _documentPicker) {
-                [self handleSpecialURL:url];
-            }
-            else {
-                _specialURLToHandle = [url copy];
+                [self handleCachedSpecialURLIfNeeded];
             }
             return;
         }
@@ -2632,10 +2629,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     _window.rootViewController = _documentPicker;
     [_window makeKeyAndVisible];
     
-    if (_specialURLToHandle) {
-        [self handleSpecialURL:_specialURLToHandle];
-        _specialURLToHandle = nil;
-    }
+    [self handleCachedSpecialURLIfNeeded];
     
     [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
     }];

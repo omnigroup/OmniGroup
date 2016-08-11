@@ -1,4 +1,4 @@
-// Copyright 2009-2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFXMLReader.h>
 #import <OmniFoundation/OFXMLQName.h>
+#import <OmniFoundation/OFErrors.h>
 #import <OmniBase/NSError-OBExtensions.h>
 #import <OmniBase/rcsid.h>
 
@@ -215,8 +216,8 @@ static void _testReadBoolContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     NSError *error = nil;
     NSString *xml = [NSString stringWithFormat:@"<root>%@<foo/></root>", inner];
     
-    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
-    OBShouldNotError(reader != nil);
+    OFXMLReader *reader;
+    OBShouldNotError(reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error]);
     
     OBShouldNotError([reader openElement:&error]);
     
@@ -341,6 +342,76 @@ static void _testReadLongContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     _testReadLongContents(self, _cmd, @"<long><![CDATA[123]]></long>", 13, 123);
     _testReadLongContents(self, _cmd, @"<long><![CDATA[0]]></long>", 13, 0);
     _testReadLongContents(self, _cmd, @"<long><![CDATA[-1]]></long>", 13, -1);
+}
+
+- (void)testReadPastEndOfFileWithEmptyRoot;
+{
+    NSString *xmlString = @"<root/>";
+
+    NSError *error = nil;
+    OFXMLReader *reader;
+    OBShouldNotError(reader = [[OFXMLReader alloc] initWithData:[xmlString dataUsingEncoding:NSUTF8StringEncoding] error:&error]);
+
+    OFXMLQName *qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"root");
+
+    OBShouldNotError([reader openElement:NULL]);
+    OBShouldNotError([reader closeElement:NULL]);
+
+    BOOL success = [reader findNextElement:NULL error:&error];
+    XCTAssertFalse(success);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:OFErrorDomain code:OFXMLReaderEndOfFile]);
+}
+
+- (void)testReadPastEndOfFileWithNonEmptyRoot;
+{
+    NSString *xmlString = @"<root><a/></root>";
+
+    NSError *error = nil;
+    OFXMLReader *reader;
+    OBShouldNotError(reader = [[OFXMLReader alloc] initWithData:[xmlString dataUsingEncoding:NSUTF8StringEncoding] error:&error]);
+
+    OFXMLQName *qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"root");
+
+    OBShouldNotError([reader openElement:NULL]);
+    OBShouldNotError([reader closeElement:NULL]);
+
+    XCTAssertFalse([reader findNextElement:NULL error:&error]);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:OFErrorDomain code:OFXMLReaderEndOfFile]);
+}
+
+- (void)testNamespaces;
+{
+    NSString *xmlString = @"<root xmlns=\"http://root.example.com\" xmlns:a=\"http://a.example.com\" xmlns:b=\"http://b.example.com\"><a:a/><b:b/><c/></root>";
+
+    NSError *error = nil;
+    OFXMLReader *reader;
+    OBShouldNotError(reader = [[OFXMLReader alloc] initWithData:[xmlString dataUsingEncoding:NSUTF8StringEncoding] error:&error]);
+
+    OFXMLQName *qName;
+
+    qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"root");
+    XCTAssertEqualObjects(qName.namespace, @"http://root.example.com");
+
+    OBShouldNotError([reader openElement:&error]);
+
+    qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"a");
+    XCTAssertEqualObjects(qName.namespace, @"http://a.example.com");
+
+    OBShouldNotError([reader skipCurrentElement:&error]);
+
+    qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"b");
+    XCTAssertEqualObjects(qName.namespace, @"http://b.example.com");
+
+    OBShouldNotError([reader skipCurrentElement:&error]);
+
+    qName = reader.elementQName;
+    XCTAssertEqualObjects(qName.name, @"c");
+    XCTAssertEqualObjects(qName.namespace, @"http://root.example.com");
 }
 
 @end

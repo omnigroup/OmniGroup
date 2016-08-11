@@ -71,10 +71,19 @@ NSString * const OATextWithIconCellImageKey = @"image";
 
 - (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 {
-    if (!_oaFlags.drawsHighlight)
-        return nil;
-    else
+    if (!_oaFlags.drawsHighlight) {
+        // This is now marked as nonnull in AppKit.
+        // We could cast away nullability, but that leave us open to the risk that someone will do:
+        //
+        //   NSColor *color = [cell highlightColorWithFrame:...];
+        //   [color set];
+        //   NSRectFill(bounds);
+        //
+        // and end up filling with the wrong color. So let's return clearColor and be safe.
+        return [NSColor clearColor];
+    } else {
         return [super highlightColorWithFrame:cellFrame inView:controlView];
+    }
 }
 
 - (NSColor *)textColor;

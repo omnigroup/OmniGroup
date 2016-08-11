@@ -20,35 +20,173 @@
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
 
-#import "OFXMLFrozenElement.h"
-
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
+
+#if OB_ARC
+#error Do not convert this to ARC w/o re-checking performance. Last time it was tried, it was noticably slower.
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFXMLElement
 {
-    NSMutableArray * _Nullable _children;
-    NSMutableArray * _Nullable _attributeOrder;
-    NSMutableDictionary * _Nullable _attributes;
+    // Store a single child directly.
+    union {
+        id _Nullable single;
+        NSMutableArray * _Nullable multiple;
+    } _child;
+    
+    // Store a single attribute directly.
+    union {
+        struct {
+            NSString * _Nullable name;
+            NSString * _Nullable value;
+        } single;
+        struct {
+            NSMutableArray * _Nullable order;
+            NSMutableDictionary * _Nullable values;
+        } multiple;
+    } _attribute;
+    
+    BOOL _multipleChildren;
+    BOOL _multipleAttributes;
     BOOL _markedAsReferenced;
+}
+
+typedef BOOL (^ChildApplier)(id child);
+static BOOL EachChild(OFXMLElement *self, ChildApplier NS_NOESCAPE applier)
+{
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if (!applier(child)) {
+                return NO;
+            }
+        }
+    } else if (self->_child.single) {
+        return applier(self->_child.single);
+    }
+    return YES;
+}
+
+typedef BOOL (^ChildElementPredicate)(OFXMLElement *child);
+static OFXMLElement * _Nullable FirstChildElement(OFXMLElement *self, ChildElementPredicate NS_NOESCAPE predicate)
+{
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if ([child isKindOfClass:[OFXMLElement class]] && predicate(child)) {
+                return child;
+            }
+        }
+    } else if (self->_child.single) {
+        id child = self->_child.single;
+        if ([child isKindOfClass:[OFXMLElement class]] && predicate(child)) {
+            return child;
+        }
+    }
+    return nil;
+}
+
+typedef BOOL (^ChildPredicate)(id child);
+static id _Nullable FirstChild(OFXMLElement *self, ChildPredicate NS_NOESCAPE predicate)
+{
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if (predicate(child)) {
+                return child;
+            }
+        }
+    } else if (self->_child.single) {
+        id child = self->_child.single;
+        if (predicate(child)) {
+            return child;
+        }
+    }
+    return nil;
+}
+
+// Return NO from applier to stop. Whole operation returns YES if enumeration completed.
+typedef BOOL (^AttributeApplier)(NSString *name, NSString *value);
+static BOOL EachAttribute(OFXMLElement *self, AttributeApplier NS_NOESCAPE applier)
+{
+    if (self->_multipleAttributes) {
+        for (NSString *name in self->_attribute.multiple.order) {
+            NSString *value = self->_attribute.multiple.values[name];
+            OBASSERT(value);
+            if (!applier(name, value)) {
+                return NO;
+            }
+        }
+        return YES;
+    } else if (self->_attribute.single.name) {
+        NSString *value = self->_attribute.single.value;
+        OBASSERT(value);
+        return applier(self->_attribute.single.name, value);
+    } else {
+        return YES;
+    }
+}
+
+static NSUInteger AttributeCount(OFXMLElement *self)
+{
+    if (self->_multipleAttributes) {
+        return [self->_attribute.multiple.order count];
+    }
+    if (self->_attribute.single.name) {
+        return 1;
+    }
+    return 0;
+}
+static NSString * _Nullable AttributeNamed(OFXMLElement *self, NSString *name)
+{
+    if (self->_multipleAttributes) {
+        return self->_attribute.multiple.values[name];
+    }
+    if ([self->_attribute.single.name isEqual:name]) {
+        return self->_attribute.single.value;
+    }
+    return nil;
+}
+static NSString * _Nullable LastAttributeName(OFXMLElement *self)
+{
+    if (self->_multipleAttributes) {
+        return [self->_attribute.multiple.order lastObject];
+    }
+    return self->_attribute.single.name;
 }
 
 - initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
 {
-    if (!(self = [super init]))
-        return nil;
+    self = [super init];
 
     _name = [name copy];
     
-    // We take ownership of these instead of making new collections.  If nil, they'll be lazily created.
-    _attributeOrder = [attributeOrder retain];
-    _attributes = [attributes retain];
-    
-    // _children is lazily allocated
+    if (attributeOrder == nil) {
+        // OK. Storage will be lazily filled out as needed.
+    } else {
+        // We take ownership of these instead of making new collections. If there is a single item in the attribute order, the single value initializer would have been a better choice. Maybe add an assert.
+        _attribute.multiple.order = [attributeOrder retain];
+        _attribute.multiple.values = [attributes retain];
+        _multipleAttributes = YES;
+    }
 
+    // Children storage is lazily set up as needed.
+
+    return self;
+}
+
+- initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
+{
+    self = [super init];
+    
+    _name = [name copy];
+    
+    _attribute.single.name = [attributeName copy];
+    _attribute.single.value = [attributeValue copy];
+    
+    // Children storage is lazily set up as needed.
+    
     return self;
 }
 
@@ -60,9 +198,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) dealloc;
 {
     [_name release];
-    [_children release];
-    [_attributeOrder release];
-    [_attributes release];
+    
+    if (_multipleChildren) {
+        [_child.multiple release];
+    } else {
+        [_child.single release];
+    }
+    
+    if (_multipleAttributes) {
+        [_attribute.multiple.order release];
+        [_attribute.multiple.values release];
+    } else {
+        [_attribute.single.name release];
+        [_attribute.single.value release];
+    }
+
     [super dealloc];
 }
 
@@ -74,14 +224,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (OFXMLElement *)deepCopyWithName:(NSString *)name;
 {
     OFXMLElement *newElement = [[OFXMLElement alloc] initWithName:name];
-    
-    if (_attributeOrder != nil)
-        newElement->_attributeOrder = [[NSMutableArray alloc] initWithArray:_attributeOrder];
-    
-    if (_attributes != nil)
-        newElement->_attributes = [_attributes mutableCopy];	// don't need a deep copy because all the attributes are non-mutable strings, but we don need a unique copy of the attributes dictionary
 
-    for (id child in _children) {
+    if (_multipleAttributes) {
+        newElement->_multipleAttributes = YES;
+        newElement->_attribute.multiple.order = [_attribute.multiple.order mutableCopy];
+        newElement->_attribute.multiple.values = [_attribute.multiple.values mutableCopy];
+    } else if (_attribute.single.name) {
+        newElement->_attribute.single.name = [_attribute.single.name copy];
+        newElement->_attribute.single.value = [_attribute.single.value copy];
+    }
+
+    EachChild(self, ^BOOL(id child){
         if ([child isKindOfClass:[OFXMLElement class]]) {
             id copiedChild = [child deepCopy];
             [newElement appendChild:copiedChild];
@@ -89,65 +242,180 @@ NS_ASSUME_NONNULL_BEGIN
         } else {
             [newElement appendChild:child];
         }
-    }
+        return YES;
+    });
 
     return newElement;
 }
 
+- (nullable NSArray *)children;
+{
+    if (_multipleChildren) {
+        OBASSERT(_child.multiple != nil);
+        return _child.multiple;
+    }
+    if (_child.single == nil) {
+        return nil;
+    }
+    
+    // Upgrade the children to an array; ideally this would not happen often...
+    id child = _child.single; // retained by us.
+    _child.multiple = [[NSMutableArray alloc] initWithObjects:&child count:1];
+    _multipleChildren = YES;
+    [child release];
+    
+    return _child.multiple;
+}
+
+static NSUInteger ChildrenCount(OFXMLElement *self)
+{
+    if (self->_multipleChildren) {
+        return [self->_child.multiple count];
+    }
+    if (self->_child.single != nil) {
+        return 1;
+    }
+    return 0;
+}
+
 - (NSUInteger)childrenCount;
 {
-    return [_children count];
+    return ChildrenCount(self);
 }
 
 - (id)childAtIndex:(NSUInteger)childIndex;
 {
-    return [_children objectAtIndex: childIndex];
+    if (_multipleChildren) {
+        return _child.multiple[childIndex];
+    }
+
+    if (_child.single && childIndex == 0) {
+        return _child.single;
+    }
+
+    [NSException raise:NSRangeException format:@"The index %lu is out of bounds (element has %lu children).", childIndex, ChildrenCount(self)];
+    return nil;
+}
+
+static id LastChild(OFXMLElement *self)
+{
+    if (self->_multipleChildren) {
+        return [self->_child.multiple lastObject];
+    }
+    return self->_child.single;
 }
 
 - (id)lastChild;
 {
-    return [_children lastObject];
+    return LastChild(self);
 }
 
 - (NSUInteger)indexOfChildIdenticalTo:(id)child;
 {
-    return [_children indexOfObjectIdenticalTo:child];
+    if (_multipleChildren) {
+        return [_child.multiple indexOfObjectIdenticalTo:child];
+    }
+
+    // NSArray would presumably say this if we asked, but maybe `child` should be non-nullable here.
+    if (child == nil) {
+        return NSNotFound;
+    }
+    if (_child.single == child) {
+        return 0;
+    }
+    return NSNotFound;
 }
 
 - (void)insertChild:(id)child atIndex:(NSUInteger)childIndex;
 {
-    if (!_children) {
-        OBASSERT(childIndex == 0); // Else, certain doom
-        _children = [[NSMutableArray alloc] initWithObjects:&child count:1];
+    if (_multipleChildren) {
+        [_child.multiple insertObject:child atIndex:childIndex];
+    } else {
+        if (_child.single) {
+            id single = _child.single; // retained by us.
+            id children[2];
+            if (childIndex == 0) {
+                children[0] = child;
+                children[1] = single;
+            } else if (childIndex == 1) {
+                children[0] = single;
+                children[1] = child;
+            } else {
+                [NSException raise:NSRangeException format:@"The index %lu is out of bounds (element has %lu children).", childIndex, ChildrenCount(self)];
+            }
+
+            _child.multiple = [[NSMutableArray alloc] initWithObjects:children count:2];
+            _multipleChildren = 1;
+            [single release];
+        } else if (childIndex == 0) {
+            _child.single = [child retain];
+        } else {
+            [NSException raise:NSRangeException format:@"The index %lu is out of bounds (element has %lu children).", childIndex, ChildrenCount(self)];
+        }
     }
-    [_children insertObject:child atIndex:childIndex];
 }
 
 - (void)appendChild:(id)child;  // Either a OFXMLElement or an NSString
 {
     OBPRECONDITION([child respondsToSelector:@selector(appendXML:withParentWhiteSpaceBehavior:document:level:error:)]);
 
-    if (!_children)
-        _children = [[NSMutableArray alloc] initWithObjects:&child count:1];
-    else
-        [_children addObject:child];
+    if (_multipleChildren) {
+        [_child.multiple addObject:child];
+        return;
+    }
+    
+    id single = _child.single;
+    if (single) {
+        id children[2] = {single, child};
+        _child.multiple = [[NSMutableArray alloc] initWithObjects:children count:2];
+        _multipleChildren = 1;
+        [single release];
+    } else {
+        _child.single = [child retain];
+    }
 }
 
 - (void)removeChild:(id)child;
 {
     OBPRECONDITION([child isKindOfClass:[NSString class]] || [child isKindOfClass:[OFXMLElement class]]);
 
-    [_children removeObjectIdenticalTo:child];
+    if (_multipleChildren) {
+        // We don't downgrade to "single" once we've spent the time to create the array.
+        [_child.multiple removeObjectIdenticalTo:child];
+        return;
+    }
+
+    if (_child.single == child) {
+        [_child.single release];
+        _child.single = nil;
+    }
 }
 
 - (void)removeChildAtIndex:(NSUInteger)childIndex;
 {
-    [_children removeObjectAtIndex:childIndex];
+    if (_multipleChildren) {
+        [_child.multiple removeObjectAtIndex:childIndex];
+        return;
+    }
+    
+    if (_child.single && childIndex == 0) {
+        [_child.single release];
+        _child.single = nil;
+        return;
+    }
+    
+    [NSException raise:NSRangeException format:@"The index %lu is out of bounds (element has %lu children).", childIndex, ChildrenCount(self)];
 }
 
 - (void)removeAllChildren;
 {
-    [_children removeAllObjects];
+    if (_multipleChildren) {
+        [_child.multiple removeAllObjects];
+        return;
+    }
+    
+    [_child.single release];
+    _child.single = nil;
 }
 
 - (void)setChildren:(NSArray *)children;
@@ -159,29 +427,36 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif
 
-    if (_children)
-        [_children setArray:children];
-    else if ([children count] > 0)
-        _children = [[NSMutableArray alloc] initWithArray:children];
+    // Probably not a terribly common operation, so not bothering to check if we can revert to single-child status
+    if (_multipleChildren) {
+        [_child.multiple setArray:children];
+    } else {
+        [_child.single release];
+        if ([children count] > 1) {
+            _child.multiple = [[NSMutableArray alloc] initWithArray:children];
+            _multipleChildren = YES;
+        } else {
+            _child.single = [[children lastObject] retain];
+        }
+    }
 }
 
 - (void)sortChildrenUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 {
-    [_children sortUsingFunction:comparator context:context];
+    if (_child.multiple) {
+        [_child.multiple sortUsingFunction:comparator context:context];
+    }
 }
 
-// TODO: Really need a common superclass for OFXMLElement and OFXMLFrozenElement
-- (OFXMLElement *)firstChildNamed:(NSString *)childName;
+- (nullable id)firstChildNamed:(NSString *)childName;
 {
-    for (id child in _children) {
+    return FirstChild(self, ^(id child){
+        // Could be an OFXMLElement or OFXMLUnparsedElement
         if ([child respondsToSelector:@selector(name)]) {
-            NSString *name = [child name];
-            if ([name isEqualToString:childName])
-                return child;
+            return [childName isEqual:[child name]];
         }
-    }
-
-    return nil;
+        return NO;
+    });
 }
 
 // Does a bunch of -firstChildNamed: calls with each name split by '/'.  This isn't XPath, just a convenience.  Don't put a '/' at the beginning since there is always relative to the receiver.
@@ -198,51 +473,123 @@ NS_ASSUME_NONNULL_BEGIN
     return currentElement;
 }
 
-- (OFXMLElement *)firstChildWithAttribute:(NSString *)attributeName value:(NSString *)value;
+- (nullable OFXMLElement *)firstChildWithAttribute:(NSString *)attributeName value:(NSString *)value;
 {
     OBPRECONDITION(attributeName);
     OBPRECONDITION(value); // Can't look for unset attributes for now.
-    
-    for (id child in _children) {
-        if ([child respondsToSelector:@selector(attributeNamed:)]) {
-            NSString *attributeValue = [child attributeNamed:attributeName];
-            if ([value isEqualToString:attributeValue])
-                return child;
+
+    return FirstChildElement(self, ^(OFXMLElement *child){
+        NSString *attributeValue = [child attributeNamed:attributeName];
+        return [value isEqual:attributeValue];
+    });
+}
+
+// -applyBlock: only iterates the child elements, not strings.
+static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
+{
+    OBPRECONDITION(block != nil);
+
+    block(self);
+
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if ([child isKindOfClass:[OFXMLElement class]]) {
+                ApplyBlock(child, block);
+            } else {
+                block(child);
+            }
         }
+    } else if (self->_child.single) {
+        id child = self->_child.single;
+        block(child);
     }
-    
+}
+
+- (NSString *)stringContents;
+{
+    // This isn't optimized for cases like <a/>, <a>xxx</a>, or <a><b>xxx</b></b>, but is only currently used in tests.
+    NSMutableString *result = [NSMutableString string];
+
+    // -applyBlock: only hits element children.
+    ApplyBlock(self, ^(id child){
+        if ([child isKindOfClass:[NSString class]]) {
+            [result appendString:child];
+        }
+    });
+
+    return result;
+}
+
+- (nullable NSArray *)attributeNames;
+{
+    if (_multipleAttributes) {
+        return _attribute.multiple.order;
+    }
+
+    if (_attribute.single.name) {
+        // In the children case, we upgrade to the "multiple" storage format. Here we're returning an autoreleased array instead of building an array and dictionary. This may require later tuning (though ideally this method wouldn't be called at all.
+        return @[_attribute.single.name];
+    }
+
     return nil;
 }
 
-- (NSArray *)attributeNames;
+- (nullable NSString *)attributeNamed:(NSString *)name;
 {
-    return _attributeOrder;
-}
-
-- (NSString *)attributeNamed:(NSString *)name;
-{
-    return [_attributes objectForKey: name];
+    return AttributeNamed(self, name);
 }
 
 - (void)setAttribute:(NSString *)name string:(nullable NSString *)value;
 {
-    if (!_attributeOrder) {
-        OBASSERT(!_attributes);
-        _attributeOrder = [[NSMutableArray alloc] init];
-        _attributes = [[NSMutableDictionary alloc] init];
-    }
+    if (_multipleAttributes) {
+        OBASSERT([_attribute.multiple.order count] == [_attribute.multiple.values count]);
 
-    OBASSERT([_attributeOrder count] == [_attributes count]);
+        if (value) {
+            if (![_attribute.multiple.values objectForKey:name])
+                [_attribute.multiple.order addObject:name];
+            id copy = [value copy];
+            [_attribute.multiple.values setObject:copy forKey:name];
+            [copy release];
+        } else {
+            [_attribute.multiple.order removeObject:name];
+            [_attribute.multiple.values removeObjectForKey:name];
+        }
+    } else if (_attribute.single.name) {
+        if ([_attribute.single.name isEqual:name]) {
+            // Setting or removing our one existing attribute.
+            if (value) {
+                [value retain];
+                [_attribute.single.value release];
+                _attribute.single.value = value;
+            } else {
+                [_attribute.single.name release];
+                _attribute.single.name = nil;
+                [_attribute.single.value release];
+                _attribute.single.value = nil;
+            }
+        } else if (!value) {
+            // Clearing some attribute we don't have. OK.
+        } else {
+            // Adding a new attribute.
+            NSString *keyArray[2] = {_attribute.single.name, name};
+            NSString *valueArray[2] = {_attribute.single.value, value};
+            NSMutableArray *order = [[NSMutableArray alloc] initWithObjects:keyArray count:2];
+            NSMutableDictionary *values = [[NSMutableDictionary alloc] initWithObjects:valueArray forKeys:keyArray count:2];
 
-    if (value) {
-        if (![_attributes objectForKey:name])
-            [_attributeOrder addObject:name];
-        id copy = [value copy];
-        [_attributes setObject:copy forKey:name];
-        [copy release];
-    } else {
-        [_attributeOrder removeObject:name];
-        [_attributes removeObjectForKey:name];
+            [_attribute.single.name release];
+            _attribute.single.name = nil;
+
+            [_attribute.single.value release];
+            _attribute.single.value = nil;
+
+            _attribute.multiple.order = order;
+            _attribute.multiple.values = values;
+            _multipleAttributes = YES;
+        }
+    } else if (value) {
+        // First attribute
+        _attribute.single.name = [name copy];
+        _attribute.single.value = [value copy];
     }
 }
 
@@ -359,22 +706,9 @@ NS_ASSUME_NONNULL_BEGIN
     return [self appendElement:elementName containingString:[date xmlString]];
 }
 
-- (void) removeAttributeNamed: (NSString *) name;
+- (void)removeAttributeNamed:(NSString *)name;
 {
-    if ([_attributes objectForKey: name]) {
-        [_attributeOrder removeObject: name];
-        [_attributes removeObjectForKey: name];
-    }
-}
-
-- (void)sortAttributesUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
-{
-    [_attributeOrder sortUsingFunction:comparator context:context];
-}
-
-- (void)sortAttributesUsingSelector:(SEL)comparator;
-{
-    [_attributeOrder sortUsingSelector:comparator];
+    [self setAttribute:name string:nil];
 }
 
 - (void)markAsReferenced;
@@ -394,21 +728,37 @@ NS_ASSUME_NONNULL_BEGIN
     // We are an element
     applier(self, context);
     
-    for (id child in _children) {
-	if ([child respondsToSelector:_cmd])
-	    [(OFXMLElement *)child applyFunction:applier context:context];
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if ([child isKindOfClass:[OFXMLElement class]]) {
+                [child applyFunction:applier context:context];
+            }
+        }
+    } else if (self->_child.single) {
+        id child = self->_child.single;
+        if ([child isKindOfClass:[OFXMLElement class]]) {
+            [child applyFunction:applier context:context];
+        }
     }
 }
 
-- (void)applyBlock:(OFXMLElementApplierBlock)applierBlock;
+- (void)applyBlock:(OFXMLElementApplierBlock NS_NOESCAPE)applierBlock;
 {
     OBPRECONDITION(applierBlock != nil);
     
     applierBlock(self);
-    
-    for (id child in _children) {
-	if ([child respondsToSelector:_cmd])
-	    [(OFXMLElement *)child applyBlock:applierBlock];
+
+    if (self->_multipleChildren) {
+        for (id child in self->_child.multiple) {
+            if ([child isKindOfClass:[OFXMLElement class]]) {
+                [child applyBlock:applierBlock];
+            }
+        }
+    } else if (self->_child.single) {
+        id child = self->_child.single;
+        if ([child isKindOfClass:[OFXMLElement class]]) {
+            [child applyBlock:applierBlock];
+        }
     }
 }
 
@@ -446,40 +796,37 @@ NS_ASSUME_NONNULL_BEGIN
 
     OFXMLBufferAppendUTF8CString(xml, "<");
     OFXMLBufferAppendString(xml, (__bridge CFStringRef)_name);
-    
-    if (_attributeOrder) {
-        // Quote the attribute values
-        CFStringEncoding encoding = [doc stringEncoding];
-        
-        for (NSString *name in _attributeOrder) {
-            NSString *value = [_attributes objectForKey:name];
 
-            OBASSERT(value); // If we write out <element key>, libxml will hate us. This shouldn't happen, but it has once.
-            if (!value)
-                continue;
-            
-            OBASSERT(![value containsCharacterInSet:[NSString discouragedXMLCharacterSet]]);
-            
-            OFXMLBufferAppendUTF8CString(xml, " ");
-            OFXMLBufferAppendString(xml, (__bridge CFStringRef)name);
-            
-            if (value) {
-                OFXMLBufferAppendUTF8CString(xml, "=\"");
-                NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
-                OFXMLBufferAppendString(xml, (__bridge CFStringRef)quotedString);
-                [quotedString release];
-                OFXMLBufferAppendUTF8CString(xml, "\"");
-            }
+    // Quote the attribute values
+    CFStringEncoding encoding = [doc stringEncoding];
+
+    EachAttribute(self, ^(NSString *name, NSString *value){
+        OBASSERT(value); // If we write out <element key>, libxml will hate us. This shouldn't happen, but it has once.
+        if (!value)
+            return YES;
+
+        OBASSERT(![value containsCharacterInSet:[NSString discouragedXMLCharacterSet]]);
+
+        OFXMLBufferAppendUTF8CString(xml, " ");
+        OFXMLBufferAppendString(xml, (__bridge CFStringRef)name);
+
+        if (value) {
+            OFXMLBufferAppendUTF8CString(xml, "=\"");
+            NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
+            OFXMLBufferAppendString(xml, (__bridge CFStringRef)quotedString);
+            [quotedString release];
+            OFXMLBufferAppendUTF8CString(xml, "\"");
         }
-    }
+        return YES;
+    });
 
-    BOOL hasWrittenChild = NO;
-    BOOL doIntenting = NO;
+    __block BOOL hasWrittenChild = NO;
+    __block BOOL doIntenting = NO;
     
     // See if any of our children are non-ignored and use this for isEmpty instead of the plain count
-    for (id child in _children) {
+    BOOL success = EachChild(self, ^BOOL(id child){
         if ([child respondsToSelector:@selector(shouldIgnore)] && [child shouldIgnore])
-            continue;
+            return YES;
         
         // If we have actual element children and whitespace isn't important for this node, do some formatting.
         // We will produce output that is a little strange for something like '<x>foo<y/></x>' or any other mix of string and element children, but usually whitespace is important in this case and it won't be an issue.
@@ -500,6 +847,11 @@ NS_ASSUME_NONNULL_BEGIN
             return NO;
 
         hasWrittenChild = YES;
+        return YES;
+    });
+
+    if (!success) {
+        return NO;
     }
 
     if (doIntenting) {
@@ -522,18 +874,12 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-- (NSObject *)copyFrozenElement;
-{
-    // Frozen elements don't have any support for marking referenced
-    return [[OFXMLFrozenElement alloc] initWithName:_name children:_children attributes:_attributes attributeOrder:_attributeOrder];
-}
-
 #pragma mark - Comparison
 
 - (BOOL)isEqual:(id)otherObject;
 {
-    // We don't consider OFXMLFrozenElement or OFXMLUnparsedElement the same, even if they would produce the same output.  Not sure if this is a bug; let's catch this case here to see if it ever hits.
-    OBPRECONDITION(![otherObject isKindOfClass:[OFXMLFrozenElement class]] && ![otherObject isKindOfClass:[OFXMLUnparsedElement class]]);
+    // We don't consider OFXMLUnparsedElement the same, even if it would produce the same output. Not sure if this is a bug; let's catch this case here to see if it ever hits.
+    OBPRECONDITION(![otherObject isKindOfClass:[OFXMLUnparsedElement class]]);
     if (![otherObject isKindOfClass:[OFXMLElement class]])
         return NO;
     
@@ -543,22 +889,52 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     
     // Allow nil to be equal to empty
-    
-    if ([_attributeOrder count] != 0 || [otherElement->_attributeOrder count] != 0) {
-        // For now, at least, we'll consider elements with the same attributes, but in different orders, to be non-equal.
-        if (OFNOTEQUAL(_attributeOrder, otherElement->_attributeOrder))
-            return NO;
+    NSUInteger attributeCount = AttributeCount(self);
+    NSUInteger otherAttributeCount = AttributeCount(otherElement);
+
+    if (attributeCount != otherAttributeCount) {
+        return NO;
     }
-    if ([_attributes count] != 0 || [otherElement->_attributes count] != 0) {
-        if (OFNOTEQUAL(_attributes, otherElement->_attributes))
-            return NO;
+    if (attributeCount > 0) {
+        if (attributeCount == 1) {
+            // Either could be in 'multiple' storage format.
+            NSString *name = LastAttributeName(self);
+            if (![AttributeNamed(self, name) isEqual:AttributeNamed(otherElement, name)]) {
+                return NO;
+            }
+        } else {
+            BOOL equalAttributes = EachAttribute(self, ^BOOL(NSString *name, NSString *value) {
+                return [AttributeNamed(otherElement, name) isEqual:value];
+            });
+            if (!equalAttributes) {
+                return NO;
+            }
+        }
     }
-    
-    if ([_children count] != 0 || [otherElement->_children count] != 0) {
-        if (OFNOTEQUAL(_children, otherElement->_children))
-            return NO;
+
+    NSUInteger childrenCount = ChildrenCount(self);
+    NSUInteger otherChildrenCount = ChildrenCount(otherElement);
+
+    if (childrenCount != otherChildrenCount) {
+        return NO;
+    } else {
+        if (childrenCount > 1) {
+            // Since the counts are equal, both elements must have arrays
+            OBASSERT(self->_multipleChildren);
+            OBASSERT(otherElement->_multipleChildren);
+            if (OFNOTEQUAL(_child.multiple, otherElement->_child.multiple)) {
+                return NO;
+            }
+        } else if (childrenCount == 1) {
+            // Either might have a single or multiple, so use the wrapper function.
+            if (![LastChild(self) isEqual:LastChild(otherElement)]) {
+                return NO;
+            }
+        } else {
+            // Both zero, OK.
+        }
     }
-    
+
     // Ignoring the flags
     return YES;
 }
@@ -571,11 +947,19 @@ NS_ASSUME_NONNULL_BEGIN
 
     debugDictionary = [super debugDictionary];
     [debugDictionary setObject: _name forKey: @"_name"];
-    if (_children)
-        [debugDictionary setObject: _children forKey: @"_children"];
-    if (_attributes) {
-        [debugDictionary setObject: _attributeOrder forKey: @"_attributeOrder"];
-        [debugDictionary setObject: _attributes forKey: @"_attributes"];
+
+    if (_multipleChildren) {
+        [debugDictionary setObject: _child.multiple forKey: @"_children"];
+    } else if (_child.single) {
+        [debugDictionary setObject: @[_child.single] forKey: @"_children"];
+    }
+
+    if (_multipleAttributes) {
+        [debugDictionary setObject: _attribute.multiple.order forKey: @"_attributeOrder"];
+        [debugDictionary setObject: _attribute.multiple.values forKey: @"_attributes"];
+    } else if (_attribute.single.name) {
+        [debugDictionary setObject: @[_attribute.single.name] forKey: @"_attributeOrder"];
+        [debugDictionary setObject: @{_attribute.single.name: _attribute.single.value} forKey: @"_attributes"];
     }
 
     return debugDictionary;
@@ -587,7 +971,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSData *data = [self xmlDataAsFragment:&error];
     if (!data) {
         NSLog(@"Error converting element to data: %@", [error toPropertyList]);
-        return [error description];
+        return [error description] ?: @"Generic XML data fragment conversion error";
     }
     
     return [NSString stringWithData:data encoding:NSUTF8StringEncoding];
@@ -610,10 +994,6 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
-- (NSObject *)copyFrozenElement;
-{
-    return [self retain];
-}
 @end
 
 NS_ASSUME_NONNULL_END

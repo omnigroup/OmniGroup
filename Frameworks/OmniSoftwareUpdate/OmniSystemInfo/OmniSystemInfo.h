@@ -15,3 +15,5 @@
 #import <OmniSystemInfo/OSUProbe.h>
 #import <OmniSystemInfo/OSUReportKeys.h>
 #import <OmniSystemInfo/OSURunTime.h>
+#import <OmniSystemInfo/NSApplication-OSUNewsSupport.h>
+#import <OmniSystemInfo/OSUSystemConfigurationController.h>

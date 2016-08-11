@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@
 
 @interface OFCharacterScanner : NSObject
 {
+    // These are used in the OWDataStreamScanner subclass
     NSUInteger rewindMarkOffsets[OFMaximumRewindMarks]; // rewindMarkOffsets[0] is always the earliest mark, by definition
     unsigned short rewindMarkCount;
     NSUInteger firstNonASCIIOffset;
@@ -28,8 +29,6 @@
     unichar *scanLocation;	// Pointer to next unichar
     unichar *scanEnd;		// Pointer to position after end of valid characters
     NSUInteger inputStringPosition;	// This is the position (in a possibly notional string buffer) of the first character in inputBuffer
-    BOOL freeInputBuffer;	// Whether we should deallocate inputBuffer when we're done with it
-    OFCaseConversionBuffer caseBuffer;
 }
 
 - init;
@@ -50,8 +49,6 @@
 /* Used by subclasses to implement the above */
 - (BOOL)fetchMoreDataFromString:(NSString *)inputString;
 - (BOOL)fetchMoreDataFromCharacters:(unichar *)characters length:(NSUInteger)length offset:(NSUInteger)offset freeWhenDone:(BOOL)doFreeWhenDone;
-// #warning the following method is obsolete; remove all references and delete it
-// - (BOOL)fetchMoreDataFromCharacters:(unichar *)characters length:(unsigned int)length freeWhenDone:(BOOL)doFreeWhenDone;
 
 - (unichar)peekCharacter;
 - (void)skipPeekedCharacter;
@@ -63,6 +60,8 @@
 - (void)rewindToMark;
 - (void)discardRewindMark;
 
+- (BOOL)hasData;
+
 - (NSUInteger)scanLocation;
 - (void)setScanLocation:(NSUInteger)aLocation;
 - (void)skipCharacters:(NSUInteger)anOffset;
@@ -70,6 +69,8 @@
 - (BOOL)hasScannedNonASCII;  // returns YES if scanner has passed any non-ASCII characters
 
 - (BOOL)scanUpToCharacter:(unichar)aCharacter;
+- (BOOL)scanUpToCharacterInOFCharacterSet:(OFCharacterSet *)delimiterBitmapRep;
+- (BOOL)scanUpToCharacterNotInOFCharacterSet:(OFCharacterSet *)memberBitmapRep;
 - (BOOL)scanUpToCharacterInSet:(NSCharacterSet *)delimiterCharacterSet;
 - (BOOL)scanUpToString:(NSString *)delimiterString;
 - (BOOL)scanUpToStringCaseInsensitive:(NSString *)delimiterString;

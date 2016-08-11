@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,6 +91,7 @@ RCS_ID("$Id$");
 
 }
 
+#if 0
 static void fpstr(NSString *s, FILE *fp)
 {
     NSData *d = [s dataUsingEncoding:NSUTF8StringEncoding];
@@ -193,6 +194,7 @@ static void fpstr(NSString *s, FILE *fp)
     fclose(fp);
 
 }
+#endif
 
 @end
 
@@ -212,9 +214,13 @@ static void fpstr(NSString *s, FILE *fp)
     
     static uint8_t s0[] = { 0x13, 0x02, 0x55, 0x53 };  /* PRINTABLESTRING */
     static uint8_t s1[] = { 0x0c, 0x0e, 0x54, 0x68, 0x65, 0x20, 0x4f, 0x6d, 0x6e, 0x69, 0x20, 0x47, 0x72, 0x6f, 0x75, 0x70 }; /* UTF8STRING */
+    static uint8_t s2[] = { 0x0c, 0x07, 'c', 'l', 'i', 'c', 'h', 0xc3, 0xa9 };
     
     XCTAssertEqualObjects(OFASN1UnDERString(DAT(s0)), @"US");
+    XCTAssertEqualObjects(DAT(s0), OFASN1EnDERString(@"US"));
     XCTAssertEqualObjects(OFASN1UnDERString(DAT(s1)), @"The Omni Group");
+    XCTAssertEqualObjects(OFASN1UnDERString(DAT(s2)), @"clich\u00E9");
+    XCTAssertEqualObjects(DAT(s2), OFASN1EnDERString(@"clich\u00E9"));
     
     static uint8_t vx[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
     NSData *r = OFASN1AppendStructure(nil, "(d*<d>)",
@@ -251,14 +257,17 @@ static void fpstr(NSString *s, FILE *fp)
     NSData * __autoreleasing sn;
     NSData * __autoreleasing issu;
     NSData * __autoreleasing subj;
+    NSArray * __autoreleasing vali;
     NSData * __autoreleasing spki;
-    int rv = OFASN1CertificateExtractFields(cert, &sn, &issu, &subj, &spki, ^(NSData *oid, BOOL crit, NSData *v){
+    NSData * __autoreleasing ski;
+    int rv = OFASN1CertificateExtractFields(cert, &sn, &issu, &subj, &vali, &spki, ^(NSData *oid, BOOL crit, NSData *v){
         /* nothing yet */
     });
     XCTAssertEqual(rv, 0);
     
     static uint8_t serial25[] = { 0x19 };
     XCTAssertEqualObjects(sn, DAT(serial25));
+    static uint8_t ski1[] = { 0x88, 0x27, 0x17, 0x09, 0xA9, 0xB6, 0x18, 0x60, 0x8B, 0xEC, 0xEB, 0xBA, 0xF6, 0x47, 0x59, 0xC5, 0x52, 0x54, 0xA3, 0xB7 };
 
     [self _checkRDN:subj
           expecting:@[
@@ -275,20 +284,34 @@ static void fpstr(NSString *s, FILE *fp)
                       @[ @"2.5.4.11", @"Apple Certification Authority"],
                       @[ @"2.5.4.3", @"Apple Root CA"]
                       ]];
+    
+    XCTAssertEqualObjects(vali, (@[ [NSDate dateWithTimeIntervalSince1970:1203015395],
+                                    [NSDate dateWithTimeIntervalSince1970:1455476195] ]));
 
     unsigned int keySize = 0;
     XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL), ka_RSA);
     XCTAssertEqual(keySize, 2048u);
     
+    SecCertificateRef cfCert = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)cert);
+    sn = NULL;
+    issu = NULL;
+    ski = NULL;
+    BOOL ok = OFSecCertificateGetIdentifiers(cfCert, &issu, &sn, &ski);
+    XCTAssertTrue(ok);
+    XCTAssertEqualObjects(sn, DAT(serial25));
+    XCTAssertEqualObjects(ski, DAT(ski1));
+    CFRelease(cfCert);
+    
     cert = [[NSData alloc] initWithBase64EncodedString:@"MIIB/TCCAaWgAwIBAgICAP8wCQYHKoZIzj0EATBgMQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMRkwFwYDVQQDDBBFbGxpcHNlIG9mIEJsaXNzMB4XDTE1MDExMzAxNTE1NFoXDTE1MDIxMjAxNTE1NFowYDELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDEZMBcGA1UEAwwQRWxsaXBzZSBvZiBCbGlzczBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOyIAG00b6CpUu+G1Kghyunq7nj4VRSoZohJ6hbq8xxTqWdSuOkFS0MaE0NLujhhRpkGY0xuQIpM+9KutGXXs7ejUDBOMB0GA1UdDgQWBBRXEUZVSKKGOSTClw2icZdYkrNAJTAfBgNVHSMEGDAWgBRXEUZVSKKGOSTClw2icZdYkrNAJTAMBgNVHRMEBTADAQH/MAkGByqGSM49BAEDRwAwRAIhALlHlYC3dJS30I2el7mKbOFymAebQc/b/2Okld5jh5abAh8TTbad3Xfzfp6mt8VUAFKoz1mWgE8RU3EcpDfUiPKW" options:0];
     
-    rv = OFASN1CertificateExtractFields(cert, &sn, &issu, &subj, &spki, ^(NSData *oid, BOOL crit, NSData *v){
+    rv = OFASN1CertificateExtractFields(cert, &sn, &issu, &subj, &vali, &spki, ^(NSData *oid, BOOL crit, NSData *v){
         /* nothing yet */
     });
     XCTAssertEqual(rv, 0);
     
     static uint8_t serial255[] = { 0x00, 0xFF };
     XCTAssertEqualObjects(sn, DAT(serial255));
+    static uint8_t ski2[] = { 0x57, 0x11, 0x46, 0x55, 0x48, 0xA2, 0x86, 0x39, 0x24, 0xC2, 0x97, 0x0D, 0xA2, 0x71, 0x97, 0x58, 0x92, 0xB3, 0x40, 0x25 };
     
     [self _checkRDN:subj
           expecting:@[
@@ -299,9 +322,22 @@ static void fpstr(NSString *s, FILE *fp)
                       ]];
     XCTAssertEqualObjects(subj, issu);
     
+    XCTAssertEqualObjects(vali, (@[ [NSDate dateWithTimeIntervalSince1970:1421113914],
+                                    [NSDate dateWithTimeIntervalSince1970:1423705914] ]));
+    
     keySize = 0;
     XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL), ka_EC);
     XCTAssertEqual(keySize, 256u);
+    
+    cfCert = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)cert);
+    sn = NULL;
+    issu = NULL;
+    ski = NULL;
+    ok = OFSecCertificateGetIdentifiers(cfCert, &issu, &sn, &ski);
+    XCTAssertTrue(ok);
+    XCTAssertEqualObjects(sn, DAT(serial255));
+    XCTAssertEqualObjects(ski, DAT(ski2));
+    CFRelease(cfCert);
 }
 
 #if !TARGET_OS_IPHONE

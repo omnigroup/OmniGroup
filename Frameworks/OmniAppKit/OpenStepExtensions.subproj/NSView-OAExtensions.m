@@ -53,6 +53,14 @@ RCS_ID("$Id$")
     return newInstance;
 }
 
+- (void)dealloc;
+{
+    [_layoutBlock release];
+    [_preAnimationBlock release];
+    [_completionBlock release];
+    [super dealloc];
+}
+
 @end
 
 

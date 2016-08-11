@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,11 @@ int main(int argc, const char * argv[])
     
     for (int argi = 1; argi < argc; argi++) {
         @autoreleasepool {
-            OFXMLWhitespaceBehavior *whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
+            //OFXMLWhitespaceBehavior *whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
+
+            // More realistic whitespace behavior for things that use our text archiving format.
+            OFXMLWhitespaceBehavior *whitespaceBehavior = [[OFXMLWhitespaceBehavior alloc] initWithDefaultBehavior:OFXMLWhitespaceBehaviorTypeIgnore];
+            [whitespaceBehavior setBehavior:OFXMLWhitespaceBehaviorTypePreserve forElementName:@"lit"];
 
             NSString *fileName = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:argv[argi] length:strlen(argv[argi])];
             
@@ -36,7 +40,7 @@ int main(int argc, const char * argv[])
             }
 
             OFPerformanceMeasurement *perf = [[OFPerformanceMeasurement alloc] init];
-            [perf addValues:100 withAction:^{
+            [perf addValues:5 withAction:^{
                 __autoreleasing NSError *error;
                 OFXMLDocument *doc = [[OFXMLDocument alloc] initWithContentsOfFile:fileName whitespaceBehavior:whitespaceBehavior error:&error];
                 if (!doc)

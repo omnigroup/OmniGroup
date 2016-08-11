@@ -351,7 +351,7 @@ NSURL *OFDirectoryURLForURL(NSURL *url)
     return parentURL;
 }
 
-NSURL *OFURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash)
+NSURL * _Nullable OFURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash)
 {
     OBASSERT(![quotedSuffix containsString:@"/"]);
     OBASSERT(!(addSlash && removeSlash));

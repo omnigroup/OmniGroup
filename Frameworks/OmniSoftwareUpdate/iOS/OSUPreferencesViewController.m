@@ -7,17 +7,19 @@
 
 #import <OmniSoftwareUpdate/OSUPreferencesViewController.h>
 
+#import <OmniFoundation/NSArray-OFExtensions.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
-#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIMenuOption.h>
 #import <OmniUI/OUIAppController.h>
 
-#import <OmniSoftwareUpdate/OSUPreferences.h>
 #import <OmniSoftwareUpdate/OSUChecker.h>
 #import <OmniSoftwareUpdate/OSUCheckOperation.h>
 #import <OmniSoftwareUpdate/OSUHardwareInfo.h>
+#import <OmniSoftwareUpdate/OSUPreferences.h>
+#import <OmniSoftwareUpdate/OSUProbe.h>
 #import "OSURunOperation.h"
 
 #import <mach-o/arch.h>
@@ -131,15 +133,17 @@ enum {
 @end
 
 @interface OSUPreferencesInfoEntry : NSObject
-@property(nonatomic,copy) NSString *name;
-@property(nonatomic,copy) NSString *value;
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *value;
+@property (nonatomic, strong) UIViewController *appSpecificDetailController;
 @end
+
 @implementation OSUPreferencesInfoEntry
 @end
 
 @implementation OSUPreferencesViewController
 {
-    NSArray *_entries;
+    NSArray<OSUPreferencesInfoEntry *> *_entries;
     OSUPreferencesTableViewLabel *_settingFooterView;
     OSUPreferencesTableViewLabel *_infoHeaderView;
 }
@@ -205,6 +209,11 @@ enum {
     _infoHeaderView = [[OSUPreferencesTableViewLabel alloc] initWithText:NSLocalizedStringFromTableInBundle(@"The following information will be sent:", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings option title") paddingOnTop:YES];
 
     return self;
+}
+
+- (UIViewController *)appSpecificDisplayControllerForProbe:(OSUProbe *)probe;
+{
+    return nil;
 }
 
 #pragma mark - UIViewController
@@ -355,8 +364,40 @@ enum {
         
         // Handle any remaining entries
         for (NSString *key in [report allKeys]) {
-            addEntry(key, key, nil);
+            
+            // Try looking up an existing probe and formatting data according to its options
+            OSUProbe *probe = [OSUProbe existingProbeWithKey:key];
+            if (probe != nil) {
+                
+                UIViewController *detailController = nil;
+                if (probe.options & OSUProbeOptionHasAppSpecificDisplay) {
+                    // Found a probe that requested app-specific display. Ask for a controller that will display it
+                    detailController = [self appSpecificDisplayControllerForProbe:probe];
+                    OBASSERT(detailController != nil, @"App created OSUProbe %@ that requested custom display, but did not provide a custom view controller for that display.", probe.key);
+                    if (detailController != nil) {
+                        OSUPreferencesInfoEntry *entry = [OSUPreferencesInfoEntry new];
+                        entry.name = probe.title;
+                        entry.value = probe.displayString;
+                        entry.appSpecificDetailController = detailController;
+                        [entries addObject:entry];
+                        [report removeObjectForKey:key];
+                    }
+                }
+                
+                if (detailController == nil) {
+                    // Found a probe that doesn't need special display, or the app failed to provide a corresponding view controller. Use the probe's localized title & formatted value
+                    addEntry(key, probe.title, ^NSString *(NSString *value) {
+                        // We could run the given value through +[OSUProbe displayStringForValue:options:], but this seems more direct
+                        return probe.displayString;
+                    });
+                }
+                
+            } else {
+                // No probe at all – add a bare entry for the key itself
+                addEntry(key, key, nil);
+            }
         }
+        
     }
     
     _entries = [entries copy];
@@ -447,19 +488,44 @@ enum {
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"info"];
             if (!cell) {
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:@"info"];
-                cell.selectionStyle = UITableViewCellSelectionStyleNone;
             }
             
             OSUPreferencesInfoEntry *entry = _entries[indexPath.row];
             cell.textLabel.text = entry.name;
-            cell.detailTextLabel.text = entry.value;
+            if (entry.appSpecificDetailController != nil) {
+                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+                cell.detailTextLabel.text = nil;
+            } else {
+                cell.accessoryType = UITableViewCellAccessoryNone;
+                cell.selectionStyle = UITableViewCellSelectionStyleNone;
+                cell.detailTextLabel.text = entry.value;
+            }
             
             return cell;
         }
         default:
-            OBASSERT_NOT_REACHED("Unknown section");
-            return 0;
+            assert(0); // not reached – should never get an indexPath.section >= SectionCount
     }
+}
+
+- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if (indexPath.section != InfoSection) {
+        return nil;
+    }
+    
+    OSUPreferencesInfoEntry *entry = _entries[indexPath.row];
+    return (entry.appSpecificDetailController == nil) ? nil : indexPath;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    OBPRECONDITION(indexPath.section == InfoSection);
+    
+    UIViewController *detailController = _entries[indexPath.row].appSpecificDetailController;
+    OBASSERT(detailController != nil);
+    [self.navigationController pushViewController:detailController animated:YES];
 }
 
 #pragma mark - Private

@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 static NSUserDefaults *standardUserDefaults;
 static NSMutableDictionary <NSString *, OFPreference *> *preferencesByKey;
 static NSLock *preferencesLock;
-static NSSet <NSString *> *registeredKeysCache;
+static NSSet <NSString *> * _Nullable registeredKeysCache;
 static NSObject *unset = nil;
 static volatile unsigned registrationGeneration = 1;
 static NSNotificationCenter *preferenceNotificationCenter = nil;
@@ -103,7 +103,7 @@ static inline id _objectValue(OFPreference *self, id const *_value, NSString *ke
     return result;
 }
 
-static void _setValueUnderlyingValue(OFPreference *self, id controller, NSString *keyPath, NSString *key, id value)
+static void _setValueUnderlyingValue(OFPreference *self, id _Nullable controller, NSString * _Nullable keyPath, NSString *key, id _Nullable value)
 {
     // Per discussion with tjw in <bug:///122290> (Bug: OFPreference deadlock), we should avoid writing to OFPreference from a background thread/queue.
     // The original design of OFPreference was that it would be readable in a thread-safe way from any queue, but that writing to it should happen on the main queue.
@@ -238,7 +238,7 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     [preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
 }
 
-+ (id)coerceStringValue:(NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
++ (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
 {
     if (stringValue == nil || [stringValue isNull]) { // null
         return [NSNull null];
@@ -473,6 +473,33 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 - (NSData * _Nullable) dataValue;
 {
     return _objectValue(self, &_value, _key, @"NSData");
+}
+
+- (NSURL * _Nullable) bookmarkURLValue;
+{
+    NSData *bookmarkData = [self dataValue];
+    if (bookmarkData.length == 0)
+        return nil;
+    
+    BOOL isStale = NO;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSURLBookmarkResolutionOptions resolutionOptions = NSURLBookmarkResolutionWithSecurityScope;
+#else
+    NSURLBookmarkResolutionOptions resolutionOptions = 0;
+#endif
+    NSURL *bookmarkURL = [NSURL URLByResolvingBookmarkData:bookmarkData options:resolutionOptions relativeToURL:nil bookmarkDataIsStale:&isStale error:NULL];
+    return bookmarkURL;
+}
+
+- (void)setBookmarkURLValue:(NSURL * _Nullable)bookmarkURL;
+{
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSURLBookmarkCreationOptions creationOptions = NSURLBookmarkCreationWithSecurityScope;
+#else
+    NSURLBookmarkCreationOptions creationOptions = 0;
+#endif
+    NSData *bookmarkData = bookmarkURL != nil ? [bookmarkURL bookmarkDataWithOptions:creationOptions includingResourceValuesForKeys:nil relativeToURL:nil error:NULL] : nil;
+    [self setDataValue:bookmarkData];
 }
 
 - (int) intValue;
@@ -949,6 +976,11 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 - (nullable NSData *)dataForKey:(NSString *)defaultName;
 {
     return [[OFPreference preferenceForKey: defaultName] dataValue];
+}
+
+- (nullable NSURL *)bookmarkURLForKey:(NSString *)defaultName;
+{
+    return [[OFPreference preferenceForKey: defaultName] bookmarkURLValue];
 }
 
 - (nullable NSArray *)stringArrayForKey:(NSString *)defaultName;

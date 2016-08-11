@@ -1,4 +1,4 @@
-// Copyright 2009-2010 The Omni Group. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@ static NSString * const TargetLayerKey = @"OQLayerRemovalAnimationTargetLayer";
     
     DEBUG_ANIMATION(@"%@ animating removal with %@", [layer shortDescription], anim);
 
-    anim.delegate = self;
+    anim.delegate = (id <CAAnimationDelegate>)self;
     [anim setValue:layer forKey:TargetLayerKey];
     [layer addAnimation:anim forKey:RemovalAnimation];
 }

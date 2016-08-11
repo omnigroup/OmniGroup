@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 
 @protocol OSUCheckService
 
-// The runtimeStatsAndProbes are passed on their own since XPC's secure coding doesn't allow for complex data.
-- (void)performCheck:(OSURunOperationParameters *)parameters runtimeStatsAndProbes:(NSDictionary *)runtimeStatsAndProbes lookupCredential:(id <OSULookupCredential>)lookupCredential withReply:(void (^)(NSDictionary *results, NSError *error))reply;
+// The runtimeStats and probes are passed on their own since XPC's secure coding doesn't allow for complex data.
+- (void)performCheck:(OSURunOperationParameters *)parameters runtimeStats:(NSDictionary *)runtimeStats probes:(NSDictionary *)probes lookupCredential:(id <OSULookupCredential>)lookupCredential withReply:(void (^)(NSDictionary *results, NSError *error))reply;
 
 @end

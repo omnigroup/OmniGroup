@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,7 @@
 
 @property(nonatomic,retain) id objectValue;
 @property(nonatomic,copy) NSString *stringValue;
+@property(nonatomic,copy) NSURL *bookmarkURLValue;
 @property(nonatomic,assign) BOOL boolValue;
 @property(nonatomic,assign) int intValue;
 @property(nonatomic,assign) NSInteger integerValue;

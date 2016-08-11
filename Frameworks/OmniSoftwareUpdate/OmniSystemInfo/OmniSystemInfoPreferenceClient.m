@@ -14,8 +14,8 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
 
-#import <OmniSoftwareUpdate/OSUPreferences.h>
-#import "OSUSystemConfigurationController.h"
+#import <OmniSystemInfo/OSUPreferences.h>
+#import <OmniSystemInfo/OSUSystemConfigurationController.h>
 
 RCS_ID("$Id$");
 

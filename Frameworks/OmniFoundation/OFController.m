@@ -97,7 +97,7 @@ static void _OFControllerCheckTerminated(void)
         if (!controllingBundle)
             controllingBundle = [[NSBundle mainBundle] retain];
         
-        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.10 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.11 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
@@ -105,7 +105,7 @@ static void _OFControllerCheckTerminated(void)
                 OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
                 OBASSERT(requiredVersion);
                 
-                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.10"];
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.11"];
                 OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
                 [requiredVersion release];
                 [globalRequiredVersion release];
@@ -171,13 +171,8 @@ static NSString *ControllerClassName(NSBundle *bundle)
         // For one-time setup that we don't want to do in -init if we are going to be a losing instance.
         [sharedController becameSharedController];
     }
-    
+
     assert([sharedController isKindOfClass:self]);
-    if (![sharedController isKindOfClass:self]) {
-        // This code is unreachable, due to the hard assert() above.
-        // We may have to do a nullability case on the return value to satisfy the compiler post Xcode 8
-        return nil;
-    }
     
     return sharedController;
 }
@@ -372,7 +367,9 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
             [_queues setObject:queue forKey:key];
         }
 
-        [queue addObject:block];
+        id copiedBlock = [block copy];
+        [queue addObject:copiedBlock];
+        [copiedBlock release];
         
         [observerLock unlock];
     }

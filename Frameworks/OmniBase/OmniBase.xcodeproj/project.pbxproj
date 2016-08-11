@@ -911,13 +911,15 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				TargetAttributes = {
 					34637CCB194F448F009B51C5 = {
 						CreatedOnToolsVersion = 6.0;
 					};
 					34637CD5194F448F009B51C5 = {
 						CreatedOnToolsVersion = 6.0;
+						DevelopmentTeam = 34YW5XSRB7;
+						DevelopmentTeamName = "The Omni Group";
 						TestTargetID = 34637CCB194F448F009B51C5;
 					};
 					34EE20D014F0354300722491 = {
@@ -1258,6 +1260,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3431A5D11C1258470033977A /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1274,6 +1277,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3431A5D21C1258470033977A /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",

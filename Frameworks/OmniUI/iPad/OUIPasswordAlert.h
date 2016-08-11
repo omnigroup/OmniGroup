@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class OUIPasswordAlertViewController;
 @protocol OUIPasswordAlertDelegate;
@@ -25,24 +27,22 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 
 @interface OUIPasswordAlert : NSObject
 
-// Designated initializer
-- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(NSUInteger)options;
+- (id)init NS_UNAVAILABLE;
+- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(nullable NSString *)title options:(NSUInteger)options NS_DESIGNATED_INITIALIZER;
 
-// Properties
 @property (nonatomic, readonly) NSString *title;
 @property (nonatomic, readonly) NSURLProtectionSpace *protectionSpace;
 
-@property (nonatomic, weak) id <OUIPasswordAlertDelegate> delegate;
-@property (nonatomic, copy) void (^finished)(OUIPasswordAlert *, OUIPasswordAlertAction);
+@property (nonatomic, weak, nullable) id <OUIPasswordAlertDelegate> delegate;
+@property (nonatomic, copy, nullable) void (^finished)(OUIPasswordAlert *, OUIPasswordAlertAction);
 
-@property (nonatomic, copy) NSString *username;
-@property (nonatomic, copy) NSString *password;
+@property (nonatomic, copy, nullable) NSString *username;
+@property (nonatomic, copy, nullable) NSString *password;
 
 @property (nonatomic, readonly, getter=isUsingObfuscatedPasswordPlaceholder) BOOL usingObfuscatedPasswordPlaceholder;
 
-@property (nonatomic, strong) UIColor *tintColor;
+@property (nonatomic, strong, null_resettable) UIColor *tintColor;
 
-// API
 - (void)showFromController:(UIViewController *)controller;
 
 @end
@@ -53,3 +53,5 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 - (void)passwordAlert:(OUIPasswordAlert *)passwordAlert didDismissWithAction:(OUIPasswordAlertAction)action;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFASN1-Internal.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
+#import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniBase/rcsid.h>
@@ -36,6 +37,11 @@ static enum OFASN1ErrorCodes objectAt(NSData *buffer, NSUInteger pos, struct asn
 static enum OFASN1ErrorCodes enterObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState);
 static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState, BOOL allowTrailing);
 
+static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v);
+
+#define asn1ParseError(a, b) OFNSErrorFromASN1Error(a, b)
+
+#define ARRAYLENGTH(a) (sizeof(a)/sizeof((a)[0]))
 static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
 {
     unsigned char buf[16];
@@ -89,7 +95,7 @@ static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where
         
         /* Indefinite lengths are forbidden in DER */
         if (requireDER)
-            return OFASN1UnexpectedType;
+            return OFASN1UnexpectedIndefinite;
         
         outTL->indefinite = YES;
         outTL->content.location = lengthStartIndex+1;
@@ -342,10 +348,11 @@ static BOOL unDerInt(NSData *buffer, const struct parsedTag *v, int32_t *result)
 #define FIELD_CONTENTS_RANGE(walker) (walker.v.content)
 
 #define ADVANCE(buf, walker) do{ rc = nextObject(buf, &walker); if (rc) return rc; }while(0)
+#define ADVANCE_E(buf, walker) do{ rc = nextObject(buf, &(walker)); if (rc != OFASN1Success && rc != OFASN1EndOfObject) return rc; }while(0)
 
 #pragma mark - ASN.1 scanning and creation utility functions
 
-int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value))
+int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value))
 {
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState stx;
@@ -389,7 +396,22 @@ int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData *
                 *issuer = [cert subdataWithRange:DER_FIELD_RANGE(tbsFields)];
             ADVANCE(cert, tbsFields);
             
-            ADVANCE(cert, tbsFields); /* Validity information */
+            /* Validity is a SEQUENCE of two dates */
+            EXPECT_TYPE(tbsFields, 0x20, 0x10);
+            if (validity) {
+                struct asnWalkerState validityFields;
+                rc = enterObject(cert, &tbsFields, &validityFields);
+                if (rc)
+                    return rc;
+                NSDate *bounds[2];
+                bounds[0] /* notBefore */ = OFASN1UnDERDateContents(cert, &(validityFields.v)).date;
+                ADVANCE(cert, validityFields);
+                bounds[1] /* notAfter */  =  OFASN1UnDERDateContents(cert, &(validityFields.v)).date;
+                if (!bounds[0] || !bounds[1])
+                    return OFASN1UnexpectedType;
+                *validity = [NSArray arrayWithObjects:bounds count:2];
+            }
+            ADVANCE(cert, tbsFields);
             
             /* Subject's concrete type is SEQUENCE (of RDNs) */
             EXPECT_TYPE(tbsFields, 0x20, 0x10);
@@ -402,20 +424,22 @@ int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData *
             if (subjectKeyInformation) {
                 *subjectKeyInformation = [cert subdataWithRange:DER_FIELD_RANGE(tbsFields)];
             }
-            ADVANCE(cert, tbsFields);
+            
+            /* The SubjectPublicKeyInfo is the last mandatory field; from here on, OFASN1EndOfObject is not an error */
+            ADVANCE_E(cert, tbsFields);
             
             /* Skip the optional IMPLICIT-tagged issuerUniqueID, if it's there */
-            if (IMPLICIT_TAGGED(tbsFields, 1)) {
-                ADVANCE(cert, tbsFields);
+            if (rc == OFASN1Success && IMPLICIT_TAGGED(tbsFields, 1)) {
+                ADVANCE_E(cert, tbsFields);
             }
             
             /* Skip the optional IMPLICIT-tagged subjectUniqueID, if it's there */
-            if (IMPLICIT_TAGGED(tbsFields, 2)) {
-                ADVANCE(cert, tbsFields);
+            if (rc == OFASN1Success && IMPLICIT_TAGGED(tbsFields, 2)) {
+                ADVANCE_E(cert, tbsFields);
             }
             
             /* The extensions array, oddly, is explicitly tagged, not implicitly */
-            if (EXPLICIT_TAGGED(tbsFields, 3)) {
+            if (rc == OFASN1Success && EXPLICIT_TAGGED(tbsFields, 3)) {
                 
                 if (extensions_cb) {
                     
@@ -484,7 +508,7 @@ int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData *
                     
                 } else {
                     /* Caller is not interested in extensions; skip them */
-                    ADVANCE(cert, tbsFields);
+                    ADVANCE_E(cert, tbsFields);
                 }
             }
             
@@ -870,6 +894,135 @@ NSData *OFASN1EnDERString(NSString *str)
     return buf;
 }
 
+static int v2digits(const char *cp)
+{
+    int h = ( cp[0] - '0' );
+    int l = ( cp[1] - '0' );
+    return h * 10 + l;
+}
+
+static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v)
+{
+    BOOL fourDigitYear;
+    
+    if (v->classAndConstructed != 0 || v->indefinite)
+        return nil;
+    
+    if (v->tag == BER_TAG_UTC_TIME) {
+        fourDigitYear = NO;
+    } else if (v->tag == BER_TAG_GENERALIZED_TIME) {
+        fourDigitYear = YES;
+    } else {
+        return nil;
+    }
+    
+    /* The longest valid date is 29 characters (YYYYMMDDHHMMSS.sssssssss+HHMM); the shortest is 8 (YYMMDDHH) */
+    NSUInteger len = v->content.length;
+    if (len < 8 || len > 29)
+        return nil;
+    char value[30];
+    [buf getBytes:value range:v->content];
+    value[len] = 0;
+
+    NSTimeZone *tz;
+    
+    if (value[len-1] == 'Z') {
+        tz = [NSTimeZone timeZoneWithName:@"UTC"];
+        len --;
+    } else if (value[len-5] == '+' || value[len-5] == '-') {
+        /* RFC3280 [4.1.2.5] forbids the timezone offset notation in all PKIX UTCTime and GeneralizedTime values */
+        /* but handling them is easy enough */
+        int offset = 60 * v2digits(value + len - 4) + v2digits(value + len - 2);
+        tz = [NSTimeZone timeZoneForSecondsFromGMT: (value[len-5] == '+')? offset : -offset];
+        len -= 5;
+    } else {
+        tz = nil;
+    }
+    
+    /* Verify that everything else is a digit */
+    for (NSUInteger i = 0; i < len; i++) {
+        if (value[i] == '.') {
+            // We don't parse sub-seconds
+            len = i;
+            break;
+        }
+        if (value[i] < '0' || value[i] > '9') {
+            // Non-digit
+            return nil;
+        }
+    }
+    if (len < 8)
+        return nil;
+    
+    NSUInteger pos;
+    NSCalendar *gregorianCalendar = [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
+    NSDateComponents *result = [[NSDateComponents alloc] init];
+    result.calendar = gregorianCalendar;
+    if (tz)
+        result.timeZone = tz;
+    
+    int year;
+    if (fourDigitYear) {
+        if (len < 10) {
+            return nil;
+        }
+        year = v2digits(value) * 100 + v2digits(value + 2);
+        pos = 4;
+    } else {
+        if (len < 8) {
+            return nil;
+        }
+        year = v2digits(value);
+        /* RFC3280 [4.1.2.5.1]: Where YY is greater than or equal to 50, the year SHALL be interpreted as 19YY; and where YY is less than 50, the year SHALL be interpreted as 20YY */
+        if (year >= 50)
+            year += 1900;
+        else
+            year += 2000;
+        pos = 2;
+    }
+    result.year = year;
+    
+    result.month = v2digits(value + pos);
+    pos += 2;
+    result.day = v2digits(value + pos);
+    pos += 2;
+    result.hour = v2digits(value + pos);
+    pos += 2;
+    if (pos+2 <= len) {
+        result.minute = v2digits(value + pos);
+        pos += 2;
+        
+        if (pos+2 <= len) {
+            result.second = v2digits(value + pos);
+            pos += 2;
+        } else {
+            result.second = 0;
+        }
+    } else {
+        result.minute = 0;
+        result.second = 0;
+    }
+    if (pos != len) {
+        // Trailing cruft
+        return nil;
+    }
+    
+    return result;
+}
+
+NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
+{
+    struct parsedTag tagged;
+    if (parseTagAndLength(buf, r.location, NSMaxRange(r), YES, &tagged) != OFASN1Success)
+        return nil;
+    if (tagged.tag != BER_TAG_OCTET_STRING || tagged.classAndConstructed != 0) /* We only support DER OCTET STRINGs here, not indefinite-length BER strings */
+        return nil;
+    if (NSMaxRange(tagged.content) != NSMaxRange(r))
+        return nil;
+    
+    return [buf subdataWithRange:tagged.content];
+}
+
 /* Convert a DER-encoded OID to its conventional text representation (e.g. "1.3.12.42") */
 NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 {
@@ -1130,6 +1283,8 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
     
     return ka_Other;
 }
+
+#pragma mark Construction helpers
 
 /*" Formats the tag byte and length field of an ASN.1 item and appends the result to the passed-in buffer. Currently the 'tag' is the whole tag+class+constructed field--- we don't handle multibyte tags at all (since they don't appear in any PKIX structures). "*/
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount)

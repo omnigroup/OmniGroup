@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,19 +15,11 @@
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 
 @interface OAFontView : NSView
-{
-    IBOutlet id delegate;
 
-    NSFont *font;
-    NSString *fontDescription;
-    NSSize textSize;
-}
+@property(nonatomic,weak) id delegate;
 
-- (void) setDelegate: (id) aDelegate;
-- (id) delegate;
-
-- (NSFont *)font;
-- (void)setFont:(NSFont *)newFont;
+@property(nonatomic,strong) NSFont *font;
+@property(nonatomic,readonly) NSString *fontDescription;
 
 - (IBAction)setFontUsingFontPanel:(id)sender;
 
@@ -37,9 +29,6 @@
 @interface NSObject (OAFontViewDelegate)
 - (BOOL)fontView:(OAFontView *)aFontView shouldChangeToFont:(NSFont *)newFont;
 - (void)fontView:(OAFontView *)aFontView didChangeToFont:(NSFont *)newFont;
-
-// We pass along the NSFontPanel delegate message, adding in the last font view to have been sent -setFontUsingFontPanel:
-- (BOOL)fontView:(OAFontView *)aFontView fontManager:(id)sender willIncludeFont:(NSString *)fontName;
 
 - (IBAction)changeFontFamily:(id)sender;
 

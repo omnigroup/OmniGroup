@@ -19,6 +19,7 @@
 #import <OmniFileStore/Errors.h>
 
 #import <OmniFileStore/OFSFileManager.h>
+#import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSEncryptingFileManager.h>
 #import <OmniDAV/ODAVFileInfo.h>
 
@@ -132,9 +133,9 @@ static const char *thing3 = "Thing three\n";
 {
     NSError * __autoreleasing error;
     
-    OFSDocumentKey *docKey;
+    OFSMutableDocumentKey *docKey;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     NSMutableData *backing = [NSMutableData data];
@@ -172,9 +173,9 @@ static const char *thing3 = "Thing three\n";
 {
     NSError * __autoreleasing error;
     
-    OFSDocumentKey *docKey;
+    OFSMutableDocumentKey *docKey;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
     
@@ -282,9 +283,9 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
 {
     NSError * __autoreleasing error;
     
-    OFSDocumentKey *docKey;
+    OFSMutableDocumentKey *docKey;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
@@ -360,9 +361,9 @@ static void wrXY(char *into, int x, int y)
 {
     NSError * __autoreleasing error;
     
-    OFSDocumentKey *docKey;
+    OFSMutableDocumentKey *docKey;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
@@ -446,14 +447,14 @@ static void wrXY(char *into, int x, int y)
 {
     NSError * __autoreleasing error = nil;
     
-    OFSDocumentKey *docKey, *otherDocKey;
+    OFSMutableDocumentKey *docKey, *otherDocKey;
     OFSSegmentDecryptWorker *decryptor;
     size_t offset = 0;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
-    OBShouldNotError(otherDocKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(otherDocKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [otherDocKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
     for (int whichCiphertext = 0; whichCiphertext < 3; whichCiphertext ++) {
@@ -541,9 +542,9 @@ static void wrXY(char *into, int x, int y)
     /* This test is similar to -testOneShotSmall, but makes sure we have correct behavior near the edges of segment boundaries. */
     NSError * __autoreleasing error = nil;
     
-    OFSDocumentKey *docKey;
+    OFSMutableDocumentKey *docKey;
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
 
@@ -584,14 +585,15 @@ static void wrXY(char *into, int x, int y)
 
 - (void)testRollover:(enum OFSDocumentKeySlotType)slotType;
 {
-    OFSDocumentKey *docKey, *intermediateDocKey, *otherDocKey, *futureDocKey;
+    OFSMutableDocumentKey *docKey;
+    OFSDocumentKey *intermediateDocKey, *otherDocKey, *futureDocKey;
     NSData *intermediateData = nil;
     NSIndexSet *intermediateIndices;
     NSError * __autoreleasing error = nil;
     NSString *passwd = @"pass blah";
     const char *sekrit = "DOOMDOOMDOOMDOOM";
     
-    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
     [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:slotType];
     XCTAssertEqual(docKey.keySlots.count, (NSUInteger)1);
 
@@ -814,7 +816,7 @@ static ODAVTestServer *srv;
 
 - (OFSEncryptingFileManager *)initializedWrapper:(OFSFileManager *)fm
 {
-    OFSDocumentKey *keys = [[OFSDocumentKey alloc] initWithData:nil error:NULL];
+    OFSMutableDocumentKey *keys = [[OFSMutableDocumentKey alloc] initWithData:nil error:NULL];
     [keys discardKeysExceptSlots:nil retireCurrent:NO generate:SlotTypeActiveAES_CTR_HMAC];
     if (![keys setPassword:self.password error:NULL]) {
         XCTFail(@"Could not generate document key");
@@ -827,7 +829,7 @@ static ODAVTestServer *srv;
         XCTFail(@"Could not store initial keyblob");
     }
     
-    OFSEncryptingFileManager *efm = [[OFSEncryptingFileManager alloc] initWithFileManager:fm keyStore:keys error:&error];
+    OFSEncryptingFileManager *efm = [[OFSEncryptingFileManager alloc] initWithFileManager:fm keyStore:[keys copy] error:&error];
     if (!efm) {
         XCTFail(@"Could not create OFSEncryptingFileManager: %@", error);
         return nil;

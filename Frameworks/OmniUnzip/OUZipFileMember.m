@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,18 +41,24 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (NSData *)contents;
+- (nullable NSData *)contents;
 {
-    if (_contents != nil)
-        return _contents;
-    else {
-        __autoreleasing NSError *error = nil;
-        NSData *data = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:_filePath] options:NSDataReadingMappedIfSafe error:&error];
-        if (!data) {
-            [error log:@"Unable to read contents of \"%@\"", _filePath];
-        }
-        return data;
+    __autoreleasing NSError *error = nil;
+    NSData *data = [self contents:&error];
+    if (!data) {
+        [error log:@"Unable to read contents of \"%@\"", _filePath];
+        return nil;
     }
+    return data;
+}
+
+- (nullable NSData *)contents:(NSError **)outError;
+{
+    if (_contents != nil) {
+        return _contents;
+    }
+
+    return [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:_filePath] options:NSDataReadingMappedIfSafe error:outError];
 }
 
 #pragma mark - OUZipMember subclass

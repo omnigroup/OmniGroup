@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,9 +22,10 @@ RCS_ID("$Id$");
     NSXPCInterface *interface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUCheckService)];
     
     // Sets the allowed values for collections that are in this argument. XPC doesn't allow use to specify the allowed values for a property inside our OSURunOperationParameters class, which is why this is split out into its own argument.
-    [interface setClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], nil] forSelector:@selector(performCheck:runtimeStatsAndProbes:lookupCredential:withReply:) argumentIndex:1 ofReply:NO];
+    [interface setClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], nil] forSelector:@selector(performCheck:runtimeStats:probes:lookupCredential:withReply:) argumentIndex:1 ofReply:NO];
+    [interface setClasses:[NSSet setWithObjects:[NSDictionary class], [NSString class], nil] forSelector:@selector(performCheck:runtimeStats:probes:lookupCredential:withReply:) argumentIndex:2 ofReply:NO];
     
-    [interface setInterface:[NSXPCInterface interfaceWithProtocol:@protocol(OSULookupCredential)] forSelector:@selector(performCheck:runtimeStatsAndProbes:lookupCredential:withReply:) argumentIndex:2 ofReply:NO];
+    [interface setInterface:[NSXPCInterface interfaceWithProtocol:@protocol(OSULookupCredential)] forSelector:@selector(performCheck:runtimeStats:probes:lookupCredential:withReply:) argumentIndex:3 ofReply:NO];
     
     newConnection.exportedInterface = interface;
     

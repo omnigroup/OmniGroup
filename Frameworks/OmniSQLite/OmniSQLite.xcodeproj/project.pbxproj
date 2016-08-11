@@ -166,7 +166,7 @@
 		BFF16A5806ECEC1300D38503 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 			};
 			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
 			compatibilityVersion = "Xcode 3.2";

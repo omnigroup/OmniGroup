@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,15 @@
  A SAX-based parser interface.
  */
 
-@interface OFXMLParser : OFObject
+@interface OFXMLParser : OFObject <NSProgressReporting>
 
-- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
++ (NSUInteger)maximumParseChunkSize; // in bytes
+
+- (id)init NS_UNAVAILABLE;
+- (id)initWithWhitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target NS_DESIGNATED_INITIALIZER;
+- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError NS_DEPRECATED(10_0, 10_11, 2_0, 10_0);
+
+- (BOOL)parseData:(NSData *)xmlData error:(NSError **)outError;
 
 @property(nonatomic,readonly) CFStringEncoding encoding;
 @property(nonatomic,readonly) NSString *versionString;

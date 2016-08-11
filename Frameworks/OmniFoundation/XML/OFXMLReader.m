@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -107,6 +107,11 @@ static BOOL _stepReader(OFXMLReader *self, NSError **outError)
         if ([self->_errors count] > 0) {
             _fillUnderlyingError(self, outError);
             return NO;
+        } else if (xmlTextReaderReadState(reader) == XML_TEXTREADER_MODE_EOF) {
+            OFError(outError, OFXMLReaderEndOfFile, @"Unable to step reader", @"At end of file");
+            self->_currentNodeType = xmlTextReaderNodeType(reader);
+            OBASSERT(self->_currentNodeType == XML_READER_TYPE_NONE);
+            return NO;
         } else {
             OBASSERT(xmlTextReaderNodeType(reader) == XML_READER_TYPE_NONE);
         }
@@ -114,6 +119,22 @@ static BOOL _stepReader(OFXMLReader *self, NSError **outError)
     
     self->_currentNodeType = xmlTextReaderNodeType(reader);
     return YES;
+}
+
+// For the case that we are stepping past the end of an element, and its OK if that is the top-level element.
+static BOOL _stepReaderAllowingEOF(OFXMLReader *self, BOOL allowEOF, NSError **outError)
+{
+    __autoreleasing NSError *stepError = nil;
+    if (_stepReader(self, &stepError))
+        return YES;
+
+    if (allowEOF && [stepError hasUnderlyingErrorDomain:OFErrorDomain code:OFXMLReaderEndOfFile]) {
+        return YES;
+    }
+    if (outError) {
+        *outError = stepError;
+    }
+    return NO;
 }
 
 static BOOL _skipPastEndOfElement(OFXMLReader *self, NSUInteger endTagsLeft, NSError **outError)
@@ -135,9 +156,11 @@ static BOOL _skipPastEndOfElement(OFXMLReader *self, NSUInteger endTagsLeft, NSE
                 // Some random other cruft we don't care about.
                 break;
         }
-        if (!_stepReader(self, outError))
+
+        // Closing the root element will return a EOF error here, but that's OK.
+        if (!_stepReaderAllowingEOF(self, endTagsLeft == 0, outError))
             return NO;
-        
+
         // This has to be here instead of in the XML_READER_TYPE_END_ELEMENT case so that skipping over an empty element will work.
         if (endTagsLeft == 0) {
             // Now done skipping the element, but we need to skip the end itself.
@@ -341,7 +364,9 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     if (_inEmptyElement) {
         // We are on the virtual end for an empty element.  Turn off this flag and skip past the start.
         _inEmptyElement = NO;
-        return _stepReader(self, outError);
+
+        // Closing an empty root element will signal an end-of-file error since that element is already past and we can't step any more.
+        return _stepReaderAllowingEOF(self, YES, outError);
     }
     
     // Look forward until we hit the next unbalanced end (matching the start for the previous call to -openElement:).
@@ -489,7 +514,7 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
                         *outString = str;
                     else
                         [str release];
-                    return _stepReader(self, outError);
+                    return _stepReaderAllowingEOF(self, YES, outError);
                 }
                 break;
             case XML_READER_TYPE_TEXT:

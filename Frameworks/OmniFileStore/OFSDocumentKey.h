@@ -52,10 +52,10 @@ enum OFSEncryptingFileManagerDisposition {
 NS_ASSUME_NONNULL_BEGIN
 
 /* An OFSDocumentKey represents a set of subkeys protected by a user-relevant mechanism like a passphrase. */
-@interface OFSDocumentKey : NSObject
+@interface OFSDocumentKey : NSObject <NSCopying,NSMutableCopying>
 
-- (instancetype __nullable)initWithData:(NSData * __nullable)finfo error:(NSError **)outError;          // For reading a stored keyblob
-- (instancetype __nullable)initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;   // For creating a new keyblob sharing another one's password
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype __nullable)initWithData:(NSData * __nullable)finfo error:(NSError **)outError NS_DESIGNATED_INITIALIZER;          // For reading a stored keyblob
 - (NSData *)data;
 
 @property (readonly,nonatomic) NSInteger changeCount;  // For detecting (semantically significant) changes to -data. Starts at 0 and increases. Not (currently) KVOable.
@@ -65,21 +65,17 @@ NS_ASSUME_NONNULL_BEGIN
 /* Password-based encryption */
 @property (readonly,nonatomic) BOOL hasPassword;
 - (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
-- (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
 
-/* Key rollover: this updates the receiver to garbage-collect any slots not mentioned in keepThese, and if retireCurrent=YES, mark any active keys as inactive (and generate new active keys as needed). If keepThese is nil, no keys are discarded (if you want to discard everything, pass a non-nil index set containing no indices). */
-- (void)discardKeysExceptSlots:(NSIndexSet * __nullable)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)tp;
 @property (readonly,nonatomic) NSIndexSet *retiredKeySlots, *keySlots;
 - (enum OFSDocumentKeySlotType)typeOfKeySlot:(NSUInteger)slot; // Returns SlotTypeNone if not found / invalid
 
 /* Returns some flags for a filename, based on whether it matches any rules added by -setDisposition:forSuffix:. */
 - (unsigned)flagsForFilename:(NSString *)filename fromSlot:(int * __nullable)outSlot;
-- (void)setDisposition:(enum OFSEncryptingFileManagerDisposition)disposition forSuffix:(NSString *)ext;
 
 - (NSString *)suffixForSlot:(NSUInteger)slotnum;  // Only used by the unit tests
 
 /* Return an encryption worker for the current active key slot. */
-- (OFSSegmentEncryptWorker *)encryptionWorker;
+- (nullable OFSSegmentEncryptWorker *)encryptionWorker;
 
 // These methods are called by OFSSegmentEncryptWorker
 - (NSData * __nullable)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
@@ -94,4 +90,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface OFSMutableDocumentKey : OFSDocumentKey
+
+- (instancetype)init;
+- (instancetype __nullable)initWithAuthenticator:(OFSDocumentKey *)source error:(NSError **)outError;   // For creating a new keyblob sharing another one's password
+
+- (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
+
+/* Key rollover: this updates the receiver to garbage-collect any slots not mentioned in keepThese, and if retireCurrent=YES, mark any active keys as inactive (and generate new active keys as needed). If keepThese is nil, no keys are discarded (if you want to discard everything, pass a non-nil index set containing no indices). */
+- (void)discardKeysExceptSlots:(NSIndexSet * __nullable)keepThese retireCurrent:(BOOL)retire generate:(enum OFSDocumentKeySlotType)tp;
+
+- (void)setDisposition:(enum OFSEncryptingFileManagerDisposition)disposition forSuffix:(NSString *)ext;
+
+@end
+
 NS_ASSUME_NONNULL_END
+

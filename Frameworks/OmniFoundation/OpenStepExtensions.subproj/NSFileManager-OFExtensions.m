@@ -543,8 +543,16 @@ static mode_t permissionsMask = 0022;
 
 - (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
 {
-    NSURL *url = [NSURL fileURLWithPath:path];
+    return [self setQuarantineProperties:quarantineDictionary forItemAtURL:[NSURL fileURLWithPath:path] error:outError];
+}
 
+- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
+{
+    return [self quarantinePropertiesForItemAtURL:[NSURL fileURLWithPath:path] error:outError];
+}
+
+- (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtURL:(NSURL *)url error:(NSError **)outError;
+{
     // As of 10.10.5, LaunchServices looks at the following dictionary keys:
     //  "LSQuarantineEventIdentifier"
     //  kLSQuarantineTimeStampKey
@@ -571,10 +579,8 @@ static mode_t permissionsMask = 0022;
     return [url setResourceValue:quarantineDictionary forKey:NSURLQuarantinePropertiesKey error:outError];
 }
 
-- (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
+- (NSDictionary *)quarantinePropertiesForItemAtURL:(NSURL *)url error:(NSError **)outError;
 {
-    NSURL *url = [NSURL fileURLWithPath:path];
-
     id __nullable __autoreleasing value = NULL;
     if (![url getResourceValue:&value forKey:NSURLQuarantinePropertiesKey error:outError])
         return nil;

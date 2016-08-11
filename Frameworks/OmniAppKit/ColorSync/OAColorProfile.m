@@ -101,7 +101,7 @@ static ColorSyncTransformRef grayColorWorld = NULL;
     return [result autorelease];
 }
 
-+ (OAColorProfile *)currentProfile;
++ (nullable OAColorProfile *)currentProfile;
 {
     if (currentColorProfile != nil) {
         if ([NSView focusView] == focusedViewForCurrentColorProfile)
@@ -595,7 +595,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     return grayProfile ? grayProfile : [self _anyProfile];
 }
 
-- (ColorSyncTransformRef)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef _Nullable)_rgbConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
     if (!aProfile)
         return NULL;
@@ -614,7 +614,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     return cmykColorWorld;
 }
 
-- (ColorSyncTransformRef)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef _Nullable)_cmykConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
     if (!aProfile)
         return NULL;
@@ -633,7 +633,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     return cmykColorWorld;
 }
 
-- (ColorSyncTransformRef)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
+- (ColorSyncTransformRef _Nullable)_grayConversionWorldForOutput:(OAColorProfile *)aProfile;
 {
     if (!aProfile)
         return NULL;

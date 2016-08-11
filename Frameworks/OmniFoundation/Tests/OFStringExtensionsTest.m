@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -208,13 +208,14 @@ RCS_ID("$Id$");
 
 - (void)testDecimalFormattingULP
 {
+    double binaryRoundtripDigitsBaseE = log(exp2(FLT_MANT_DIG)); // This tests whether OFShortASCIIDecimalStringFromDouble() will correctly roundtrip any binary representation of a float value to a decimal string and back. We used to use OF_FLT_DIGITS_E for this, but it has a different use case: our goal there is to roundtrip decimal strings to binary floats and back.
     float n;
     int i;
     
     for(n = 1.0f, i = 0;
         i < 1000;
         n = nextafterf(n, 100.0f), i++) {
-        char *buf = OFShortASCIIDecimalStringFromDouble(n, OF_FLT_DIGITS_E, 0, 1);
+        char *buf = OFShortASCIIDecimalStringFromDouble(n, binaryRoundtripDigitsBaseE, 0, 1);
         float n2 = -1;
         XCTAssertTrue(sscanf(buf, "%f", &n2) == 1 && (n == n2),
                       @"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2);
@@ -224,7 +225,7 @@ RCS_ID("$Id$");
     for(n = 1.0f, i = 0;
         i < 1000;
         n = nextafterf(n, -100.0f), i++) {
-        char *buf = OFShortASCIIDecimalStringFromDouble(n, OF_FLT_DIGITS_E, 0, 1);
+        char *buf = OFShortASCIIDecimalStringFromDouble(n, binaryRoundtripDigitsBaseE, 0, 1);
         float n2 = -1;
         XCTAssertTrue(sscanf(buf, "%f", &n2) == 1 && (n == n2),
                       @"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2);

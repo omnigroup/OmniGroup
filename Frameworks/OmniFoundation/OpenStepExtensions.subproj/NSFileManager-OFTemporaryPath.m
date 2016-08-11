@@ -33,7 +33,8 @@ static NSLock *tempFilenameLock = nil;
 // We need this since NSItemReplacementDirectory creates a new directory inside the TemporaryItems directory instead of just returning the TemporaryItems directory. Radar 13965099: Add suitable replacement for FSFindFolder/kTemporaryFolderType
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (NSURL *)_specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
+
+- (nullable NSURL *)_specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
 {
     OBPRECONDITION([path isAbsolutePath]);
     
@@ -82,7 +83,7 @@ static NSLock *tempFilenameLock = nil;
 #pragma clang diagnostic pop
 #endif
 
-- (NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
+- (nullable NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
 /*"
  Returns a URL to a temporary items directory that can be used to write a new file and then do a -replaceItemAtURL:... If there is a problem (no temporary items folder on the filesystem), nil is returned.
  Note that if this returns an error, a common course of action would be to put the temporary file in the same folder as the original file.  This has the same security problems as -uniqueFilenameFromName:, of course, so we don't want to do that by default.  The calling code should make this decision.
@@ -111,7 +112,7 @@ static NSLock *tempFilenameLock = nil;
 #endif
 }
 
-- (NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
+- (nullable NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
 {
     OBPRECONDITION(originalURL);
     
@@ -144,13 +145,13 @@ static NSLock *tempFilenameLock = nil;
     return temporaryURL;
 }
 
-- (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
+- (nullable NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
 {
     return [self temporaryPathForWritingToPath:path allowOriginalDirectory:allowOriginalDirectory create:YES error:outError];
 }
 
 // Note that due to the permissions behavior of FSFindFolder, this shouldn't have the security problems that raw calls to -uniqueFilenameFromName: may have.
-- (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;
+- (nullable NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;
 /*" Returns a unique filename in the -temporaryDirectoryForFileSystemContainingPath: for the filesystem containing the given path.  The returned path is suitable for writing to and then replacing the input path using -replaceFileAtPath:withFileAtPath:handler:.  This means that the result should never be equal to the input path.  If no suitable temporary items folder is found and allowOriginalDirectory is NO, this will raise.  If allowOriginalDirectory is YES, on the other hand, this will return a file name in the same folder.  Note that passing YES for allowOriginalDirectory could potentially result in security implications of the form noted with -uniqueFilenameFromName:. "*/
 {
     OBPRECONDITION(![NSString isEmptyString:path]);
@@ -181,7 +182,7 @@ static NSLock *tempFilenameLock = nil;
 }
 
 // Note that if this returns an error, a common course of action would be to put the temporary file in the same folder as the original file.  This has the same security problems as -uniqueFilenameFromName:, of course, so we don't want to do that by default.  The calling code should make this decision.
-- (NSString *)temporaryDirectoryForFileSystemContainingPath:(NSString *)path error:(NSError **)outError;
+- (nullable NSString *)temporaryDirectoryForFileSystemContainingPath:(NSString *)path error:(NSError **)outError;
 /*" Returns the path to the 'Temporary Items' folder on the same filesystem as the given path.  Returns an error if there is a problem (for example, iDisk doesn't have temporary folders).  The returned directory should be only readable by the calling user, so files written into this directory can be written with the desired final permissions without worrying about security (the expectation being that you'll soon call -exchangeFileAtPath:withFileAtPath:). "*/
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -263,7 +264,7 @@ static NSLock *tempFilenameLock = nil;
 // Generate a unique filename based on a suggested name, possibly returning the same name.
 
 // [WIML]: This function is kinda bogus and could represent a security problem. If we're opening+creating the file anyway (which some callers of this function depend on) we should return the opened fd instead of forcing the caller to re-open the file. We shouldn't create the file world-read, in case it's destined to hold sensitive info (there will be a window of opportunity before the file's permissions are reset). We're inefficiently testing for existence twice, once with lstat() and once with O_CREAT|O_EXCL. We should check into the algorithm used by e.g. mkstemp() or other secure scratch file functions and duplicate it.
-- (NSString *)uniqueFilenameFromName:(NSString *)filename error:(NSError **)outError;
+- (nullable NSString *)uniqueFilenameFromName:(NSString *)filename error:(NSError **)outError;
 {
     return [self uniqueFilenameFromName:filename allowOriginal:YES create:YES error:outError];
 }
@@ -313,7 +314,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
 }
 
 // If 'create' is NO, the returned path will not exist.  This could allow another thread/process to steal the filename.
-- (NSString *)uniqueFilenameFromName:(NSString *)filename allowOriginal:(BOOL)allowOriginal create:(BOOL)create error:(NSError **)outError;
+- (nullable NSString *)uniqueFilenameFromName:(NSString *)filename allowOriginal:(BOOL)allowOriginal create:(BOOL)create error:(NSError **)outError;
 {
 #if 0 && defined(DEBUG_bungi)
     OBASSERT(create, "Avoid this use to avoid race conditions");

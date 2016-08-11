@@ -720,7 +720,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         [[NSProcessInfo processInfo] enableSuddenTermination];
         
         // Close our host window.
-        // !!!:correia
         [self.delegate close];
         
         // Balance the strong retain we held on ourselves at the beginning of -run

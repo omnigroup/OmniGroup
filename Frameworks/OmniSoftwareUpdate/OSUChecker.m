@@ -156,8 +156,7 @@ NSString * const OSULicenseTypeAppStore = @"appstore";
     OSUCheckOperation *_currentCheckOperation;
     
     // Track info updates
-    NSURLConnection *_refreshingTrackInfo;
-    NSMutableData *_refreshingTrackData;
+    NSURLSessionDataTask *_refreshingTrackInfoTask;
 }
 
 static inline BOOL _hasScheduledCheck(OSUChecker *self)
@@ -623,71 +622,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
 }
 
-#pragma mark - NSURLConnection delegates
-
-// On iOS/MAS we don't download track information from the update feed since we ignore the result items anyway.
-#if OSU_FULL
-
-/* Zero or more connection:didReceiveResponse: messages will be sent to the delegate before receiving a connection:didReceiveData: message. */
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
-{
-    if (connection == _refreshingTrackInfo) {
-        BOOL satisfactory;
-        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-            satisfactory = ( [(NSHTTPURLResponse *)response statusCode] <= 399 ) &&
-            ( [[response MIMEType] containsString:@"xml"] ) ;
-        } else {
-            // No way to distinguish successful from unsuccessful responses for non-HTTP protocols? Presumably we'll just get -didFailWithError: for other protocols.
-            satisfactory = YES;
-        }
-        
-        _refreshingTrackData = nil;
-        if (satisfactory)
-            _refreshingTrackData = [[NSMutableData alloc] init];
-    }
-}
-
-/* Zero or more connection:didReceiveData: messages will be sent */
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
-{
-    /* It's a pity that Apple has no easy to use push- or stream- parser interface */
-    if (connection == _refreshingTrackInfo && nil != _refreshingTrackData)
-        [_refreshingTrackData appendData:data];
-}
-
-/* Unless a NSURLConnection receives a cancel message, the delegate will receive one and only one of connectionDidFinishLoading:, or connection:didFailWithError: message, but never both. */
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
-{
-    if (connection == _refreshingTrackInfo) {
-        _refreshingTrackInfo = nil;
-        _refreshingTrackData = nil;
-        
-        NSLog(@"Couldn't fetch track text: %@", [error description]);
-    }
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    if (connection == _refreshingTrackInfo) {
-        _refreshingTrackInfo = nil;
-        
-        __autoreleasing NSError *xmlError = nil;
-        NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:_refreshingTrackData options:NSXMLNodeOptionsNone error:&xmlError];
-        _refreshingTrackData = nil;
-        
-        if (!document) {
-            NSLog(@"Can't parse track text: %@", [xmlError description]);
-        } else {
-            [OSUItem processTrackInformation:document];
-        }
-    }
-}
-
-#endif
-
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 @synthesize target = _checkTarget;
 - (void)setTarget:(id <OSUCheckerTarget>)target;
@@ -1120,15 +1055,18 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     // If it looks like we'll display anything, retrieve the track descriptions and up-to-date orderings
-    if ([items count] > 0 && !_refreshingTrackInfo) {
+    if ([items count] > 0 && !_refreshingTrackInfoTask) {
         NSArray *trackInfoAttributes = [document objectsForXQuery:[NSString stringWithFormat:@"declare namespace oac = \"%@\";\n /rss/channel/attribute::oac:trackinfo", OSUAppcastTrackInfoNamespace] error:NULL];
         if ([trackInfoAttributes count]) {
             NSURL *trackInfoURL = [NSURL URLWithString:[[trackInfoAttributes objectAtIndex:0] stringValue]];
             if (trackInfoURL) {
                 NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:trackInfoURL];
                 [infoRequest setValue:[[operation url] absoluteString] forHTTPHeaderField:@"Referer" /* sic */];
-                _refreshingTrackInfo = [[NSURLConnection alloc] initWithRequest:infoRequest delegate:self];
-                OBASSERT(_refreshingTrackData == nil); 
+
+                _refreshingTrackInfoTask = [[NSURLSession sharedSession] dataTaskWithRequest:infoRequest completionHandler:^(NSData * _Nullable trackData, NSURLResponse * _Nullable response, NSError * _Nullable error){
+                    [self _trackInfoDataTaskFinished: trackData];
+                }];
+                [_refreshingTrackInfoTask resume];
             }
         }
     }
@@ -1142,6 +1080,37 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         [_checkTarget checker:self newVersionsAvailable:[items filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededPredicate]] fromCheck:operation];
     
     return YES;
+}
+
+- (void)_trackInfoDataTaskFinished:(NSData *)trackData;
+{
+    NSError *error = _refreshingTrackInfoTask.error;
+    if (error) {
+        [error log:@"Couldn't fetch track info"];
+        _refreshingTrackInfoTask = nil;
+        return;
+    }
+    NSURLResponse *response = _refreshingTrackInfoTask.response;
+    _refreshingTrackInfoTask = nil;
+
+    if (![[response MIMEType] containsString:@"xml"]) {
+        NSLog(@"Ignoring track data with unknown MIME type %@", [response MIMEType]);
+        return;
+    }
+
+    if (!trackData) {
+        OBASSERT(trackData);
+        return;
+    }
+
+    __autoreleasing NSError *xmlError = nil;
+    NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:trackData options:NSXMLNodeOptionsNone error:&xmlError];
+
+    if (!document) {
+        [xmlError log: @"Can't parse track info"];
+    } else {
+        [OSUItem processTrackInformation:document];
+    }
 }
 
 #else

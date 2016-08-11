@@ -542,7 +542,7 @@ static NSIndexSet * _Nullable OATableViewRowsInCurrentDrag = nil;
 
 // Informal OmniFindControllerAware protocol
 
-- (id <OAFindControllerTarget>)omniFindControllerTarget;
+- (nullable id <OAFindControllerTarget>)omniFindControllerTarget;
 {
     if (![self.dataSource respondsToSelector:@selector(tableView:itemAtRow:matchesPattern:)])
         return nil;

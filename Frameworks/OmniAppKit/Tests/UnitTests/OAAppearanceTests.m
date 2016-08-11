@@ -188,6 +188,7 @@ XCTAssertNotEqualWithAccuracy(result, 0.0f, OAAppearanceTestFloatAccuracy, @"Exp
 @end
 
 @implementation _NotificationCounter
+
 - (instancetype)init
 {
     self = [super init];
@@ -196,6 +197,13 @@ XCTAssertNotEqualWithAccuracy(result, 0.0f, OAAppearanceTestFloatAccuracy, @"Exp
         _notificationCounts = [NSCountedSet new];
     }
     return self;
+}
+
+- (void)dealloc;
+{
+    [_nameMap release];
+    [_notificationCounts release];
+    [super dealloc];
 }
 
 - (void)registerForObject:(id)object name:(NSString *)name;

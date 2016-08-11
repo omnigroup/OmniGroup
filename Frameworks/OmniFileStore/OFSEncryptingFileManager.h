@@ -28,12 +28,12 @@ typedef BOOL (^OFSEncryptingFileManagerFileMatch)(NSURL *fileURL);
 
 - initWithFileManager:(OFSFileManager <OFSConcreteFileManager> *)underlyingFileManager keyStore:(OFSDocumentKey *)keyStore error:(OBNSErrorOutType)outError NS_DESIGNATED_INITIALIZER ;
 
-@property (readonly, nonatomic, nonnull) OFSDocumentKey *keyStore;
+@property (readwrite, nonatomic, nonnull, copy) OFSDocumentKey *keyStore;
 @property (readwrite, nonatomic, nullable, retain) ODAVFileInfo *keyStoreOrigin;
 @property (readonly, nonatomic, retain) OFSFileManager *underlyingFileManager;
 
-- (OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
-- (NSIndexSet * __nullable)unusedKeySlotsOfSet:(NSIndexSet *)slots amongFiles:(NSArray <ODAVFileInfo *> *)files error:(NSError **)outError;
+- (nullable OFSEncryptingFileManagerTasteOperation *)asynchronouslyTasteKeySlot:(ODAVFileInfo *)file;
+- (nullable NSIndexSet *)unusedKeySlotsOfSet:(NSIndexSet *)slots amongFiles:(NSArray <ODAVFileInfo *> *)files error:(NSError **)outError;
 
 - (void)maskFilesMatching:(OFSEncryptingFileManagerFileMatch)matchBlock;
 - (BOOL)maskingFileAtURL:(NSURL *)fileURL;

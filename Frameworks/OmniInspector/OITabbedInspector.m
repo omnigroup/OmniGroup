@@ -622,17 +622,21 @@ RCS_ID("$Id$")
     
     NSSize size = NSMakeSize([contentView frame].size.width, 0);
     
-    NSUInteger selectedTabCount = 0;
-
     for (OIInspectorTabController *tab in _tabControllers) {
 	if (![tab isVisible]) {
 	    if ([tab hasLoadedView]) { // hack to avoid asking for the view before it's needed; don't want to load the nib just to hide it
 		[[tab inspectorView] removeFromSuperview];
 		[[tab dividerView] removeFromSuperview];
 	    }
-	    continue;
 	}
-	
+    }
+    
+    NSUInteger selectedTabCount = 0;
+    
+    for (OIInspectorTabController *tab in _tabControllers) {
+        if (![tab isVisible])
+            continue;
+        
         if (selectedTabCount > 0) {
             NSRect dividerFrame = [contentView frame];
             dividerFrame.origin.y = size.height;

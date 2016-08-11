@@ -24,7 +24,6 @@ RCS_ID("$Id$")
 
 @interface OISectionedInspector (/*Private*/)
 @property (strong, nonatomic) IBOutlet NSView *inspectionView;
-- (void)_layoutSections;
 @end
 
 #pragma mark -
@@ -34,19 +33,6 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void)awakeFromNib;
-{
-    float inspectorWidth = [[OIInspectorRegistry inspectorRegistryForMainWindow] inspectorWidth];
-    
-    NSRect inspectionFrame = [inspectionView frame];
-    OBASSERT(inspectionFrame.size.width <= inspectorWidth); // OK to make views from nibs wider, but probably indicates a problem if we are making them smaller.
-    inspectionFrame.size.width = inspectorWidth;
-    [inspectionView setFrame:inspectionFrame];
-    
-    
-    [self _layoutSections];
 }
 
 #pragma mark -
@@ -91,6 +77,49 @@ RCS_ID("$Id$")
     return self;
 }
 
+- (void)loadView;
+{
+    [super loadView];
+    
+    OBPRECONDITION([_sectionInspectors count] > 0);
+    OBPRECONDITION([inspectionView isFlipped]); // We use an OITabbedInspectorContentView in the nib to make layout easier.
+    
+    NSBox *priorDivider = nil;
+    for (OIInspectorSection *section in _sectionInspectors) {
+        NSView *view = [section view];
+        [inspectionView addSubview:view];
+
+        if (!priorDivider)
+            [[inspectionView topAnchor] constraintEqualToAnchor:[view topAnchor]].active = YES;
+        else
+            [[priorDivider bottomAnchor] constraintEqualToAnchor:[view topAnchor]].active = YES;
+        [[inspectionView centerXAnchor] constraintEqualToAnchor:[view centerXAnchor]].active = YES;
+        
+        NSBox *divider = [[NSBox alloc] initWithFrame:NSMakeRect(0,0,10,1)];
+        [divider setBorderType:NSLineBorder];
+        [divider setBoxType:NSBoxSeparator];
+        [divider setTranslatesAutoresizingMaskIntoConstraints:NO];
+        
+        [inspectionView addSubview:divider];
+        [[divider heightAnchor] constraintEqualToConstant:1].active = YES;
+        [[divider leftAnchor] constraintEqualToAnchor:[view leftAnchor]].active = YES;
+        [[divider rightAnchor] constraintEqualToAnchor:[view rightAnchor]].active = YES;
+        [[view bottomAnchor] constraintEqualToAnchor:[divider topAnchor]].active = YES;
+        
+        priorDivider = divider;
+    }
+    
+    [[inspectionView bottomAnchor] constraintGreaterThanOrEqualToAnchor:[priorDivider bottomAnchor]].active = YES;
+}
+
+- (void)viewWillAppear
+{
+    [[inspectionView leftAnchor] constraintEqualToAnchor:[[inspectionView superview] leftAnchor]].active = YES;
+    [[inspectionView rightAnchor] constraintEqualToAnchor:[[inspectionView superview] rightAnchor]].active = YES;
+    [[inspectionView topAnchor] constraintEqualToAnchor:[[inspectionView superview] topAnchor]].active = YES;
+    [[[inspectionView superview] bottomAnchor] constraintGreaterThanOrEqualToAnchor:[inspectionView bottomAnchor]].active = YES;
+}
+
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
 {
     OBASSERT(resizedInspector != self); // Don't call us if we are the resized inspector, only on ancestors of that inspector
@@ -104,7 +133,6 @@ RCS_ID("$Id$")
             break;
         }
     }
-    [self _layoutSections];
 }
 
 - (void)setInspectorController:(OIInspectorController *)aController;
@@ -165,81 +193,5 @@ RCS_ID("$Id$")
 #pragma mark Private
 
 @synthesize inspectionView=inspectionView;
-
-- (void)_layoutSections;
-{
-    OBPRECONDITION([_sectionInspectors count] > 0);
-    OBPRECONDITION([inspectionView isFlipped]); // We use an OITabbedInspectorContentView in the nib to make layout easier.
-    
-    NSSize size = NSMakeSize([inspectionView frame].size.width, 0);
-    
-    NSUInteger sectionIndex, sectionCount = [_sectionInspectors count];
-    
-    NSView *veryFirstKeyView = nil;
-    NSView *previousLastKeyView = nil;
-
-    for (sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-        OIInspectorSection *section = [_sectionInspectors objectAtIndex:sectionIndex];
-
-        if (sectionIndex > 0) {
-            NSRect dividerFrame = [inspectionView frame];
-            dividerFrame.origin.y = size.height;
-            dividerFrame.size.height = 1;
-            
-            NSBox *divider = [[NSBox alloc] initWithFrame:dividerFrame];
-            [divider setBorderType:NSLineBorder];
-            [divider setBoxType:NSBoxSeparator];
-            
-            [inspectionView addSubview:divider];
-            
-            size.height += 1;
-	}
-	
-        NSView *view = [section view];
-        NSRect viewFrame = [view frame];
-	OBASSERT(viewFrame.size.width <= size.width); // make sure it'll fit
-	
-        viewFrame.origin.x = (CGFloat)floor((size.width - viewFrame.size.width) / 2.0);
-        viewFrame.origin.y = size.height;
-        viewFrame.size = [view frame].size;
-        [view setFrame:viewFrame];
-	[inspectionView addSubview:view];
-	
-        size.height += [view frame].size.height;
-        
-        // Stitch the key view loop together
-        NSView *firstKeyView = [section firstKeyView];
-        if (firstKeyView) {
-            if (!veryFirstKeyView)
-                veryFirstKeyView = firstKeyView;
-            
-            // Find the last key view in this section
-            NSView *lastKeyView = firstKeyView;
-            while ([lastKeyView nextKeyView])
-                lastKeyView = [lastKeyView nextKeyView];
-            
-            if (previousLastKeyView) {
-                OBASSERT([previousLastKeyView nextKeyView] == nil);
-                [previousLastKeyView setNextKeyView:firstKeyView];
-            }
-            
-            previousLastKeyView = lastKeyView;
-            OBASSERT(previousLastKeyView);
-            OBASSERT([previousLastKeyView nextKeyView] == nil);
-        }
-    }
-    
-    // Close the loop from bottom back to top
-    [previousLastKeyView setNextKeyView:veryFirstKeyView];
-    
-    NSRect contentFrame = [inspectionView frame];
-    contentFrame.size.height = size.height;
-    [inspectionView setFrame:contentFrame];
-    
-    [inspectionView setNeedsDisplay:YES];
-    [self.inspectorController prepareWindowForDisplay];
-    
-    
-}
 
 @end

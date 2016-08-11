@@ -52,6 +52,8 @@ static id (*original_setSize)(id __attribute((ns_consumed)) self, SEL _cmd, NSSi
 
 // If you run into these assertions, consider running the OAMakeImageSizeIntegral command line tool in your image (probably only reasonable for TIFF right now).
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 - (id)_initWithContentsOfFile_replacement:(NSString *)fileName;
 {
     self = original_initWithContentsOfFile(self, _cmd, fileName);
@@ -94,6 +96,7 @@ static id (*original_setSize)(id __attribute((ns_consumed)) self, SEL _cmd, NSSi
     OBPOSTCONDITION(size.height == rint(size.height));
     return self;
 }
+#pragma clang diagnostic pop
 
 #ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
 - (id)replacement_initWithSize:(NSSize)size;
@@ -800,48 +803,6 @@ static void setupTintTable(void)
 {
     pthread_once(&setupTintTableOnce, setupTintTable);
     return tintTable;
-}
-
-#pragma mark CoreImage
-- (CIImage *)ciImageForContext:(CIContext *)ctxt;
-{
-    return [self ciImageForContext:ctxt scale:1];
-}
-
-- (CIImage *)ciImageForContext:(CIContext *)ctxt scale:(CGFloat)scale;
-{
-    /* Check to see if we have an image rep that's easily converted to a CIImage. */
-    for (NSImageRep *rep in [self representations]) {
-        if ([rep isKindOfClass:[NSCIImageRep class]])
-            return [(NSCIImageRep *)rep CIImage];
-        if ([rep isKindOfClass:[NSBitmapImageRep class]]) {
-            CGImageRef cgImage = [(NSBitmapImageRep *)rep CGImage];
-            if (cgImage != NULL)
-                return [CIImage imageWithCGImage:cgImage];
-        }
-    }
-    
-    /* Fallback: render the image into a CGLayer and get a CIImage from that. */
-    
-    [NSGraphicsContext saveGraphicsState];
-    NSSize mySize = [self size];
-    mySize.width *= scale;
-    mySize.height *= scale;
-    
-    CGLayerRef imageLayer = [ctxt createCGLayerWithSize:(CGSize){mySize.width, mySize.height} info:NULL];
-    CGContextRef layerContext = CGLayerGetContext(imageLayer);
-    CGContextScaleCTM(layerContext, scale, scale);
-    [NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithGraphicsPort:layerContext flipped:NO]];
-    [self drawAtPoint:(NSPoint){0, 0}
-             fromRect:(NSRect){{0, 0}, [self size]}
-            operation:NSCompositeCopy
-             fraction:1.0f];
-    [NSGraphicsContext restoreGraphicsState];
-    
-    CIImage *result = [CIImage imageWithCGLayer:imageLayer];
-    CGLayerRelease(imageLayer);
-    
-    return result;
 }
 
 @end

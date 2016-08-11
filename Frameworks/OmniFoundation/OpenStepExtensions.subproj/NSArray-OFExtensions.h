@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSArray.h>
+#import <Foundation/NSSortDescriptor.h>
 
 #import <CoreFoundation/CFSet.h>
 #import <OmniFoundation/OFUtilities.h>

@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,11 @@
 //
 // $Id$
 
-extern CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSString *uuidString, NSDictionary *runtimeStatsAndProbes, bool collectHardwareInformation, NSString *licenseType, bool reportMode);
+#import <CoreFoundation/CFDictionary.h>
+
+@class NSString, NSDictionary;
+
+extern CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSString *uuidString, NSDictionary *runtimeStats, NSDictionary *probes, bool collectHardwareInformation, NSString *licenseType, bool reportMode);
 
 #define OSUReportInfoUUIDKey (@"uuid")
 #define OSUReportInfoLicenseTypeKey (@"license-type")

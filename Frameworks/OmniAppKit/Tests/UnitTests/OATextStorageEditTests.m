@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,9 +48,9 @@ static NSString * const Attribute1 = @"1";
     _textStorage = nil;
 }
 
-- (void)textStorageDidProcessEditing:(NSNotification *)notification;
+- (void)textStorage:(NSTextStorage *)textStorage didProcessEditing:(NSTextStorageEditActions)editedMask range:(NSRange)editedRange changeInLength:(NSInteger)delta;
 {
-    XCTAssertEqual([notification object], _textStorage);
+    XCTAssertEqual(textStorage, _textStorage);
     _processEditingCalls++;
 }
 

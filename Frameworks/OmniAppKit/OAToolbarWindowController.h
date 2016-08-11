@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <AppKit/NSWindowController.h>
 #import <OmniAppKit/OAToolbar.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class OAToolbar;
 @class NSToolbarItem;
@@ -25,7 +27,7 @@
 // The list of item identifiers provided by this helper. The identifiers should be <name>.<extension>, where the name will be passed into the format strings in the template specified by templateItemIdentifier.
 - (NSArray<NSString *> *)allowedItems;
 
-- (NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (nullable NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 
 @end
 
@@ -39,8 +41,8 @@
 - (OAToolbar *)toolbar;
 - (void)createToolbar;
 - (BOOL)isCreatingToolbar;
-- (NSDictionary *)toolbarInfoForItem:(NSString *)identifier;
-- (NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
+- (nullable NSDictionary *)toolbarInfoForItem:(NSString *)identifier;
+- (nullable NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
 
 // implement in subclasses to control toolbar
 - (NSString *)toolbarConfigurationName; // file name to lookup .toolbar plist
@@ -51,3 +53,5 @@
 - (NSDictionary *)toolbarConfigurationDictionary; // Used when -shouldAutosaveConfiguration returns NO
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -116,9 +116,23 @@ RCS_ID("$Id$")
 
 - (void)inspectObjects:(NSArray *)list
 {
-    for (OIInspectorTabController *slice in _sliceControllers) {
-        NSArray *interestingObjects = [self.inspectorRegistry copyObjectsInterestingToInspector:slice.inspector];
-        [slice.inspector inspectObjects:interestingObjects];
+    for (OIAutoLayoutInspectorController *slice in _sliceControllers) {
+        OIInspector<OIConcreteInspector> *sliceInspector = slice.inspector;
+        NSArray *interestingObjects = [self.inspectorRegistry copyObjectsInterestingToInspector:sliceInspector];
+        BOOL showInspector = NO;
+        for (id object in interestingObjects) {
+            if ([sliceInspector shouldBeUsedForObject:object]) {
+                showInspector = YES;
+                break;
+            }
+        }
+        if (showInspector) {
+            [self.containerStackView setVisibilityPriority:NSStackViewVisibilityPriorityMustHold forView:[slice containerView]];
+            [slice.inspector inspectObjects:interestingObjects];
+        } else {
+            [self.containerStackView setVisibilityPriority:NSStackViewVisibilityPriorityNotVisible forView:[slice containerView]];
+            [slice.inspector inspectObjects:nil];
+        }
     }
 }
 

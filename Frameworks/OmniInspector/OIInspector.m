@@ -10,9 +10,11 @@
 #import <AppKit/AppKit.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/OIInspectorController.h>
 #import <OmniInspector/OIInspectorHeaderView.h>
 #import <OmniInspector/OIInspectorRegistry.h>
 #import <OmniInspector/OITabbedInspector.h>
@@ -23,6 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 static OFEnumNameTable *ModifierMaskNameTable = nil;
 static OFEnumNameTable *OIVisibilityStateNameTable = nil;
+
+@interface OIInspector ()
+@property(nonatomic,readwrite) CGFloat inspectorMinimumHeight;
+@end
 
 @implementation OIInspector
 
@@ -195,6 +201,13 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return self;
 }
 
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
+    self.inspectorMinimumHeight = NSHeight([self.view frame]);
+}
+
 @dynamic identifier; // Marked NS_UNAVAILABLE in our header to avoid conflicting with the one NSViewController has due to NSUserInterfaceItemIdentification.
 
 - (nullable NSImage *)imageNamed:(NSString *)imageName;
@@ -312,7 +325,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return YES;
 }
 
-- (NSPredicate *)shouldBeUsedForObjectPredicate;
+- (nullable NSPredicate *)shouldBeUsedForObjectPredicate;
 {
     return nil;
 }
@@ -320,6 +333,21 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
 {
     OBASSERT_NOT_REACHED("This should only be called on inspectors which are ancestors of the resized inspector.");
+}
+
+- (void)enqueueResizeToFittingSizeBeforeAnyWindowDisplayWithInspectorController:(OIInspectorController *)inspectorController;
+{
+    __weak OIInspectorController *weakInspectorController = inspectorController;
+    __weak OIInspector *weakSelf = self;
+    
+    [NSWindow beforeAnyDisplayIfNeededPerformBlock:^{
+        OIInspector *strongSelf = weakSelf;
+        if (strongSelf != nil) {
+            strongSelf.inspectorMinimumHeight = [strongSelf.view fittingSize].height;
+            OIInspectorController *strongInspectorController = weakInspectorController;
+            [strongInspectorController inspectorDidResize:strongSelf];
+        }
+    }];
 }
 
 #pragma mark - Debugging

@@ -327,7 +327,7 @@ static NSWindow * _Nullable RootlessProgressWindow = nil;
         [self performSelector:@selector(finishedLongOperation) withObject:nil afterDelay:0.0f inModes:[NSArray arrayWithObjects:NSDefaultRunLoopMode, NSModalPanelRunLoopMode, nil]];
 }
 
-+ (NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
++ (nullable NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
     if (!LongOperationIndicatorEnabledForWindow(nil))
         return nil;
@@ -366,7 +366,7 @@ static NSWindow * _Nullable RootlessProgressWindow = nil;
 
 // Public API is unchanged for now, we haven't spent enough time testing the progress bar style and what happens when someone tries to switch between the two in the same window
 
-+ (NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize;
++ (nullable NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize;
 {
     return [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:NSProgressIndicatorSpinningStyle automaticallyEnds:YES];
 }

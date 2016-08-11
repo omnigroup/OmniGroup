@@ -12,6 +12,8 @@
 RCS_ID("$Id$")
 OB_REQUIRE_ARC
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OACertificateTrustPrompt
 {
     NSURLAuthenticationChallenge *_challenge;
@@ -25,8 +27,6 @@ OB_REQUIRE_ARC
     OBINVARIANT([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]);
 
     self = [super init];
-    if (self == nil)
-        return nil;
 
     _challenge = challenge;
     _result = OFCertificateTrustDurationNotEvenBriefly;
@@ -37,8 +37,6 @@ OB_REQUIRE_ARC
 - (instancetype)initForError:(NSError *)error;
 {
     self = [super init];
-    if (self == nil)
-        return nil;
 
     while (error != nil) {
         NSDictionary *userInfo = error.userInfo;
@@ -125,7 +123,7 @@ static OFCertificateTrustDuration _currentTrustDuration(SecTrustRef serverTrust)
     [self finish];
 }
 
-- (SecTrustRef)serverTrust;
+- (SecTrustRef _Nullable)serverTrust;
 {
     if (_challenge != nil) {
         return _challenge.protectionSpace.serverTrust;
@@ -153,3 +151,4 @@ static OFCertificateTrustDuration _currentTrustDuration(SecTrustRef serverTrust)
 
 @end
 
+NS_ASSUME_NONNULL_END

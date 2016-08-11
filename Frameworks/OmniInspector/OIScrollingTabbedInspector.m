@@ -23,7 +23,7 @@ RCS_ID("$Id$")
 
 @property (strong, nonatomic) IBOutlet NSScrollView *inspectorScrollView;
 @property (strong, nonatomic) IBOutlet NSTextField *tabLabel;
-@property (strong, nonatomic) NSLayoutConstraint *topConstraint, *bottomConstraint, *widthConstraint, *scrollViewWidthConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *topConstraint, *bottomConstraint, *scrollViewWidthConstraint;
 @property (strong, nonatomic) NSLayoutConstraint *labelCenterConstraint;
 @end
 
@@ -48,6 +48,7 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
 
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [contentView setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
 
 - (void)_layoutSelectedTabs;
@@ -63,7 +64,11 @@ RCS_ID("$Id$")
             firstTab = tab;
         
         lastTab = tab;
+        [contentView.widthAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.widthAnchor constant:0].active = YES;
     }
+    NSLayoutConstraint *compressionConstraint = [contentView.widthAnchor constraintEqualToConstant:0];
+    compressionConstraint.priority = NSLayoutPriorityDefaultHigh;
+    compressionConstraint.active = YES;
     
     NSView *firstInspectorView = [firstTab inspectorView];
     NSView *lastInspectorView = [lastTab inspectorView];
@@ -72,42 +77,26 @@ RCS_ID("$Id$")
         if (self.topConstraint)
             [contentView removeConstraint:self.topConstraint];
         
-        self.topConstraint = [NSLayoutConstraint constraintWithItem:contentView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:firstInspectorView attribute:NSLayoutAttributeTop multiplier:1 constant:0];
-        [contentView addConstraint:self.topConstraint];
+        self.topConstraint = [contentView.topAnchor constraintEqualToAnchor:firstInspectorView.topAnchor];
+        self.topConstraint.active = YES;
     }
     
     if (self.bottomConstraint.secondItem != lastInspectorView) {
         if (self.bottomConstraint)
             [contentView removeConstraint:self.bottomConstraint];
         
-        self.bottomConstraint = [NSLayoutConstraint constraintWithItem:contentView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:lastInspectorView attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
-        [contentView addConstraint:self.bottomConstraint];
+        self.bottomConstraint = [contentView.bottomAnchor constraintEqualToAnchor:lastInspectorView.bottomAnchor];
+        self.bottomConstraint.active = YES;
     }
     
-    CGFloat width = firstTab.inspectorRegistry.inspectorWidth;
-
-    if (!self.widthConstraint) {
-        self.widthConstraint = [NSLayoutConstraint constraintWithItem:contentView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:width];
-        [contentView addConstraint:self.widthConstraint];
-    } else if (self.widthConstraint.constant != width) {
-        self.widthConstraint.constant = width;
-    }
-    
-    NSScroller *verticalScroller = [self.inspectorScrollView verticalScroller];
-    if ([verticalScroller scrollerStyle] == NSScrollerStyleLegacy)
-        width += NSWidth([verticalScroller frame]);
-
     if (!self.scrollViewWidthConstraint) {
-        self.scrollViewWidthConstraint = [NSLayoutConstraint constraintWithItem:self.inspectorScrollView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1 constant:width];
-        [self.inspectorScrollView addConstraint:self.scrollViewWidthConstraint];
-    } else if (self.scrollViewWidthConstraint.constant != width) {
-        self.scrollViewWidthConstraint.constant = width;
+        self.scrollViewWidthConstraint = [self.inspectorScrollView.widthAnchor constraintEqualToAnchor:contentView.widthAnchor];
+        self.scrollViewWidthConstraint.active = YES;
     }
+    [self _adjustScrollViewWidthConstraintForScrollWidth];
     
-    NSDictionary *views = NSDictionaryOfVariableBindings(_inspectorScrollView);
-    
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[_inspectorScrollView]-0-|" options:0 metrics:nil views:views]];
-
+    [self.view.widthAnchor constraintEqualToAnchor:_inspectorScrollView.widthAnchor].active = YES;
+     
     CGFloat tabCenter = NSMidX([self.buttonMatrix cellFrameAtRow:self.buttonMatrix.selectedRow column:self.buttonMatrix.selectedColumn]);
 
     NSString *displayName = firstTab.inspector.displayName;
@@ -116,9 +105,9 @@ RCS_ID("$Id$")
     self.tabLabel.stringValue = displayName;
 
     if (!self.labelCenterConstraint) {
-        self.labelCenterConstraint = [NSLayoutConstraint constraintWithItem:self.tabLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.buttonMatrix attribute:NSLayoutAttributeLeft multiplier:1 constant:tabCenter];
+        self.labelCenterConstraint = [self.tabLabel.centerXAnchor constraintGreaterThanOrEqualToAnchor:self.buttonMatrix.leftAnchor constant:tabCenter];
         self.labelCenterConstraint.priority = NSLayoutPriorityDefaultHigh;
-        [self.view addConstraint:self.labelCenterConstraint];
+        self.labelCenterConstraint.active = YES;
     } else {
         self.labelCenterConstraint.constant = tabCenter;
     }
@@ -127,11 +116,20 @@ RCS_ID("$Id$")
     [self.view.window recalculateKeyViewLoop];
 }
 
+
+- (void)_adjustScrollViewWidthConstraintForScrollWidth;
+{
+    CGFloat scrollerWidth = 0;
+    NSScroller *verticalScroller = [self.inspectorScrollView verticalScroller];
+    if ([verticalScroller scrollerStyle] == NSScrollerStyleLegacy)
+        scrollerWidth = NSWidth([verticalScroller frame]);
+    
+    self.scrollViewWidthConstraint.constant = scrollerWidth;
+}
+
 - (void)_scrollerStyleDidChange:(NSNotification *)notification
 {
-    // We don't really need to redo all the layout, but we do want to maybe adjust the width based on [verticalScroller scrollerStyle]
-    if ([self.inspectorController isVisible])
-        [self _layoutSelectedTabs];
+    [self _adjustScrollViewWidthConstraintForScrollWidth];
 }
 
 @end

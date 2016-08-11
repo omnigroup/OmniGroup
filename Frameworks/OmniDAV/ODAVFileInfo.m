@@ -152,16 +152,22 @@ RCS_ID("$Id$");
 
 - (BOOL)mayBeSameAsFileInfo:(ODAVFileInfo *)otherInfo;
 {
-    if (!_exists || !otherInfo.exists)
+    if ((_exists && !otherInfo.exists) ||
+        (!_exists && otherInfo.exists)) {
         return NO;
-
+    }
+    
+    if ((_directory && !otherInfo.isDirectory) ||
+        (!_directory && otherInfo.isDirectory)) {
+        return NO;
+    }
+    
     if (_lastModifiedDate && otherInfo.lastModifiedDate && ![_lastModifiedDate isEqual:otherInfo.lastModifiedDate])
         return NO;
     
-    if (self.isDirectory) {
-        if (!otherInfo.isDirectory)
-            return NO;
+    if (_directory || !_exists) {
         // ETag and size validators don't apply to directories
+        // or to non-existent files
         return YES;
     }
     

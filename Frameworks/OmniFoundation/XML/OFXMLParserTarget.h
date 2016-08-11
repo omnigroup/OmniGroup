@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,29 @@
 // $Id$
 
 #import <OmniFoundation/OFXMLInternedStringTable.h>
+#import <OmniBase/OBUtilities.h>
 
 @class OFXMLParser, OFXMLQName;
 @class NSData, NSMutableArray, NSURL;
+
+// This is passed to some methods in OFXMLParserTarget which may or may not want attributes (and which may want them in different formats), when there are multiple arguments. If there are zero or one arguments, nil is passed.
+@protocol OFXMLParserMultipleAttributeGenerator
+
+// In the QName case, an attribute of "xmlns:ns=someurl" is reported as an attribute with a name of "ns", a namespace of "http://www.w3.org/2000/xmlns/" and a value of "someurl". If ":ns" isn't present, the name is the empty string.
+- (void)generateAttributesWithQNames:(void (^ NS_NOESCAPE)(NSMutableArray <OFXMLQName *> *qnames, NSMutableArray <NSString *> *values))receiver;
+
+// In the plain name case, an attribute of "xmlns:ns=someurl" is reported with the name "xmlns:ns" with a value of "someurl". If ":ns" isn't present, the name is just "xmlns". The namespace on attributes is lost (though we could report "<ns:a>" or "ns:b=foo" with the prefix intact, but the prefix is open to change. Ideally everything should move toward the QName interface, but this gives a higher performance backwards compatibility path for OFXMLDocument.
+- (void)generateAttributesWithPlainNames:(void (^ NS_NOESCAPE)(NSMutableArray <NSString *> *names, NSMutableDictionary <NSString *, NSString *> *values))receiver;
+
+@end
+
+// For the case of a single attribute, where we can potentially avoid building collections, this is passed.
+@protocol OFXMLParserSingleAttributeGenerator
+
+- (void)generateAttributeWithQName:(void (^ NS_NOESCAPE)(OFXMLQName *qnames, NSString *value))receiver;
+- (void)generateAttributeWithPlainName:(void (^ NS_NOESCAPE)(NSString *name, NSString *value))receiver;
+
+@end
 
 typedef enum {
     OFXMLParserElementBehaviorParse, // Descend into this element as normal
@@ -29,13 +49,18 @@ typedef enum {
 - (void)parser:(OFXMLParser *)parser addProcessingInstructionNamed:(NSString *)piName value:(NSString *)piValue;
 
 // Hook to allow for unparsed elements.  Everything from the "<foo>...</foo>" will be wrapped up into the unparsed element.
-- (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues;
-- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues;
+- (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
+
+- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 
 - (void)parserEndElement:(OFXMLParser *)parser;
 - (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+
+// Deprecated
+- (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues OB_DEPRECATED_ATTRIBUTE;
+- (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname attributeQNames:(NSMutableArray <OFXMLQName *> *)attributeQNames attributeValues:(NSMutableArray <NSString *> *)attributeValues OB_DEPRECATED_ATTRIBUTE;
 
 @end

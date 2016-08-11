@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,11 @@
 
 RCS_ID("$Id$");
 
-@interface OFXMLParserState : NSObject
+#if OB_ARC
+#error Do not convert this to ARC w/o re-checking performance. Last time it was tried, it was noticably slower.
+#endif
+
+@interface OFXMLParserState : NSObject <OFXMLParserMultipleAttributeGenerator, OFXMLParserSingleAttributeGenerator>
 {
 @public
     xmlParserCtxtPtr ctxt;
@@ -30,9 +34,10 @@ RCS_ID("$Id$");
         void (*setSystemID)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSURL *systemID, NSString *publicID);
         void (*addProcessingInstruction)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *piName, NSString *piValue);
         
-        OFXMLParserElementBehavior (*behaviorForElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *name, NSMutableArray *attributeQNames, NSMutableArray *attributeValues);
-        void (*startElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, NSMutableArray *attributeQNames, NSMutableArray *attributeValues);
-        
+        OFXMLParserElementBehavior (*behaviorForElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *name, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
+
+        void (*startElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
+
         void (*endElement)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser);
         void (*endUnparsedElementWithQName)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSString *identifier, NSData *contents);
         
@@ -58,10 +63,253 @@ RCS_ID("$Id$");
     off_t unparsedBlockStart; // < 0 if we aren't in an unparsed block.
     unsigned int unparsedBlockElementNesting;
     NSString *unparsedElementID; // The value of the xml:id attribute, if any
+
+    // Temporarily stashed pointers passed to _startElementNsSAX2Func
+    int nb_namespaces;
+    const xmlChar **namespaces;
+    int nb_attributes;
+    const xmlChar **attributes;
 }
 @end
 
+@interface OFXMLParser ()
+{
+@private
+    NSData *_xmlData; // Only set while parsing
+    OFXMLParserState *_state; // Only set while parsing.
+}
+
+@property (nonatomic, strong) NSProgress *progress;
+
+- (NSData *)xmlData;
+
+@end
+
 @implementation OFXMLParserState
+
+#pragma mark - OFXMLParserMultipleAttributeGenerator
+
+- (void)generateAttributesWithQNames:(void (^ NS_NOESCAPE)(NSMutableArray <OFXMLQName *> *qnames, NSMutableArray <NSString *> *values))receiver;
+{
+    OBPRECONDITION(nb_namespaces + nb_attributes > 1, "Otherwise nil should have been passed for the multiple-attribute generator");
+
+    NSMutableArray <OFXMLQName *> *attributeQNames = [[NSMutableArray alloc] init];
+    NSMutableArray <NSString *> *attributeValues = [[NSMutableArray alloc] init];
+
+    // For the plain-name based paths.
+
+    // Note: the segregation of namespace and attibutes will force us to reorder xmlns attributes to the beginning when round-tripping (since we map namespaces to attributes to avoid losing them).
+    int namespaceIndex;
+    for (namespaceIndex = 0; namespaceIndex < nb_namespaces; namespaceIndex++) {
+        // Each namespace is given by two elements, a prefix and URI.
+        const char *prefixCString = (const char *)namespaces[2*namespaceIndex + 0];
+        const char *uriCString = (const char *)namespaces[2*namespaceIndex + 1];
+
+        OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(nameTable, OFXMLNamespaceXMLNSCString, prefixCString);
+
+        NSString *URIString;
+        if (uriCString)
+            URIString = [[NSString alloc] initWithUTF8String:uriCString];
+        else {
+            NSLog(@"Bogus namespace; no URI string");
+            continue;
+        }
+
+        [attributeQNames addObject:qname];
+        [attributeValues addObject:URIString];
+        [URIString release];
+    }
+
+    // Each attribute is given by 5 elements, localname, prefix, URI, value start and value end.
+    int attributeIndex;
+    for (attributeIndex = 0; attributeIndex < nb_attributes; attributeIndex++) {
+        // Intern the values or not?  Don't have a great way to do it with the current setup since we want NULL terminated strings.  Some attribute values may be the same over and over; maybe we could intern if the length is small enough?
+        //
+        // Update 8/10/2016
+        //
+        // Small values already benefit from being tagged pointers.
+        // Overall, de-duplicating attribute values doesn't seem like a huge win given the frequency analysis done in the following bug for a representative large, real-world OmniFocus root transaction file.
+        // See bug:///132530 (Frameworks-Mac Performance: Measure whether de-duplicating attribute values, unparsed elements, or strings in OFXMLParser is a win)
+
+        const char *attributeLocalname = (const char *)attributes[5*attributeIndex + 0];
+        //const char *prefix = (const char *)attributes[5*attributeIndex + 1];
+        const char *attributeNsURI = (const char *)attributes[5*attributeIndex + 2];
+        const char *valueStart = (const char *)attributes[5*attributeIndex + 3];
+        const char *valueEnd = (const char *)attributes[5*attributeIndex + 4];
+
+        OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(nameTable, attributeNsURI, attributeLocalname);
+        NSString *value = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
+
+        // We specify XML_PARSE_NOENT so entities are already parsed up front.  Clients of the framework should thus always get nice Unicode strings w/o worrying about this muck.
+
+        [attributeQNames addObject:qname];
+        [attributeValues addObject:value];
+
+        [value release];
+    }
+
+    receiver(attributeQNames, attributeValues);
+    [attributeQNames release];
+    [attributeValues release];
+}
+
+- (void)generateAttributesWithPlainNames:(void (^ NS_NOESCAPE)(NSMutableArray <NSString *> *names, NSMutableDictionary <NSString *, NSString *> *values))receiver;
+{
+    OBPRECONDITION(nb_namespaces + nb_attributes > 1, "Otherwise nil should have been passed for the multiple-attribute generator");
+
+    NSMutableArray <NSString *> *attributeNames = [[NSMutableArray alloc] init];
+    NSMutableDictionary <NSString *, NSString *> *attributeValues = [[NSMutableDictionary alloc] init];
+
+    // For the plain-name based paths.
+
+    // Note: the segregation of namespace and attibutes will force us to reorder xmlns attributes to the beginning when round-tripping (since we map namespaces to attributes to avoid losing them).
+    int namespaceIndex;
+    for (namespaceIndex = 0; namespaceIndex < nb_namespaces; namespaceIndex++) {
+        // Each namespace is given by two elements, a prefix and URI.
+        const char *prefixCString = (const char *)namespaces[2*namespaceIndex + 0];
+        const char *uriCString = (const char *)namespaces[2*namespaceIndex + 1];
+
+        NSString *URIString;
+        if (uriCString)
+            URIString = [[NSString alloc] initWithUTF8String:uriCString];
+        else {
+            NSLog(@"Bogus namespace; no URI string");
+            continue;
+        }
+
+        NSString *attributeName;
+        if (!prefixCString || *prefixCString == '\0') {
+            attributeName = @"xmlns";
+        } else {
+            // Probably shouldn't assume %s is UTF-8... it may be something else based on the locale environment variables...
+            NSString *prefixString = [[NSString alloc] initWithCString:prefixCString encoding:NSUTF8StringEncoding];
+            attributeName = [[NSString alloc] initWithFormat:@"xmlns:%@", prefixString];
+            [prefixString release];
+        }
+
+        [attributeNames addObject:attributeName];
+        attributeValues[attributeName] = URIString;
+
+        [attributeName release];
+        [URIString release];
+    }
+
+    // Each attribute is given by 5 elements, localname, prefix, URI, value start and value end.
+    int attributeIndex;
+    for (attributeIndex = 0; attributeIndex < nb_attributes; attributeIndex++) {
+        // TODO: Intern the values or not?  Don't have a great way to do it with the current setup since we want NULL terminated strings.  Some attribute values may be the same over and over; maybe we could intern if the length is small enough?
+
+        const char *attributeLocalname = (const char *)attributes[5*attributeIndex + 0];
+        //const char *prefix = (const char *)attributes[5*attributeIndex + 1];
+        //const char *attributeNsURI = (const char *)attributes[5*attributeIndex + 2];
+        const char *valueStart = (const char *)attributes[5*attributeIndex + 3];
+        const char *valueEnd = (const char *)attributes[5*attributeIndex + 4];
+
+        NSString *name = [[NSString alloc] initWithCString:attributeLocalname encoding:NSUTF8StringEncoding];
+        NSString *value = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
+
+        // We specify XML_PARSE_NOENT so entities are already parsed up front.  Clients of the framework should thus always get nice Unicode strings w/o worrying about this muck.
+
+        [attributeNames addObject:name];
+        attributeValues[name] = value;
+
+        [name release];
+        [value release];
+    }
+
+    receiver(attributeNames, attributeValues);
+    [attributeNames release];
+    [attributeValues release];
+}
+
+#pragma mark - OFXMLParserSingleAttributeGenerator
+
+- (void)generateAttributeWithQName:(void (^ NS_NOESCAPE)(OFXMLQName *qnames, NSString *value))receiver;
+{
+    OBPRECONDITION(nb_namespaces + nb_attributes == 1, "Otherwise nil should have been passed for the single-attribute generator");
+    
+    OFXMLQName *attributeQName;
+    NSString *attributeValue;
+
+    if (nb_namespaces) {
+        // Each namespace is given by two elements, a prefix and URI.
+        const char *prefixCString = (const char *)namespaces[0];
+        const char *uriCString = (const char *)namespaces[1];
+        
+        attributeQName = OFXMLInternedNameTableGetInternedName(nameTable, OFXMLNamespaceXMLNSCString, prefixCString);
+        
+        if (uriCString)
+            attributeValue = [[NSString alloc] initWithUTF8String:uriCString];
+        else {
+            NSLog(@"Bogus namespace; no URI string");
+            return;
+        }
+    } else if (nb_attributes) {
+        const char *attributeLocalname = (const char *)attributes[0];
+        //const char *prefix = (const char *)attributes[1];
+        const char *attributeNsURI = (const char *)attributes[2];
+        const char *valueStart = (const char *)attributes[3];
+        const char *valueEnd = (const char *)attributes[4];
+        
+        attributeQName = OFXMLInternedNameTableGetInternedName(nameTable, attributeNsURI, attributeLocalname);
+        attributeValue = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
+    } else {
+        OBASSERT_NOT_REACHED("Should have exactly one attribute");
+        return;
+    }
+    
+    receiver(attributeQName, attributeValue);
+    [attributeValue release];
+}
+
+- (void)generateAttributeWithPlainName:(void (^ NS_NOESCAPE)(NSString *name, NSString *value))receiver;
+{
+    OBPRECONDITION(nb_namespaces + nb_attributes == 1, "Otherwise nil should have been passed for the single-attribute generator");
+    
+    NSString *attributeName, *attibuteValue;
+
+    if (nb_namespaces) {
+        // Each namespace is given by two elements, a prefix and URI.
+        const char *prefixCString = (const char *)namespaces[0];
+        const char *uriCString = (const char *)namespaces[1];
+        
+        if (uriCString)
+            attibuteValue = [[NSString alloc] initWithUTF8String:uriCString];
+        else {
+            NSLog(@"Bogus namespace; no URI string");
+            return;
+        }
+        
+        if (!prefixCString || *prefixCString == '\0') {
+            attributeName = @"xmlns";
+        } else {
+            // Probably shouldn't assume %s is UTF-8... it may be something else based on the locale environment variables...
+            NSString *prefixString = [[NSString alloc] initWithCString:prefixCString encoding:NSUTF8StringEncoding];
+            attributeName = [[NSString alloc] initWithFormat:@"xmlns:%@", prefixString];
+            [prefixString release];
+        }
+    } else if (nb_attributes) {
+        // Each attribute is given by 5 elements, localname, prefix, URI, value start and value end.
+        // TODO: Intern the values or not?  Don't have a great way to do it with the current setup since we want NULL terminated strings.  Some attribute values may be the same over and over; maybe we could intern if the length is small enough?
+        
+        const char *attributeLocalname = (const char *)attributes[0];
+        //const char *prefix = (const char *)attributes[1];
+        //const char *attributeNsURI = (const char *)attributes[2];
+        const char *valueStart = (const char *)attributes[3];
+        const char *valueEnd = (const char *)attributes[4];
+        
+        attributeName = [[NSString alloc] initWithCString:attributeLocalname encoding:NSUTF8StringEncoding];
+        attibuteValue = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
+    } else {
+        OBASSERT_NOT_REACHED("Should have exactly one attribute");
+        return;
+    }
+    
+    receiver(attributeName, attibuteValue);
+    [attributeName release];
+    [attibuteValue release];
+}
+
 @end
 
 // CFXML only has one callback for this; not sure why there are two.
@@ -97,91 +345,28 @@ static void _externalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar
     }
 }
 
-static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI, int nb_namespaces, const xmlChar **namespaces, int nb_attributes, int nb_defaulted, const xmlChar **attributes)
+// Returns YES if the target wants to treat this element as unparsed.
+static BOOL _checkForUnparsedElement(OFXMLParserState *state, OFXMLQName *elementQName)
 {
-    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
-    
-    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
-    
-    // Unparsed element support
-    if (state->unparsedBlockStart >= 0) {
-        // Already in an unparsed block.  Increment our counter and bail.
-        state->unparsedBlockElementNesting++;
-        //fprintf(stderr, " ## start nested unparsed element '%s'; depth now %d\n", localname, state->unparsedBlockElementNesting);
-        return;
-    }
-    
-    NSMutableArray *attributeQNames = nil;
-    NSMutableArray *attributeValues = nil;
-    
-    // Note: the segregation of namespace and attibutes will force us to reorder xmlns attributes to the beginning when round-tripping (since we map namespaces to attributes to avoid losing them).
-    if (nb_namespaces) {
-        if (!attributeQNames)
-            attributeQNames = [[NSMutableArray alloc] init];
-        if (!attributeValues)
-            attributeValues = [[NSMutableArray alloc] init];
-        
-        int namespaceIndex;
-        for (namespaceIndex = 0; namespaceIndex < nb_namespaces; namespaceIndex++) {
-            // Each namespace is given by two elements, a prefix and URI.
-            
-            OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, OFXMLNamespaceXMLNSCString, (const char *)namespaces[0]);
-            
-            NSString *URIString;
-            if (namespaces[1])
-                URIString = [[NSString alloc] initWithUTF8String:(const char *)namespaces[1]];
-            else {
-                NSLog(@"Bogus namespace; no URI string");
-                continue;
-            }
-            
-            [attributeQNames addObject:qname];
-            [attributeValues addObject:URIString];
-            [URIString release];
-        }
-    }
-    
-    if (nb_attributes) {
-        if (!attributeQNames)
-            attributeQNames = [[NSMutableArray alloc] init];
-        if (!attributeValues)
-            attributeValues = [[NSMutableArray alloc] init];
-        
-        // Each attribute is given by 5 elements, localname, prefix, URI, value start and value end.
-        while (nb_attributes--) {
-            // TODO: Intern the values or not?  Don't have a great way to do it with the current setup since we want NULL terminated strings.  Some attribute values may be the same over and over; maybe we could intern if the length is small enough?
-            
-            const char *attributeLocalname = (const char *)attributes[0];
-            //const char *prefix = (const char *)attributes[1];
-            const char *attributeNsURI = (const char *)attributes[2];
-            const char *valueStart = (const char *)attributes[3];
-            const char *valueEnd = (const char *)attributes[4];
-
-            OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, attributeNsURI, attributeLocalname);
-            NSString *value = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
-            
-            // We specify XML_PARSE_NOENT so entities are already parsed up front.  Clients of the framework should thus always get nice Unicode strings w/o worrying about this muck.
-            
-            [attributeQNames addObject:qname];
-            [attributeValues addObject:value];
-            
-            [value release];
-            
-            attributes += 5;
-        }
-    }
-    
-    OFXMLQName *elementQName = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
 
     // This gets called after the input pointer has scanned up to the end of the attributes.  For <foo bar="x" /> the input will be pointing at the '/'.  Find the starting byte of this element by scanning backwards looking for '<'.  Since we get called while inside the element, we don't have to worry about '<' in CDATA blocks.  Not sure if libxml2 handles non-conforming documents with '<' in attributes.
     OFXMLParserElementBehavior behavior = OFXMLParserElementBehaviorParse;
-    if (state->targetImp.behaviorForElementWithQName)
-        behavior = state->targetImp.behaviorForElementWithQName(state->target, @selector(parser:behaviorForElementWithQName:attributeQNames:attributeValues:), parser, elementQName, attributeQNames, attributeValues);
+    if (state->targetImp.behaviorForElementWithQName) {
+        id <OFXMLParserMultipleAttributeGenerator> multipleGenerator = nil;
+        id <OFXMLParserSingleAttributeGenerator> singleGenerator = nil;
+        if (state->nb_namespaces + state->nb_attributes > 1) {
+            multipleGenerator = state;
+        } else if (state->nb_namespaces + state->nb_attributes == 1) {
+            singleGenerator = state;
+        }
+        
+        behavior = state->targetImp.behaviorForElementWithQName(state->target, @selector(parser:behaviorForElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:), parser, elementQName, multipleGenerator, singleGenerator);
+    }
     if (behavior != OFXMLParserElementBehaviorParse) {
         const xmlChar *p = state->ctxt->input->cur;
         const xmlChar *base = state->ctxt->input->base;
-        
+
         if (behavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) {
             // do not include the element, just the data
             OBASSERT(*p == '/' || *p == '>');
@@ -196,42 +381,93 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
                 p--;
             }
         }
-        
+
         if (*p == '<' || behavior == OFXMLParserElementBehaviorUnparsedReturnContentsOnly) {
             state->unparsedBlockBehavior = behavior;
-            state->unparsedBlockStart = p - base;
+            state->unparsedBlockStart = p - base + state->ctxt->input->consumed;
             state->unparsedBlockElementNesting = 0;
             //fprintf(stderr, "unparsed element '%s' starts at offset %qd\n", localname, state->unparsedBlockStart);
-            
+
             // Store the xml:id of the element, if it has one, so we can pass it to the end hook.  We could pass the entire set of attributes, but I only need the id right now.
             OBASSERT(state->unparsedElementID == nil);
 
-            OFXMLQName *idQName = OFXMLInternedNameTableGetInternedName(state->nameTable, OFXMLNamespaceXMLCString, "id");
-            NSUInteger idIndex = [attributeQNames indexOfObject:idQName];
-            if (idIndex != NSNotFound) {
-                state->unparsedElementID = [[attributeValues objectAtIndex:idIndex] copy];
-            }
-            
-            [attributeQNames release];
-            [attributeValues release];
+            // Avoid loading the full set of attributes -- looking at the internal state we store for our OFXMLAttributeGenerator protocol.
 
-            return;
+            // Each attribute is given by 5 elements, localname, prefix, URI, value start and value end.
+            int attributeIndex;
+            for (attributeIndex = 0; attributeIndex < state->nb_attributes; attributeIndex++) {
+                const char *attributeLocalname = (const char *)state->attributes[5*attributeIndex + 0];
+                //const char *prefix = (const char *)state->attributes[5*attributeIndex + 1];
+                const char *attributeNsURI = (const char *)state->attributes[5*attributeIndex + 2];
+                const char *valueStart = (const char *)state->attributes[5*attributeIndex + 3];
+                const char *valueEnd = (const char *)state->attributes[5*attributeIndex + 4];
+
+                if (attributeLocalname && strcmp(attributeLocalname, "id") == 0 &&
+                    (!attributeNsURI || strcmp(attributeNsURI, OFXMLNamespaceXMLCString) == 0)) {
+                    state->unparsedElementID = [[NSString alloc] initWithBytes:valueStart length:valueEnd - valueStart encoding:NSUTF8StringEncoding];
+                    break;
+                }
+            }
+
+            return YES;
         } else {
             OBASSERT_NOT_REACHED("Didn't find element open.");
         }
     }
+
+    return NO;
+}
+
+static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI, int nb_namespaces, const xmlChar **namespaces, int nb_attributes, int nb_defaulted, const xmlChar **attributes)
+{
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
+
+    OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
     
+    // Unparsed element support
+    if (state->unparsedBlockStart >= 0) {
+        // Already in an unparsed block.  Increment our counter and bail.
+        state->unparsedBlockElementNesting++;
+        //fprintf(stderr, " ## start nested unparsed element '%s'; depth now %d\n", localname, state->unparsedBlockElementNesting);
+        return;
+    }
+
+    // Depending in the implemented callbacks, we need different sets of state. We stash pointers temporarily and let the target decide what format of attributes it wants (or maybe none at all!)
+    state->nb_namespaces = nb_namespaces;
+    state->namespaces = namespaces;
+    state->nb_attributes = nb_attributes;
+    state->attributes = attributes;
+
+
+    OFXMLQName *elementQName = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
+
+    if (_checkForUnparsedElement(state, elementQName)) {
+        state->nb_namespaces = 0;
+        state->namespaces = NULL;
+        state->nb_attributes = 0;
+        state->attributes = NULL;
+        return;
+    }
 
     // TODO: Maintain our own stack of return values from startElement and pass them to the end call?  Or require all the targets to maintain their own stack if they need it?
     state->elementDepth++;
     
-    if (state->targetImp.startElementWithQName)
-        state->targetImp.startElementWithQName(state->target, @selector(parser:startElementWithQName:attributeQNames:attributeValues:), state->parser, elementQName, attributeQNames, attributeValues);
+    if (state->targetImp.startElementWithQName) {
+        id <OFXMLParserMultipleAttributeGenerator> multipleGenerator = nil;
+        id <OFXMLParserSingleAttributeGenerator> singleGenerator = nil;
+        if (state->nb_namespaces + state->nb_attributes > 1) {
+            multipleGenerator = state;
+        } else if (state->nb_namespaces + state->nb_attributes == 1) {
+            singleGenerator = state;
+        }
+        state->targetImp.startElementWithQName(state->target, @selector(parser:startElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:), state->parser, elementQName, multipleGenerator, singleGenerator);
+    }
     
-    [attributeQNames release];
-    [attributeValues release];
-    
-    
+    state->nb_namespaces = 0;
+    state->namespaces = NULL;
+    state->nb_attributes = 0;
+    state->attributes = NULL;
+
     // TODO: Make OFXMLWhitespaceBehaviorType QName aware.
     OFXMLWhitespaceBehaviorType oldBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
     OFXMLWhitespaceBehaviorType newBehavior = [state->whitespaceBehavior behaviorForElementName:elementQName.name];
@@ -289,15 +525,16 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
                 }
                 
                 OBASSERT(p > base);
-//                OBASSERT(p[-1] == '>');
+//              OBASSERT(p[-1] == '>');
                 
-                size_t end = p - base;
+                size_t end = p - base + state->ctxt->input->consumed;
                 //fprintf(stderr, "unparsed element '%s' at %qd extended for %qd\n", localname, state->unparsedBlockStart, end - state->unparsedBlockStart);
                 
                 OBASSERT(end > (typeof(end))state->unparsedBlockStart); // signed vs. unsigned, but we checked unparsedBlockStart >= 0 above, so the cast is safe
                 size_t length = (size_t)(end - state->unparsedBlockStart);
                 
-                NSData *data = [[NSData alloc] initWithBytes:state->ctxt->input->base + state->unparsedBlockStart length:length];
+                const char *xmlBytes = [[state->parser xmlData] bytes];
+                NSData *data = [[NSData alloc] initWithBytes:xmlBytes + state->unparsedBlockStart length:length];
                 OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
                 
                 state->targetImp.endUnparsedElementWithQName(state->target, @selector(parser:endUnparsedElementWithQName:identifier:contents:), parser, qname, state->unparsedElementID, data);
@@ -334,6 +571,43 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
     OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
 }
 
+typedef NS_ENUM(NSInteger, OFXMLStringClassification) {
+    OFXMLStringClassificationAllWhitespace,
+    OFXMLStringClassificationSomeNonWhitespace,
+    OFXMLStringClassificationUnknown
+};
+
+// The vast majority of the time, we'll get simple ASCII input. The NSString method spends a lot of time doing composed character checking...
+static OFXMLStringClassification _classifyString(const xmlChar *ch, int len)
+{
+    for (int idx = 0; idx < len; idx++) {
+        xmlChar c = ch[idx];
+
+        if (isspace(c)) {
+            continue;
+        }
+
+        if (isgraph(c)) {
+            return OFXMLStringClassificationSomeNonWhitespace;
+        }
+
+        return OFXMLStringClassificationUnknown;
+    }
+
+    return OFXMLStringClassificationAllWhitespace;
+}
+
+
+// Slow path...
+static OFXMLStringClassification _classifyNSString(NSString *str, NSCharacterSet *nonWhitespaceCharacterSet)
+{
+    if ([str rangeOfCharacterFromSet:nonWhitespaceCharacterSet].length == 0) {
+        return OFXMLStringClassificationAllWhitespace;
+    }
+    return OFXMLStringClassificationSomeNonWhitespace;
+}
+
+
 static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
 {
     OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
@@ -346,26 +620,60 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
     // Ignore whitespace and text outside the root element.
     if (state->elementDepth == 0)
         return;
-    
-    NSString *str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
-    //NSLog(@"characters: '%@'", str);
-    
-    if ([str rangeOfCharacterFromSet:state->nonWhitespaceCharacterSet].length == 0) {
-        OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
-        
-        // Only add the whitespace if our current behavior dictates that we do so (and we are actually inside the root element)
-        OFXMLWhitespaceBehaviorType currentBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
-        
-        if (currentBehavior == OFXMLWhitespaceBehaviorTypePreserve) {
-            if (state->targetImp.addWhitespace)
-                state->targetImp.addWhitespace(state->target, @selector(parser:addWhitespace:), parser, str);
-        }
-    } else {
-        //NSLog(@"_addString:%@", str);
-        if (state->targetImp.addString)
-            state->targetImp.addString(state->target, @selector(parser:addWhitespace:), parser, str);
+
+    // Do nothing w/o callbacks...
+    typeof(state->targetImp.addWhitespace) addWhitespace = state->targetImp.addWhitespace;
+    typeof(state->targetImp.addString) addString = state->targetImp.addString;
+
+    if (addWhitespace == NULL && addString == NULL) {
+        return;
     }
-    
+
+    OBASSERT(len > 0); // Should we early out or still call -parser:addString: in this case?
+
+    NSString *str = nil;
+    OFXMLStringClassification classification = _classifyString(ch, len);
+
+    if (classification == OFXMLStringClassificationUnknown) {
+        str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
+        classification = _classifyNSString(str, state->nonWhitespaceCharacterSet);
+    }
+
+    //NSLog(@"characters: '%@'", str);
+
+
+    switch (classification) {
+        case OFXMLStringClassificationAllWhitespace: {
+            OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
+
+            // Only add the whitespace if our current behavior dictates that we do so (and we are actually inside the root element)
+            OFXMLWhitespaceBehaviorType currentBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
+
+            if (currentBehavior == OFXMLWhitespaceBehaviorTypePreserve) {
+                if (addWhitespace) {
+                    if (!str) {
+                        str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
+                    }
+                    addWhitespace(state->target, @selector(parser:addWhitespace:), parser, str);
+                }
+            }
+            break;
+        }
+
+        case OFXMLStringClassificationSomeNonWhitespace:
+            //NSLog(@"_addString:%@", str);
+            if (addString) {
+                if (!str) {
+                    str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
+                }
+                addString(state->target, @selector(parser:addString:), parser, str);
+            }
+            break;
+
+        default:
+            OBASSERT_NOT_REACHED("Should resolve to a known state before entering the switch");
+    }
+
     [str release];
 }
 
@@ -420,12 +728,29 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
         OFXMLInternedNameTableFree(state->nameTable);
 }
 
+#pragma mark -
+
 @implementation OFXMLParser
+
++ (NSUInteger)maximumParseChunkSize;
 {
-    OFXMLParserState *_state; // Only set while parsing.
+    return 1024 * 1024 * 4;
 }
 
-- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
+- (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject<OFXMLParserTarget> *)target error:(NSError **)outError;
+{
+    if (!(self = [self initWithWhitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior target:target])) {
+        return nil;
+    }
+    
+    if (![self parseData:xmlData error:outError]) {
+        return nil;
+    }
+    
+    return self;
+}
+
+- (id)initWithWhitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target;
 {
     if (!(self = [super init]))
         return nil;
@@ -443,7 +768,7 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     _state->nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
     _state->loadWarnings = [[NSMutableArray alloc] init];
     _state->whitespaceBehavior = whitespaceBehavior;
-    
+
     _state->target = target;
     
     // Assert on deprecated target methods.
@@ -459,8 +784,8 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 } while (0)
     GET_IMP(setSystemID, @selector(parser:setSystemID:publicID:));
     GET_IMP(addProcessingInstruction, @selector(parser:addProcessingInstructionNamed:value:));
-    GET_IMP(behaviorForElementWithQName, @selector(parser:behaviorForElementWithQName:attributeQNames:attributeValues:));
-    GET_IMP(startElementWithQName, @selector(parser:startElementWithQName:attributeQNames:attributeValues:));
+    GET_IMP(behaviorForElementWithQName, @selector(parser:behaviorForElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:));
+    GET_IMP(startElementWithQName, @selector(parser:startElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:));
     GET_IMP(endElement, @selector(parserEndElement:));
     GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:identifier:contents:));
     GET_IMP(addWhitespace, @selector(parser:addWhitespace:));
@@ -480,8 +805,14 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     
     // Set up default whitespace behavior
     [_state->whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
+
+    _progress = [[NSProgress alloc] init];
     
-    
+    return self;
+}
+
+- (BOOL)parseData:(NSData *)xmlData error:(NSError **)outError;
+{
     // TODO: Add support for passing along the source URL
     // We want whitespace reported since we may or may not keep it depending on our whitespaceBehavior input.
     
@@ -499,16 +830,16 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     sax.serror = _xmlStructuredErrorFunc;
     
     // xmlSAXUserParseMemory hides the xmlParserCtxtPtr.  But, this means we can't get the source encoding, so we use the push approach.
-    NSUInteger xmlLength = [xmlData length];
-    OBASSERT(xmlLength < INT_MAX); // Need a different API for super-long XML.
     
-    _state->ctxt = xmlCreatePushParserCtxt(&sax, (__bridge void *)_state/*user data*/, [xmlData bytes], (int)xmlLength, NULL);
+    _state->ctxt = xmlCreatePushParserCtxt(&sax, (__bridge void *)_state/*user data*/, NULL, 0, NULL);
     
     // Set the options on our XML parser instance.
     // We set XML_PARSE_HUGE to bypass any hardcoded internal parser limits, such as 10000000 byte input length limit.
     //
     // Those limits are enforced by default with the version of libxml2 that ships with iOS 7 and OS X 10.9.
     // rdar://problem/14280255 and rdar://problem/14280241 asks them to reconsider this default configuration because it breaks binary compatibilty for existing libxml2 clients.
+    //
+    // N.B. Setting XML_PARSE_HUGE is no longer necessary unless we wish to use a chunk size larger than the internal parser limit of 10000000.
     
     int options = 0;
     options |= XML_PARSE_NOENT;     // Turn entities into content
@@ -522,8 +853,33 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
         NSLog(@"Unsupported xml parser options: 0x%08x", options);
 
     // Encoding isn't set until after the terminate.
-    int rc = xmlParseChunk(_state->ctxt, NULL, 0, TRUE/*terminate*/);
     
+    const char *bytes = (const char *)[xmlData bytes];
+    NSUInteger xmlLength = [xmlData length];
+    NSUInteger bytesRemaining = xmlLength;
+    _progress.totalUnitCount = xmlLength;
+    int rc = 0;
+
+    self->_xmlData = xmlData;
+    
+    NSUInteger maxChunkSize = [[self class] maximumParseChunkSize];
+    do {
+        NSUInteger chunkSize = MIN(bytesRemaining, maxChunkSize);
+        BOOL isLastChunk = (chunkSize == bytesRemaining);
+
+        rc = xmlParseChunk(_state->ctxt, bytes, (int)chunkSize, isLastChunk);
+        if (rc != 0 && rc != XML_ERR_USER_STOP) {
+            [_progress cancel];
+            break;
+        }
+        
+        bytes += chunkSize;
+        bytesRemaining -= chunkSize;
+        _progress.completedUnitCount += chunkSize;
+    } while (bytesRemaining > 0);
+
+    self->_xmlData = nil;
+
     OBASSERT((rc == 0) == (_state->error == nil));
     
     BOOL result = YES;
@@ -532,6 +888,7 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
             *outError = [[_state->error retain] autorelease];
         [_state->error release];
         _state->error = nil; // we've dealt with cleaning up the error portion of the state
+        [_progress cancel];
         result = NO;
     } else {
         CFStringEncoding encoding = kCFStringEncodingUTF8;
@@ -570,23 +927,26 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     [_state release];
     _state = nil;
     
-    if (!result) {
-        [self release];
-        return nil;
-    }
-    return self;
+    return result;
 }
 
 - (void)dealloc;
 {
+    OBPRECONDITION(_xmlData == nil);
     [_versionString release];
     [_loadWarnings release];
+    [_progress release];
     [super dealloc];
 }
 
 - (NSUInteger)elementDepth;
 {
     return _state ? _state->elementDepth : 0;
+}
+
+- (NSData *)xmlData;
+{
+    return _xmlData;
 }
 
 @end

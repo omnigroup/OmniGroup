@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,9 @@
 RCS_ID("$Id$")
 
 @implementation OAFontView
+{
+    NSSize _textSize;
+}
 
 // Init and dealloc
 
@@ -26,44 +29,31 @@ RCS_ID("$Id$")
     if (!(self = [super initWithFrame:frameRect]))
         return nil;
 
-    [self setFont:[NSFont userFontOfSize:0]];
+    self.font = [NSFont userFontOfSize:0];
 
     return self;
 }
 
 //
 
-- (void) setDelegate: (id) aDelegate;
-{
-    delegate = aDelegate;
-}
-
-- (id) delegate;
-{
-    return delegate;
-}
-
-- (NSFont *)font;
-{
-    return font;
-}
+@synthesize delegate = _weak_delegate;
 
 - (void)setFont:(NSFont *)newFont;
 {
-    if (font == newFont)
+    if (_font == newFont)
 	return;
 
-    font = newFont;
+    _font = newFont;
 
-    if (font) {
-        fontDescription = [[NSString alloc] initWithFormat:@"%@ %.1f", [font displayName], [font pointSize]];
+    if (_font) {
+        _fontDescription = [[NSString alloc] initWithFormat:@"%@ %.1f", _font.displayName, _font.pointSize];
     
-        NSDictionary *attributes = [NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
-        textSize = [fontDescription sizeWithAttributes:attributes];
-        textSize.height = (CGFloat)ceil(textSize.height);
-        textSize.width = (CGFloat)ceil(textSize.width);
+        NSDictionary *attributes = [NSDictionary dictionaryWithObject:_font forKey:NSFontAttributeName];
+        _textSize = [_fontDescription sizeWithAttributes:attributes];
+        _textSize.height = (CGFloat)ceil(_textSize.height);
+        _textSize.width = (CGFloat)ceil(_textSize.width);
     } else
-        textSize.height = textSize.width = 0.0f;
+        _textSize.height = _textSize.width = 0.0f;
     
         
     [self setNeedsDisplay:YES];
@@ -84,21 +74,17 @@ RCS_ID("$Id$")
 
 // NSFontManager sends -changeFont: up the responder chain
 
-- (BOOL)fontManager:(id)sender willIncludeFont:(NSString *)fontName;
-{
-    if ([delegate respondsToSelector: @selector(fontView:fontManager:willIncludeFont:)])
-        return [delegate fontView: self fontManager: sender willIncludeFont: fontName];
-    return YES;
-}
-
 - (void)changeFont:(id)sender;
 {
+    NSFont *font = [sender convertFont:[sender selectedFont]];
+
+    id delegate = _weak_delegate;
     if ([delegate respondsToSelector: @selector(fontView:shouldChangeToFont:)])
         if (![delegate fontView:self shouldChangeToFont:font])
             return;
 
-    [self setFont:[sender convertFont:[sender selectedFont]]];
-    
+    self.font = font;
+
     if ([delegate respondsToSelector: @selector(fontView:didChangeToFont:)])
         [delegate fontView:self didChangeToFont:font];
 }
@@ -130,7 +116,7 @@ RCS_ID("$Id$")
 
     [[NSColor gridColor] set];
     NSFrameRect(bounds);
-    [fontDescription drawWithFont:font color:[NSColor textColor] alignment:NSCenterTextAlignment verticallyCenter:YES inRectangle:bounds];
+    [_fontDescription drawWithFont:_font color:[NSColor textColor] alignment:NSCenterTextAlignment verticallyCenter:YES inRectangle:bounds];
 
 }
 
@@ -156,7 +142,7 @@ RCS_ID("$Id$")
     if (![super becomeFirstResponder]) 
 	return NO;
     
-    [[NSFontManager sharedFontManager] setSelectedFont:font isMultiple:NO];
+    [[NSFontManager sharedFontManager] setSelectedFont:_font isMultiple:NO];
     [self setKeyboardFocusRingNeedsDisplayInRect:[self bounds]];
     return YES;
 }
@@ -176,11 +162,11 @@ RCS_ID("$Id$")
     NSMutableDictionary *debugDictionary;
 
     debugDictionary = [super debugDictionary];
-    if (font)
-        [debugDictionary setObject:font forKey:@"font"];
-    if (fontDescription)
-        [debugDictionary setObject:fontDescription forKey:@"fontDescription"];
-    [debugDictionary setObject:NSStringFromSize(textSize) forKey:@"textSize"];
+    if (_font)
+        [debugDictionary setObject:_font forKey:@"font"];
+    if (_fontDescription)
+        [debugDictionary setObject:_fontDescription forKey:@"fontDescription"];
+    [debugDictionary setObject:NSStringFromSize(_textSize) forKey:@"textSize"];
     return debugDictionary;
 }
 

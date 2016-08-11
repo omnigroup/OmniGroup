@@ -13,14 +13,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSFileManager (OFTemporaryPath)
 
-- (NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
+- (nullable NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
 
 // This returns a new URL that does not exist (but that should be relatively race free vs other callers as it contains a random identifier instead of an incrementing number). The path based versions below use a sequence number, checking if the file exists. Two calls in a row that are intended to return two temporary names could then return the same one twice.
-- (NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
+- (nullable NSURL *)temporaryURLForWritingToURL:(NSURL *)originalURL allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
 
-- (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
-- (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;
-- (NSString *)temporaryDirectoryForFileSystemContainingPath:(NSString *)path error:(NSError **)outError;
+- (nullable NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory error:(NSError **)outError;
+- (nullable NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;
+- (nullable NSString *)temporaryDirectoryForFileSystemContainingPath:(NSString *)path error:(NSError **)outError;
 
 - (NSString *)tempFilenameFromTemplate:(NSString *)inputString
                               andRange:(NSRange)replaceRange;
@@ -37,8 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)tempFilenameFromHashesTemplate:(NSString *)inputString;
 // Create a unique temp filename from a template string which contains a substring of six hash marks which are to be replaced by the unique portion of the filename.
 
-- (NSString *)uniqueFilenameFromName:(NSString *)filename error:(NSError **)outError;
-- (NSString *)uniqueFilenameFromName:(NSString *)filename allowOriginal:(BOOL)allowOriginal create:(BOOL)create error:(NSError **)outError;
+- (nullable NSString *)uniqueFilenameFromName:(NSString *)filename error:(NSError **)outError;
+- (nullable NSString *)uniqueFilenameFromName:(NSString *)filename allowOriginal:(BOOL)allowOriginal create:(BOOL)create error:(NSError **)outError;
 // Generate a unique filename based on a suggested name
 
 - (BOOL)replaceFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;

@@ -32,15 +32,6 @@ RCS_ID("$Id$")
     [super gotPostponedTerminateResult:isReadyToTerminate];
 }
 
-- (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
-{
-    if ([[exception name] isEqualToString:NSAccessibilityException] &&
-        [[[exception userInfo] objectForKey:NSAccessibilityErrorCodeExceptionInfo] intValue] == kAXErrorAttributeUnsupported)
-        return NO;
-    
-    return [super shouldLogException:exception mask:aMask];
-}
-
 #pragma mark -
 #pragma mark API
 

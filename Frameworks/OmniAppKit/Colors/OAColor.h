@@ -113,10 +113,10 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithCGColor:(CGColorRef)cgColor;
 + (OAColor *)colorWithPlatformColor:(OA_PLATFORM_COLOR_CLASS *)color;
 
-+ (OAColor *)colorFromRGBAString:(NSString *)rgbaString;
++ (nullable OAColor *)colorFromRGBAString:(NSString *)rgbaString;
 - (NSString *)rgbaString;
 
-+ (OAColor *)colorForPreferenceKey:(NSString *)preferenceKey;
++ (nullable OAColor *)colorForPreferenceKey:(NSString *)preferenceKey;
 + (void)setColor:(OAColor *)color forPreferenceKey:(NSString *)preferenceKey;
 
 + (OAColor *)colorWithRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha;
@@ -149,8 +149,6 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
 - (void)set;
 
-- (BOOL)isEqual:(id)otherObject;
-
 @end
 
 // Concrete subclases, and claim that all instances should conform.
@@ -159,7 +157,7 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 @property(nonatomic, readonly) OAColorSpace colorSpace;
 
 - (OAColor *)colorUsingColorSpace:(OAColorSpace)colorSpace;
-- (OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
+- (nullable OAColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OAColor *)otherColor;
 - (OAColor *)colorWithAlphaComponent:(CGFloat)fraction;
 
 @property(nonatomic, readonly) CGFloat whiteComponent;

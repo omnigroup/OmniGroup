@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // As a special case, NSViews in the responder chain can implement -menuForContextControl: and not -targetViewForContextControl: (and they will be used for the view).
 @protocol OAContextControlDelegate <NSObject>
-- (NSMenu * _Nullable)menuForContextControl:(NSControl *)control;
-- (NSView * _Nullable)targetViewForContextControl:(NSControl *)control;
+- (nullable NSMenu *)menuForContextControl:(nullable NSControl *)control;
+- (nullable NSView *)targetViewForContextControl:(nullable NSControl *)control;
 @end
 
 extern NSString *OAContextControlToolTip(void);

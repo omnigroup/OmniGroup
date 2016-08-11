@@ -38,20 +38,20 @@ RCS_ID("$Id$");
 
 static OSUDownloadController *CurrentDownloadController = nil;
 
-@interface OSUDownloadController () <NSURLDownloadDelegate, OSUInstallerDelegate> {
-  @private
+@interface OSUDownloadController () <OSUInstallerDelegate, NSURLSessionDownloadDelegate>
+{
     NSURL *_packageURL;
     OSUItem *_item;
     NSURLRequest *_request;
-    NSURLDownload *_download;
-    NSURLAuthenticationChallenge *_challenge;
-    BOOL _didFinishOrFail;
+    NSURLSession *_session;
+    NSURLSessionDownloadTask *_downloadTask;
+
+    void (^_challengeCompletionHandler)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential);
+
     BOOL _showCautionText;  // Usually describing a verification failure
     BOOL _displayingInstallView;
     
-    // Where we're downloading the package to
-    NSString *_suggestedDestinationFile;
-    NSString *_destinationFile;
+    NSURL *_downloadedURL;
 }
 
 @property (nonatomic, retain) IBOutlet OAConstraintBasedStackView *contentView;
@@ -88,16 +88,6 @@ static OSUDownloadController *CurrentDownloadController = nil;
 
 // Installer bookkeeping
 @property (nonatomic, retain) OSUInstaller *installer;
-
-- (IBAction)cancelAndClose:(id)sender;
-- (IBAction)continueDownloadWithCredentials:(id)sender;
-- (IBAction)installAndRelaunch:(id)sender;
-- (IBAction)chooseDirectory:(id)sender;
-
-- (void)_setInstallViews;
-- (void)_setDisplayedView:(NSView *)aView;
-- (void)setContentViews:(NSArray *)newContent;
-- (void)_cancel;
 
 @end
 
@@ -165,12 +155,10 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     
     void (^startDownload)(void) = ^{
         // This starts the download
-        _download = [[NSURLDownload alloc] initWithRequest:_request delegate:self];
-        
-        // At least until we support resuming downloads, let's delete them on failure.
-        // TODO: This doesn't delete the file when you cancel the download.
-        [_download setDeletesFileUponFailure:YES];
-        
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+
+        _downloadTask = [_session downloadTaskWithRequest:_request];
+        [_downloadTask resume];
     };
 
     __autoreleasing NSError *validateError = nil;
@@ -196,8 +184,9 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     // Should have been done in -close, but just in case
     [self _cancel]; 
    
-    OBASSERT(_download == nil);
-    OBASSERT(_challenge == nil);
+    OBASSERT(_session == nil);
+    OBASSERT(_downloadTask == nil);
+    OBASSERT(_challengeCompletionHandler == nil);
     OBASSERT(_request == nil);
     OBASSERT(CurrentDownloadController != self); // cleared in _cancel
 }
@@ -257,12 +246,20 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 
 - (IBAction)continueDownloadWithCredentials:(id)sender;
 {
+    OBPRECONDITION(_challengeCompletionHandler);
+
     // We aren't a NSController, so we need to commit the editing...
     NSWindow *window = [self window];
     [window makeFirstResponder:window];
-    
-    NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:self.userName password:self.password persistence:(self.rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
-    [[_challenge sender] useCredential:credential forAuthenticationChallenge:_challenge];
+
+    if (_challengeCompletionHandler) {
+        NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:self.userName password:self.password persistence:(self.rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
+
+        typeof(_challengeCompletionHandler) handler = _challengeCompletionHandler;
+        _challengeCompletionHandler = nil;
+
+        handler(NSURLSessionAuthChallengeUseCredential, credential);
+    }
 
     // Switch views so that if we get another credential failure, the user sees that we *tried* to use what they gave us, but failed again.
     [self _setDisplayedView:self.downloadProgressView];
@@ -278,7 +275,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     // OSUInstaller will either fail during decode & preflight, and ask us to close and leave us running, or complete (either successfully, or by posting an error and quitting.)
     // In the later case, *it* is responsible for initiating the application termination sequence.
 
-    OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:_destinationFile];
+    OSUInstaller *installer = [[OSUInstaller alloc] initWithPackagePath:[[_downloadedURL absoluteURL] path]];
     
     installer.delegate = self;
     installer.installedVersionPath = [[NSBundle mainBundle] bundlePath];
@@ -396,142 +393,42 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     }
 }
 
-#pragma mark -
-#pragma mark NSURLDownload delegate
+#pragma mark - NSURLSessionTaskDelegate
 
-- (void)downloadDidBegin:(NSURLDownload *)download;
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
+willPerformHTTPRedirection:(NSHTTPURLResponse *)response
+        newRequest:(NSURLRequest *)request
+ completionHandler:(void (^)(NSURLRequest * _Nullable))completionHandler;
 {
-    DEBUG_DOWNLOAD(@"did begin %@", download);
+    DEBUG_DOWNLOAD(@"will send redirect request %@", request);
+    completionHandler(request);
 }
 
-- (NSURLRequest *)download:(NSURLDownload *)download willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
+#pragma mark - NSURLSessionDelegate delegate
+
+- (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 {
-    DEBUG_DOWNLOAD(@"will send request %@ for %@", request, download);
-    return request;
+    [self _handleAuthenticationChallenge:challenge completionHandler:completionHandler];
 }
 
-- (void)download:(NSURLDownload *)download didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask
+      didWriteData:(int64_t)bytesWritten
+ totalBytesWritten:(int64_t)totalBytesWritten
+totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite;
 {
-    DEBUG_DOWNLOAD(@"didReceiveAuthenticationChallenge %@", challenge);
-    
-    DEBUG_DOWNLOAD(@"protectionSpace = %@", [challenge protectionSpace]);
-    DEBUG_DOWNLOAD(@"  realm = %@", [[challenge protectionSpace] realm]);
-    DEBUG_DOWNLOAD(@"  host = %@", [[challenge protectionSpace] host]);
-    DEBUG_DOWNLOAD(@"  port = %ld", [[challenge protectionSpace] port]);
-    DEBUG_DOWNLOAD(@"  isProxy = %d", [[challenge protectionSpace] isProxy]);
-    DEBUG_DOWNLOAD(@"  proxyType = %@", [[challenge protectionSpace] proxyType]);
-    DEBUG_DOWNLOAD(@"  protocol = %@", [[challenge protectionSpace] protocol]);
-    DEBUG_DOWNLOAD(@"  authenticationMethod = %@", [[challenge protectionSpace] authenticationMethod]);
-    DEBUG_DOWNLOAD(@"  receivesCredentialSecurely = %d", [[challenge protectionSpace] receivesCredentialSecurely]);
-    
-    DEBUG_DOWNLOAD(@"previousFailureCount = %ld", [challenge previousFailureCount]);
-    NSURLCredential *proposed = [challenge proposedCredential];
-    DEBUG_DOWNLOAD(@"proposed = %@", proposed);
-    
-    _challenge = challenge;
-
-    if ([challenge previousFailureCount] == 0 && (proposed != nil) && ![NSString isEmptyString:[proposed user]] && ![NSString isEmptyString:[proposed password]]) {
-        // Try the proposed credentials, if any, the first time around.  I've gotten a non-nil proposal with a null user name on 10.4 before.
-        [[_challenge sender] useCredential:proposed forAuthenticationChallenge:_challenge];
-        return;
-    }
-    
-    [self _setDisplayedView:self.credentialsView];
-    [self showWindow:nil];
-    [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
+    self.totalSize = totalBytesExpectedToWrite;
+    self.currentBytesDownloaded = totalBytesWritten;
 }
 
-- (void)download:(NSURLDownload *)download didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
++ (void)_quarantineDownloadAtURL:(NSURL *)downloadURL requestURL:(NSURL *)requestURL item:(OSUItem *)item;
 {
-    DEBUG_DOWNLOAD(@"didCancelAuthenticationChallenge %@", challenge);
-}
-
-- (void)download:(NSURLDownload *)download didReceiveResponse:(NSURLResponse *)response;
-{
-    DEBUG_DOWNLOAD(@"didReceiveResponse %@", response);
-    DEBUG_DOWNLOAD(@"  URL %@", [response URL]);
-    DEBUG_DOWNLOAD(@"  MIMEType %@", [response MIMEType]);
-    DEBUG_DOWNLOAD(@"  expectedContentLength %qd", [response expectedContentLength]);
-    DEBUG_DOWNLOAD(@"  textEncodingName %@", [response textEncodingName]);
-    DEBUG_DOWNLOAD(@"  suggestedFilename %@", [response suggestedFilename]);
-    
-    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-        DEBUG_DOWNLOAD(@"  statusCode %ld", [(NSHTTPURLResponse *)response statusCode]);
-        DEBUG_DOWNLOAD(@"  allHeaderFields %@", [(NSHTTPURLResponse *)response allHeaderFields]);
-    }
-
-    self.totalSize = [response expectedContentLength];
-    [self _setDisplayedView:self.downloadProgressView];
-}
-
-- (void)download:(NSURLDownload *)download willResumeWithResponse:(NSURLResponse *)response fromByte:(long long)startingByte;
-{
-    DEBUG_DOWNLOAD(@"willResumeWithResponse %@ fromByte %qd", response, startingByte);
-}
-
-- (void)download:(NSURLDownload *)download didReceiveDataOfLength:(NSUInteger)length;
-{
-    off_t newBytesDownloaded = self.currentBytesDownloaded + length;
-    self.currentBytesDownloaded = newBytesDownloaded;
-}
-
-- (BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType;
-{
-    DEBUG_DOWNLOAD(@"shouldDecodeSourceDataOfMIMEType %@", encodingType);
-    return YES;
-}
-
-- (void)download:(NSURLDownload *)download decideDestinationWithSuggestedFilename:(NSString *)filename;
-{
-    DEBUG_DOWNLOAD(@"decideDestinationWithSuggestedFilename %@", filename);
-    
-    NSFileManager *manager = [NSFileManager defaultManager];
-    
-    // Save disk images to the user's downloads folder.
-    NSString *folder = nil;
-    
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES /* expand tilde */);
-    if ([paths count] > 0) {
-        NSString *cachePath = [paths objectAtIndex:0];
-        folder = [cachePath stringByAppendingPathComponent:[OMNI_BUNDLE bundleIdentifier]];
-        if (folder != nil && ![manager directoryExistsAtPath:folder]) {
-            __autoreleasing NSError *error = nil;
-            if (![manager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:&error]) {
-#ifdef DEBUG		
-                NSLog(@"Unable to create download directory at specified location '%@' -- %@", folder, error);
-#endif		    
-                folder = nil;
-            }
-        }
-    }
-
-    if (folder == nil) {
-        OBASSERT_NOT_REACHED("Bad permissions on download folder or some other issue?");
-        NSLog(@"Unable to determine download directory");
-        return;
-    }
-
-    // On some people's machines, we'll end up with foo.tbz2.bz2 as the suggested name.  This is not good; it seems to come from having a 3rd party utility instaled that handles bz2 files, registering a set of UTIs that convinces NSURLDownload to suggest the more accurate extension.  So, we ignore the suggestion and use the filename from the URL.
-    
-    NSString *originalFileName = [[_packageURL path] lastPathComponent];
-    OBASSERT([[OSUInstaller supportedPackageFormats] containsObject:[originalFileName pathExtension]]);
-    
-    _suggestedDestinationFile = [[folder stringByAppendingPathComponent:originalFileName] copy];
-    
-    DEBUG_DOWNLOAD(@"  destination: %@", _suggestedDestinationFile);
-    [download setDestination:_suggestedDestinationFile allowOverwrite:YES];
-}
-
-- (void)download:(NSURLDownload *)download didCreateDestination:(NSString *)path;
-{
-    DEBUG_DOWNLOAD(@"didCreateDestination %@", path);
-    
-    _destinationFile = [path copy];
+    DEBUG_DOWNLOAD(@"_quarantineDownloadAtURL %@", downloadURL);
     
     // Quarantine the file. Later, after we verify its checksum, we can remove the quarantine.
     __autoreleasing NSError *qError = nil;
     NSFileManager *fm = [NSFileManager defaultManager];
-    if ([fm quarantinePropertiesForItemAtPath:path error:&qError] != nil) {
+    if ([fm quarantinePropertiesForItemAtURL:downloadURL error:&qError] != nil) {
         // It already has a quarantine (presumably we're running with LSFileQuarantineEnabled in our Info.plist)
         // And apparently it's not possible to change the parameters of an existing quarantine event
         // So just assume that NSURLDownload did something that was good enough
@@ -540,46 +437,100 @@ static void _FillOutDownloadInProgressError(NSError **outError)
             
             NSMutableDictionary *qua = [NSMutableDictionary dictionary];
             [qua setObject:(id)kLSQuarantineTypeOtherDownload forKey:(id)kLSQuarantineTypeKey];
-            [qua setObject:[[download request] URL] forKey:(id)kLSQuarantineDataURLKey];
-            NSString *fromWhere = [_item sourceLocation];
+            [qua setObject:requestURL forKey:(id)kLSQuarantineDataURLKey];
+            NSString *fromWhere = [item sourceLocation];
             if (fromWhere) {
                 NSURL *parsed = [NSURL URLWithString:fromWhere];
                 if (parsed)
                     [qua setObject:parsed forKey:(id)kLSQuarantineOriginURLKey];
             }
             
-            [fm setQuarantineProperties:qua forItemAtPath:path error:NULL];
+            [fm setQuarantineProperties:qua forItemAtURL:downloadURL error:NULL];
         }
     }
 }
 
-- (void)downloadDidFinish:(NSURLDownload *)download;
++ (NSURL *)_storeDownloadURL:(NSURL *)downloadURL originalRequestURL:(NSURL *)originalRequestURL error:(NSError **)outError;
 {
-    DEBUG_DOWNLOAD(@"downloadDidFinish %@", download);
-    _didFinishOrFail = YES;
-    
-    [self setStatus:NSLocalizedStringFromTableInBundle(@"Verifying file\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status")];
-    NSString *caution = [_item verifyFile:_destinationFile];
-    if (![NSString isEmptyString:caution]) {
-        [self.installViewCautionText setStringValue:caution];
-        _showCautionText = YES;
+    DEBUG_DOWNLOAD(@"_storeDownloadURL %@", downloadURL);
+
+    NSFileManager *manager = [NSFileManager defaultManager];
+
+    NSURL *cacheDirectoryURL = [manager URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:downloadURL create:YES error:outError];
+    if (!cacheDirectoryURL) {
+        return nil;
     }
-    
-    [self setStatus:NSLocalizedStringFromTableInBundle(@"Ready to Install", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - Done downloading, about to prompt the user to let us reinstall and restart the app")];
-    
-    if (![[NSApplication sharedApplication] isActive])
-        [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest];
-    else
-        [self showWindow:nil];
-    
-    [self _setInstallViews];
+
+    cacheDirectoryURL = [cacheDirectoryURL URLByAppendingPathComponent:[OMNI_BUNDLE bundleIdentifier] isDirectory:YES];
+    if (![manager createDirectoryAtURL:cacheDirectoryURL withIntermediateDirectories:YES attributes:nil error:outError]) {
+        return nil;
+    }
+
+    // When we used to use NSURLDownload, on some people's machines, we'll end up with foo.tbz2.bz2 as the suggested name.  This is not good; it seems to come from having a 3rd party utility instaled that handles bz2 files, registering a set of UTIs that convinces NSURLDownload to suggest the more accurate extension. So, we ignore the suggestion and use the filename from the URL.
+
+    NSString *originalFileName = [originalRequestURL lastPathComponent];
+    OBASSERT([[OSUInstaller supportedPackageFormats] containsObject:[originalFileName pathExtension]]);
+
+    NSURL *destinationURL = [cacheDirectoryURL URLByAppendingPathComponent:originalFileName];
+
+    // NSFileManager won't remove a previous download, if there is one (maybe the user downloaded the package, and then terminated the app before installing or cancelling).
+    __autoreleasing NSError *removeError = nil;
+    if (![manager removeItemAtURL:destinationURL error:&removeError]) {
+        if (![removeError causedByMissingFile]) {
+            if (outError)
+                *outError = removeError;
+            return nil;
+        }
+    }
+
+    DEBUG_DOWNLOAD(@"  destination: %@", destinationURL);
+    if (![manager moveItemAtURL:downloadURL toURL:destinationURL error:outError])
+        return nil;
+    return destinationURL;
 }
 
-- (void)download:(NSURLDownload *)download didFailWithError:(NSError *)error;
+#pragma mark - NSURLSessionDownloadDelegate
+
+- (void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(NSURL *)location;
 {
+    // The passed in URL will be somewhere in $TMPDIR and will removed after this method returns, so we have to move/save it (and we don't need to clean it up on error).
+    [[self class] _quarantineDownloadAtURL:location requestURL:downloadTask.currentRequest.URL item:_item];
+
+    __autoreleasing NSError *error = nil;
+    _downloadedURL = [[self class] _storeDownloadURL:location originalRequestURL:downloadTask.originalRequest.URL error:&error];
+    if (!_downloadedURL) {
+        [[self window] presentError:error];
+        return;
+    }
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(nullable NSError *)error;
+{
+    if (!error) {
+        OBASSERT(_downloadedURL);
+
+        // TODO: Perform verification on a background queue and leave the UI disabled until that is done?
+        [self setStatus:NSLocalizedStringFromTableInBundle(@"Verifying file\\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status")];
+        NSString *caution = [_item verifyFile:[[_downloadedURL absoluteURL] path]];
+        if (![NSString isEmptyString:caution]) {
+            [self.installViewCautionText setStringValue:caution];
+            _showCautionText = YES;
+        }
+
+        [self setStatus:NSLocalizedStringFromTableInBundle(@"Ready to Install", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - Done downloading, about to prompt the user to let us reinstall and restart the app")];
+
+        if (![[NSApplication sharedApplication] isActive])
+            [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest];
+        else
+            [self showWindow:nil];
+        
+        [self _setInstallViews];
+
+        return;
+    }
+
     DEBUG_DOWNLOAD(@"didFailWithError %@", error);
-    _didFinishOrFail = YES;
-    
+
     BOOL suggestLocalFileProblem = NO;
     BOOL suggestTransitoryNetworkProblem = NO;
     BOOL shouldDisplayUnderlyingError = YES;
@@ -624,15 +575,10 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         
     }
     
-        
-    NSString *file = _destinationFile ? _destinationFile : _suggestedDestinationFile;
-    
+
     NSString *errorSuggestion;
     
-    if (file)
-        errorSuggestion = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to download %@ to %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error message - unable to download URL to LOCALFILENAME - will often be followed by more detailed explanation"), _packageURL, file];
-    else
-        errorSuggestion = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to download %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error message - unable to download URL (but no LOCALFILENAME was chosen yet) - will often be followed by more detailed explanation"), _packageURL];
+    errorSuggestion = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to download %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error message - unable to download URL (but no LOCALFILENAME was chosen yet) - will often be followed by more detailed explanation"), _packageURL];
 
     if (suggestTransitoryNetworkProblem)
         errorSuggestion = [NSString stringWithStrings:errorSuggestion, @"\n\n",
@@ -660,8 +606,64 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         [self close]; // Didn't recover
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - NSURLSessionTaskDelegate
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
+{
+    // We seem to get this for authenticated feeds, at least in some cases
+    [self _handleAuthenticationChallenge:challenge completionHandler:completionHandler];
+}
+
+#pragma mark - Private
+
+- (void)_handleAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
+{
+    OBPRECONDITION(completionHandler); // Not using the challenge's -sender to reply
+    
+    DEBUG_DOWNLOAD(@"didReceiveAuthenticationChallenge %@", challenge);
+    
+    DEBUG_DOWNLOAD(@"protectionSpace = %@", [challenge protectionSpace]);
+    DEBUG_DOWNLOAD(@"  realm = %@", [[challenge protectionSpace] realm]);
+    DEBUG_DOWNLOAD(@"  host = %@", [[challenge protectionSpace] host]);
+    DEBUG_DOWNLOAD(@"  port = %ld", [[challenge protectionSpace] port]);
+    DEBUG_DOWNLOAD(@"  isProxy = %d", [[challenge protectionSpace] isProxy]);
+    DEBUG_DOWNLOAD(@"  proxyType = %@", [[challenge protectionSpace] proxyType]);
+    DEBUG_DOWNLOAD(@"  protocol = %@", [[challenge protectionSpace] protocol]);
+    DEBUG_DOWNLOAD(@"  authenticationMethod = %@", [[challenge protectionSpace] authenticationMethod]);
+    DEBUG_DOWNLOAD(@"  receivesCredentialSecurely = %d", [[challenge protectionSpace] receivesCredentialSecurely]);
+    
+    NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
+    if ([[protectionSpace authenticationMethod] isEqual:NSURLAuthenticationMethodServerTrust]) {
+        // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
+        if (completionHandler) {
+            completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+        }
+        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+        return;
+    }
+    
+    DEBUG_DOWNLOAD(@"previousFailureCount = %ld", [challenge previousFailureCount]);
+    NSURLCredential *proposed = [challenge proposedCredential];
+    DEBUG_DOWNLOAD(@"proposed = %@", proposed);
+    
+    if ([challenge previousFailureCount] == 0 && (proposed != nil) && ![NSString isEmptyString:[proposed user]] && ![NSString isEmptyString:[proposed password]]) {
+        // Try the proposed credentials, if any, the first time around.  I've gotten a non-nil proposal with a null user name on 10.4 before.
+        completionHandler(NSURLSessionAuthChallengeUseCredential, proposed);
+        return;
+    }
+    
+    // If we somehow had a pending challenge, answer it negatively...
+    if (_challengeCompletionHandler) {
+        OBASSERT_NOT_REACHED("Not planning on having two oustanding challenged... how are we getting here?");
+        _challengeCompletionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+        _challengeCompletionHandler = nil;
+    }
+    _challengeCompletionHandler = [completionHandler copy];
+    
+    [self _setDisplayedView:self.credentialsView];
+    [self showWindow:nil];
+    [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
+}
 
 - (void)_adjustProgressIndicatorAttributesInSubtreeForView:(NSView *)view;
 {
@@ -727,21 +729,22 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         OBRetainAutorelease(self); // Don't get deallocated immediately
         CurrentDownloadController = nil;
     }
-    
-    [[_challenge sender] cancelAuthenticationChallenge:_challenge];
-    _challenge = nil;
-    
-    if (!_didFinishOrFail) {
-        // NSURLDownload will delete the downloaded file if you -cancel it after a successful download!  So, only call -cancel if we didn't finish or fail.
-        [_download cancel];
-        
-        // If we are explictly cancelling, delete the file
-        if (![NSString isEmptyString:_destinationFile])
-            [[NSFileManager defaultManager] removeItemAtPath:_destinationFile error:NULL];
+
+    if (_challengeCompletionHandler) {
+        _challengeCompletionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+        _challengeCompletionHandler = nil;
     }
-    
+
+    // If we are explictly cancelling, delete the file
+    if (_downloadedURL) {
+        [[NSFileManager defaultManager] removeItemAtURL:_downloadedURL error:NULL];
+        _downloadedURL = nil;
+    }
+
     _request = nil;
-    _download = nil;
+
+    [_downloadTask cancel];
+    _downloadTask = nil;
 }
 
 @end
