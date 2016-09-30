@@ -115,6 +115,7 @@
 #import <OmniAppKit/OAMouseTipWindow.h>
 #import <OmniAppKit/OAOutlineViewEnumerator.h>
 #import <OmniAppKit/OAPageSelectableDocumentProtocol.h>
+#import <OmniAppKit/OAPassphrasePrompt.h>
 #import <OmniAppKit/OAPasteboardHelper.h>
 #import <OmniAppKit/OAPopUpButton.h>
 #import <OmniAppKit/OAPopupDatePicker.h>

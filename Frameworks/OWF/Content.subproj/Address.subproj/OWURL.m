@@ -83,9 +83,9 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
     OWFLowercaseStringCacheInit(&lowercaseSchemeCache);
 
-    AlphaSet = [[[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet letterCharacterSet]] autorelease];
-    DigitSet = [[[OFCharacterSet alloc] initWithString:@"0123456789"] autorelease];
-    ReservedSet = [[[OFCharacterSet alloc] initWithString:@";/?:@&="] autorelease];
+    AlphaSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet letterCharacterSet]];
+    DigitSet = [[OFCharacterSet alloc] initWithString:@"0123456789"];
+    ReservedSet = [[OFCharacterSet alloc] initWithString:@";/?:@&="];
 
     // This is a bit richer than the standard allows
     UnreservedSet = [[OFCharacterSet alloc] initWithOFCharacterSet:ReservedSet];
@@ -131,7 +131,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     FragmentSet = [[OFCharacterSet alloc] initWithOFCharacterSet:QuerySet];
     [FragmentSet addCharactersInString:@"#"];
 #endif
-    SchemeSpecificPartSet = [QuerySet retain];
+    SchemeSpecificPartSet = QuerySet;
 
     // Now, get the OFCharacterSet *representations of all those character sets
 #define delimiterBitmapForSet(ofSet, set) { ofSet = [[OFCharacterSet alloc] initWithOFCharacterSet:set]; [ofSet invert]; }
@@ -145,17 +145,6 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 #undef delimiterBitmapForSet
     NonWhitespaceOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     [NonWhitespaceOFCharacterSet invert];
-
-    [UnreservedSet release];
-    [UCharSet release];
-    [PCharSet release];
-    [SchemeSet release];
-    [NetLocationSet release];
-    [PathSet release];
-    [ParamSet release];
-    [QuerySet release];
-    [FragmentSet release];
-    [SchemeSpecificPartSet release];
 
     TabsAndReturnsOFCharacterSet = [[OFCharacterSet alloc] initWithString:@"\t\r\n"];
 
@@ -180,13 +169,8 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 + (void)readDefaults;
 {
-    NSUserDefaults *userDefaults;
-    NSArray *fakeRootURLStrings;
-    NSUInteger fakeRootCount;
-
-    userDefaults = [NSUserDefaults standardUserDefaults];
-    [shortTopLevelDomains release];
-    shortTopLevelDomains = [[userDefaults arrayForKey:@"OWShortTopLevelDomains"] retain];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    shortTopLevelDomains = [userDefaults arrayForKey:@"OWShortTopLevelDomains"];
     NetscapeCompatibleRelativeAddresses = [userDefaults boolForKey:@"OWURLNetscapeCompatibleRelativeAddresses"];
 
     // Don't override the URL encoding --- the draft standard for internationalized URLs specifies the use of UTF-8. (Previously we used the user's default encoding as a way to guess what their favorite server might be expecting, but I'm not sure that ever helped anyone.)
@@ -199,8 +183,8 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
         [NSString setURLEncoding:[OWDataStreamCharacterProcessor defaultStringEncoding]];
 #endif
 
-    fakeRootURLStrings = [userDefaults arrayForKey:@"OWURLFakeRootURLs"];
-    fakeRootCount = [fakeRootURLStrings count];
+    NSArray *fakeRootURLStrings = [userDefaults arrayForKey:@"OWURLFakeRootURLs"];
+    NSUInteger fakeRootCount = [fakeRootURLStrings count];
     if (fakeRootCount > 0) {
         NSUInteger fakeRootIndex;
         NSMutableArray *newFakeRootURLs;
@@ -210,13 +194,10 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
             [newFakeRootURLs addObject:[self urlFromDirtyString:[fakeRootURLStrings objectAtIndex:fakeRootIndex]]];
         }
         [fakeRootURLsLock lock];
-        [fakeRootURLs release];
         fakeRootURLs = [[NSArray alloc] initWithArray:newFakeRootURLs];
         [fakeRootURLsLock unlock];
-        [newFakeRootURLs release];
     } else {
         [fakeRootURLsLock lock];
-        [fakeRootURLs release];
         fakeRootURLs = nil;
         [fakeRootURLsLock unlock];
     }
@@ -230,17 +211,12 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 + (OWURL *)urlWithScheme:(NSString *)aScheme netLocation:(NSString *)aNetLocation path:(NSString *)aPath params:(NSString *)someParams queryDictionary:(NSDictionary *)queryDictionary fragment:(NSString *)aFragment;
 {
-    NSMutableString *encodedQuery;
-    NSEnumerator *enumerator;
+    NSMutableString *encodedQuery = [NSMutableString string];
+    NSEnumerator *enumerator = [[[queryDictionary allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
     NSString *queryKey;
     BOOL firstItem = YES;
-
-    encodedQuery = [NSMutableString string];
-    enumerator = [[[queryDictionary allKeys] sortedArrayUsingSelector:@selector(compare:)] objectEnumerator];
-    while ((queryKey = [enumerator nextObject])) {
-        NSString *queryValue;
-
-        queryValue = [queryDictionary objectForKey:queryKey];
+    while ((queryKey = [enumerator nextObject]) != nil) {
+        NSString *queryValue = [queryDictionary objectForKey:queryKey];
         if (queryValue != nil) {
             if (firstItem == YES)
                 firstItem = NO;
@@ -267,16 +243,14 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     NSString *aPath, *someParams;
     NSString *aQuery, *aFragment;
     NSString *aSchemeSpecificPart;
-    OFStringScanner *scanner;
 
     if (aString == nil || [aString length] == 0)
 	return nil;
 
-    scanner = [[OFStringScanner alloc] initWithString:aString];
+    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:aString];
     scannerScanUpToCharacterInOFCharacterSet(scanner, NonWhitespaceOFCharacterSet);
     aScheme = [scanner readFullTokenWithDelimiterOFCharacterSet:SchemeDelimiterOFCharacterSet forceLowercase:YES];
     if (aScheme == nil || [aScheme length] == 0 || scannerReadCharacter(scanner) != ':') {
-        [scanner release];
         return nil;
     }
     if (scannerPeekCharacter(scanner) == '/') {
@@ -356,8 +330,6 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     } else {
         aFragment = nil;
     }
-
-    [scanner release];
 
     if (aSchemeSpecificPart != nil)
 	return [self urlWithLowercaseScheme:aScheme schemeSpecificPart:aSchemeSpecificPart fragment:aFragment];
@@ -560,30 +532,16 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 - (void)dealloc;
 {
-    [scheme release];
-    [netLocation release];
-    [path release];
-    [params release];
-    [query release];
-    [fragment release];
-    [schemeSpecificPart release];
     OFSimpleLockFree(&derivedAttributesSimpleLock);
-    [_cachedCompositeString release];
-    [_cachedShortDisplayString release];
-    [_cachedParsedNetLocation release];
-    [_cachedDomain release];
-    [_cacheKey release];
-    [super dealloc];
 }
 
 - (NSURL *)NSURL;
 {
     NSMutableString *compositeString = (NSMutableString *)[self _newURLStringWithEncodedHostname:YES];
     {
-        NSURL *url = (NSURL *)CFURLCreateWithString(NULL, (CFStringRef)compositeString, NULL);
-        if (url) {
-            [compositeString release];
-            return [url autorelease];
+        NSURL *url = CFBridgingRelease(CFURLCreateWithString(NULL, (CFStringRef)compositeString, NULL));
+        if (url != nil) {
+            return url;
         }
     }
 
@@ -605,13 +563,12 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
     //escape any other characters that ought to be escaped
     CFStringRef percentEscapedString = CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)compositeString, CFSTR("%"), NULL, kCFStringEncodingUTF8);
-    NSURL *url = (NSURL *)CFURLCreateWithString(NULL, percentEscapedString, NULL);
+    NSURL *url = CFBridgingRelease(CFURLCreateWithString(NULL, percentEscapedString, NULL));
 
-    [compositeString release];
     CFRelease(percentEscapedString);
 
     OBPOSTCONDITION(url != nil);
-    return [url autorelease];
+    return url;
 }
 
 - (NSString *)scheme;
@@ -655,7 +612,6 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     if (_cachedCompositeString == nil) {
         NSMutableString *compositeString = (NSMutableString *)[self _newURLStringWithEncodedHostname:NO];
         _cachedCompositeString = [compositeString copy];
-        [compositeString release];
     }
     OFSimpleUnlock(&derivedAttributesSimpleLock);
     return _cachedCompositeString;
@@ -692,7 +648,6 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     
         // Make the cacheKey immutable so that others will be able to just retain it rather than making their own immutable copy.
         _cacheKey = [key copy];
-        [key release];
     }
     OFSimpleUnlock(&derivedAttributesSimpleLock);
     return _cacheKey;
@@ -754,18 +709,16 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 - (NSString *)proxyFetchPath;
 {
-    NSMutableString *proxyFetchPath;
-
     // Yes, this ends up looking a lot like our -cacheKey, except we're calling -fetchPath so the NetscapeCompatibleRelativeAddresses preference will kick in (and we don't want it to kick in for our -cacheKey because it's relatively expensive and -cacheKey gets called a lot more).
 
-    proxyFetchPath = [[NSMutableString alloc] initWithString:scheme];
+    NSMutableString *proxyFetchPath = [[NSMutableString alloc] initWithString:scheme];
     [proxyFetchPath appendString:@":"];
     if (netLocation) {
         [proxyFetchPath appendString:@"//"];
         [proxyFetchPath appendString:netLocation];
     }
     [proxyFetchPath appendString:[self fetchPath]];
-    return [proxyFetchPath autorelease];
+    return proxyFetchPath;
 }
 
 - (NSArray *)pathComponents;
@@ -804,7 +757,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     
     OFSimpleLock(&derivedAttributesSimpleLock);
     if (_cachedDomain == nil)
-        _cachedDomain = [[OWURL domainForHostname:[urlNetLocation hostname]] retain];
+        _cachedDomain = [OWURL domainForHostname:[urlNetLocation hostname]];
     OFSimpleUnlock(&derivedAttributesSimpleLock);
     
     return _cachedDomain;
@@ -845,8 +798,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
             [shortDisplayString appendString:fragment];
         }
         // Make the cacheKey immutable so that others will be able to just retain it rather than making their own immutable copy.
-        _cachedShortDisplayString = [shortDisplayString retain];
-        [shortDisplayString release];
+        _cachedShortDisplayString = shortDisplayString;
     }
     OFSimpleUnlock(&derivedAttributesSimpleLock);
     return _cachedShortDisplayString;
@@ -1021,7 +973,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
         if (path == nil || [path length] == 0)
 	    pathElements = [NSMutableArray arrayWithCapacity:1];
 	else
-            pathElements = [[[OWURL pathComponentsForPath:path] mutableCopy] autorelease];
+            pathElements = [[OWURL pathComponentsForPath:path] mutableCopy];
 	pathElementCount = [pathElements count];
 	if (pathElementCount != 0) {
 	    if ([[pathElements objectAtIndex:0] length] == 0)
@@ -1090,8 +1042,6 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
         if (!aFragment)
             aFragment = @"";
     }
-
-    [scanner release];
 
     return [OWURL urlWithLowercaseScheme:scheme netLocation:aNetLocation path:aPath params:someParams query:aQuery fragment:aFragment];
 }
@@ -1167,12 +1117,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    OWURL *newURL;
-    
-    if (NSShouldRetainWithZone(self, zone))
-        return [self retain];
-
-    newURL = [[[self class] allocWithZone:zone] init];
+    OWURL *newURL = [[[self class] allocWithZone:zone] init];
     
     newURL->scheme = [scheme copyWithZone:zone];
     newURL->netLocation = [netLocation copyWithZone:zone];
@@ -1230,7 +1175,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 {
     if (!aScheme)
 	return nil;
-    return [[[self alloc] initWithLowercaseScheme:aScheme netLocation:aNetLocation path:aPath params:someParams query:aQuery fragment:aFragment] autorelease];
+    return [[self alloc] initWithLowercaseScheme:aScheme netLocation:aNetLocation path:aPath params:someParams query:aQuery fragment:aFragment];
 }
 
 + (OWURL *)urlWithLowercaseScheme:(NSString *)aScheme schemeSpecificPart:(NSString *)aSchemeSpecificPart fragment:(NSString *)aFragment;
@@ -1238,7 +1183,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     if (!aScheme)
 	return nil;
 
-    return [[[self alloc] initWithLowercaseScheme:aScheme schemeSpecificPart:aSchemeSpecificPart fragment:aFragment] autorelease];
+    return [[self alloc] initWithLowercaseScheme:aScheme schemeSpecificPart:aSchemeSpecificPart fragment:aFragment];
 }
 
 - _initWithLowercaseScheme:(NSString *)aScheme;
@@ -1247,10 +1192,10 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 	return nil;
 
     if (aScheme == nil) {
-	[self release];
+	self = nil;
 	return nil;
     }
-    scheme = [aScheme retain];
+    scheme = aScheme;
     OFSimpleLockInit(&derivedAttributesSimpleLock);
     return self;
 }
@@ -1261,11 +1206,11 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
         return nil;
             
         
-    netLocation = [aNetLocation retain];
-    path = [aPath retain];
-    params = [someParams retain];
-    query = [aQuery retain];
-    fragment = [aFragment retain];
+    netLocation = aNetLocation;
+    path = aPath;
+    params = someParams;
+    query = aQuery;
+    fragment = aFragment;
 
     OBPOSTCONDITION([[[self compositeString] stringByRemovingCharactersInOFCharacterSet:TabsAndReturnsOFCharacterSet] isEqualToString:[self compositeString]]);
     
@@ -1308,7 +1253,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
         someFakeRootURL = [fakeRootURLs objectAtIndex:fakeRootIndex];
         if ([[self compositeString] hasPrefix:[someFakeRootURL compositeString]]) {
-            fakeRootURL = [[someFakeRootURL retain] autorelease];
+            fakeRootURL = someFakeRootURL;
         }
     }
     [fakeRootURLsLock unlock];
@@ -1318,7 +1263,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 - (void)_locked_parseNetLocation;
 {
     OBPRECONDITION(_cachedParsedNetLocation == nil);
-    _cachedParsedNetLocation = [[OWNetLocation netLocationWithString:netLocation != nil ? netLocation : schemeSpecificPart] retain];
+    _cachedParsedNetLocation = [OWNetLocation netLocationWithString:netLocation != nil ? netLocation : schemeSpecificPart];
 }
 
 - (NSString *)_newURLStringWithEncodedHostname:(BOOL)shouldEncode;

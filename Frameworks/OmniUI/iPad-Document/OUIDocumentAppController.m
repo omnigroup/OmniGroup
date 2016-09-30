@@ -58,6 +58,7 @@
 #import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
+#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 //#import <CrashReporter/CrashReporter.h>
 
@@ -71,7 +72,6 @@
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIRestoreSampleDocumentListController.h"
-#import "OUIServerAccountSetupViewController.h"
 #import "OUIDocumentOpenAnimator.h"
 #import "OUIWebDAVSyncListController.h"
 #import "OUILaunchViewController.h"
@@ -1027,8 +1027,11 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
 
 - (void)handleCachedSpecialURLIfNeeded
 {
-    [self handleSpecialURL:_specialURLToHandle];
-    _specialURLToHandle = nil;
+    if (_specialURLToHandle != nil)
+    {
+        [self handleSpecialURL:_specialURLToHandle];
+        _specialURLToHandle = nil;
+    }
 }
 
 #pragma mark - UIResponder subclass

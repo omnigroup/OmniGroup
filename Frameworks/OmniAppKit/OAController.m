@@ -43,12 +43,26 @@ RCS_ID("$Id$")
     NSEnumerator *keyEnumerator = [parameters keyEnumerator];
     NSString *key = nil;
     while ((key = [keyEnumerator nextObject]) != nil) {
-        id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
-        id oldValue = [preferences valueForKey:key];
         NSString *stringValue = [parameters lastObjectForKey:key];
         if ([stringValue isNull])
             stringValue = nil;
+        id oldValue = [preferences valueForKey:key];
+
+        if ([key isEqualToString:@"AppleLanguages"] && (stringValue != nil)) {
+            NSString *canonicalLocaleIdentifier = [NSLocale canonicalLocaleIdentifierFromString:stringValue];
+            NSArray *availableLanguages = NSLocale.availableLocaleIdentifiers;
+            if (![availableLanguages containsObject:canonicalLocaleIdentifier]) {
+                // The given string is not a known localeIdentifier. INVALID!!!
+                NSAlert *alert = [[NSAlert alloc] init];
+                alert.messageText = NSLocalizedStringFromTableInBundle(@"Preference change error", @"OmniAppKit", OMNI_BUNDLE, @"preference change error alert title");
+                alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot change the '%@' preference from '%@' to '%@' because '%@' is not a valid locale identifier.", @"OmniAppKit", OMNI_BUNDLE, @"alert message"), key, oldValue, stringValue, stringValue];
+                [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", OMNI_BUNDLE, @"button title")];
+                (void)[alert runModal];
+                return NO;
+            }
+        }
         
+        id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
         id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
         if (coercedValue == nil) {
             NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);

@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,7 @@ static NSString *_logFileSuffix = @".log";
 static NSTimeInterval _oneDayInSeconds = 24 * 60 * 60;
 static NSTimeInterval _oneWeekInSeconds = 7 * 24 * 60 * 60;
 
-static void _RemoveLogFiles(NSString *loggerName, NSDate *olderThanDate)
+static void _ProcessLogFiles(NSString *loggerName, NSDate *olderThanDate, OBLogFileHandler handler)
 {
     OBPRECONDITION(loggerName != nil);
     OBPRECONDITION(![loggerName isEqualToString:@""]);
@@ -73,12 +73,19 @@ static void _RemoveLogFiles(NSString *loggerName, NSDate *olderThanDate)
             continue; // new enough to keep
         
         if ([itemName hasPrefix:loggerName] && [itemName hasSuffix:_logFileSuffix]) {
-            OB_AUTORELEASING NSError *error = nil;
-            if (![[NSFileManager defaultManager] removeItemAtURL:itemURL error:&error]) {
-                NSLog(@"Couldn't remove log file with URL \"%@\": %@", itemURL, error);
-            }
+            handler(itemURL);
         }
     }
+}
+
+static void _RemoveLogFiles(NSString *loggerName, NSDate *olderThanDate)
+{
+    _ProcessLogFiles(loggerName, olderThanDate, ^(NSURL *itemURL) {
+        OB_AUTORELEASING NSError *error = nil;
+        if (![[NSFileManager defaultManager] removeItemAtURL:itemURL error:&error]) {
+            NSLog(@"Couldn't remove log file with URL \"%@\": %@", itemURL, error);
+        }
+    });
 }
 
 @interface NSString (OBLoggerExtensions)
@@ -226,6 +233,11 @@ static void _setPOSIXError(NSError **error, NSString *description)
             NSLog(@"Error logging for %@: %@", strongSelf.name, error);
         }
     }];
+}
+
+- (void)processLogFilesWithHandler:(OBLogFileHandler)handler;
+{
+    _ProcessLogFiles(self.name, [NSDate distantFuture], handler);
 }
 
 #pragma mark - Private API

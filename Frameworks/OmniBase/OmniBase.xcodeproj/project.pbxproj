@@ -91,12 +91,12 @@
 		4A33D41D08A0191B003A3FA5 /* OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */; settings = {ATTRIBUTES = (); }; };
 		4A33D41E08A0191B003A3FA5 /* NSException-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AA829100D177F4C697A14A /* NSException-OBExtensions.m */; };
 		4A33D42008A0191B003A3FA5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51C3EFE8AAE2511C9CC38 /* Foundation.framework */; };
+		4D5C2EEC1D5BF2AC0043B3D2 /* OmniBase-watchOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D5C2EEB1D5BF2AC0043B3D2 /* OmniBase-watchOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DA2E34F17A064420073144A /* OBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2E34D17A064420073144A /* OBLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DA2E35117A064420073144A /* OBLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2E34E17A064420073144A /* OBLogger.m */; };
 		5FE81E1F1B62AF770056756C /* OBBacktraceBuffer-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = A2E007850E5CA926007709A5 /* OBBacktraceBuffer-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		5FE81E201B62AF8C0056756C /* OBObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C29FE8AAE2511C9CC38 /* OBObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FE81E211B62AF930056756C /* OBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2E34D17A064420073144A /* OBLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		5FE81E231B62AFA00056756C /* OmniBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2CFE8AAE2511C9CC38 /* OmniBase.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FE81E241B62AFA60056756C /* OBBacktraceBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34571D271AB1E9310072E0F0 /* OBBacktraceBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FE81E251B62AFAB0056756C /* NSError-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 347049730CFB6612007025F7 /* NSError-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FE81E261B62AFB20056756C /* NSException-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 07AA829000D177F4C697A14A /* NSException-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -394,6 +394,8 @@
 		4AB8F0ED08AD0B7000DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		4AB8F0EF08AD0B7000DBB061 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F0F008AD0B7000DBB061 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		4D5C2EEA1D5BF27B0043B3D2 /* OmniBase-watchOS.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = "OmniBase-watchOS.modulemap"; sourceTree = "<group>"; };
+		4D5C2EEB1D5BF2AC0043B3D2 /* OmniBase-watchOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OmniBase-watchOS.h"; sourceTree = "<group>"; };
 		4DA2E34D17A064420073144A /* OBLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBLogger.h; sourceTree = "<group>"; };
 		4DA2E34E17A064420073144A /* OBLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBLogger.m; sourceTree = "<group>"; };
 		5FE81E171B62AE980056756C /* OmniBase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -494,8 +496,10 @@
 			isa = PBXGroup;
 			children = (
 				00E51C2CFE8AAE2511C9CC38 /* OmniBase.h */,
+				4D5C2EEB1D5BF2AC0043B3D2 /* OmniBase-watchOS.h */,
 				BFE2186905ED3B330097A147 /* OmniBase_Prefix.h */,
 				34078DC019E31194005E739C /* OmniBase.modulemap */,
+				4D5C2EEA1D5BF27B0043B3D2 /* OmniBase-watchOS.modulemap */,
 				BFE2186805ED3B330097A147 /* Info.plist */,
 				34A159450564081F0097A113 /* OmniBase.order */,
 				00E51C27FE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.h */,
@@ -761,11 +765,11 @@
 				5FE81E2A1B62AFCA0056756C /* assertions.h in Headers */,
 				5FE81E291B62AFC60056756C /* OBUtilities.h in Headers */,
 				5FE81E281B62AFC00056756C /* rcsid.h in Headers */,
+				4D5C2EEC1D5BF2AC0043B3D2 /* OmniBase-watchOS.h in Headers */,
 				5FE81E271B62AFBB0056756C /* OBExpectedDeallocation.h in Headers */,
 				5FE81E261B62AFB20056756C /* NSException-OBExtensions.h in Headers */,
 				5FE81E251B62AFAB0056756C /* NSError-OBExtensions.h in Headers */,
 				5FE81E241B62AFA60056756C /* OBBacktraceBuffer.h in Headers */,
-				5FE81E231B62AFA00056756C /* OmniBase.h in Headers */,
 				5FE81E211B62AF930056756C /* OBLogger.h in Headers */,
 				5FE81E821B62E4060056756C /* OBRuntimeCheck.h in Headers */,
 				5FE81E201B62AF8C0056756C /* OBObject.h in Headers */,
@@ -1397,12 +1401,13 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				MODULEMAP_FILE = "OmniBase-watchOS.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos";
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
 		};
@@ -1412,12 +1417,13 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				MODULEMAP_FILE = "OmniBase-watchOS.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos";
 				TARGETED_DEVICE_FAMILY = 4;
-				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
 		};

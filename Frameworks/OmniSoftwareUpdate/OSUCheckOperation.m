@@ -382,9 +382,17 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
 - (NSXPCConnection *)connection;
 {
     if (_connection == nil) {
+
+        // As of around 09/19/2016, the XPC service needs a bundle identifier registered with the MacAppStore.
+#if MAC_APP_STORE
+        static NSString * const ServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore";
+#else
+        static NSString * const ServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUCheckService";
+#endif
+
         _connectionFlags.invalid = NO;
         _connectionFlags.interrupted = NO;
-        _connection = [[NSXPCConnection alloc] initWithServiceName:@"com.omnigroup.OmniSoftwareUpdate.OSUCheckService"];
+        _connection = [[NSXPCConnection alloc] initWithServiceName:ServiceName];
         
         NSXPCInterface *remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUCheckService)];
         

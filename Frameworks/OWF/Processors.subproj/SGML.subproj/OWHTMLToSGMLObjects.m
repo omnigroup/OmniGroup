@@ -88,8 +88,15 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 
 + (void)initialize;
 {
-    NSAutoreleasePool *pool;
+    OBINITIALIZE;
+    
+    @autoreleasepool {
+        [self _initializeCharacterSets];
+    }
+}
 
++ (void)_initializeCharacterSets;
+{
     // abstract syntax
 
     NSCharacterSet *DigitSet;
@@ -125,15 +132,10 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     NSMutableCharacterSet *EndValueSet;
     NSMutableCharacterSet *TagEndOrNameStartCharacterSet;
 
-    
-    OBINITIALIZE;
-
-    pool = [[NSAutoreleasePool alloc] init];
-
     entityDictionary = [[NSDictionary alloc] initWithContentsOfFile:[[OWHTMLToSGMLObjects bundle] pathForResource:@"entities" ofType:@"plist"]];
     basicStringEntityDictionary = [[entityDictionary objectForKey:@"strings"] mutableCopy];
     [self _decodeEntriesFromCharacterDictionary:[entityDictionary objectForKey:@"character"] intoStringDictionary:basicStringEntityDictionary];
-    entityNameDictionary = [[self _invertEntitiesFromDictionary:basicStringEntityDictionary] retain];
+    entityNameDictionary = [self _invertEntitiesFromDictionary:basicStringEntityDictionary];
     extendedStringEntityDictionary = [[NSMutableDictionary alloc] initWithDictionary:basicStringEntityDictionary];
     [self _decodeEntriesFromCharacterDictionary:[entityDictionary objectForKey:@"extendedCharacter"] intoStringDictionary:extendedStringEntityDictionary];
     
@@ -149,7 +151,6 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     [InvertedHexDigitSet formUnionWithCharacterSet:DigitSet];
     [InvertedHexDigitSet addCharactersInString:@"abcdefABCDEF"];
     [InvertedHexDigitSet invert];
-    [InvertedHexDigitSet autorelease];
     
     LCLetterSet = [NSCharacterSet lowercaseLetterCharacterSet];
     UCLetterSet = [NSCharacterSet uppercaseLetterCharacterSet];
@@ -169,7 +170,6 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     NameStartCharacterSet = [[NSMutableCharacterSet alloc] init];
     [NameStartCharacterSet formUnionWithCharacterSet:LCLetterSet];
     [NameStartCharacterSet formUnionWithCharacterSet:UCLetterSet];
-    [NameStartCharacterSet autorelease];
 
     InvertedNameCharacterSet = [[NSMutableCharacterSet alloc] init];
     [InvertedNameCharacterSet formUnionWithCharacterSet:NameStartCharacterSet];
@@ -177,22 +177,18 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     [InvertedNameCharacterSet formUnionWithCharacterSet:LCNameCharSet];
     [InvertedNameCharacterSet formUnionWithCharacterSet:UCNameCharSet];
     [InvertedNameCharacterSet invert];
-    [InvertedNameCharacterSet autorelease];
 
     BlankSpaceSet = [[NSMutableCharacterSet alloc] init];
     [BlankSpaceSet formUnionWithCharacterSet:SpaceSet];
     [BlankSpaceSet formUnionWithCharacterSet:RecordEndSet];
     [BlankSpaceSet formUnionWithCharacterSet:RecordStartSet];
     [BlankSpaceSet formUnionWithCharacterSet:SepCharSet];
-    [BlankSpaceSet autorelease];
 
-    InvertedBlankSpaceSet = [[BlankSpaceSet invertedSet] retain];
-    [InvertedBlankSpaceSet autorelease];
+    InvertedBlankSpaceSet = [BlankSpaceSet invertedSet];
 
     CREFSet = [[NSMutableCharacterSet alloc] init];
     [CREFSet formUnionWithCharacterSet:DigitSet];
     [CREFSet addCharactersInString:@"xX"]; // SGML allows others, HTML does not
-    [CREFSet autorelease];
 
 // made up
 
@@ -203,11 +199,9 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 
     EndValueSet = [BlankSpaceSet mutableCopy];
     [EndValueSet addCharactersInString:@"&>"];
-    [EndValueSet autorelease];
 
     TagEndOrNameStartCharacterSet = [NameStartCharacterSet mutableCopy];
     [TagEndOrNameStartCharacterSet addCharactersInString:@">"];
-    [TagEndOrNameStartCharacterSet autorelease];
 
     // Setup bitmaps
     CommentEndOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:CommentEndSet];
@@ -223,8 +217,6 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     InvertedNameOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:InvertedNameCharacterSet];
     NameStartOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:NameStartCharacterSet];
     TagEndOrNameStartOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:TagEndOrNameStartCharacterSet];
-
-    [pool release];
 }
 
 + (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(NSDictionary *)description;
@@ -240,14 +232,8 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 + (NSString *)entityNameForCharacter:(unichar)character;
 {
     // TODO someday: use a map table here instead of requiring us to create these temporary 1-character strings?
-    NSString *key, *name;
-    unichar buffer[1];
-    
-    buffer[0] = character;
-    
-    key = [[NSString alloc] initWithCharacters:buffer length:1];
-    name = [entityNameDictionary objectForKey:key];
-    [key release];
+    NSString *key = [[NSString alloc] initWithCharacters:&character length:1];
+    NSString *name = [entityNameDictionary objectForKey:key];
     return name;
 }
 
@@ -255,14 +241,13 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    NSUserDefaults *userDefaults;
-
-    if (!(self = [super initWithContent:initialContent context:aPipeline]))
+    self = [super initWithContent:initialContent context:aPipeline];
+    if (self == nil)
         return nil;
         
-    sourceContentDTD = [[OWSGMLDTD dtdForSourceContentType:[initialContent contentType]] retain];
+    sourceContentDTD = [OWSGMLDTD dtdForSourceContentType:[initialContent contentType]];
 
-    userDefaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     flags.netscapeCompatibleComments = [userDefaults boolForKey:@"OWHTMLNetscapeCompatibleComments"];
     flags.netscapeCompatibleNewlineAfterEntity = [userDefaults boolForKey:@"OWHTMLNetscapeCompatibleNewlineAfterEntity"];
     flags.netscapeCompatibleNonterminatedEntities = [userDefaults boolForKey:@"OWHTMLNetscapeCompatibleNonterminatedEntities"];
@@ -285,18 +270,7 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
     // The preceeding assertion fails on occasion, which is a bug.  For now, let's ensure that the consequences of the bug aren't too serious by making sure whoever reads our object stream doesn't hang forever (in a non-abortable state) waiting for our end of data signal.
     if (![objectStream endOfData])
         [objectStream dataAbort];
-    [objectStream release];
-    [scanner release];
-    [sourceContentDTD release];
-    [super dealloc];
 }
-
-//
-
-//- (OWObjectStream *)outputStream;
-//{
-//    return objectStream;
-//}
 
 // OWProcessor subclass
 
@@ -309,7 +283,7 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 
 - (void)process;
 {
-    for(;;) {
+    for (;;) {
         BOOL restart = NO;
         
         NS_DURING {
@@ -342,12 +316,10 @@ static OFCharacterSet *TagEndOrNameStartOFCharacterSet;
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
-    if (objectStream)
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
+    if (objectStream != nil)
 	[debugDictionary setObject:objectStream forKey:@"objectStream"];
-    if (scanner)
+    if (scanner != nil)
 	[debugDictionary setObject:scanner forKey:@"scanner"];
     return debugDictionary;
 }
@@ -383,32 +355,23 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 + (NSDictionary *)_invertEntitiesFromDictionary:(NSDictionary *)dictionary;
 {
-    NSMutableDictionary *inverseEntities;
-    NSEnumerator *characterKeyEnumerator;
-    NSDictionary *immutableResult;
-    NSString *name;
-
-    inverseEntities = [[NSMutableDictionary alloc] initWithCapacity:[dictionary count]];
-    characterKeyEnumerator = [dictionary keyEnumerator];
-    while ((name = [characterKeyEnumerator nextObject]) != nil) {
-        NSString *characterString;
-
-        characterString = [dictionary objectForKey:name];
+    NSMutableDictionary *inverseEntities = [[NSMutableDictionary alloc] initWithCapacity:[dictionary count]];
+    NSEnumerator *characterKeyEnumerator = [dictionary keyEnumerator];
+    for (NSString *name in characterKeyEnumerator) {
+        NSString *characterString = [dictionary objectForKey:name];
         if ([characterString length] == 1)
             [inverseEntities setObject:name forKey:characterString];
     }
-    immutableResult = [[NSDictionary alloc] initWithDictionary:inverseEntities];
-    [inverseEntities release];
-    return [immutableResult autorelease];
+    NSDictionary *immutableResult = [[NSDictionary alloc] initWithDictionary:inverseEntities];
+
+    return immutableResult;
 }
 
 - (void)_initStreams
 {
-    BOOL restarting;
-    
-    OBASSERT(!flags.haveAddedObjectStreamToPipeline);
+    OBPRECONDITION(!flags.haveAddedObjectStreamToPipeline);
 
-    restarting = ( resetSourceEncoding != kCFStringEncodingInvalidId );
+    BOOL restarting = ( resetSourceEncoding != kCFStringEncodingInvalidId );
 
 #ifdef DEBUG
     if (OWHTMLToSGMLObjectsDebug)
@@ -417,19 +380,13 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 #endif
     
     if (restarting) {
-        OWDataStreamCursor *dataCursor;
-        
-        [objectStream release];
         objectStream = nil;
-        [scanner release];
         scanner = nil;
         
-        dataCursor = [[characterCursor dataStreamCursor] retain];
-        [characterCursor release];
+        OWDataStreamCursor *dataCursor = [characterCursor dataStreamCursor];
         characterCursor = nil;
         [dataCursor seekToOffset:0 fromPosition:OWCursorSeekFromStart];
         characterCursor = [[OWDataStreamCharacterCursor alloc] initForDataCursor:dataCursor encoding:resetSourceEncoding];
-        [dataCursor release];
     }
     
     objectStream = [[OWObjectStream alloc] init];
@@ -450,8 +407,9 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 - (void)_scanContent;
 {
-    if (!scanner)
+    if (scanner == nil)
 	return;
+
     while (scannerHasData(scanner)) {
         switch (scannerPeekCharacter(scanner)) {
             case '<':
@@ -497,19 +455,15 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 - (void)_scanBeginTag;
 {
-    OWSGMLTagType *tagType;
-    OWSGMLTag *tag = nil;
-    OWSGMLTag *retainedTag = nil;
-    OFTrie *attributeTrie;
-    OWSGMLAttribute *attribute;
-
-    tagType = (OWSGMLTagType *)[scanner readLongestTrieElement:tagTrie];
+    OWSGMLTagType *tagType = (OWSGMLTagType *)[scanner readLongestTrieElement:tagTrie];
     if (!tagType || !OFCharacterSetHasMember(InvertedNameOFCharacterSet, scannerPeekCharacter(scanner))) {
 	[self _skipToEndOfTag];
 	return;
     }
 
-    attributeTrie = [tagType attributeTrie];
+    
+    OWSGMLTag *tag = nil;
+    OFTrie *attributeTrie = [tagType attributeTrie];
     
     while (scannerHasData(scanner)) {
         NSString *extraAttributeName = nil;
@@ -522,7 +476,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
         }
                            
         [scanner setRewindMark];
-        attribute = (OWSGMLAttribute *)[scanner readLongestTrieElement:attributeTrie];
+        OWSGMLAttribute *attribute = (OWSGMLAttribute *)[scanner readLongestTrieElement:attributeTrie];
         if (attribute && !OFCharacterSetHasMember(InvertedNameOFCharacterSet, scannerPeekCharacter(scanner))) {
             // The attribute name starts with a value we recognize, but has more text afterwards. Back up and read it from the start.
             attribute = nil;
@@ -558,9 +512,8 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
         }
         
         if (attribute || (extraAttributeName && value)) {
-            if (!tag) {
-                retainedTag = [OWSGMLTag newTagWithTokenType:OWSGMLTokenTypeStartTag tagType:tagType];
-                tag = retainedTag;
+            if (tag == nil) {
+                tag = [OWSGMLTag newTagWithTokenType:OWSGMLTokenTypeStartTag tagType:tagType];
             }
             
             if (attribute)
@@ -570,86 +523,71 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
         }
     }
 
-    if (!tag)
+    if (tag == nil)
         tag = [tagType attributelessStartTag];
-        
-    @try {
-        
-        [objectStream writeObject:tag];
+    
+    [objectStream writeObject:tag];
 #ifdef DEBUG
-        if (OWHTMLToSGMLObjectsDebug)
-            NSLog(@"Tag: %@", tag);
+    if (OWHTMLToSGMLObjectsDebug)
+        NSLog(@"Tag: %@", tag);
 #endif
-
-        // Ugly hack to support non-SGML tags such as <SCRIPT> and stylesheets
-        if ([tagType contentHandling] != OWSGMLTagContentHandlingNormal)
-            [self _scanNonSGMLContent:tag];
-            
-        // Ugly hack to support changing charsets in mid-stream
-        if (tagType == metaCharsetHackTagType) {
-            [self _metaCharsetTagHack:tag];
-        } else if (tagType == endMetaCharsetHackTagType) {
-            metaCharsetHackTagType = nil;
-            endMetaCharsetHackTagType = nil;
-            [self _objectStreamIsValid];
-        }
-        
-    } @finally {
-        if (retainedTag != nil)
-            [retainedTag release];
+    
+    // Ugly hack to support non-SGML tags such as <SCRIPT> and stylesheets
+    if ([tagType contentHandling] != OWSGMLTagContentHandlingNormal)
+        [self _scanNonSGMLContent:tag];
+    
+    // Ugly hack to support changing charsets in mid-stream
+    if (tagType == metaCharsetHackTagType) {
+        [self _metaCharsetTagHack:tag];
+    } else if (tagType == endMetaCharsetHackTagType) {
+        metaCharsetHackTagType = nil;
+        endMetaCharsetHackTagType = nil;
+        [self _objectStreamIsValid];
     }
-        
 }
 
 - (void)_objectStreamIsValid
 {
     // This is called after we know that we are not going to be restarting with a new string encoding (and a new object stream). Before that point, it's possible we'll be throwing away the object stream and starting over, so we can't add it to the pipeline yet.
     
-    if (!flags.haveAddedObjectStreamToPipeline) {
-        OWContent *resultContent;
-        CFStringEncoding sourceEncoding = [[scanner dataStreamCursor] stringEncoding];
+    if (flags.haveAddedObjectStreamToPipeline)
+        return;
 
-        resultContent = [[OWContent alloc] initWithName:nil content:objectStream];
-        [resultContent setContentType:[sourceContentDTD destinationType]];
-        
-        if (sourceEncoding != kCFStringEncodingInvalidId) {
-            // Even though we are sending NSStrings downstream, some later processors might want to know the string encoding of the original document, e.g. forms want to encode their responses in the same character set as the document they came from.
-            [resultContent addHeader:OWContentSourceEncodingMetadataKey value:[NSNumber numberWithUnsignedInt:sourceEncoding]];
-        }
+    CFStringEncoding sourceEncoding = [[scanner dataStreamCursor] stringEncoding];
 
-        [resultContent markEndOfHeaders];
-
-        [pipeline addContent:resultContent fromProcessor:self flags:OWProcessorTypeDerived];
-        [resultContent release];
-        
-        flags.haveAddedObjectStreamToPipeline = 1;
+    OWContent *resultContent = [[OWContent alloc] initWithName:nil content:objectStream];
+    [resultContent setContentType:[sourceContentDTD destinationType]];
+    
+    if (sourceEncoding != kCFStringEncodingInvalidId) {
+        // Even though we are sending NSStrings downstream, some later processors might want to know the string encoding of the original document, e.g. forms want to encode their responses in the same character set as the document they came from.
+        [resultContent addHeader:OWContentSourceEncodingMetadataKey value:[NSNumber numberWithUnsignedInt:sourceEncoding]];
     }
+    
+    [resultContent markEndOfHeaders];
+    
+    [self.pipeline addContent:resultContent fromProcessor:self flags:OWProcessorTypeDerived];
+    
+    flags.haveAddedObjectStreamToPipeline = 1;
 }
 
 - (void)_metaCharsetTagHack:(OWSGMLTag *)tag;
 {
-    NSString *httpEquivalentValue;
-    NSString *charsetValue;
-
     // We shouldn't have already added the object stream to the pipeline, because the point of delaying adding the object stream to the pipeline is to allow us to change charsets due to a META tag.
     OBASSERT(!flags.haveAddedObjectStreamToPipeline);
 
-    httpEquivalentValue = [tag valueForAttribute:@"http-equiv"];
+    NSString *httpEquivalentValue = [tag valueForAttribute:@"http-equiv"];
     if (httpEquivalentValue != nil && [httpEquivalentValue caseInsensitiveCompare:@"content-type"] == NSOrderedSame)  {
         // <meta http-equiv=content-type content="text/html; charset=iso-8859-1">
-        NSString *newContentTypeString;
-        OWParameterizedContentType *newContentType;
-
-        newContentTypeString = [tag valueForAttribute:@"content"];
+        NSString *newContentTypeString = [tag valueForAttribute:@"content"];
         if (newContentTypeString == nil)
             return; // Ignore tag: no content attribute value
-        newContentType = [OWParameterizedContentType contentTypeForString:[tag valueForAttribute:@"content"]];
+        OWParameterizedContentType *newContentType = [OWParameterizedContentType contentTypeForString:[tag valueForAttribute:@"content"]];
         if (newContentType == nil)
             return; // Ignore tag: content type failed to parse
         [self _updateCharacterSetEncoding:[OWDataStreamCharacterProcessor stringEncodingForContentType:newContentType]];
         return;
     }
-    charsetValue = [tag valueForAttribute:@"charset"];
+    NSString *charsetValue = [tag valueForAttribute:@"charset"];
     if (charsetValue != nil) {
         // <meta charset="iso-8859-1"> is a Microsoft IE extension
         [self _updateCharacterSetEncoding:[OWDataStreamCharacterProcessor stringEncodingForIANACharSetName:charsetValue]];
@@ -878,10 +816,7 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 - (id <OWSGMLToken>)_readCharacterReference;
 {
-    NSString *value;
-    UnicodeScalarValue character;  // NB: UnicodeScalarValue is different from unichar
-
-    character = scannerPeekCharacter(scanner);
+    UnicodeScalarValue character = scannerPeekCharacter(scanner); // NB: UnicodeScalarValue is different from unichar
     if (!OFCharacterSetHasMember(CREFOFCharacterSet, character))
 	return @"&#";
     if (OFCharacterSetHasMember(DigitOFCharacterSet, character)) {
@@ -893,15 +828,11 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
     // WJS: 5/19/98 Even though the upper control characters aren't mapped in ISO Latin-1, they work in Netscape and Windows, so we check for that range explicitly and interpret them as WindowsCP1252 characters.
     // WIML July2000: Change this to use the new functions in OmniFoundation
-    value = nil;
+    NSString *value = nil;
     if (character > 0x7e && character < 0xa0) {
-        unsigned char byte;
-        NSData *data;
-
-        byte = character & 0xff;
-        data = [[NSData alloc] initWithBytes:&byte length:1];
+        unsigned char byte = character & 0xff;
+        NSData *data = [[NSData alloc] initWithBytes:&byte length:1];
         value = [NSString stringWithData:data encoding:NSWindowsCP1252StringEncoding];
-        [data release];
     }
     if (value == nil)
         value = [NSString stringWithCharacter:character];
@@ -915,16 +846,13 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 - (id <OWSGMLToken>)_readEntityReference;
 {
-    NSString *name, *value;
-    NSUInteger nameLength;
-    unichar terminatingCharacter;
-
-    name = [scanner readFullTokenWithDelimiterOFCharacterSet:InvertedNameOFCharacterSet forceLowercase:NO];
-    nameLength = name ? [name length] : 0;
+    NSString *name = [scanner readFullTokenWithDelimiterOFCharacterSet:InvertedNameOFCharacterSet forceLowercase:NO];
+    NSUInteger nameLength = name ? [name length] : 0;
     if (nameLength == 0)
         return @"&";
 
-    terminatingCharacter = scannerPeekCharacter(scanner);
+    unichar terminatingCharacter = scannerPeekCharacter(scanner);
+    NSString *value;
     if (terminatingCharacter == ';')
         value = [extendedStringEntityDictionary objectForKey:name];
     else
@@ -1034,17 +962,16 @@ static BOOL OWHTMLToSGMLObjectsDebug = NO;
 
 - (NSString *)_readFragmentUpToLeftAngleBracketOrAmpersand;
 {
-    unichar *startLocation;
-
     if (!scannerHasData(self))
         return nil;
 
-    startLocation = scanLocation;
+    unichar *startLocation = scanLocation;
     while (scanLocation < scanEnd) {
         if (*scanLocation == '<' || *scanLocation == '&')
             break;
         scanLocation++;
     }
+
     return [NSString stringWithCharacters:startLocation length:scanLocation - startLocation];
 }
 

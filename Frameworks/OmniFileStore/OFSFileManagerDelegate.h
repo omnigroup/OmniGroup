@@ -34,7 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
                                    getKey:(ODAVFileInfo *)encryptionInfo
                              refreshCache:(BOOL)refreshing
                                     error:(NSError **)outError;
-- (BOOL)fileManager:(OFSFileManager * __nonnull)fileManager changePasswordOfKey:(OFSMutableDocumentKey *)derivation originURL:(NSURL *)originURL error:(NSError **)outError;
+- (BOOL)fileManager:(OFSFileManager *)fileManager verifyKey:(OFSDocumentKey *)derivation originURL:(NSURL *)originURL error:(NSError **)outError;
+- (BOOL)fileManager:(OFSFileManager *)fileManager changePasswordOfKey:(OFSMutableDocumentKey *)derivation originURL:(NSURL *)originURL error:(NSError **)outError;
 - (OFSMutableDocumentKey * _Nullable)fileManager:(OFSFileManager *)underlyingFileManager initialKeyWithError:(NSError **)outError;
 - (void)fileManagerDidStore:(NSURL *)where key:(OFSDocumentKey * _Nullable)keyStore data:(NSData *)d;
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -94,14 +94,12 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
     OBPRECONDITION([NSThread isMainThread]);
 
     SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)[[NSProcessInfo processInfo] processName], OWProxyServerDynamicStoreCallBack, NULL);
-    CFStringRef proxiesKey = SCDynamicStoreKeyCreateProxies(NULL);
-    if (!SCDynamicStoreSetNotificationKeys(store, (CFArrayRef)[NSArray arrayWithObject:(id)proxiesKey], nil))
+    NSString *proxiesKey = CFBridgingRelease(SCDynamicStoreKeyCreateProxies(NULL));
+    if (!SCDynamicStoreSetNotificationKeys(store, (CFArrayRef)@[proxiesKey], nil))
         NSLog(@"SCDynamicStoreSetNotificationKeys() failed: %s", SCErrorString(SCError()));
 
-    NSDictionary *proxySettingsDictionary = (NSDictionary *)SCDynamicStoreCopyValue(store, proxiesKey);
-    CFRelease(proxiesKey);
+    NSDictionary *proxySettingsDictionary = CFBridgingRelease(SCDynamicStoreCopyValue(store, (__bridge CFStringRef)proxiesKey));
     [self _updateProxySettingsFromDictionary:proxySettingsDictionary];
-    [proxySettingsDictionary release];
 
     CFRunLoopSourceRef runLoopSource = SCDynamicStoreCreateRunLoopSource(NULL, store, 0);
     CFRunLoopRef currentRunLoop = CFRunLoopGetCurrent();
@@ -156,13 +154,11 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
         [newProxySettingsDictionary setObject:exceptionsList forKey:OWProxiesExceptionsListKey];
 
     [self _setProxySettingsDictionary:newProxySettingsDictionary];
-    [newProxySettingsDictionary release];
 }
 
 + (void)_setProxySettingsDictionary:(NSDictionary *)newDictionary;
 {
     [_proxySettingsDictionaryLock lock];
-    [_proxySettingsDictionary release];
     _proxySettingsDictionary = [[NSDictionary alloc] initWithDictionary:newDictionary];
     [_proxySettingsDictionaryLock unlock];
 }
@@ -172,9 +168,9 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
     NSDictionary *proxySettingsDictionary;
 
     [_proxySettingsDictionaryLock lock];
-    proxySettingsDictionary = [_proxySettingsDictionary retain];
+    proxySettingsDictionary = _proxySettingsDictionary;
     [_proxySettingsDictionaryLock unlock];
-    return [proxySettingsDictionary autorelease];
+    return proxySettingsDictionary;
 }
 
 + (OWURL *)_proxyURLWithHost:(NSString *)proxyHost port:(unsigned int)proxyPort;
@@ -187,19 +183,18 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedKeys, void *info)
 {
 #ifdef DEBUG_kc
-    NSLog(@"OWProxyServerDynamicStoreCallBack(): changedKeys=%@", [(NSArray *)changedKeys description]);
+    NSLog(@"OWProxyServerDynamicStoreCallBack(): changedKeys=%@", [(__bridge NSArray *)changedKeys description]);
 #endif
 
-    NSUInteger changedKeyCount = [(NSArray *)changedKeys count];
+    NSUInteger changedKeyCount = CFArrayGetCount(changedKeys);
     if (changedKeyCount == 0)
         return; // I'm not sure why they've called us since there are no changed keys, but I have seen this happen
 
     OBASSERT(changedKeyCount == 1); // We've only registered for one key
     CFStringRef proxiesKey = SCDynamicStoreKeyCreateProxies(NULL);
-    NSDictionary *proxySettingsDictionary = (NSDictionary *)SCDynamicStoreCopyValue(store, proxiesKey);
+    NSDictionary *proxySettingsDictionary = CFBridgingRelease(SCDynamicStoreCopyValue(store, proxiesKey));
     CFRelease(proxiesKey);
     [OWProxyServer _updateProxySettingsFromDictionary:proxySettingsDictionary];
-    [proxySettingsDictionary release];
 }
 
 @end

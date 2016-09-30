@@ -8,7 +8,9 @@
 #import <OmniUnzip/OUUnzipArchive.h>
 
 #import <OmniUnzip/OUUnzipEntry.h>
+#import <OmniUnzip/OUUnzipEntryInputStream.h>
 #import <OmniUnzip/OUErrors.h>
+#import <OmniBase/NSError-OBExtensions.h>
 #import <OmniBase/system.h> // S_IFMT, etc
 
 @import OmniFoundation;
@@ -200,112 +202,77 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
     return matches;
 }
 
-// This always returns nil, so that callers can 'return UNZIP_DATA_ERROR(...);'
-static _Nullable id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int err, NSError **outError)
-{
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, [entry name], [self path]];
-    OmniUnzipError(outError, OmniUnzipUnableToReadZipFileContents, description, reason);
-    
-    NSLog(@"%s returned %d", func, err);
-    return nil;
-}
-#define UNZIP_DATA_ERROR(f) _unzipDataError(self, entry, #f, err, outError)
-
-// We might want to return a read-stream later, but for now all the callers want a data.  This method should only be called for resources that can be opened on the device.  If you attach a 70MB satellite image and try to open it on your phone, you'll be sad (on many fronts).  So, returning a data here should be OK since we'll not create datas for every entry in the zip file.
 - (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
 {
-    OBPRECONDITION(entry);
-    
-    unzFile unzip;
-    if (_store) {
-        unzip = unzOpen2((__bridge void *)_store, &OUReadIOImpl);
-    } else {
-        _store = nil;
-        unzip = unzOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:_path]);
-    }
-    
-    if (!unzip) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
-        NSString *reason = [NSString stringWithFormat:@"Unable to open zip file \"%@\".", _path];
-        OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
+    NSInputStream *inputStream = [self inputStreamForEntry:entry raw:raw error:outError];
+    if (inputStream == nil) {
         return nil;
     }
-
-    NSData *data = nil;
     
-    @try {
-        int err;
-        unz_file_pos position;
-        memset(&position, 0, sizeof(position));
-        position.pos_in_zip_directory = [entry positionInFile]; // Presuming that if we screw up and pass an entry from the wrong file or otherwise have something past the end of the file, that this will be detected.
-        position.num_of_file = [entry fileNumber];
-        
-        err = unzGoToFilePos(unzip, &position);
-        if (err != UNZ_OK)
-            return UNZIP_DATA_ERROR(unzGoToFilePos);
-        
-        unz_file_info fileInfo;
-        err = unzGetCurrentFileInfo(unzip, &fileInfo, NULL, 0, // file name & size
-                                    NULL, 0, NULL, 0); // extra args for 'extra field' and comment buffer and buffer size
-        if (err != UNZ_OK)
-            return UNZIP_DATA_ERROR(unzGetCurrentFileInfo);
-
-        int method, level;
-        err = unzOpenCurrentFile3(unzip, &method, &level, raw ? 1 : 0, NULL/*password*/);
-        if (err != UNZ_OK)
-            return UNZIP_DATA_ERROR(unzOpenCurrentFile3);
-        
-        size_t totalSize = raw ? fileInfo.compressed_size : fileInfo.uncompressed_size;
-        
-        void *bytes = malloc(totalSize);
-        size_t totalBytesRead = 0;
-        while (totalBytesRead < totalSize) {
-            // wants an unsigned. but then it returns an int; will use INT_MAX instead of UINT_MAX.
-            size_t availableBytes = totalSize - totalBytesRead;
-            unsigned bytesToRead;
-            if (availableBytes > INT_MAX)
-                bytesToRead = INT_MAX;
-            else
-                bytesToRead = (unsigned)availableBytes;
-            
-            int copied = unzReadCurrentFile(unzip, bytes + totalBytesRead, bytesToRead);
-            OBASSERT(copied < 0 || (unsigned)copied >= bytesToRead);
-            
-            if (copied <= 0) { // Not expecting zero here since we stop before end of file.  Include it in the conditional so we'll error out rather the loop infinitely.
-                free(bytes);
-                return UNZIP_DATA_ERROR(unzReadCurrentFile);
-            }
-            totalBytesRead += copied;
+    [inputStream open];
+    if (inputStream.streamStatus != NSStreamStatusOpen) {
+        OBASSERT(inputStream.streamStatus == NSStreamStatusError);
+        OBASSERT(inputStream.streamError != nil);
+        if (outError != nil) {
+            *outError = inputStream.streamError;
         }
         
-        // Transfer ownership to a data.
-        data = [NSData dataWithBytesNoCopy:bytes length:totalSize freeWhenDone:YES];
-
-        err = unzCloseCurrentFile(unzip);
-        if (err != UNZ_OK)
-            return UNZIP_DATA_ERROR(unzCloseCurrentFile);
-        
-    } @finally {
-        if (unzip)
-            unzClose(unzip);
+        return nil;
     }
     
-    return data;
+    NSUInteger length = raw ? entry.compressedSize : entry.uncompressedSize;
+    uint8_t *bytes = malloc(length);
+
+    length = [inputStream read:bytes maxLength:length];
+    if (inputStream.streamStatus == NSStreamStatusError) {
+        OBASSERT(inputStream.streamError != nil);
+        if (outError != nil) {
+            *outError = inputStream.streamError;
+        }
+        
+        free(bytes);
+        return nil;
+    }
     
+    [inputStream close];
+    
+    // Transfer ownership to an NSData
+    NSData *data = [[NSData alloc] initWithBytesNoCopy:bytes length:length freeWhenDone:YES];
+    return data;
 }
-#undef UNZIP_DATA_ERROR
 
 - (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 {
     return [self dataForEntry:entry raw:NO error:outError];
 }
 
+- (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
+{
+    NSURL *archiveURL = [NSURL fileURLWithPath:_path];
+    OUUnzipEntryInputStreamOptions options = raw ? OUUnzipEntryInputStreamOptionRaw : OUUnzipEntryInputStreamOptionNone;
+
+    return [[OUUnzipEntryInputStream alloc] initWithUnzipEntry:entry inZipArchiveAtURL:archiveURL data:_store options:options];
+}
+
+- (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
+{
+    return [self inputStreamForEntry:entry raw:NO error:outError];
+}
+
 - (BOOL)_writeEntriesWithPrefix:(NSString * _Nullable)prefix toURL:(NSURL *)writeURL error:(NSError **)outError;
 {
+    OBPRECONDITION([writeURL isFileURL]);
+    
     NSFileManager *defaultManager = [NSFileManager defaultManager];
-    if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:outError])
-        return NO;
+    NSError *createError = nil;
+    if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:&createError]) {
+        if (![createError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError]) {
+            if (outError != NULL) {
+                *outError = createError;
+            }
+            return NO;
+        }
+    }
 
     NSArray <OUUnzipEntry *> *entries = [self entriesWithNamePrefix:prefix];
     for (OUUnzipEntry *entry in entries) {

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,10 +32,8 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 + (OWSGMLTag *)newTagWithTokenType:(OWSGMLTokenType)aType tagType:(OWSGMLTagType *)aTagType;
 {
-    OWSGMLTag *result;
-    
     NSUInteger tagTypeAttributeCount = [aTagType attributeCount];
-    result = (id)NSAllocateObject(self, sizeof(NSString *) * tagTypeAttributeCount, NULL);
+    OWSGMLTag *result = (id)NSAllocateObject(self, sizeof(NSString *) * tagTypeAttributeCount, NULL);
     result->tokenType = aType;
     result->nonretainedTagType = aTagType;
     OBASSERT(tagTypeAttributeCount < 256);
@@ -235,10 +233,9 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     NSString *typeString;
 
-    debugDictionary = [super debugDictionary];
     switch (tokenType) {
         case OWSGMLTokenTypeStartTag:
             typeString = @"StartTag";
@@ -250,12 +247,13 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
             typeString = nil;
             break;
     }
-    if (typeString)
+
+    if (typeString != nil)
 	[debugDictionary setObject:typeString forKey:@"_type"];
-    if (nonretainedTagType)
+    if (nonretainedTagType != nil)
         [debugDictionary setObject:nonretainedTagType forKey:@"nonretainedTagType"];
     [debugDictionary setObject:[self attributes] forKey:@"attributes"];
-    if (extraAttributes)
+    if (extraAttributes != nil)
         [debugDictionary setObject:extraAttributes forKey:@"extraAttributes"];
     return debugDictionary;
 }

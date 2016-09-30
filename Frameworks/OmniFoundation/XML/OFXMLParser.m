@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFXMLParser.h>
+#import <OmniFoundation/OFXMLParser-Internal.h>
 
 #import <libxml/SAX2.h>
 #import <libxml/parser.h>
@@ -60,9 +61,10 @@ RCS_ID("$Id$");
     
     // Support for unparsed/skipped blocks
     OFXMLParserElementBehavior unparsedBlockBehavior;
-    off_t unparsedBlockStart; // < 0 if we aren't in an unparsed block.
+    off_t unparsedBlockStart; // < 0 if we aren't in an unparsed block; absolute value in the byte stream being processed
     unsigned int unparsedBlockElementNesting;
     NSString *unparsedElementID; // The value of the xml:id attribute, if any
+    NSMutableData *unparsedElementData;
 
     // Temporarily stashed pointers passed to _startElementNsSAX2Func
     int nb_namespaces;
@@ -75,13 +77,10 @@ RCS_ID("$Id$");
 @interface OFXMLParser ()
 {
 @private
-    NSData *_xmlData; // Only set while parsing
     OFXMLParserState *_state; // Only set while parsing.
 }
 
 @property (nonatomic, strong) NSProgress *progress;
-
-- (NSData *)xmlData;
 
 @end
 
@@ -386,6 +385,9 @@ static BOOL _checkForUnparsedElement(OFXMLParserState *state, OFXMLQName *elemen
             state->unparsedBlockBehavior = behavior;
             state->unparsedBlockStart = p - base + state->ctxt->input->consumed;
             state->unparsedBlockElementNesting = 0;
+
+            OBASSERT(state->unparsedElementData == nil);
+            state->unparsedElementData = [[NSMutableData alloc] init];
             //fprintf(stderr, "unparsed element '%s' starts at offset %qd\n", localname, state->unparsedBlockStart);
 
             // Store the xml:id of the element, if it has one, so we can pass it to the end hook.  We could pass the entire set of attributes, but I only need the id right now.
@@ -525,24 +527,28 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
                 }
                 
                 OBASSERT(p > base);
-//              OBASSERT(p[-1] == '>');
+                const xmlChar *bytes = (base + state->unparsedBlockStart - state->ctxt->input->consumed);
+                size_t length = (size_t)(p - bytes);
+
+                OBASSERT(state->unparsedElementData != nil);
+                [state->unparsedElementData appendBytes:bytes length:length];
                 
-                size_t end = p - base + state->ctxt->input->consumed;
-                //fprintf(stderr, "unparsed element '%s' at %qd extended for %qd\n", localname, state->unparsedBlockStart, end - state->unparsedBlockStart);
-                
-                OBASSERT(end > (typeof(end))state->unparsedBlockStart); // signed vs. unsigned, but we checked unparsedBlockStart >= 0 above, so the cast is safe
-                size_t length = (size_t)(end - state->unparsedBlockStart);
-                
-                const char *xmlBytes = [[state->parser xmlData] bytes];
-                NSData *data = [[NSData alloc] initWithBytes:xmlBytes + state->unparsedBlockStart length:length];
+                // Immediately make a copy of the accumulated unparsed element data.
+                // In the case that the target processes this data immediately and discards it, we have one unnecessary temporary copy.
+                // In the case that the target holds onto this data, we have zero extra copies and have defended against clients which incorrectly have -retain semantics instead of -copy semantics.
+                NSData *unparsedElementData = [state->unparsedElementData copy];
                 OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
                 
-                state->targetImp.endUnparsedElementWithQName(state->target, @selector(parser:endUnparsedElementWithQName:identifier:contents:), parser, qname, state->unparsedElementID, data);
+                state->targetImp.endUnparsedElementWithQName(state->target, @selector(parser:endUnparsedElementWithQName:identifier:contents:), parser, qname, state->unparsedElementID, unparsedElementData);
+                
+                [unparsedElementData release];
+                unparsedElementData = nil;
 
+                [state->unparsedElementData release];
+                state->unparsedElementData = nil;
+                
                 [state->unparsedElementID release];
                 state->unparsedElementID = nil;
-                
-                [data release];            
             }
             
             state->unparsedBlockStart = -1; // end of the unparsed block
@@ -732,7 +738,7 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 
 @implementation OFXMLParser
 
-+ (NSUInteger)maximumParseChunkSize;
++ (NSUInteger)defaultMaximumParseChunkSize;
 {
     return 1024 * 1024 * 4;
 }
@@ -757,6 +763,7 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 
     OBPRECONDITION(whitespaceBehavior);
     
+    _maximumParseChunkSize = [[self class] defaultMaximumParseChunkSize];
     _encoding = kCFStringEncodingInvalidId;
     
     LIBXML_TEST_VERSION
@@ -811,11 +818,38 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     return self;
 }
 
+- (void)dealloc;
+{
+    [_versionString release];
+    [_loadWarnings release];
+    [_progress release];
+    [super dealloc];
+}
+
 - (BOOL)parseData:(NSData *)xmlData error:(NSError **)outError;
+{
+    // This method is annotated nonnull, but let's also generate an error at runtime if necessary.
+    if (xmlData == nil || xmlData.length == 0) {
+        OFError(outError, OFXMLInvalidateInputError, nil, nil);
+        return NO;
+    }
+
+    NSInputStream *inputStream = [[NSInputStream alloc] initWithData:xmlData];
+    BOOL success = [self parseInputStream:inputStream expectedStreamLength:xmlData.length error:outError];
+    [inputStream release];
+    return success;
+}
+
+- (BOOL)parseInputStream:(NSInputStream *)inputStream error:(NSError **)outError;
+{
+    return [self parseInputStream:inputStream expectedStreamLength:NSNotFound error:outError];
+}
+
+- (BOOL)parseInputStream:(NSInputStream *)inputStream expectedStreamLength:(NSUInteger)expectedStreamLength error:(NSError **)outError;
 {
     // TODO: Add support for passing along the source URL
     // We want whitespace reported since we may or may not keep it depending on our whitespaceBehavior input.
-    
+
     xmlSAXHandler sax;
     memset(&sax, 0, sizeof(sax));
     
@@ -849,43 +883,75 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     options |= XML_PARSE_HUGE;      // Relax any hardcoded limit from the parser
     
     options = xmlCtxtUseOptions(_state->ctxt, options);
-    if (options != 0)
+    if (options != 0) {
         NSLog(@"Unsupported xml parser options: 0x%08x", options);
-
-    // Encoding isn't set until after the terminate.
+    }
     
-    const char *bytes = (const char *)[xmlData bytes];
-    NSUInteger xmlLength = [xmlData length];
-    NSUInteger bytesRemaining = xmlLength;
-    _progress.totalUnitCount = xmlLength;
-    int rc = 0;
-
-    self->_xmlData = xmlData;
-    
-    NSUInteger maxChunkSize = [[self class] maximumParseChunkSize];
-    do {
-        NSUInteger chunkSize = MIN(bytesRemaining, maxChunkSize);
-        BOOL isLastChunk = (chunkSize == bytesRemaining);
-
-        rc = xmlParseChunk(_state->ctxt, bytes, (int)chunkSize, isLastChunk);
-        if (rc != 0 && rc != XML_ERR_USER_STOP) {
-            [_progress cancel];
-            break;
+    [inputStream open];
+    if (inputStream.streamStatus == NSStreamStatusError) {
+        OBASSERT(inputStream.streamError != nil);
+        if (outError != NULL) {
+            *outError = [[inputStream.streamError copy] autorelease];
         }
-        
-        bytes += chunkSize;
-        bytesRemaining -= chunkSize;
-        _progress.completedUnitCount += chunkSize;
-    } while (bytesRemaining > 0);
+        return NO;
+    }
+    
+    // Encoding isn't set until after the terminate.
 
-    self->_xmlData = nil;
+    if (expectedStreamLength != NSNotFound) {
+        _progress.totalUnitCount = expectedStreamLength;
+    } else {
+        _progress.totalUnitCount = -1;
+    }
 
+    int rc = 0;
+    
+    NSUInteger maxChunkSize = self.maximumParseChunkSize;
+    OBASSERT(maxChunkSize > 0);
+    
+    uint8_t *buffer = malloc(maxChunkSize);
+    
+    do @autoreleasepool {
+        NSInteger bytesRead = [inputStream read:buffer maxLength:maxChunkSize];
+        if (bytesRead > 0) {
+            rc = xmlParseChunk(_state->ctxt, (const char *)buffer, (int)bytesRead, FALSE);
+            if (rc != 0 && rc != XML_ERR_USER_STOP) {
+                [_progress cancel];
+                break;
+            }
+            
+            // If we are in the middle of processing an unparsed element, copy the rest of this chunk into unparsedElementData and advance unparsedBlockStart
+            if (_state->unparsedBlockStart >= (off_t)_state->ctxt->input->consumed) {
+                OBASSERT(_state->unparsedElementData != nil);
+                const xmlChar *unparsedElementPtr = _state->ctxt->input->base + _state->unparsedBlockStart - _state->ctxt->input->consumed;
+                NSUInteger length = _state->ctxt->input->end - unparsedElementPtr;
+                [_state->unparsedElementData appendBytes:unparsedElementPtr length:length];
+                _state->unparsedBlockStart += length;
+            }
+            
+            _progress.completedUnitCount += bytesRead;
+        }
+    } while (inputStream.streamStatus == NSStreamStatusOpen);
+    
+    if (rc == 0) {
+        xmlParseChunk(_state->ctxt, NULL, 0, TRUE);
+    }
+    
+    free(buffer);
     OBASSERT((rc == 0) == (_state->error == nil));
     
     BOOL result = YES;
-    if (rc != 0 || _state->error) {
-        if (outError)
+    if (inputStream.streamStatus == NSStreamStatusError) {
+        OBASSERT(inputStream.streamError != nil);
+        if (outError != NULL) {
+            *outError = [[inputStream.streamError copy] autorelease];
+        }
+        [_progress cancel];
+        result = NO;
+    } else if (rc != 0 || _state->error) {
+        if (outError) {
             *outError = [[_state->error retain] autorelease];
+        }
         [_state->error release];
         _state->error = nil; // we've dealt with cleaning up the error portion of the state
         [_progress cancel];
@@ -900,24 +966,32 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 #ifdef DEBUG
                 NSLog(@"No string encoding found for '%s'.", _state->ctxt->encoding);
 #endif
-            } else
+            } else {
                 encoding = parsedEncoding;
+            }
         }
         _encoding = encoding;
-        if (_state->loadWarnings)
+        if (_state->loadWarnings) {
             _loadWarnings = [[NSArray alloc] initWithArray:_state->loadWarnings];
+        }
         
         // CFXML reports the <?xml...?> as a PI, but libxml2 doesn't.  It has the information we need in the context structure.  But, if there were other PIs, they'll be first in the list now.  So, we store this information out of the PIs now.
-        if (_state->ctxt->version && *_state->ctxt->version)
+        if (_state->ctxt->version && *_state->ctxt->version) {
             _versionString = [[NSString alloc] initWithUTF8String:(const char *)_state->ctxt->version];
-        else
+        } else {
             _versionString = @"1.0";
+        }
         _standalone = _state->ctxt->standalone? YES : NO;
         
         OBASSERT(_state->elementDepth == 0); // should have finished the root element.
         OBASSERT(_state->rootElementFinished);
         OBASSERT([_state->whitespaceBehaviorStack count] == 1); // The default one should be one the stack.
         OBASSERT(![NSString isEmptyString:_versionString]);
+    }
+    
+    [inputStream close];
+    if (inputStream.streamStatus == NSStreamStatusError) {
+        NSLog(@"Error closing input stream in %s: %@", __func__, inputStream.streamError);
     }
     
     xmlFreeParserCtxt(_state->ctxt);
@@ -930,23 +1004,9 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     return result;
 }
 
-- (void)dealloc;
-{
-    OBPRECONDITION(_xmlData == nil);
-    [_versionString release];
-    [_loadWarnings release];
-    [_progress release];
-    [super dealloc];
-}
-
 - (NSUInteger)elementDepth;
 {
     return _state ? _state->elementDepth : 0;
-}
-
-- (NSData *)xmlData;
-{
-    return _xmlData;
 }
 
 @end

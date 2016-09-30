@@ -26,31 +26,24 @@ static NSString *PartFormatString = nil;
 + (void)initialize;
 {
     OBINITIALIZE;
-    PartFormatString = [NSLocalizedStringFromTableInBundle(@"Part %d...", @"OWF", [OWMultipartDataStreamProcessor bundle], @"mulitpart datastream processor status format") retain];
+
+    PartFormatString = NSLocalizedStringFromTableInBundle(@"Part %d...", @"OWF", OMNI_BUNDLE, @"mulitpart datastream processor status format");
 }
 
 - (void)dealloc;
 {
     if (delimiter != NULL)
         free(delimiter);
-    [super dealloc];
 }
 
 - (BOOL)readDelimiter;
 {
     NSString *line = nil;
     OWDataStreamCharacterCursor *lineScanner = [[OWDataStreamCharacterCursor alloc] initForDataCursor:dataCursor encoding:OFDeferredASCIISupersetStringEncoding];
-    NS_DURING {
-        do {
-            line = [lineScanner readLine];
-        } while (line && ![line hasPrefix:@"--"]);
-    } NS_HANDLER {
-        [lineScanner release];
-        [localException raise];
-        return NO; // fix the warning: `line' might be used uninitialized in this function
-    } NS_ENDHANDLER;
+    do {
+        line = [lineScanner readLine];
+    } while (line != nil && ![line hasPrefix:@"--"]);
     [lineScanner discardReadahead];
-    [lineScanner release];
     if (line == nil)
 	return NO;
     
@@ -60,7 +53,6 @@ static NSString *PartFormatString = nil;
     if (![delimiterString getCString:(char *)delimiter maxLength:delimiterLength + 1 encoding:NSMacOSRomanStringEncoding])
         [NSException raise:NSInternalInconsistencyException format:@"Failed to decode delimiter of multipart stream"];
 
-    [delimiterString release];
     inputBufferSize = DEFAULT_INPUT_BUFFER_SIZE;
     if (delimiterLength * 2 > inputBufferSize)
 	inputBufferSize = delimiterLength * 2;
@@ -123,73 +115,56 @@ static NSString *PartFormatString = nil;
 
 - (void)processContentWithHeaders:(OWHeaderDictionary *)partHeaders;
 {
-    OWDataStream *outputDataStream;
-    NSException *raisedException = nil;
-
-    outputDataStream = [[OWDataStream alloc] init];
-    NS_DURING {
+    OWDataStream *outputDataStream = [[OWDataStream alloc] init];
+    @try {
         [self processDataStreamPart:outputDataStream headers:partHeaders];
 	[self processPartIntoStream:outputDataStream];
-    } NS_HANDLER {
-	raisedException = localException;
+    } @finally {
 	/* Perhaps copy the rest of the input into the output */
-    } NS_ENDHANDLER;
-    [outputDataStream dataEnd];
-    [outputDataStream release];
-    if (raisedException)
-	[raisedException raise];
+        [outputDataStream dataEnd];
+    }
 }
 
 // OWProcessor subclass
 
 - (void)process;
 {
-    NSDate *nextDisplayDate = nil;
-    unsigned int index = 0;
-    NSAutoreleasePool *autoreleasePool = nil;
-
-    if (!dataCursor)
+    if (dataCursor == nil)
 	return;
     if (![self readDelimiter])
 	return;
+
+    NSDate *nextDisplayDate = nil;
+    unsigned int index = 0;
+    
     @try {
 	while (YES) {
-	    OWHeaderDictionary *headerDictionary;
-	    NSString *durationHeader;
-
-	    if (autoreleasePool)
-		[autoreleasePool release];
-	    autoreleasePool = [[NSAutoreleasePool alloc] init];    
-	    headerDictionary = [[[OWHeaderDictionary alloc] init] autorelease];
-	    [headerDictionary readRFC822HeadersFromCursor:dataCursor];
-	    [dataCursor bufferBytes:delimiterLength];
-	    durationHeader =
-	      [headerDictionary lastStringForKey:@"display-duration"];
-	    if (nextDisplayDate) {
-		[nextDisplayDate sleepUntilDate];
-		[nextDisplayDate release];
-		nextDisplayDate = nil;
-	    }
-	    if (durationHeader) {
-		nextDisplayDate = [[NSDate alloc] initWithTimeIntervalSinceNow:[durationHeader floatValue]];
-	    }
-	    [self setStatusString:[NSString stringWithFormat:PartFormatString, ++index]];
-	    [self processContentWithHeaders:headerDictionary];
-	}
+            @autoreleasepool {
+                OWHeaderDictionary *headerDictionary = [[OWHeaderDictionary alloc] init];
+                [headerDictionary readRFC822HeadersFromCursor:dataCursor];
+                [dataCursor bufferBytes:delimiterLength];
+                NSString *durationHeader = [headerDictionary lastStringForKey:@"display-duration"];
+                if (nextDisplayDate != nil) {
+                    [nextDisplayDate sleepUntilDate];
+                    nextDisplayDate = nil;
+                }
+                if (durationHeader != nil) {
+                    nextDisplayDate = [[NSDate alloc] initWithTimeIntervalSinceNow:[durationHeader floatValue]];
+                }
+                [self setStatusString:[NSString stringWithFormat:PartFormatString, ++index]];
+                [self processContentWithHeaders:headerDictionary];
+            }
+        }
     } @catch (NSException *exc) {
         OB_UNUSED_VALUE(exc);
-        [nextDisplayDate release];
     }
-    [autoreleasePool release];
 }
 
 // Debugging
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (delimiter) {
 	[debugDictionary setObject:[NSString stringWithUTF8String:(char *)delimiter] forKey:@"delimiter"];
 	[debugDictionary setObject:[NSString stringWithFormat:@"%ld", delimiterLength] forKey:@"delimiterLength"];

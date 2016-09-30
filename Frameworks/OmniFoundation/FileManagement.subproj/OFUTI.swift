@@ -57,9 +57,9 @@ public struct UTI {
         let rawFileType:String
 
         if preferringNative {
-            rawFileType = OFUTIForTagPreferringNative(tagClass, tagValue, conformingToUTI)
+            rawFileType = OFUTIForTagPreferringNative(tagClass as CFString, tagValue, conformingToUTI as CFString?)
         } else {
-            rawFileType = UTTypeCreatePreferredIdentifierForTag(tagClass, tagValue, conformingToUTI)!.takeUnretainedValue() as String
+            rawFileType = UTTypeCreatePreferredIdentifierForTag(tagClass as CFString, tagValue as CFString, conformingToUTI as CFString?)!.takeUnretainedValue() as String
         }
         return UTI(rawFileType)
     }
@@ -73,10 +73,10 @@ public struct UTI {
 
     /// Checks if the receiver conforms to, or is equal to, the passed in type.
     public func conformsTo(_ otherUTI:UTI) -> Bool {
-        return UTTypeConformsTo(self.rawFileType, otherUTI.rawFileType)
+        return UTTypeConformsTo(self.rawFileType as CFString, otherUTI.rawFileType as CFString)
     }
 
-    public func conformsToAny<T where T : Sequence, T.Iterator.Element == UTI>(_ otherUTIs:T) -> Bool {
+    public func conformsToAny<T>(_ otherUTIs:T) -> Bool where T : Sequence, T.Iterator.Element == UTI {
         for e in otherUTIs {
             if self.conformsTo(e) {
                 return true
@@ -86,7 +86,7 @@ public struct UTI {
     }
     
     public var preferredPathExtension: String? {
-        guard let unmanaged = UTTypeCopyPreferredTagWithClass(self.rawFileType, kUTTagClassFilenameExtension) else {
+        guard let unmanaged = UTTypeCopyPreferredTagWithClass(self.rawFileType as CFString, kUTTagClassFilenameExtension) else {
             return nil
         }
         return String(unmanaged.takeRetainedValue())
@@ -113,6 +113,6 @@ extension UTI: ExpressibleByStringLiteral {
 
 extension UTI: Equatable {
     public static func ==(type1:UTI, type2:UTI) -> Bool {
-        return UTTypeEqual(type1.rawFileType, type2.rawFileType)
+        return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
     }
 }

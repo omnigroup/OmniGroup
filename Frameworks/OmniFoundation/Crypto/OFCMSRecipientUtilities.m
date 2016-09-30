@@ -13,8 +13,10 @@
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFASN1-Internal.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/OFCMS.h>
 #import "OFCMS-Internal.h"
 #import "GeneratedOIDs.h"
+#import "OFRFC3211Wrap.h"
 #import <Foundation/NSData.h>
 #import <CommonCrypto/CommonCrypto.h>
 #import <CommonCrypto/CommonRandom.h>
@@ -25,13 +27,7 @@ OB_REQUIRE_ARC
 
 static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **outError);
 static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **outError);
-static NSError *_unsupportedCMSFeature(NSString *descr) __attribute__((cold));
-
-#ifdef der_PWRI_KEK_len
-#define WITH_RFC3211_KEY_WRAP
-NSData *OFRFC3211Wrap(NSData *CEK, NSData *KEK, NSData *iv, CCAlgorithm innerAlgorithm, size_t blockSize);
-NSData *OFRFC3211Unwrap(NSData *input, NSData *KEK, NSData *iv, CCAlgorithm innerAlgorithm, size_t blockSize);
-#endif
+static NSError *unsupportedCMSFeature(NSString *fmt, ...) __attribute__((cold));
 
 /* Algorithm identifiers. */
 
@@ -81,20 +77,16 @@ NSData *OFGeneratePBKDF2AlgorithmInfo(NSUInteger keyLength, unsigned int iterati
         prfOid = der_prf_hmacWithSHA512;
     }
     
-    NSMutableData *numsBuf = [NSMutableData data];
-    OFASN1AppendInteger(numsBuf, iterations);
-    OFASN1AppendInteger(numsBuf, keyLength);
-    
     /* From RFC3370 [4.4.1]: id-PBKDF2 = { iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) 12} */
     
     /* The embedded PRF algorithms are encoded with the optional NULL omitted, per RFC5754 [2]. */
     
     /* The algorithm info is a SEQUENCE, but it's used in the password recipient info structure, which gives it an IMPLICIT TAG of 0. So we apply that here. */
     
-    NSMutableData *encodedResult = OFASN1AppendStructure(nil, "!(+([*]d(+)))",
+    NSMutableData *encodedResult = OFASN1AppendStructure(nil, "!(+([*]uu(+)))",
                                                          0 /* IMPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC,
                                                          der_PBKDF2,
-                                                         saltLength, salt, numsBuf, prfOid);
+                                                         saltLength, salt, (unsigned)iterations, (unsigned)keyLength, prfOid);
     
     
     return encodedResult;
@@ -120,7 +112,7 @@ NSData *OFDeriveKEKForCMSPWRI(NSData *password, NSData *encodedAlgInfo, NSError 
     if (derivationAlgorithm != OFASN1Algorithm_PBKDF2) {
         // The only derivation algorithm we currently support is PBKDF2. We may want to support something like Argon2 in the future, but we'll have to wait for it to be assigned an OID in the CMS context.
         if (outError) {
-            *outError = _unsupportedCMSFeature(@"Key derivation algorithm");
+            *outError = unsupportedCMSFeature(@"Key derivation algorithm");
         }
         return nil;
     }
@@ -136,13 +128,13 @@ NSData *OFDeriveKEKForCMSPWRI(NSData *password, NSData *encodedAlgInfo, NSError 
     // NB: It's legal for keyLength to be omitted from the parameters, in which case OFASN1ParsePBKDF2Parameters() will set it to 0. In that case we would need to look at the algorithmIdentifier of the wrapped key itself to discover the key length. We currently don't support that.
     if (keyLength == 0) {
         if (outError)
-            *outError = _unsupportedCMSFeature(@"Implicit wrap key length");
+            *outError = unsupportedCMSFeature(@"Implicit wrap key length");
         return nil;
     }
     
     if ([salt length] < 2 || iterations < 1 || keyLength < kCCKeySizeAES128 || keyLength > kCCKeySizeAES256) {
         if (outError) {
-            *outError = _unsupportedCMSFeature(@"Key derivation parameters");
+            *outError = unsupportedCMSFeature(@"Key derivation parameters");
         }
         return nil;
     }
@@ -159,7 +151,7 @@ NSData *OFDeriveKEKForCMSPWRI(NSData *password, NSData *encodedAlgInfo, NSError 
             break;
         default:
             if (outError) {
-                *outError = _unsupportedCMSFeature(@"Key derivation algorithm");
+                *outError = unsupportedCMSFeature(@"Key derivation algorithm");
             }
             return nil;
     }
@@ -277,7 +269,7 @@ static NSData *unwrapWithAlgId_PWRI(NSData *kekParameters, NSData *wrappedKey, N
             break;
         default:
             if (outError)
-                *outError = _unsupportedCMSFeature(@"Key wrap algorithm");
+                *outError = unsupportedCMSFeature(@"Key wrap algorithm");
             return nil;
     }
     
@@ -345,7 +337,7 @@ static NSData *unwrapWithAlgId(NSData *encrypted, NSData *KEK, NSError **outErro
 #endif
         default:
             if (outError)
-                *outError = _unsupportedCMSFeature(@"Key wrap algorithm");
+                *outError = unsupportedCMSFeature(@"Key wrap algorithm");
             return nil;
     }
     
@@ -415,6 +407,46 @@ NSData *OFProduceRIForCMSPWRI(NSData *KEK, NSData *CEK, NSData *algInfo, OFCMSOp
     return result;
 }
 
+static NSError *parsePasswordDerivationRecipient(NSData *rid, const struct parsedTag *recip, NSData **outKDFAlgorithmIdentifier, NSData **outWrapped)
+{
+        /*
+        PasswordRecipientInfo ::= SEQUENCE {
+            version CMSVersion,   -- always set to 0
+            keyDerivationAlgorithm [0] KeyDerivationAlgorithmIdentifier OPTIONAL,
+            keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+            encryptedKey EncryptedKey
+        }
+        */
+
+    static const struct scanItem pwriDataItems[4] = {
+        { FLAG_PRIMITIVE, BER_TAG_INTEGER }, /* version */
+        { FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC | FLAG_OPTIONAL, 0 }, /* KeyDerivationAlgorithmIdentifier */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* wrapping algorithm */
+        { FLAG_PRIMITIVE, BER_TAG_OCTET_STRING } /* wrapped key */
+    };
+    struct parsedItem pwriDataValues[4];
+    
+    enum OFASN1ErrorCodes rc = OFASN1ParseItemsInObject(rid, *recip, YES, pwriDataItems, pwriDataValues);
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"PasswordRecipient");
+    
+    int syntaxVersion = -1;
+    rc = OFASN1UnDERSmallInteger(rid, &pwriDataValues[0].i, &syntaxVersion);
+    if (rc != OFASN1Success || syntaxVersion < 0 || syntaxVersion > 0) {
+        // Don't try to parse something whose version field is out of the range we know about.
+        return unsupportedCMSFeature(@"PasswordRecipientInfo.version (%d)", syntaxVersion);
+    }
+    
+    if (pwriDataValues[1].i.classAndConstructed != (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC)) {
+        /* The keyDerivationAlgorithm is OPTIONAL, but we don't support not having it. */
+        return unsupportedCMSFeature(@"Missing keyDerivationAlgorithm");
+    }
+    
+    *outKDFAlgorithmIdentifier = [rid subdataWithRange:(NSRange){ pwriDataValues[1].startPosition, NSMaxRange(pwriDataValues[1].i.content) - pwriDataValues[1].startPosition }];
+    *outWrapped = [rid subdataWithRange:(NSRange){ pwriDataValues[2].startPosition, NSMaxRange(pwriDataValues[3].i.content) - pwriDataValues[2].startPosition } ];
+    return nil;
+}
+
 NSData *OFUnwrapRIForCMSPWRI(NSData *encrypted, NSData *KEK, NSError **outError)
 {
     return unwrapWithAlgId(encrypted, KEK, outError);
@@ -422,13 +454,17 @@ NSData *OFUnwrapRIForCMSPWRI(NSData *encrypted, NSData *KEK, NSError **outError)
 
 #pragma mark External key transport recipients
 
-NSData *OFProduceRIForCMSKEK(NSData *KEK, NSData *CEK, NSData *kekIdentifier, OFCMSOptions options)
+NSData *OFProduceRIForCMSKEK(NSData *KEK, NSData *CEK, NSData *keyIdentifier, OFCMSOptions options)
 {
     /* We're producing the following structure, in an IMPLICIT TAGS context (see RFC3852 [6.2.3] etc):
      
      [2] SEQUENCE {
          version CMSVersion,   -- Always set to 4
-         kekid KEKIdentifier,
+         kekid KEKIdentifier ::= SEQUENCE {
+             keyIdentifier OCTET STRING,
+             date GeneralizedTime OPTIONAL,
+             other OtherKeyAttribute OPTIONAL
+         }
          keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
          encryptedKey OCTET STRING
      }
@@ -436,8 +472,8 @@ NSData *OFProduceRIForCMSKEK(NSData *KEK, NSData *CEK, NSData *kekIdentifier, OF
      */
     
     NSMutableData *buffer = [NSMutableData data];
-    OFASN1AppendInteger(buffer, 4); // Version number: always 4
-    [buffer appendData:kekIdentifier];
+    OFASN1AppendInteger(buffer, 4); // Version number: always 4, see RFC3852 [6.2.4]
+    OFASN1AppendStructure(buffer, "([d])", keyIdentifier);
     
 #ifdef WITH_RFC3211_KEY_WRAP
     if (options & OFCMSOptionPreferRFC3211) {
@@ -458,6 +494,54 @@ NSData *OFProduceRIForCMSKEK(NSData *KEK, NSData *CEK, NSData *kekIdentifier, OF
     return result;
 }
 
+static NSError *parsePreSharedKeyRecipient(NSData *rid, const struct parsedTag *recip, NSData **outKeyIdentifier, NSData **outWrapped)
+{
+    /* see RFC3852 [6.2.3] etc:
+     
+     [2] SEQUENCE {
+         version CMSVersion,   -- Always set to 4
+         kekid KEKIdentifier ::= SEQUENCE {
+             keyIdentifier OCTET STRING,
+             date GeneralizedTime OPTIONAL,
+             other OtherKeyAttribute OPTIONAL
+         },
+         keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+         encryptedKey OCTET STRING
+     }
+
+     */
+    
+    static const struct scanItem kekDataItems[4] = {
+        { FLAG_PRIMITIVE, BER_TAG_INTEGER }, /* version */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* KEKIdentifier sequence */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* wrapping algorithm */
+        { FLAG_PRIMITIVE, BER_TAG_OCTET_STRING } /* wrapped key */
+    };
+    struct parsedItem kekDataValues[4];
+    
+    enum OFASN1ErrorCodes rc = OFASN1ParseItemsInObject(rid, *recip, YES, kekDataItems, kekDataValues);
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"KEKRecipient");
+    
+    int syntaxVersion = -1;
+    rc = OFASN1UnDERSmallInteger(rid, &kekDataValues[0].i, &syntaxVersion);
+    if (rc != OFASN1Success || syntaxVersion > 4 /* section [6.2.3], version is always 4 */) {
+        return unsupportedCMSFeature(@"Unexpected RecipientInfo version (%d)", syntaxVersion);
+    }
+    
+    /* The only part of the KEK identifier we use is the actual keyIdentifier. For now, just extract that and discard the optional other selectors which might follow it. */
+    struct parsedTag kiTag;
+    rc = OFASN1ParseTagAndLength(rid, kekDataValues[1].i.content.location, NSMaxRange(kekDataValues[1].i.content), YES, &kiTag);
+    if (rc == OFASN1Success && !(kiTag.classAndConstructed == (CLASS_UNIVERSAL|FLAG_PRIMITIVE) && kiTag.tag == BER_TAG_OCTET_STRING))
+        rc = OFASN1UnexpectedType;
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"KEKRecipient");
+    
+    *outKeyIdentifier = [rid subdataWithRange:kiTag.content];
+    *outWrapped = [rid subdataWithRange:(NSRange){ kekDataValues[2].startPosition, NSMaxRange(kekDataValues[3].i.content) - kekDataValues[2].startPosition } ];
+    return nil;
+}
+
 #pragma mark Asymmetric-crypto recipients
 
 NSData *OFProduceRIForCMSRSAKeyTransport(SecKeyRef publicKey, NSData *recipientIdentifier, NSData *CEK, NSError **outError)
@@ -472,7 +556,7 @@ NSData *OFProduceRIForCMSRSAKeyTransport(SecKeyRef publicKey, NSData *recipientI
     */
     
     /* The version field is 0 if the recipient identifier is issuerAndSerialNumber, or 2 if it is subjectKeyIdentifier. The recipient identifier is an implicitly-tagged CHOICE, so we look at its tag. */
-    int version;
+    unsigned version;
     uint8_t ridTag[1];
     [recipientIdentifier getBytes:ridTag range:(NSRange){0, 1}];
     if (ridTag[0] == (BER_TAG_SEQUENCE|FLAG_CONSTRUCTED)) {
@@ -480,30 +564,66 @@ NSData *OFProduceRIForCMSRSAKeyTransport(SecKeyRef publicKey, NSData *recipientI
     } else /* if ridTag == (0 | FLAG_PRIMITIVE | CLASS_CONTEXT_SPECIFIC) */ {
         version = 2;
     }
-    NSMutableData *buffer = [NSMutableData data];
-    OFASN1AppendInteger(buffer, version);
-    
-    [buffer appendData:recipientIdentifier];
-    
-    [buffer appendBytes:alg_rsaEncryption_pkcs1_5 length:sizeof(alg_rsaEncryption_pkcs1_5)];
-    
+
     NSData *encryptedForTransport = rsaTransportKey(CEK, publicKey, outError);
     if (!encryptedForTransport)
         return nil;
     
     // You'd think that we'd want to deal with any leading 0s in the integer returned from the RSA computation, but PKCS#1/RFC3447 specifies PKCS #1 v1.5 padding as resulting in an octet string (via I2OSP), not a bit string.
-    OFASN1AppendTagLength(buffer, BER_TAG_OCTET_STRING, [encryptedForTransport length]);
-    [buffer appendData:encryptedForTransport];
     
-    /* Finally, wrap that in a SEQUENCE. No implicit tag this time. */
-    NSMutableData *result = [NSMutableData data];
-    OFASN1AppendTagLength(result, BER_TAG_SEQUENCE | FLAG_CONSTRUCTED, [buffer length]);
-    [result appendData:buffer];
-    
-    return result;
+    return OFASN1AppendStructure(nil, "(ud+[d])",
+                                 version,
+                                 recipientIdentifier,
+                                 alg_rsaEncryption_pkcs1_5,
+                                 encryptedForTransport);
 }
 
-NSData *OFUnwrapRIForCMSKeyTransport(SecIdentityRef ident, NSData *encrypted, NSError **outError)
+static NSError *parseKeyTransportRecipient(NSData *rid, const struct parsedTag *recip, NSData **outRecipientIdentifier, NSData **outWrapped)
+{
+    /*
+     KeyTransRecipientInfo ::= SEQUENCE {
+         version CMSVersion,  -- always set to 0 or 2
+         rid RecipientIdentifier,
+         keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+         encryptedKey EncryptedKey
+     }
+     */
+    
+    static const struct scanItem ktriDataItems[4] = {
+        { FLAG_PRIMITIVE, BER_TAG_INTEGER }, /* version */
+        { FLAG_ANY_OBJECT, 0 }, /* RecipientIdentifier */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* wrapping algorithm */
+        { FLAG_PRIMITIVE, BER_TAG_OCTET_STRING } /* wrapped key */
+    };
+    struct parsedItem ktriDataValues[4];
+    
+    enum OFASN1ErrorCodes rc = OFASN1ParseItemsInObject(rid, *recip, YES, ktriDataItems, ktriDataValues);
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"KeyTransportRecipient");
+    
+    int syntaxVersion = -1;
+    rc = OFASN1UnDERSmallInteger(rid, &ktriDataValues[0].i, &syntaxVersion);
+    if (rc != OFASN1Success || syntaxVersion < 0 || syntaxVersion > 2) {
+        // Don't try to parse something whose version field is out of the range we know about.
+        return unsupportedCMSFeature(@"KeyTransRecipientInfo.version=%d", syntaxVersion);
+    }
+    
+    /* The recipient identifier is: CHOICE {
+          issuerAndSerialNumber SEQUENCE { ... },
+          subjectKeyIdentifier [0] OCTET STRING
+       }
+     For future expansion, we'll accept any context-tagged object here. Our caller will deal with the fallout.
+     */
+    if (!(( ktriDataValues[1].i.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_UNIVERSAL) && ktriDataValues[1].i.tag == BER_TAG_SEQUENCE ) ||
+          ( (ktriDataValues[1].i.classAndConstructed & CLASS_MASK) == CLASS_CONTEXT_SPECIFIC )))
+        return OFNSErrorFromASN1Error(OFASN1UnexpectedType, @"KeyTransportRecipient");
+    
+    *outRecipientIdentifier = [rid subdataWithRange:(NSRange){ ktriDataValues[1].startPosition, NSMaxRange(ktriDataValues[1].i.content) - ktriDataValues[1].startPosition }];
+    *outWrapped = [rid subdataWithRange:(NSRange){ ktriDataValues[2].startPosition, NSMaxRange(ktriDataValues[3].i.content) - ktriDataValues[2].startPosition } ];
+    return nil;
+}
+
+NSData *OFUnwrapRIForCMSKeyTransport(SecKeyRef secretKey, NSData *encrypted, NSError **outError)
 {
     enum OFASN1Algorithm alg = OFASN1Algorithm_Unknown;
     NSRange algParams;
@@ -519,16 +639,7 @@ NSData *OFUnwrapRIForCMSKeyTransport(SecIdentityRef ident, NSData *encrypted, NS
         case OFASN1Algorithm_rsaEncryption_pkcs1_5:
         {
             NSData *encryptedForTransport = OFASN1UnwrapOctetString(encrypted, (NSRange){NSMaxRange(algParams), [encrypted length] - NSMaxRange(algParams)});
-            SecKeyRef secretKey = NULL;
-            OSStatus oserr = SecIdentityCopyPrivateKey(ident, &secretKey);
-            if (oserr != noErr || !secretKey) {
-                if (outError)
-                    *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo: @{ @"function": @"SecIdentityCopyPrivateKey" }];
-                return nil;
-            }
-            NSData *result = rsaReceiveKey(encryptedForTransport, secretKey, outError);
-            CFRelease(secretKey);
-            return result;
+            return rsaReceiveKey(encryptedForTransport, secretKey, outError);
         }
         default:
             if (outError) {
@@ -635,7 +746,7 @@ static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **o
 {
     /* SecKeyGetBlockSize() is very vaguely documented and has in fact changed its behavior incompatibly over time, but its current behavior is to return the size, in bytes, of the block which can be encrypted by the given key. For RSA, that's the size of the output. */
     size_t byteSize = SecKeyGetBlockSize(publicKey);
-    size_t bufferSize = 2 * MAX(byteSize, 128);  // Just use an overlong buffer in case SecKeyGetBlockSize() is inaccurate somehow.
+    size_t bufferSize = 2 * MAX(byteSize, 128u);  // Just use an overlong buffer in case SecKeyGetBlockSize() is inaccurate somehow.
     
     NSMutableData *buffer = [[NSMutableData alloc] initWithLength:bufferSize];
     
@@ -643,7 +754,7 @@ static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **o
     
     if (oserr != noErr) {
         if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo:@{ @"function": @"SecKeyEncrypt", @"key": publicKey }];
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo:@{ @"function": @"SecKeyEncrypt", @"key": (__bridge NSObject *)publicKey }];
         return nil;
     }
     
@@ -654,16 +765,16 @@ static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **o
 
 static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **outError)
 {
-    size_t byteSize = SecKeyGetBlockSize(publicKey);
-    size_t bufferSize = 2 * MAX(byteSize, 128);  // Just use an overlong buffer in case SecKeyGetBlockSize() is inaccurate somehow.
+    size_t byteSize = SecKeyGetBlockSize(secretKey);
+    size_t bufferSize = 2 * MAX(byteSize, 128u);  // Just use an overlong buffer in case SecKeyGetBlockSize() is inaccurate somehow.
     
     NSMutableData *buffer = [[NSMutableData alloc] initWithLength:bufferSize];
     
-    OSStatus oserr = SecKeyDecrypt(publicKey, kSecPaddingPKCS1, [encrypted bytes], [encrypted length], [buffer mutableBytes], &bufferSize);
+    OSStatus oserr = SecKeyDecrypt(secretKey, kSecPaddingPKCS1, [encrypted bytes], [encrypted length], [buffer mutableBytes], &bufferSize);
     
     if (oserr != noErr) {
         if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo:@{ @"function": @"SecKeyDecrypt", @"key": publicKey }];
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo:@{ @"function": @"SecKeyDecrypt", @"key": (__bridge NSObject *)secretKey }];
         return nil;
     }
     
@@ -673,6 +784,100 @@ static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **o
 }
 
 #endif
+
+#pragma mark Parsing Functions
+
+NSError *_OFASN1ParseCMSRecipient(NSData *rinfo, enum OFCMSRecipientType *outType, NSData **outWho, NSData **outEncryptedKey)
+{
+    enum OFASN1ErrorCodes rc;
+    struct parsedTag recip;
+    
+    NSUInteger inputLength = rinfo.length;
+    rc = OFASN1ParseTagAndLength(rinfo, 0, inputLength, YES, &recip);
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"RecipientInfo");
+    if (inputLength != NSMaxRange(recip.content))
+        return OFNSErrorFromASN1Error(OFASN1TrailingData, @"RecipientInfo");
+    
+    if (recip.classAndConstructed == FLAG_CONSTRUCTED && recip.tag == BER_TAG_SEQUENCE) {
+        *outType = OFCMSRKeyTransport;
+        return parseKeyTransportRecipient(rinfo, &recip, outWho, outEncryptedKey);
+    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 3) {
+        *outType = OFCMSRPassword;
+        return parsePasswordDerivationRecipient(rinfo, &recip, outWho, outEncryptedKey);
+    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 2) {
+        *outType = OFCMSRPreSharedKey;
+        return parsePreSharedKeyRecipient(rinfo, &recip, outWho, outEncryptedKey);
+    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC)) {
+        *outType = OFCMSRUnknown;
+        return nil;
+    } else {
+        return OFNSErrorFromASN1Error(OFASN1UnexpectedType, @"RecipientInfo");
+    }
+}
+
+NSError *_OFASN1ParseCMSRecipientIdentifier(NSData *rid, enum OFCMSRecipientIdentifierType *outType, NSData **blob1, NSData **blob2)
+{
+    enum OFASN1ErrorCodes rc;
+    struct parsedTag recip;
+    NSUInteger inputLength = rid.length;
+
+    rc = OFASN1ParseTagAndLength(rid, 0, inputLength, YES, &recip);
+    if (!rc) {
+        if (NSMaxRange(recip.content) < inputLength)
+            rc = OFASN1Truncated;
+        else if (NSMaxRange(recip.content) > inputLength)
+            rc = OFASN1TrailingData;
+    }
+    if (rc) {
+        return OFNSErrorFromASN1Error(rc, @"RecipientIdentifier");
+    }
+    
+    if (recip.classAndConstructed == FLAG_CONSTRUCTED && recip.tag == BER_TAG_SEQUENCE) {
+        /* Inverse of _OFCMSRIDFromIssuerSerial():
+         
+         IssuerAndSerialNumber ::= SEQUENCE {
+             issuer Name,
+             serialNumber CertificateSerialNumber
+         }
+        */
+        
+        static const struct scanItem isnDataItems[2] = {
+            { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE },
+            { FLAG_PRIMITIVE, BER_TAG_INTEGER }
+        };
+        struct parsedItem isnDataValues[2];
+        
+        rc = OFASN1ParseItemsInObject(rid, recip, YES, isnDataItems, isnDataValues);
+        if (rc) {
+            return OFNSErrorFromASN1Error(rc, @"RecipientIdentifier: IssuerAndSerialNumber");
+        }
+        
+        *blob1 = [rid subdataWithRange:(NSRange){ .location = isnDataValues[0].startPosition, .length = NSMaxRange(isnDataValues[0].i.content) - isnDataValues[0].startPosition }];
+        rc = OFASN1ExtractStringContents(rid, isnDataValues[1].i, blob2);
+        if (rc) {
+            return OFNSErrorFromASN1Error(rc, @"RecipientIdentifier: IssuerAndSerialNumber");
+        }
+        
+        *outType = OFCMSRIDIssuerSerial;
+        return nil;
+    } else if (recip.classAndConstructed == (FLAG_PRIMITIVE | CLASS_CONTEXT_SPECIFIC) && recip.tag == 0) {
+        /* Inverse of _OFCMSRIDFromSKI():
+         [0] IMPLICIT SubjectKeyIdentifier ::= OCTET STRING
+         */
+        
+        *blob2 = nil;
+        rc = OFASN1ExtractStringContents(rid, recip, blob1);
+        if (rc) {
+            return OFNSErrorFromASN1Error(rc, @"RecipientIdentifier: SubjectKeyIdentifier");
+        }
+
+        *outType = OFCMSRIDSubjectKeyIdentifier;
+        return nil;
+    } else {
+        return unsupportedCMSFeature(@"RecipientIdentifier tag 0x%02x", recip.tag);
+    }
+}
 
 #pragma mark Producing RecipientIdentifiers
 
@@ -692,12 +897,16 @@ NSData *_OFCMSRIDFromSKI(NSData *ski)
 
 #pragma mark Local helpers
 
-static NSError *_unsupportedCMSFeature(NSString *descr)
+static NSError *unsupportedCMSFeature(NSString *fmt, ...)
 {
-    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-    if (descr)
-        [userInfo setObject:descr forKey:NSLocalizedFailureReasonErrorKey];
-    return [NSError errorWithDomain:OFErrorDomain code:OFUnsupportedCMSFeature userInfo:( [userInfo count] ? [userInfo copy] : nil )];
+    va_list argList;
+    va_start(argList, fmt);
+    NSString *detail = [[NSString alloc] initWithFormat:fmt arguments:argList];
+    va_end(argList);
+    
+    NSError *result = [NSError errorWithDomain:OFErrorDomain code:OFUnsupportedCMSFeature userInfo: @{ NSLocalizedFailureReasonErrorKey: detail } ];
+    
+    return result;
 }
 
 

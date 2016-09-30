@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniFileStore/OFSFileManager.h>
 
+#import <OmniBase/OBLogger.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
@@ -22,8 +23,7 @@
 
 RCS_ID("$Id$");
 
-OFDeclareDebugLogLevel(OFSFileManagerDebug);
-
+OBLogger *OFSFileManagerLogger;
 
 // If the file name ends in a number, we are likely dealing with a duplicate.
 void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outName, NSUInteger *outCounter)
@@ -32,6 +32,13 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 }
 
 @implementation OFSFileManager
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    OBLoggerInitializeLogLevel(OFSFileManagerLogger);
+}
 
 + (Class)fileManagerClassForURLScheme:(NSString *)scheme;
 {

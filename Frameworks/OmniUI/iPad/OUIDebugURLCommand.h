@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development. Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,26 @@
 /*!
  Concrete special URL command handler for debug URLs (of the form <app name>:///debug?<command>). When invoked, this command prompts for confirmation as usual, but then executes a command and forces the app to quit immediately.
  
- The command executed is derived from the query string in the URL (or, if no query exists, the resource specifier). This string is converted to a camel-case equivalent, then prefixed with the string "command_" and executed as a selector on this class. For example, the OmniGraffle URL omnigraffle:///debug?clear-preview-cache would eventually invoke a selector -command_ClearPreviewCache. If no matching selector for a URL is found, this command does nothing.
+ The command executed is derived from the query string in the URL (or, if no query exists, the resource specifier). The string is converted to a camel-case equivalent and then the command can take on one of the following forms:
  
- To provide custom commands in an application, simply define a method with the appropriate name and signature. Debug commands should return BOOL (whether their debug operation succeeded or failed) and take no arguments. They must be of the form -command_CamelCaseDebugString. Generally, you should consider providing a category on OUIDebugURLCommand to define these methods instead of subclassing further; overriding this class's implementation of -invoke is especially discouraged.
+    * Deferred completion:
+
+        Camel-cased command is transformed into "command_%@_completionHandler:". The completion handler takes on the following signature: ^void (BOOL success).
+ 
+        To provide this type of command in an application, simply define a method with the appropriate name and signature and a return type of void.
+ 
+        Note: This takes precedence if both formats are implemented.
+
+    * Immediate completion:
+
+        Camel-cased command is prefixed with the string "command_" and executed as a selector on this class.
+
+        To provide this type of command in an application, simply define a method with the appropriate name and signature and a return type of BOOL.
+
+ For example, the OmniGraffle URL omnigraffle:///debug?clear-preview-cache would invoke a selector -command_ClearPreviewCache_completionHandler: and failing that -command_ClearPreviewCache. If no matching selector for a URL is found, this command does nothing.
+
+ Generally, you should consider providing a category on OUIDebugURLCommand to define these methods instead of subclassing further; overriding this class's implementation of -invoke is especially discouraged.
+
  */
 @interface OUIDebugURLCommand : OUISpecialURLCommand
 

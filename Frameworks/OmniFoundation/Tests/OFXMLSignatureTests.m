@@ -288,8 +288,8 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
     
     NSLog(@"   Retrieving external reference <%@>", [refURL absoluteString]);
     
-    NSData *remoteData = [NSURLConnection sendSynchronousRequest:[NSURLRequest requestWithURL:refURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:45] returningResponse:NULL error:outError];
-    if (!remoteData)  // NSURLConnection will have filled *outError for us
+    NSData *remoteData = [NSData dataWithContentsOfURL:refURL options:0 error:outError];
+    if (!remoteData)  // -dataWithContentsOfURL: will have filled *outError for us
         return NO;
     
 #ifdef DEBUG_XMLSIG_TESTS

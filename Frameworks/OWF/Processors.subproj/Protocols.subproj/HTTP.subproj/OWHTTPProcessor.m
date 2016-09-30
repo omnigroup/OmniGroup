@@ -36,61 +36,44 @@ static NSSet *nonEntityHeaderNames;
 
 + (void)initialize
 {
-    CFSetRef headerNames;
-#define HEADER_NAME_MAX 25
-    int count;
-    NSString *nonEntityHeaderNameArray[HEADER_NAME_MAX];
-    
     OBINITIALIZE;
 
-    count = 0;
 //  TODO: Handle 'Age' appropriately
-    nonEntityHeaderNameArray[count++] = @"Authorization";
-    nonEntityHeaderNameArray[count++] = @"Connection";
-    nonEntityHeaderNameArray[count++] = @"Date";
-    nonEntityHeaderNameArray[count++] = @"Keep-Alive";
-    nonEntityHeaderNameArray[count++] = @"Location";  // Different from Content-Location. The Location field is stripped out earlier and used to genenerate a redirection content.
-    nonEntityHeaderNameArray[count++] = @"Proxy-Authenticate";
-    nonEntityHeaderNameArray[count++] = @"Proxy-Authorization";
-    nonEntityHeaderNameArray[count++] = @"Retry-After";
-    nonEntityHeaderNameArray[count++] = @"Set-Cookie";    // Nonstandard but widely used
-    nonEntityHeaderNameArray[count++] = @"Set-Cookie2";   // Nonstandard but widely used
-    nonEntityHeaderNameArray[count++] = @"TE";
-    nonEntityHeaderNameArray[count++] = @"Transfer-Encoding";
-    nonEntityHeaderNameArray[count++] = @"Upgrade";
-    
-    // Other random stuff
-    nonEntityHeaderNameArray[count++] = @"Proxy-Connection";
-    nonEntityHeaderNameArray[count++] = @"X-Cache";
-    nonEntityHeaderNameArray[count++] = @"X-Cache-Lookup";
-
-    // The following headers should really be used to add properties to the arc, rather than left on the OWContent. For now they're on the OWContent.
- //  nonEntityHeaderNameArray[count++] = @"Accept-Ranges";  // Currently this needs to be on the content because that's where OHDownloader looks for it. It should probably be on the arc, because it's an attribute of the server's ability to supply this content, not an attribute of the content itself.
- //    nonEntityHeaderNameArray[count++] = @"Server";
- //    nonEntityHeaderNameArray[count++] = @"Vary";
- //    nonEntityHeaderNameArray[count++] = @"Via";
- //    nonEntityHeaderNameArray[count++] = @"X-Cache";    // Nonstandard but widely used
-
-    assert(count <= HEADER_NAME_MAX);
-
-    headerNames = CFSetCreate(kCFAllocatorDefault, (const void **)nonEntityHeaderNameArray, count, &OFCaseInsensitiveStringSetCallbacks);
-    nonEntityHeaderNames = (NSSet *)headerNames;
+    const void *nonEntityHeaderNameArray[] = {
+        @"Authorization",
+        @"Connection",
+        @"Date",
+        @"Keep-Alive",
+        @"Location", // Different from Content-Location. The Location field is stripped out earlier and used to genenerate a redirection content.
+        @"Proxy-Authenticate",
+        @"Proxy-Authorization",
+        @"Retry-After",
+        @"Set-Cookie", // Nonstandard but widely used
+        @"Set-Cookie2", // Nonstandard but widely used
+        @"TE",
+        @"Transfer-Encoding",
+        @"Upgrade",
+        
+        // Other random stuff
+        @"Proxy-Connection",
+        @"X-Cache",
+        @"X-Cache-Lookup",
+        
+        // The following headers should really be used to add properties to the arc, rather than left on the OWContent. For now they're on the OWContent.
+        // @"Accept-Ranges", // Currently this needs to be on the content because that's where OHDownloader looks for it. It should probably be on the arc, because it's an attribute of the server's ability to supply this content, not an attribute of the content itself.
+        // @"Server",
+        // @"Vary",
+        // @"Via",
+        // @"X-Cache", // Nonstandard but widely used
+    };
+    CFIndex headerNameCount = sizeof(nonEntityHeaderNameArray) / sizeof(*nonEntityHeaderNameArray);
+    CFSetRef headerNames = CFSetCreate(kCFAllocatorDefault, nonEntityHeaderNameArray, headerNameCount, &OFCaseInsensitiveStringSetCallbacks);
+    nonEntityHeaderNames = CFBridgingRelease(headerNames);
 }
 
 + (BOOL)processorUsesNetwork
 {
     return YES;
-}
-
-// Init and dealloc
-
-- (void)dealloc;
-{
-    [dataStream release];
-    [httpContent release];
-    [queue release];
-    [credentials release];
-    [super dealloc];
 }
 
 // API
@@ -104,14 +87,14 @@ static NSSet *nonEntityHeaderNames;
 {
     OBPRECONDITION(queue == nil);
     
-    queue = [aQueue retain];
+    queue = aQueue;
     if ([queue queueProcessor:self])
         [super startProcessing];
 }
 
 - (void)handleSessionException:(NSException *)anException;
 {
-    if (status != OWProcessorAborting)
+    if (self.status != OWProcessorAborting)
         [self handleProcessingException:anException];
     [self processAbort];
 }
@@ -123,11 +106,9 @@ static NSSet *nonEntityHeaderNames;
 
 - (void)setDataStream:(OWDataStream *)aDataStream;
 {
-    if (aDataStream != dataStream) {
-        [dataStream release];
-        dataStream = [aDataStream retain];
-        [httpContent release];
-        httpContent = [[OWContent contentWithDataStream:dataStream isSource:YES] retain];
+    if (dataStream != aDataStream) {
+        dataStream = aDataStream;
+        httpContent = [OWContent contentWithDataStream:dataStream isSource:YES];
         [httpContent addHeader:OWContentHTTPStatusMetadataKey value:[NSNumber numberWithInt:httpStatusCode]];
     }
 }
@@ -149,9 +130,8 @@ static NSSet *nonEntityHeaderNames;
         OWURL *anAffectedResource = [[sourceAddress url] urlFromRelativeString:anAffectedLocation];
         if (![anAffectedResource isEqual:[sourceAddress url]] &&
             [[[sourceAddress url] netLocation] isEqual:[anAffectedResource netLocation]])
-            [pipeline mightAffectResource:anAffectedResource];
+            [self.pipeline mightAffectResource:anAffectedResource];
     });
-    [affectedLocations release];
 }
 
 - (void)addHeaders:(OWHeaderDictionary *)headerDict;
@@ -167,7 +147,7 @@ static NSSet *nonEntityHeaderNames;
 
     [self invalidateForHeaders:headerDict];
 
-    [pipeline cacheControl:[OWCacheControlSettings cacheSettingsForHeaderDictionary:headerDict]];
+    [self.pipeline cacheControl:[OWCacheControlSettings cacheSettingsForHeaderDictionary:headerDict]];
 }
 
 - (void)markEndOfHeaders;
@@ -177,7 +157,7 @@ static NSSet *nonEntityHeaderNames;
 
 - (void)addContent;
 {
-    [pipeline addContent:[self content] fromProcessor:self flags:httpContentFlags];
+    [self.pipeline addContent:[self content] fromProcessor:self flags:httpContentFlags];
 }
 
 - (void)flagResult:(unsigned)someFlags;
@@ -208,10 +188,7 @@ static NSSet *nonEntityHeaderNames;
     if (credentials)
         [newCredentials addObjectsFromArray:credentials];
     
-    [credentials release];
     credentials = [newCredentials copy];
-
-    [newCredentials release];
 }
 
 - (void)setHTTPStatusCode:(HTTPStatus)newStatusCode;
@@ -228,19 +205,17 @@ static NSSet *nonEntityHeaderNames;
 
 - (void)startProcessing;
 {
-    NSString *reqMethod;
-    
     httpContentFlags = OWProcessorContentIsSource|OWProcessorTypeRetrieval;
     
     // Decide whether the URL is probably an 'operation' instead of a 'retrieval'.
-    reqMethod = [sourceAddress methodString];
+    NSString *reqMethod = [sourceAddress methodString];
     if ([reqMethod isEqualToString:@"GET"] || [reqMethod isEqualToString:@"HEAD"]) {
         // GETs are generally retrievals, unless they have a query-string [9.1],[13.9]. 
         if (![NSString isEmptyString:[[sourceAddress url] query]])
             httpContentFlags |= OWProcessorTypeAction;
     } else if ([reqMethod isEqualToString:@"OPTIONS"]) {
         // OPTIONS isn't an action. It's not cacheable, though. [9.2]
-        [pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithNoCache]];
+        [self.pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithNoCache]];
     } else {
         // Other method strings can be assumed to be actions.
         httpContentFlags |= OWProcessorTypeAction;
@@ -252,7 +227,7 @@ static NSSet *nonEntityHeaderNames;
         }
         [self startProcessingInHTTPSessionQueue:[[self sessionQueueClass] httpSessionQueueForAddress:sourceAddress]];
     } NS_HANDLER {
-        if (status != OWProcessorAborting)
+        if (self.status != OWProcessorAborting)
             [self handleProcessingException:localException];
         [self processAbort];
         [self retire];
@@ -263,7 +238,7 @@ static NSSet *nonEntityHeaderNames;
 {
     [super processBegin];
     if (httpContentFlags & OWProcessorTypeAction)
-        [pipeline mightAffectResource:[sourceAddress url]];
+        [self.pipeline mightAffectResource:[sourceAddress url]];
 }
 
 - (void)processInThread;
@@ -273,14 +248,15 @@ static NSSet *nonEntityHeaderNames;
 
 - (void)abortProcessing;
 {
-    [self retain];
-    OWHTTPSessionQueue *myQueue = [[queue retain] autorelease];
+    OWHTTPProcessor *strongSelf = self;
+    OWHTTPSessionQueue *myQueue = queue;
+    OBRetainAutorelease(myQueue);
     [super abortProcessing];
     [myQueue abortProcessingForProcessor:self];
-    if (dataStream && ![dataStream endOfData])
+    if (dataStream != nil && ![dataStream endOfData])
         [dataStream dataAbort];
     [self markEndOfHeaders];
-    [self release];
+    strongSelf = nil;
 }
 
 @end

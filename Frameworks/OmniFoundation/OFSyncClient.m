@@ -262,21 +262,13 @@ NSString *OFSyncClientHardwareModel(NSDictionary *clientState)
 // Testing support.
 NSDate *OFSyncClientDateWithTimeIntervalSinceNow(NSTimeInterval sinceNow)
 {
-    static BOOL Initialized = NO;
-    static NSDate *ReferenceDate = nil;
-    if (!Initialized) {
-        Initialized = YES;
+    NSString *syncDateString = [[NSUserDefaults standardUserDefaults] stringForKey:@"OFSyncClientReferenceDate"];
+    if (![NSString isEmptyString:syncDateString]) {
+        NSDate *referenceDate = [[NSDate alloc] initWithXMLString:syncDateString];
+        OBASSERT(referenceDate);
         
-        const char *syncDateString = getenv("OFSyncClientReferenceDate");
-        if (syncDateString) {
-            ReferenceDate = [[NSDate alloc] initWithXMLString:[NSString stringWithUTF8String:syncDateString]];
-            OBASSERT(ReferenceDate);
-        }
-    }
-    
-    if (ReferenceDate) {
         // The clock is stopped in this case, so we can't really do multiple sync operations (but we want predictable outputs, so that's expected).  We could add the ability to set the reference date later if we need.
-        return [ReferenceDate dateByAddingTimeInterval:sinceNow];
+        return [referenceDate dateByAddingTimeInterval:sinceNow];
     }
     
     return [NSDate dateWithTimeIntervalSinceNow:sinceNow];

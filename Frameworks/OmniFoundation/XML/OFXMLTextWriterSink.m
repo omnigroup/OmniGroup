@@ -1,4 +1,4 @@
-// Copyright 2009-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,12 @@ static inline const xmlChar * __attribute__((const,always_inline)) castXmlChar(c
 }
 
 @implementation OFXMLTextWriterSink
+{
+    xmlTextWriter *writer;
+#ifdef DEBUG
+    OFXMLMaker *currentElt;
+#endif
+}
 
 // Init and dealloc
 
@@ -41,6 +47,33 @@ static inline const xmlChar * __attribute__((const,always_inline)) castXmlChar(c
     currentElt = self;
 #endif
     
+    return self;
+}
+
+static int xmlOutToNSStream(void *ctxt, const char *buffer, int len)
+{
+    NSOutputStream *s = (NSOutputStream *)ctxt;
+    return (int)[s write:(void *)buffer maxLength:len];
+}
+static int xmlOutToNSStreamEnd(void * ctxt)
+{
+    NSOutputStream *s = (NSOutputStream *)ctxt;
+    [s close];
+    [s release];
+    return 0;
+}
+
+- (instancetype)initWithStream:(NSOutputStream *)outputStream;
+{
+    [outputStream open];
+    void *ctxt = outputStream;
+    xmlOutputBuffer *buf = xmlOutputBufferCreateIO(xmlOutToNSStream, xmlOutToNSStreamEnd, ctxt, xmlGetCharEncodingHandler(XML_CHAR_ENCODING_UTF8));
+    [outputStream retain];
+    xmlTextWriter *w = xmlNewTextWriter(buf);
+    if (!(self = [self initWithTextWriter:w freeWhenDone:YES])) {
+        xmlFreeTextWriter(w);
+        return nil;
+    }
     return self;
 }
 

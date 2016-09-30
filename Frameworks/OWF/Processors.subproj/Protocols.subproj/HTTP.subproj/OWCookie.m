@@ -44,25 +44,11 @@ NSString * const OWCookieGlobalPath = @"/";
     _path = [aPath copy];
     _name = [aName copy];
     _value = [aValue copy];
-    _expirationDate = [aDate retain];
+    _expirationDate = aDate;
     _secure = isSecure;
 
     return self;
 }
-
-- (void)dealloc;
-{
-    [_domain release];
-    [_path release];
-    [_name release];
-    [_value release];
-    [_expirationDate release];
-    [_site release];
-    [_siteDomain release];
-
-    [super dealloc];
-}
-
 
 // API
 
@@ -114,10 +100,7 @@ NSString * const OWCookieGlobalPath = @"/";
 - (void)setSite:(NSString *)aURL;
 {
     if (aURL != _site) {
-        [_site release];
         _site = [aURL copy];
-        
-        [_siteDomain release];
         _siteDomain = nil;
     }
 }
@@ -126,9 +109,9 @@ NSString * const OWCookieGlobalPath = @"/";
 {
     if (_siteDomain == nil) {
         if ([NSString isEmptyString:_site])
-            _siteDomain = [[NSString string] retain];
+            _siteDomain = [NSString string];
         else
-            _siteDomain = [[[OWURL urlFromString:_site] domain] retain];
+            _siteDomain = [[OWURL urlFromString:_site] domain];
     }
 
     return _siteDomain;
@@ -200,17 +183,17 @@ NSString * const OWCookieGlobalPath = @"/";
 - (void)appendXML:(OFDataBuffer *)xmlBuffer;
 {
     OFDataBufferAppendCString(xmlBuffer, "  <cookie name=\"");
-    OFDataBufferAppendXMLQuotedString(xmlBuffer, (CFStringRef)_name);
+    OFDataBufferAppendXMLQuotedString(xmlBuffer, (__bridge CFStringRef)_name);
     
     // Only save the path if it is a non-global value (the most common case).
     if (_path != nil && ![_path isEqualToString:OWCookieGlobalPath]) {
         OFDataBufferAppendCString(xmlBuffer, "\" path=\"");
-        OFDataBufferAppendXMLQuotedString(xmlBuffer, (CFStringRef)_path);
+        OFDataBufferAppendXMLQuotedString(xmlBuffer, (__bridge CFStringRef)_path);
     }
     
     if (_value != nil) {
         OFDataBufferAppendCString(xmlBuffer, "\" value=\"");
-        OFDataBufferAppendXMLQuotedString(xmlBuffer, (CFStringRef)_value);
+        OFDataBufferAppendXMLQuotedString(xmlBuffer, (__bridge CFStringRef)_value);
     }
     if (_expirationDate != nil) {
         char string[13]; // We want to support dates through the year 9999
@@ -230,7 +213,7 @@ NSString * const OWCookieGlobalPath = @"/";
     
     if (_site != nil) {
         OFDataBufferAppendCString(xmlBuffer, "\" receivedBySite=\"");
-        OFDataBufferAppendXMLQuotedString(xmlBuffer, (CFStringRef)_site);
+        OFDataBufferAppendXMLQuotedString(xmlBuffer, (__bridge CFStringRef)_site);
     }
     
     OFDataBufferAppendCString(xmlBuffer, "\" />\n");
@@ -251,9 +234,7 @@ NSString * const OWCookieGlobalPath = @"/";
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
     if (_domain)
         [debugDictionary setObject:_domain forKey:@"domain"];
@@ -308,7 +289,6 @@ NSString * const OWCookieGlobalPath = @"/";
     NSHTTPCookie *nsCookie = [NSHTTPCookie cookieWithProperties:cookieProperties];
     if (nsCookie == nil)
         NSLog(@"-[%@ %@]: nsCookie=%@, cookieProperties=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), nsCookie, cookieProperties);
-    [cookieProperties release];
     return nsCookie;
 }
 

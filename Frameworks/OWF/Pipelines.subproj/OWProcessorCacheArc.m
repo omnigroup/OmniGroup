@@ -40,21 +40,76 @@ RCS_ID("$Id$");
 @end
 
 @implementation OWProcessorCacheArc
+{
+    OWContent /* *subject, */ *source, *object;
+    
+    OWCacheArcType arcType;
+    struct {
+        enum {
+            ArcStateInitial = 1,
+            ArcStateStarting,
+            ArcStateLoadingBundle,
+            ArcStateRunning,
+            ArcStateRetired
+        } state: 8;
+        unsigned int objectIsSource:1, objectIsError:1;
+        unsigned int arcShouldNotBeCachedOnDisk:1;
+        unsigned int possiblyProducesSource:1;
+        unsigned int traversalIsAction:1;
+        unsigned int havePassedOn: 1;
+        unsigned int haveRemovedFromCache: 1;
+        unsigned int _pad: 1;
+    } flags;
+    
+    /* Locking discipline */
+    /* Not changed after initialization: source, link */
+    /* protected by OWPipeline lock: ... */
+    /* protected by local lock: dependentContext, all members of 'flags', cacheControl, 'processor', auxiliaryContent, ... */
+    
+    OWProcessorCache *owner;
+    OWContentTypeLink *link;
+    OWProcessor *processor;
+    
+    NSLock *lock; /* LEAF LOCK */
+    NSMutableDictionary *dependentContext;
+    
+    // Keeping track of when we started working and when we got the beginning of the response
+    NSDate *processStarted, *processGotResponse;
+    OWProcessorStatus previousStatus;
+    
+    // Cacheability information from the processor or server (mostly applies to HTTP content)
+    OWCacheControlSettings *cacheControl;
+    
+    // Derived information: derived from processStarted, processGotResponse, cacheControl.serverDate, and cacheControl.ageAtFetch
+    NSTimeInterval clockSkew;
+    NSDate *arcCreationDate;
+    
+    unsigned short cachedTaskPriority;
+    OWTask *cachedTaskInfo;
+    __weak OWPipeline *context;
+    
+    OFSimpleLockType displayablesSimpleLock;
+    NSDate *firstBytesDate;
+    NSUInteger bytesProcessed;
+    NSUInteger totalBytes;
+    
+    CFMutableArrayRef observers;  // Nonretained observers; protected by local lock
+    
+    NSMutableArray *auxiliaryContent;
+}
 
 - (id)initWithSource:(OWContent *)sourceEntry link:(OWContentTypeLink *)aLink inCache:(OWProcessorCache *)aCache forPipeline:(OWPipeline *)owningPipeline;
 {
     if (!(self = [super init]))
         return nil;
 
-    OWFWeakRetainConcreteImplementation_INIT;
-
     OFSimpleLockInit(&displayablesSimpleLock);
     
     cacheControl = [[OWCacheControlSettings alloc] init];
-    owner = [aCache retain];
-    source = [sourceEntry retain];
+    owner = aCache;
+    source = sourceEntry;
     object = nil;
-    link = [aLink retain];
+    link = aLink;
     lock = [[NSLock alloc] init];
     processor = nil;
     dependentContext = [[NSMutableDictionary alloc] init];
@@ -63,7 +118,7 @@ RCS_ID("$Id$");
     previousStatus = OWProcessorNotStarted;
     flags.state = ArcStateInitial;
     observers = OFCreateNonOwnedPointerArray();
-    context = [owningPipeline weakRetain];
+    context = owningPipeline;
     OBASSERT(context != nil);
     [context addDeallocationObserver:self];
 
@@ -85,15 +140,14 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    OFSimpleLockFree(&displayablesSimpleLock);
+    [self removeFromCache];
+    [self _clearContext];
 
-    [cachedTaskInfo release];
-    cachedTaskInfo = nil;
+    OFSimpleLockFree(&displayablesSimpleLock);
 
     OBASSERT(processor == nil); // Shouldn't this be true?  Well, just in case it's not, let's go ahead and test...
     if (processor != nil) {
         [processor abortProcessing];
-        [processor autorelease];
         processor = nil;
     }
 
@@ -101,30 +155,11 @@ RCS_ID("$Id$");
     OBASSERT(flags.state == ArcStateInitial || flags.state == ArcStateRetired);
 
     // Any observers should have already removed themselves from our list by now.
-    OBASSERT(CFArrayGetCount((CFMutableArrayRef)observers) == 0);
+    OBASSERT(CFArrayGetCount(observers) == 0);
     CFRelease(observers);
 
-    OBASSERT(context == nil);
-    [source release];
-    source = nil;
-    [object release];
-    object = nil;
-    [owner release];
-    [link release];
-    [lock release];
-    [dependentContext release];
-    [processStarted release];
-    [processGotResponse release];
-    [cacheControl release];
-    [arcCreationDate release];
     OBASSERT(context == nil); // Cleared by _clearContext:
-    [firstBytesDate release];
-    [auxiliaryContent release];
-
-    [super dealloc];
 }
-
-OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSUInteger)hash
 {
@@ -281,8 +316,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (OWCacheArcTraversalResult)traverseInPipeline:(OWPipeline *)pipeline
 {
-    OWCacheArcTraversalResult result;
-    
     ASSERT_OWPipeline_Locked();
 
     [lock lock];
@@ -301,10 +334,9 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         cachedTaskPriority = [pipeline messageQueueSchedulingInfo].priority;
         
         // Save off old task so that we can release it outside the lock (and avoid a deadlock)
-        oldTask = [cachedTaskInfo retain];
+        oldTask = cachedTaskInfo;
         
-        [cachedTaskInfo release];
-        cachedTaskInfo = [pipeline retain];
+        cachedTaskInfo = pipeline;
     }
 
     if (flags.state == ArcStateInitial) {
@@ -313,7 +345,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         /* Don't let a pipeline that isn't our preferred pipeline start us. Otherwise, we're likely to waste time producing content our 'context' pipeline would want, instead of producing the content that the pipeline that started us would want. */
         if (context != pipeline) {
             [lock unlock];
-            [oldTask release];
+            oldTask = nil;
             return OWCacheArcTraversal_Failed;
         }
 
@@ -322,12 +354,13 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         started = [self _startProcessor];
         
         if (!started) {
-            [oldTask release];
+            oldTask = nil;
             return OWCacheArcTraversal_Failed;
         }
         [lock lock];
     }
 
+    OWCacheArcTraversalResult result;
     if (object != nil)
         result = OWCacheArcTraversal_HaveResult;
     else if (flags.state == ArcStateRetired || [processor status] == OWProcessorAborting)
@@ -336,7 +369,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         result = OWCacheArcTraversal_WillNotify;
 
     [lock unlock];
-    [oldTask release]; // Retained inside the lock -- we release it outside the lock to avoid recursive deadlocks
+    oldTask = nil; // Retained inside the lock -- we release it outside the lock to avoid recursive deadlocks
 
     return result;
 }
@@ -374,9 +407,8 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         case OWProcessorStarting:
         case OWProcessorQueued:
         case OWProcessorRunning:
-            myProcessor = [processor retain];
+            myProcessor = processor;
             [lock unlock];
-            [myProcessor autorelease];
             [myProcessor abortProcessing];
             return YES;
         default:
@@ -419,21 +451,16 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSString *)statusString;
 {
-    OWProcessor *myProcessor;
-    NSString *processorStatusString;
-
-    myProcessor = nil;
+    OWProcessor *myProcessor = nil;
+    NSString *processorStatusString = nil;
 
     [lock lock];
-    if (processor)
-        myProcessor = [processor retain];
+    if (processor != nil)
+        myProcessor = processor;
     [lock unlock];
 
-    if (myProcessor)
+    if (myProcessor != nil)
         processorStatusString = [myProcessor statusString];
-    else
-        processorStatusString = nil;
-    [myProcessor release];
 
     return processorStatusString;
 }
@@ -478,8 +505,8 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
     if (newTotalBytes != NSNotFound)
         totalBytes = newTotalBytes;
-    if (!firstBytesDate)
-        firstBytesDate = [[NSDate date] retain];
+    if (firstBytesDate == nil)
+        firstBytesDate = [NSDate date];
 
     bytesProcessed = bytes;
     OFSimpleUnlock(&displayablesSimpleLock);
@@ -490,10 +517,8 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSDate *)firstBytesDate;
 {
-    NSDate *aDate;
-    
     OFSimpleLock(&displayablesSimpleLock);
-    aDate = [[firstBytesDate retain] autorelease];
+    NSDate *aDate = firstBytesDate;
     OFSimpleUnlock(&displayablesSimpleLock);
     return aDate;
 }
@@ -564,9 +589,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
                  flags.state == ArcStateRetired);
     }
 
-    [processor autorelease];
     processor = nil;
-    [cachedTaskInfo autorelease];
     cachedTaskInfo = nil;
 
     flags.state = ArcStateRetired;
@@ -586,18 +609,17 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         hasThreadChange = -1;
     previousStatus = OWProcessorRetired;
 
-    [self retain];
+    OWProcessorCacheArc *strongSelf = self;
 
     info = [[NSMutableDictionary alloc] initWithCapacity:3];
     [info setBoolValue:YES forKey:OWCacheArcIsFinishedNotificationInfoKey];
     [info setIntValue:hasThreadChange forKey:OWCacheArcHasThreadChangeInfoKey defaultValue:0];
 
     [self _unlockAndPostInfo:info];
-    [info release];
 
     // TODO:  We'd like to remove ourselves from our cache immediately when we retire, but unfortunately our replacement static arc may not have been created and registered with its cache yet (and we don't want a cache miss).
     // [owner removeArc:self];
-    [self release];
+    strongSelf = nil;
 }
 
 - (void)mightAffectResource:(OWURL *)aResourceLocator;
@@ -645,8 +667,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     OBASSERT(aProcessor == nil || aProcessor == processor);
     OBINVARIANT(flags.state == ArcStateRunning);
 
-    [object autorelease];
-    object = [someContent retain];
+    object = someContent;
 
     flags.objectIsSource = ( contentFlags & OWProcessorContentIsSource ) ? YES : NO;
     OBASSERT(flags.objectIsSource == [object isSource]);
@@ -669,7 +690,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     if (contentFlags & OWProcessorTypeAction)
         flags.traversalIsAction = 1;
 
-    if (CFArrayGetCount((CFMutableArrayRef)observers) == 0) {
+    if (CFArrayGetCount(observers) == 0) {
         [lock unlock];
     } else {
         NSMutableDictionary *info = [[NSMutableDictionary alloc] init];
@@ -681,14 +702,13 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
             [info setObject:object forKey:OWCacheArcObjectNotificationInfoKey];
         [info setObject:self forKey:@"arc"];
 
-        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(NSArray *)observers];
+        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(__bridge NSArray * _Nonnull)(observers)];
 
         [lock unlock];
 
-        [OWPipeline postSelector:@selector(arcHasResult:) toPipelines:observerSnapshot withObject:info];
-
-        [info release];
-        [observerSnapshot release];
+        [OWPipeline postUpdateToPipelines:observerSnapshot withBlock:^(OWPipeline *pipeline) {
+            [pipeline arcHasResult:info];
+        }];
     }
 
     [OWPipeline unlock];
@@ -712,20 +732,17 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (void)extraContent:(OWContent *)someContent fromProcessor:(OWProcessor *)aProcessor forAddress:(OWAddress *)anAddress
 {
-    NSDictionary *auxContent;
-
     OBPRECONDITION(someContent != nil);
     OBPRECONDITION(anAddress != nil);
 
-    auxContent = [[NSDictionary alloc] initWithObjectsAndKeys:
-        someContent, @"content",
-        anAddress, @"address",
-        nil];
+    NSDictionary *auxContent = @{
+        @"content": someContent,
+        @"address": anAddress,
+    };
     [lock lock];
     OBINVARIANT(aProcessor == processor);
     [auxiliaryContent addObject:auxContent];
     [lock unlock];
-    [auxContent release];
 }
 
 - (void)cacheControl:(OWCacheControlSettings *)control;
@@ -788,29 +805,25 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (OFPreference *)preferenceForKey:(NSString *)preferenceKey;
 {
-    OFPreference *result;
-
-    result = nil;
+    OFPreference *result = nil;
 
     [OWPipeline lock];
     if (context != nil)
-        result = [[context preferenceForKey:preferenceKey arc:self] retain];
+        result = [context preferenceForKey:preferenceKey arc:self];
     else
-        result = [[OFPreference preferenceForKey:preferenceKey] retain];
+        result = [OFPreference preferenceForKey:preferenceKey];
     [OWPipeline unlock];
 
-    return [result autorelease];
+    return result;
 }
 
 - (NSArray *)tasks
 {
-    NSArray *result;
-
     [lock lock];
-    result = (NSArray *)CFArrayCreateCopy(kCFAllocatorDefault, (CFMutableArrayRef)observers);
+    NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(__bridge NSArray * _Nonnull)(observers)];
     [lock unlock];
 
-    return [result autorelease];
+    return observerSnapshot;
 }
 
 - (id)promptView
@@ -839,31 +852,22 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSArray *)outerContentInfos
 {
-    NSMutableSet *seen;
-    NSMutableArray *queue, *results;
-
-    queue = [[NSMutableArray alloc] initWithArray:[self tasks]];
-    seen = [[NSMutableSet alloc] init];
-    results = [[NSMutableArray alloc] init];
-    [results autorelease];
+    NSMutableArray *queue = [[NSMutableArray alloc] initWithArray:[self tasks]];
+    NSMutableSet *seen = [[NSMutableSet alloc] init];
+    NSMutableArray *results = [[NSMutableArray alloc] init];
 
     while ([queue count] > 0) {
-        OWTask *aTask;
-        OWContentInfo *someInfo;
-
-        aTask = [[queue objectAtIndex:0] retain];
+        OWTask *aTask = [queue objectAtIndex:0];
         [queue removeObjectAtIndex:0];
 
         if ([seen containsObject:aTask]) {
-            [aTask release];
             continue;
         } else {
             [seen addObject:aTask];
-            [aTask release];
         }
 
-        someInfo = [aTask parentContentInfo];
-        if (!someInfo || [someInfo isHeader] || ![someInfo address]) {
+        OWContentInfo *someInfo = [aTask parentContentInfo];
+        if (someInfo == nil || [someInfo isHeader] || ![someInfo address]) {
             OWContentInfo *outerInfo = [aTask contentInfo];
             if (outerInfo && ![outerInfo isHeader]) {
                 [results addObject:outerInfo];
@@ -873,19 +877,14 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         }
     }
 
-    [queue release];
-    [seen release];
-
     return results;
 }
 
 - (void)noteErrorName:(NSString *)nonLocalizedErrorName reason:(NSString *)localizedErrorDescription;
 {
-    NSMutableDictionary *userInfo;
-
     [lock lock];
 
-    userInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
+    NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
     if (processor)
         [userInfo setObject:processor forKey:OWCacheArcErrorProcessorNotificationInfoKey];
     if ([NSString isEmptyString:nonLocalizedErrorName])
@@ -897,7 +896,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     flags.objectIsError = YES;
 
     [self _unlockAndPostInfo:userInfo];
-    [userInfo release];
 }
 
 - (BOOL)hadError
@@ -907,21 +905,21 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSArray *)entriesWithRelation:(OWCacheArcRelationship)relation
 {
-    id objets[3];
+    OWContent *objects[3];
     unsigned objCount = 0;
     NSArray *result;
     
     if (relation & (OWCacheArcSubject | OWCacheArcSource))
-        objets[objCount++] = [source retain];
+        objects[objCount++] = source;
     if (relation & OWCacheArcObject) {
         [lock lock];
-        objets[objCount++] = [object retain];
+        objects[objCount++] = object;
         [lock unlock];
     }
 
-    result = objCount? [NSArray arrayWithObjects:objets count:objCount] : nil;
-    while (objCount)
-        [objets[--objCount] release];
+    result = objCount != 0 ? [NSArray arrayWithObjects:objects count:objCount] : nil;
+    while (objCount-- != 0)
+        objects[objCount] = nil;
 
     return result;
 }
@@ -936,91 +934,86 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 {
     OBPRECONDITION(cacheControl != nil);
 
-    struct OWStaticArcInitialization arcProperties;
-    OWStaticArc *newArc, *addedArc;
-    NSObject *releaseMe;
-
     // Check whether our content is acceptable to the target cache
     if (![actualCache canStoreContent:source] || ![actualCache canStoreContent:object])
         return nil;
 
-    releaseMe = nil;
-    NS_DURING;
-
-    bzero(&arcProperties, sizeof(arcProperties));
-    arcProperties.source = [actualCache storeContent:source];
-    arcProperties.object = [actualCache storeContent:object];
-    arcProperties.subject = arcProperties.source;    // We only represent arcs whose subject and source are the same
-
-    arcProperties.contextDependencies = dependentContext;
-
-    // Figure out the effective creation and expiration dates of this arc.
-
-    arcProperties.creationDate = [self creationDate];  // use info maintained by _adjustDates
-    if (!arcProperties.creationDate)
-        arcProperties.creationDate = [NSDate date];
-
-    // Figure out when to expire (or revalidate) this arc
-    if (cacheControl->maxAge) {
-        // RFC2616 14.9.3 para 2: max-age takes precedence over Expire
-        arcProperties.freshUntil = [arcProperties.creationDate dateByAddingTimeInterval:[cacheControl->maxAge floatValue]];
-    } else if (cacheControl->explicitExpire) {
-        arcProperties.freshUntil = [cacheControl->explicitExpire dateByAddingTimeInterval:clockSkew];
-    } else
-        arcProperties.freshUntil = nil;
-
-    arcProperties.arcType = arcType;
-    arcProperties.resultIsSource = flags.objectIsSource;
-    arcProperties.resultIsError = flags.objectIsError;
-    arcProperties.shouldNotBeCachedOnDisk = flags.arcShouldNotBeCachedOnDisk;
-    arcProperties.nonReusable = ( cacheControl->noCache || cacheControl->mustRevalidate );
-    if (flags.traversalIsAction && (cacheControl->explicitExpire == nil))
-        arcProperties.nonReusable = YES;
-
-    newArc = [[OWStaticArc alloc] initWithArcInitializationProperties:arcProperties];
-    [newArc autorelease];
-    addedArc = (OWStaticArc *)[actualCache addArc:newArc];
-
-    /* If we're not representing an error result, then create arcs for any auxiliary content that was produced as well. */
-    /* Also: Don't create aux. arcs if we're not reusable, since nobody would ever be able to make use of them. */
-    if (!flags.objectIsError && !arcProperties.nonReusable) {
-        NSUInteger auxArcCount, auxArcIndex;
-
-        auxArcCount = [auxiliaryContent count];
-        for(auxArcIndex = 0; auxArcIndex < auxArcCount; auxArcIndex ++) {
-            NSDictionary *auxArcInfo = [auxiliaryContent objectAtIndex:auxArcIndex];
-            OWContent *thisObject, *thisSubject;
-            OWStaticArc *auxArc;
-
-            thisObject = [auxArcInfo objectForKey:@"content"];
-            thisSubject = [OWContent contentWithAddress:[auxArcInfo objectForKey:@"address"]];
-
-            if (![actualCache canStoreContent:thisObject] || ![actualCache canStoreContent:thisSubject])
-                continue;
-
-            arcProperties.arcType = OWCacheArcInformationalHint;
-            /* arcProperties.source is already set correctly */
-            arcProperties.subject = [actualCache storeContent:thisSubject];
-            arcProperties.object = [actualCache storeContent:thisObject];
-            /* reusing contextDependencies */
-            /* reusing creationDate */
-            /* reusing expiration date (freshUntil) --- is this correct? TODO */
-            arcProperties.resultIsSource = NO;
-            arcProperties.resultIsError = NO;
-
-            auxArc = [[OWStaticArc alloc] initWithArcInitializationProperties:arcProperties];
-            releaseMe = auxArc;
-            [actualCache addArc:auxArc];
-            releaseMe = nil;
-            [auxArc release];
+    OWStaticArc *addedArc = nil;
+    NSObject *releaseMe = nil;
+    @try {
+        
+        OWStaticArcInitialization *arcProperties = [[OWStaticArcInitialization alloc] init];
+        arcProperties.source = [actualCache storeContent:source];
+        arcProperties.object = [actualCache storeContent:object];
+        arcProperties.subject = arcProperties.source;    // We only represent arcs whose subject and source are the same
+        
+        arcProperties.contextDependencies = dependentContext;
+        
+        // Figure out the effective creation and expiration dates of this arc.
+        
+        arcProperties.creationDate = [self creationDate];  // use info maintained by _adjustDates
+        if (!arcProperties.creationDate)
+            arcProperties.creationDate = [NSDate date];
+        
+        // Figure out when to expire (or revalidate) this arc
+        if (cacheControl->maxAge) {
+            // RFC2616 14.9.3 para 2: max-age takes precedence over Expire
+            arcProperties.freshUntil = [arcProperties.creationDate dateByAddingTimeInterval:[cacheControl->maxAge floatValue]];
+        } else if (cacheControl->explicitExpire) {
+            arcProperties.freshUntil = [cacheControl->explicitExpire dateByAddingTimeInterval:clockSkew];
+        } else
+            arcProperties.freshUntil = nil;
+        
+        arcProperties.arcType = arcType;
+        arcProperties.resultIsSource = flags.objectIsSource;
+        arcProperties.resultIsError = flags.objectIsError;
+        arcProperties.shouldNotBeCachedOnDisk = flags.arcShouldNotBeCachedOnDisk;
+        arcProperties.nonReusable = ( cacheControl->noCache || cacheControl->mustRevalidate );
+        if (flags.traversalIsAction && (cacheControl->explicitExpire == nil))
+            arcProperties.nonReusable = YES;
+        
+        OWStaticArc *newArc = [[OWStaticArc alloc] initWithArcInitializationProperties:arcProperties];
+        addedArc = (OWStaticArc *)[actualCache addArc:newArc];
+        
+        /* If we're not representing an error result, then create arcs for any auxiliary content that was produced as well. */
+        /* Also: Don't create aux. arcs if we're not reusable, since nobody would ever be able to make use of them. */
+        if (!flags.objectIsError && !arcProperties.nonReusable) {
+            NSUInteger auxArcCount, auxArcIndex;
+            
+            auxArcCount = [auxiliaryContent count];
+            for(auxArcIndex = 0; auxArcIndex < auxArcCount; auxArcIndex ++) {
+                NSDictionary *auxArcInfo = [auxiliaryContent objectAtIndex:auxArcIndex];
+                OWContent *thisObject, *thisSubject;
+                OWStaticArc *auxArc;
+                
+                thisObject = [auxArcInfo objectForKey:@"content"];
+                thisSubject = [OWContent contentWithAddress:[auxArcInfo objectForKey:@"address"]];
+                
+                if (![actualCache canStoreContent:thisObject] || ![actualCache canStoreContent:thisSubject])
+                    continue;
+                
+                arcProperties.arcType = OWCacheArcInformationalHint;
+                /* arcProperties.source is already set correctly */
+                arcProperties.subject = [actualCache storeContent:thisSubject];
+                arcProperties.object = [actualCache storeContent:thisObject];
+                /* reusing contextDependencies */
+                /* reusing creationDate */
+                /* reusing expiration date (freshUntil) --- is this correct? TODO */
+                arcProperties.resultIsSource = NO;
+                arcProperties.resultIsError = NO;
+                
+                auxArc = [[OWStaticArc alloc] initWithArcInitializationProperties:arcProperties];
+                releaseMe = auxArc;
+                [actualCache addArc:auxArc];
+                releaseMe = nil;
+            }
         }
-    }
-
-    NS_HANDLER {
-        [releaseMe release];
+    } @catch (NSException *localException) {
         NSLog(@"Exception while caching response: %@", [localException description]);
         return nil;
-    } NS_ENDHANDLER;
+    } @finally {
+        releaseMe = nil;
+    }
 
     OBASSERT(releaseMe == nil);
 
@@ -1041,29 +1034,17 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     }
 }
 
-- (void)invalidateWeakRetains
-{
-#ifdef DEBUG_wiml
-    NSLog(@"-[%@ %s]", OBShortObjectDescription(self), _cmd);
-#endif
-    [self removeFromCache];
-    [self _clearContext];
-}
-
 // OBObject subclass
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-    BOOL didLock;
-    
-    [[self retain] autorelease];
+    OWProcessorCacheArc *strongSelf = self;
 
-    didLock = [lock tryLock];
+    BOOL didLock = [lock tryLock];
 
     // WARNING/TODO: This debugDictionary method is not completely threadsafe.
 
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     [debugDictionary setValue:[link processorDescription] forKey:@"link"];
     [debugDictionary setValue:source forKey:@"source"];
     if (didLock)
@@ -1090,6 +1071,8 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     
     if (didLock)
         [lock unlock];
+
+    strongSelf = nil;
 
     return debugDictionary;
 }
@@ -1130,18 +1113,18 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 - (void)addArcObserver:(OWPipeline *)anObserver
 {
     [lock lock];
-    CFArrayAppendValue((CFMutableArrayRef)observers, anObserver);
+    CFArrayAppendValue(observers, (__bridge const void *)(anObserver));
     [lock unlock];
 }
 
 - (void)removeArcObserver:(OWPipeline *)anObserver
 {
     [lock lock];
-    CFIndex observerIndex = CFArrayGetLastIndexOfValue((CFMutableArrayRef)observers, (CFRange){0, CFArrayGetCount((CFMutableArrayRef)observers)}, anObserver);
+    CFIndex observerIndex = CFArrayGetLastIndexOfValue(observers, (CFRange){0, CFArrayGetCount(observers)}, (__bridge const void *)(anObserver));
     OBASSERT(observerIndex != kCFNotFound);
     if (observerIndex != kCFNotFound)
-        CFArrayRemoveValueAtIndex((CFMutableArrayRef)observers, observerIndex);
-    CFIndex observerCount = CFArrayGetCount((CFMutableArrayRef)observers);
+        CFArrayRemoveValueAtIndex(observers, observerIndex);
+    CFIndex observerCount = CFArrayGetCount(observers);
     [lock unlock];
 
     // If our last observer goes away while our processor is running or starting (e.g. if someone closes a window while it's loading) we should abort the processor early.
@@ -1213,7 +1196,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
                 [NSException raise:NSInternalInconsistencyException format:@"Cannot allocate processor for %@", processorClass];
 
             [lock lock];
-            processor = [newProcessor retain];
+            processor = newProcessor;
             releaseMe = newProcessor;
             flags.state = ArcStateRunning;
             processStarted = [[NSDate alloc] init];
@@ -1223,17 +1206,16 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
             success = YES;
         }
     } NS_HANDLER {
-        OWProcessor *myProcessor;
-        
         NSLog(@"Exception raised while starting %@: %@", [link processorClassName], localException);
         [self noteErrorName:[localException name] reason:[localException reason]];
 
         if (!locked)
             [lock lock];
-        myProcessor = [[processor retain] autorelease];
+        OBRetainAutorelease(processor);
+        OWProcessor *myProcessor = processor;
         [lock unlock];
         locked = NO;
-        [releaseMe release];
+        releaseMe = nil;
 
         if (myProcessor) {
             [myProcessor handleProcessingException:localException];
@@ -1248,7 +1230,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     OBASSERT(!locked);
     if (pipelineLocked)
         [OWPipeline unlock];
-    [releaseMe release];
+    releaseMe = nil;
     
     return success;
 }
@@ -1284,17 +1266,18 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (void)_unlockAndPostInfo:(NSMutableDictionary *)statusInfo
 {
-    if (CFArrayGetCount((CFMutableArrayRef)observers) == 0) {
+    if (CFArrayGetCount(observers) == 0) {
         [lock unlock];
         return;
     } else {
-        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(NSArray *)observers];
+        NSArray *observerSnapshot = [[NSArray alloc] initWithArray:(__bridge NSArray * _Nonnull)(observers)];
         [lock unlock];
         if (statusInfo == nil)
             statusInfo = [NSMutableDictionary dictionary];
         [statusInfo setObject:self forKey:@"arc"];
-        [OWPipeline postSelector:@selector(arcHasStatus:) toPipelines:observerSnapshot withObject:statusInfo];
-        [observerSnapshot release];
+        [OWPipeline postUpdateToPipelines:observerSnapshot withBlock:^(OWPipeline *pipeline) {
+            [pipeline arcHasStatus:statusInfo];
+        }];
         return;
     }
 }
@@ -1315,7 +1298,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     }
 
     theValue = [context contextObjectForKey:key arc:self];
-    [[theValue retain] autorelease];
+    OBRetainAutorelease(theValue);
 
     [OWPipeline unlock];
 
@@ -1354,24 +1337,21 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     }
 
     if (thisDate) {
-        [arcCreationDate release];
-        arcCreationDate = [thisDate retain];
+        arcCreationDate = thisDate;
         clockSkew = thisClockSkew;
     }
 }
 
 - (void)_clearContext;
 {
-    OWPipeline *cachedPipeline;
-
     [context removeDeallocationObserver:self];
 
     [lock lock];
-    cachedPipeline = context;
+    OWPipeline *cachedPipeline = context;
     context = nil;
     [lock unlock];
 
-    [cachedPipeline weakRelease];
+    cachedPipeline = nil;
 }
 
 // OWPipelineDeallocationObservers protocol

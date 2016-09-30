@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,19 +26,12 @@ RCS_ID("$Id$");
         return nil;
 
     sourceAddress = [initialContent address];
-    [sourceAddress retain];
-    if (!sourceAddress) {
-        [self release];
+    if (sourceAddress == nil) {
+        self = nil;
         return nil;
     }
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [sourceAddress release];
-    [super dealloc];
 }
 
 - (OWAddress *)sourceAddress;
@@ -50,9 +43,7 @@ RCS_ID("$Id$");
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (sourceAddress)
         [debugDictionary setObject:sourceAddress forKey:@"sourceAddress"];
 

@@ -42,13 +42,6 @@ static NSException *OWDataStreamCursor_SeekException;
     return self;
 }
 
-- (void)dealloc;
-{
-    [bufferedData release];
-    [super dealloc];
-}
-
-
 // API
 
 - (void)processBegin
@@ -260,7 +253,6 @@ static NSException *OWDataStreamCursor_SeekException;
         return nil; // We have no more data
 
     NSData *result = [bufferedData subdataWithRange:NSMakeRange(oldBytesInBuffer, bufferedDataValidLength - oldBytesInBuffer)];
-    [bufferedData release];
     bufferedData = [[NSMutableData alloc] initWithCapacity:0];
     bufferedDataStart += bufferedDataValidLength;
     bufferedDataValidLength = 0;

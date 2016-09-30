@@ -102,49 +102,6 @@ static const uint8_t digestInfoPrefix_sha512[] = {
 
 #endif
 
-/* Ordering function for members of a DER-encoded SET. */
-static NSInteger lexicographicCompareData(id a, id b, void *dummy)
-{
-    const void *aBytes = [(NSData *)a bytes];
-    const void *bBytes = [(NSData *)b bytes];
-    NSUInteger aLength = [(NSData *)a length];
-    NSUInteger bLength = [(NSData *)b length];
-    
-    int cmp = memcmp(aBytes, bBytes, MIN(aLength, bLength));
-    if (cmp < 0) {
-        return NSOrderedAscending;
-    } else if (cmp > 0) {
-        return NSOrderedDescending;
-    } else {
-        /* This branch should never be taken: DER-encoded objects are self-delimiting, i.e., one cannot be a prefix of another unless they are identical. */
-        OBASSERT_NOT_REACHED("Equal or prefix-equal items in a SET?");
-        if (aLength < bLength) {
-            return NSOrderedAscending;
-        } else if (aLength > bLength) {
-            return NSOrderedDescending;
-        } else {
-            return NSOrderedSame;
-        }
-    }
-}
-
-void OFASN1AppendSet(NSMutableData *buffer, unsigned char tagByte, NSArray *derElements)
-{
-    /* For DER encoding, the SET items must be sorted according to their DER representation. */
-    NSArray *sortedElements = [derElements sortedArrayUsingFunction:lexicographicCompareData context:NULL];
-    
-    /* Compute length */
-    NSUInteger elementCount = [sortedElements count];
-    NSUInteger totalLength = 0;
-    for (NSUInteger eltIndex = 0; eltIndex < elementCount; eltIndex ++)
-        totalLength += [[sortedElements objectAtIndex:eltIndex] length];
-    
-    /* And write the SET */
-    OFASN1AppendTagLength(buffer, tagByte, totalLength);
-    for (NSUInteger eltIndex = 0; eltIndex < elementCount; eltIndex ++)
-        [buffer appendData:[sortedElements objectAtIndex:eltIndex]];
-}
-
 NSData *OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, SecKeyRef privateKey, NSArray *derAttributes, NSMutableString *log, NSError **outError)
 {
 /*

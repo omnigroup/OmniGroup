@@ -10,9 +10,19 @@
 import Foundation
 import XCTest
 @testable import OmniFoundation
+@testable import OmniFoundation.Private
 
-class blah : OFCMSUnwrapDelegate {
-    @objc(promptForPassword:) func promptForPassword() throws -> String {
+class keysource : OFCMSKeySource {
+    
+    var password: String? = nil;
+    var keypairs: [ (SecCertificate, SecKey) ] = [];
+    
+    @objc(promptForPasswordWithCount:error:) func promptForPassword(withCount _: Int) throws -> String {
+        
+        if let result = self.password {
+            return result;
+        }
+        
         var buf = Array(repeating: Int8(0), count: 128);
         let rv = readpassphrase("foo", &buf, buf.count, 0);
         if rv == nil {
@@ -27,6 +37,22 @@ class blah : OFCMSUnwrapDelegate {
             return str as String;
         }
     }
+    
+    @objc(asymmetricKeysForQuery:error:) func asymmetricKeys(forQuery searchPattern: CFDictionary) throws -> [Any] {
+        
+        if !keypairs.isEmpty {
+            guard let cls = (searchPattern as NSDictionary)[kSecClass] as? NSObject? else {
+                throw NSError(domain:NSOSStatusErrorDomain, code:-50, userInfo:nil);
+            }
+            if cls == kSecClassCertificate {
+                return keypairs.map({ (cert, _) -> SecCertificate in cert });
+            } else if cls == kSecClassKey {
+                return keypairs.map({ (_, key) -> SecKey in key });
+            }
+        }
+        
+        throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+    }
 }
 
 class OFCMSTest : XCTestCase {
@@ -36,22 +62,35 @@ class OFCMSTest : XCTestCase {
     
     // This is the corresponding certificate for Bob (issuer=carl, sn=46:34:...) certificate from RFC 4134.
     let rfc4134_carl_issued_to_bob = "MIICJzCCAZCgAwIBAgIQRjRrx4AAVrwR024uzV1x0DANBgkqhkiG9w0BAQUFADASMRAwDgYDVQQDEwdDYXJsUlNBMB4XDTk5MDkxOTAxMDkwMloXDTM5MTIzMTIzNTk1OVowETEPMA0GA1UEAxMGQm9iUlNBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp4WeYPznVX/Kgk0FepnmJhcg1XZqRW/sdAdoZcCYXD72lItA1hW16mGYUQVzPt7cIOwnJkbgZaTdt+WUee9mpMySjfzu7r0YBhjY0MssHA1lS/IWLMQS4zBgIFEjmTxz7XWDE4FwfU9N/U9hpAfEF+Hpw0b6Dxl84zxwsqmqn6wIDAQABo38wfTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIFIDAfBgNVHSMEGDAWgBTp4JAnrHggeprTTPJCN04irp44uzAdBgNVHQ4EFgQU6PS4Z9izlqQq8xGqKdOVWoYWtCQwHQYDVR0RBBYwFIESQm9iUlNBQGV4YW1wbGUuY29tMA0GCSqGSIb3DQEBBQUAA4GBAHuOZsXxED8QIEyIcat7QGshM/pKld6dDltrlCEFwPLhfirNnJOIh/uLt359QWHh5NZt+eIEVWFFvGQnRMChvVl52R1kPCHWRbBdaDOS6qzxV+WBfZjmNZGjOd539OgcOyncf1EHl/M28FAK3Zvetl44ESv7V+qJba3JiNiPzyvT";
+    // Values extracted using openssl
+    let bobcert_ski = Data(bytes: [0xE8, 0xF4, 0xB8, 0x67, 0xD8, 0xB3, 0x96, 0xA4, 0x2A, 0xF3, 0x11, 0xAA, 0x29, 0xD3, 0x95, 0x5A, 0x86, 0x16, 0xB4, 0x24]);
+    let bobcert_serial = Data(bytes: [0x46, 0x34, 0x6b, 0xc7, 0x80, 0x00, 0x56, 0xbc, 0x11, 0xd3, 0x6e, 0x2e, 0xcd, 0x5d, 0x71, 0xd0]);
+    let bobcert_issuer = Data(bytes: [0x30, 0x12, 0x31, 0x10, 0x30, 0x0e, 0x06, 0x03, 0x55, 0x04, 0x03, 0x13, 0x07, 0x43, 0x61, 0x72, 0x6c, 0x52, 0x53, 0x41])
 
     // And Bob's private key
     let rfc4134_bob_private = "MIICXAIBAAKBgQCp4WeYPznVX/Kgk0FepnmJhcg1XZqRW/sdAdoZcCYXD72lItA1hW16mGYUQVzPt7cIOwnJkbgZaTdt+WUee9mpMySjfzu7r0YBhjY0MssHA1lS/IWLMQS4zBgIFEjmTxz7XWDE4FwfU9N/U9hpAfEF+Hpw0b6Dxl84zxwsqmqn6wIDAQABAoGAZ81ITJoNj5jCG2X/IoOcbfCmBh287acDiJTyHGsPizXeDoJ4MMvnumpWrXfG61F5cHkKoPT+ReCpsvQZ2oeY1jCEdOT8WWzBxnfcqZHQfDCgosUIXiFxQ/wNBz3w+m0Unk5j8BdYeRxLmBw9PbAb3/olO6PALJgF9hAJ2IfbAxkCQQDQwyLG3qKZGHaPjbymddZmP9SNRVKMdvVyxOvwRprxPlyqVQub2t1rbfj8OzwIQ5O1W/7O6v1ohCNir/MxwrnlAkEA0FH8HiK3W+21jgHI16vyWNT3gpTzU6gZRctmyigZX+IQK/OP7GowdPhNEfSnxCC1RyHcSQH5CiAp8CQIhGB9jwJANLpkyUgoV3TXVVDeakjvGypaHEh7HiFZw2A7m5epwO8YZqlOYlI4hM7lCYhIlGnFIBSZWlf+I2zkpyN70IC3hQJBAJ4vszea+wsGXVfhCQakXdmQlgYFXyQGQHKcOoiFnIcPnWISiBZoqDUaG0PoOMCYaa8DCkgyBE7pD493fTQwJQcCQFcYZ9YK0rWrwrp651TanAVPgdTvAYkeMj1pyzHEUshUVSUAOxwqfCZQ1emm13fLzxX17gvVje6zr0yhfGNGQfY=";
     
+    private var bobpair : Keypair {
+        let bobcert = SecCertificateCreateWithData(kCFAllocatorDefault, NSData(base64Encoded: rfc4134_carl_issued_to_bob, options: [])!)!;
+
+        let bobpriv = NSData(base64Encoded: rfc4134_bob_private, options: [])! as Data;
+        let bobprivk = OFSecCopyPrivateKeyFromPKCS1Data(bobpriv)!;
+        
+        return Keypair.secCertificate(cert: bobcert, key: bobprivk);
+    }
+    
     func testPasswordRecipients() throws {
         
-        let test_password : NSString = "hello";
+        let test_password = "hello";
         
         let cek = NSData.cryptographicRandomData(ofLength: 32);
         let ri = CMSPasswordRecipient(password: test_password);
-        let rinfo = try ri.recipientInfo(withCEK: cek);
+        let rinfo = try ri.recipientInfo(wrapping: cek);
         
         var who : NSData? = nil;
         var what : NSData? = nil;
-        var recipientType : OFASN1RecipientType = OFCMSRUnknown;
-        let err = OFASN1ParseCMSRecipient(rinfo, &recipientType, &who, &what);
+        var recipientType : OFCMSRecipientType = OFCMSRUnknown;
+        let err = _OFASN1ParseCMSRecipient(rinfo, &recipientType, &who, &what);
         if let err = err {
             throw err;
         }
@@ -64,13 +103,13 @@ class OFCMSTest : XCTestCase {
     }
     
     func testPKRecipient4134() throws {
-        let message = NSData(base64Encoded: rfc4134_5_3, options: []);
-        let ri = message?.subdata(with: NSRange(location: 29, length: 192));
+        let message = NSData(base64Encoded: rfc4134_5_3, options: [])!;
+        let ri = message.subdata(with: NSRange(location: 29, length: 192));
         
         var who : NSData? = nil;
         var what : NSData? = nil;
-        var recipientType : OFASN1RecipientType = OFCMSRUnknown;
-        let err = OFASN1ParseCMSRecipient(ri, &recipientType, &who, &what);
+        var recipientType : OFCMSRecipientType = OFCMSRUnknown;
+        let err = _OFASN1ParseCMSRecipient(ri, &recipientType, &who, &what);
         if let err = err {
             throw err;
         }
@@ -82,11 +121,12 @@ class OFCMSTest : XCTestCase {
             return;
         }
         
-        try XCTAssertEqual(sn, NSData(hexString:"46346BC7800056BC11D36E2ECD5D71D0"));
+        XCTAssertEqual(issu, bobcert_issuer);
+        XCTAssertEqual(sn, bobcert_serial);
         
         let parsable = OFASN1EnumerateAVAsInName(issu, { (attr, val, rdnseq, _) -> ()
             in
-            XCTAssertEqual(attr, try! NSData(hexString:"550403"));
+            XCTAssertEqual(attr, Data(bytes: [ 0x55, 0x04, 0x03 ]));
             XCTAssertEqual(OFASN1UnDERString(val), "CarlRSA");
             XCTAssertEqual(rdnseq, 0);
         });
@@ -98,16 +138,55 @@ class OFCMSTest : XCTestCase {
         }
         XCTAssertTrue(rid.matchesCertificate(cert));
         
-        let bobpriv = NSData(base64Encoded: rfc4134_bob_private, options: [])! as Data;
-        guard let foo = OFSecCopyPrivateKeyFromPKCS1Data(bobpriv) else {
-            XCTAssertTrue(false, "OFSecCopyPrivateKeyFromPKCS1Data");
-        }
-        
-        let cek = try CMSPKRecipient(rid: rid).unwrap(privateKey: foo, data: what!);
-        debugPrint(cek);
+        let cek = try CMSPKRecipient(rid: rid).unwrap(identity: bobpair, data: what! as Data);
+        // This is the 3DES key we expect
+        XCTAssertEqual(cek, Data(bytes: [ 0x08, 0x46, 0x76, 0x3b, 0x5d, 0xa1, 0x16, 0x6d, 0xef, 0x29, 0xfb, 0x1a, 0xd5, 0xd6, 0xfd, 0x85, 0x01, 0x07, 0x19, 0xe3, 0x04, 0x4c, 0xad, 0x19 ]));
     }
     
-    #if DEBUG_wiml || DEBUG_wimlocal
+    func testPKRecipient_matching() throws {
+        let bobcert = try bobpair.certificate()!;
+        
+        let pkrecip = try CMSPKRecipient(certificate: bobcert);
+        
+        guard case CMSRecipientIdentifier.keyIdentifier(ski: bobcert_ski) = pkrecip.rid else {
+            XCTAssert(false, "Parsed rid \(pkrecip.rid) does not match expected value");
+            return;
+        }
+
+        XCTAssertTrue(pkrecip.rid.matchesCertificate(bobcert));
+        
+        XCTAssertFalse(CMSRecipientIdentifier.keyIdentifier(ski: Data(bytes: [0x01, 0x02, 0x03])).matchesCertificate(bobcert));
+        XCTAssertTrue(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: bobcert_serial).matchesCertificate(bobcert));
+        XCTAssertFalse(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: Data(bytes: [0x01, 0x02, 0x03])).matchesCertificate(bobcert));
+    }
+    
+    func testKeyTransportRSA() throws {
+        // let plaintext = "Greetings, Professor Falken. A strange game. The only winning move is not to play. How about a nice game of chess?";
+        let bobcert = try bobpair.certificate()!;
+        
+        let pkrecip = try CMSPKRecipient(certificate: bobcert);
+        
+        let sampleCEK = NSData.cryptographicRandomData(ofLength: 16);
+        let rinfo = try pkrecip.recipientInfo(wrapping: sampleCEK);
+        
+        var who : NSData? = nil;
+        var what : NSData? = nil;
+        var recipientType : OFCMSRecipientType = OFCMSRUnknown;
+        let err = _OFASN1ParseCMSRecipient(rinfo, &recipientType, &who, &what);
+        if let err = err {
+            throw err;
+        }
+        XCTAssertEqual(recipientType, OFCMSRKeyTransport);
+        
+        let recip = try CMSPKRecipient(rid: CMSRecipientIdentifier.fromDER(who! as Data));
+        
+        let transported = try recip.unwrap(identity: bobpair, data: what! as Data);
+        
+        XCTAssertEqual(sampleCEK, transported);
+    }
+
+    
+    #if WITH_RFC3211_KEY_WRAP
     func testRFC3211Recipients() throws {
         
         // Test data from RFC3211, with two changes:
@@ -143,32 +222,174 @@ class OFCMSTest : XCTestCase {
         
         var who : NSData? = nil;
         var what : NSData? = nil;
-        var recipientType : OFASN1RecipientType = OFCMSRUnknown;
-        let err = OFASN1ParseCMSRecipient(Data(bytes: example_page11), &recipientType, &who, &what);
+        var recipientType : OFCMSRecipientType = OFCMSRUnknown;
+        let err = _OFASN1ParseCMSRecipient(Data(bytes: example_page11), &recipientType, &who, &what);
         if let err = err {
             throw err;
         }
         XCTAssertEqual(recipientType, OFCMSRPassword);
         
-        let ri_out = CMSPasswordRecipient(info: who!);
-        let cek_out = try ri_out.unwrap("All n-entities must communicate with other n-entities via n-1 entiteeheehees", data: what!);
+        let ri_out = CMSPasswordRecipient(info: who! as Data);
+        let cek_out = try ri_out.unwrap(password: "All n-entities must communicate with other n-entities via n-1 entiteeheehees", data: what! as Data);
         
         XCTAssertEqual(Data(bytes: cek_page11), cek_out);
     }
     #endif
     
-    #if false
-    // This test requires some way to supply the RFC4134 certificates and private keys to OFCMSUnwrapper.
-    // We may want to add that to the delegate protocol.
     func testRFC4134() throws {
-        let message = NSData(base64EncodedString: rfc4134_5_3, options: NSDataBase64DecodingOptions(rawValue: 0));
-        let delegate = blah();
+        let message = NSData(base64Encoded: rfc4134_5_3, options: [])!;
+        let delegate = keysource();
         
-        let decr = try OFCMSUnwrapper(data: message!, delegate: delegate);
+        let decr = try OFCMSUnwrapper(data: message as Data, keySource: delegate);
         XCTAssertEqual(decr.contentType, OFCMSContentType_envelopedData);
         
+        decr.auxiliaryAsymmetricKeys.append(self.bobpair);
+        
+        try decr.decryptUED();
+        XCTAssertEqual(decr.contentType, OFCMSContentType_data);
+        XCTAssertEqual(decr.content(), "This is some sample content.".data(using: String.Encoding.ascii));
     }
-    #endif
     
+    func testFileWrapper() throws {
+        let plaintext = "Bork bork bork?\n".data(using: String.Encoding.utf8)!;
+        let password = "aplets & cotlets";
+        let input = FileWrapper(regularFileWithContents: plaintext);
+        let wr = OFCMSFileWrapper();
+        let del = keysource();
+        del.password = password;
+        wr.delegate = del;
+        let wrapped = try wr.wrap(input: input, previous: nil, schema: nil, recipients: [ CMSPasswordRecipient(password: password) ], options: []);
+        
+        XCTAssertTrue(wrapped.isRegularFile);
+        XCTAssertGreaterThan(wrapped.regularFileContents!.count, plaintext.count);
+        
+        let unwrapped = try wr.unwrap(input: wrapped);
+        
+        XCTAssertEqual(plaintext, unwrapped.regularFileContents);
+    }
+    
+    func testDirectoryWrapper() throws {
+        
+        let names = [ "SomeFile", "otherfile.png", "contents.xml", "doom" ];
+        var initialData : [String:String] = [:];
+        var members : [String:FileWrapper] = [:];
+        for name in names {
+            let content = "This is the content of the file wrapper named \"\(name)\".\n";
+            initialData[name] = content;
+            let member = FileWrapper(regularFileWithContents: content.data(using: String.Encoding.utf8)!);
+            member.preferredFilename = name;
+            members[name] = member;
+        }
+        let input = FileWrapper(directoryWithFileWrappers: members);
+
+        let password = "kibbles & bits";
+        let wr = OFCMSFileWrapper();
+        let del = keysource();
+        del.password = password;
+        wr.delegate = del;
+        let wrapped = try wr.wrap(input: input, previous: nil, schema: nil, recipients: [
+            CMSPasswordRecipient(password: password),
+            CMSPKRecipient(certificate: bobpair.certificate()!)
+            ], options: []);
+        
+        XCTAssertTrue(wrapped.isDirectory);
+        
+        // First, try unwrapping using the password we stuffed in the delegate
+        
+        let unwrapped = try wr.unwrap(input: wrapped);
+        
+        var unwrappedMembers : [String: String] = [:];
+        for (k, v) in unwrapped.fileWrappers! {
+            XCTAssertTrue(v.isRegularFile);
+            unwrappedMembers[k] = String(data: v.regularFileContents!, encoding: String.Encoding.utf8)!;
+        }
+        
+        XCTAssertEqual(initialData, unwrappedMembers)
+        
+        // Next, try unwrapping using the private key
+        
+        let wr2 = OFCMSFileWrapper();
+        wr2.delegate = keysource();
+        wr2.auxiliaryAsymmetricKeys.append(bobpair);
+        
+        let unwrapped2 = try wr2.unwrap(input: wrapped);
+        
+        unwrappedMembers = [:];
+        for (k, v) in unwrapped2.fileWrappers! {
+            XCTAssertTrue(v.isRegularFile);
+            unwrappedMembers[k] = String(data: v.regularFileContents!, encoding: String.Encoding.utf8)!;
+        }
+        
+        XCTAssertEqual(initialData, unwrappedMembers)
+    }
+
+    fileprivate enum wrapperPrototype {
+        case file(String);
+        case dir([String : wrapperPrototype]);
+        
+        func toWrapper() -> FileWrapper {
+            switch self {
+            case .file(let txt):
+                return FileWrapper(regularFileWithContents: txt.data(using: String.Encoding.utf8)!);
+            case .dir(let kkvv):
+                var entries : [String : FileWrapper] = [:];
+                for (fn, fc) in kkvv {
+                    entries[fn] = fc.toWrapper();
+                }
+                return FileWrapper(directoryWithFileWrappers: entries);
+            }
+        }
+    }
+    
+    func testDeeperDirectoryWrapper() throws {
+        let input = wrapperPrototype.dir([
+            "Hello": wrapperPrototype.file("Hello thing"),
+            "EmptyDir": wrapperPrototype.dir([:]),
+            "NonEmptyDir": wrapperPrototype.dir([
+                "EmptyFile": wrapperPrototype.file(""),
+                "bloop…": wrapperPrototype.file("bloop"),
+                "Further...": wrapperPrototype.dir( [
+                    "Further...": wrapperPrototype.dir([
+                        "zo\"om>!": wrapperPrototype.file("Until the thrill of speed overcomes the fear of death"),
+                        "Hello": wrapperPrototype.file("Different hello thing")
+                        ])
+                    ]),
+                ]),
+            ]);
+        
+        // Round-trip it through something
+        
+        let password = "kibbles & bits";
+        let wr = OFCMSFileWrapper();
+        let del = keysource();
+        del.password = password;
+        wr.delegate = del;
+        let inputWrapper = input.toWrapper();
+        let wrapped = try wr.wrap(input: inputWrapper, previous: nil, schema: nil, recipients: [ CMSPasswordRecipient(password: password) ], options: []);
+        
+        XCTAssertTrue(wrapped.isDirectory);
+        for (_, contentFile) in wrapped.fileWrappers! {
+            XCTAssertTrue(contentFile.isRegularFile);
+        }
+        
+        let unwrapped = try wr.unwrap(input: wrapped);
+        
+        func compareToPrototype(input: FileWrapper, proto: wrapperPrototype) {
+            switch proto {
+            case .file(let txt):
+                XCTAssertTrue(input.isRegularFile);
+                XCTAssertEqual(input.regularFileContents, txt.data(using: String.Encoding.utf8));
+            case .dir(let kkvv):
+                XCTAssertTrue(input.isDirectory);
+                let entries = input.fileWrappers!;
+                XCTAssertEqual(Set(kkvv.keys), Set(entries.keys));
+                for (akey, avalue) in kkvv {
+                    compareToPrototype(input: entries[akey]!, proto: avalue);
+                };
+            }
+        }
+        
+        compareToPrototype(input: unwrapped, proto: input);
+    }
 }
 

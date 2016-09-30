@@ -556,6 +556,16 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
+- (BOOL)any:(OFPredicateBlock)predicate;
+{
+    for (id object in self) {
+        if (predicate(object)) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 - (BOOL)all:(OFPredicateBlock)predicate;
 {
     for (id object in self)

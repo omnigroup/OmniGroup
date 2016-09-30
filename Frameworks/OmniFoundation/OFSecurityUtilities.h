@@ -58,6 +58,53 @@ typedef SecItemClass OFSecItemClass;
 #define kOFKeyUsagePermanent   0x00010000
 #define kOFKeyUsageTemporary   0x00020000
 
+
+
+/* These are PBKDF2 round counts for various devices, obtained from CCCalibratePBKDF() running on the specified models of hardware. The round count is the result when asked to give a 100-millisecond estimate. These can be used to choose round counts when we're producing something that will need to be interpreted on other machines as well. (For hashes only used on the local machine, we can just call CCCalibratePBKDF() ourselves.) */
+
+/* iPod Touch 5 */
+#define OF_PBKDF2_ROUNDS_SHA1_N78AP       4000
+#define OF_PBKDF2_ROUNDS_SHA256_N78AP     2400
+
+/* iPad Mini 1 */
+#define OF_PBKDF2_ROUNDS_SHA1_P105AP      5000
+#define OF_PBKDF2_ROUNDS_SHA256_P105AP    3000
+
+/* iPad 4 */
+#define OF_PBKDF2_ROUNDS_SHA1_P101AP     10000
+#define OF_PBKDF2_ROUNDS_SHA256_P101AP    6000
+
+/* These devices using the A7 have similar performance:
+   iPhone 5S (N51AP)      17000 21000
+   iPad Air (J71AP)       17000 21000
+   iPadMini2 (J85AP)      17000 21000
+*/
+#define OF_PBKDF2_ROUNDS_SHA1_AppleA7    17000
+#define OF_PBKDF2_ROUNDS_SHA256_AppleA7  21000
+
+/* These devices using the A8 (at 1.4 GHz or so) have similar performance:
+ iPhone 6  (N61AP)      20000 22000
+ iPhone 6+ (N56AP)      21000 22000
+ iPadMini4 (J97AP)      22000 25000
+*/
+#define OF_PBKDF2_ROUNDS_SHA1_AppleA8    20000
+#define OF_PBKDF2_ROUNDS_SHA256_AppleA8  22000
+
+/* The iPhone 6S+ and peers use the A9 at 1.85 GHz:
+ Phone6S+ (N66AP)       30000 33000
+ */
+#define OF_PBKDF2_ROUNDS_SHA1_AppleA9    30000
+#define OF_PBKDF2_ROUNDS_SHA256_AppleA9  33000
+
+/* The iPad Pro uses the A9X at 2.2 GHz:
+ iPadPro (J127AP)       40000 41000
+ */
+#define OF_PBKDF2_ROUNDS_SHA1_AppleA9X   40000
+#define OF_PBKDF2_ROUNDS_SHA256_AppleA9X 41000
+
+/* For programs that need to create PBKDF2-hashed passwords which might be verified on any device, we maintain/use this constant. As we increase our minimum supported OS version we should update this to point to more recent hardware. */
+#define OF_REASONABLE_PBKDF2_ITERATIONS (OF_PBKDF2_ROUNDS_SHA256_P105AP * 4) // Half a second on slowest hardware; faster on newer hardware
+
 /* Returns a multiline string describing the results of a trust evaluation, for debugging/logging purposes. */
 extern NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
 
@@ -94,6 +141,13 @@ NSData *OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, Sec
 /* Returns the certificate's issuer (as a DER-encoded name), serial number (as the contents of a DER-encoded integer, without the tag), and subject key identifier (as a NSData, but only if the cert has the relevant extension). */
 BOOL OFSecCertificateGetIdentifiers(SecCertificateRef aCert,
                                     NSData **outIssuer, NSData **outSerial, NSData **outSKI);
+
+SecKeyRef OFSecCopyPrivateKeyFromPKCS1Data(NSData *bytes) CF_RETURNS_RETAINED;
+
+#if TARGET_OS_IPHONE
+/* Bizarrely, SecCertificateCopyPublicKey() doesn't exist on iOS. */
+SecKeyRef OFSecCertificateCopyPublicKey(SecCertificateRef aCert, NSError **outError) CF_RETURNS_RETAINED;
+#endif
 
 /* This is internal to OmniFoundation */
 struct OFNamedCurveInfo {

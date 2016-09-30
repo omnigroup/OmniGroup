@@ -97,9 +97,10 @@ RCS_ID("$Id$");
     [xmlString appendString:@"</root>"];
     
     NSData *xmlData = [xmlString dataUsingEncoding:NSUTF8StringEncoding];
-    OBASSERT([xmlData length] > [OFXMLParser maximumParseChunkSize]); // OFXMLParser creates 4MB chunks, so let's make sure there's more than one such chunk
     
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypeIgnore target:self];
+    OBASSERT([xmlData length] > parser.maximumParseChunkSize); // OFXMLParser creates 4MB chunks, so let's make sure there's more than one such chunk
+
     XCTestExpectation *intermediateExpectation = [self keyValueObservingExpectationForObject:parser.progress keyPath:@"completedUnitCount" expectedValue:@(4 * 1024 * 1024)];
     XCTestExpectation *completedExpectation = [self keyValueObservingExpectationForObject:parser.progress keyPath:@"completedUnitCount" expectedValue:@([xmlData length])];
     

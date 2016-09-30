@@ -28,8 +28,6 @@ extern NSString * const OWExpireCookiesAtEndOfSessionPreferenceKey;
     NSMutableArray *_cookiePaths;
 }
 
-+ (void)readDefaults;
-
 + (void)registerCookie:(OWCookie *)aCookie fromURL:(OWURL *)url siteURL:(OWURL *)siteURL;
 + (void)registerCookiesFromURL:(OWURL *)url outerContentInfos:(NSArray *)outerContentInfos headerValue:(NSString *)headerValue;
 + (void)registerCookiesFromURL:(OWURL *)url context:(id <OWProcessorContext>)processorContext headerDictionary:(OWHeaderDictionary *)headerDictionary;

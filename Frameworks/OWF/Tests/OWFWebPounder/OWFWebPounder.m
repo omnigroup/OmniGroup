@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -213,8 +213,6 @@ static NSMutableDictionary *anchorStringsCache;
 
 - (id)initWithAddressString:(NSString *)addressString;
 {
-    OWFWeakRetainConcreteImplementation_INIT;
-
     if (!(self = [super init]))
         return nil;
 
@@ -271,20 +269,6 @@ static NSMutableDictionary *anchorStringsCache;
     [OWPipeline invalidatePipelinesForTarget:self];
     [[NSDate dateWithTimeIntervalSinceNow:0.01] sleepUntilDate];
     [self release];
-}
-
-//
-// OWFWeakRetain protocol
-//
-
-OWFWeakRetainConcreteImplementation_IMPLEMENTATION
-
-- (void)invalidateWeakRetains;
-{
-#if 0
-    [[NSDate dateWithTimeIntervalSinceNow:0.01] sleepUntilDate];
-    [OWPipeline invalidatePipelinesForTarget:self];
-#endif
 }
 
 @end

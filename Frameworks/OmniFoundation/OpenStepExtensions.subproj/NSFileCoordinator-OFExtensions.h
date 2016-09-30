@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,20 +9,24 @@
 
 #import <Foundation/NSFileCoordinator.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+typedef BOOL (^OFFileAccessor)(NSURL *newURL, NSError **outError);
+
 @interface NSFileCoordinator (OFExtensions)
 
 // NOTE: Due to bugs in NSFileCoordination, if you are doing case-only renames, your file presenter WILL NOT get notified of the rename (on any file system type), but will just get a generic 'changed' event. This means it is safest to (1) always pass a filePresenter to the coordination created for doing renames and notify it yourself and (2) only have one file presenter per URL (since only one presenter can be thus registered).
 // The success handler will be called at the end of the move, passing in the resulting URL (possibly in a temporary location).
-- (BOOL)moveItemAtURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (^)(NSURL *resultURL))successHandler;
+- (BOOL)moveItemAtURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (^ _Nullable)(NSURL *resultURL))successHandler;
 - (BOOL)moveItemAtURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError; // Passes nil for successHandler
 
 // A coordinated move of the source to some uncoordinated location (like a temporary folder or trash). The accessor should NOT call -itemAtURL:didMoveToURL:. It will be called by this method, based on the returned URL.
-- (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(NSURL * (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(nullable NSURL * (^)(NSURL *newURL, NSError **outError))accessor;
 
-- (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
 
-- (BOOL)readItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
-- (BOOL)writeItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)readItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
+- (BOOL)writeItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
 
 - (BOOL)readItemAtURL:(NSURL *)readURL withChanges:(BOOL)readWithChanges
        writeItemAtURL:(NSURL *)writeURL withChanges:(BOOL)writeWithChanges
@@ -32,3 +36,5 @@
 - (BOOL)prepareToWriteItemsAtURLs:(NSArray *)writingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
 
 @end
+
+NS_ASSUME_NONNULL_END

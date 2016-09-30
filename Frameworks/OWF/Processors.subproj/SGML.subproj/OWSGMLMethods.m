@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
 
-    parent = [aParent retain];
+    parent = aParent;
     implementationForTagDictionary = [[NSMutableDictionary alloc] init];
     implementationForEndTagDictionary = [[NSMutableDictionary alloc] init];
 
@@ -41,24 +41,15 @@ RCS_ID("$Id$")
     return [self initWithParent:nil];
 }
 
-- (void)dealloc;
-{
-    [parent release];
-    [implementationForTagDictionary release];
-    [implementationForEndTagDictionary release];
-    [super dealloc];
-}
-
 // API
 
 - (void)registerHandler:(OWSGMLMethodHandler)handler forTagName:(NSString *)tagName inDictionary:(NSMutableDictionary *)dictionary;
 {
-    if (!handler)
+    if (handler == nil)
 	return;
     
     handler = [handler copy];
     [dictionary setObject:handler forKey:[tagName lowercaseString]];
-    [handler release];
 }
 
 - (void)registerTagName:(NSString *)tagName startHandler:(OWSGMLMethodHandler)handler;
@@ -73,33 +64,29 @@ RCS_ID("$Id$")
 
 - (NSDictionary *)implementationForTagDictionary;
 {
-    NSMutableDictionary *mergedDictionary;
-
-    if (!parent)
+    if (parent == nil)
         return implementationForTagDictionary;
-    mergedDictionary = [[parent implementationForTagDictionary] mutableCopy];
+
+    NSMutableDictionary *mergedDictionary = [[parent implementationForTagDictionary] mutableCopy];
     [mergedDictionary addEntriesFromDictionary:implementationForTagDictionary];
-    return [mergedDictionary autorelease];
+    return mergedDictionary;
 }
 
 - (NSDictionary *)implementationForEndTagDictionary;
 {
-    NSMutableDictionary *mergedDictionary;
-
-    if (!parent)
+    if (parent == nil)
         return implementationForEndTagDictionary;
-    mergedDictionary = [[parent implementationForEndTagDictionary] mutableCopy];
+
+    NSMutableDictionary *mergedDictionary = [[parent implementationForEndTagDictionary] mutableCopy];
     [mergedDictionary addEntriesFromDictionary:implementationForEndTagDictionary];
-    return [mergedDictionary autorelease];
+    return mergedDictionary;
 }
 
 // OBObject subclass
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (parent)
         [debugDictionary setObject:parent forKey:@"parent"];
     if (implementationForTagDictionary)
@@ -117,14 +104,13 @@ RCS_ID("$Id$")
 
 - (void)registerTagsWithDTD:(OWSGMLDTD *)aDTD;
 {
-    NSEnumerator *tagNameEnumerator;
-    NSString *tagName;
+    NSEnumerator *tagNameEnumerator = [implementationForTagDictionary keyEnumerator];
 
-    tagNameEnumerator = [implementationForTagDictionary keyEnumerator];
-    while ((tagName = [tagNameEnumerator nextObject]))
+    NSString *tagName;
+    while ((tagName = [tagNameEnumerator nextObject]) != nil)
         [aDTD tagTypeNamed:tagName];
     tagNameEnumerator = [implementationForEndTagDictionary keyEnumerator];
-    while ((tagName = [tagNameEnumerator nextObject]))
+    while ((tagName = [tagNameEnumerator nextObject]) != nil)
         [aDTD tagTypeNamed:tagName];
 }
 

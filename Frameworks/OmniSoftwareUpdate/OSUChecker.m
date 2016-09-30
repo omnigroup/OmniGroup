@@ -930,7 +930,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         OSU_DEBUG(1, @"Using %@", trust);
 
         NSArray *verifiedPortions = OSUGetSignedPortionsOfAppcast(data, trust, outError);
-        if (!verifiedPortions || ![verifiedPortions count]) {
+        if (!data || !verifiedPortions || ![verifiedPortions count]) {
             if (outError) {
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to authenticate the response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we have some update information but it doesn't look authentic");
                 NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithObject:description forKey:NSLocalizedDescriptionKey];
@@ -966,7 +966,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     NSLog(@"OSU: Verification has been disabled in this configuration. Unauthentic updates may be accepted.");
 #endif
     
-    NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError];
+    NSXMLDocument *document =  data ? [[NSXMLDocument alloc] initWithData:data options:NSXMLNodeOptionsNone error:outError] : nil;
     if (!document) {
         if (outError) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse response from the software update server.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
@@ -1055,18 +1055,24 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     // If it looks like we'll display anything, retrieve the track descriptions and up-to-date orderings
-    if ([items count] > 0 && !_refreshingTrackInfoTask) {
+    if (items.count != 0 && _refreshingTrackInfoTask == nil) {
         NSArray *trackInfoAttributes = [document objectsForXQuery:[NSString stringWithFormat:@"declare namespace oac = \"%@\";\n /rss/channel/attribute::oac:trackinfo", OSUAppcastTrackInfoNamespace] error:NULL];
-        if ([trackInfoAttributes count]) {
-            NSURL *trackInfoURL = [NSURL URLWithString:[[trackInfoAttributes objectAtIndex:0] stringValue]];
-            if (trackInfoURL) {
-                NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:trackInfoURL];
-                [infoRequest setValue:[[operation url] absoluteString] forHTTPHeaderField:@"Referer" /* sic */];
+        if (trackInfoAttributes.count != 0) {
+            NSURLComponents *trackInfoURLComponents = [[NSURLComponents alloc] initWithString:[[trackInfoAttributes objectAtIndex:0] stringValue]];
+            if (trackInfoURLComponents != nil) {
+                if (OFISEQUAL(trackInfoURLComponents.scheme, @"http") && [trackInfoURLComponents.host hasSuffix:@".omnigroup.com"]) {
+                    trackInfoURLComponents.scheme = @"https";
+                }
+                NSURL *trackInfoURL = trackInfoURLComponents.URL;
+                if (trackInfoURL != nil) {
+                    NSMutableURLRequest *infoRequest = [NSMutableURLRequest requestWithURL:trackInfoURL];
+                    [infoRequest setValue:[[operation url] absoluteString] forHTTPHeaderField:@"Referer" /* sic */];
 
-                _refreshingTrackInfoTask = [[NSURLSession sharedSession] dataTaskWithRequest:infoRequest completionHandler:^(NSData * _Nullable trackData, NSURLResponse * _Nullable response, NSError * _Nullable error){
-                    [self _trackInfoDataTaskFinished: trackData];
-                }];
-                [_refreshingTrackInfoTask resume];
+                    _refreshingTrackInfoTask = [[NSURLSession sharedSession] dataTaskWithRequest:infoRequest completionHandler:^(NSData * _Nullable trackData, NSURLResponse * _Nullable response, NSError * _Nullable error){
+                        [self _trackInfoDataTaskFinished: trackData];
+                    }];
+                    [_refreshingTrackInfoTask resume];
+                }
             }
         }
     }
@@ -1084,6 +1090,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (void)_trackInfoDataTaskFinished:(NSData *)trackData;
 {
+    OBPRECONDITION(![NSThread isMainThread], "We are called on a NSURLSession worker queue.");
+
     NSError *error = _refreshingTrackInfoTask.error;
     if (error) {
         [error log:@"Couldn't fetch track info"];
@@ -1109,7 +1117,9 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (!document) {
         [xmlError log: @"Can't parse track info"];
     } else {
-        [OSUItem processTrackInformation:document];
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [OSUItem processTrackInformation:document];
+        }];
     }
 }
 

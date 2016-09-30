@@ -12,9 +12,10 @@
 @class NSData, NSMutableData, NSString;
 
 /* These routines parse out interesting parts of some common DER/BER-encoded objects, which is especially useful on iOS where we can't rely on Security.framework to do it for us. */
-int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
-BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (^callback)(NSData *a, NSData *v, unsigned ix, BOOL *stop));
-BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(int attributeType, int attributeVersion, NSRange valueRange));
+/* The routines which return 'int' actually return an enum OFASN1ErrorCodes, but Swift can't import declarations involving forward-declared enums (and C++ can't include headers involving them), so we declare them all as int. The int can be passed to OFNSErrorFromASN1Error(), or compared against 0 (success). */
+int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (NS_NOESCAPE ^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
+BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (NS_NOESCAPE ^callback)(NSData *a, NSData *v, unsigned ix, BOOL *stop));
+BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (NS_NOESCAPE ^callback)(int attributeType, int attributeVersion, NSRange valueRange));
 
 /* PKCS#7 parsing */
 #if TARGET_OS_IPHONE
@@ -29,6 +30,12 @@ NSData *OFASN1EnDERString(NSString *str);
 NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
 NSData *OFASN1OIDFromString(NSString *s);  // Return DER-encoded OID from a dotted-integers string - not really intended for user-supplied strings
 
+/* DER unsigned integers */
+NSData *OFASN1EnDERInteger(uint64_t i);
+
+/* DER dates */
+// NSDate *OFASN1UnDERDate(NSData *derString);
+
 /* Octet strings */
 NSData *OFASN1UnwrapOctetString(NSData *derValue, NSRange r);
 
@@ -38,6 +45,72 @@ extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformatio
 /* Used for constructing DER-encoded objects */
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount);
 unsigned int OFASN1SizeOfTagLength(uint8_t tag, NSUInteger byteCount); // Number of bytes that OFASN1AppendTagLength() will produce
+void OFASN1AppendTagIndefinite(NSMutableData *buffer, uint8_t tag);
+void OFASN1AppendInteger(NSMutableData *buffer, uint64_t i);
 NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...);
+dispatch_data_t OFASN1MakeStructure(const char *fmt, ...);
 void OFASN1AppendSet(NSMutableData *buffer, unsigned char tagByte, NSArray *derElements);
+
+/* Numerical OID shorthand conveniences */
+enum OFASN1Algorithm {
+    OFASN1Algorithm_Unknown,
+
+    /* The various AES modes */
+    OFASN1Algorithm_aes128_cbc,
+    OFASN1Algorithm_aes128_ccm,
+    OFASN1Algorithm_aes128_gcm,
+    OFASN1Algorithm_aes128_wrap,
+    OFASN1Algorithm_aes192_cbc,
+    OFASN1Algorithm_aes192_ccm,
+    OFASN1Algorithm_aes192_gcm,
+    OFASN1Algorithm_aes192_wrap,
+    OFASN1Algorithm_aes256_cbc,
+    OFASN1Algorithm_aes256_ccm,
+    OFASN1Algorithm_aes256_gcm,
+    OFASN1Algorithm_aes256_wrap,
+    
+    /* 3DES, which we only use for test vectors */
+    OFASN1Algorithm_des_ede_cbc,
+    
+    /* Asymmetric algorithms and their parameters */
+    OFASN1Algorithm_rsaEncryption_pkcs1_5,
+    OFASN1Algorithm_rsaEncryption_OAEP,
+    OFASN1Algorithm_mgf_1,
+    OFASN1Algorithm_DSA,
+    OFASN1Algorithm_ecPublicKey,
+    OFASN1Algorithm_ecDH,
+    
+    /* The AlgorithmIdentifier structure is also used for a bunch of algorithms other than symmetric crypto; for convenience we parse them with the same function. */
+    OFASN1Algorithm_zlibCompress,
+    OFASN1Algorithm_PBKDF2,
+    OFASN1Algorithm_PWRI_KEK,
+    OFASN1Algorithm_prf_hmacWithSHA1,
+    OFASN1Algorithm_prf_hmacWithSHA256,
+    OFASN1Algorithm_prf_hmacWithSHA512,
+};
+enum OFCMSContentType {
+    OFCMSContentType_Unknown,
+
+    OFCMSContentType_data,
+    OFCMSContentType_signedData,
+    OFCMSContentType_envelopedData,
+    OFCMSContentType_authenticatedData,
+    OFCMSContentType_compressedData,
+    OFCMSContentType_contentCollection,
+    OFCMSContentType_contentWithAttributes,
+    OFCMSContentType_authenticatedEnvelopedData,
+    OFCMSContentType_XML,
+};
+enum OFCMSAttribute {
+    OFCMSAttribute_Unknown,
+    
+    OFCMSAttribute_contentType,
+    OFCMSAttribute_messageDigest,
+    OFCMSAttribute_signingTime,
+    OFCMSAttribute_contentIdentifier,
+};
+
+/* Parsing helper for some Algorithm structures */
+int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL allowTrailing, enum OFASN1Algorithm *outAlg, NSRange *outParameterRange);
+int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL allowTrailing, NSRange *outOIDRange, NSRange *outParameterRange);
 

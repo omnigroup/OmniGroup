@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,54 +18,44 @@ RCS_ID("$Id$")
 
 @implementation OWConversionPathElement
 
-+ (OWConversionPathElement *)elementLink: (OWContentTypeLink *) aLink nextElement: (OWConversionPathElement *) anElement;
++ (OWConversionPathElement *)elementLink:(OWContentTypeLink *)aLink nextElement:(OWConversionPathElement *)anElement;
 {
-    return [[[self alloc] initWithLink: aLink nextElement: anElement] autorelease];
+    return [[self alloc] initWithLink:aLink nextElement:anElement];
 }
 
-- initWithLink:(OWContentTypeLink *)aLink nextElement: (OWConversionPathElement *) anElement;
+- initWithLink:(OWContentTypeLink *)aLink nextElement:(OWConversionPathElement *)anElement;
 {
     // nextElement can be nil
     OBPRECONDITION(aLink);
     
-    nextElement = [anElement retain];
-    link = [aLink retain];
+    nextElement = anElement;
+    link = aLink;
     totalCost = nextElement ? [nextElement totalCost] : 0.0f;
     totalCost += [link cost];
     
     return self;
 }
 
-- (void) dealloc;
-{
-    [nextElement release];
-    [link release];
-    [super dealloc];
-}
-
-- (OWConversionPathElement *) nextElement;
+- (OWConversionPathElement *)nextElement;
 {
     return nextElement;
 }
 
-- (OWContentTypeLink *) link;
+- (OWContentTypeLink *)link;
 {
     return link;
 }
 
-- (float) totalCost;
+- (float)totalCost;
 {
     return totalCost;
 }
-
 
 // Debugging
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (nextElement)
 	[debugDictionary setObject:nextElement forKey:@"nextElement"];
     if (link)

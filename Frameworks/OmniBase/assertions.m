@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,6 +93,7 @@ static void _OBAssertionLoad(void) __attribute__((constructor));
 static void _OBAssertionLoad(void)
 {
 #ifdef OMNI_ASSERTIONS_ON
+#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH // crashes on watch, loads too soon?
     @autoreleasepool {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSDictionary *assertionDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -109,6 +110,7 @@ static void _OBAssertionLoad(void)
             }
         }
     }
+#endif
 #elif DEBUG
     if (getenv("OBASSERT_NO_BANNER") == NULL)
         fprintf(stderr, "*** Assertions are OFF ***\n");

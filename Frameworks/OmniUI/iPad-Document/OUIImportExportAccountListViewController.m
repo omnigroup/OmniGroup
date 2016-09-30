@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,9 +17,9 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 
 #import "OUIAddCloudAccountViewController.h"
-#import "OUIServerAccountSetupViewController.h"
 #import "OUIDocumentAppController-Internal.h"
 
 RCS_ID("$Id$");

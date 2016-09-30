@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,27 +19,6 @@
 #define COST_OF_UNCERTAINTY (1e4f)	// we fear the unknown
 
 @interface OWCacheSearch : OFObject
-{
-    /* The parameters of the search */
-    OWContent *sourceEntry;
-    OWCacheArcRelationship searchRelation;
-    OWPipeline *weaklyRetainedPipeline;
-    float unacceptableCost;
-    
-    /* Queues of objects to consider */
-    OFHeap *cachesToSearch;
-    OFHeap *arcsToConsider;
-
-    /* Arcs already considered and either rejected or previously traversed */
-    NSMutableSet *rejectedArcs;
-    /* These arcs were given to the pipeline in -init, and should be considered effectively free */
-    NSMutableSet *freeArcs;
-#ifdef DEBUG_kc
-    struct {
-        unsigned int debug:1;
-    } flags;
-#endif
-}
 
 // API
 - initForRelation:(OWCacheArcRelationship)aRelation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)context;

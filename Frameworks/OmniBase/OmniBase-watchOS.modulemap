@@ -1,0 +1,23 @@
+framework module OmniBase {
+    umbrella header "OmniBase-watchOS.h"
+    
+    // This imports non-module headers
+    exclude header "system.h"
+
+    // Exclude other bits required in the umbrella header but not used on Watch
+    exclude header "assertions.h"
+    exclude header "macros.h"
+    exclude header "NSError-OBExtensions.h"
+    exclude header "NSError-OBUtilities.h"
+    exclude header "NSException-OBExtensions.h"
+    exclude header "OBBacktraceBuffer.h"
+    exclude header "OBExpectedDeallocation.h"
+    exclude header "objc.h"
+    exclude header "OBObject.h"
+    exclude header "OBRuntimeCheck.h"
+    exclude header "OBUtilities.h"
+    exclude header "rcsid.h"
+
+    export *
+    module * { export * }
+}

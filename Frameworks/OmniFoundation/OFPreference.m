@@ -233,6 +233,17 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     [preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
 }
 
++ (id)addObserverForPreference:(nullable OFPreference *)preference usingBlock:(void (^)(OFPreference *preference))block;
+{
+    id result = [preferenceNotificationCenter addObserverForName:OFPreferenceDidChangeNotification object:preference queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        OFPreference *changedPreference = note.object;
+        if ([changedPreference isKindOfClass:[OFPreference class]]) {
+            block(changedPreference);
+        }
+    }];
+    return result;
+}
+
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 {
     [preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
@@ -246,8 +257,10 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
         return stringValue;
     } else if ([propertyListValue isKindOfClass:[NSNumber class]]) { // <real> or <integer> or <true/> or <false/>
         const char *objCType = [(NSNumber *)propertyListValue objCType];
-        if (strcmp(objCType, @encode(int)) == 0) // <integer>
+        if (strcmp(objCType, @encode(int)) == 0) // <integer> on 32-bit platform
             return [NSNumber numberWithInt:[stringValue intValue]];
+        else if (strcmp(objCType, @encode(long)) == 0) // <integer> on 64-bit platform
+            return [NSNumber numberWithInteger:[stringValue integerValue]];
         else if (strcmp(objCType, @encode(double)) == 0) // <real>
             return [NSNumber numberWithDouble:[stringValue doubleValue]];
         else if (strcmp(objCType, @encode(char)) == 0) // <true/> or <false/>

@@ -120,11 +120,15 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: PROPFIND %@", url);
+    
     return [_connection synchronousFileInfoAtURL:url serverDate:outServerDate error:outError];
 }
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
 {
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: GET %@", url);
+    
     return [_connection synchronousGetContentsOfURL:url ETag:ETag error:outError];
 }
 
@@ -141,6 +145,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 - (NSMutableArray<ODAVFileInfo *> *)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag collectingRedirects:(NSMutableArray *)redirections serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
     OBPRECONDITION(url);
+    
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: PROPFIND %@ (ETag: %@)", url, ETag);
 
     _connection.operationReason = self.operationReason;
     ODAVMultipleFileInfoResult *results = [_connection synchronousDirectoryContentsAtURL:url withETag:ETag error:outError];
@@ -151,6 +157,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
         [redirections addObjectsFromArray:results.redirects];
     if (outServerDate)
         *outServerDate = results.serverDate;
+    
+    OBLog(OFSFileManagerLogger, 1, @"    --> %@", results.fileInfos);
     return [results.fileInfos mutableCopy];
 }
 
@@ -180,8 +188,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     OBPRECONDITION(data, @"Pass an empty data if that's really what you want");
     OBPRECONDITION(url);
 
-    if (OFSFileManagerDebug > 0)
-        NSLog(@"DAV operation: PUT %@ (data of %ld bytes) atomically:%d", url, [data length], atomically);
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: PUT %@ (data of %ld bytes) atomically:%d", url, [data length], atomically);
 
     // PUT is not atomic.  By itself it will just stream the file right into place; if the transfer is interrupted, it'll just leave a partial turd there.
     if (atomically) {
@@ -237,6 +244,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     OBPRECONDITION(url);
     OBPRECONDITION(_connection);
     
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: MKCOL %@", url);
+    
     return [_connection synchronousMakeCollectionAtURL:url error:outError].URL;
 }
 
@@ -244,6 +253,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 {
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
+    
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: MOVE %@ -> %@", sourceURL, destURL);
 
     return [_connection synchronousMoveURL:sourceURL toURL:destURL withDestinationETag:nil overwrite:YES error:outError];
 }
@@ -251,6 +262,9 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 - (BOOL)deleteURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
+    
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: DELETE %@", url);
+    
     return [_connection synchronousDeleteURL:url withETag:nil error:outError];
 }
 
@@ -258,6 +272,9 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 {
     NSURL *url = fileinfo.originalURL;
     OBPRECONDITION(url);
+    
+    OBLog(OFSFileManagerLogger, 2, @"DAV operation: DELETE %@ (ETag %@)", url, fileinfo.ETag);
+    
     return [_connection synchronousDeleteURL:url withETag:fileinfo.ETag error:outError];
 }
 

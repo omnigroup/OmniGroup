@@ -26,7 +26,7 @@ static NSCharacterSet *tokenDelimiters;
 {
     OBINITIALIZE;
 
-    tokenDelimiters = [[NSCharacterSet whitespaceAndNewlineCharacterSet] retain];
+    tokenDelimiters = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 }
 
 - initForDataCursor:(OWDataStreamCursor *)source encoding:(CFStringEncoding)aStringEncoding;
@@ -39,20 +39,13 @@ static NSCharacterSet *tokenDelimiters;
     if (!(self = [super init]))
         return nil;
         
-    byteSource = [source retain];
+    byteSource = source;
     
     stringBuffer = nil;
     stringEncodingType = se_simple_Foundation;
     [self setCFStringEncoding:aStringEncoding];
     
     return self;
-}
-
-- (void)dealloc
-{
-    [byteSource release];
-    [stringBuffer release];
-    [super dealloc];
 }
 
 - (void)setCFStringEncoding:(CFStringEncoding)newEncoding
@@ -119,7 +112,6 @@ static NSCharacterSet *tokenDelimiters;
         [byteSource seekToOffset: -seekBack fromPosition:OWCursorSeekFromCurrent];
     }
     
-    [stringBuffer release];
     stringBuffer = nil;
 }
 
@@ -141,22 +133,20 @@ static NSCharacterSet *tokenDelimiters;
 
 - (OWDataStreamCursor *)dataStreamCursor
 {
-    return [[byteSource retain] autorelease];
+    return byteSource;
 }
 
 /* May raise an exception. May return 0 before EOF, if we get some bytes but not a full character's worth. Will return OWDataStreamCharacterCursor_EOF at EOF. */
 static inline NSUInteger _getCharacters(OWDataStreamCharacterCursor *self, unichar *characterBuffer, NSUInteger bufferSize, BOOL updateCursorPosition)
 {
-    struct OFCharacterScanResult decodeResult;
     void *byteBuffer = NULL;
-    NSUInteger byteCount;
-            
-    byteCount = [self->byteSource peekUnderlyingBuffer:&byteBuffer];
-    if (!byteCount) {
+    NSUInteger byteCount = [self->byteSource peekUnderlyingBuffer:&byteBuffer];
+    if (byteCount == 0) {
         return OWDataStreamCharacterCursor_EOF;
     }
-    decodeResult = OFScanCharactersIntoBuffer(self->conversionState, (unsigned char *)byteBuffer, byteCount, characterBuffer, bufferSize);
-            
+
+    struct OFCharacterScanResult decodeResult = OFScanCharactersIntoBuffer(self->conversionState, (unsigned char *)byteBuffer, byteCount, characterBuffer, bufferSize);
+
     if (updateCursorPosition) {
         [self->byteSource seekToOffset: decodeResult.bytesConsumed fromPosition:OWCursorSeekFromCurrent];
         self->conversionState = decodeResult.state;
@@ -266,23 +256,20 @@ static /* inline */ NSString *OWCreateStringFromData(NSData *data, CFStringEncod
                 break;
         }
     } while (input < sourceBytesEnd);
-    return (NSString *)CFStringCreateWithCharactersNoCopy(NULL, buffer, output - buffer, NULL);
+    return (NSString *)CFBridgingRelease(CFStringCreateWithCharactersNoCopy(NULL, buffer, output - buffer, NULL));
 }
 
 /* Reads to EOF. Will return nil at EOF. */
 static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacterCursor *self)
 {
-    NSData *allData;
-    NSString *allCharacters;
-    
     OBASSERT(self->stringEncodingType == se_complex_Foundation);
     
     /* The unhappiest encodings of them all are encodings which we don't understand in OmniFoundation and which aren't simple one-to-one mappings of characters and bytes. These encodings cannot be scanned incrementally. Woe, woe are we. */
-    allData = [self->byteSource readAllData];
+    NSData *allData = [self->byteSource readAllData];
     if (!allData)
         return nil;
 
-    allCharacters = (NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)allData, self->stringEncoding);
+    NSString *allCharacters = (NSString *)CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)allData, self->stringEncoding));
     if (allCharacters == nil)
         allCharacters = OWCreateStringFromData(allData, self->stringEncoding);
     OBASSERT(allCharacters != nil);
@@ -297,7 +284,6 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     if (stringEncodingType == se_complex_Foundation &&
         !(stringBuffer && stringBufferValidRange.length > 0)) {
         if (stringBuffer) {
-            [stringBuffer release];
             stringBuffer = nil;  /* set stringBuffer in case _get...() raises */
         }
         stringBuffer = _getAllRemainingCharactersRetained(self);
@@ -309,7 +295,6 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
         if (stringBufferValidRange.length <= bufferSize) {
             [stringBuffer getCharacters:buffer range:stringBufferValidRange];
             if (!doNotUpdateCursorPosition) {
-                [stringBuffer release];	
                 stringBuffer = nil;
             }
             return stringBufferValidRange.length;
@@ -393,12 +378,10 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     
     if (appendix && [appendix length] > 0) {
         if (stringBuffer && stringBufferValidRange.length > 0) {
-            new = [[[stringBuffer substringWithRange:stringBufferValidRange] stringByAppendingString:appendix] retain];
-            [appendix release];
+            new = [[stringBuffer substringWithRange:stringBufferValidRange] stringByAppendingString:appendix];
         } else {
             new = appendix;
         }
-        if (stringBuffer) [stringBuffer release];
         stringBuffer = new;
         stringBufferValidRange.length = [stringBuffer length];
         stringBufferValidRange.location = 0;
@@ -409,8 +392,6 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
 
 - (NSString *)readString;
 {
-    NSString *retval;
-
     if (abortException != nil)
         [abortException raise];
     
@@ -418,20 +399,23 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
         if (![self _enlargeBufferedString])
             return nil;
     
+    NSString *returnValue;
     if (stringBufferValidRange.location == 0) {
-        retval = [stringBuffer autorelease];
+        returnValue = stringBuffer;
         stringBuffer = nil;
     } else {
-        retval = [stringBuffer substringWithRange:stringBufferValidRange];
-        [stringBuffer release];
+        returnValue = [stringBuffer substringWithRange:stringBufferValidRange];
         stringBuffer = nil;
     }
         
-    return retval;
+    return returnValue;
 }
 
 - (NSString *)readAllAsString;
 {
+    if (abortException != nil)
+        [abortException raise];
+    
 #warning TODO - verify this method
     NSString *initial;
     CFMutableStringRef cfBuffer;
@@ -439,9 +423,6 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     const unsigned int unicharBufferLength = 8192;
     NSUInteger charsRead;
     
-    if (abortException != nil)
-        [abortException raise];
-
     if (stringBuffer && stringBufferValidRange.length > 0)
         initial = [self readString];
     else
@@ -467,7 +448,8 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
     } NS_ENDHANDLER;
 
     free(unicharBuffer);
-    return [(NSMutableString *)cfBuffer autorelease];
+    NSMutableString *string = CFBridgingRelease(cfBuffer);
+    return string;
 }
 
 

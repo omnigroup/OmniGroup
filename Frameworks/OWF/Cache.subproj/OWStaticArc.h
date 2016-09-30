@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,17 +12,15 @@
 
 @class NSDictionary, NSDate;
 
-struct OWStaticArcInitialization
-{
-    OWCacheArcType arcType;
-    OWContent *source, *subject, *object;
-    NSDictionary *contextDependencies;
-    NSDate *creationDate, *freshUntil;
-
-    BOOL resultIsSource, resultIsError;
-    BOOL shouldNotBeCachedOnDisk;
-    BOOL nonReusable;
-};
+@interface OWStaticArcInitialization : NSObject
+@property OWCacheArcType arcType;
+@property (retain) OWContent *source, *subject, *object;
+@property (retain) NSDictionary *contextDependencies;
+@property (retain) NSDate *creationDate, *freshUntil;
+@property BOOL resultIsSource, resultIsError;
+@property BOOL shouldNotBeCachedOnDisk;
+@property BOOL nonReusable;
+@end
 
 @interface OWStaticArc : OFObject <OWCacheArc>
 {
@@ -47,10 +45,9 @@ struct OWStaticArcInitialization
 }
 
 // API
-+ (BOOL)deserializeProperties:(struct OWStaticArcInitialization *)stuff
-                   fromBuffer:(NSData *)buf;
++ (BOOL)deserializeProperties:(OWStaticArcInitialization *)stuff fromBuffer:(NSData *)buf;
 
-- initWithArcInitializationProperties:(struct OWStaticArcInitialization)stuff;
+- initWithArcInitializationProperties:(OWStaticArcInitialization *)stuff;
 
 - (OWCacheArcRelationship)relationsOfEntry:(OWContent *)anEntry intern:(OWContent **)interned;
 - (OWContent *)source;

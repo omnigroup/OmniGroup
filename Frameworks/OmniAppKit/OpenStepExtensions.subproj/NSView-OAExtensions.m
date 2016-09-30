@@ -46,21 +46,25 @@ RCS_ID("$Id$")
 
 + (instancetype)descriptorWithLayoutBlock:(nonnull OACrossfadeLayoutBlock)layoutBlock preAnimationBlock:(nullable OACrossfadePreAnimationBlock)preAnimationBlock completionBlock:(nullable OACrossfadeCompletionBlock)completionBlock;
 {
-    OACrossfadeDescriptor *newInstance = [[[[self class] alloc] init] autorelease];
+    OACrossfadeDescriptor *newInstance = [[[self class] alloc] init];
     newInstance.layoutBlock = layoutBlock;
     newInstance.preAnimationBlock = preAnimationBlock;
     newInstance.completionBlock = completionBlock;
     return newInstance;
 }
 
-- (void)dealloc;
-{
-    [_layoutBlock release];
-    [_preAnimationBlock release];
-    [_completionBlock release];
-    [super dealloc];
-}
+@end
 
+
+@interface OADeferredScrollEntry : NSObject
+
+@property (nonatomic) NSView *view;
+@property (nonatomic) CGFloat x;
+@property (nonatomic) CGFloat y;
+
+@end
+
+@implementation OADeferredScrollEntry
 @end
 
 
@@ -263,46 +267,35 @@ static void replacement_unlockFocus(NSView *self, SEL _cmd)
 
 // Scrolling
 
-typedef struct {
-    NSView *view;
-    CGFloat x;
-    CGFloat y;
-} OADeferredScrollEntry;
+static NSMutableArray *scrollEntries = nil;
 
-static OADeferredScrollEntry *scrollEntries;
-static unsigned int scrollEntriesAllocated = 0;
-static unsigned int scrollEntriesCount = 0;
++ (void)_ensureScrollEntries
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        scrollEntries = [NSMutableArray new];
+    });
+}
+
++ (void)_clearScrollEntries
+{
+    [scrollEntries removeAllObjects];
+}
 
 - (OADeferredScrollEntry *)_deferredScrollEntry;
 {
-    if (scrollEntriesAllocated == 0) {
-        scrollEntriesAllocated = 8;
-        scrollEntries = malloc(scrollEntriesAllocated * sizeof(*scrollEntries));
-        memset(scrollEntries, 0, scrollEntriesAllocated * sizeof(*scrollEntries));
-        OBASSERT(scrollEntriesCount == 0);
-    }
+    [[self class] _ensureScrollEntries];
 
-    OADeferredScrollEntry *deferredScrollEntry = scrollEntries + scrollEntriesCount;
-    while (deferredScrollEntry-- > scrollEntries)
-        if (deferredScrollEntry->view == self)
+    for (NSInteger i = (NSInteger)scrollEntries.count - 1; i >= 0; i--) {
+        OADeferredScrollEntry *deferredScrollEntry = scrollEntries[i];
+        if (deferredScrollEntry.view == self) {
             return deferredScrollEntry;
-
-    // We didn't find an existing entry, let's make a new one
-    if (scrollEntriesCount == scrollEntriesAllocated) {
-        OBASSERT(scrollEntriesAllocated > 0); // clang-sa bug: if scrollEntriesAllocated == 0 at the beginning of this method, the analyzer can't tell that it cannot enter this block, even though it knows it re-assigned scrollEntriesAllocated above
-        scrollEntriesAllocated *= 2;
-        scrollEntries = reallocf(scrollEntries, scrollEntriesAllocated * sizeof(*scrollEntries));
-        // Zero the entries we just allocated
-        unsigned int newCount = scrollEntriesAllocated / 2;
-        OADeferredScrollEntry *newEntries = scrollEntries + newCount;
-        memset(newEntries, 0, newCount * sizeof(*scrollEntries));
+        }
     }
 
-    OADeferredScrollEntry *newScrollEntry = scrollEntries + scrollEntriesCount;
-    newScrollEntry->view = [self retain];
-    newScrollEntry->x = 0.0f;
-    newScrollEntry->y = 0.0f;
-    scrollEntriesCount++;
+    OADeferredScrollEntry *newScrollEntry = [[OADeferredScrollEntry alloc] init];
+    newScrollEntry.view = self;
+    [scrollEntries addObject:newScrollEntry];
     return newScrollEntry;
 }
 
@@ -325,55 +318,55 @@ static unsigned int scrollEntriesCount = 0;
 
 + (void)performDeferredScrolling;
 {
-    OADeferredScrollEntry *deferredScrollEntry;
-
-    if (![NSThread isMainThread])
+    if (![NSThread isMainThread]) {
         [NSException raise:NSInternalInconsistencyException format:@"+[NSView(OAExtensions) performDeferredScrolling] is not thread-safe"];
-
-    deferredScrollEntry = scrollEntries + scrollEntriesCount;
-    while (deferredScrollEntry-- > scrollEntries) {
-        NSView *view;
-        CGFloat x, y;
-
-        view = deferredScrollEntry->view;
-        x = deferredScrollEntry->x;
-        y = deferredScrollEntry->y;
-	if (x != 0.0 || y != 0.0)
-	    [view _scrollByAdjustedPixelsDown:y right:x];
-        [view release];
     }
-    scrollEntriesCount = 0;
+
+    [self _ensureScrollEntries];
+
+    if (scrollEntries.count > 0) {
+        for (NSInteger i = (NSInteger)scrollEntries.count - 1; i >= 0; i--) {
+
+            OADeferredScrollEntry *deferredScrollEntry = scrollEntries[i];
+            CGFloat x = deferredScrollEntry.x;
+            CGFloat y = deferredScrollEntry.y;
+
+            if (x != 0.0 || y != 0.0) {
+                [deferredScrollEntry.view _scrollByAdjustedPixelsDown:y right:x];
+            }
+        }
+
+        [self _clearScrollEntries];
+    }
 }
 
 - (void)scrollDownByAdjustedPixels:(CGFloat)pixels;
 {
-    OADeferredScrollEntry *deferredScrollEntry;
-
-    if (![NSThread isMainThread])
+    if (![NSThread isMainThread]) {
         [NSException raise:NSInternalInconsistencyException format:@"-[NSView(OAExtensions) scrollDownByAdjustedPixels:] is not thread-safe"];
+    }
 
 #ifdef DEBUG_kc0
     NSLog(@"-[%@ scrollDownByAdjustedPixels:%1.1f]", OBShortObjectDescription(self), pixels);
 #endif
 
-    deferredScrollEntry = [self _deferredScrollEntry];
-    deferredScrollEntry->y += pixels;
+    OADeferredScrollEntry *deferredScrollEntry = [self _deferredScrollEntry];
+    deferredScrollEntry.y = deferredScrollEntry.y + pixels;
     [[self class] queueSelectorOnce:@selector(performDeferredScrolling)];
 }
 
 - (void)scrollRightByAdjustedPixels:(CGFloat)pixels;
 {
-    OADeferredScrollEntry *deferredScrollEntry;
-
-    if (![NSThread isMainThread])
+    if (![NSThread isMainThread]) {
         [NSException raise:NSInternalInconsistencyException format:@"-[NSView(OAExtensions) scrollRightByAdjustedPixels:] is not thread-safe"];
+    }
 
 #ifdef DEBUG_kc0
     NSLog(@"-[%@ scrollRightByAdjustedPixels:%1.1f]", OBShortObjectDescription(self), pixels);
 #endif
 
-    deferredScrollEntry = [self _deferredScrollEntry];
-    deferredScrollEntry->x += pixels;
+    OADeferredScrollEntry *deferredScrollEntry = [self _deferredScrollEntry];
+    deferredScrollEntry.x = deferredScrollEntry.x + pixels;
     [[self class] queueSelectorOnce:@selector(performDeferredScrolling)];
 }
 
@@ -800,7 +793,7 @@ static NSImage * _Nonnull _snapshotImageForView(NSView * _Nonnull view)
     NSBitmapImageRep *bitmap = [view bitmapImageRepForCachingDisplayInRect:bounds];
     [view cacheDisplayInRect:bounds toBitmapImageRep:bitmap];
     OBASSERT(bitmap != nil);
-    NSImage *image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
+    NSImage *image = [[NSImage alloc] initWithSize:bounds.size];
     [image addRepresentation:bitmap];
     OBASSERT(image != nil);
     return image;
@@ -811,7 +804,7 @@ static NSImageView * _Nonnull _snapshotImageViewForView(NSView * _Nonnull view)
     NSImage *image = _snapshotImageForView(view);
     NSRect frame = view.frame;
     frame.origin = NSZeroPoint;
-    NSImageView *imageView = [[[NSImageView alloc] initWithFrame:frame] autorelease];
+    NSImageView *imageView = [[NSImageView alloc] initWithFrame:frame];
     imageView.translatesAutoresizingMaskIntoConstraints = NO;
     imageView.imageScaling = NSImageScaleNone;
     imageView.imageAlignment = NSImageAlignTopLeft;
@@ -831,7 +824,7 @@ static NSImageView * _Nonnull _snapshotImageViewForView(NSView * _Nonnull view)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         CrossfadingViews = [[NSMutableArray alloc] init];
-        QueuedCrossfadesByView = [[NSMapTable strongToStrongObjectsMapTable] retain];
+        QueuedCrossfadesByView = [NSMapTable strongToStrongObjectsMapTable];
     });
     
     // Clear out any queued layout change
@@ -1114,13 +1107,9 @@ unsigned int NSViewMaxDebugDepth = 10;
         level++;
     }
     
-    [ancestors release];
-    
     [self _appendConstraintsInvolvingView:self toString:string level:level recurse:YES];
     
     NSLog(@"Constraints involving %@:\n%@", self.shortDescription, string);
-    
-    [string release];
 }
 
 static NSString *_vibrancyInfo(NSView *view, NSUInteger level)

@@ -52,7 +52,4 @@
 // Actions
 - (IBAction)selectInspector:(id)sender;
 
-// for subclasses
-- (BOOL)shouldHideTabWithIdentifier:(NSString *)identifier;
-
 @end

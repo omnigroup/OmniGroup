@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@ RCS_ID("$Id$");
 @implementation OUIDebugURLCommand {
 @private
     SEL _sel;
+    BOOL _hasCompletionHandler;
     NSString *_commandString;
     NSString *_parameterString;
 }
@@ -40,15 +41,20 @@ RCS_ID("$Id$");
     }
     
     NSString *camelCommand = [[[_commandString componentsSeparatedByString:@"-"] arrayByPerformingSelector:@selector(capitalizedString)] componentsJoinedByString:@""];
-    _sel = NSSelectorFromString([NSString stringWithFormat:@"command_%@", camelCommand]);
-    
-    if (![self respondsToSelector:_sel]) {
+    SEL selectorWithCompletionHandler = NSSelectorFromString([NSString stringWithFormat:@"command_%@_completionHandler:", camelCommand]);
+    SEL selectorWithoutCompletionHandler = NSSelectorFromString([NSString stringWithFormat:@"command_%@", camelCommand]);
+    if ([self respondsToSelector:selectorWithCompletionHandler]) {
+        _hasCompletionHandler = YES;
+        _sel = selectorWithCompletionHandler;
+    } else if ([self respondsToSelector:selectorWithoutCompletionHandler]) {
+        _sel = selectorWithoutCompletionHandler;
+    } else {
 #ifdef DEBUG
         NSLog(@"%@ does not respond to %@", NSStringFromClass([self class]), NSStringFromSelector(_sel));
 #endif
         return nil;
     }
-    
+
     return self;
 }
 
@@ -85,18 +91,29 @@ RCS_ID("$Id$");
 
 - (void)invoke;
 {
-    BOOL (*command)(id self, SEL _cmd) = (typeof(command))[self methodForSelector:_sel];
-    if (command(self, _cmd)) {
-        // Successful debug commands quit and require relaunch.  Otherwise, they'd be much harder to implement and test.
-        if ([self respondsToSelector:@selector(prepareForTermination)]) {
-            [self prepareForTermination];
+    typedef void (^InvokeCompletionBlock)(BOOL success);
+    InvokeCompletionBlock completionBlock = ^void(BOOL success) {
+        if (success) {
+            // Successful debug commands quit and require relaunch.  Otherwise, they'd be much harder to implement and test.
+            if ([self respondsToSelector:@selector(prepareForTermination)]) {
+                [self prepareForTermination];
+            }
+            
+            exit(0);
+        } else {
+            // Finish starting up if we postponed to handle the DEBUG url
+            OUIAppController *controller = [OUIAppController controller];
+            controller.shouldPostponeLaunchActions = NO;
         }
-        
-        exit(0);
+    };
+
+    if (_hasCompletionHandler) {
+        void (*command)(id self, SEL _cmd, InvokeCompletionBlock completionBlock) = (typeof(command))[self methodForSelector:_sel];
+        command(self, _cmd, completionBlock);
     } else {
-        // Finish starting up if we postponed to handle the DEBUG url
-        OUIAppController *controller = [OUIAppController controller];
-        controller.shouldPostponeLaunchActions = NO;
+        BOOL (*command)(id self, SEL _cmd) = (typeof(command))[self methodForSelector:_sel];
+        BOOL success = command(self, _cmd);
+        completionBlock(success);
     }
 }
 

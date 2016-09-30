@@ -17,6 +17,7 @@
 #import <OmniAppKit/OAWindowCascade.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/NSWindowController-OIExtensions.h>
 #import <OmniInspector/OIInspectableControllerProtocol.h>
 #import <OmniInspector/OIInspectionSet.h>
 #import <OmniInspector/OIInspector.h>
@@ -1239,11 +1240,12 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
             [window orderFront:self];
     }
 
-    NSResponder *responder = [window firstResponder];
-    if (!responder)
-        responder = window;
+    inspectionSet = [[self class] newInspectionSetForWindowController:windowController];
+}
 
-    inspectionSet = [[self class] newInspectionSetForResponder:responder];
++ (OIInspectionSet *)newInspectionSetForWindowController:(NSWindowController *)windowController;
+{
+    return [self newInspectionSetForResponder:[windowController responderForInspectionSet]];
 }
 
 + (OIInspectionSet *)newInspectionSetForResponder:(NSResponder *)responder;
@@ -1490,6 +1492,11 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
     
     return nil;
+}
+
+- (BOOL)tabbedInspector:(OITabbedInspector *)tabbedInspector shouldLoadTabWithIdentifier:(NSString *)identier;
+{
+    return YES;
 }
 
 @end

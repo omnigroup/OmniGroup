@@ -117,7 +117,10 @@ static BOOL errorIndicatesPlaintext(NSError *err);
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 {
+    OBLog(OFSFileManagerLogger, 2, @"ENCRYPTION operation: read %@", url);
+    
     if ([self maskingFileAtURL:url]) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> masking");
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read file.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such file \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
         OFSError(outError, OFSNoSuchFile, description, reason);
@@ -129,13 +132,16 @@ static BOOL errorIndicatesPlaintext(NSError *err);
         return nil;
     
     unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent] fromSlot:NULL];
-    if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedRead)
+    if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedRead) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> always unencrypted read");
         return encrypted;
+    }
     
     size_t offset = 0;
     NSRange keyInfoLocation = { 0, 0 };
     NSError * __autoreleasing headerError = nil;
     if (![OFSSegmentDecryptWorker parseHeader:encrypted truncated:NO wrappedInfo:&keyInfoLocation dataOffset:&offset error:&headerError]) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> header parse error %@ (flags:%u)", headerError, dispositionFlags);
         if (dispositionFlags & OFSDocKeyFlagAllowUnencryptedRead && errorIndicatesPlaintext(headerError)) {
             return encrypted;
         }
@@ -155,12 +161,16 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     if (!result)
         return nil;
     
+    OBLog(OFSFileManagerLogger, 1, @"    --> decrypted data (%tu bytes)", [result length]);
     return result;
 }
 
 - (NSURL *)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
+    OBLog(OFSFileManagerLogger, 2, @"ENCRYPTION operation: write %@ (%tu bytes, atomic:%@)", url, [data length], atomically ? @"YES" : @"NO");
+    
     if ([self maskingFileAtURL:url]) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> masking");
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to write file.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such file \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
         OFSError(outError, OFSCannotWrite, description, reason);
@@ -169,6 +179,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     
     unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent] fromSlot:NULL];
     if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedWrite) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> always unencrypted write");
         return [underlying writeData:data toURL:url atomically:atomically error:outError];
     }
     
@@ -191,6 +202,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     [[NSNotificationCenter defaultCenter] postNotificationName:OFSFileManagerKeySlotNotificationName object:self userInfo:uinfo];
 #endif
     
+    OBLog(OFSFileManagerLogger, 1, @"    --> wrote %tu bytes", [encrypted length]);
     return wroteTo;
 }
 

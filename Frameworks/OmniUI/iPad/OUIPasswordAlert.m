@@ -20,11 +20,15 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     
     struct {
         NSUInteger dismissed:1;
+        NSUInteger needsLoginActionStateUpdate:1;
     } _flags;
 }
 
 @property (nonatomic, strong) UITextField *usernameTextField;
 @property (nonatomic, strong) UITextField *passwordTextField;
+@property (nonatomic, strong) UITextField *passwordConfirmationTextField;
+
+@property (nonatomic, weak) UIAlertAction *loginAction;
 
 @end
 
@@ -42,7 +46,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     return _alerts;
 }
 
-- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(NSUInteger)options;
+- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(OUIPasswordAlertOptions)options;
 {
     self = [super init];
     if (!self)
@@ -64,7 +68,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     BOOL allowEditingUsername = (_options & OUIPasswordAlertOptionAllowsEditingUsername) != 0;
 
-    _alertController = [UIAlertController alertControllerWithTitle:_title message:nil preferredStyle:UIAlertControllerStyleAlert];
+    _alertController = [UIAlertController alertControllerWithTitle:_title message:self.message preferredStyle:UIAlertControllerStyleAlert];
     __weak typeof(self) weakSelf = self;
     
     // Username field
@@ -77,11 +81,17 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     
     // Password field
     [_alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-        [weakSelf configurePasswordTextField:textField];
+        [weakSelf configurePasswordTextField:textField forConfirmation:NO];
     }];
     
-    // Buttons
+    // Confirmation field
+    if (options & OUIPasswordAlertOptionRequiresPasswordConfirmation) {
+        [_alertController addTextFieldWithConfigurationHandler:^(UITextField * _Nonnull textField) {
+            [weakSelf configurePasswordTextField:textField forConfirmation:YES];
+        }];
+    }
     
+    // Buttons
     NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
     NSString *logInButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
     
@@ -89,9 +99,11 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     [_alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionCancel];
     }]];
-    [_alertController addAction:[UIAlertAction actionWithTitle:logInButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    
+    self.loginAction = [UIAlertAction actionWithTitle:logInButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
-    }]];
+    }];
+    [_alertController addAction:self.loginAction];
 
     return self;
 }
@@ -101,6 +113,16 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     if (_title != title) {
         _title = [title copy];
         self.alertController.title = _title;
+    }
+}
+
+- (void)setMessage:(NSString *)message;
+{
+    if (![_message isEqualToString:message]) {
+        _message = [message copy];
+        if ((_options & OUIPasswordAlertOptionShowUsername) == 0) {
+            self.alertController.message = message;
+        }
     }
 }
 
@@ -119,8 +141,9 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 {
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     
-    if (showUsername && self.usernameTextField == nil)
+    if (showUsername && self.usernameTextField == nil) {
         self.alertController.message = username;
+    }
 
     self.usernameTextField.text = username;
     
@@ -131,8 +154,19 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (NSString *)password;
 {
-    if ([self isUsingObfuscatedPasswordPlaceholder])
+    if ([self isUsingObfuscatedPasswordPlaceholder]) {
         return nil;
+    }
+    
+    BOOL requiresConfirmation = (_options & OUIPasswordAlertOptionRequiresPasswordConfirmation);
+    BOOL passwordsMatch = [self.passwordTextField.text isEqualToString:self.passwordConfirmationTextField.text];
+    if (requiresConfirmation && !passwordsMatch) {
+        return nil;
+    }
+    
+    if ([self.passwordTextField.text length] < self.minimumPasswordLength) {
+        return nil;
+    }
     
     return self.passwordTextField.text;
 }
@@ -147,6 +181,8 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     // This is fixed on iOS 9.0 and later, so we've removed the workaround (where we specifically passed through nil if password was isEqualToString:OUIPasswordAlertObfuscatedPasswordPlaceholder).
 
     self.passwordTextField.text = password;
+    self.passwordConfirmationTextField.text = password;
+    OBPOSTCONDITION([self.password isEqualToString:password]);
 }
 
 - (BOOL)isUsingObfuscatedPasswordPlaceholder;
@@ -171,20 +207,57 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     [[self.alertController view] setTintColor:tintColor];
 }
 
+- (void)setMinimumPasswordLength:(NSUInteger)minimumPasswordLength;
+{
+    _minimumPasswordLength = minimumPasswordLength;
+    
+    [self setNeedsLoginActionStateUpdate];
+}
+
 #pragma mark Internal
+
+- (BOOL)canLogIn;
+{
+    // self.password returns nil if the obfuscated placeholder is in place, but that shouldn't prevent a login
+    return (self.password != nil) || [self isUsingObfuscatedPasswordPlaceholder];
+}
 
 - (BOOL)isDismissed;
 {
     return _flags.dismissed;
 }
 
-- (void)configurePasswordTextField:(UITextField *)textField;
+- (void)configurePasswordTextField:(UITextField *)textField forConfirmation:(BOOL)forConfirmation;
 {
-    self.passwordTextField = textField;
+    NSString *placeholder;
+    
+    if (forConfirmation) {
+        self.passwordConfirmationTextField = textField;
+        placeholder = NSLocalizedStringFromTableInBundle(@"confirm", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase confirmation field in prompt");
+    } else {
+        self.passwordTextField = textField;
+        placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase field of login/password prompt");
+    }
+    
     OBASSERT(textField.delegate == nil);
     textField.delegate = self;
     textField.secureTextEntry = YES;
-    textField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase field of login/password prompt");
+    textField.placeholder = placeholder;
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:textField];
+}
+
+- (void)setNeedsLoginActionStateUpdate;
+{
+    if (_flags.needsLoginActionStateUpdate) {
+        return;
+    }
+    _flags.needsLoginActionStateUpdate = YES;
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        self.loginAction.enabled = [self canLogIn];
+        _flags.needsLoginActionStateUpdate = NO;
+    }];
 }
 
 - (void)dismissWithAction:(OUIPasswordAlertAction)action;
@@ -197,29 +270,34 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 #pragma mark -
 
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (void)textFieldTextDidChange:(NSNotification *)notification;
 {
-    OBPRECONDITION(textField == self.passwordTextField);
-
-    if ([self isUsingObfuscatedPasswordPlaceholder]) {
-        return YES;
+    if (notification.object == self.passwordTextField || notification.object == self.passwordConfirmationTextField) {
+        [self setNeedsLoginActionStateUpdate];
     }
-    
-    return YES;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;
 {
-    OBPRECONDITION(textField == self.passwordTextField);
+    OBPRECONDITION(textField == self.passwordTextField || textField == self.passwordConfirmationTextField);
 
-    if (textField == self.passwordTextField && ![NSString isEmptyString:self.passwordTextField.text]) {
-        
+    void (^dismiss)(void) = ^{
         // See discussion around alert dismissal in -_didDismissWithAction:.
         if (![self isDismissed]) {
             [self dismissWithAction:OUIPasswordAlertActionLogIn];
         }
-
-        return NO;
+    };
+    
+    if (_options & OUIPasswordAlertOptionRequiresPasswordConfirmation) {
+        if (textField == self.passwordConfirmationTextField && [self canLogIn]) {
+            dismiss();
+        } else if (textField == self.passwordTextField) {
+            [self.passwordConfirmationTextField becomeFirstResponder];
+        }
+    } else {
+        if (textField == self.passwordTextField && [self canLogIn]) {
+            dismiss();
+        }
     }
     
     return NO;
@@ -238,6 +316,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     OBPRECONDITION(!_flags.dismissed);
     OBPRECONDITION(self.alertController != nil);
     OBPRECONDITION([self.alertController presentingViewController] == nil);
+    OBASSERT_IF(action == OUIPasswordAlertActionLogIn, [self canLogIn]);
     
     _flags.dismissed = 1;
 
@@ -248,6 +327,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     [self.delegate passwordAlert:self didDismissWithAction:action];
 
     [[OUIPasswordAlert _visibleAlerts] removeObject:self]; // balance the retain in -show
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:nil];
 }
 
 @end

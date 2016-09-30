@@ -17,13 +17,7 @@ RCS_ID("$Id$")
 
 - (NSString *)httpHeaderStringForProcessor:(OWHTTPProcessor *)aProcessor;
 {
-    NSMutableString *buffer;
-    NSData *bytes;
-    NSString *headerName;
-    
-//    lastUsedTimeInterval = [NSDate timeIntervalSinceReferenceDate];
-    
-    buffer = [[NSMutableString alloc] init];
+    NSMutableString *buffer = [[NSMutableString alloc] init];
     if (username)
         [buffer appendString:username];
     [buffer appendString:@":"];
@@ -34,12 +28,12 @@ RCS_ID("$Id$")
 #warning Encoding breakage is possible here
     // TODO: Find out what we're supposed to do if someone has kanji in their username or something
     
-    bytes = [buffer dataUsingEncoding:NSISOLatin1StringEncoding allowLossyConversion:NO];
-    [buffer release];
+    NSData *bytes = [buffer dataUsingEncoding:NSISOLatin1StringEncoding allowLossyConversion:NO];
     if (bytes == nil) {
         [NSException raise:@"Can't Authorize" reason:NSLocalizedStringFromTableInBundle(@"Username or password contains characters which cannot be encoded", @"OWF", [OWAuthSchemeHTTPBasic bundle], @"authorization error")];
     }
     
+    NSString *headerName;
     if (type == OWAuth_HTTP)
         headerName = @"Authorization";
     else if (type == OWAuth_HTTP_Proxy)
@@ -47,9 +41,7 @@ RCS_ID("$Id$")
     else
         headerName = @"X-Bogus-Header"; // TODO
         
-    return [NSString stringWithFormat:@"%@: Basic %@",
-            headerName,
-            [bytes base64EncodedStringWithOptions:0]];
+    return [NSString stringWithFormat:@"%@: Basic %@", headerName, [bytes base64EncodedStringWithOptions:0]];
 }
 
 - (BOOL)appliesToHTTPChallenge:(NSDictionary *)challenge

@@ -64,7 +64,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     _filterRegularExpressionLock = [[NSLock alloc] init];
 
     // Note: If this changes, it should also be changed in OmniWeb's OWShortcutPreferences.m since it has no way of getting at it.  (Perhaps it should be a default.)  Ugly, but for now we're maintaining this character set in two places.
-    nonShortcutCharacterSet = [[NSCharacterSet characterSetWithCharactersInString:@"./:"] retain];
+    nonShortcutCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"./:"];
 
     uniqueKeyCount = 0;
     uniqueKeyCountLock = [[NSLock alloc] init];
@@ -87,14 +87,14 @@ static OFPreference *directoryIndexFilenamePreference = nil;
 + (void)controllerDidInitialize:(OFController *)controller;
 {
     [self _readDefaults];
-    directoryIndexFilenamePreference = [[OFPreference preferenceForKey:@"OWDirectoryIndexFilename"] retain];
+    directoryIndexFilenamePreference = [OFPreference preferenceForKey:@"OWDirectoryIndexFilename"];
 }
 
 // Defaults
 
 + (NSDictionary *)shortcutDictionary;
 {
-    return [[_shortcutDictionary retain] autorelease];
+    return _shortcutDictionary;
 }
 
 + (void)setShortcutDictionary:(NSDictionary *)newShortcutDictionary;
@@ -102,8 +102,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     if (newShortcutDictionary == nil)
         return;
 
-    [_shortcutDictionary autorelease];
-    _shortcutDictionary = [newShortcutDictionary retain];
+    _shortcutDictionary = [newShortcutDictionary copy];
     OFPreference *shortcutPreference = [OFPreference preferenceForKey:@"OW5AddressShortcuts"];
     [shortcutPreference setDictionaryValue:_shortcutDictionary];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -119,8 +118,6 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     [mutableDefaultShortcuts setObject:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedStringFromTableInBundle(@"http://www.%@.com/", @"OWF", [OWAddress bundle], "default address format to use in your country when user just types a single word"), @"format", @"GET", @"method", @"www.*.com", @"name", nil] forKey:@"*"];
 
     [[NSUserDefaults standardUserDefaults] registerDefaults:[NSDictionary dictionaryWithObject:mutableDefaultShortcuts forKey:@"OW5AddressShortcuts"]];
-
-    [mutableDefaultShortcuts release];
 }
 
 + (void)reloadShortcutDictionaryFromDefaults;
@@ -162,24 +159,18 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     }
     
     [self setShortcutDictionary:mutableShortcutDictionary];
-    [mutableShortcutDictionary release];
 }
 
 + (void)reloadAddressFilterArrayFromDefaults;
 {
-    NSUserDefaults *userDefaults;
-    NSArray *addressFilterArray, *whitelistArray;
-
-    userDefaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
 
     [_filterRegularExpressionLock lock];
 
-    [_filterRegularExpression release];
     _filterRegularExpression = nil;
-    [_whitelistFilterRegularExpression release];
     _whitelistFilterRegularExpression = nil;
 
-    addressFilterArray = [userDefaults arrayForKey:OWAddressesToFilterDefaultName];
+    NSArray *addressFilterArray = [userDefaults arrayForKey:OWAddressesToFilterDefaultName];
     if ([addressFilterArray count] > 0) {
         NSMutableArray *goodRegex = [NSMutableArray array];
         NSEnumerator *regexEnumerator = [addressFilterArray objectEnumerator];
@@ -187,13 +178,13 @@ static OFPreference *directoryIndexFilenamePreference = nil;
         while ((regexString = [regexEnumerator nextObject])) {
             NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:regexString options:0 error:NULL];
             if (regex != nil) {
-                [regex release];
                 [goodRegex addObject:regexString];
             } 
         }
         _filterRegularExpression = [[NSRegularExpression alloc] initWithPattern:[NSString stringWithFormat:@"(%@)", [goodRegex componentsJoinedByString:@")|("]] options:0 error:NULL];
     }
-    whitelistArray = [userDefaults arrayForKey:OWAddressesToAllowDefaultName];
+
+    NSArray *whitelistArray = [userDefaults arrayForKey:OWAddressesToAllowDefaultName];
     if ([whitelistArray count] > 0) {
         NSMutableArray *goodRegex = [NSMutableArray array];
         NSEnumerator *regexEnumerator = [whitelistArray objectEnumerator];
@@ -201,7 +192,6 @@ static OFPreference *directoryIndexFilenamePreference = nil;
         while ((regexString = [regexEnumerator nextObject])) {
             NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:regexString options:0 error:NULL];
             if (regex != nil) {
-                [regex release];
                 [goodRegex addObject:regexString];
             } 
         }
@@ -212,22 +202,18 @@ static OFPreference *directoryIndexFilenamePreference = nil;
 
 + (void)addAddressToWhitelist:(OWAddress *)anAddress;
 {
-    OFPreferenceWrapper *defaults;
-    NSString *addressString;
-    NSMutableArray *whiteList, *blackList;
-    
-    defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
-    addressString = [[anAddress addressString] regularExpressionForLiteralString];
+    OFPreferenceWrapper *defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
+    NSString *addressString = [[anAddress addressString] regularExpressionForLiteralString];
     
     // Add to whitelist
-    whiteList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToAllowDefaultName]];
+    NSMutableArray *whiteList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToAllowDefaultName]];
     if (![whiteList containsObject:addressString]) {
         [whiteList addObject:addressString];
         [defaults setObject:whiteList forKey:OWAddressesToAllowDefaultName];
     }
     
     // Remove from blacklist
-    blackList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToFilterDefaultName]];
+    NSMutableArray *blackList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToFilterDefaultName]];
     if ([blackList containsObject:addressString]) {
         [blackList removeObject:addressString];
         [defaults setObject:blackList forKey:OWAddressesToFilterDefaultName];
@@ -238,22 +224,18 @@ static OFPreference *directoryIndexFilenamePreference = nil;
 
 + (void)addAddressToBlacklist:(OWAddress *)anAddress;
 {
-    OFPreferenceWrapper *defaults;
-    NSString *addressString;
-    NSMutableArray *whiteList, *blackList;
-
-    defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
-    addressString = [[anAddress addressString] regularExpressionForLiteralString];
+    OFPreferenceWrapper *defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
+    NSString *addressString = [[anAddress addressString] regularExpressionForLiteralString];
     
     // Remove from whitelist if present
-    whiteList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToAllowDefaultName]];
+    NSMutableArray *whiteList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToAllowDefaultName]];
     if ([whiteList containsObject:addressString]) {
         [whiteList removeObject:addressString];
         [defaults setObject:whiteList forKey:OWAddressesToAllowDefaultName];
     }
 
     // Add to blacklist if not present
-    blackList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToFilterDefaultName]];
+    NSMutableArray *blackList = [NSMutableArray arrayWithArray:[defaults arrayForKey:OWAddressesToFilterDefaultName]];
     if (![blackList containsObject:addressString]) {
         [blackList addObject:addressString];
         [defaults setObject:blackList forKey:OWAddressesToFilterDefaultName];
@@ -440,7 +422,7 @@ addressForNotSoObviousHostname(NSString *string)
 {
     if (!aURL)
 	return nil;
-    return [[[self alloc] initWithURL:aURL target:aTarget methodString:aMethodString methodDictionary:aMethodDictionary effect:anEffect forceAlwaysUnique:shouldForceAlwaysUnique contextDictionary:aContextDictionary] autorelease];
+    return [[self alloc] initWithURL:aURL target:aTarget methodString:aMethodString methodDictionary:aMethodDictionary effect:anEffect forceAlwaysUnique:shouldForceAlwaysUnique contextDictionary:aContextDictionary];
 }
 
 + (OWAddress *)addressWithURL:(OWURL *)aURL target:(NSString *)aTarget methodString:(NSString *)aMethodString methodDictionary:(NSDictionary *)aMethodDictionary effect:(OWAddressEffect)anEffect forceAlwaysUnique:(BOOL)shouldForceAlwaysUnique;
@@ -452,14 +434,14 @@ addressForNotSoObviousHostname(NSString *string)
 {
     if (!aURL)
 	return nil;
-    return [[[self alloc] initWithURL:aURL target:aTarget effect:anEffect] autorelease];
+    return [[self alloc] initWithURL:aURL target:aTarget effect:anEffect];
 }
 
 + (OWAddress *)addressWithURL:(OWURL *)aURL;
 {
     if (!aURL)
 	return nil;
-    return [[[self alloc] initWithURL:aURL target:nil effect:OWAddressEffectFollowInWindow] autorelease];
+    return [[self alloc] initWithURL:aURL target:nil effect:OWAddressEffectFollowInWindow];
 }
 
 + (OWAddress *)addressForString:(NSString *)anAddressString;
@@ -516,13 +498,13 @@ addressForNotSoObviousHostname(NSString *string)
     if (!(self = [super init]))
 	return nil;
 
-    url = [aURL retain];
-    target = [aTarget retain];
-    methodString = [aMethodString ? aMethodString : @"GET" retain];
-    methodDictionary = [aMethodDictionary retain];
+    url = aURL;
+    target = aTarget;
+    methodString = aMethodString != nil ? aMethodString : @"GET";
+    methodDictionary = aMethodDictionary;
     flags.effect = anEffect;
     flags.forceAlwaysUnique = shouldForceAlwaysUnique;
-    contextDictionary = [aContextDictionary retain];
+    contextDictionary = aContextDictionary;
 
     return self;
 }
@@ -549,13 +531,13 @@ addressForNotSoObviousHostname(NSString *string)
     if (!(self = [super init]))
         return nil;
 
-    url = [[OWURL urlFromString:[dictionary objectForKey:@"url" defaultObject:@""]] retain];
-    target = [[dictionary objectForKey:@"target" defaultObject:@""] retain];
-    methodString = [[dictionary objectForKey:@"method" defaultObject:@"GET"] retain];
-    methodDictionary = [[dictionary objectForKey:@"mdict"] retain];
+    url = [OWURL urlFromString:[dictionary objectForKey:@"url" defaultObject:@""]];
+    target = [dictionary objectForKey:@"target" defaultObject:@""];
+    methodString = [dictionary objectForKey:@"method" defaultObject:@"GET"];
+    methodDictionary = [dictionary objectForKey:@"mdict"];
     flags.effect = [dictionary intForKey:@"effect" defaultValue:OWAddressEffectFollowInWindow];
     flags.forceAlwaysUnique = [dictionary boolForKey:@"unique" defaultValue:NO];
-    contextDictionary = [[dictionary objectForKey:@"context"] retain];
+    contextDictionary = [dictionary objectForKey:@"context"];
 
     return self;
 }
@@ -563,17 +545,6 @@ addressForNotSoObviousHostname(NSString *string)
 - (id)initWithCoder:(NSCoder *)aDecoder;
 {
     return [self initWithArchiveDictionary:[aDecoder decodePropertyList]];
-}
-
-- (void)dealloc;
-{
-    [url release];
-    [target release];
-    [methodString release];
-    [methodDictionary release];
-    [cacheKey release];
-    [contextDictionary release];
-    [super dealloc];
 }
 
 // Queries
@@ -815,7 +786,7 @@ addressForNotSoObviousHostname(NSString *string)
 	return cacheKey;
 	
     if (![self isAlwaysUnique]) {
-	cacheKey = [[url cacheKey] retain];
+	cacheKey = [url cacheKey];
 	return cacheKey;
     }
     [uniqueKeyCountLock lock];
@@ -896,7 +867,7 @@ addressForNotSoObviousHostname(NSString *string)
 
         relativeAddress = [OWAddress addressWithURL:[url urlFromRelativeString:relativeAddressString] target:aTarget methodString:nil methodDictionary:nil effect:anEffect forceAlwaysUnique:NO contextDictionary:contextDictionary];
         // Force the new address to use the exact same document in the cache as we use, EVEN if we are unique (eg, the result of a FORM or some such).  The advantage to this is that image maps in form results that use "#mapname" will not force a second fetch, which will cause a form to post twice.  Also, relative links in form documents don't cause a refetch.
-        relativeAddress->cacheKey = [[self cacheKey] retain];
+        relativeAddress->cacheKey = [self cacheKey];
 
         return relativeAddress;
     }
@@ -1049,9 +1020,6 @@ addressForNotSoObviousHostname(NSString *string)
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    if (NSShouldRetainWithZone(self, zone))
-        return [self retain];
-
     OWURL *newURL = [url copyWithZone:zone];
     NSString *newTarget = [target copyWithZone:zone];
     NSString *newMethodString = [methodString copyWithZone:zone];
@@ -1059,12 +1027,6 @@ addressForNotSoObviousHostname(NSString *string)
     NSDictionary *newContextDictionary = [contextDictionary copyWithZone:zone];
         
     OWAddress *newAddress = [[[self class] allocWithZone:zone] initWithURL:newURL target:newTarget methodString:newMethodString methodDictionary:newMethodDictionary effect:flags.effect forceAlwaysUnique:flags.forceAlwaysUnique contextDictionary:newContextDictionary];
-
-    [newURL release];
-    [newTarget release];
-    [newMethodString release];
-    [newMethodDictionary release];
-    [newContextDictionary release];
     
     return newAddress;
 }

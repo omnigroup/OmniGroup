@@ -39,6 +39,7 @@
 #import <OmniUI/OUIComponentColorPicker.h>
 #import <OmniUI/OUICrossfadeViewControllerTransition.h>
 #import <OmniUI/OUICustomKeyboardProtocol.h>
+#import <OmniUI/OUICustomSubclass.h>
 #import <OmniUI/OUIDebugURLCommand.h>
 #import <OmniUI/OUIDetailInspectorSlice.h>
 #import <OmniUI/OUIDirectTapGestureRecognizer.h>

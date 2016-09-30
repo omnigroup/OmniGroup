@@ -37,7 +37,7 @@ OFCharacterSet *CacheControlValueDelimiterSet;
 {
     OBINITIALIZE;
 
-    refreshScheduler = [[[OFScheduler mainScheduler] subscheduler] retain];
+    refreshScheduler = [[OFScheduler mainScheduler] subscheduler];
 
     WhitespaceSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
@@ -49,7 +49,7 @@ OFCharacterSet *CacheControlValueDelimiterSet;
     [CacheControlValueDelimiterSet addCharacter:','];
 }
 
-- initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- initWithContent:(OWContent *)aContent target:(id <OWTarget, NSObject>)aTarget;
 {
     if (!(self = [super initWithContent:aContent target:aTarget]))
         return nil;

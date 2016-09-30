@@ -39,9 +39,13 @@ enum {
     
     OFXMLSignatureValidationError,    // Signature information could not be parsed
     OFXMLSignatureValidationFailure,  // Signature information could be parsed, but did not validate
+    OFXMLInvalidateInputError,        // Empty, nil, or otherwise invalid input to the XML parser
     OFASN1Error,                      // Problem parsing an ASN.1 BER or DER encoded value
     OFKeyNotAvailable,                // An encryption key or passphrase isn't available
+    OFKeyNotApplicable,               // This encryption key (e.g. password) doesn't match the thing it's decrypting.
     OFUnsupportedCMSFeature,          // Some CMS identifier or version is unknown or not supported by us
+    OFCMSFormatError,                 // CMS structure is wrong, somehow
+    OFEncryptedDocumentFormatError,   // Omni document-based-app encrypted document structure or format is wrong somehow (often has a suberror)
     
     OFNetStateRegistrationCannotCreateSocket,
     

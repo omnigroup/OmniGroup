@@ -14,4 +14,16 @@ framework module OmniFoundation {
     
     export *
     module * { export * }
+
+    explicit module TestSupport {
+        header "OFXMLParser-Internal.h"
+    }
 }
+
+explicit module OmniFoundation.Private {
+    header "OFCMS-Internal.h"
+    header "OFASN1-Internal.h"
+    
+    export *
+}
+

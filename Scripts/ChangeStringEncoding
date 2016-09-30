@@ -1,0 +1,72 @@
+#!/usr/bin/perl -w
+#
+# Copyright 2005 Omni Development, Inc.  All rights reserved.
+#
+$VERSION = q$Id$;
+if ($VERSION =~ /Header: svn\S+ (\d+ .*)$/) { $VERSION = $1; }
+
+use Getopt::Long;
+use Encode;
+
+our $doNothing = 0;
+our $debug = 0;
+our $verbose = 0;
+our $inputEncoding = "utf-8";
+our $outputEncoding = "utf-16";
+our $relaxEncoding = 0;
+
+Getopt::Long::Configure('require_order', 'auto_version');
+
+GetOptions('do-nothing|n' => \$doNothing,
+           'debug' => \$debug,
+           'verbose' => \$verbose,
+           'input=s' => \$inputEncoding,
+           'output=s' => \$outputEncoding,
+	   'relax=s' => $relaxEncoding
+           );
+
+foreach $file (@ARGV) 
+{
+    checkFile($file);
+}
+
+sub checkFile
+{
+    my ($file) = @_;
+    my ($thisOutputEncoding) = $outputEncoding;
+
+    open (FILE, $file) || die "Can't open $file: $!\n";
+    undef $/; # Read the entire file at once
+    my $fileData = <FILE>;
+    close FILE || die "Failed to close $file: $!\n";
+    eval { decode($outputEncoding, my $data = $fileData, Encode::FB_CROAK) };
+    unless ($@) {
+        # This file is already encoded as $outputEncoding
+        print STDERR "$file: $outputEncoding\n" if $debug;
+    } else {
+        # This file was not encoded as $outputEncoding, try $inputEncoding
+        my $inputString;
+        eval { $inputString = decode($inputEncoding, my $data = $fileData, Encode::FB_CROAK) };
+        unless ($@) {
+            print "$file\n" if $verbose;
+
+	    $thisOutputEncoding = 'ascii'
+		if($relaxEncoding && $file !~ m/[^[:ascii:]]/);
+
+            my $outputString = $inputString;
+            $outputString =~ s/^\x{feff}+//;
+            my $outputData = encode($thisOutputEncoding, $outputString, Encode::FB_CROAK);
+            die "ERROR: $file: zero length result converting from $inputEncoding to $thisOutputEncoding, died"
+                unless $outputData;
+            print STDERR "$file: $inputEncoding " . length($fileData) . " bytes -> $thisOutputEncoding " . length($outputData) . " bytes\n" if $debug;
+            unless ($doNothing) {
+                # This file is $inputEncoding, rewrite it using $thisOutputEncoding
+                open (FILE, ">$file") || die "Cannot write to $file: $!\n";
+                print FILE $outputData;
+                close FILE || die "Failed to close $file: $!\nFILE HAS BEEN CORRUPTED, REVERT IT.\n";
+            }
+        } else {
+            print STDERR "ERROR: $file: not encoded as $outputEncoding or $inputEncoding\n";
+        }
+    }
+}

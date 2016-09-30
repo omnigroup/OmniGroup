@@ -37,50 +37,37 @@ static OFSimpleLockType observersLock;
 
     // Set up the enumeration for the cache validity preference before +cacheValidationPreference is called
     {
-        OFEnumNameTable *validationBehaviors;
-
-        validationBehaviors = [[OFEnumNameTable alloc] initWithDefaultEnumValue:OWCacheValidation_DefaultBehavior];
+        OFEnumNameTable *validationBehaviors = [[OFEnumNameTable alloc] initWithDefaultEnumValue:OWCacheValidation_DefaultBehavior];
         [validationBehaviors setName:@"always" forEnumValue:OWCacheValidation_Always];
         [validationBehaviors setName:@"rarely" forEnumValue:OWCacheValidation_Infrequent];
         [validationBehaviors setName:@"unless-explicit-control" forEnumValue:OWCacheValidation_UnlessCacheControl];
         
         // This makes sure the preference is associated with the given enumeration
         [OFPreference preferenceForKey:OWCacheValidationBehaviorPreferenceKey enumeration:validationBehaviors];
-
-        [validationBehaviors release];
     }
 
     if (cacheActivityScheduler == nil) {
-        OFDedicatedThreadScheduler *scheduler;
-        
-        scheduler = [[OFDedicatedThreadScheduler alloc] init];
+        OFDedicatedThreadScheduler *scheduler = [[OFDedicatedThreadScheduler alloc] init];
         cacheActivityScheduler = scheduler;
         [scheduler setInvokesEventsInMainThread:NO];
         [scheduler runScheduleForeverInNewThread];
     }
 
     if (defaultCacheGroup == nil) {
-        OWProcessorCache *procCache;
-        OWMemoryCache *memoryCache;
-        OWFilteredAddressCache *filterCache;
-
         defaultCacheGroup = [[OWContentCacheGroup alloc] init];
 
 #warning this sucks. kill me.
 
-        procCache = [[OWProcessorCache alloc] init];
+        OWProcessorCache *procCache = [[OWProcessorCache alloc] init];
         [defaultCacheGroup addCache:procCache atStart:YES];
-        [procCache release];
 
-        memoryCache = [[OWMemoryCache alloc] init];
+        OWMemoryCache *memoryCache = [[OWMemoryCache alloc] init];
         [memoryCache setFlush:YES];
         [defaultCacheGroup addCache:memoryCache atStart:NO];
         [defaultCacheGroup setResultCache:memoryCache];
-        [memoryCache release];
 
-        filterCache = [[OWFilteredAddressCache alloc] init];
+        OWFilteredAddressCache *filterCache = [[OWFilteredAddressCache alloc] init];
         [defaultCacheGroup addCache:filterCache atStart:YES];
-        [filterCache release];
     }
 
 }
@@ -103,14 +90,14 @@ static OFSimpleLockType observersLock;
 + (void)addObserver:(id)anObject;
 {
     OFSimpleLock(&observersLock);
-    CFArrayAppendValue(observers, anObject);
+    CFArrayAppendValue(observers, (__bridge const void *)(anObject));
     OFSimpleUnlock(&observersLock);
 }
 
 + (void)removeObserver:(id)anObject;
 {
     OFSimpleLock(&observersLock);
-    CFIndex where = CFArrayGetLastIndexOfValue(observers, (CFRange){0, CFArrayGetCount(observers)}, anObject);
+    CFIndex where = CFArrayGetLastIndexOfValue(observers, (CFRange){0, CFArrayGetCount(observers)}, (__bridge const void *)(anObject));
     if (where != kCFNotFound)
         CFArrayRemoveValueAtIndex(observers, where);
     OFSimpleUnlock(&observersLock);
@@ -119,10 +106,9 @@ static OFSimpleLockType observersLock;
 + (void)invalidateResource:(OWURL *)resource beforeDate:(NSDate *)invalidationDate;
 {
     OFSimpleLock(&observersLock);
-    NSArray *observersSnapshot = [[NSArray alloc] initWithArray:(NSArray *)observers];
+    NSArray *observersSnapshot = [[NSArray alloc] initWithArray:(__bridge NSArray *)observers];
     OFSimpleUnlock(&observersLock);
     [observersSnapshot makeObjectsPerformSelector:_cmd withObject:resource withObject:invalidationDate];
-    [observersSnapshot release];
 }
 
 // Init and dealloc
@@ -135,13 +121,6 @@ static OFSimpleLockType observersLock;
     caches = [[NSMutableArray alloc] init];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [caches release];
-    [resultCache release];
-    [super dealloc];
 }
 
 // API
@@ -161,7 +140,6 @@ static OFSimpleLockType observersLock;
 {
     [caches removeObjectIdenticalTo:aCache];
     if (aCache == resultCache) {
-        [resultCache release];
         resultCache = nil;
     }
 }
@@ -172,7 +150,6 @@ static OFSimpleLockType observersLock;
     OBASSERT([aCache conformsToProtocol:@protocol(OWCacheContentProvider)]);
     OBPRECONDITION(resultCache == nil);
 
-    [aCache retain];
     resultCache = aCache;
 }
 

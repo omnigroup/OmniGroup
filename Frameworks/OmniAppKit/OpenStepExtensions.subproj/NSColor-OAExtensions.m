@@ -558,19 +558,17 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NS
 
 static const OANamedColorEntry *_combinedColorEntries(NSUInteger *outEntryCount)
 {
-    OBPRECONDITION([NSThread isMainThread]); // static variables
-    
     static OANamedColorEntry *entries = NULL;
     static NSUInteger entryCount = 0;
-    
-    if (entries == NULL) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
 	// Two built-in color lists that should get localized
         entries = _addColorsFromList(entries, &entryCount, [NSColorList colorListNamed:@"Apple"]);
         entries = _addColorsFromList(entries, &entryCount, [NSColorList colorListNamed:@"Crayons"]);
 	
 	// Load *our* color list last since it should be localized and has more colors than either of the above
 	entries = _addColorsFromList(entries, &entryCount, classicCrayonsColorList());
-    }
+    });
     
     *outEntryCount = entryCount;
     return entries;

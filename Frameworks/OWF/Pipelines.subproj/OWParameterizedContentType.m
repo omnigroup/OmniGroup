@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,27 +20,21 @@ RCS_ID("$Id$")
 
 + (OWParameterizedContentType *)contentTypeForString:(NSString *)aString
 {
-    NSString *bareType;
-    OFMultiValueDictionary *contentParameters;
-    OWParameterizedContentType *returnValue;
-
-    aString = [aString stringByRemovingSurroundingWhitespace];
-    if ([NSString isEmptyString:aString])
+    NSString *strippedString = [aString stringByRemovingSurroundingWhitespace];
+    if ([NSString isEmptyString:strippedString])
         return nil;
 
-    if ([aString containsString:@";"]) {
+    OFMultiValueDictionary *contentParameters;
+    NSString *bareType;
+    if ([strippedString containsString:@";"]) {
         contentParameters = [[OFMultiValueDictionary alloc] init];
-        bareType = [OWHeaderDictionary parseParameterizedHeader:aString intoDictionary:contentParameters valueChars:nil];
+        bareType = [OWHeaderDictionary parseParameterizedHeader:strippedString intoDictionary:contentParameters valueChars:nil];
     } else {
         contentParameters = nil;
-        bareType = aString;
+        bareType = strippedString;
     }
     
-    returnValue = [[OWParameterizedContentType alloc] initWithContentType:[OWContentType contentTypeForString:bareType] parameters:contentParameters];
-    
-    [contentParameters release];
-    
-    return [returnValue autorelease];
+    return [[OWParameterizedContentType alloc] initWithContentType:[OWContentType contentTypeForString:bareType] parameters:contentParameters];
 }
 
 - initWithContentType:(OWContentType *)aType;
@@ -53,22 +47,11 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
     
-    contentType = [aType retain];
+    contentType = aType;
     _parameterLock = [[NSLock alloc] init];
-    if (someParameters != nil)
-        _parameters = [someParameters retain];
-    else
-        _parameters = nil;
+    _parameters = someParameters;
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [contentType release];
-    [_parameterLock release];
-    [_parameters release];
-    [super dealloc];
 }
 
 // API
@@ -85,7 +68,7 @@ RCS_ID("$Id$")
     [_parameterLock lock];
     result = [_parameters mutableCopy];
     [_parameterLock unlock];
-    return [result autorelease];
+    return result;
 }
 
 - (NSString *)objectForKey:(NSString *)aName;
@@ -93,9 +76,9 @@ RCS_ID("$Id$")
     NSString *object;
 
     [_parameterLock lock];
-    object = [[_parameters lastObjectForKey:aName] retain];
+    object = [_parameters lastObjectForKey:aName];
     [_parameterLock unlock];
-    return [object autorelease];
+    return object;
 }
 
 - (void)setObject:(NSString *)newValue forKey:(NSString *)aName;
@@ -126,16 +109,12 @@ RCS_ID("$Id$")
 
 - mutableCopyWithZone:(NSZone *)newZone
 {
-    OWParameterizedContentType *copy;
     OFMultiValueDictionary *copiedParameters;
     
     [_parameterLock lock];
     copiedParameters = [_parameters mutableCopyWithZone:newZone];
     [_parameterLock unlock];
-    copy = [[[self class] allocWithZone:newZone] initWithContentType:contentType parameters:copiedParameters];
-    [copiedParameters release];
-    
-    return copy;
+    return [[[self class] allocWithZone:newZone] initWithContentType:contentType parameters:copiedParameters];
 }
 
 // OBObject subclass

@@ -684,6 +684,21 @@ static NSURL *urlIfExists(NSURL *url)
     return [self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath];
 }
 
+- (BOOL)isLightLuma:(CGFloat)luma;
+{
+    static CGFloat lightColorLimit;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OAAppearance *appearance = [OAAppearance appearance];
+        lightColorLimit = ([appearance CGFloatForKeyPath:@"OALightColorLumaLimit"]);
+    });
+
+    if (luma < lightColorLimit)
+        return NO;
+    else
+        return YES;
+}
+
 - (OA_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
 {
     return [OA_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
@@ -1344,7 +1359,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
             Class reifyingClass = GetPrivateReifyingClassForPublicClass(cls);
             appearance = [[reifyingClass alloc] _initWithPlistName:nil inBundle:nil];
         } else {
-            appearance = [[cls alloc] _initWithPlistName:NSStringFromClass(cls) inBundle:[NSBundle bundleForClass:cls]];
+            appearance = [[cls alloc] _initWithPlistName:NSStringFromClass(cls) inBundle:[cls bundleForPlist]];
         }
         OBASSERT_NOTNULL(appearance);
         
@@ -1443,6 +1458,13 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
     return appearance;
 }
 
+// If you always want to use a different bundle for this plist.
++ (NSBundle *)bundleForPlist
+{
+    return [NSBundle bundleForClass:self];
+}
+
+// If you want to hot-swap your directory at runtime.
 + (NSURL * _Nullable)directoryURLForSwitchablePlist;
 {
     return nil;
@@ -1538,20 +1560,10 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
 
 - (BOOL)isLightColor;
 {
-    static CGFloat lightColorLimit;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OAAppearance *appearance = [OAAppearance appearance];
-        lightColorLimit = ([appearance CGFloatForKeyPath:@"OALightColorLumaLimit"]);
-    });
-    
     OAColor *aColor = [OAColor colorWithPlatformColor:self];
     CGFloat luma = OAGetRGBAColorLuma([aColor toRGBA]);
-    
-    if (luma < lightColorLimit)
-        return NO;
-    else
-        return YES;
+
+    return [[OAAppearance appearance] isLightLuma:luma];
 }
 
 @end
@@ -1590,20 +1602,10 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
 
 - (BOOL)isLightColor;
 {
-    static CGFloat lightColorLimit;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OAAppearance *appearance = [OAAppearance appearance];
-        lightColorLimit = ([appearance CGFloatForKeyPath:@"OALightColorLumaLimit"]);
-    });
-
     OAColor *aColor = [OAColor colorWithPlatformColor:self];
     CGFloat luma = OAGetRGBAColorLuma([aColor toRGBA]);
 
-    if (luma < lightColorLimit)
-        return NO;
-    else
-        return YES;
+    return [[OAAppearance appearance] isLightLuma:luma];
 }
 
 @end

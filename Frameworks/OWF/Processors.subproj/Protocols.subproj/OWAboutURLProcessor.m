@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ static NSString *aboutAliasFilename = nil;
 + (void)initialize
 {
     if (aboutAliasFilename == nil) {
-        aboutAliasFilename = [[[NSBundle bundleForClass:[self class]] pathForResource:@"aboutSchemeAliases" ofType:@"plist"] retain];
+        aboutAliasFilename = [[NSBundle bundleForClass:[self class]] pathForResource:@"aboutSchemeAliases" ofType:@"plist"];
     }
     
     [super initialize];
@@ -43,19 +43,14 @@ static NSString *aboutAliasFilename = nil;
 
 - (void)process
 {
-    OWURL *aboutURL;
-    NSString *aboutWhat;
-    NSDictionary *aliases;
-    NSString *redirectTo = nil;
-    OWAddress *newAddress;
-    
-    aboutURL = [sourceAddress url];
-    aboutWhat = [aboutURL schemeSpecificPart];
+    OWURL *aboutURL = [sourceAddress url];
+    NSString *aboutWhat = [aboutURL schemeSpecificPart];
     if (aboutWhat == nil)
         aboutWhat = @"";
     
-    aliases = [NSDictionary dictionaryWithContentsOfFile:aboutAliasFilename];
-    if (aliases == nil || !(redirectTo = [aliases objectForKey:aboutWhat])) {
+    NSDictionary *aliases = [NSDictionary dictionaryWithContentsOfFile:aboutAliasFilename];
+    NSString *redirectTo = nil;
+    if (aliases == nil || (redirectTo = [aliases objectForKey:aboutWhat]) == nil) {
         NSException *exception;
         
         if (aliases == nil)
@@ -65,9 +60,9 @@ static NSString *aboutAliasFilename = nil;
         [exception raise];
     }
     
-    newAddress = [OWAddress addressWithURL:[aboutURL urlFromRelativeString:redirectTo] target:[sourceAddress target] methodString:[sourceAddress methodString] methodDictionary:[sourceAddress methodDictionary] effect:[sourceAddress effect] forceAlwaysUnique:NO contextDictionary:[sourceAddress contextDictionary]];
+    OWAddress *newAddress = [OWAddress addressWithURL:[aboutURL urlFromRelativeString:redirectTo] target:[sourceAddress target] methodString:[sourceAddress methodString] methodDictionary:[sourceAddress methodDictionary] effect:[sourceAddress effect] forceAlwaysUnique:NO contextDictionary:[sourceAddress contextDictionary]];
     
-    [pipeline addRedirectionContent:newAddress sameURI:NO];
+    [self.pipeline addRedirectionContent:newAddress sameURI:NO];
 }
 
 @end

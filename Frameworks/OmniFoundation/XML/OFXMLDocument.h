@@ -16,7 +16,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class OFXMLCursor, OFXMLElement, OFXMLWhitespaceBehavior;
-@class NSArray, NSMutableArray, NSDate, NSData, NSURL, NSError;
+@class NSArray, NSMutableArray, NSDate, NSData, NSURL, NSError, NSInputStream;
 
 @interface OFXMLDocument : OFXMLIdentifierRegistry <OFXMLParserTarget>
 
@@ -46,8 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithContentsOfFile:(NSString *)path whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 
 // xmlData marked nullable for testing purposes. This will return a nil document.
-- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
-- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
 
 @property(nonatomic,readonly) OFXMLWhitespaceBehavior *whitespaceBehavior;
 @property(nonatomic,readonly,nullable) CFURLRef dtdSystemID;

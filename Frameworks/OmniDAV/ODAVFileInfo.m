@@ -181,6 +181,11 @@ RCS_ID("$Id$");
 
 #pragma mark - Debugging
 
+- (NSString *)description;
+{
+    return [NSString stringWithFormat:@"<%@:%p '%@'>", NSStringFromClass([self class]), self, _name];
+}
+
 - (NSString *)shortDescription;
 {
     return _name;

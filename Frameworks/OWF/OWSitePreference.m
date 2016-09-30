@@ -99,21 +99,18 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 
 + (OWSitePreference *)preferenceForKey:(NSString *)key domain:(NSString *)domain;
 {
-    NSMutableDictionary *preferenceCache;
-    OWSitePreference *preference;
-    
     OBASSERT(domain != nil);
 
     [domainLock lock];
-    preferenceCache = [self _lockedPreferenceCacheForDomain:domain];
-    preference = [[preferenceCache objectForKey:key] retain];
+    NSMutableDictionary *preferenceCache = [self _lockedPreferenceCacheForDomain:domain];
+    OWSitePreference *preference = [preferenceCache objectForKey:key];
     if (preference == nil) {
         preference = [[OWSitePreference alloc] _initWithKey:key domain:domain];
         [preferenceCache setObject:preference forKey:key];
     }
     [domainLock unlock];
 
-    return [preference autorelease];
+    return preference;
 }
 
 + (OWSitePreference *)preferenceForKey:(NSString *)key address:(OWAddress *)address;
@@ -204,10 +201,6 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
 - (void)dealloc;
 {
     [OFPreference removeObserver:self forPreference:nil];
-    [globalPreference release];
-    [siteSpecificPreference release];
-    
-    [super dealloc];
 }
 
 // API
@@ -341,7 +334,7 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
         return nil;
             
     // Global preference (used as a fallback)
-    globalPreference = [[OFPreference preferenceForKey:key] retain];
+    globalPreference = [OFPreference preferenceForKey:key];
         
     // Site-specific preference
     if (![NSString isEmptyString:domain]) {
@@ -350,7 +343,7 @@ static NSNotificationCenter *sitePreferenceNotificationCenter;
         domain = [domain lowercaseString];
         
         siteKey = [NSString stringWithFormat:@"SiteSpecific:%@:%@", domain, key];
-        siteSpecificPreference = [[OFPreference preferenceForKey:siteKey] retain];
+        siteSpecificPreference = [OFPreference preferenceForKey:siteKey];
     }
 
     if (globalPreference != nil)

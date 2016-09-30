@@ -16,12 +16,6 @@
 #import <OWF/OWContentCacheProtocols.h> // For OWCacheArcProvider;
 
 @interface OWProcessorCache : OFObject <OWCacheArcProvider>
-{
-    NSLock *lock;
-    
-    OFMultiValueDictionary *processorsFromHashableSources;
-    NSMutableArray *otherProcessors;
-}
 
 - (void)removeArc:(OWProcessorCacheArc *)anArc;
 

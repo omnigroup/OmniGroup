@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,31 +34,21 @@ RCS_ID("$Id$");
     if (!(self = [super initWithContent:initialContent context:aPipeline]))
         return nil;
 
-    baseAddress = [[pipeline contextObjectForKey:OWCacheArcSourceAddressKey] retain];
+    baseAddress = [self.pipeline contextObjectForKey:OWCacheArcSourceAddressKey];
 
     return self;
 }
 
-- (void)dealloc;
-{
-    [objectStream release];
-    [baseAddress release];
-    [super dealloc];
-}
-
 - (void)startProcessing
 {
-    OWContent *resultContent;
-    
     OBPRECONDITION(objectStream == nil);
 
     objectStream = [[OWObjectStream alloc] init];
 
-    resultContent = [[OWContent alloc] initWithContent:objectStream];
+    OWContent *resultContent = [[OWContent alloc] initWithContent:objectStream];
     [resultContent setContentTypeString:@"ObjectStream/OWFileInfoList"];
     [resultContent markEndOfHeaders];
-    [pipeline addContent:resultContent fromProcessor:self flags:OWProcessorTypeDerived];
-    [resultContent release];
+    [self.pipeline addContent:resultContent fromProcessor:self flags:OWProcessorTypeDerived];
 
     [super startProcessing];
 }
@@ -66,7 +56,6 @@ RCS_ID("$Id$");
 - (void)addFileForLine:(NSString *)line
 {
     OWFileInfo *fileInfo = [self fileInfoForLine:line];
-    OWContent *fileInfoContent;
     
     if (fileInfo == nil)
         return;
@@ -74,10 +63,9 @@ RCS_ID("$Id$");
     [objectStream writeObject:fileInfo];
     
     // Store file info in the cache for use by other processes
-    fileInfoContent = [[OWContent alloc] initWithContent:fileInfo];
+    OWContent *fileInfoContent = [[OWContent alloc] initWithContent:fileInfo];
     [fileInfoContent markEndOfHeaders];
-    [pipeline extraContent:fileInfoContent fromProcessor:self forAddress:[fileInfo address]];
-    [fileInfoContent release];
+    [self.pipeline extraContent:fileInfoContent fromProcessor:self forAddress:[fileInfo address]];
 }
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
@@ -85,43 +73,22 @@ RCS_ID("$Id$");
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-#define LINES_PER_POOL (25)
-
 - (void)process;
 {
-    NSString *line;
-    int linesUntilNewPool;
-    NSAutoreleasePool *pool;
-    NSException *pendingException;
-
-    pool = nil;
-    pendingException = nil;
-    linesUntilNewPool = 0;
     lineNumber = 0;
-    NS_DURING;
-    for(;;) {
-        if (linesUntilNewPool < 1) {
-            [pool release];
-            pool = [[NSAutoreleasePool alloc] init];
-            linesUntilNewPool = LINES_PER_POOL;
+    @try {
+        for (;;) {
+            @autoreleasepool {
+                NSString *line = [characterCursor readLine];
+                if (line == nil)
+                    break;
+                lineNumber++;
+                [self addFileForLine:line];
+            }
         }
-        line = [characterCursor readLine];
-        if (!line)
-            break;
-        linesUntilNewPool --;
-        lineNumber ++;
-        [self addFileForLine:line];
+    } @finally {
+        [objectStream dataEnd];
     }
-    NS_HANDLER {
-        [localException retain];
-        [pool release];
-        pool = nil;
-        pendingException = [localException autorelease];
-    } NS_ENDHANDLER; 
-    [objectStream dataEnd];
-    [pool release];
-    if (pendingException)
-        [pendingException raise];
 }
 
 - (void)processAbort;

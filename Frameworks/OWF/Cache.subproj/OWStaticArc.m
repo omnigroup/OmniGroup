@@ -27,6 +27,9 @@
 
 RCS_ID("$Id$");
 
+@implementation OWStaticArcInitialization
+@end
+
 @implementation OWStaticArc
 
 static OFPreference *proportionalValidityFactorPreference = nil;
@@ -111,23 +114,20 @@ static NSDate *extractDate(void *from)
         return [NSDate dateWithTimeIntervalSince1970:timet];
 }
 
-+ (BOOL)deserializeProperties:(struct OWStaticArcInitialization *)i
-                   fromBuffer:(NSData *)buf;
++ (BOOL)deserializeProperties:(OWStaticArcInitialization *)i fromBuffer:(NSData *)buf;
 {
-    unsigned char arcFlags, *cursor;
-    unsigned offset;
-    NSKeyedUnarchiver *arch;
-    
-    i->contextDependencies = nil;
+    i.contextDependencies = nil;
 
     if ([buf length] < 4)
         return NO;
 
-    cursor = (unsigned char *)[buf bytes];
+    unsigned char *cursor = (unsigned char *)[buf bytes];
+    unsigned char arcFlags;
+    unsigned offset;
 
     if (!memcmp([buf bytes], Serialization_Magic_1, 3)) {
         arcFlags = cursor[3];
-        i->arcType = OWCacheArcRetrievedContent;
+        i.arcType = OWCacheArcRetrievedContent;
         offset = 4;
     } else if(!memcmp([buf bytes], Serialization_Magic_2, 3)) {
         unsigned char moreArcFlags;
@@ -135,7 +135,7 @@ static NSDate *extractDate(void *from)
         arcFlags = cursor[3];
         moreArcFlags = cursor[4];
 
-        i->arcType = ( moreArcFlags & 0x0F );
+        i.arcType = ( moreArcFlags & 0x0F );
         
         offset = 5;
     } else {
@@ -143,20 +143,21 @@ static NSDate *extractDate(void *from)
         offset = 0;
     }
     
-    i->resultIsSource   = (arcFlags & SerialFlags_isSource)? YES : NO;
-    i->resultIsError    = (arcFlags & SerialFlags_isError)? YES : NO;
-    i->shouldNotBeCachedOnDisk = (arcFlags & SerialFlags_isLocal)? YES : NO;
-    i->nonReusable      = (arcFlags & SerialFlags_nonReusable)? YES : NO;
+    i.resultIsSource   = (arcFlags & SerialFlags_isSource)? YES : NO;
+    i.resultIsError    = (arcFlags & SerialFlags_isError)? YES : NO;
+    i.shouldNotBeCachedOnDisk = (arcFlags & SerialFlags_isLocal)? YES : NO;
+    i.nonReusable      = (arcFlags & SerialFlags_nonReusable)? YES : NO;
 
     if (arcFlags & SerialFlags_hasCreationDate) {
-        i->creationDate = extractDate(cursor + offset);
+        i.creationDate = extractDate(cursor + offset);
         offset += 4;
     }
     if (arcFlags & SerialFlags_hasExpirationDate) {
-        i->freshUntil = extractDate(cursor + offset);
+        i.freshUntil = extractDate(cursor + offset);
         offset += 4;
     }
 
+    NSKeyedUnarchiver *arch;
     if (arcFlags & SerialFlags_hasArchivedProperties) {
         NSRange archivedRange = { offset, [buf length] - offset };
         arch = [[NSKeyedUnarchiver alloc] initForReadingWithData:[buf subdataWithRange:archivedRange]];
@@ -164,31 +165,27 @@ static NSDate *extractDate(void *from)
         arch = nil;
 
     if ([arch containsValueForKey:@"context"])
-        i->contextDependencies = [[[arch decodeObjectForKey:@"context"] retain] autorelease];
+        i.contextDependencies = [arch decodeObjectForKey:@"context"];
     if ([arch containsValueForKey:@"created"])
-        i->creationDate = [[[arch decodeObjectForKey:@"created"] retain] autorelease];
+        i.creationDate = [arch decodeObjectForKey:@"created"];
     if ([arch containsValueForKey:@"expires"])
-        i->freshUntil = [[[arch decodeObjectForKey:@"expires"] retain] autorelease];
+        i.freshUntil = [arch decodeObjectForKey:@"expires"];
     if ([arch containsValueForKey:@"src"])
-        i->resultIsSource = [arch decodeBoolForKey:@"src"];
+        i.resultIsSource = [arch decodeBoolForKey:@"src"];
     if ([arch containsValueForKey:@"err"])
-        i->resultIsError = [arch decodeBoolForKey:@"err"];
+        i.resultIsError = [arch decodeBoolForKey:@"err"];
     if ([arch containsValueForKey:@"local"])
-        i->shouldNotBeCachedOnDisk = [arch decodeBoolForKey:@"local"];
+        i.shouldNotBeCachedOnDisk = [arch decodeBoolForKey:@"local"];
 
-    [arch release];
-    
     return YES;
 }
 
 - (NSData *)serialize;
 {
-    NSMutableData *buf;
     unsigned char arcFlags = 0;
     unsigned char moreArcFlags;
 
-    buf = [[NSMutableData alloc] init];
-    [buf autorelease];
+    NSMutableData *buf = [[NSMutableData alloc] init];
 
     arcFlags = 0;
     if (resultIsError)
@@ -225,7 +222,6 @@ static NSDate *extractDate(void *from)
         if ([contextDependencies count])
             [arch encodeObject:contextDependencies forKey:@"context"];
         [arch finishEncoding];
-        [arch release];
     }
 
     return buf;
@@ -233,7 +229,7 @@ static NSDate *extractDate(void *from)
 
 // Init and dealloc
 
-- initWithArcInitializationProperties:(struct OWStaticArcInitialization)initialProperties;
+- initWithArcInitializationProperties:(OWStaticArcInitialization *)initialProperties;
 {
     if (!(self = [super init]))
         return nil;
@@ -247,16 +243,16 @@ static NSDate *extractDate(void *from)
     OBASSERT([initialProperties.object endOfHeaders]);
 
     arcType = initialProperties.arcType;
-    subject = [initialProperties.subject retain];
-    source = [initialProperties.source retain];
-    object = [initialProperties.object retain];
+    subject = initialProperties.subject;
+    source = initialProperties.source;
+    object = initialProperties.object;
 
     if (initialProperties.contextDependencies != nil)
         contextDependencies = [initialProperties.contextDependencies copy];
     else
         contextDependencies = [[NSDictionary alloc] init];
-    freshUntil = [initialProperties.freshUntil retain];
-    creationDate = [initialProperties.creationDate retain];
+    freshUntil = initialProperties.freshUntil;
+    creationDate = initialProperties.creationDate;
     if (creationDate == nil)
         creationDate = [[NSDate alloc] init];
 
@@ -267,18 +263,6 @@ static NSDate *extractDate(void *from)
 
     return self;
 }
-
-- (void)dealloc;
-{
-    [subject release];
-    [source release];
-    [object release];
-    [contextDependencies release];
-    [freshUntil release];
-    [creationDate release];
-    [super dealloc];
-}
-
 
 // API
 
@@ -307,7 +291,7 @@ static NSDate *extractDate(void *from)
                 [result addObject:source];
             if (relation & OWCacheArcObject)
                 [result addObject:object];
-            return [result autorelease];
+            return result;
         }
     }
 }

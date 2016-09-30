@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -317,16 +317,23 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
             case kCFNumberSInt32Type:
             case kCFNumberCharType:
             case kCFNumberShortType:
-            case kCFNumberIntType:
+            case kCFNumberIntType: {
                 if (!ODOSQLStatementBindInt32(sqlite, self, bindIndex, [constant intValue], outError))
                     return NO;
                 break;
-                default: {
-                    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
-                    ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
+            }
+            case kCFNumberLongLongType:
+            case kCFNumberNSIntegerType: {
+                if (!ODOSQLStatementBindInt64(sqlite, self, bindIndex, [constant longLongValue], outError))
                     return NO;
-                }
+                break;
+            }
+            default: {
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
+                ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
+                return NO;
+            }
         }
     } else if ([constant isKindOfClass:[NSDate class]]) {
         if (!ODOSQLStatementBindDate(sqlite, self, bindIndex, constant, outError))

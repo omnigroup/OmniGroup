@@ -255,7 +255,8 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     if (_challengeCompletionHandler) {
         NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:self.userName password:self.password persistence:(self.rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
 
-        typeof(_challengeCompletionHandler) handler = _challengeCompletionHandler;
+        typeof(_challengeCompletionHandler) handler = [_challengeCompletionHandler copy];
+        OBRetainAutorelease(handler);
         _challengeCompletionHandler = nil;
 
         handler(NSURLSessionAuthChallengeUseCredential, credential);

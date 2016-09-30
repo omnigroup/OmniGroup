@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,14 @@
 RCS_ID("$Id$")
 
 @implementation OWProcessor
+{
+    __weak id <OWProcessorContext> pipeline;
+    
+    // For display purposes
+    OFSimpleLockType displayablesSimpleLock;
+    OWProcessorStatus status;
+    NSString *statusString;
+}
 
 static NSMapTable *classNameToReadableNameMapTable = NULL;
 static NSLock *readableNameDictionaryLock = nil;
@@ -33,46 +41,39 @@ static BOOL OWProcessorTimeLog = NO;
 
 + (void)initialize;
 {
-    NSBundle *myBundle;
-    
     OBINITIALIZE;
 
     readableNameDictionaryLock = [[NSLock alloc] init];
-    classNameToReadableNameMapTable = NSCreateMapTable(NSNonOwnedPointerMapKeyCallBacks, NSObjectMapValueCallBacks, 25);
+    classNameToReadableNameMapTable = [NSMapTable weakToStrongObjectsMapTable];
     
-    myBundle = [NSBundle bundleForClass:[OWProcessor class]];
-    StatusStrings[OWProcessorNotStarted] = [NSLocalizedStringFromTableInBundle(@"Not Started", @"OWF", myBundle, @"processor status") retain];
-    StatusStrings[OWProcessorStarting] = [NSLocalizedStringFromTableInBundle(@"Waiting", @"OWF", myBundle, @"processor status") retain];
-    StatusStrings[OWProcessorQueued] = [NSLocalizedStringFromTableInBundle(@"Queued", @"OWF", myBundle, @"processor status") retain];
-    StatusStrings[OWProcessorRunning] = [NSLocalizedStringFromTableInBundle(@"Running", @"OWF", myBundle, @"processor status") retain];
-    StatusStrings[OWProcessorAborting] = [NSLocalizedStringFromTableInBundle(@"Stopping", @"OWF", myBundle, @"processor status") retain];
-    StatusStrings[OWProcessorRetired] = [NSLocalizedStringFromTableInBundle(@"Exiting", @"OWF", myBundle, @"processor status") retain];
+    StatusStrings[OWProcessorNotStarted] = NSLocalizedStringFromTableInBundle(@"Not Started", @"OWF", OMNI_BUNDLE, @"processor status");
+    StatusStrings[OWProcessorStarting] = NSLocalizedStringFromTableInBundle(@"Waiting", @"OWF", OMNI_BUNDLE, @"processor status");
+    StatusStrings[OWProcessorQueued] = NSLocalizedStringFromTableInBundle(@"Queued", @"OWF", OMNI_BUNDLE, @"processor status");
+    StatusStrings[OWProcessorRunning] = NSLocalizedStringFromTableInBundle(@"Running", @"OWF", OMNI_BUNDLE, @"processor status");
+    StatusStrings[OWProcessorAborting] = NSLocalizedStringFromTableInBundle(@"Stopping", @"OWF", OMNI_BUNDLE, @"processor status");
+    StatusStrings[OWProcessorRetired] = NSLocalizedStringFromTableInBundle(@"Exiting", @"OWF", OMNI_BUNDLE, @"processor status");
 }
 
 + (NSString *)readableClassName;
 {
-    NSString *readableName;
-    NSRange range;
-    
     [readableNameDictionaryLock lock];
 
-    readableName = NSMapGet(classNameToReadableNameMapTable, self);
-    if (readableName)
-	goto unlockAndReturn;
-    
-    NSString *className = NSStringFromClass(self);
-    
-    if ((range = [className rangeOfString:@"Omni" options:NSAnchoredSearch]).length || (range = [className rangeOfString:@"OW" options:NSAnchoredSearch]).length)
-	readableName = [className substringFromIndex:NSMaxRange(range)];
-    else
-	readableName = className;
+    NSString *readableName = [classNameToReadableNameMapTable objectForKey:self];
+    if (readableName == nil) {
+        NSString *className = NSStringFromClass(self);
+        
+        NSRange range;
+        if ((range = [className rangeOfString:@"Omni" options:NSAnchoredSearch]).length || (range = [className rangeOfString:@"OW" options:NSAnchoredSearch]).length)
+            readableName = [className substringFromIndex:NSMaxRange(range)];
+        else
+            readableName = className;
+        
+        if ((range = [readableName rangeOfString:@"Processor" options:NSAnchoredSearch|NSBackwardsSearch]).length)
+            readableName = [readableName substringToIndex:range.location];
+        
+        [classNameToReadableNameMapTable setObject:readableName forKey:self];
+    }
 	
-    if ((range = [readableName rangeOfString:@"Processor" options:NSAnchoredSearch|NSBackwardsSearch]).length)
-	readableName = [readableName substringToIndex:range.location];
-    
-    NSMapInsert(classNameToReadableNameMapTable, self, readableName);
-	
-unlockAndReturn:
     [readableNameDictionaryLock unlock];
     return readableName;
 }
@@ -142,8 +143,8 @@ unlockAndReturn:
     OFSimpleLockInit(&displayablesSimpleLock);
     [self setStatus:OWProcessorStarting];
 
-    pipeline = [aPipeline retain];
-    originalContent = [initialContent retain];
+    pipeline = aPipeline;
+    originalContent = initialContent;
 
     return self;
 }
@@ -151,10 +152,6 @@ unlockAndReturn:
 - (void)dealloc;
 {
     OFSimpleLockFree(&displayablesSimpleLock);
-    [statusString release];
-    [pipeline release];
-    [originalContent release];
-    [super dealloc];
 }
 
 //
@@ -210,43 +207,34 @@ unlockAndReturn:
     if (statusString == newStatus)
 	return;
     OFSimpleLock(&displayablesSimpleLock);
-    [statusString release];
-    statusString = [newStatus retain];
+    statusString = newStatus;
     OFSimpleUnlock(&displayablesSimpleLock);
     [pipeline processorStatusChanged:self];
 }
 
 - (void)setStatusFormat:(NSString *)aFormat, ...;
 {
-    NSString *newStatus;
     va_list argList;
-
     va_start(argList, aFormat);
-    newStatus = [[NSString alloc] initWithFormat:aFormat arguments:argList];
+    NSString *newStatus = [[NSString alloc] initWithFormat:aFormat arguments:argList];
     va_end(argList);
     [self setStatusString:newStatus];
-    [newStatus release];
 }
 
 - (void)setStatusStringWithClassName:(NSString *)newStatus;
 {
-    NSMutableString *newStatusString;
-
     // Avoid +stringWithFormat: since this is simple
-    newStatusString = [[NSMutableString alloc] initWithString:[[self class] readableClassName]];
-    [newStatusString appendString: @" "];
-    [newStatusString appendString: newStatus];
+    NSMutableString *newStatusString = [[NSMutableString alloc] initWithString:[[self class] readableClassName]];
+    [newStatusString appendString:@" "];
+    [newStatusString appendString:newStatus];
     
-    [self setStatusString: newStatusString];
-    [newStatusString release];
+    [self setStatusString:newStatusString];
 }
 
 - (NSString *)statusString;
 {
-    NSString *aStatus;
-
     OFSimpleLock(&displayablesSimpleLock);
-    aStatus = [[statusString retain] autorelease];
+    NSString *aStatus = statusString;
     OFSimpleUnlock(&displayablesSimpleLock);
     return aStatus;
 }
@@ -283,7 +271,7 @@ unlockAndReturn:
     if (pipeline != nil) {
         return [pipeline messageQueueSchedulingInfo];
     } else {
-        return (OFMessageQueueSchedulingInfo){.priority = OFLowPriority, .group = [OWProcessor class], .maximumSimultaneousThreadsInGroup = 1};
+        return (OFMessageQueueSchedulingInfo){.priority = OFLowPriority, .group = (__bridge const void *)([OWProcessor class]), .maximumSimultaneousThreadsInGroup = 1};
     }
 }
 
@@ -317,30 +305,32 @@ unlockAndReturn:
 
 - (void)processInThread;
 {
-    NSAutoreleasePool *pool;
-    
     if (status == OWProcessorAborting) {
         [self retire];
         return;
     }
-    pool = [[NSAutoreleasePool alloc] init];
-    NS_DURING {
-        [self processBegin];
-        [pool release];
+
+    @try {
+        @autoreleasepool {
+            [self processBegin];
+        }
         
-        pool = [[NSAutoreleasePool alloc] init];
-        [self process];
-        [pool release];
+        @autoreleasepool {
+            [self process];
+        }
         
-        pool = [[NSAutoreleasePool alloc] init];
-        [self processEnd];
-    } NS_HANDLER {
-        if (status != OWProcessorAborting)
-            [self handleProcessingException:localException];
-        [self processAbort];
-    } NS_ENDHANDLER;
-    [pool release];
-    [self retire];
+        @autoreleasepool {
+            [self processEnd];
+        }
+    } @catch (NSException *localException) {
+        @autoreleasepool {
+            if (status != OWProcessorAborting)
+                [self handleProcessingException:localException];
+            [self processAbort];
+        }
+    } @finally {
+        [self retire];
+    }
 }
 
 - (void)retire;
@@ -351,10 +341,7 @@ unlockAndReturn:
 
 - (void)handleProcessingException:(NSException *)processingException;
 {
-    OWContent *errorContent;
-    BOOL alreadyHadError;
-
-    alreadyHadError = [pipeline hadError];
+    BOOL alreadyHadError = [pipeline hadError];
 
     if ([[processingException name] isEqualToString:@"OWProcessorCacheArcHasRetired"]) {
         [pipeline noteErrorName:[processingException displayName] reason:[processingException reason]];
@@ -368,21 +355,15 @@ unlockAndReturn:
     if (alreadyHadError)
         return;
 
-    errorContent = [OWContent contentWithConcreteCacheEntry:processingException];
-    
+    OWContent *errorContent = [OWContent contentWithConcreteCacheEntry:processingException];
     [pipeline addContent:errorContent fromProcessor:self flags:OWProcessorContentIsError | OWProcessorTypeRetrieval];
 }
     
 - (OWFileInfo *)cacheDate:(NSDate *)aDate forAddress:(OWAddress *)anAddress
 {
-    OWContent *newContent;
-    OWFileInfo *fileInfo;
-
-    fileInfo = [[OWFileInfo alloc] initWithLastChangeDate:aDate];
-    newContent = [[OWContent alloc] initWithContent:fileInfo];
-    [fileInfo release];
+    OWFileInfo *fileInfo = [[OWFileInfo alloc] initWithLastChangeDate:aDate];
+    OWContent *newContent = [[OWContent alloc] initWithContent:fileInfo];
     [newContent markEndOfHeaders];
-    [newContent autorelease];
     [pipeline extraContent:newContent fromProcessor:self forAddress:anAddress];
     return fileInfo;
 }
@@ -392,9 +373,7 @@ unlockAndReturn:
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     [debugDictionary setObject:[(id)pipeline shortDescription] forKey:@"pipeline"];
     if (statusString)
         [debugDictionary setObject:[self statusString] forKey:@"statusString"];

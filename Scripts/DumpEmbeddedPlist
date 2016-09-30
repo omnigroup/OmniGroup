@@ -1,0 +1,18 @@
+#!/bin/zsh -euf
+
+# Xcode 8.0 beta 2 breaks the -X and -P flags, so we require that Xcode 7.3.1 be installed too and use its copy. Radar 27378808.
+# OLD_XCODE=/Applications/Xcode-7.3.1.app
+# if [ ! -d "$OLD_XCODE" ]; then
+# 	# Build servers have this app moved aside so that they won't attempt to do 7.x builds on 8.0-touched systems until we are ready.
+# 	OLD_XCODE=/Applications/tmp/Xcode-7.3.1.app
+# fi
+# export DEVELOPER_DIR=$OLD_XCODE/Contents/Developer
+#
+# if [ ! -d "$DEVELOPER_DIR" ]; then
+# 	echo "*** Error: To work around an Xcode 8 but, you need Xcode-7.3.1 at $OLD_XCODE"
+# 	exit 1
+# fi
+# otool -X -P "$@"
+
+# Xcode 8.0 beta 4 has (maybe added) "otool-classic". Hopefully the main otool will get fixed, but this removes the requirement for having Xcode 7.3.1 installed (which isn't supported on Sierra).
+xcrun otool-classic -X -P "$@"

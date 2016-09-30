@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSFileCoordinator (OFExtensions)
 
@@ -24,7 +26,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 }
 
 // TODO: Rename this method to make it clear that it is a user-initated rename where it is OK that the destinationURL exists, if it is the same as the sourceURL (in the case insensitivity case).
-- (BOOL)moveItemAtURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (^)(NSURL *resultURL))successHandler;
+- (BOOL)moveItemAtURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL createIntermediateDirectories:(BOOL)createIntermediateDirectories error:(NSError **)outError success:(void (^ _Nullable)(NSURL *resultURL))successHandler;
 {
     __block BOOL success = NO;
 
@@ -71,7 +73,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
     return [self moveItemAtURL:sourceURL toURL:destinationURL createIntermediateDirectories:createIntermediateDirectories error:outError success:nil];
 }
 
-- (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(NSURL * (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(nullable NSURL * (^)(NSURL *newURL, NSError **outError))accessor;
 {
     __block BOOL success = NO;
     [self coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving error:outError byAccessor:^(NSURL *newURL){
@@ -84,7 +86,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
     return success;
 }
 
-- (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
 {
     __block BOOL success = NO;
     [self coordinateWritingItemAtURL:fileURL options:NSFileCoordinatorWritingForDeleting error:outError byAccessor:^(NSURL *newURL){
@@ -93,7 +95,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
     return success;
 }
 
-- (BOOL)readItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)readItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
 {
     __block BOOL success = NO;
     
@@ -104,7 +106,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
     return success;
 }
 
-- (BOOL)writeItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+- (BOOL)writeItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(OFFileAccessor)accessor;
 {
     __block BOOL success = NO;
     
@@ -156,3 +158,5 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

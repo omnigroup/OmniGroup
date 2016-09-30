@@ -259,7 +259,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 - (void)addConstructionWarning;
 {
     OAConstructionTitlebarAccessoryViewController *accessory = [[OAConstructionTitlebarAccessoryViewController alloc] init];
-    [self addTitlebarAccessoryViewController:accessory];
+    [self insertTitlebarAccessoryViewController:accessory atIndex:0];
 }
 
 - (NSPoint)convertPointToScreen:(NSPoint)windowPoint;

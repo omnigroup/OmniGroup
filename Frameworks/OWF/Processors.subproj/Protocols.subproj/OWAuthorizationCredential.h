@@ -37,7 +37,7 @@ OB_HIDDEN extern NSTimeInterval OWAuthDistantPast;
 + (OWAuthorizationCredential *)nullCredential; // a placeholder for no credential at all
 
 - initForRequest:(OWAuthorizationRequest *)req realm:(NSString *)authRealm;
-- initAsCopyOf:other;
+- (instancetype)initAsCopyOf:(id)otherInstance;
 
 - (NSString *)hostname;
 - (enum OWAuthorizationType)type;

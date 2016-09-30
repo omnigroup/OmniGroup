@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,8 @@
 - (BOOL)directoryExistsAtPath:(NSString *)path;
 - (BOOL)directoryExistsAtPath:(NSString *)path traverseLink:(BOOL)traverseLink;
 
-- (NSArray <NSString *> *)directoryContentsAtPath:(NSString *)path havingExtension:(NSString *)extension  error:(NSError **)outError;
+/// Returns an array of names of children in the given path that have the given extension. The search here is shallow; files with the given extension nested within one or more folders inside the given path will not be matched.
+- (NSArray <NSString *> *)directoryContentsAtPath:(NSString *)path havingExtension:(NSString *)extension error:(NSError **)outError;
 
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
 // Creates any directories needed to be able to create a file at the specified path.

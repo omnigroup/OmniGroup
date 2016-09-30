@@ -82,6 +82,22 @@
     "platform": "iPhone8,4",
     "comment": "TSMC A9 chip"
   },
+  "D10AP": {
+      "name": "iPhone 7",
+      "platform": "iPhone9,1"
+  },
+  "D101AP": {
+      "name": "iPhone 7",
+      "platform": "iPhone9,3"
+  },
+  "D11AP": {
+      "name": "iPhone 7 Plus",
+      "platform": "iPhone9,2"
+  },
+  "D111AP": {
+      "name": "iPhone 7 Plus",
+      "platform": "iPhone9,4"
+  },
   "K48AP": {
     "name": "iPad 1"
   },

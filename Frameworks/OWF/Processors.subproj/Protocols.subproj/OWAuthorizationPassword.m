@@ -12,54 +12,42 @@
 
 RCS_ID("$Id$")
 
-@interface OWAuthorizationPassword (Private)
-@end
-
 @implementation OWAuthorizationPassword
 
 - initForRequest:(OWAuthorizationRequest *)req realm:(NSString *)authRealm username:(NSString *)user password:(NSString *)pass
 {
     self = [super initForRequest:req realm:authRealm];
     
-    if (!self)
+    if (self == nil)
         return nil;
     
-    if (!user || !pass) {
-        [super dealloc];
+    if (user == nil || pass == nil) {
+        self = nil;
         return nil;
     }
     
-    username = [user retain];
-    password = [pass retain];
+    username = user;
+    password = pass;
     
     return self;
 }
 
 - initAsCopyOf:otherInstance
 {
-    OWAuthorizationPassword *other;
-    
-    if (!(self = [super initAsCopyOf:otherInstance]))
+    self = [super initAsCopyOf:otherInstance];
+    if (self == nil)
         return nil;
         
     if (![otherInstance isKindOfClass:[OWAuthorizationPassword class]]) {
-        [super dealloc];
+        self = nil;
         return nil;
     }
     
-    other = otherInstance;
+    OWAuthorizationPassword *other = otherInstance;
     username = [other->username copy];
     password = [other->password copy];
         
     return self;
-}
-
-
-- (void)dealloc
-{
-    [username release];
-    [password release];
-    [super dealloc];
 }
 
 - (int)compareToNewCredential:(OWAuthorizationCredential *)other
@@ -88,7 +76,4 @@ RCS_ID("$Id$")
     return debugDictionary;
 }
 
-@end
-
-@implementation OWAuthorizationPassword (Private)
 @end

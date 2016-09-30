@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 
+#import <OmniUI/OUICustomSubclass.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorPane.h>
 #import <OmniUI/OUIEmptyPaddingInspectorSlice.h>
@@ -14,7 +15,6 @@
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
-#import "OUICustomSubclass.h"
 #import "OUIInspectorSlice-Internal.h"
 #import "OUIParameters.h"
 #import "OUISliceSeparatorView.h"

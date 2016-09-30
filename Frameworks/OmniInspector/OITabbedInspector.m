@@ -362,8 +362,11 @@ RCS_ID("$Id$")
     
     // Read our sub-inspectors from the plist
     for (NSDictionary *tabPlist in [dict objectForKey:@"tabs"]) {
-        NSString *identifier = [tabPlist objectForKey:@"identifier"];
-        if ([self shouldHideTabWithIdentifier:identifier]) // OG uses this to hide non-Pro tabs
+        NSDictionary *inspectorPlist = [tabPlist objectForKey:@"inspector"];
+        NSString *identifier = [inspectorPlist objectForKey:@"identifier"];
+        
+        NSObject *appDelegate = (NSObject *)[[NSApplication sharedApplication] delegate];
+        if (![appDelegate tabbedInspector:self shouldLoadTabWithIdentifier:identifier])
             continue;
 
         OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self inspectorRegistry:inspectorRegistry bundle:sourceBundle];
@@ -397,11 +400,6 @@ RCS_ID("$Id$")
 - (NSBundle *)nibBundle;
 {
     return OMNI_BUNDLE;
-}
-
-- (BOOL)shouldHideTabWithIdentifier:(NSString *)identifier;
-{
-    return NO;
 }
 
 - (void)registerInspectorDictionary:(NSDictionary *)tabPlist inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle

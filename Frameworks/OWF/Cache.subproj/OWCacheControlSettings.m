@@ -27,11 +27,9 @@ RCS_ID("$Id$")
 
 + (OWCacheControlSettings *)cacheSettingsForMultiValueDictionary:(OFMultiValueDictionary *)headerDictionary;
 {
-    OWCacheControlSettings *newSettings;
-
-    newSettings = [[self alloc] init];
+    OWCacheControlSettings *newSettings = [[self alloc] init];
     [newSettings addHeaders:headerDictionary];
-    return [newSettings autorelease];
+    return newSettings;
 }
 
 + (OWCacheControlSettings *)cacheSettingsWithNoCache;
@@ -47,44 +45,29 @@ RCS_ID("$Id$")
 
 + (OWCacheControlSettings *)cacheSettingsWithMaxAgeInterval:(NSTimeInterval)seconds;
 {
-    OWCacheControlSettings *newSettings;
-
-    newSettings = [[OWCacheControlSettings alloc] init];
+    OWCacheControlSettings *newSettings = [[OWCacheControlSettings alloc] init];
     [newSettings setMaxAge:[NSNumber numberWithDouble:(double)seconds]];
-    return [newSettings autorelease];
-}
-
-- (void)dealloc;
-{
-    [serverDate release];
-    [ageAtFetch release];
-    [maxAge release];
-    [explicitExpire release];
-    [super dealloc];
+    return newSettings;
 }
 
 - (void)setServerDate:(NSDate *)newDate;
 {
-    [serverDate release];
-    serverDate = [newDate retain];
+    serverDate = newDate;
 }
 
 - (void)setAgeAtFetch:(NSNumber *)newNumber;
 {
-    [ageAtFetch release];
-    ageAtFetch = [newNumber retain];
+    ageAtFetch = newNumber;
 }
 
 - (void)setMaxAge:(NSNumber *)newNumber;
 {
-    [maxAge release];
-    maxAge = [newNumber retain];
+    maxAge = newNumber;
 }
 
 - (void)setExpirationDate:(NSDate *)newDate;
 {
-    [explicitExpire release];
-    explicitExpire = [newDate retain];
+    explicitExpire = newDate;
 }
 
 //

@@ -95,8 +95,9 @@ typedef NS_ENUM(NSUInteger, OUIDocumentProviderPreferencesSection) {
 
 - (IBAction)moreInfoButtonTapped:(id)sender {
     NSURL *moreInfoURL = [[OUIDocumentAppController controller] documentProviderMoreInfoURL];
+    NSDictionary *emptyOptions = [NSDictionary dictionary];
     if (moreInfoURL != nil) {
-        [[UIApplication sharedApplication] openURL:moreInfoURL];
+        [[UIApplication sharedApplication] openURL:moreInfoURL options:emptyOptions completionHandler:nil];
     }
 }
 

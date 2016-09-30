@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
 
-    streamCursor = [aStreamCursor retain];
+    streamCursor = aStreamCursor;
     
     minimumReadBufferLength = aBufferLength;
     if (minimumReadBufferLength < NSPageSize())
@@ -45,9 +45,7 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [streamCursor release];
     free(buffer);
-    [super dealloc];
 }
 
 // OWScanner subclass

@@ -453,7 +453,6 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
 
             // Object was previously created as a fault, but hasn't been filled in yet.  Let's do so and mark it cleared.
             if (!ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(sqlite, statement, object, ctx, outError)) {
-                [objectID release];
                 return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
             }
             [object _setIsFault:NO];
@@ -501,6 +500,9 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
     // Was the object reachable?
     if ([object isFault]) {
         OBASSERT([ctx->results count] == 0);
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Object with ID '%@' is inaccessible.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        ODOError(outError, ODOUnableToFetchFault, description, reason);
         return NO;
     }
     
@@ -543,7 +545,7 @@ void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object)
     NSError *error = nil;
     if (!FetchObjectFaultWithContext(self, object, &ctx, &error)) {
         // CoreData raises when faulting fails.  We'd like to avoid that, but for now we'll mimic it.
-        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
+        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), error];
     }
 }
 
@@ -640,7 +642,7 @@ NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORel
     NSError *error = nil;
     if (!FetchSetFaultWithContext(self, owner, rel, &ctx, &error)) {
         // CoreData raises when faulting fails.  We'd like to avoid that, but for now we'll mimic it.
-        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), [error toPropertyList]];
+        [NSException raise:NSObjectInaccessibleException format:NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault: %@", @"OmniDataObjects", OMNI_BUNDLE, @"faulting exception"), error];
     }
 
     // TODO: Since we lazily clear the fault, we might need to treat undo specially.  For example, A->>B.  Fetch an A and a B w/o clearing the fault.  Delete the B.  Process changes.  Clear the fault (A->>Bs won't contain the B we deleted).  Undo.  If we clear the reverse fault when doing delete propagation, then this should just work if we snapshot the to-many.  But, if we snapshot the nil (lazy fault not yet created) and then undo after clearing, then the cleared set will be incorrect.

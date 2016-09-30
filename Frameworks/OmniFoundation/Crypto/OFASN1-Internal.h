@@ -20,6 +20,7 @@ enum OFASN1ErrorCodes {
     OFASN1UnexpectedIndefinite,
     OFASN1TrailingData,
 };
+NSError *OFNSErrorFromASN1Error(int errCode, NSString *extra) __attribute__((cold)) OB_HIDDEN;
 
 #define CLASS_MASK             0xC0
 #define CLASS_UNIVERSAL        0x00
@@ -28,6 +29,13 @@ enum OFASN1ErrorCodes {
 
 #define FLAG_CONSTRUCTED       0x20
 #define FLAG_PRIMITIVE         0x00
+
+/* These are not from BER, but we borrow some bits from the tag field to store flags when scanning sequences. */
+#define FLAG_OPTIONAL          0x01 // Just for OFASN1ScanObject()
+#define FLAG_ANY_OBJECT        0x02 // Just for OFASN1ScanObject()
+#define FLAG_BER_MASK         ( CLASS_MASK | FLAG_CONSTRUCTED )
+
+#define BER_SENTINEL_LENGTH 2
 
 /* These are in Security.framework on the Mac, but not on iOS */
 #ifndef BER_TAG_SEQUENCE
@@ -62,3 +70,32 @@ enum OFASN1ErrorCodes {
 
 #endif
 
+#define ARRAYLENGTH(a) (sizeof(a)/sizeof((a)[0]))
+#define SAME_LENGTH(x, y) _Static_assert(ARRAYLENGTH(x) == ARRAYLENGTH(y), "Mismatched array lengths")
+
+struct parsedTag {
+    unsigned short tag;              // tag
+    uint8_t classAndConstructed;     // class and constructed flags bits from first octet
+    BOOL indefinite;
+    NSRange content;
+};
+
+struct scanItem {
+    uint16_t flags;
+    uint16_t tag;
+};
+
+struct parsedItem {
+    NSUInteger startPosition;
+    struct parsedTag i;
+};
+
+enum OFASN1ErrorCodes OFASN1IndefiniteObjectExtent(NSData *buf, NSUInteger position, NSUInteger maxIndex, NSUInteger *outEndPos) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, NSUInteger endPosition, BOOL requireDER, const struct scanItem *items, struct parsedItem *found, unsigned count) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1UnDERSmallInteger(NSData *buf, const struct parsedTag *v, int *resultp) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ParseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData **outData) OB_HIDDEN;
+#define OFASN1ParseItemsInObject(b, p, der, i, v)    ({ SAME_LENGTH(i, v); OFASN1ParseBERSequence(b, (p).content.location, ((p).indefinite && !(p).content.length)? 0 : NSMaxRange((p).content), der,  (i), (v), ARRAYLENGTH(i)); })
+
+enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum OFASN1Algorithm algid, NSRange range, NSData **outNonce, int *outTagSize) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData **outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF) OB_HIDDEN;

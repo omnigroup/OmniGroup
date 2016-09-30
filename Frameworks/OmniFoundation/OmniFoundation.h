@@ -23,10 +23,12 @@
 #import <OmniFoundation/OFCharacterScanner.h>
 #import <OmniFoundation/OFCharacterSet.h>
 #import <OmniFoundation/OFCompletionMatch.h>
+#import <OmniFoundation/OFCMS.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFDateFormatConversion.h>
+#import <OmniFoundation/OFDocumentEncryption-ObjC.h>
 #import <OmniFoundation/OFEnumNameTable-OFXMLArchiving.h>
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFErrorRecovery.h>
@@ -127,10 +129,8 @@
 #import <OmniFoundation/OFXMLReader.h>
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    #import <OmniFoundation/OFXMLMaker.h>
-    #import <OmniFoundation/OFXMLTextWriterSink.h>
-#endif
+#import <OmniFoundation/OFXMLMaker.h>
+#import <OmniFoundation/OFXMLTextWriterSink.h>
 
 // AppleScript
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

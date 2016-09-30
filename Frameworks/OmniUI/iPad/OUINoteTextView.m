@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,22 @@
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUI/OUINoteTextView.h>
+#import <OmniUI/NSTextStorage-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
 #define ALLOW_LINK_DETECTION (YES)
+// App-scheme links are handled by -[NSTextStorage(OUIExtensions) detectAppSchemeLinks] because UITextView fails to handle them properly on iOS 10. bug:///134447 (iOS-OmniFocus Regression: Data detection for phone numbers and addresses no longer works)
+static UIDataDetectorTypes typesToDetectWithUITextView = (
+                                                          UIDataDetectorTypeLink |
+                                                          UIDataDetectorTypePhoneNumber |
+                                                          UIDataDetectorTypeAddress |
+                                                          UIDataDetectorTypeCalendarEvent |
+                                                          UIDataDetectorTypeShipmentTrackingNumber |
+                                                          UIDataDetectorTypeFlightNumber |
+                                                          UIDataDetectorTypeLookupSuggestion |
+                                                          (UIDataDetectorTypes)0 // or-ing 0 on the end for easier enabling/disabling of cases above
+                                                          );
 
 CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 
@@ -68,7 +80,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     
     self.contentMode = UIViewContentModeRedraw;
     self.editable = NO;
-    self.dataDetectorTypes = UIDataDetectorTypeAll;
+    self.dataDetectorTypes = typesToDetectWithUITextView;
     self.alwaysBounceVertical = YES;
     
     [self appearanceDidChange];
@@ -236,6 +248,11 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     // Starting with iOS 7, the text storage is exposed.
     // To catch all cases of the text changing (and possibly needing to draw the placeholder string), we'd have to watch the storage.
     // OmniFocus doesn't use the text view that way, so we ignore that.
+    // However, thanks to Apple, we do need to detect links on the text if we aren't in the process of editing it. bug:///134348 (iOS-OmniFocus Bug: Implement our own link detection for notes) and bug:///134447 (iOS-OmniFocus Regression: Data detection for phone numbers and addresses no longer works)
+    if (![self isFirstResponder] && _detectsLinks) {
+        [self.textStorage detectAppSchemeLinks];
+        self.dataDetectorTypes = typesToDetectWithUITextView;
+    }
     [self setNeedsDisplay];
 }
 
@@ -246,7 +263,8 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     if (result && _detectsLinks) {
         // Set editable to NO when resigning first responder so that links are tappable.
         self.editable = NO;
-        self.dataDetectorTypes = UIDataDetectorTypeAll;
+        [self.textStorage detectAppSchemeLinks];
+        self.dataDetectorTypes = typesToDetectWithUITextView;
     }
     
     return result;
@@ -335,7 +353,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     return (![self isFirstResponder] && ![self hasText] && _drawsPlaceholder && ![NSString isEmptyString:_placeholder]);
 }
 
-- (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("");
+- (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder;
 {
     if ([self isEditable])
         return;
@@ -355,31 +373,17 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     NSString *text = self.text;
     NSUInteger characterIndex = [layoutManager characterIndexForPoint:point inTextContainer:textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
 
-    if (characterIndex < text.length) {
-        NSURL *link = [textStorage attribute:NSLinkAttributeName atIndex:characterIndex effectiveRange:NULL];
-        if (link != nil) {
-            // Looks like there's a link here. Was the link itself tapped, or does it just contain the nearest character?
-            NSUInteger glyphIndex = [layoutManager glyphIndexForPoint:point inTextContainer:textContainer];
-            CGRect boundingRect = [layoutManager boundingRectForGlyphRange:NSMakeRange(glyphIndex, 1) inTextContainer:textContainer];
-            if (CGRectContainsPoint(boundingRect, point)) {
-                // The link was tapped, so let's try to open it.
-                // On iOS 9, however, we can't ask whether we can open it (using -canOpenURL:) ahead of time – we can't possibly whitelist every scheme that someone could type into a note text view.
-                // Therefore, we just call -openURL: and pass off the link. If it fails, iOS should present an alert explaining the problem.
-                
-                [[UIApplication sharedApplication] openURL:link];
-                return;
-            }
-        }
-    }
-
     self.editable = YES;
-    self.dataDetectorTypes = UIDataDetectorTypeNone;
 
-    // UITextView used to remove the link attributes when setting `dataDetectorTypes` to `UIDataDetectorTypeNone`.
-    // It no longer does this, so we do it here. We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
-    [textStorage removeAttribute:NSLinkAttributeName range:NSMakeRange(0, textStorage.length)];
+    // We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
+    self.dataDetectorTypes = UIDataDetectorTypeNone;
     NSDictionary *textAttributes = @{ NSFontAttributeName: self.font, NSForegroundColorAttributeName: self.textColor ?: [self _textColor] };
-    [textStorage addAttributes:textAttributes range:NSMakeRange(0, textStorage.length)];
+    [textStorage beginEditing];
+    {
+        [textStorage removeAllLinks];
+        [textStorage addAttributes:textAttributes range:NSMakeRange(0, textStorage.length)];
+    }
+    [textStorage endEditing];
     [layoutManager ensureLayoutForCharacterRange:NSMakeRange(0, textStorage.length)];
 
     // Replicate UITextView's behavior where it puts the insertion point before/after the word clicked in.

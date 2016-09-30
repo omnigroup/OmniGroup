@@ -162,8 +162,15 @@ module Xcode
       File.dirname(path)
     end
     
-    def add_dir_ref(ref_by_dir, path, project_path)
-      dir_path = File.dirname(path)
+    def add_dir_ref(ref_by_dir, path, file_type, project_path)
+			
+			if file_type == "folder"
+				# When copying folders, for example, This is particularly important if we have a file reference in ^/Foo -- we don't want to check out the parent (the entire repository!)
+				dir_path = path
+			else
+	      dir_path = File.dirname(path)
+			end
+			
       ref = ref_by_dir[dir_path]
       if ref.nil?
         ref = Xcode::Workspace::PathReference.new(dir_path, [project_path])
@@ -178,7 +185,7 @@ module Xcode
     # The results are instances of Workspace::PathReference. The reference given won't necessarily contain all the project paths refering to its path or subpaths (usually useful for getting rid of bad references, so you might need to use it iteratively).
     def directory_references
       ref_by_dir = {}
-      add_dir_ref(ref_by_dir, path, path) # The directory containing this workspace
+      add_dir_ref(ref_by_dir, path, "xcworkspace", path) # The directory containing this workspace
       
       # TODO: If a group in the workspace has a path set, we should probably include that? But the few places we have that, it points at OmniGroup/Frameworks and we don't need all that.
       project_paths = []
@@ -197,7 +204,7 @@ module Xcode
         next if processed_project_paths[project_path] # Skip projects that we've seen via another path
         processed_project_paths[project_path] = true
         
-        add_dir_ref(ref_by_dir, project_path, project_path)
+        add_dir_ref(ref_by_dir, project_path, "xcodeproj", project_path)
 
         #STDERR.print "project_path = #{project_path}\n"
         project = Xcode::Project.from_path(project_path)
@@ -221,8 +228,7 @@ module Xcode
           when Xcode::PBXGroup, Xcode::PBXVariantGroup
             # We don't include anything directly for groups since (for example, we might have a reference to OmniGroup/Frameworks)
           when Xcode::PBXFileReference
-            # TODO: If this is a copy-the-folder reference, we only need the folder.
-            add_dir_ref(ref_by_dir, fullpath, project_path)
+            add_dir_ref(ref_by_dir, fullpath, item.fileType, project_path)
           else
             fail "Don't know what to do with #{item} at #{fullpath}\n"
           end

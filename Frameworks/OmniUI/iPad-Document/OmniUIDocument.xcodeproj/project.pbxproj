@@ -339,6 +339,8 @@
 		429585D41C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D11C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png */; };
 		429585D51C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D21C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
+		798474131D636C1D004A7E42 /* OUIServerAccountSetupViewController-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 7984740E1D636B57004A7E42 /* OUIServerAccountSetupViewController-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		79C513E71D5E7F460067B66F /* OUIServerAccountSetupViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E50E16780D970019328E /* OUIServerAccountSetupViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */; };
 		FBFCD1F61C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h in Headers */ = {isa = PBXBuildFile; fileRef = FBFCD1F41C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -654,6 +656,7 @@
 		6C660BB417BD573600950C60 /* OUIDocumentSubfolderAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentSubfolderAnimator.m; sourceTree = SOURCE_ROOT; };
 		6CAD884C17D7BA1300B4519E /* OUIDocumentHomeScreenAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentHomeScreenAnimator.h; sourceTree = SOURCE_ROOT; };
 		6CAD884D17D7BA1300B4519E /* OUIDocumentHomeScreenAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentHomeScreenAnimator.m; sourceTree = SOURCE_ROOT; };
+		7984740E1D636B57004A7E42 /* OUIServerAccountSetupViewController-Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OUIServerAccountSetupViewController-Subclass.h"; sourceTree = SOURCE_ROOT; };
 		94A9109D199AD05900783C68 /* OUIDocumentPickerAddLocationIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentPickerAddLocationIcon.png; sourceTree = "<group>"; };
 		94A9109E199AD05900783C68 /* OUIDocumentPickerAddLocationIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentPickerAddLocationIcon@2x.png"; sourceTree = "<group>"; };
 		94A910A1199AD1EB00783C68 /* OUIDocumentPickerTrashLocationIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentPickerTrashLocationIcon.png; sourceTree = "<group>"; };
@@ -1270,6 +1273,7 @@
 			isa = PBXGroup;
 			children = (
 				3424E50E16780D970019328E /* OUIServerAccountSetupViewController.h */,
+				7984740E1D636B57004A7E42 /* OUIServerAccountSetupViewController-Subclass.h */,
 				3424E50F16780D970019328E /* OUIServerAccountSetupViewController.m */,
 				3441607716B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h */,
 				3441607816B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m */,
@@ -1344,6 +1348,7 @@
 				FBFCD1F61C56E76E00C25B33 /* OUIReplaceRenameDocumentAlertController.h in Headers */,
 				3458F0621B5D7026000011A6 /* OUIDocumentPickerItemView.h in Headers */,
 				3458F05C1B5D7026000011A6 /* OUIDocumentPickerGroupItemView.h in Headers */,
+				798474131D636C1D004A7E42 /* OUIServerAccountSetupViewController-Subclass.h in Headers */,
 				236A6B351B66ABED001FEC59 /* OUIDocumentProviderPreferencesViewController.h in Headers */,
 				3458F07A1B5D7078000011A6 /* OUIExportOptionsType.h in Headers */,
 				3458F0501B5D7026000011A6 /* OUIDocumentPickerViewController.h in Headers */,
@@ -1359,6 +1364,7 @@
 				3458EF571B5D6FC6000011A6 /* OmniUIDocumentImages.h in Headers */,
 				3458F0951B5D70DB000011A6 /* OmniUIDocumentAppearance.h in Headers */,
 				3458F0431B5D7018000011A6 /* OUIDocument.h in Headers */,
+				79C513E71D5E7F460067B66F /* OUIServerAccountSetupViewController.h in Headers */,
 				3458F0451B5D7026000011A6 /* OUIDocumentPicker.h in Headers */,
 				3458EF441B5D6FB3000011A6 /* OUIDocumentParameters.h in Headers */,
 				3470A40D1BDEC0AF00D14049 /* OmniUIDocument.h in Headers */,

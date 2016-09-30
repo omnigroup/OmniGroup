@@ -111,6 +111,8 @@
 		E2BFE04F1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h in Headers */ = {isa = PBXBuildFile; fileRef = E2BFE04C1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h */; };
 		E2BFE0501AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = E2BFE04D1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m */; };
 		E2BFE0511AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2BFE04E1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib */; };
+		E2E26BEE1D53B054006EA86B /* NSWindowController-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = E2E26BEC1D53B054006EA86B /* NSWindowController-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E2E26BEF1D53B054006EA86B /* NSWindowController-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = E2E26BED1D53B054006EA86B /* NSWindowController-OIExtensions.m */; };
 		E2EE36831B1687150032B4AB /* OIStackedSlicesInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = E28BFED81B0E9F60005EF8A0 /* OIStackedSlicesInspector.m */; };
 		E2EFA7371B911D4200E2CA86 /* OIAppearance.h in Headers */ = {isa = PBXBuildFile; fileRef = E2BFE0521AFD3AE800F06789 /* OIAppearance.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
@@ -240,6 +242,8 @@
 		E2BFE0521AFD3AE800F06789 /* OIAppearance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIAppearance.h; sourceTree = "<group>"; };
 		E2BFE0531AFD3AE800F06789 /* OIAppearance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIAppearance.m; sourceTree = "<group>"; };
 		E2BFE0541AFD3AE800F06789 /* OIAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OIAppearance.plist; sourceTree = "<group>"; };
+		E2E26BEC1D53B054006EA86B /* NSWindowController-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindowController-OIExtensions.h"; sourceTree = "<group>"; };
+		E2E26BED1D53B054006EA86B /* NSWindowController-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindowController-OIExtensions.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -306,6 +310,8 @@
 		08FB77AEFE84172EC02AAC07 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				E2E26BEC1D53B054006EA86B /* NSWindowController-OIExtensions.h */,
+				E2E26BED1D53B054006EA86B /* NSWindowController-OIExtensions.m */,
 				32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */,
 				34D2B80708D0E43500C74260 /* OmniInspector.order */,
 				34B2544308D0DCEE00DD2070 /* OmniInspector.h */,
@@ -488,6 +494,7 @@
 				E253D2D21B430FB500E38E39 /* OIScrollingTabbedInspector.h in Headers */,
 				34B2545608D0DCEE00DD2070 /* OIInspectorRegistry.h in Headers */,
 				34B2545C08D0DCEE00DD2070 /* OIInspectorVerticalResizer.h in Headers */,
+				E2E26BEE1D53B054006EA86B /* NSWindowController-OIExtensions.h in Headers */,
 				E2B394441B31F4660081E009 /* OIWorkspace.h in Headers */,
 				34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */,
 				34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */,
@@ -658,6 +665,7 @@
 				E2EE36831B1687150032B4AB /* OIStackedSlicesInspector.m in Sources */,
 				947D53050B8F699E001F9E30 /* OITableView.m in Sources */,
 				94D1DDDB0B93701E0006D793 /* OIMatrix.m in Sources */,
+				E2E26BEF1D53B054006EA86B /* NSWindowController-OIExtensions.m in Sources */,
 				A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */,
 				34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */,
 				E253D2D31B430FB500E38E39 /* OIScrollingTabbedInspector.m in Sources */,

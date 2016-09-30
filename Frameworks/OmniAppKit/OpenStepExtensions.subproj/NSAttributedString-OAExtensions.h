@@ -37,8 +37,11 @@
 
 - (NSData *)rtf;
 
-// See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
-- (void)drawInRectangle:(CGRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
+// The following three methods are for single line string rendering
+- (void)drawInRectangle:(NSRect)rectangle verticallyCentered:(BOOL)verticallyCenter;
+// These next two are conveniences for adding paragraph style attributes and make a mutableCopy of self
+- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
+- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment lineBreakMode:(NSLineBreakMode)lineBreakMode verticallyCentered:(BOOL)verticallyCenter;
 
 - (void)drawCenteredShrinkingToFitInRect:(CGRect)rect;
 #endif

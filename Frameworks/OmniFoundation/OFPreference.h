@@ -35,6 +35,11 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (void)recacheRegisteredKeys;
 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
+/** Registers the block to be invoked when the given preference changes.
+ 
+ The returned object is an opaque reference that can be passed to removeObserver:forPreference: to stop observing. The block passed in is copied.
+*/
++ (id)addObserverForPreference:(nullable OFPreference *)preference usingBlock:(void (^)(OFPreference *preference))block;
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 
 + (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;

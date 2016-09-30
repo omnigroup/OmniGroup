@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (unsigned)flagsForFilename:(NSString *)filename fromSlot:(int * __nullable)outSlot;
 
 - (NSString *)suffixForSlot:(NSUInteger)slotnum;  // Only used by the unit tests
+- (NSDictionary *)descriptionDictionary;   // For the UI. See keys below.
 
 /* Return an encryption worker for the current active key slot. */
 - (nullable OFSSegmentEncryptWorker *)encryptionWorker;
@@ -80,13 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods are called by OFSSegmentEncryptWorker
 - (NSData * __nullable)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
 - (ssize_t)unwrapFileKey:(NSData *)wrappedFileKeyInfo into:(uint8_t *)buffer length:(size_t)unwrappedKeyBufferLength error:(NSError **)outError;
-
-@end
-
-@interface OFSDocumentKey (Keychain)
-
-- (BOOL)deriveWithKeychainIdentifier:(NSString *)ident error:(NSError **)outError;
-- (BOOL)storeWithKeychainIdentifier:(NSString *)label error:(NSError **)outError;
 
 @end
 
@@ -103,6 +97,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setDisposition:(enum OFSEncryptingFileManagerDisposition)disposition forSuffix:(NSString *)ext;
 
 @end
+
+// Keys in the dictionary returned by -descriptionDictionary
+#define OFSDocKeyDescription_AccessMethod  @"method"   // User-displayable name of unlock method, e.g. "Password (PBKDF2; aes128-wrap)"
+#define OFSDocKeyDescription_PlaintextSuffixes @"plaintext"
+#define OFSDocKeyDescription_TemporaryPlaintextSuffixes @"temporary plaintext"
+
+#define OFSDocKeyDescription_KeyList       @"keys"
+#define OFSDocKeyDescription_Key_TypeName  @"type"
+#define OFSDocKeyDescription_Key_Active    @"active"
+#define OFSDocKeyDescription_Key_Identifier @"slot"
 
 NS_ASSUME_NONNULL_END
 

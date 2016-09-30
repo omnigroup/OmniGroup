@@ -138,6 +138,10 @@ module Xcode
     def isDerived?
         return project.isDerived?(self)
     end
+		
+		def fileType
+			dict['lastKnownFileType']
+		end
     
   end
 

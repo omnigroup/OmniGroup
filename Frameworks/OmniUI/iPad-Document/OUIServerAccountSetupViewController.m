@@ -5,11 +5,11 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIServerAccountSetupViewController.h"
+#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
+#import <OmniUIDocument/OUIServerAccountSetupViewController-Subclass.h>
 
 #import <OmniDAV/ODAVErrors.h> // For OFSShouldOfferToReportError()
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
@@ -22,6 +22,7 @@
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniAppKit/OAAppearanceColors.h>
+#import <OmniUI/OUICustomSubclass.h>
 
 #import "OUIServerAccountValidationViewController.h"
 
@@ -44,21 +45,9 @@ static const CGFloat TableViewIndent = 15;
 
 @end
 
-typedef enum {
-    ServerAccountAddressSection,
-    ServerAccountCredentialsSection,
-    ServerAccountDescriptionSection,
-    ServerAccountDeletionSection,
-    ServerAccountSectionCount,
-} ServerAccountSections;
-typedef enum {
-    ServerAccountCredentialsUsernameRow,
-    ServerAccountCredentialsPasswordRow,
-    ServerAccountCredentialsCount,
-} ServerAccountCredentialRows;
 
 #define CELL_AT(section,row) ((OUIEditableLabeledTableViewCell *)[_tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section]])
-#define TEXT_AT(section,row) [self _textAtSection:section andRow:row]
+#define TEXT_AT(section,row) [self textAtSection:section andRow:row]
 
 @interface OUIServerAccountSetupViewController () <OUIEditableLabeledValueCellDelegate, UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate>
 @end
@@ -66,12 +55,15 @@ typedef enum {
 
 @implementation OUIServerAccountSetupViewController
 {
-    UITableView *_tableView;
-    OFXServerAccountType *_accountType;
     UIButton *_accountInfoButton;
     NSMutableDictionary *_cachedTextValues;
     OFXServerAccountUsageMode _usageModeToCreate;
     BOOL _showDeletionSection;
+}
+
++ (id)allocWithZone:(NSZone *)zone;
+{
+    OUIAllocateCustomClass;
 }
 
 - init;
@@ -130,7 +122,7 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
 }
 
-- (NSString *)_textAtSection:(NSUInteger)section andRow:(NSUInteger)row;
+- (NSString *)textAtSection:(NSUInteger)section andRow:(NSUInteger)row;
 {
     NSIndexPath *path = [NSIndexPath indexPathForRow:row inSection:section];
     return [_cachedTextValues objectForKey:path];
@@ -369,33 +361,18 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    static NSString * const CellIdentifier = @"Cell";
     
     if (indexPath.section == ServerAccountDeletionSection) {
         OBASSERT(_showDeletionSection);
-        
-        static NSString *const DeletionCellIdentifier = @"DeletionCell";
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DeletionCellIdentifier];
-        if (!cell)
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:DeletionCellIdentifier];
-        cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Delete Account", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup button label");
-        cell.textLabel.textColor = [OAAppearanceDefaultColors appearance].omniDeleteColor;
-        cell.textLabel.textAlignment = NSTextAlignmentCenter;
-        return cell;
+        return [self deletionCellForTableView:tableView];
     }
     
-    OUIEditableLabeledTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[OUIEditableLabeledTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
-        cell.selectionStyle = UITableViewCellSelectionStyleNone;
-
-        OUIEditableLabeledValueCell *contents = cell.editableValueCell;
-        contents.valueField.autocorrectionType = UITextAutocorrectionTypeNo;
-        contents.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        contents.delegate = self;
-        
-        contents.valueField.returnKeyType = UIReturnKeyGo;
-        contents.valueField.enablesReturnKeyAutomatically = YES;
+    OUIEditableLabeledTableViewCell *cell;
+    if (indexPath.section == ServerAccountCredentialsSection && indexPath.row == ServerAccountCredentialsPasswordRow) {
+        cell = [self valueCellOfType:OUIValueCellTypePassword forTableView:tableView];
+    }
+    else {
+        cell = [self valueCellOfType:OUIValueCellTypePlaintext forTableView:tableView];
     }
     
     OUIEditableLabeledValueCell *contents = cell.editableValueCell;
@@ -485,6 +462,44 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
         [_cachedTextValues removeObjectForKey:indexPath];
     return cell;
 }
+
+// NB: For now this is private. If we ever make it public for customizing in subclasses or such, we should consider integrating it into valueCellOfType:forTableView: below.
+- (nonnull UITableViewCell *)deletionCellForTableView:(UITableView *)tableView
+{
+    static NSString *const DeletionCellIdentifier = @"DeletionCell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DeletionCellIdentifier];
+    if (!cell)
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:DeletionCellIdentifier];
+    cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Delete Account", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup button label");
+    cell.textLabel.textColor = [OAAppearanceDefaultColors appearance].omniDeleteColor;
+    cell.textLabel.textAlignment = NSTextAlignmentCenter;
+    return cell;
+    
+}
+
+// By default, we'll ignore the type parameter and make the same kind of cell for passwords and plain text.
+// Subclasses may choose to do things differently.
+- (nonnull OUIEditableLabeledTableViewCell *)valueCellOfType:(OUIValueCellType)type forTableView:(UITableView *)tableView;
+{
+    static NSString * const CellIdentifier = @"Cell";
+    
+    OUIEditableLabeledTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[OUIEditableLabeledTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        OUIEditableLabeledValueCell *contents = cell.editableValueCell;
+        contents.valueField.autocorrectionType = UITextAutocorrectionTypeNo;
+        contents.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        contents.delegate = self;
+        
+        contents.valueField.returnKeyType = UIReturnKeyGo;
+        contents.valueField.enablesReturnKeyAutomatically = YES;
+    }
+    return cell;
+}
+
+
 
 static const CGFloat OUIOmniSyncServerSetupHeaderHeight = 44;
 static const CGFloat OUIServerAccountSetupViewControllerHeaderHeight = 40;
@@ -738,7 +753,9 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
 
 - (void)accountInfoButtonTapped:(id)sender;
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.omnigroup.com/sync/"]];
+    NSDictionary *emptyOptions = [NSDictionary dictionary];
+    NSURL *syncSignupURL = [NSURL URLWithString:@"http://www.omnigroup.com/sync/"];
+    [[UIApplication sharedApplication] openURL:syncSignupURL options:emptyOptions completionHandler:nil];
 }
 
 - (NSString *)_accountName;

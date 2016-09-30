@@ -27,6 +27,7 @@ RCS_ID("$Id$")
 
 static void _fixPreferences(void) __attribute__((constructor));
 static void _fixPreferences(void) {
+  @autoreleasepool {
     NSDictionary *environment = [[NSProcessInfo processInfo] environment];
     NSString *prefix = environment[@"OBFixXcodeBustedEnvironment"];
     if (!prefix)
@@ -57,6 +58,7 @@ static void _fixPreferences(void) {
 
     // No public setter, but this is just a hack...
     [[NSProcessInfo processInfo] setValue:environment forKey:@"environment"];
+  };
 }
 
 // Call this from main() to fix arguments...
@@ -398,6 +400,8 @@ void _OBStopInDebugger(const char *file, unsigned int line, const char *function
     if (isBeingDebugged) {
 #if __x86_64__
         asm("\tint3");
+#elif __arm__
+        asm("\tbkpt");
 #else
         kill(getpid(), SIGTRAP);
 #endif

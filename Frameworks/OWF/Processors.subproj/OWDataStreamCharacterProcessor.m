@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,14 +34,12 @@ static OFPreference *cp1252OverridePref = nil;
 {
     OBINITIALIZE;
 
-    cp1252OverridePref = [[OFPreference preferenceForKey:@"OWUseCP1252ForLatin1"] retain];
+    cp1252OverridePref = [OFPreference preferenceForKey:@"OWUseCP1252ForLatin1"];
 }
 
 + (CFStringEncoding)stringEncodingForAddress:(OWAddress *)anAddress;
 {
-    CFStringEncoding cfEncoding;
-    
-    cfEncoding = [self stringEncodingForDefault:[[OWSitePreference preferenceForKey:@"OWIncomingStringEncoding" address:anAddress] stringValue]];
+    CFStringEncoding cfEncoding = [self stringEncodingForDefault:[[OWSitePreference preferenceForKey:@"OWIncomingStringEncoding" address:anAddress] stringValue]];
     switch (cfEncoding) {
         case kCFStringEncodingInvalidId: // If unset, use ISO Latin 1
         case kCFStringEncodingISOLatin1:
@@ -60,12 +58,9 @@ static OFPreference *cp1252OverridePref = nil;
 
 + (CFStringEncoding)stringEncodingForDefault:(NSString *)encodingName;
 {
-    NSStringEncoding stringEncoding;
-    CFStringEncoding cfEncoding;
-    
     // Note that this default can be either a string or an integer. Integers refer to NSStringEncoding values. Strings consist of a prefix, a space, and a string whose meaning depends on the prefix. Currently understood prefixes are "ietf" (indicating an IETF charset name) and "cf" (indicating a CoreFoundation encoding number). Previously understood prefixes were the names of OWStringDocoder-conformant classes, but we don't do that any more.
     
-    cfEncoding = kCFStringEncodingInvalidId;
+    CFStringEncoding cfEncoding = kCFStringEncodingInvalidId;
     if ([encodingName hasPrefix:@"iana "]) {
         NSString *ietfName = [encodingName substringFromIndex:5];
         cfEncoding = CFStringConvertIANACharSetNameToEncoding((CFStringRef)ietfName);
@@ -78,7 +73,7 @@ static OFPreference *cp1252OverridePref = nil;
     if (cfEncoding != kCFStringEncodingInvalidId)
         return cfEncoding;
     
-    stringEncoding = [encodingName intValue];
+    NSStringEncoding stringEncoding = [encodingName intValue];
     // Note that 0 is guaranteed never to be a valid encoding by the semantics of +[NSString availableStringEncodings]. (0 used to be used for the Unicode string encoding.)
     if (stringEncoding != 0)
         return CFStringConvertNSStringEncodingToEncoding(stringEncoding);
@@ -168,14 +163,12 @@ static OFPreference *cp1252OverridePref = nil;
 
 + (NSString *)charsetForCFEncoding:(CFStringEncoding)anEncoding
 {
-    CFStringRef charsetName;
-    
     if (anEncoding == kCFStringEncodingInvalidId)
         return nil;
         
-    charsetName = CFStringConvertEncodingToIANACharSetName(anEncoding);
-    if (charsetName)
-        return (NSString *)charsetName;
+    NSString *charsetName = (NSString *)CFStringConvertEncodingToIANACharSetName(anEncoding);
+    if (charsetName != nil)
+        return charsetName;
     
     return [NSString stringWithFormat:@"x-mac-cf-%d", anEncoding];
 }
@@ -184,30 +177,22 @@ static OFPreference *cp1252OverridePref = nil;
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    OWDataStreamCursor *dataCursor;
-    CFStringEncoding stringEncoding;
-    
-    if (!(self = [super initWithContent:initialContent context:aPipeline]))
+    self = [super initWithContent:initialContent context:aPipeline];
+    if (self == nil)
         return nil;
 
-    dataCursor = [initialContent dataCursor];
-    if (!dataCursor) {
-        [self release];
+    OWDataStreamCursor *dataCursor = [initialContent dataCursor];
+    if (dataCursor == nil) {
+        self = nil;
         return nil;
     }
     OBASSERT([dataCursor isKindOfClass:[OWDataStreamCursor class]]);
 
-    stringEncoding = [self chooseStringEncoding:dataCursor content:initialContent];
+    CFStringEncoding stringEncoding = [self chooseStringEncoding:dataCursor content:initialContent];
 
     characterCursor = [[OWDataStreamCharacterCursor alloc] initForDataCursor:dataCursor encoding:stringEncoding];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [characterCursor release];
-    [super dealloc];
 }
 
 // OWProcessor subclass
@@ -226,7 +211,7 @@ static OFPreference *cp1252OverridePref = nil;
     CFStringEncoding specifiedEncoding;
 
     specifiedEncoding = [[self class] stringEncodingForContentType:[sourceContent fullContentType]];
-    encodingOverrideNumber = [pipeline contextObjectForKey:OWEncodingOverrideContextKey];
+    encodingOverrideNumber = [self.pipeline contextObjectForKey:OWEncodingOverrideContextKey];
     if (encodingOverrideNumber != nil) {
         NSNumber *oldEncodingProvenance;
         CFStringEncoding encodingOverride;
@@ -241,7 +226,7 @@ static OFPreference *cp1252OverridePref = nil;
     if (specifiedEncoding == kCFStringEncodingInvalidId) {
         NSNumber *encodingDefaultNumber;
 
-        encodingDefaultNumber = [pipeline contextObjectForKey:OWEncodingDefaultContextKey];
+        encodingDefaultNumber = [self.pipeline contextObjectForKey:OWEncodingDefaultContextKey];
         if (encodingDefaultNumber != nil) {
             CFStringEncoding encodingDefault;
             
@@ -258,9 +243,7 @@ static OFPreference *cp1252OverridePref = nil;
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (characterCursor)
         [debugDictionary setObject:characterCursor forKey:@"characterCursor"];
 

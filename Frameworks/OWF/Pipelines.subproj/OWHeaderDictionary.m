@@ -38,18 +38,10 @@ static BOOL debugHeaderDictionary = NO;
     return self;
 }
 
-- (void)dealloc;
-{
-    [parameterizedContentTypeLock release];
-    [parameterizedContentType release];
-    [super dealloc];
-}
-
 - (void)addString:(NSString *)aString forKey:(NSString *)aKey;
 {
     if (parameterizedContentType && [aKey compare:OFHTTPContentTypeHeaderKey options: NSCaseInsensitiveSearch] == NSOrderedSame) {
         [parameterizedContentTypeLock lock];
-        [parameterizedContentType release];
         parameterizedContentType = nil;
         [parameterizedContentTypeLock unlock];
     }
@@ -100,17 +92,9 @@ static BOOL debugHeaderDictionary = NO;
 
 - (void)readRFC822HeadersFromCursor:(OWDataStreamCursor *)aCursor;
 {
-    OWDataStreamCharacterCursor *characterCursor;
-    
-    characterCursor = [[OWDataStreamCharacterCursor alloc] initForDataCursor:aCursor encoding:kCFStringEncodingISOLatin1];
-    NS_DURING {
-        [self readRFC822HeadersFrom:characterCursor];
-        [characterCursor discardReadahead];
-    } NS_HANDLER {
-        [characterCursor release];
-        [localException raise];
-    } NS_ENDHANDLER;
-    [characterCursor release];
+    OWDataStreamCharacterCursor *characterCursor = [[OWDataStreamCharacterCursor alloc] initForDataCursor:aCursor encoding:kCFStringEncodingISOLatin1];
+    [self readRFC822HeadersFrom:characterCursor];
+    [characterCursor discardReadahead];
 }
 
 - (void)readRFC822HeadersFromScanner:(OWDataStreamScanner *)aScanner;
@@ -130,20 +114,17 @@ static BOOL debugHeaderDictionary = NO;
     [parameterizedContentTypeLock lock];
     if (parameterizedContentType == nil)
         [self _locked_parseParameterizedContentType];
-    returnValue = [parameterizedContentType retain];
+    returnValue = parameterizedContentType;
     [parameterizedContentTypeLock unlock];
-    return [returnValue autorelease];
+    return returnValue;
 }
 
 - (OWContentType *)contentEncoding;
 {
-    NSString *headerString;
-    OWContentType *contentEncoding;
-
-    headerString = [self lastStringForKey:@"content-encoding"];
-    if (!headerString || [headerString isEqualToString:@""])
+    NSString *headerString = [self lastStringForKey:@"content-encoding"];
+    if (headerString == nil || [headerString isEqualToString:@""])
 	return nil;
-    contentEncoding = [OWContentType contentTypeForString:[@"encoding/" stringByAppendingString:headerString]];
+    OWContentType *contentEncoding = [OWContentType contentTypeForString:[@"encoding/" stringByAppendingString:headerString]];
     return contentEncoding;
 }
 
@@ -167,7 +148,7 @@ static BOOL debugHeaderDictionary = NO;
     if (parameterizedContentType != nil)
         return;
 
-    parameterizedContentType = [[OWParameterizedContentType contentTypeForString:[self lastStringForKey:OFHTTPContentTypeHeaderKey]] retain];
+    parameterizedContentType = [OWParameterizedContentType contentTypeForString:[self lastStringForKey:OFHTTPContentTypeHeaderKey]];
     if (parameterizedContentType == nil)
         parameterizedContentType = [[OWParameterizedContentType alloc] initWithContentType:[OWContentType unknownContentType]];
 }

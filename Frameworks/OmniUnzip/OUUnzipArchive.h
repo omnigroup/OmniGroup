@@ -11,9 +11,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class NSArray, NSData, NSError, NSFileWrapper;
+@class NSArray;
+@class NSData;
+@class NSError;
+@class NSFileWrapper;
+@class NSInputStream;
 @class OUUnzipEntry;
 @protocol OFByteProvider;
+@protocol OFByteStream;
 
 @interface OUUnzipArchive : NSObject
 
@@ -28,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
 - (nullable NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
+
+- (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
+- (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 
 // Convenience methods for unarchiving to disk
 - (BOOL)unzipArchiveToURL:(NSURL *)targetURL error:(NSError **)outError;

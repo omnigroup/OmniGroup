@@ -14,10 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OUIPasswordAlert ()
 
 @property (nonatomic, strong, readonly) UIAlertController *alertController;
-@property (nonatomic, readonly) NSUInteger options;
+@property (nonatomic, readonly) OUIPasswordAlertOptions options;
 @property (nonatomic, readonly, getter = isDismissed) BOOL dismissed;
 
-- (void)configurePasswordTextField:(UITextField *)textField NS_REQUIRES_SUPER;
+- (void)configurePasswordTextField:(UITextField *)textField forConfirmation:(BOOL)forConfirmation NS_REQUIRES_SUPER;
 
 - (void)dismissWithAction:(OUIPasswordAlertAction)action;
 

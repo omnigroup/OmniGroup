@@ -1,4 +1,4 @@
-// Copyright 2000-2009, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,53 +49,31 @@ typedef NS_ENUM(NSUInteger, OFTimeSpanFormatterUnit) {
 
 - (NSNumberFormatter *)numberFormatter;
 
-- (void)setUseVerboseFormat:(BOOL)shouldUseVerbose;
-- (BOOL)shouldUseVerboseFormat;
+@property (nonatomic, assign, getter = shouldUseVerboseFormat) BOOL useVerboseFormat; // "12w 3d" vs "12 weeks 3 days"
+@property (nonatomic, assign) BOOL shouldReturnNumber; // whether -getObjectValue:… returns an NSNumber instead of an OFTimeSpan
+@property (nonatomic, assign) BOOL floatValuesInSeconds; // whether incoming NSNumber floats are seconds or hours
+@property (nonatomic, assign) float roundingInterval;
+@property (nonatomic, assign) BOOL usesArchiveUnitStrings;
 
-- (void)setShouldReturnNumber:(BOOL)shouldReturnNumber;
-- (BOOL)shouldReturnNumber;
 - (OFTimeSpan *)timeSpanValueForNumberValue:(NSNumber *)aNumber;
 
-- (void)setFloatValuesInSeconds:(BOOL)shouldTreatFloatValuesAsSeconds;
-- (BOOL)floatValuesInSeconds;
+@property (nonatomic, assign) float hoursPerDay;
+@property (nonatomic, assign) float hoursPerWeek;
+@property (nonatomic, assign) float hoursPerMonth;
+@property (nonatomic, assign) float hoursPerYear;
 
-- (void)setRoundingInterval:(float)interval;
-- (float)roundingInterval;
+@property (nonatomic, assign) BOOL displayUnmodifiedTimeSpan; // overrides all display unit settings
 
-- (void)setUsesArchiveUnitStrings:(BOOL)shouldUseArchiveUnitStrings;
-- (BOOL)usesArchiveUnitStrings;
-
-- (float)hoursPerDay;
-- (float)hoursPerWeek;
-- (float)hoursPerMonth;
-- (float)hoursPerYear;
-
-- (void)setHoursPerDay:(float)hours;
-- (void)setHoursPerWeek:(float)hours;
-- (void)setHoursPerMonth:(float)hours;
-- (void)setHoursPerYear:(float)hours;
+@property (nonatomic, assign) BOOL displaySeconds;
+@property (nonatomic, assign) BOOL displayMinutes;
+@property (nonatomic, assign) BOOL displayHours;
+@property (nonatomic, assign) BOOL displayDays;
+@property (nonatomic, assign) BOOL displayWeeks;
+@property (nonatomic, assign) BOOL displayMonths;
+@property (nonatomic, assign) BOOL displayYears;
 
 - (BOOL)isStandardWorkTime;
 - (BOOL)isStandardCalendarTime;
-
-- (BOOL)displayUnmodifiedTimeSpan; // Overrides all display unit settings
-- (void)setDisplayUnmodifiedTimeSpan:(BOOL)aBool; // Overrides all display unit settings
-
-- (BOOL)displaySeconds;
-- (BOOL)displayMinutes;
-- (BOOL)displayHours;
-- (BOOL)displayDays;
-- (BOOL)displayWeeks;
-- (BOOL)displayMonths;
-- (BOOL)displayYears;
-
-- (void)setDisplaySeconds:(BOOL)aBool;
-- (void)setDisplayMinutes:(BOOL)aBool;
-- (void)setDisplayHours:(BOOL)aBool;
-- (void)setDisplayDays:(BOOL)aBool;
-- (void)setDisplayWeeks:(BOOL)aBool;
-- (void)setDisplayMonths:(BOOL)aBool;
-- (void)setDisplayYears:(BOOL)aBool;
 
 - (void)setStandardWorkTime; // 8h = 1d, 40h = 1w, 160h = 1m, 1920h = 1y (12m = 1y)
 - (void)setStandardCalendarTime; // 24h = 1d, 168h = 1w, 720h = 1m (30d = 1m), 8760h = 1y (365d = 1y)

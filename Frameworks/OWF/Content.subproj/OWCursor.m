@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,15 +29,9 @@ RCS_ID("$Id$")
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (void)dealloc;
-{
-    [abortException release];
-    [super dealloc];
-}
-
 - (id)createCursor;
 {
-    return [[[[self class] alloc] initFromCursor:self] autorelease];
+    return [[[self class] alloc] initFromCursor:self];
 }
 
 //
@@ -56,8 +50,7 @@ RCS_ID("$Id$")
 {
     if (abortException == anException)
 	return;
-    [abortException autorelease];
-    abortException = [anException retain];
+    abortException = anException;
 }
 
 - (void)abort;

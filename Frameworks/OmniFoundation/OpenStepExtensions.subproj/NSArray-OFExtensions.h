@@ -83,6 +83,7 @@
 - (ObjectType)last:(PREDICATE_BLOCK)predicate;
 - (ObjectType)lastInRange:(NSRange)range that:(PREDICATE_BLOCK)predicate;
 
+- (BOOL)any:(PREDICATE_BLOCK)predicate;
 - (BOOL)all:(PREDICATE_BLOCK)predicate;
 
 - (NSArray <ObjectType> *)objectsSatisfyingCondition:(SEL)aSelector;

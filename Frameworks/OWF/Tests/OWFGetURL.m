@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,13 +12,7 @@
 
 RCS_ID("$Id$");
 
-@interface OWFGetURLFetcher : OFObject <OWFWeakRetain, OWTarget>
-{
-    NSConditionLock *dataStreamReadyLock;
-    OWContent *content;
-
-    OWFWeakRetainConcreteImplementation_IVARS;
-}
+@interface OWFGetURLFetcher : OFObject <OWTarget>
 
 + (void)getURLString:(NSString *)urlString;
 - (id)initWithAddress:(OWAddress *)anAddress;
@@ -50,6 +44,10 @@ int main(int argc, char *argv[])
 }
 
 @implementation OWFGetURLFetcher
+{
+    NSConditionLock *dataStreamReadyLock;
+    OWContent *content;
+}
 
 enum { NOT_READY, READY };
 
@@ -73,8 +71,6 @@ enum { NOT_READY, READY };
 
 - (id)initWithAddress:(OWAddress *)anAddress;
 {
-    OWFWeakRetainConcreteImplementation_INIT;
-
     if (!(self = [super init]))
         return nil;
 
@@ -142,16 +138,6 @@ enum { NOT_READY, READY };
 - (void)pipelineDidEnd:(OWPipeline *)aPipeline;
 {
     [OWPipeline invalidatePipelinesForTarget:self];
-}
-
-//
-// OWFWeakRetain protocol
-//
-
-OWFWeakRetainConcreteImplementation_IMPLEMENTATION
-
-- (void)invalidateWeakRetains;
-{
 }
 
 @end

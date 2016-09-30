@@ -119,14 +119,12 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 + (void)initialize;
 {
-    NSMutableCharacterSet *tokenCharacterSet;
-    
     OBINITIALIZE;
 
     http10VersionString = @"HTTP/1.0";
     http11VersionString = @"HTTP/1.1";
     endOfLineString = @"\r\n";
-    spaceCharacterSet = [[NSCharacterSet characterSetWithCharactersInString:@" "] retain];
+    spaceCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@" "];
     textPlainContentType = [OWContentType contentTypeForString:@"text/plain"];
     textXMLContentType = [OWContentType contentTypeForString:@"text/xml"];
     applicationXMLContentType = [OWContentType contentTypeForString:@"application/xml"];
@@ -137,14 +135,13 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     [OWContentType contentTypeForString:@"encoding/gzip"];
     
     // This is the character set allowed for tokens, [RFC2068 section 2.2]
-    tokenCharacterSet = [[NSMutableCharacterSet alloc] init];
+    NSMutableCharacterSet *tokenCharacterSet = [[NSMutableCharacterSet alloc] init];
     // All US-ASCII chars except controls (0-31) and DEL (127)
     [tokenCharacterSet addCharactersInRange:NSMakeRange(32, (127 - 32))];
     // Remove 'tspecials'
     [tokenCharacterSet removeCharactersInString:@"()<>@,;:\\\"/[]?={} "];
     
-    nonTokenCharacterSet = [[tokenCharacterSet invertedSet] retain];
-    [tokenCharacterSet release];
+    nonTokenCharacterSet = [tokenCharacterSet invertedSet];
     
     browserIdentDict = [[NSDictionary alloc] initWithContentsOfFile:[[OWHTTPSession bundle] pathForResource:@"BrowserIdentity" ofType:@"plist"]];
 
@@ -282,8 +279,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     OWHTTPDebug = [defaults boolForKey:@"OWHTTPDebug"];
-    OWHTTPTrustServerContentType = [[OFPreference preferenceForKey:OWHTTPTrustServerContentTypePreferenceKey] retain];
-    OWHTTPSessionLanguageLimitPreference = [[OFPreference preferenceForKey:@"OWHTTPSessionLanguageLimit"] retain];
+    OWHTTPTrustServerContentType = [OFPreference preferenceForKey:OWHTTPTrustServerContentTypePreferenceKey];
+    OWHTTPSessionLanguageLimitPreference = [OFPreference preferenceForKey:@"OWHTTPSessionLanguageLimit"];
     [OWHeaderDictionary setDebug:OWHTTPDebug];
     [self _readLanguageDefaults];
 }
@@ -360,8 +357,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     [acceptsArray sortUsingFunction:acceptEncodingHeaderOrdering context:NULL];
     
     // Note: We always send the Accept-Encoding header, even if we have no encodings.  In fact, especially when we have no encodings, since according to RFC 2616 no Accept-Encoding header means the server can assume we understand compress and gzip, while an empty header value means the server can only assume that we understand the "identity" encoding.
-    _acceptEncodingsValue = [[acceptsArray componentsJoinedByString:@", "] retain];
-    [acceptsArray release];
+    _acceptEncodingsValue = [acceptsArray componentsJoinedByString:@", "];
 
     return _acceptEncodingsValue;
 }
@@ -382,7 +378,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     proxyURL = [anAddress proxyURL];
     realURL = [anAddress url];
     flags.connectingViaProxyServer = (proxyURL != realURL);
-    proxyLocation = [[proxyURL parsedNetLocation] retain];
+    proxyLocation = [proxyURL parsedNetLocation];
     processorQueue = [[NSMutableArray alloc] initWithCapacity:[queue maximumNumberOfRequestsToPipeline]];
     processorQueueLock = [[NSLock alloc] init];
     flags.pipeliningRequests = NO;
@@ -397,14 +393,6 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 - (void)dealloc;
 {
     [self disconnectAndRequeueProcessors];
-    [proxyLocation release];
-    proxyLocation = nil; // Why?  Thread-safety issues?  We should fix those instead--this isn't a reliable cure, since the other thread could access proxyLocation after we release but before we reset it.
-    [processorQueue release];
-    processorQueue = nil;
-    [processorQueueLock release];
-    processorQueueLock = nil;
-
-    [super dealloc];
 }
 
 - (void)runSession;
@@ -413,7 +401,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         NSException *sessionException = nil;
 
         @autoreleasepool {
-            NS_DURING {
+            @try {
                 BOOL continueSession = NO;
 
                 do {
@@ -445,9 +433,9 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
                     }
                 } while (continueSession);
                 [self disconnectAndRequeueProcessors];
-            } NS_HANDLER {
+            } @catch (NSException *localException) {
                 sessionException = localException;
-            } NS_ENDHANDLER;
+            }
             if (sessionException != nil) {
                 // Notify processors
                 [processorQueueLock lock];
@@ -458,7 +446,6 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
                 [processorQueueLock lock];
                 [processorQueue removeAllObjects];
                 [processorQueueLock unlock];
-                [processorQueueSnapshot release];
                 [self disconnectAndRequeueProcessors]; // Note:  We don't really have any processors to requeue, we're just disconnecting
                 if (requestsSentThisConnection == 0) {
                     // -sendRequest raised an exception before we even started looking for processors (e.g., when trying to connect to a server which is down or doesn't exist).  Send the exception to all queued processors.
@@ -511,30 +498,24 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     // Set the status for all processors in this session
     OFForEachInArray(processorQueueSnapshot, OWProcessor *, aProcessor,
                      [aProcessor setStatusString:newStatus]);
-    [processorQueueSnapshot release];
     // And for any processors waiting on us
     [queue session:self hasStatusString:newStatus];
 }
 
 - (void)setStatusFormat:(NSString *)aFormat, ...;
 {
-    NSString *newStatus;
     va_list argList;
-
     va_start(argList, aFormat);
-    newStatus = [[NSString alloc] initWithFormat:aFormat arguments:argList];
+    NSString *newStatus = [[NSString alloc] initWithFormat:aFormat arguments:argList];
     va_end(argList);
     [self setStatusString:newStatus];
-    [newStatus release];
 }
 
 // OBObject subclass
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (fetchAddress)
         [debugDictionary setObject: fetchAddress forKey:@"fetchAddress"];
     if (socketStream)
@@ -552,22 +533,19 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 - (void)connect;
 {
-    NSString *port;
-    ONInternetSocket *socket;
-    ONHost *host;
-    NSBundle *myBundle = [OWHTTPSession bundle];
+    NSBundle *myBundle = OMNI_BUNDLE;
     
     requestsSentThisConnection = 0;
     
     [self setStatusFormat:NSLocalizedStringFromTableInBundle(@"Finding %@", @"OWF", myBundle, @"http session status"), [proxyLocation shortDisplayString]];
-    port = [proxyLocation port];
-    host = [ONHost hostForHostname:[proxyLocation hostname]];
+    NSString *port = [proxyLocation port];
+    ONHost *host = [ONHost hostForHostname:[proxyLocation hostname]];
     [self setStatusFormat:NSLocalizedStringFromTableInBundle(@"Contacting %@", @"OWF", myBundle, @"http session status"), [proxyLocation shortDisplayString]];
     flags.serverIsLocal = [host isLocalHost]?1:0;
 
     // Sadly, we have two socket methods, +[ONInternetSocket socket] and -[ONSocketStream socket], and the compiler doesn't know which it's getting without the final cast.  (There's no way to cast +socketClass to disambiguate ahead of time.)
     ONInternetSocket *(*imp)(Class cls, SEL _cmd) = (typeof(imp))objc_msgSend;
-    socket = imp([[self class] socketClass], @selector(socket));
+    ONInternetSocket *socket = imp([[self class] socketClass], @selector(socket));
     [socket setReadBufferSize:32 * 1024];
 
     OBASSERT(!socketStream);
@@ -581,8 +559,6 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 - (void)disconnectAndRequeueProcessors;
 {
-    NSUInteger index, count;
-
     // Take a snapshot of our processor queue and clear it out
     [processorQueueLock lock];
     NSArray *processorQueueSnapshot = processorQueue;
@@ -590,12 +566,9 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     [processorQueueLock unlock];
 
     // Requeue all the processors in the snapshot
-    for (index = 0, count = [processorQueueSnapshot count]; index < count; index++)
-        [queue queueProcessor:[processorQueueSnapshot objectAtIndex:index]];
+    for (OWHTTPProcessor *processor in processorQueueSnapshot)
+        [queue queueProcessor:processor];
         
-    // Release our snapshot
-    [processorQueueSnapshot release];
-
     // If we have a socket stream, release it
     [self _closeSocketStream];
 }
@@ -607,18 +580,18 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
      
     [aProcessor processBegin];
     
-    fetchAddress = [[aProcessor sourceAddress] retain];
-    fetchURL = [[fetchAddress url] retain];
+    fetchAddress = [aProcessor sourceAddress];
+    fetchURL = [fetchAddress url];
     headerDictionary = [[OWHeaderDictionary alloc] init];
-    interruptedDataStream = [[aProcessor dataStream] retain];
+    interruptedDataStream = [aProcessor dataStream];
 
-    NS_DURING {
+    @try {
         if ([[fetchAddress methodString] isEqualToString:@"HEAD"])
             finishedProcessing = [self readHeadForProcessor:aProcessor];
         else
             finishedProcessing = [self readResponseForProcessor:aProcessor];
         failedRequests = 0;
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
 #ifdef DEBUG
         NSLog(@"%@(%@): Caught exception: name='%@', posixErrorNumber=%d, reason='%@'", [fetchAddress addressString], OBShortObjectDescription(self), [localException name], [localException posixErrorNumber], [localException reason]);
 #endif
@@ -644,7 +617,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
                 // Our HTTP/1.0 connection appears to have been dropped:  overloaded server, perhaps?  Let's retry a few times.
                 failedRequests++;
                 if (interruptedDataStream != nil || failedRequests > 3) {
-                    sessionException = [localException retain];
+                    sessionException = localException;
                     [interruptedDataStream dataAbort];
                 } else if (failedRequests > 1) {
                     // If this isn't our first retry, give the server a slight rest before connecting again
@@ -653,10 +626,10 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
             }
         } else {
             // Abort the data stream and reraise the exception
-            sessionException = [localException retain];
+            sessionException = localException;
             [interruptedDataStream dataAbort];
         }
-    } NS_ENDHANDLER;            
+    }
 
     if (sessionException) {
         [self notifyProcessor:aProcessor ofSessionException:sessionException];
@@ -667,25 +640,16 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         
 
     // get rid of variables for this fetch
-    [fetchAddress release];
     fetchAddress = nil;
-    [fetchURL release];
     fetchURL = nil;
-    [headerDictionary release];
     headerDictionary = nil;
-    [interruptedDataStream release];
     interruptedDataStream = nil;
     return finishedProcessing;
 }
 
 - (void)setKludgesForProcessor:(OWHTTPProcessor *)aProcessor address:(OWAddress *)thisAddress;
 {
-    NSUInteger workaroundCount, workaroundIndex;
-    NSString *hostString;
-    id <OWProcessorContext> context;
-    id contextObject;
-
-    context = [aProcessor pipeline];
+    id <OWProcessorContext> context = [aProcessor pipeline];
 
     if ([[context contextObjectForKey:OWHTTPFakeAcceptHeaderPreferenceKey] boolValue]) {
         kludge.fakeAcceptHeader = 1;
@@ -695,21 +659,16 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         kludge.fakeAcceptEncodingHeader = 0;
     }
     kludge.suppressAcceptEncodingHeader = 0;
-    contextObject = [context contextObjectForKey:OWHTTPTrustServerContentTypePreferenceKey];
+    id contextObject = [context contextObjectForKey:OWHTTPTrustServerContentTypePreferenceKey];
     if (contextObject)
-        kludge.distrustContentType = [OWHTTPTrustServerContentType boolValue]? 0 : 1;
+        kludge.distrustContentType = [OWHTTPTrustServerContentType boolValue] ? 0 : 1;
     
-    hostString = [[[[thisAddress url] parsedNetLocation] hostname] lowercaseString];
+    NSString *hostString = [[[[thisAddress url] parsedNetLocation] hostname] lowercaseString];
     
-    workaroundCount = [OWHTTPWorkarounds count];
-    for(workaroundIndex = 0; workaroundIndex < workaroundCount; workaroundIndex ++) {
-        NSDictionary *workaround = [OWHTTPWorkarounds objectAtIndex:workaroundIndex];
-        BOOL applicable;
-        NSString *value;
+    for (NSDictionary *workaround in OWHTTPWorkarounds) {
+        BOOL applicable = NO;
 
-        applicable = NO;
-
-        value = [workaround objectForKey:@"domainSuffix"];
+        NSString *value = [workaround objectForKey:@"domainSuffix"];
         if (value && [hostString hasSuffix:value])
             applicable = YES;
 
@@ -792,16 +751,13 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 - (NSString *)authorizationStringForAddress:(OWAddress *)anAddress processor:(OWHTTPProcessor *)aProcessor;
 {
-    NSMutableArray *credentialsToSend;
-    OWAuthorizationRequest *serverAuthorization, *proxyAuthorization;
-    NSMutableString *buffer;
-    NSUInteger credentialCount, credentialIndex;
-    
+    OWAuthorizationRequest *proxyAuthorization;
     if (flags.connectingViaProxyServer && proxyCredentials == nil) {
         proxyAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP_Proxy netLocation:proxyLocation defaultPort:[[self class] defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
     } else
         proxyAuthorization = nil;
     
+    OWAuthorizationRequest *serverAuthorization;
     if ([aProcessor credentials] == nil) {
         serverAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP netLocation:[[anAddress url] parsedNetLocation] defaultPort:[[self class] defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
     } else
@@ -814,18 +770,15 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         proxyCredentials = [proxyAuthorization credentials];
         if (proxyCredentials && [proxyCredentials count] > 1)
             proxyCredentials = [proxyCredentials subarrayWithRange:NSMakeRange(0,1)];
-        [proxyCredentials retain];
-        [proxyAuthorization release];
     }
     
     if (serverAuthorization != nil) {
         NSArray *serverCredentials = [serverAuthorization credentials];
         if (serverCredentials && [serverCredentials count])
             [aProcessor addCredential:[serverCredentials objectAtIndex:0]];
-        [serverAuthorization release];
     }
     
-    credentialsToSend = [[NSMutableArray alloc] init];
+    NSMutableArray *credentialsToSend = [[NSMutableArray alloc] init];
     if (OWHTTPCredentialsDebug)
         NSLog(@"%@: proxy credentials = %@, using proxy = %d", [anAddress addressString], proxyCredentials, flags.connectingViaProxyServer);
     if (flags.connectingViaProxyServer && proxyCredentials != nil && [proxyCredentials count])
@@ -835,24 +788,19 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     if ([aProcessor credentials])
         [credentialsToSend addObject:[[aProcessor credentials] objectAtIndex:0]];
     
-    credentialCount = [credentialsToSend count];
+    NSUInteger credentialCount = [credentialsToSend count];
     if (credentialCount == 0) {
-        [credentialsToSend release];
         return @"";
     }
     
-    buffer = [[[NSMutableString alloc] init] autorelease];
-    for(credentialIndex = 0; credentialIndex < credentialCount; credentialIndex++) {
-        NSString *headerString;
-
-        headerString = [[credentialsToSend objectAtIndex:credentialIndex] httpHeaderStringForProcessor:aProcessor];
+    NSMutableString *buffer = [NSMutableString string];
+    for (OWAuthorizationCredential *credential in credentialsToSend) {
+        NSString *headerString = [credential httpHeaderStringForProcessor:aProcessor];
         if (headerString) {
             [buffer appendString:headerString];
             [buffer appendString:endOfLineString];
         }
     }
-    
-    [credentialsToSend release];
     
     return buffer;
 }
@@ -874,9 +822,10 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         [self disconnectAndRequeueProcessors];
         [self connect];
     }
-    NS_DURING {
+
+    @try {
         [self sendRequests];
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         BOOL problemIsTransient = NO;
 
         if ([[localException name] isEqualToString:ONInternetSocketWriteFailedExceptionName]) {
@@ -894,7 +843,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
             // Reraise the exception
             [localException raise];
         }
-    } NS_ENDHANDLER;
+    }
 
     [processorQueueLock lock];
     BOOL stillHaveRequests = ([processorQueue count] != 0);
@@ -905,21 +854,15 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 - (BOOL)sendRequests;
 {
-    NSData *requestData;
-    NSString *requestString;
-    OWAddress *anAddress;
-    NSUInteger queueCount;
-    BOOL shouldPipelineRequests;
-    NSUInteger maximumNumberOfRequestsToSend;
-
     // figure out how many requests to send
-    shouldPipelineRequests = [queue shouldPipelineRequests];
+    BOOL shouldPipelineRequests = [queue shouldPipelineRequests];
 
     [processorQueueLock lock];
-    queueCount = [processorQueue count];
+    NSUInteger queueCount = [processorQueue count];
     [processorQueueLock unlock];
 
     flags.pipeliningRequests = shouldPipelineRequests;
+    NSUInteger maximumNumberOfRequestsToSend;
     if (shouldPipelineRequests) {
         maximumNumberOfRequestsToSend = [queue maximumNumberOfRequestsToPipeline];
     } else {
@@ -929,9 +872,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     // Fill our queue
     NSMutableArray *newRequests = [NSMutableArray arrayWithCapacity:maximumNumberOfRequestsToSend - queueCount];
     while (queueCount < maximumNumberOfRequestsToSend) {
-        OWHTTPProcessor *aProcessor;
-
-        aProcessor = [queue nextProcessor];
+        OWHTTPProcessor *aProcessor = [queue nextProcessor];
         if (aProcessor == nil)
             break;
         switch ([aProcessor status]) {
@@ -960,16 +901,12 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     // Send requests for each new processor in the queue
     NSUInteger newRequestIndex, newRequestCount;
     for (newRequestIndex = 0, newRequestCount = [newRequests count]; newRequestIndex < newRequestCount; newRequestIndex++) {
-        OWHTTPProcessor *aProcessor;
-
-        aProcessor = [newRequests objectAtIndex:newRequestIndex];
+        OWHTTPProcessor *aProcessor = [newRequests objectAtIndex:newRequestIndex];
         if ([self prepareConnectionForProcessor:aProcessor]) {
-            NSDictionary *methodDictionary;
-            
-            anAddress = [aProcessor sourceAddress];
-            methodDictionary = [anAddress methodDictionary];
-            requestData = [methodDictionary objectForKey:OWAddressContentDataMethodKey];
-            requestString = [self requestStringForProcessor:aProcessor];
+            OWAddress *anAddress = [aProcessor sourceAddress];
+            NSDictionary *methodDictionary = [anAddress methodDictionary];
+            NSData *requestData = [methodDictionary objectForKey:OWAddressContentDataMethodKey];
+            NSString *requestString = [self requestStringForProcessor:aProcessor];
             
             if (OWHTTPDebug)
                 NSLog(@"%@ Tx: %@", [[anAddress url] scheme], requestString);
@@ -1005,13 +942,6 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
-    if (languageArray != nil)
-        [languageArray release];
-    if (acceptLanguageValue != nil)
-        [acceptLanguageValue release];
-    if (acceptLanguageString != nil)
-        [acceptLanguageString release];
-    
     NSArray *systemLanguages = [defaults stringArrayForKey:@"OWHTTPSessionLanguages"];
     if (systemLanguages == nil) {
         // If the user didn't provide a specific web language ordering, look up their their language preferences.  Mac OS X stores the user's language preferences in AppleLanguages, using the ISO abbreviations --- very convenient, but see below.
@@ -1031,11 +961,9 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
         NSMutableString *mutableLanguageAbbreviation = [[languageAbbreviation lowercaseString] mutableCopy];
         [mutableLanguageAbbreviation replaceAllOccurrencesOfString:@"_" withString:@"-"];
         NSString *immutableLanguageAbbreviation = [mutableLanguageAbbreviation copy];
-        [mutableLanguageAbbreviation release];
         mutableLanguageAbbreviation = nil;
 
         [languageArray addObject:immutableLanguageAbbreviation];
-        [immutableLanguageAbbreviation release];
     }
 
     OBASSERT(systemLanguageCount == [languageArray count]);
@@ -1045,8 +973,8 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
             acceptLanguageValue = nil;
             acceptLanguageString = nil;
         } else {
-            acceptLanguageValue = [acceptLanguageHeaderOverride retain];
-            acceptLanguageString = [[self stringForHeader:@"Accept-Language" value:acceptLanguageValue] retain];
+            acceptLanguageValue = acceptLanguageHeaderOverride;
+            acceptLanguageString = [self stringForHeader:@"Accept-Language" value:acceptLanguageValue];
         }
     } else if (systemLanguageCount > 0) {
         NSString *qualityFormatString;
@@ -1074,9 +1002,8 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
         if ([defaults boolForKey:@"OWHTTPSessionAcceptLanguageIncludeFallback"])
             [acceptLanguages addObject:[NSString stringWithFormat:qualityFormatString, @"*", 1.0 / acceptLanguageCount]]; // End with "*;q=0.01"
-        acceptLanguageValue = [[acceptLanguages componentsJoinedByString:@", "] retain];
-        acceptLanguageString = [[self stringForHeader:@"Accept-Language" value:acceptLanguageValue] retain];
-        [acceptLanguages release];
+        acceptLanguageValue = [acceptLanguages componentsJoinedByString:@", "];
+        acceptLanguageString = [self stringForHeader:@"Accept-Language" value:acceptLanguageValue];
     } else {
         acceptLanguageValue = nil;
         acceptLanguageString = nil;
@@ -1085,24 +1012,20 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 + (void)_calculatePrimaryUserAgentInfo;
 {
-    NSBundle *mainBundle;
-    NSDictionary *mainBundleInfoDictionary;
-    NSString *primaryAgentName, *primaryAgentVersion, *primaryAgentBuild, *primaryAgentCombinedVersion;
-    NSNumber *hidePrimaryAgentVersionValue;
-    BOOL hidePrimaryAgentVersion;
-
-    mainBundle = [NSBundle mainBundle];
-    mainBundleInfoDictionary = [mainBundle infoDictionary];
-    primaryAgentName = [mainBundleInfoDictionary objectForKey:@"CFBundleName"];
-    primaryAgentVersion = [mainBundleInfoDictionary objectForKey:@"CFBundleShortVersionString"];
-    primaryAgentBuild = [mainBundleInfoDictionary objectForKey:@"CFBundleVersion"];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *mainBundleInfoDictionary = [mainBundle infoDictionary];
+    NSString *primaryAgentName = [mainBundleInfoDictionary objectForKey:@"CFBundleName"];
+    NSString *primaryAgentVersion = [mainBundleInfoDictionary objectForKey:@"CFBundleShortVersionString"];
+    NSString *primaryAgentBuild = [mainBundleInfoDictionary objectForKey:@"CFBundleVersion"];
     NSRange lastDot = [primaryAgentBuild rangeOfString:@"." options:NSBackwardsSearch]; // chopping off the last .x
     primaryAgentBuild = [primaryAgentBuild substringToIndex:lastDot.location];
     
     if (![NSString isEmptyString:primaryAgentBuild])
         primaryAgentBuild = [@"v" stringByAppendingString:primaryAgentBuild]; // 319 -> v319
-    hidePrimaryAgentVersionValue = [mainBundleInfoDictionary objectForKey:@"OWFHidePrimaryAgentVersion"];
-    hidePrimaryAgentVersion = hidePrimaryAgentVersionValue != nil && [hidePrimaryAgentVersionValue boolValue];
+    NSNumber *hidePrimaryAgentVersionValue = [mainBundleInfoDictionary objectForKey:@"OWFHidePrimaryAgentVersion"];
+    BOOL hidePrimaryAgentVersion = hidePrimaryAgentVersionValue != nil && [hidePrimaryAgentVersionValue boolValue];
+
+    NSString *primaryAgentCombinedVersion;
     if (!hidePrimaryAgentVersion && ![NSString isEmptyString:primaryAgentVersion]) {
         NSRange firstWordRange;
         NSString *firstWord;
@@ -1146,7 +1069,6 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     [header appendString:@": "];
     [header appendString:value];
     [header appendString:endOfLineString];
-    [header autorelease];
     return header;
 }
 
@@ -1288,7 +1210,6 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
         }
     }
 
-    [desiredContentTypes release];
     desiredContentTypes = nil;
 
     // Sort the content-types, and convert them to strings
@@ -1309,10 +1230,6 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     }
     
     NSString *acceptTypesString = [[self class] stringForHeader:@"Accept" value:[acceptsArray componentsJoinedByString:@", "]];
-    [acceptsArray release];
-    [sortedContentTypes release];
-    [acceptableContentTypes release];
-    
     return acceptTypesString;
 }
 
@@ -1469,7 +1386,6 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
         [valueString appendStrings:@"; boundary=", boundaryString, nil];
 
     contentTypeHeaderString = [[self class] stringForHeader:@"Content-Type" value:valueString];
-    [valueString release];
     return contentTypeHeaderString;
 }
 
@@ -1587,7 +1503,6 @@ processStatus:
             
             // Return an empty data stream so caller gets success instead of alternate or failure
             [self readHeadersForProcessor:processor];
-            [headerDictionary release];
             headerDictionary = [[OWHeaderDictionary alloc] init];
             [headerDictionary addString:[[OWContentType nothingContentType] contentTypeString] forKey:@"Content-Type"];
 #ifdef DEBUG_kc
@@ -1704,7 +1619,6 @@ processStatus:
             if (newCredentials == nil)
                 [[processor pipeline] noteErrorName:(IsProxyAuth ? @"ProxyAuthFailed" : @"AuthFailed") reason:[authorizationRequest errorString]];
             if (newCredentials == nil || ![newCredentials count]) {
-                [authorizationRequest release];
                 [processor flagResult:OWProcessorContentIsError];
                 [self readBodyForProcessor:processor ignore:NO];
             } else {
@@ -1715,12 +1629,10 @@ processStatus:
                 // We now send only the first (most recent) credential in the array each time, and the OWAuthorizationRequest class will only give us back credential that are not in the oldCredentials list
                 if (IsProxyAuth) {
                     newCredentials = [[NSArray arrayWithObject:newCredential] arrayByAddingObjectsFromArray:proxyCredentials];
-                    [proxyCredentials release];
-                    proxyCredentials = [newCredentials retain];
+                    proxyCredentials = newCredentials;
                 } else {
                     [processor addCredential:newCredential];
                 }
-                [authorizationRequest release];
                 [self readBodyForProcessor:processor ignore:YES];
                 return NO;  // Try again
             }
@@ -1831,7 +1743,7 @@ processStatus:
     
     [processor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Reading document from %@", @"OWF", [OWHTTPSession bundle], @"httpsession status"), [proxyLocation shortDisplayString]];
     
-    NS_DURING {
+    @try {
 
         if ([@"chunked" caseInsensitiveCompare:[headerDictionary lastStringForKey:@"transfer-encoding"]] == NSOrderedSame)
             [self readChunkedBodyIntoStream:interruptedDataStream precedingSkipLength:precedingSkipLength forProcessor:processor];
@@ -1840,7 +1752,7 @@ processStatus:
         else
             [self readClosingBodyIntoStream:interruptedDataStream precedingSkipLength:precedingSkipLength forProcessor:processor];
 
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
 #warning This probably doesnt work correctly for restarted fetches
         // The session will try to fetch more data into the same interruptedDataStream, which will add more headers to it, which will not work because we've already closed the headers off. On the other hand, what are we supposed to do if we get different headers on the second request?
 
@@ -1849,7 +1761,7 @@ processStatus:
             [localException raise];  // outer exception handler will end the data stream.
         }
         // If status == aborting, handle it below.
-    } NS_ENDHANDLER;
+    }
 
     // If we quit reading because the processor is in the OWProcessorAborting state, then end any open streams and return... the caller will disconnect-and-requeue.
     if ([processor status] == OWProcessorAborting) {
@@ -1867,19 +1779,11 @@ processStatus:
 #warning TODO [wiml nov2003] - verify that whoever makes HEAD requests can understand the results we produce here
 - (BOOL)readHeadForProcessor:(OWHTTPProcessor *)processor;
 {
-    NSString *line;
-    NSScanner *scanner;
-    float httpVersion;
-    HTTPStatus httpStatus;
-    NSString *commentString;
-    OWFileInfo *stamp = nil;
     id <OWProcessorContext> context = [processor pipeline];
-    OWContent *resultContent;
-    id <OWConcreteCacheEntry,NSObject> result;
     BOOL successResponse;
 
     [processor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Awaiting document info from %@", @"OWF", [OWHTTPSession bundle], @"httpsession status"), [proxyLocation shortDisplayString]];
-    line = [socketStream peekLine];
+    NSString *line = [socketStream peekLine];
     while (line != nil && [line isEqualToString:@""]) {
         // Skipping past leading newlines in the response fixes a problem I was seeing talking to a SmallWebServer/2.0 (used in some bulletin boards like the one at Clan Fat, http://pub12.ezboard.com/bfat).  I think what might have happened is that they miscalculated their content length in an earlier request, and sent us an extra newline following the counted bytes.  The result was that every other request to the server would fail.
         // Note:  if we're actually talking to an HTTP 0.9 server, it's possible we're losing blank lines at the beginning of the content they're sending us.  But since I haven't seen any HTTP 0.9 servers in a long, long time...
@@ -1890,21 +1794,19 @@ processStatus:
         return NO;
     if (OWHTTPDebug)
         NSLog(@"%@ Rx: %@", [fetchURL scheme], line);
-    scanner = [NSScanner scannerWithString:line];
-
+    NSScanner *scanner = [NSScanner scannerWithString:line];
     if (![scanner scanString:@"HTTP" intoString:NULL]) {
         // 0.9 server, so can't determine timestamp
-        stamp = [[OWFileInfo alloc] initWithLastChangeDate:nil];
-        resultContent = [[OWContent alloc] initWithContent:stamp];
-        [stamp release];
+        OWFileInfo *stamp = [[OWFileInfo alloc] initWithLastChangeDate:nil];
+        OWContent *resultContent = [[OWContent alloc] initWithContent:stamp];
         [resultContent markEndOfHeaders];
         [context addContent:resultContent fromProcessor:processor flags:OWProcessorTypeAuxiliary];
-        [resultContent release];
         return YES;
     }
 
     [socketStream readLine]; // Skip past the line we're already parsing
     [scanner scanString:@"/" intoString:NULL];
+    float httpVersion;
     [scanner scanFloat:&httpVersion];
     if (OWHTTPDebug)
         NSLog(@"Rx: %@", [fetchAddress addressString]);
@@ -1912,7 +1814,10 @@ processStatus:
         [queue setServerUnderstandsPipelinedRequests];
     }
 
+    HTTPStatus httpStatus;
     [scanner scanInt:(int *)&httpStatus];
+
+    NSString *commentString;
     if (![scanner scanUpToString:@"\n" intoString:&commentString])
         commentString = @"";
 
@@ -1965,7 +1870,6 @@ processStatus:
                 [newContent addHeaders:[headerDictionary dictionarySnapshot]];
                 [newContent markEndOfHeaders];
                 [context addContent:newContent fromProcessor:processor flags:OWProcessorTypeRetrieval];
-                [newContent release];
             }
             return YES;
 
@@ -2020,41 +1924,31 @@ processStatus:
     }
 
     // Create an OWFileInfo object if we have some file info, or an error object if the request failed. In any case, attach the headers to the resulting content.
+    id <OWConcreteCacheEntry, NSObject> result;
     if (successResponse) {
-        NSString *headerString;
-        NSNumber *objectSize;
-        NSDate *lastModifiedDate;
-        
-        headerString = [headerDictionary lastStringForKey:@"last-modified"];
-        if (headerString)
-            lastModifiedDate = [NSDate dateWithHTTPDateString:headerString];
-        else
-            lastModifiedDate = nil;
+        NSString *modifiedDateString = [headerDictionary lastStringForKey:@"last-modified"];
+        NSDate *lastModifiedDate = modifiedDateString != nil ? [NSDate dateWithHTTPDateString:modifiedDateString] : nil;
 
-        headerString = [headerDictionary lastStringForKey:@"content-length"];
-        objectSize = nil;
-        if (headerString) {
-            long long contentLength = [headerString longLongValue];
+        NSString *contentLengthString = [headerDictionary lastStringForKey:@"content-length"];
+        NSNumber *objectSize = nil;
+        if (contentLengthString != nil) {
+            long long contentLength = [contentLengthString longLongValue];
             if (contentLength != 0)
                 objectSize = [NSNumber numberWithLongLong:contentLength];
         }
             
         result = [[OWFileInfo alloc] initWithAddress:[processor sourceAddress] size:objectSize isDirectory:NO isShortcut:NO lastChangeDate:lastModifiedDate];
     } else {
-        NSString *message;
-
-        message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server returns \"%@\" (%d)", @"OWF", [OWHTTPSession bundle], @"httpsession error - string and numeric code from server"), commentString, httpStatus];
+        NSString *message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server returns \"%@\" (%d)", @"OWF", [OWHTTPSession bundle], @"httpsession error - string and numeric code from server"), commentString, httpStatus];
 
         result = (id <OWConcreteCacheEntry>)[[NSException alloc] initWithName:[NSString stringWithFormat:@"HTTP %d", httpStatus] reason:message userInfo:nil];
     }
 
-    resultContent = [[OWContent alloc] initWithContent:result];
-    [result release];
+    OWContent *resultContent = [[OWContent alloc] initWithContent:result];
     [resultContent addHeaders:[headerDictionary dictionarySnapshot]];
     [resultContent markEndOfHeaders];
 
     [context addContent:resultContent fromProcessor:processor flags: (successResponse? 0 : OWProcessorContentIsError)|OWProcessorTypeRetrieval];
-    [resultContent release];
     
     return YES;
 }
@@ -2106,14 +2000,8 @@ processStatus:
     NSUInteger totalByteCount = 0, totalLength = 0;
     
     while ([processor status] == OWProcessorRunning) {
-        NSAutoreleasePool *autoreleasePool = nil;
-        NSString *contentLengthString;
-        NSUInteger bytesLeft;
-        NSUInteger bytesInThisPool;
-
-        autoreleasePool = [[NSAutoreleasePool alloc] init];
-        contentLengthString = [socketStream peekLine];
-        bytesLeft = [self intValueFromHexString:contentLengthString];
+        NSString *contentLengthString = [socketStream peekLine];
+        NSUInteger bytesLeft = [self intValueFromHexString:contentLengthString];
         if (totalLength == 0 && bytesLeft == 0 && ![contentLengthString hasPrefix:@"0"]) {
             // Oops, this isn't actually chunked; try reading this as a "closing" body instead.  (This fixes an intermittent problem reading <http://www.msnbc.com/>.)
             [self readClosingBodyIntoStream:dataStream precedingSkipLength:precedingSkipLength forProcessor:processor];
@@ -2126,7 +2014,6 @@ processStatus:
         if (bytesLeft == 0)
             break;
             
-        bytesInThisPool = 0;
         totalLength += bytesLeft;
 #ifdef DEBUG_kc0
         NSLog(@"%@ readChunkedBody: start: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), totalByteCount, totalLength, OBShortObjectDescription(dataStream), bytesLeft);
@@ -2145,40 +2032,33 @@ processStatus:
         }
 
         while ([processor status] == OWProcessorRunning && bytesLeft != 0) {
-            NSUInteger dataStreamBytesAvailable, socketBytesWritten;
-            void *dataStreamBuffer;
-
-            OBASSERT(dataStream != nil);
-            dataStreamBytesAvailable = MIN([dataStream appendToUnderlyingBuffer:&dataStreamBuffer], bytesLeft);
-            socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
-            if (socketBytesWritten == 0)
-                break;
+            @autoreleasepool {
+                OBASSERT(dataStream != nil);
+                void *dataStreamBuffer;
+                NSUInteger dataStreamBytesAvailable = MIN([dataStream appendToUnderlyingBuffer:&dataStreamBuffer], bytesLeft);
+                NSUInteger socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
+                if (socketBytesWritten == 0)
+                    break;
                 
-            totalByteCount += socketBytesWritten;
-            bytesLeft -= socketBytesWritten;
-            bytesInThisPool += socketBytesWritten;
-            [processor processedBytes:totalByteCount ofBytes:totalLength];
+                totalByteCount += socketBytesWritten;
+                bytesLeft -= socketBytesWritten;
+                [processor processedBytes:totalByteCount ofBytes:totalLength];
 #ifdef DEBUG_kc0
-            NSLog(@"%@ readChunkedBody: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), totalByteCount, totalLength, OBShortObjectDescription(dataStream), bytesLeft);
+                NSLog(@"%@ readChunkedBody: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), totalByteCount, totalLength, OBShortObjectDescription(dataStream), bytesLeft);
 #endif
-            [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
+                [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
 #ifdef DEBUG_kc0
-            NSLog(@"%@ readChunkedBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
+                NSLog(@"%@ readChunkedBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
 #endif
-            if (bytesInThisPool > 64 * 1024) {
-                [autoreleasePool release];
-                autoreleasePool = [[NSAutoreleasePool alloc] init];
-                bytesInThisPool = 0;
             }
         }
         [socketStream readLine];
-        [autoreleasePool release];
     }
+
     if ([processor status] != OWProcessorRunning)
         return;
         
     trailingHeaderDictionary = [[OWHeaderDictionary alloc] init];
-    [trailingHeaderDictionary autorelease];
     [trailingHeaderDictionary readRFC822HeadersFromSocketStream:socketStream];
     [processor addHeaders:trailingHeaderDictionary];
 #ifdef DEBUG_kc0
@@ -2189,17 +2069,11 @@ processStatus:
 
 - (void)readStandardBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
-    NSAutoreleasePool *autoreleasePool = nil;
-    NSUInteger contentLength, bytesLeft;
-    NSUInteger byteCount, bytesInThisPool;
-
     [processor markEndOfHeaders];
 
-    autoreleasePool = [[NSAutoreleasePool alloc] init];
-    contentLength = [[headerDictionary lastStringForKey:@"content-length"] intValue];
-    bytesInThisPool = 0;
-    byteCount = 0;
-    bytesLeft = contentLength;
+    NSUInteger contentLength = [[headerDictionary lastStringForKey:@"content-length"] intValue];
+    NSUInteger byteCount = 0;
+    NSUInteger bytesLeft = contentLength;
     // NSLog(@"%@ readStandardBody: start: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), byteCount, contentLength, OBShortObjectDescription(dataStream), bytesLeft);
     [processor processedBytes:byteCount ofBytes:contentLength];
 
@@ -2215,38 +2089,27 @@ processStatus:
     }
 
     while ([processor status] == OWProcessorRunning && bytesLeft != 0) {
-        void *dataStreamBuffer;
-        NSUInteger dataStreamBytesAvailable, socketBytesWritten;
-
-        OBASSERT(dataStream != nil);
-        dataStreamBytesAvailable = MIN([dataStream appendToUnderlyingBuffer:&dataStreamBuffer], bytesLeft);
-        socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
-        if (socketBytesWritten == 0)
-            break;
-
-        byteCount += socketBytesWritten;
-        bytesLeft -= socketBytesWritten;
-        bytesInThisPool += socketBytesWritten;
-        [processor processedBytes:byteCount ofBytes:contentLength];
-        // NSLog(@"%@ readStandardBody: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), byteCount, contentLength, OBShortObjectDescription(dataStream), bytesLeft);
-        [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
-        // NSLog(@"%@ readStandardBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
-        if (bytesInThisPool > 64 * 1024) {
-            [autoreleasePool release];
-            autoreleasePool = [[NSAutoreleasePool alloc] init];
-            bytesInThisPool = 0;
+        @autoreleasepool {
+            OBASSERT(dataStream != nil);
+            void *dataStreamBuffer;
+            NSUInteger dataStreamBytesAvailable = MIN([dataStream appendToUnderlyingBuffer:&dataStreamBuffer], bytesLeft);
+            NSUInteger socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
+            if (socketBytesWritten == 0)
+                break;
+            
+            byteCount += socketBytesWritten;
+            bytesLeft -= socketBytesWritten;
+            [processor processedBytes:byteCount ofBytes:contentLength];
+            // NSLog(@"%@ readStandardBody: processed bytes %d of %d for dataStream %@, bytesLeft = %d", OBShortObjectDescription(self), byteCount, contentLength, OBShortObjectDescription(dataStream), bytesLeft);
+            [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
+            // NSLog(@"%@ readStandardBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
         }
     }
-    [autoreleasePool release];
     // We might be done, or we might be in the OWProcessorAborting state; the caller will check.
 }
 
 - (void)readClosingBodyIntoStream:(OWDataStream *)dataStream precedingSkipLength:(NSUInteger)precedingSkipLength forProcessor:(OWHTTPProcessor *)processor;
 {
-    NSAutoreleasePool *autoreleasePool = nil;
-    void *dataStreamBuffer;
-    NSUInteger byteCount, bytesInThisPool;
-
     [processor markEndOfHeaders];
 
     if (dataStream == nil) {
@@ -2254,13 +2117,11 @@ processStatus:
         return;
     }
 
-    autoreleasePool = [[NSAutoreleasePool alloc] init];
-    bytesInThisPool = 0;
-    byteCount = 0;
+    NSUInteger byteCount = 0;
     // NSLog(@"%@ readClosingBody: start: processed bytes %d for dataStream %@", OBShortObjectDescription(self), byteCount, OBShortObjectDescription(dataStream));
     [processor processedBytes:byteCount ofBytes:0];
     
-    NS_DURING {
+    @try {
 
         if (precedingSkipLength) {
             [socketStream skipBytes:precedingSkipLength];
@@ -2268,38 +2129,32 @@ processStatus:
         }
 
         while ([processor status] == OWProcessorRunning) {
-            NSUInteger dataStreamBytesAvailable, socketBytesWritten;
-
-            OBASSERT(dataStream != nil);
-            dataStreamBytesAvailable = [dataStream appendToUnderlyingBuffer:&dataStreamBuffer];
-            socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
-            if (socketBytesWritten == 0)
-                break;
-
-            byteCount += socketBytesWritten;
-            bytesInThisPool += socketBytesWritten;
-            [processor processedBytes:byteCount ofBytes:0];
-            // NSLog(@"%@ readClosingBody: processed bytes %d for dataStream %@", OBShortObjectDescription(self), byteCount, OBShortObjectDescription(dataStream));
-            [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
-            // NSLog(@"%@ readClosingBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
-            if (bytesInThisPool > 64 * 1024) {
-                [autoreleasePool release];
-                autoreleasePool = [[NSAutoreleasePool alloc] init];
-                bytesInThisPool = 0;
+            @autoreleasepool {
+                NSUInteger dataStreamBytesAvailable, socketBytesWritten;
+                
+                OBASSERT(dataStream != nil);
+                void *dataStreamBuffer;
+                dataStreamBytesAvailable = [dataStream appendToUnderlyingBuffer:&dataStreamBuffer];
+                socketBytesWritten = [socketStream readBytesWithMaxLength:dataStreamBytesAvailable intoBuffer:dataStreamBuffer];
+                if (socketBytesWritten == 0)
+                    break;
+                
+                byteCount += socketBytesWritten;
+                [processor processedBytes:byteCount ofBytes:0];
+                // NSLog(@"%@ readClosingBody: processed bytes %d for dataStream %@", OBShortObjectDescription(self), byteCount, OBShortObjectDescription(dataStream));
+                [dataStream wroteBytesToUnderlyingBuffer:socketBytesWritten];
+                // NSLog(@"%@ readClosingBody: wrote data to %@", OBShortObjectDescription(self), OBShortObjectDescription(dataStream));
             }
         }        
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         // We ignore exceptions here on the assumption that they're just EOF indications from the server.
-    } NS_ENDHANDLER;
-
-    [autoreleasePool release];
+    }
 }
 
 // Closing
 
 - (void)_closeSocketStream;
 {
-    [socketStream release];
     socketStream = nil;
 }
 
@@ -2307,13 +2162,13 @@ processStatus:
 
 - (void)notifyProcessor:(OWHTTPProcessor *)aProcessor ofSessionException:(NSException *)sessionException;
 {
-    NS_DURING {
+    @try {
         [aProcessor handleSessionException:sessionException];
         [aProcessor processEnd];
         [aProcessor retire];
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         NSLog(@"Exception trying to notify processor of session exception: sessionException = %@, localException = %@", sessionException, localException);
-    } NS_ENDHANDLER;
+    }
 }
 
 @end

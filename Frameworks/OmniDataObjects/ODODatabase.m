@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,6 +129,22 @@ static BOOL ODOVacuumOnDisconnect = NO;
 @end
 
 @implementation ODODatabase
+{
+@private
+    ODOModel *_model;
+    
+    NSURL *_connectedURL;
+    struct sqlite3 *_sqlite;
+    ODOSQLStatement *_beginTransactionStatement;
+    ODOSQLStatement *_commitTransactionStatement;
+    ODOSQLStatement *_metadataInsertStatement;
+    NSMutableDictionary *_cachedStatements;
+    
+    NSMutableDictionary *_committedMetadata;
+    NSMutableDictionary *_pendingMetadataChanges;
+    
+    BOOL _isFreshlyCreated; // YES if we just made the schema and -didSave hasn't been called (which should be called the first time we save a transaction; presumably having an INSERT).
+}
 
 + (void)initialize;
 {
@@ -354,6 +370,17 @@ static BOOL ODOVacuumOnDisconnect = NO;
     [_pendingMetadataChanges setObject:value forKey:key];
 }
 
+- (BOOL)writePendingMetadataChanges:(NSError **)outError;
+{
+    OBPRECONDITION(_pendingMetadataChanges != nil);
+    if (![self _writeMetadataChanges:outError]) {
+        return NO;
+    }
+    
+    [self _committedPendingMetadataChanges];
+    return YES;
+}
+
 - (BOOL)deleteCommittedMetadataForKey:(NSString *)key error:(NSError **)outError;
 {
     return [self executeSQLWithoutResults:[NSString stringWithFormat:@"DELETE FROM %@ WHERE key = '%@';", ODODatabaseMetadataTableName, key] error:outError];
@@ -367,7 +394,7 @@ static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *stat
     return YES;
 }
 
-- (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
+- (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:(ODOEntity *)entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
     OBPRECONDITION(_sqlite);
     
@@ -383,6 +410,39 @@ static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *stat
 
     [statement release];
 
+    return success;
+}
+
+static BOOL _fetchSumCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
+{
+    int64_t *outSum = context;
+    OBASSERT(sqlite3_column_count(statement->_statement) == 1);
+    *outSum = sqlite3_column_int64(statement->_statement, 0);
+    return YES;
+}
+
+- (BOOL)fetchCommitedInt64Sum:(int64_t *)outSum fromAttribute:(ODOAttribute *)attribute entity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(_sqlite);
+    OBPRECONDITION(attribute != nil);
+    
+    if (predicate != nil) {
+        OBFinishPorting;
+    }
+    
+    NSString *sql = [NSString stringWithFormat:@"SELECT SUM(%@) FROM %@", [attribute name], [entity name]];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithDatabase:self sql:sql error:outError];
+    if (!statement)
+        return NO;
+    
+    ODOSQLStatementCallbacks callbacks;
+    memset(&callbacks, 0, sizeof(callbacks));
+    callbacks.row = _fetchSumCallback;
+    
+    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, outSum, outError);
+    
+    [statement release];
+    
     return success;
 }
 

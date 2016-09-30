@@ -462,13 +462,6 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     XCTAssertEqualObjects([[rootElement children] lastObject], @"foo<wonga>blegga");
 }
 
-- (void)testNilInputData;
-{
-    NSError *error = nil;
-    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:nil whitespaceBehavior:IgnoreAllWhitespace() error:&error];
-    XCTAssertTrue(doc == nil);
-}
-
 // On iOS 6.0, the xml parser fails inside parsing the DOCTYPE declaration, and calls our error handler with a NULL userData, whereupon we crash dereferencing that pointer
 - (void)testHTMLContent;
 {

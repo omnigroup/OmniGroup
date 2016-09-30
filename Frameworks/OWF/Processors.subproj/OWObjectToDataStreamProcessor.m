@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,32 +23,22 @@ RCS_ID("$Id$");
 
 - (void)startProcessing;
 {
-    OWContent *outputContent;
-    CFStringEncoding writeEncoding;
-
     OBPRECONDITION(outputStream == nil);
 
     outputStream = [[OWDataStream alloc] init];
-    outputContent = [[OWContent alloc] initWithContent:outputStream];
+    OWContent *outputContent = [[OWContent alloc] initWithContent:outputStream];
     [outputContent setContentTypeString:[[self class] resultContentType]];
     [outputContent setCharsetProvenance:OWStringEncodingProvenance_Generated];
     [outputContent markEndOfHeaders];
 
     // In case our subclass is intending to write strings, make sure the data stream's writeEncoding is set to the same encoding that a reader will expect based on its content-type
-    writeEncoding = [OWDataStreamCharacterProcessor stringEncodingForContentType:[outputContent fullContentType]];
+    CFStringEncoding writeEncoding = [OWDataStreamCharacterProcessor stringEncodingForContentType:[outputContent fullContentType]];
     if (writeEncoding != kCFStringEncodingInvalidId)
         [outputStream setWriteEncoding:writeEncoding];
     
-    [pipeline addContent:outputContent fromProcessor:self flags:OWProcessorTypeDerived];
-    [outputContent release];
+    [self.pipeline addContent:outputContent fromProcessor:self flags:OWProcessorTypeDerived];
 
     [super startProcessing];
-}
-
-- (void)dealloc;
-{
-    [outputStream release];
-    [super dealloc];
 }
 
 - (void)processAbort;

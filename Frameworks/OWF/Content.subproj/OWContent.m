@@ -68,7 +68,6 @@ enum {
     OWContent *result;
 
     result = [[OWContent alloc] initWithName:@"Address" content:anAddress];
-    [result autorelease];
     [result markEndOfHeaders];
 
     return result;
@@ -77,7 +76,6 @@ enum {
 + (id)contentWithAddress:(OWAddress *)newAddress redirectionFlags:(unsigned)flags interimContent:(OWContent *)interim;
 {
     OWContent *result = [[OWContent alloc] initWithName:@"Redirect" content:newAddress];
-    [result autorelease];
     if (flags != 0)
         [result addHeader:OWContentRedirectionTypeMetadataKey value:[NSNumber numberWithUnsignedInt:flags]];
     if (interim != nil)
@@ -89,7 +87,6 @@ enum {
 + (id)contentWithDataStream:(OWDataStream *)dataStream isSource:(BOOL)sourcey
 {
     OWContent *result = [[OWContent alloc] initWithName:@"DataStream" content:dataStream];
-    [result autorelease];
     if (sourcey)
         [result addHeader:OWContentIsSourceMetadataKey value:[NSNumber numberWithBool:YES]];
     return result;
@@ -107,7 +104,7 @@ enum {
 
     OWContent *result = [self contentWithDataStream:dataStream isSource:NO];
 
-    [dataStream release];
+    dataStream = nil;
     
     if (someMetadata)
         [result addHeaders:someMetadata];
@@ -147,8 +144,6 @@ enum {
     [dataStream dataEnd];
 
     content = [[self alloc] initWithContent:dataStream];
-    [dataStream release];
-    [content autorelease];
 
     [content addHeader:OWContentTypeHeaderString value:fullContentType];
     [content addHeader:OWContentIsSourceMetadataKey value:[NSNumber numberWithBool:contentIsSource]];
@@ -161,16 +156,14 @@ enum {
 
 + (id)contentWithConcreteCacheEntry:(id <OWConcreteCacheEntry>)aCacheEntry;
 {
-    OWContent *someContent;
-
-    someContent = [[OWContent alloc] initWithContent:aCacheEntry];
+    OWContent *someContent = [[OWContent alloc] initWithContent:aCacheEntry];
     [someContent markEndOfHeaders];
-    return [someContent autorelease];
+    return someContent;
 }
 
 + (id)unknownContentFromContent:(OWContent *)mistypedContent;
 {
-    OWContent *unknownContent = [[mistypedContent copyWithMutableHeaders] autorelease];
+    OWContent *unknownContent = [mistypedContent copyWithMutableHeaders];
     [unknownContent removeHeader:OWContentTypeHeaderString];
     [unknownContent removeHeader:OWContentIsSourceMetadataKey];
     [unknownContent setContentType:[OWContentType unknownContentType]];
@@ -215,10 +208,10 @@ enum {
     metadataHash = 0;
     contentHash = 0;
     hasValidator = '?';
-    concreteContent = [someContent retain];
+    concreteContent = someContent;
     cachedContentType = nil;
     cachedContentEncodings = nil;
-    containingCaches = (NSMutableDictionary *) CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    containingCaches = (NSMutableDictionary *) CFBridgingRelease(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
 
     if ([concreteContent isKindOfClass:[OWAddress class]])
         smallConcreteType = ConcreteType_Address;
@@ -275,23 +268,15 @@ static void Thingy(id mememe, SEL wheee)
     id <OWCacheContentProvider> aCache;
     
     [contentInfo nullifyContent];
-    [contentInfo release];
     contentInfo = nil;
 
     cacheEnumerator = [containingCaches keyEnumerator];
     while( (aCache = [cacheEnumerator nextObject]) != nil ) {
         [aCache adjustHandle:[containingCaches objectForKey:aCache] reference:-1];
     }
-    [containingCaches release];
     containingCaches = nil;
     
-    [metaData release];
-    [metadataCompleteCondition release];
-    [concreteContent release];
-    [cachedContentType release];
-    [cachedContentEncodings release];
     OFSimpleLockFree(&lock);
-    [super dealloc];
 }
 
 - (OWContentInfo *)contentInfo;
@@ -343,41 +328,35 @@ static void Thingy(id mememe, SEL wheee)
 
 - (OWParameterizedContentType *)fullContentType;
 {
-    NSString *ctString;
-    BOOL maybeStash;
-    OWParameterizedContentType *parameterizedContentType;
-    
     if (concreteContent && [concreteContent respondsToSelector:@selector(fullContentType)])
         return [(id)concreteContent fullContentType];
 
     OFSimpleLock(&lock);
 
     if (cachedContentType != nil) {
-        parameterizedContentType = [[cachedContentType retain] autorelease];
+        OWParameterizedContentType *parameterizedContentType = cachedContentType;
         OFSimpleUnlock(&lock);
         return parameterizedContentType;
     }
 
-    ctString = [[metaData lastObjectForKey:OWContentTypeHeaderString] retain];
-    maybeStash = metadataComplete;
+    NSString *ctString = [metaData lastObjectForKey:OWContentTypeHeaderString];
+    BOOL maybeStash = metadataComplete;
     
     OFSimpleUnlock(&lock);
 
-    parameterizedContentType = [OWParameterizedContentType contentTypeForString:ctString];
+    OWParameterizedContentType *parameterizedContentType = [OWParameterizedContentType contentTypeForString:ctString];
     if (parameterizedContentType == nil)
-        parameterizedContentType = [[[OWParameterizedContentType alloc] initWithContentType:[OWContentType unknownContentType]] autorelease];
+        parameterizedContentType = [[OWParameterizedContentType alloc] initWithContentType:[OWContentType unknownContentType]];
 
     if (maybeStash) {
         OFSimpleLock(&lock);
         // Someone else may have come along and cached a content-type and/or modified the metadata
         if (cachedContentType == nil &&
             [ctString isEqual:[metaData lastObjectForKey:OWContentTypeHeaderString]]) {
-            cachedContentType = [parameterizedContentType retain];
+            cachedContentType = parameterizedContentType;
         }
         OFSimpleUnlock(&lock);
     }
-
-    [ctString release];
 
     OBPOSTCONDITION(parameterizedContentType != nil);
     return parameterizedContentType;
@@ -409,10 +388,8 @@ static void Thingy(id mememe, SEL wheee)
         return nil;
 
     codingTokens = [OWHeaderDictionary splitHeaderValues:codingHeadersCopy];
-    [codingHeadersCopy release];
 
     codings = [[NSMutableArray alloc] initWithCapacity:[codingTokens count]];
-    [codings autorelease];
     while ([codingTokens count]) {
         NSString *codingName = [OWHeaderDictionary parseParameterizedHeader:[codingTokens lastObject] intoDictionary:nil valueChars:nil];
         OWContentType *encoding = [OWContentType contentEncodingForString:codingName];
@@ -510,7 +487,7 @@ static void Thingy(id mememe, SEL wheee)
 - (id)objectValue
 {
     if (smallConcreteType != ConcreteType_Address)
-        return [[concreteContent retain] autorelease];
+        return concreteContent;
     else
         return [self _invalidContentType:_cmd];
 }
@@ -730,7 +707,6 @@ static void Thingy(id mememe, SEL wheee)
 
         if (cachedContentType != nil &&
             [headerName caseInsensitiveCompare:OWContentTypeHeaderString] == NSOrderedSame) {
-            [cachedContentType release];
             cachedContentType = nil;
         }
     }
@@ -758,8 +734,8 @@ static void Thingy(id mememe, SEL wheee)
 
     OFSimpleLock(&lock);
 
-    if(cachedContentType == nil) {
-        cachedContentType = [aType retain];
+    if (cachedContentType == nil) {
+        cachedContentType = aType;
     } else {
         OBASSERT([cachedContentType isEqual:aType]);
     }
@@ -801,8 +777,6 @@ static void Thingy(id mememe, SEL wheee)
 
 - (void)waitForEndOfHeaders
 {
-    NSConditionLock *waitCondition;
-
     OFSimpleLock(&lock);
 
     if (metadataComplete) {
@@ -814,13 +788,12 @@ static void Thingy(id mememe, SEL wheee)
         metadataCompleteCondition = [[NSConditionLock alloc] initWithCondition:metadataComplete];
     }
 
-    waitCondition = [metadataCompleteCondition retain];
+    NSConditionLock *waitCondition = metadataCompleteCondition;
 
     OFSimpleUnlock(&lock);
 
     [waitCondition lockWhenCondition:YES];
     [waitCondition unlock];
-    [waitCondition release];
     waitCondition = nil;
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -836,12 +809,12 @@ static void Thingy(id mememe, SEL wheee)
 
     OFSimpleLock(&lock);
     if (metadataComplete)
-        result = [metaData retain];
+        result = metaData;
     else
         result = [metaData mutableCopy];
     OFSimpleUnlock(&lock);
 
-    return [result autorelease];
+    return result;
 }
 
 - lastObjectForKey:(NSString *)headerKey
@@ -849,9 +822,9 @@ static void Thingy(id mememe, SEL wheee)
     id result;
 
     OFSimpleLock(&lock);
-    result = [[metaData lastObjectForKey:headerKey] retain];
+    result = [metaData lastObjectForKey:headerKey];
     OFSimpleUnlock(&lock);
-    return [result autorelease];
+    return result;
 }
 
 - (OWCacheControlSettings *)cacheControlSettings;
@@ -865,12 +838,12 @@ static void Thingy(id mememe, SEL wheee)
     
     OFSimpleLock(&lock);
     if (metadataComplete)
-        result = [[metaData dictionary] retain];
+        result = [metaData dictionary];
     else
-        result = [[metaData dictionary] copy];
+        result = [metaData dictionary];
     OFSimpleUnlock(&lock);
 
-    return [result autorelease];
+    return result;
 }
 
 - (void)addHeadersFromPropertyList:(id)plist
@@ -885,23 +858,16 @@ static void Thingy(id mememe, SEL wheee)
 
 - (NSDictionary *)suggestedFileAttributesWithAddress:(OWAddress *)originAddress;
 {
-    OFMultiValueDictionary *contentDispositionParameters;
-    NSString *filename;
-    OWContentType *mimeType;
-    NSMutableDictionary *fileAttributes;
-    NSString *value;
-    BOOL hfsTypesInContentDisposition;
+    NSMutableDictionary *fileAttributes = [NSMutableDictionary dictionary];
+    BOOL hfsTypesInContentDisposition = NO;
 
-    fileAttributes = [NSMutableDictionary dictionary];
-    hfsTypesInContentDisposition = NO;
+    OWContentType *mimeType = [self contentType];
 
-    mimeType = [self contentType];
-
-    contentDispositionParameters = [[OFMultiValueDictionary alloc] init];
+    OFMultiValueDictionary *contentDispositionParameters = [[OFMultiValueDictionary alloc] init];
     [OWHeaderDictionary parseParameterizedHeader:[self lastObjectForKey:OWContentDispositionHeaderString] intoDictionary:contentDispositionParameters valueChars:nil];
     
     // Extract and sanitize the filename parameter
-    filename = [contentDispositionParameters lastObjectForKey:@"filename"];
+    NSString *filename = [contentDispositionParameters lastObjectForKey:@"filename"];
     if (filename && ![filename containsString:[NSString stringWithCharacter:0]]) {
         filename = [[filename lastPathComponent] stringByRemovingSurroundingWhitespace];
         if ([filename hasPrefix:@"."] || [filename hasPrefix:@"~"])
@@ -911,7 +877,7 @@ static void Thingy(id mememe, SEL wheee)
     }
     
     // Nonstandard but widely used Content-Disposition parameters for storing HFS types.
-    value = [contentDispositionParameters lastObjectForKey:@"x-mac-creator"];
+    NSString *value = [contentDispositionParameters lastObjectForKey:@"x-mac-creator"];
     if (value) {
         OSType fourcc = [value hexValue];
         if (fourcc != 0) {
@@ -936,8 +902,6 @@ static void Thingy(id mememe, SEL wheee)
             [fileAttributes setObject:creationDate forKey:NSFileCreationDate];
     }
 
-    [contentDispositionParameters release];
-    
     // If not found in Content-Disposition, copy the HFS types from the Content-Type.
     if (mimeType && !hfsTypesInContentDisposition) {
         OSType macType;
@@ -1103,10 +1067,9 @@ static void Thingy(id mememe, SEL wheee)
                 cacheEnumerator = [containingCaches keyEnumerator];
                 while( (aCache = [cacheEnumerator nextObject]) != nil) {
                     id handle = [containingCaches objectForKey:aCache];
-                    [handle retain];
                     OFSimpleUnlock(&lock);
                     myContentHash = [aCache contentHashForHandle:handle];
-                    [handle release];
+                    handle = nil;
                     if (myContentHash != 0) {
                         contentHash = myContentHash;
                         NS_VALUERETURN(myContentHash, NSUInteger);
@@ -1135,7 +1098,7 @@ static void Thingy(id mememe, SEL wheee)
                 [NSException raise:NSInternalInconsistencyException format:@"Cannot compute hash of invalidated %@", [self shortDescription]];
             }
     
-            valueToHash = [[concreteContent retain] autorelease];
+            valueToHash = concreteContent;
 
             OFSimpleUnlock(&lock);
         } NS_HANDLER {
@@ -1164,37 +1127,31 @@ static void Thingy(id mememe, SEL wheee)
 
 - (void)useHandle:(id)newHandle forCache:(id <OWCacheContentProvider>)aCache;
 {
-    id oldHandle;
-    id incrementHandle, decrementHandle;
-    CFMutableDictionaryRef handles;
-    
     OBASSERT(newHandle != nil);
     OBASSERT(aCache != nil);
 
     OFSimpleLock(&lock);
 
-    handles = (CFMutableDictionaryRef)containingCaches;
-    incrementHandle = nil;
-    decrementHandle = nil;
+    CFMutableDictionaryRef handles = (__bridge CFMutableDictionaryRef)containingCaches;
+    id incrementHandle = nil;
+    id decrementHandle = nil;
 
-    oldHandle = (id)CFDictionaryGetValue(handles, aCache);
+    id oldHandle = CFDictionaryGetValue(handles, (__bridge const void *)(aCache));
     if (oldHandle != newHandle) {
-        incrementHandle = [newHandle retain];
+        incrementHandle = newHandle;
         if (oldHandle != nil)
-            decrementHandle = [oldHandle retain];
-        CFDictionarySetValue(handles, aCache, newHandle);
+            decrementHandle = oldHandle;
+        CFDictionarySetValue(handles, CFBridgingRetain(aCache), CFBridgingRetain(newHandle));
     }
 
     OFSimpleUnlock(&lock);
 
-    if (incrementHandle) {
+    if (incrementHandle != nil) {
         [aCache adjustHandle:incrementHandle reference:+1];
-        [incrementHandle release];
     }
 
-    if (decrementHandle) {
+    if (decrementHandle != nil) {
         [aCache adjustHandle:decrementHandle reference:-1];
-        [decrementHandle release];
     }
 }
 
@@ -1204,10 +1161,9 @@ static void Thingy(id mememe, SEL wheee)
     
     OFSimpleLock(&lock);
     handle = [containingCaches objectForKey:aCache];
-    [handle retain];
     OFSimpleUnlock(&lock);
 
-    return [handle autorelease];
+    return handle;
 }
 
 - (OWContent *)copyWithMutableHeaders;
@@ -1249,7 +1205,6 @@ static void Thingy(id mememe, SEL wheee)
     cacheEnumerator = [containingCaches keyEnumerator];
     while ( (aCache = [cacheEnumerator nextObject]) != nil ) {
         concreteContent = [aCache contentForHandle:[containingCaches objectForKey:aCache]];
-        [concreteContent retain];
         if (concreteContent != nil)
             break;
     }
@@ -1273,7 +1228,7 @@ static void Thingy(id mememe, SEL wheee)
         if ([containingCaches objectForKey:aCache] == nil) {
             aHandle = [otherContentHandles objectForKey:aCache];
             [aCache adjustHandle:aHandle reference:+1];
-            CFDictionarySetValue((CFMutableDictionaryRef)containingCaches, aCache, aHandle);
+            CFDictionarySetValue((CFMutableDictionaryRef)containingCaches, CFBridgingRetain(aCache), CFBridgingRetain(aHandle));
         }
     }
     cacheEnumerator = [containingCaches keyEnumerator];
@@ -1281,7 +1236,7 @@ static void Thingy(id mememe, SEL wheee)
         if ([otherContentHandles objectForKey:aCache] == nil) {
             aHandle = [containingCaches objectForKey:aCache];
             [aCache adjustHandle:aHandle reference:+1];
-            CFDictionarySetValue((CFMutableDictionaryRef)otherContentHandles, aCache, aHandle);
+            CFDictionarySetValue((CFMutableDictionaryRef)otherContentHandles, CFBridgingRetain(aCache), CFBridgingRetain(aHandle));
         }
     }
 
@@ -1318,7 +1273,6 @@ static void Thingy(id mememe, SEL wheee)
 
     if (cachedContentType != nil &&
         [headerName caseInsensitiveCompare:OWContentTypeHeaderString] == NSOrderedSame) {
-        [cachedContentType release];
         cachedContentType = nil;
     }
 

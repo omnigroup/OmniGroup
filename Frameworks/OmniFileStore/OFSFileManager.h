@@ -11,11 +11,13 @@
 
 @class NSMutableArray;
 
+@class OBLogger;
 @protocol ODAVAsynchronousOperation;
 @class ODAVFileInfo;
 @protocol OFByteProvider;
 
-extern NSInteger OFSFileManagerDebug;
+// levels: 1=extra debug info, 2=operation logging, 3=errors only
+extern OBLogger *OFSFileManagerLogger;
 
 @protocol OFSFileManagerDelegate;
 

@@ -23,7 +23,7 @@ extern NSString * const OAInfoTemplateImageName;
 @class /* OmniFoundation */ OFEnumNameTable;
 
 #define OARequireImageNamed(name) ({NSImage *image = [NSImage imageNamed:name]; OBASSERT(image, @"Image \"%@\" is missing!", name); image;})
-#define OARequireImageNamedInBundle(name,bundle) ({NSImage *image = [NSImage imageNamed:name inBundle:bundle]; OBASSERT(image, @"Image \"%@\" is missing from bundle %@", name, bungle); image;})
+#define OARequireImageNamedInBundle(name,bundle) ({NSImage *image = [NSImage imageNamed:name inBundle:bundle]; OBASSERT(image, @"Image \"%@\" is missing from bundle %@", name, bundle); image;})
 
 @interface NSImage (OAExtensions)
 

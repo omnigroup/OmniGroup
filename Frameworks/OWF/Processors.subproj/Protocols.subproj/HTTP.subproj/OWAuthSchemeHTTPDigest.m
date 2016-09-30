@@ -66,37 +66,20 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [nonce release];
-    [opaque release];
-    [client_nonce release];
-    [super dealloc];
-}
-
-
 - (void)setParameters:(NSDictionary *)digestAuthParams
 {
-    NSString *qopString, *algString;
-    
-    [nonce release];
-    nonce = [[digestAuthParams objectForKey:@"nonce"] retain];
-    
-    [opaque release];
-    opaque = [[digestAuthParams objectForKey:@"opaque"] retain];
+    nonce = [digestAuthParams objectForKey:@"nonce"];
+    opaque = [digestAuthParams objectForKey:@"opaque"];
 
-    qopString = [digestAuthParams objectForKey:@"qop"];
-    if (qopString) {
-        NSMutableString *qopBuffer;
-        NSArray *qops;
+    NSString *qopString = [digestAuthParams objectForKey:@"qop"];
+    if (qopString != nil) {
         // Must parse the QoP header. According to rfc2617, this is a list of tokens indicating different QoP levels the server is willing to accept.
         // rfc2617 defines two QoP levels: 'auth' (basically the same as 2069) and 'auth-int' (which includes request body integrity checking), and allows for the possibility that more will be defined in the future. Right now we only support 'auth', and not 'auth-int'.
         
         // unclear whether whitespace is allowed to separate tokens in the qop value. here we replace all whitespace with commas (sheesh) and later we ignore 0-length tokens. we're also trying to avoid creating ephemeral character sets (e.g. whitespace-and-comma-character-set) here.
-        qopBuffer = [qopString mutableCopy];
+        NSMutableString *qopBuffer = [qopString mutableCopy];
         [qopBuffer collapseAllOccurrencesOfCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] toString:@","];
-        qops = [[qopBuffer componentsSeparatedByString:@","] arrayByPerformingSelector:@selector(lowercaseString)];
-        [qopBuffer release];
+        NSArray *qops = [[qopBuffer componentsSeparatedByString:@","] arrayByPerformingSelector:@selector(lowercaseString)];
         qopBuffer = nil;
 
         if ([qops containsObject:@"auth"]) {
@@ -109,8 +92,8 @@ RCS_ID("$Id$");
         qop = htdigest_no_qop;  // rfc2069 compatibility support
     }
 
-    algString = [digestAuthParams objectForKey:@"algorithm"];
-    if (!algString || ([algString caseInsensitiveCompare:@"MD5"] == NSOrderedSame))
+    NSString *algString = [digestAuthParams objectForKey:@"algorithm"];
+    if (algString == nil || ([algString caseInsensitiveCompare:@"MD5"] == NSOrderedSame))
         digest_algorithm = htdigest_alg_MD5;
     else if ([algString caseInsensitiveCompare:@"MD5-sess"] == NSOrderedSame)
         digest_algorithm = htdigest_alg_MD5_sess;
@@ -148,32 +131,28 @@ static NSString *computeDigest_2069(NSString *username,
                                NSString *method,
                                NSString *fetchPath)
 {
-    NSMutableString *Ax;
-    NSString *A1hash, *A2hash;
     NSString *response;
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    // buffer for string manipulation
-    Ax = [[[NSMutableString alloc] init] autorelease];
-
-    // compute A1 and its MD5-hash
-    [Ax appendStrings:username, @":", realmname, @":", password, nil];
-    A1hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-    [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
+    @autoreleasepool {
+        // buffer for string manipulation
+        NSMutableString *Ax = [[NSMutableString alloc] init];
+        
+        // compute A1 and its MD5-hash
+        [Ax appendStrings:username, @":", realmname, @":", password, nil];
+        NSString *A1hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+        [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
+        
+        // compute A2 and its MD5-hash
+        [Ax appendStrings:method, @":", fetchPath, nil];
+        NSString *A2hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+        [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
+        
+        // compute the final digest
+        [Ax appendStrings:A1hash, @":", nonce, @":", A2hash, nil];
+        response = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+    }
     
-    // compute A2 and its MD5-hash
-    [Ax appendStrings:method, @":", fetchPath, nil];
-    A2hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-    [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
-
-    // compute the final digest
-    [Ax appendStrings:A1hash, @":", nonce, @":", A2hash, nil];
-    response = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-    
-    [response retain];
-    [pool release];
-    
-    return [response autorelease];
+    return response;
 }
 
 // compute the digest for ( qop=auth | qop=auth-int ) & ( algorithm=MD5 )
@@ -188,46 +167,34 @@ static NSString *computeDigest_2617(NSString *username,
                                     NSString *cnonce,
                                     NSString *qop)
 {
-    NSMutableString *Ax;
-    NSString *A1hash, *A2hash;
     NSString *response;
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    // buffer for string manipulation
-    Ax = [[[NSMutableString alloc] init] autorelease];
+    @autoreleasepool {
+        // buffer for string manipulation
+        NSMutableString *Ax = [[NSMutableString alloc] init];
+        
+        // compute A1 and its MD5-hash
+        [Ax appendStrings:username, @":", realmname, @":", password, nil];
+        NSString *A1hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+        [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
+        
+        // compute A2 and its MD5-hash
+        [Ax appendStrings:method, @":", fetchPath, nil];
+        NSString *A2hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+        [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
+        
+        // compute the final digest
+        [Ax appendStrings:A1hash, @":", nonce, @":", cnonce_count, @":", cnonce, @":", qop, @":", A2hash, nil];
+        response = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
+    }
 
-    // compute A1 and its MD5-hash
-    [Ax appendStrings:username, @":", realmname, @":", password, nil];
-    A1hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-    [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
-
-    // compute A2 and its MD5-hash
-    [Ax appendStrings:method, @":", fetchPath, nil];
-    A2hash = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-    [Ax deleteCharactersInRange:NSMakeRange(0, [Ax length])];
-
-    // compute the final digest
-    [Ax appendStrings:A1hash, @":", nonce, @":", cnonce_count, @":", cnonce, @":", qop, @":", A2hash, nil];
-    response = [[[Ax dataUsingEncoding:NSISOLatin1StringEncoding] md5Signature] unadornedLowercaseHexString];
-
-    [response retain];
-    [pool release];
-
-    return [response autorelease];
+    return response;
 }
 
 
 - (void)_freshenNonce
 {
-    NSMutableData *entropy_buf;
-    NSTimeInterval now;
-    struct {
-        void *p1, *p2, *p3;
-        NSTimeInterval tv;
-    } cheap_entropy;
-
-
-    now = [[NSDate date] timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [[NSDate date] timeIntervalSinceReferenceDate];
     
     // Decide whether we need to create a new client nonce.
     if (client_nonce != nil && client_nonce_count > 0 &&
@@ -235,20 +202,23 @@ static NSString *computeDigest_2617(NSString *username,
         (now - client_nonce_created) < MAX_CLIENT_NONCE_AGE)
         return;
 
+    struct {
+        void *p1, *p2, *p3;
+        NSTimeInterval tv;
+    } cheap_entropy;
+    
     cheap_entropy.p1 = &cheap_entropy;
-    cheap_entropy.p2 = client_nonce;
+    cheap_entropy.p2 = (__bridge void *)(client_nonce);
     cheap_entropy.p3 = &client_nonce;
     cheap_entropy.tv = now;
 
-    entropy_buf = [[NSMutableData alloc] init];
+    NSMutableData *entropy_buf = [[NSMutableData alloc] init];
     [entropy_buf appendBytes:&cheap_entropy length:sizeof(cheap_entropy)];
     [entropy_buf appendData:[client_nonce dataUsingEncoding:NSUTF8StringEncoding]];
     [entropy_buf appendData:[OWAuthorizationRequest entropy]];
 
-    [client_nonce autorelease];
-    client_nonce = [[[[entropy_buf sha1Signature] base64EncodedStringWithOptions:0] substringToIndex:20] retain];
-    [entropy_buf release];
-    client_nonce_count ++;
+    client_nonce = [[[entropy_buf sha1Signature] base64EncodedStringWithOptions:0] substringToIndex:20];
+    client_nonce_count++;
     client_nonce_use_count = 0;
     client_nonce_created = now;
     
@@ -272,8 +242,6 @@ static void appendAuthParameter0(NSMutableString *buf, NSString *name, NSString 
         [buf appendLongCharacter:'"'];
         [buf appendString:quotedValue];
         [buf appendLongCharacter:'"'];
-
-        [quotedValue release];
     } else
         [buf appendString:value];
 }
@@ -378,7 +346,6 @@ static void appendAuthParameter(NSMutableString *buf, NSString *name, NSString *
                     OWAuthSchemeHTTPDigest *newCred = [[OWAuthSchemeHTTPDigest alloc] initAsCopyOf:self];
                     [newCred setParameters:challenge];
                     [OWAuthorizationRequest cacheCredentialIfAbsent:newCred];
-                    [newCred release];
                 }
             }
         }

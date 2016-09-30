@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,26 +95,18 @@ readGuessesIntoList(NSMutableArray *guessList, id guessObject, OWContentType *co
     if (mask)
         [guess setObject:mask forKey:@"mask"];
 
-    [guessList addObject:[[guess copy] autorelease]];
+    [guessList addObject:[guess copy]];
 }
 
 + (void)registerGuessesDictionary:(NSDictionary *)guessesDictionary;
 {
-    NSEnumerator *contentTypeEnumerator;
+    NSEnumerator *contentTypeEnumerator = [guessesDictionary keyEnumerator];
     NSString *contentTypeString;
-
-    contentTypeEnumerator = [guessesDictionary keyEnumerator];
-
     while ((contentTypeString = [contentTypeEnumerator nextObject])) {
-	OWContentType *contentType;
-	NSDictionary *guessDictionary;
-        NSNumber *lookahead;
-        NSData *mask;
-
-	contentType = [OWContentType contentTypeForString:contentTypeString];
-	guessDictionary = [guessesDictionary objectForKey:contentTypeString];
-        lookahead = [guessDictionary objectForKey:@"lookahead"];
-        mask = [guessDictionary objectForKey:@"mask"];
+	OWContentType *contentType = [OWContentType contentTypeForString:contentTypeString];
+	NSDictionary *guessDictionary = [guessesDictionary objectForKey:contentTypeString];
+        NSNumber *lookahead = [guessDictionary objectForKey:@"lookahead"];
+        NSData *mask = [guessDictionary objectForKey:@"mask"];
 
 	readGuessesIntoList(GuessList, [guessDictionary objectForKey:@"prefix"], contentType, NO, nil, mask);
 	readGuessesIntoList(GuessList, [guessDictionary objectForKey:@"anywhere"], contentType, YES, lookahead, mask);
@@ -122,36 +114,6 @@ readGuessesIntoList(NSMutableArray *guessList, id guessObject, OWContentType *co
 }
 
 //
-
-- (void)dealloc
-{
-    [workingContent release];
-    [super dealloc];
-}
-
-//
-
-#if 0
-// This is the standard naive quadratic string-search algorithm. I'm kind of suprised it isn't in libc somewhere.
-static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat, unsigned patlen)
-{
-    const char *bufend;
-    
-    if (patlen == 0)
-        return buf;
-
-    bufend = buf + buflen;
-    while (buf + patlen <= bufend) {
-        buf = memchr(buf, *pat, ( bufend - buf ) - ( patlen - 1 ));
-        if (buf == NULL)
-            break;
-        if (memcmp(buf, pat, patlen) == 0)
-            return buf;
-        buf ++;
-    }
-    return NULL;
-}
-#endif
 
 - (NSDictionary *)contentTypeGuessForBytes:(OWDataStreamCursor *)cursor
 {
@@ -193,12 +155,10 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
             }
             matchData = maskedData;
         } else
-            matchData = [peekedData retain];
+            matchData = peekedData;
 
-        BOOL matches = (anywhere? [matchData containsData:bytes] : [matchData hasPrefix:bytes]);
+        BOOL matches = (anywhere ? [matchData containsData:bytes] : [matchData hasPrefix:bytes]);
 
-        [matchData release];
-        
         if (matches)
             return guess;
     }
@@ -279,7 +239,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
     if (cfEncoding == kCFStringEncodingInvalidId)
         cfEncoding = kCFStringEncodingASCII;
 
-    guess = [self contentTypeGuessForCharacters:[[[OWDataStreamCharacterCursor alloc] initForDataCursor:byteCursor encoding:cfEncoding] autorelease]];
+    guess = [self contentTypeGuessForCharacters:[[OWDataStreamCharacterCursor alloc] initForDataCursor:byteCursor encoding:cfEncoding]];
     byteCursor = nil; // -contentTypeGuessForCharacters: will have advanced the cursor a random amount
 
     if ([guess objectForKey:@"type"])
@@ -340,20 +300,17 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 
 - (void)process;
 {
-    OWContentType *typeGuess;
-
     [self setStatusString:NSLocalizedStringFromTableInBundle(@"Taking a guess at content type", @"OWF", [OWUnknownDataStreamProcessor bundle], @"unknowndatastreamprocessor status")];
 
-    [workingContent release];
-    workingContent = [originalContent retain];
+    workingContent = originalContent;
 
-    typeGuess = [self contentTypeGuess];
+    OWContentType *typeGuess = [self contentTypeGuess];
     if (typeGuess == [OWContentType contentTypeForString:@"application/xml"]) {
         typeGuess = [self contentTypeGuessForXML];
         OBASSERT(typeGuess != nil);
     }
 
-    OWAddress *sourceAddress = [pipeline contextObjectForKey:OWCacheArcSourceAddressKey];
+    OWAddress *sourceAddress = [self.pipeline contextObjectForKey:OWCacheArcSourceAddressKey];
     NSString *addressString = [sourceAddress addressString];
 
     if (typeGuess == nil) {
@@ -381,7 +338,6 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
             return;
         }
         NSLog(@"%@: Guessing content encoding is %@", addressString, encodingString);
-        [workingContent autorelease];
         workingContent = [workingContent copyWithMutableHeaders];
         [workingContent removeHeader:OWContentTypeHeaderString];
         [workingContent removeHeader:OWContentEncodingHeaderString];
@@ -399,7 +355,6 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
     if (typeGuess != nil && ![typeGuess isEncoding] && typeGuess != [workingContent contentType] && typeGuess != [OWContentType unknownContentType]) {
         if ([workingContent contentType] != [OWContentType unknownContentType])
             NSLog(@"%@: Guessing content type is %@, not %@", addressString, [typeGuess contentTypeString], [[workingContent contentType] contentTypeString]);
-        [workingContent autorelease];
         workingContent = [workingContent copyWithMutableHeaders];
         [workingContent removeHeader:OWContentTypeHeaderString];
         [workingContent removeHeader:OWContentIsSourceMetadataKey];
@@ -408,7 +363,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
     }
 
     if (![workingContent isEqual:originalContent]) {
-        [pipeline addContent:workingContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeDerived];
+        [self.pipeline addContent:workingContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeDerived];
     } else {
 #ifdef DEBUG
         NSLog(@"DEBUG: %@: Could not determine content type", addressString);

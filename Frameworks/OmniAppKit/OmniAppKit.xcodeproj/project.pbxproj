@@ -16,6 +16,9 @@
 		159F5E491CE503DA003EF102 /* OmniAppKit.strings in Resources */ = {isa = PBXBuildFile; fileRef = 159F5E401CE503DA003EF102 /* OmniAppKit.strings */; };
 		1E2573661CB5AF8A00049669 /* OACertificateTrustPrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E2573671CB5AF8A00049669 /* OACertificateTrustPrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */; };
+		1EF6651C1D908DD600B207AA /* OAPassphrasePrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EF665191D908DD600B207AA /* OAPassphrasePrompt.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1EF6651D1D908DD600B207AA /* OAPassphrasePrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF6651A1D908DD600B207AA /* OAPassphrasePrompt.m */; };
+		1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
@@ -395,7 +398,7 @@
 		4AA1E7A708AA764600E2FF6B /* NSToolbar-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66CD437B0132454A0097A13E /* NSToolbar-OAExtensions.m */; };
 		4AA1E7A808AA764600E2FF6B /* NSToolbarItem-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F07B9A0E022AB6663897A113 /* NSToolbarItem-OAExtensions.m */; };
 		4AA1E7A908AA764600E2FF6B /* NSUserDefaults-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F31FE8AB2E911C9CC38 /* NSUserDefaults-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AA08AA764600E2FF6B /* NSView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F32FE8AB2E911C9CC38 /* NSView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AA08AA764600E2FF6B /* NSView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F32FE8AB2E911C9CC38 /* NSView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E7AB08AA764600E2FF6B /* NSWindow-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F33FE8AB2E911C9CC38 /* NSWindow-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E7AD08AA764600E2FF6B /* OAPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F69FE8AB2E911C9CC38 /* OAPreferenceClient.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7AE08AA764600E2FF6B /* OAPreferenceClientRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6AFE8AB2E911C9CC38 /* OAPreferenceClientRecord.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
@@ -748,6 +751,9 @@
 		1D0E8F7703FBA2F90097A138 /* OACautionIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OACautionIcon.png; sourceTree = "<group>"; };
 		1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACertificateTrustPrompt.h; sourceTree = "<group>"; };
 		1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACertificateTrustPrompt.m; sourceTree = "<group>"; };
+		1EF665191D908DD600B207AA /* OAPassphrasePrompt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPassphrasePrompt.h; sourceTree = "<group>"; };
+		1EF6651A1D908DD600B207AA /* OAPassphrasePrompt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPassphrasePrompt.m; sourceTree = "<group>"; };
+		1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAPassphrasePrompt.xib; sourceTree = "<group>"; };
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
 		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
@@ -1055,8 +1061,8 @@
 		A207C2340AA3BC7F00C3A5EF /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		A207C2350AA3BC7F00C3A5EF /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
 		A216D1330AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAInternal.h"; sourceTree = "<group>"; };
-		A2177CD404FEC4FF0097A146 /* OASwoopView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASwoopView.h; sourceTree = "<group>"; };
-		A2177CD504FEC4FF0097A146 /* OASwoopView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASwoopView.m; sourceTree = "<group>"; };
+		A2177CD404FEC4FF0097A146 /* OASwoopView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OASwoopView.h; path = Widgets.subproj/OASwoopView.h; sourceTree = "<group>"; };
+		A2177CD504FEC4FF0097A146 /* OASwoopView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OASwoopView.m; path = Widgets.subproj/OASwoopView.m; sourceTree = "<group>"; };
 		A23CDA6C07135B4200AC6F1A /* OAColorSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorSpace.h; sourceTree = "<group>"; };
 		A23CDA6D07135B4200AC6F1A /* OAColorSpace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorSpace.m; sourceTree = "<group>"; };
 		A25653B60ADDBFB400A2A25B /* OAControlTextColorTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAControlTextColorTransformer.h; sourceTree = "<group>"; };
@@ -1403,6 +1409,8 @@
 				00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */,
 				13F8BB49FF32715FC697A13D /* OAShrinkingTextDisplayer.h */,
 				13F8BB4AFF32715FC697A13D /* OAShrinkingTextDisplayer.m */,
+				A2177CD404FEC4FF0097A146 /* OASwoopView.h */,
+				A2177CD504FEC4FF0097A146 /* OASwoopView.m */,
 			);
 			name = "Obsolete or Deprecated";
 			sourceTree = "<group>";
@@ -1697,14 +1705,15 @@
 				6C72445A03E88BCE00E7FE1C /* OAMouseTipView.m */,
 				6C72445503E886EE00E7FE1C /* OAMouseTipWindow.h */,
 				6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */,
-				27495030182C955600BCBA6A /* OASubtleScroller.h */,
-				27495031182C955600BCBA6A /* OASubtleScroller.m */,
+				1EF665191D908DD600B207AA /* OAPassphrasePrompt.h */,
+				1EF6651A1D908DD600B207AA /* OAPassphrasePrompt.m */,
+				1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */,
 				1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */,
 				1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */,
 				E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */,
 				E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */,
-				A2177CD404FEC4FF0097A146 /* OASwoopView.h */,
-				A2177CD504FEC4FF0097A146 /* OASwoopView.m */,
+				27495030182C955600BCBA6A /* OASubtleScroller.h */,
+				27495031182C955600BCBA6A /* OASubtleScroller.m */,
 				010A51C0005212DBC697A13D /* OATextWithIconCell.h */,
 				010A51C1005212DBC697A13D /* OATextWithIconCell.m */,
 				66525F0701768E3B0097A13E /* OATypeAheadSelectionHelper.h */,
@@ -2597,6 +2606,7 @@
 				4AA1E6BA08AA764600E2FF6B /* NSSplitView-OAExtensions.h in Headers */,
 				4AA1E6BB08AA764600E2FF6B /* NSString-OAExtensions.h in Headers */,
 				4AA1E6BC08AA764600E2FF6B /* NSTableView-OAColumnConfigurationExtensions.h in Headers */,
+				1EF6651C1D908DD600B207AA /* OAPassphrasePrompt.h in Headers */,
 				4AA1E6BD08AA764600E2FF6B /* NSTableView-OAExtensions.h in Headers */,
 				4AA1E6BE08AA764600E2FF6B /* NSText-OAExtensions.h in Headers */,
 				4AA1E6BF08AA764600E2FF6B /* NSTextField-OAExtensions.h in Headers */,
@@ -3007,6 +3017,7 @@
 				E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */,
 				4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */,
 				34AA8B681B224DDC00B0AC5A /* OAMiniAction@2x.png in Resources */,
+				1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3258,6 +3269,7 @@
 				4DA2ED431C51B70700CCEE3C /* OAAppearancePropertyListCoder.m in Sources */,
 				4AA1E7EA08AA764600E2FF6B /* OAContextControl.m in Sources */,
 				4AA1E7EC08AA764600E2FF6B /* OAAutosizingHorizontalRule.m in Sources */,
+				1EF6651D1D908DD600B207AA /* OAPassphrasePrompt.m in Sources */,
 				50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */,
 				34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */,
 				340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */,

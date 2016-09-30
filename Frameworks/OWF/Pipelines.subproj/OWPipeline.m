@@ -91,11 +91,9 @@ static NSNumber *OWZeroNumber = nil;
 
 @implementation OWPipeline
 {
-    OWFWeakRetainConcreteImplementation_IVARS;
-
     // Unless otherwise noted, instance variables are protected by the global pipeline lock.
 
-    id <OWTarget, OWFWeakRetain, NSObject> _target; // protected by displayablesSimpleLock
+    __weak id <OWTarget, NSObject> _weakTarget; // protected by displayablesSimpleLock
 
     struct {
         unsigned int pipelineDidBegin: 1;
@@ -127,7 +125,7 @@ static NSNumber *OWZeroNumber = nil;
     
     NSLock *contextLock;              // Protects a few ivars. NOTE: This is a 'leaf' lock. It is vital that no other locks be acquired while this lock is held.
     NSMutableDictionary *context;     // Miscellaneous context information. Protected by contextLock
-    NSMutableArray *deallocationObservers; // Protected by contextLock
+    NSMutableArray <OFWeakReference *> *_deallocationObserverReferences; // Protected by contextLock
 
     struct {
         unsigned int contentError:1;
@@ -203,7 +201,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
     OFSimpleLockInit(&targetPipelinesMapTableLock);
     targetPipelinesMapTable = NSCreateMapTable(NSNonRetainedObjectMapKeyCallBacks, NSObjectMapValueCallBacks, DEFAULT_SIMULTANEOUS_TARGET_CAPACITY);
 
-    OWZeroNumber = [[NSNumber numberWithInt:0] retain];
+    OWZeroNumber = [NSNumber numberWithInt:0];
     
     // Status monitor
     activeTreeHasUndisplayedChanges = NO;
@@ -248,58 +246,36 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 
 + (void)invalidatePipelinesForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-
-    OMNI_POOL_START {
-        while ((pipelines = [self pipelinesForTarget:aTarget])) {
-            NSUInteger pipelineIndex, pipelineCount;
-
-            pipelineCount = [pipelines count];
-            for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
-                [[pipelines objectAtIndex:pipelineIndex] invalidate];
+    @autoreleasepool {
+        NSArray *pipelines;
+        while ((pipelines = [self pipelinesForTarget:aTarget]) != nil) {
+            for (OWPipeline *pipeline in pipelines) {
+                [pipeline invalidate];
             }
         }
-    } OMNI_POOL_END;
+    }
 }
 
 + (void)abortTreeActivityForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-
-    pipelines = [self pipelinesForTarget:aTarget];
-    if (pipelines) {
-        NSUInteger pipelineIndex, pipelineCount;
-
-        pipelineCount = [pipelines count];
-        for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
-            [[pipelines objectAtIndex:pipelineIndex] abortTreeActivity];
-        }
+    NSArray *pipelines = [self pipelinesForTarget:aTarget];
+    for (OWPipeline *pipeline in pipelines) {
+        [pipeline abortTreeActivity];
     }
 }
 
 + (void)abortPipelinesForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-
-    pipelines = [self pipelinesForTarget:aTarget];
-    if (pipelines) {
-        NSUInteger pipelineIndex, pipelineCount;
-
-        pipelineCount = [pipelines count];
-        for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
-            [[pipelines objectAtIndex:pipelineIndex] abortTask];
-        }
+    NSArray *pipelines = [self pipelinesForTarget:aTarget];
+    for (OWPipeline *pipeline in pipelines) {
+        [pipeline abortTask];
     }
 }
 
 + (OWPipeline *)currentPipelineForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-
-    pipelines = [self pipelinesForTarget:aTarget];
-    if (pipelines == nil || [pipelines count] == 0)
-        return nil;
-    return [pipelines objectAtIndex:0]; // Is in effect autoreleased, since the whole array is autoreleased
+    NSArray *pipelines = [self pipelinesForTarget:aTarget];
+    return [pipelines firstObject];
 }
 
 + (NSArray *)pipelinesForTarget:(id <OWTarget>)aTarget;
@@ -309,7 +285,7 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
     OBPRECONDITION(aTarget != nil);
 
     OFSimpleLock(&targetPipelinesMapTableLock); {
-        NSArray *pipelines = NSMapGet(targetPipelinesMapTable, aTarget);
+        NSArray *pipelines = [targetPipelinesMapTable objectForKey:aTarget];
         pipelinesSnapshot = pipelines != nil ? [NSArray arrayWithArray:pipelines] : nil;
     } OFSimpleUnlock(&targetPipelinesMapTableLock);
 
@@ -318,40 +294,21 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 
 + (OWPipeline *)firstActivePipelineForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-    NSUInteger pipelineIndex, pipelineCount;
-
-    pipelines = [self pipelinesForTarget:aTarget];
-    if (pipelines == nil)
-        return nil;
-    
-    pipelineCount = [pipelines count];
-    for (pipelineIndex = 0; pipelineIndex < pipelineCount; pipelineIndex++) {
-        OWPipeline *aPipeline;
-
-        aPipeline = [pipelines objectAtIndex:pipelineIndex];
+    NSArray *pipelines = [self pipelinesForTarget:aTarget];
+    for (OWPipeline *aPipeline in pipelines) {
         if ([aPipeline treeHasActiveChildren])
-            return aPipeline; // Is in effect autoreleased, since the whole array is autoreleased
+            return aPipeline;
     }
+
     return nil;
 }
 
 + (OWPipeline *)lastActivePipelineForTarget:(id <OWTarget>)aTarget;
 {
-    NSArray *pipelines;
-    NSUInteger pipelineIndex;
-
-    pipelines = [self pipelinesForTarget:aTarget];
-    if (!pipelines)
-        return nil;
-
-    pipelineIndex = [pipelines count];
-    while (pipelineIndex--) {
-        OWPipeline *aPipeline;
-
-        aPipeline = [pipelines objectAtIndex:pipelineIndex];
+    NSArray *pipelines = [self pipelinesForTarget:aTarget];
+    for (OWPipeline *aPipeline in [pipelines reverseObjectEnumerator]) {
         if ([aPipeline treeHasActiveChildren])
-            return aPipeline; // Is in effect autoreleased, since the whole array is autoreleased
+            return aPipeline;
     }
     return nil;
 }
@@ -371,20 +328,19 @@ static void OWPipelineSetState(OWPipeline *self, OWPipelineState newState)
 {
     OBPRECONDITION(activeStatusUpdateTimer == nil);
 
-    activeStatusUpdateTimer = [[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_updateStatusMonitors:) userInfo:nil repeats:YES] retain];
+    activeStatusUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_updateStatusMonitors:) userInfo:nil repeats:YES];
 }
 
 + (void)stopActiveStatusUpdateTimer;
 {
     OBPRECONDITION(activeStatusUpdateTimer != nil);
     [activeStatusUpdateTimer invalidate];
-    [activeStatusUpdateTimer release];
     activeStatusUpdateTimer = nil;
 }
 
 // Managing the global cache lock
 
-static void lockedPostNotificationsAndRelease(NSArray *notesToSend);
+static void lockedPostUpdates(NSArray *notesToSend);
 static void acquireLockMutexAlreadyHeld(BOOL localMutexHeld, BOOL deliverPending)
 {
     NSArray *deliverThese;
@@ -416,7 +372,7 @@ static void acquireLockMutexAlreadyHeld(BOOL localMutexHeld, BOOL deliverPending
 
     pthread_mutex_unlock(&globalCacheLock);
 
-    lockedPostNotificationsAndRelease(deliverThese);
+    lockedPostUpdates(deliverThese);
 }
 
 + (void)lock
@@ -447,50 +403,40 @@ static void acquireLockMutexAlreadyHeld(BOOL localMutexHeld, BOOL deliverPending
 
 + (BOOL)isLockHeldByCallingThread
 {
-    int is;
-
     pthread_mutex_lock(&globalCacheLock);
-    is = pthread_equal(globalCacheLockThread, pthread_self());
+    int is = pthread_equal(globalCacheLockThread, pthread_self());
     pthread_mutex_unlock(&globalCacheLock);
     return is? YES : NO;
 }
 
-static void lockedPostNotificationsAndRelease(NSArray *notesToSend)
+static void lockedPostUpdates(NSArray *updateBlocks)
 {
-    NSUInteger noteIndex, noteCount;
-
-    noteCount = [notesToSend count];
-    noteIndex = 0;
+    NSUInteger noteCount = [updateBlocks count];
+    NSUInteger noteIndex = 0;
     ASSERT_OWPipeline_Locked();
 
+    // This double loop is to reduce the number of times we add and remove exception handlers in the common, no-exception-raised case.
     while (noteIndex < noteCount) {
-        NS_DURING {
+        @try {
             while (noteIndex < noteCount) {
-                OFInvocation *sendMe = [notesToSend objectAtIndex:noteIndex ++];
-                [sendMe invoke];
+                void (^updateBlock)(void) = [updateBlocks objectAtIndex:noteIndex++];
+                updateBlock();
             }
             ASSERT_OWPipeline_Locked();
-        } NS_HANDLER {
+        } @catch (NSException *localException) {
             NSLog(@"*** Exception raised in pipeline notification, ignoring (%@ %lu/%lu) %@",
-                  [notesToSend objectAtIndex:noteIndex-1], noteIndex-1, noteCount, localException);
-        } NS_ENDHANDLER;
+                  [updateBlocks objectAtIndex:noteIndex - 1], noteIndex - 1, noteCount, localException);
+        }
     }
-        
-    [notesToSend release];
 }
 
-static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, NSUInteger targetCount, SEL selector, NSObject *arg)
+static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, void (^updateBlock)(OWPipeline *))
 {
-    NSUInteger targetIndex;
-
-    for (targetIndex = 0; targetIndex < targetCount; targetIndex++) {
-        OWPipeline *aPipeline;
-        OFInvocation *anInvocation;
-
-        aPipeline = [pipelines objectAtIndex:targetIndex];
-        anInvocation = [[OFInvocation alloc] initForObject:aPipeline selector:selector withObject:arg];
-        [invQueue addObject:anInvocation];
-        [anInvocation release];
+    updateBlock = [updateBlock copy];
+    for (OWPipeline *pipeline in pipelines) {
+        [blockQueue addObject:^{
+            updateBlock(pipeline);
+        }];
     }
 }
 
@@ -500,14 +446,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     [self unlock];
 }
 
-+ (void)postSelector:(SEL)aSelector toPipelines:(NSArray *)pipelines withObject:(NSObject *)arg;
++ (void)postUpdateToPipelines:(NSArray *)pipelines withBlock:(void (^)(OWPipeline *))updateBlock;
 {
-    NSUInteger targetIndex, targetCount;
     BOOL acquiredLockLocally;
     
-    if (aSelector == NULL || pipelines == nil)
+    if (updateBlock == nil || pipelines == nil)
         return;
-    targetCount = [pipelines count];
+    NSUInteger targetCount = [pipelines count];
     if (targetCount == 0)
         return;
     
@@ -523,13 +468,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         NSArray *deliverThese = pendingCacheNotifications;
         pendingCacheNotifications = [[NSMutableArray alloc] init];
         pthread_mutex_unlock(&globalCacheLock);
-        lockedPostNotificationsAndRelease(deliverThese);
+        lockedPostUpdates(deliverThese);
         acquiredLockLocally = NO;
         // Fall through to direct posting
     } else {
         // Someone else has the lock. Add our note to the queue, and if we're the first one in line, fire off an invocation to make sure we get processed.
         BOOL wasEmpty = ( [pendingCacheNotifications count] == 0 );
-        addInvocationsToQueue(pendingCacheNotifications, pipelines, targetCount, aSelector, arg);
+        addBlocksToQueue(pendingCacheNotifications, pipelines, updateBlock);
         pthread_mutex_unlock(&globalCacheLock);
         if (wasEmpty)
             [[OWProcessor processorQueue] queueSelector:@selector(_blockAndPostNotifications) forObject:(id)self];
@@ -537,17 +482,17 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     }
 
     // This double loop is to reduce the number of times we add and remove exception handlers in the common, no-exception-raised case.
-    targetIndex = 0;
+    NSUInteger targetIndex = 0;
     do {
-        NS_DURING {
+        @try {
             while (targetIndex < targetCount) {
-                OWPipeline *aPipeline = [pipelines objectAtIndex:targetIndex ++];
-                [aPipeline performSelector:aSelector withObject:arg];
+                OWPipeline *aPipeline = [pipelines objectAtIndex:targetIndex++];
+                updateBlock(aPipeline);
             }
-        } NS_HANDLER {
-            NSLog(@"*** Exception raised in pipeline notification, ignoring (target=%p %lu/%lu, sel=%@) %@",
-                  [pipelines objectAtIndex:targetIndex-1], targetIndex-1, targetCount, NSStringFromSelector(aSelector), localException);
-        } NS_ENDHANDLER;
+        } @catch (NSException *localException) {
+            NSLog(@"*** Exception raised in pipeline notification, ignoring (target=%p %lu/%lu)",
+                  [pipelines objectAtIndex:targetIndex - 1], targetIndex - 1, targetCount);
+        }
     } while (targetIndex < targetCount);
 
     if (acquiredLockLocally)
@@ -570,20 +515,15 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 // Init and dealloc
 
-+ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
++ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, NSObject>)aTarget;
 {
-    OWPipeline *pipeline;
-
-    pipeline = [[self alloc] initWithAddress:anAddress target:aTarget];
+    OWPipeline *pipeline = [[self alloc] initWithAddress:anAddress target:aTarget];
     [pipeline startProcessingContent];
-    [pipeline release];
 }
 
-- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, NSObject>)aTarget;
 {
-    OWContent *initialContent;
-
-    initialContent = anAddress != nil ? [OWContent contentWithAddress:anAddress] : nil;
+    OWContent *initialContent = anAddress != nil ? [OWContent contentWithAddress:anAddress] : nil;
 
 #ifdef DEBUG_kc
     if (anAddress != nil && [[anAddress addressString] isEqualToString:[[NSUserDefaults standardUserDefaults] stringForKey:@"OWPipelineDebugAddress"]])
@@ -593,10 +533,8 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return [self initWithContent:initialContent target:aTarget];
 }
 
-- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, NSObject>)aTarget;
 {
-    OWPipeline *newPipeline;
-    NSArray *initialContent;
     OWContentInfo *referringContentInfo = nil;
     NSString *sourceRange = nil;
     
@@ -610,12 +548,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         sourceRange = [[startAddress contextDictionary] objectForKey:OWAddressSourceRangeContextKey];
     }
     
+    NSArray *initialContent;
     if (aContent != nil)
         initialContent = [NSArray arrayWithObject:aContent];
     else
         initialContent = nil;
     
-    newPipeline = [self initWithCacheGroup:nil content:initialContent arcs:nil target:aTarget];
+    OWPipeline *newPipeline = [self initWithCacheGroup:nil content:initialContent arcs:nil target:aTarget];
     if (newPipeline != nil) {
         [newPipeline setContextObject:[NSNumber numberWithBool:NO] forKey:OWCacheArcUseCachedErrorContentKey];
         if (referringContentInfo != nil)
@@ -627,12 +566,10 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return newPipeline;
 }
 
-- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;  // Designated initializer
+- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, NSObject>)aTarget;  // Designated initializer
 {
     if (!(self = [super init]))
         return nil;
-
-    OWFWeakRetainConcreteImplementation_INIT;
 
     state = OWPipelineInit;
     flags.contentError = NO;
@@ -656,7 +593,6 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     // Check to see that we're being initialized with content (that's the point of this initializer!)
     OBASSERT(someContent != nil && contentCount > 0);
     if (someContent == nil || contentCount < 1) {
-        [self autorelease];
         [NSException raise:NSInvalidArgumentException format:@"Attempt to create a pipeline with no content"];
     }
 
@@ -670,21 +606,21 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         if ([content isAddress]) {
             addressCount++;
             if (mostRecentAddress == nil)
-                mostRecentAddress = [content retain];
+                mostRecentAddress = content;
         }
     }
 
     /* Strongly retain our target for the duration of our init method */
-    _target = [aTarget strongRetain];
+    _weakTarget = aTarget;
     if (OWPipelineDebug || flags.debug)
         NSLog(@"%@: init, target = %@", [self shortDescription], OBShortObjectDescription(aTarget));
 
     if (someCaches != nil)
-        caches = [someCaches retain];
-    else if ([_target respondsToSelector:@selector(defaultCacheGroup)])
-        caches = [[(id <OWOptionalTarget>)_target defaultCacheGroup] retain];
+        caches = someCaches;
+    else if ([_weakTarget respondsToSelector:@selector(defaultCacheGroup)])
+        caches = [(id <OWOptionalTarget>)_weakTarget defaultCacheGroup];
     else
-        caches = [[OWContentCacheGroup defaultCacheGroup] retain];
+        caches = [OWContentCacheGroup defaultCacheGroup];
 
     if (someArcs) {
         NSUInteger arcIndex;
@@ -704,8 +640,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
             [givenArcs addObject:thisArc];
             if ([thisArc resultIsSource]) {
-                [mostRecentArcProducingSource release];
-                mostRecentArcProducingSource = [thisArc retain];
+                mostRecentArcProducingSource = thisArc;
             }
         }
     }
@@ -714,7 +649,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
                 [followedArcs count]   == [followedContent count]);
     
     context = [[NSMutableDictionary alloc] init];
-    deallocationObservers = [[NSMutableArray alloc] init];
+    _deallocationObserverReferences = [[NSMutableArray alloc] init];
     contextLock = [[NSLock alloc] init];
     [self setContentInfo:[[followedContent lastObject] contentInfo]];
 
@@ -730,21 +665,19 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 #undef CHECK_RESPONDS_TO
 
     /* Convert our strong retain of the target into a weak retain, but make sure it doesn't go away before we're done with this method */
-    [[_target retain] autorelease];
-    [_target incrementWeakRetainCount];
 
     NS_DURING {
-        [[self class] _addPipeline:self forTarget:_target];
-        [self setParentContentInfo:[_target parentContentInfo]];
+        [[self class] _addPipeline:self forTarget:_weakTarget];
+        [self setParentContentInfo:[_weakTarget parentContentInfo]];
         OBASSERT(parentContentInfo != nil);
 
         [self _computeAcceptableContentTypes];
-        targetTypeFormatString = [[_target targetTypeFormatString] retain];
+        targetTypeFormatString = [_weakTarget targetTypeFormatString];
         [self _rebuildCompositeTypeString];
         if (targetRespondsTo.pipelineDidBegin)
-            [(id <OWOptionalTarget>)_target pipelineDidBegin:self];
+            [(id <OWOptionalTarget>)_weakTarget pipelineDidBegin:self];
 
-        [self _notifyTargetOfTreeActivation:_target];
+        [self _notifyTargetOfTreeActivation:_weakTarget];
     } NS_HANDLER {
         NSLog(@"%@: exception during init: %@", [self shortDescription], localException);
         [self invalidate];
@@ -755,7 +688,9 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 - (void)dealloc;
 {
-    OBPRECONDITION(_target == nil);
+    [self _invalidateWeakRetains];
+
+    OBPRECONDITION(_weakTarget == nil);
     OBPRECONDITION(cacheSearch == nil);
     
     if (OWPipelineDebug || flags.debug)
@@ -763,34 +698,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
     [followedArcs makeObjectsPerformSelector:@selector(removeArcObserver:) withObject:self];
 
-    OWFWeakRetainConcreteImplementation_DEALLOC;
-
-    [costEstimates release];
-    [caches release];
-    [rejectedArcs release];
-    [followedArcs release];
-    [followedArcsWithThreads release];
-    [followedContent release];
-    [activeArcs release];
-    [cacheSearch release];
-    [givenArcs release];
-    [mostRecentAddress release];
-    [mostRecentlyOffered release];
-    [mostRecentArcProducingSource release];
-    [targetAcceptableContentTypes release];
-    
-    [targetTypeFormatString release];
-
-    [context release];
-    [deallocationObservers release];
-    [contextLock release];
-
     OBASSERT(continuationEvent == nil);
-
-    [errorNameString release];
-    [errorReasonString release];
-    [errorDelayDate release];
-    [super dealloc];
 }
 
 
@@ -799,20 +707,15 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 - (OWAddress *)lastAddress;
 {
     OWAddress *retainedAddress = nil;
-    
-    NS_DURING {
+
+    @try {
         [contextLock lock];
-        retainedAddress = [[mostRecentAddress address] retain];
+        retainedAddress = [mostRecentAddress address];
+    } @finally {
         [contextLock unlock];
-    } NS_HANDLER {
-#ifdef DEBUG
-        NSLog(@"Exception raised during -lastAddress %@", localException);
-#endif
-        [contextLock unlock];
-        [localException raise];
-    } NS_ENDHANDLER;
+    }
         
-    return [retainedAddress autorelease];
+    return retainedAddress;
 }
 
 - (BOOL)treeHasActiveChildren;
@@ -986,7 +889,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     NSString *string;
 
     OFSimpleLock(&displayablesSimpleLock); {
-        string = [[compositeTypeString retain] autorelease];
+        string = compositeTypeString;
     } OFSimpleUnlock(&displayablesSimpleLock);
 
     return string;
@@ -1076,15 +979,15 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
 // Target
 
-- (id <OWTarget, OWFWeakRetain, NSObject>)target;
+- (id <OWTarget, NSObject>)target;
 {
-    id <OWTarget, OWFWeakRetain, NSObject> retainedTarget;
+    id <OWTarget, NSObject> retainedTarget;
 
     OFSimpleLock(&displayablesSimpleLock);
-    retainedTarget = [_target strongRetain];
+    retainedTarget = _weakTarget;
     OFSimpleUnlock(&displayablesSimpleLock);
     
-    return [retainedTarget autorelease];
+    return retainedTarget;
 }
 
 
@@ -1095,10 +998,9 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
 
     flags.contentError = NO;
     [OWPipeline lock];
-    OBASSERT([self strongRetain] == self && ([self release], YES));
     OFSimpleLock(&displayablesSimpleLock);
-    id oldTarget = _target; // Inherit -weakRetain
-    _target = nil;
+    __strong id oldTarget = _weakTarget;
+    _weakTarget = nil;
     OFSimpleUnlock(&displayablesSimpleLock);
     NS_DURING {
         if (oldTarget != nil) {
@@ -1112,43 +1014,40 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
         NSLog(@"-[%@ %@]: caught exception %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [localException reason]);
     } NS_ENDHANDLER;
 
-    OBASSERT(_target == nil);
+    OBASSERT(_weakTarget == nil);
     OBASSERT(state == OWPipelineInvalidating || state == OWPipelineDead);
 
     [OWPipeline unlock];
 
-    if (oldTarget != nil)
-        [(NSObject *)oldTarget weakAutorelease];
+    oldTarget = nil;
 
     [self _cleanupPipelineIfDead];
 
-    OBPOSTCONDITION(_target == nil);
+    OBPOSTCONDITION(_weakTarget == nil);
     OBPOSTCONDITION(state == OWPipelineInvalidating || state == OWPipelineDead);
 }
 
 - (void)parentContentInfoLostContent;
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         id <OWTarget, OWOptionalTarget, NSObject> targetSnapshot = (id)[self target];
         if ([targetSnapshot respondsToSelector:@selector(parentContentInfoLostContent)])
             [targetSnapshot parentContentInfoLostContent];
-    } OMNI_POOL_END;
+    }
 }
 
 - (void)updateStatusOnTarget;
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         [self _updateStatusOnTarget:[self target]];
-    } OMNI_POOL_END;
+    }
 }
 
 - (void)setErrorName:(NSString *)newName reason:(NSString *)newReason;
 {
     flags.processingError = YES;
-    [errorNameString release];
-    errorNameString = [newName retain];
-    [errorReasonString release];
-    errorReasonString = [newReason retain];
+    errorNameString = newName;
+    errorReasonString = newReason;
     
     if (errorReasonString != nil)
         NSLog(@"Error loading <%@>: %@", [[self lastAddress] addressString], errorReasonString);
@@ -1215,7 +1114,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     id retainedContextObject;
 
     [contextLock lock]; {
-        retainedContextObject = [[context objectForKey:key] retain];
+        retainedContextObject = [context objectForKey:key];
     } [contextLock unlock];
 
     if (retainedContextObject == nil && [key isEqualToString:OWCacheArcReferringAddressKey]) {
@@ -1224,25 +1123,21 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     }
 
     if (retainedContextObject == nil && [[OFPreference registeredKeys] containsObject:key]) {
-        OFPreference *preference;
-
-        preference = [self preferenceForKey:key arc:arc];
+        OFPreference *preference = [self preferenceForKey:key arc:arc];
         if (preference != nil)
             return [preference objectValue];
     }
 
-    return [retainedContextObject autorelease];
+    return retainedContextObject;
 }
 
 - (OFPreference *)preferenceForKey:(NSString *)key arc:(id <OWCacheArc>)arc;
 {
-    OWSitePreference *sitePreference;
-
-    sitePreference = nil;
+    OWSitePreference *sitePreference = nil;
     if (targetRespondsTo.preferenceForKey) {
-        OMNI_POOL_START {
+        @autoreleasepool {
             sitePreference = [(id <OWOptionalTarget>)[self target] preferenceForKey:key];
-        } OMNI_POOL_END;
+        }
     }
 
     // TODO - We're looking up the site preference according to the URL the item was loaded from, as opposed to the URL of the outermost containing object (which is what "site preferences" is typically keyed off of). Is this wrong?
@@ -1258,13 +1153,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     id retainedPreviousContextObject;
 
     [contextLock lock]; {
-        retainedPreviousContextObject = [[context objectForKey:key] retain];
+        retainedPreviousContextObject = [context objectForKey:key];
         if (anObject != nil)
             [context setObject:anObject forKey:key];
         else
             [context removeObjectForKey:key];
     } [contextLock unlock];
-    [retainedPreviousContextObject release]; // Release this outside the lock to avoid any possibility of deadlock
+    retainedPreviousContextObject = nil; // Release this outside the lock to avoid any possibility of deadlock
 }
 
 - (id)setContextObjectNoReplace:(id)anObject forKey:(NSString *)key;
@@ -1272,13 +1167,13 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     id existingObject;
     
     [contextLock lock]; {
-        existingObject = [[context objectForKey:key] retain];
+        existingObject = [context objectForKey:key];
         if (existingObject == nil && anObject != nil) {
             [context setObject:anObject forKey:key];
-            existingObject = [anObject retain];
+            existingObject = anObject;
         }
     } [contextLock unlock];
-    return [existingObject autorelease];
+    return existingObject;
 }
 
 - (NSDictionary *)contextDictionary;
@@ -1288,7 +1183,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     [contextLock lock];
     snapshotContextDictionary = [[NSDictionary alloc] initWithDictionary:context];
     [contextLock unlock];
-    return [snapshotContextDictionary autorelease];
+    return snapshotContextDictionary;
 }
 
 - (void)setReferringAddress:(OWAddress *)anAddress;
@@ -1327,16 +1222,12 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     return nil;
 }
     
-// OWFWeakRetain protocol
-
-OWFWeakRetainConcreteImplementation_IMPLEMENTATION
-
-- (void)invalidateWeakRetains;
+- (void)_invalidateWeakRetains;
 {
     OBPRECONDITION(state == OWPipelineInvalidating || state == OWPipelineDead);
 
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: invalidateWeakRetains", [self shortDescription]);
+        NSLog(@"%@: _invalidateWeakRetains", [self shortDescription]);
 
     [self _notifyDeallocationObservers];
 
@@ -1349,51 +1240,42 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     [givenArcs removeAllObjects];
     [rejectedArcs removeAllObjects];
     [followedArcsWithThreads removeAllObjects];
-    [cacheSearch release];
     cacheSearch = nil;
-    if (mostRecentArcProducingSource != nil) {
-        [mostRecentArcProducingSource release];
-        mostRecentArcProducingSource = nil;
-    }
+    mostRecentArcProducingSource = nil;
 
     [OWPipeline unlock];
 }
 
-- (OWPipeline *)cloneWithTarget:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (OWPipeline *)cloneWithTarget:(id <OWTarget, NSObject>)aTarget;
 {
     OWPipeline *newPipeline = nil;
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    [OWPipeline lock];
-    NS_DURING {
-        newPipeline = [[[self class] alloc] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
-        [contextLock lock];
-        [newPipeline->context addEntriesFromDictionary:context];
-        [contextLock unlock];
-    } NS_HANDLER {
-        [OWPipeline unlock];
-        [localException retain];
-        [pool release];
-        [[localException autorelease] raise];
-    } NS_ENDHANDLER;
-    [OWPipeline unlock];
-    [pool release];
+    @autoreleasepool {
+        [OWPipeline lock];
+        @try {
+            newPipeline = [[[self class] alloc] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
+            @try {
+                [contextLock lock];
+                [newPipeline->context addEntriesFromDictionary:context];
+            } @finally {
+                [contextLock unlock];
+            }
+        } @finally {
+            [OWPipeline unlock];
+        }
+    }
 
-    return [newPipeline autorelease];
+    return newPipeline;
 }
 
 - (NSNumber *)estimateCostFromType:(OWContentType *)aType
 {
-    float cost;
-    id nsCost;
-    OWContentType *deliveredType;
-
-    nsCost = [costEstimates objectForKey:aType];
+    id nsCost = [costEstimates objectForKey:aType];
     if (nsCost)
         return nsCost;
 
-    cost = COST_OF_REJECTION;
-    deliveredType = nil;
+    float cost = COST_OF_REJECTION;
+    OWContentType *deliveredType = nil;
 
     if (aType == [OWContentType wildcardContentType]) {
         cost = COST_OF_UNCERTAINTY;
@@ -1403,15 +1285,11 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             cost = MIN(cost, [path totalCost] + COST_OF_UNCERTAINTY);
     }
 
-    OFForEachObject([targetAcceptableContentTypes keyEnumerator], OWContentType *, targetType) {
-        float thisCost;
-
-        thisCost = [[targetAcceptableContentTypes objectForKey:targetType] floatValue];
+    for (OWContentType *targetType in [targetAcceptableContentTypes keyEnumerator]) {
+        float thisCost = [[targetAcceptableContentTypes objectForKey:targetType] floatValue];
 
         if (targetType != aType) {
-            OWConversionPathElement *path;
-
-            path = [aType bestPathForTargetContentType:targetType];
+            OWConversionPathElement *path = [aType bestPathForTargetContentType:targetType];
             thisCost += path? [path totalCost] : COST_OF_REJECTION;
         }
 
@@ -1435,10 +1313,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)arcHasStatus:(NSDictionary *)info
 {
-    id <OWCacheArc, NSObject> thisArc;
-    NSString *errorName;
-    BOOL thisArcHasThread;
-
 #ifdef DEBUG_kc0
     NSLog(@"-[%@ %s]: %@", OBShortObjectDescription(self), _cmd, note);
 #endif
@@ -1456,13 +1330,13 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             break;
     }
 
-    thisArc = [info objectForKey:@"arc"];
+    id <OWCacheArc, NSObject> thisArc = [info objectForKey:@"arc"];
     OBASSERT(thisArc != nil);
     NSUInteger thisArcIndex = [followedArcs indexOfObjectIdenticalTo:thisArc];
     if (thisArcIndex == NSNotFound)
         return;
 
-    thisArcHasThread = [thisArc status] == OWProcessorRunning; // TODO - store this in note info dict?
+    BOOL thisArcHasThread = [thisArc status] == OWProcessorRunning; // TODO - store this in note info dict?
     if (thisArcHasThread)
         [followedArcsWithThreads addObject:thisArc];
     else
@@ -1473,7 +1347,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         NSLog(@"%@ <%@> %@ %@ / %@%@ (threadsUsedCount=%ld, delta=%d)", OBShortObjectDescription(self), [[self lastAddress] addressString], [(NSObject *)thisArc shortDescription], [info objectForKey:OWCacheArcStatusStringNotificationInfoKey],  [info objectForKey:OWPipelineHasErrorNotificationErrorNameKey],
               [info boolForKey:OWCacheArcIsFinishedNotificationInfoKey defaultValue:NO]?@" (finished)":@"", threadsUsedCount, [info intForKey:OWCacheArcHasThreadChangeInfoKey defaultValue:0]);
 
-    errorName = [info objectForKey:OWCacheArcErrorNameNotificationInfoKey];
+    NSString *errorName = [info objectForKey:OWCacheArcErrorNameNotificationInfoKey];
     if (errorName != nil) {
         NSNotification *forwardedErrorNotification;
         NSMutableDictionary *forwardedNoteInfo;
@@ -1488,7 +1362,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         [forwardedNoteInfo removeObjectForKey:@"arc"];
         [forwardedNoteInfo setObject:self forKey:OWPipelineHasErrorNotificationPipelineKey];
         forwardedErrorNotification = [NSNotification notificationWithName:OWPipelineHasErrorNotificationName object:self userInfo:forwardedNoteInfo];
-        [forwardedNoteInfo release];
         [[OWProcessor processorQueue] queueSelectorOnce:@selector(postNotification:) forObject:[NSNotificationCenter defaultCenter] withObject:forwardedErrorNotification];
     }
 
@@ -1542,7 +1415,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         OBASSERT(!flags.traversingLastArc);
         if (gotContent) {
             // Got some new content. Go ahead and deal with it.
-            [cacheSearch release];
             cacheSearch = nil;
             [self _processContent];
         } else {
@@ -1567,22 +1439,20 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 // Some objects are interested in knowing when we're about to deallocate
 
-- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
+- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver>)anObserver;
 {
     [contextLock lock];
-    [deallocationObservers addObject:anObserver];
+    [OFWeakReference add:anObserver toReferences:_deallocationObserverReferences];
     [contextLock unlock];
-    [anObserver incrementWeakRetainCount];
 }
 
-- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
+- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver>)anObserver;
 {
-    [anObserver decrementWeakRetainCount];
-    [(NSObject *)anObserver retain]; // Don't deallocate (or invalidate) this object inside our lock
+    id <OWPipelineDeallocationObserver> strongObserverReference = anObserver; // Don't deallocate the observer while holding our lock
     [contextLock lock];
-    [deallocationObservers removeObjectIdenticalTo:anObserver];
+    [OFWeakReference remove:anObserver fromReferences:_deallocationObserverReferences];
     [contextLock unlock];
-    [(NSObject *)anObserver release];
+    strongObserverReference = nil;
 }
 
 @end
@@ -1593,7 +1463,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 {
     OBPRECONDITION(state == OWPipelineDead);
         
-    OMNI_POOL_START {
+    @autoreleasepool {
         id <OWTarget, OWOptionalTarget, NSObject> targetSnapshot;
 
         if (OWPipelineDebug || flags.debug)
@@ -1604,7 +1474,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             [targetSnapshot pipelineDidEnd:self];
 
         [self treeActiveStatusMayHaveChanged]; // Will call -deactivateInTree
-    } OMNI_POOL_END;
+    }
 }
 
 
@@ -1637,11 +1507,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     OFSimpleLock(&targetPipelinesMapTableLock); {
     
-        NSMutableArray *pipelines = NSMapGet(targetPipelinesMapTable, aTarget);
+        NSMutableArray *pipelines = [targetPipelinesMapTable objectForKey:aTarget];
         if (pipelines == nil) {
             pipelines = [[NSMutableArray alloc] init];
-            NSMapInsertKnownAbsent(targetPipelinesMapTable, aTarget, pipelines);
-            [pipelines release];
+            [targetPipelinesMapTable setObject:pipelines forKey:aTarget];
         }
 
         OBASSERT(![pipelines containsObjectIdenticalTo:aPipeline]);
@@ -1661,10 +1530,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     OFSimpleLock(&targetPipelinesMapTableLock); {
     
-        NSMutableArray *pipelines = NSMapGet(targetPipelinesMapTable, aTarget);
+        NSMutableArray *pipelines = [targetPipelinesMapTable objectForKey:aTarget];
         OBASSERT(pipelines != nil);
 
-        [aPipeline retain];
+        OWPipeline *retainedPipeline = aPipeline;
 
         OBASSERT([pipelines containsObjectIdenticalTo:aPipeline]);
         [pipelines removeObjectIdenticalTo:aPipeline];
@@ -1676,7 +1545,8 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             [pipelines insertObject:aPipeline atIndex:parentPipelineIndex];
         else
             [pipelines insertObject:aPipeline atIndex:parentPipelineIndex + 1];
-        [aPipeline release];
+
+        retainedPipeline = nil;
 
     } OFSimpleUnlock(&targetPipelinesMapTableLock);
 }
@@ -1688,13 +1558,13 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     OFSimpleLock(&targetPipelinesMapTableLock); {
 
-        NSMutableArray *pipelines = NSMapGet(targetPipelinesMapTable, aTarget);
+        NSMutableArray *pipelines = [targetPipelinesMapTable objectForKey:aTarget];
         OBPRECONDITION(pipelines != nil && [pipelines indexOfObjectIdenticalTo:aPipeline] != NSNotFound);
 
-        [[aPipeline retain] autorelease];
+        OBRetainAutorelease(aPipeline);
         [pipelines removeObjectIdenticalTo:aPipeline];
         if ([pipelines count] == 0)
-            NSMapRemove(targetPipelinesMapTable, aTarget);
+            [targetPipelinesMapTable removeObjectForKey:aTarget];
 
     } OFSimpleUnlock(&targetPipelinesMapTableLock);
 }
@@ -1800,7 +1670,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         OWPipelineSetState(self, OWPipelineDead); // We never started processing anything, so we don't need to abort it
     [OWPipeline unlock];
 
-    [[self retain] autorelease]; // Ensure we stick around for a little while yet
+    OBRetainAutorelease(self); // Ensure we stick around for a little while yet
     [self setParentContentInfo:nil];
     [self setContentInfo:nil];
 
@@ -1819,14 +1689,13 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     }
 
     OFInvocation *continuation = nil;
-    NSException *caughtException = nil;
 
-    OMNI_POOL_START {
+    @autoreleasepool {
         if (OWPipelineDebug || flags.debug)
             NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 
         [OWPipeline lock];
-        NS_DURING {
+        @try {
             switch (state) {
                 case OWPipelineInit:
                     if (cloneParent != nil) {
@@ -1846,7 +1715,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                     }
 
                     if (continuationEvent == nil)
-                        continuation = [[self _processContent] retain];
+                        continuation = [self _processContent];
 
                     break;
 
@@ -1863,15 +1732,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                     // We shouldn't be trying to process anything at this point
                     break;
             }
-        } NS_HANDLER {
-            caughtException = [localException retain];
-        } NS_ENDHANDLER;
-        [OWPipeline unlock];
-    } OMNI_POOL_END;
-    [continuation autorelease];
-
-    if (caughtException != nil)
-        [[caughtException autorelease] raise];
+        } @finally {
+            [OWPipeline unlock];
+        }
+    }
 
     [self treeActiveStatusMayHaveChanged];
     
@@ -1980,9 +1844,9 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             if ([possibleArc resultIsSource]) {
                 [contextLock lock];
                 id <OWCacheArc> previousArc = mostRecentArcProducingSource; // Inherit retain
-                mostRecentArcProducingSource = [possibleArc retain];
+                mostRecentArcProducingSource = possibleArc;
                 [contextLock unlock];
-                [previousArc release]; // Release outside the lock to avoid a deadlock when the arc tries to remove itself as a deallocation observer
+                previousArc = nil; // Release outside the lock to avoid a deadlock when the arc tries to remove itself as a deallocation observer
             }
             break;
     }
@@ -2035,8 +1899,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                     addressCount++;
                     addressCountTooBig = (addressCount > 10);
                     if (!addressCountTooBig) {
-                        [mostRecentAddress release];
-                        mostRecentAddress = [newlyFoundContentEntry retain];
+                        mostRecentAddress = newlyFoundContentEntry;
                     }
                     [contextLock unlock];
                     if (addressCountTooBig) {
@@ -2090,7 +1953,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     NSMutableArray *newPipelineContent;
     NSArray *newPipelineArcs;
     OWPipeline *newPipeline;
-    id <OWTarget, OWFWeakRetain, NSObject> targetSnapshot = [self target];
+    id <OWTarget, NSObject> targetSnapshot = [self target];
 
     ASSERT_OWPipeline_Locked();
 
@@ -2111,7 +1974,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     reusedArcs.length = arcIndex + 1;
 
     newPipelineContent = [followedContent mutableCopy];
-    [newPipelineContent autorelease];
     [newPipelineContent removeObjectsInRange:laterContent];
     if (newContent)
         [newPipelineContent addObject:newContent];
@@ -2122,7 +1984,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     [contextLock lock];
     [newPipeline->context addEntriesFromDictionary:context];
     [contextLock unlock];
-    [newPipeline autorelease];
     [newPipeline _startProcessingContentWithCloneParent:self insertBefore:precedes];
 }
 
@@ -2272,11 +2133,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         OBPRECONDITION(state == OWPipelineBuilding);
         OBPRECONDITION(cacheSearch == nil);
 
-        [continuationEvent autorelease];
         continuationEvent = nil;
 
         targetSnapshot = [self target];
-        lastContent = [[[followedContent lastObject] retain] autorelease];
+        lastContent = [followedContent lastObject];
 
         if (OWPipelineDebug || flags.debug) {
             NSLog(@"%@ targetSnapshot=%@ state=%d", OBShortObjectDescription(self), OBShortObjectDescription(targetSnapshot), state);
@@ -2458,7 +2318,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                 continuationEvent = [[OFInvocation alloc] initForObject:self selector:@selector(_weAreAtAnImpasse)];
             }
 
-            [cacheSearch release];
             cacheSearch = nil;
 
             return continuationEvent;
@@ -2475,8 +2334,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                 break;
             case OWCacheArcTraversal_HaveResult:
                 /* We got something from this traversal immediately. Go ahead and process it. */
-                [cacheSearch release]; /* we're done with this search */
-                cacheSearch = nil;
+                cacheSearch = nil; /* we're done with this search */
                 break;
             case OWCacheArcTraversal_WillNotify:
                 /* The arc didn't have anything immediately, but it will call us back. */
@@ -2553,8 +2411,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         someContent = [followedContent lastObject];
         OBASSERT(someContent != mostRecentlyOffered);
         offerAcceptability = [self _deliveryCostOfContent:someContent];
-        [mostRecentlyOffered release];
-        mostRecentlyOffered = [someContent retain];
+        mostRecentlyOffered = someContent;
 
         if (firstErrorContent != NSNotFound) {
             OBASSERT(firstErrorContent < [followedContent count]);
@@ -2587,7 +2444,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         }
 
         OBASSERT(continuationEvent != nil && [continuationEvent selector] == _cmd);
-        [continuationEvent autorelease];
         continuationEvent = nil;
 
         switch (state) {
@@ -2663,7 +2519,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     [OWPipeline lock];
     NS_DURING {
         OBASSERT(continuationEvent == nil || [continuationEvent selector] == _cmd);
-        [continuationEvent release];
         continuationEvent = nil;
         
         if (state == OWPipelineBuilding)
@@ -2689,7 +2544,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     id target = [self target];
     OWContentType *mainContentType = [target targetContentType];
 
-    [targetAcceptableContentTypes release];
     targetAcceptableContentTypes = nil;
     [costEstimates removeAllObjects];
     
@@ -2700,7 +2554,6 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         workingDict = [otherContentTypes mutableCopy];
         [workingDict setObject:OWZeroNumber forKey:mainContentType];
         targetAcceptableContentTypes = [workingDict copy];
-        [workingDict release];
     } else {
         targetAcceptableContentTypes = [[NSDictionary alloc] initWithObjectsAndKeys:OWZeroNumber, mainContentType, nil];
     }
@@ -2710,13 +2563,11 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (id <OWCacheArc>)_mostRecentArcProducingSource;
 {
-    id <OWCacheArc> sourceArc = nil;
-    
     [contextLock lock];
-    sourceArc = [mostRecentArcProducingSource retain];
+    id <OWCacheArc> sourceArc = mostRecentArcProducingSource;
     [contextLock unlock];
     
-    return [sourceArc autorelease];
+    return sourceArc;
 }
 
 - (void)_sendPipelineFetchNotificationForArc:(id <OWCacheArc>)productiveArc;
@@ -2753,17 +2604,17 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)_notifyDeallocationObservers;
 {
-    NSArray *deallocationObserversSnapshot;
-
     [contextLock lock];
-    deallocationObserversSnapshot = [[NSArray alloc] initWithArray:deallocationObservers];
+    NSArray <OFWeakReference *> *deallocationObserversSnapshot = [[NSArray alloc] initWithArray:_deallocationObserverReferences];
     [contextLock unlock];
-    [deallocationObserversSnapshot makeObjectsPerformSelector:@selector(pipelineWillDeallocate:) withObject:self];
-    [deallocationObserversSnapshot release];
 
+    for (OFWeakReference *deallocationObserverReference in deallocationObserversSnapshot) {
+        [deallocationObserverReference.object pipelineWillDeallocate:self];
+    }
+    
 #ifdef DEBUG_kc
     [contextLock lock];
-    OBPOSTCONDITION([deallocationObservers count] == 0);
+    OBPOSTCONDITION(_deallocationObserverReferences.count == 0);
     [contextLock unlock];
 #endif
 }
@@ -2772,16 +2623,16 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
 - (void)_notifyTargetOfTreeActivation;
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         [self _notifyTargetOfTreeActivation:[self target]];
-    } OMNI_POOL_END;
+    }
 }
 
 - (void)_notifyTargetOfTreeDeactivation;
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         [self _notifyTargetOfTreeDeactivation:[self target]];
-    } OMNI_POOL_END;
+    }
 }
 
 - (void)_notifyTargetOfTreeActivation:(id <OWTarget>)aTarget;
@@ -2858,24 +2709,20 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     if (targetTypeFormatString)
         newCompositeTypeString = [[NSString alloc] initWithFormat:targetTypeFormatString, contentTypeString];
     else
-        newCompositeTypeString = [contentTypeString retain];
+        newCompositeTypeString = contentTypeString;
 
     OFSimpleLock(&displayablesSimpleLock); {
-        [compositeTypeString release];
         compositeTypeString = newCompositeTypeString;
     } OFSimpleUnlock(&displayablesSimpleLock);
 }
 
 - (OWHeaderDictionary *)_headerDictionaryWaitForCompleteHeaders:(BOOL)shouldWaitForCompleteHeaders;
 {
-    OWHeaderDictionary *result;
-    NSArray *contentCopy = nil;
-    
 #warning do this a better way
     // Probably we want to have a method like -lastHeaderValue(s)ForName:... content:... which scans backwards through the followedContent?
     
-    result = [[OWHeaderDictionary alloc] init];
-    [result autorelease];
+    OWHeaderDictionary *result = [[OWHeaderDictionary alloc] init];
+    NSArray *contentCopy = nil;
     
     [OWPipeline lock];
     NS_DURING { // can't imagine anything going wrong here, but let's be thorough...

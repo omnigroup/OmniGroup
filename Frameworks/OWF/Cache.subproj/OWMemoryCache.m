@@ -69,7 +69,7 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
 
-    arc = [anArc retain];
+    arc = anArc;
     next = nil;
     lastUsed = [NSDate timeIntervalSinceReferenceDate];
     reasonableLifetime = DEFAULT_DEFAULT_LIFETIME_A_DOO_WOP;
@@ -79,13 +79,6 @@ RCS_ID("$Id$");
     flags.hasValidator = [[anArc object] hasValidator];
 
     return self;
-}
-
-- (void)dealloc
-{
-    [arc release];
-    [next release];
-    [super dealloc];
 }
 
 - (OWStaticArc *)arc
@@ -140,7 +133,7 @@ RCS_ID("$Id$");
         return nil;
 
     lock = [[NSLock alloc] init];
-    arcsBySubject = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    arcsBySubject = CFBridgingRelease(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
     knownOtherContent = [[NSMutableSet alloc] init];
     [OWContentCacheGroup addObserver:self];
 
@@ -150,18 +143,12 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [OWContentCacheGroup removeObserver:self];
-    [arcsBySubject release];
-    [knownOtherContent release];
-    [lock release];
-    [super dealloc];
 }
 
 // API
 
 - (void)setResultCache:(id <OWCacheArcProvider, OWCacheContentProvider>)newBackingCache;
 {
-    [newBackingCache retain];
-    [backingCache release];
     backingCache = newBackingCache;
 }
 
@@ -184,7 +171,7 @@ RCS_ID("$Id$");
     NSArray *arcs = [[NSArray alloc] initWithArray:[[arcsBySubject allValues] arrayByPerformingSelector:@selector(arc)]];
     [lock unlock];
     
-    return [arcs autorelease];
+    return arcs;
 }
 
 - (NSArray *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)pipe
@@ -210,11 +197,9 @@ RCS_ID("$Id$");
         [self _scanArcsForSubject:anEntry giving:result];  // Most common case.
 
     if ([result count] > 0) {
-        [result autorelease];
         [result makeObjectsPerformSelector:@selector(touch)];
         [result replaceObjectsInRange:(NSRange){0, [result count]} byApplyingSelector:@selector(arc)];
     } else {
-        [result release];
         result = nil;
     }
 
@@ -237,11 +222,6 @@ RCS_ID("$Id$");
 
 - (id <OWCacheArc>)addArc:(OWStaticArc *)anArc
 {
-    OWMemoryCacheEntry *newEntry;
-    OWMemoryCacheEntry *existingEntry;
-    NSMutableArray *priorArcs;
-    id cacheRow;
-
 #ifdef DEBUG_kc0
     NSLog(@"-[%@ %s], anArc=%@", OBShortObjectDescription(self), _cmd, OBShortObjectDescription(anArc));
 #endif
@@ -251,17 +231,18 @@ RCS_ID("$Id$");
 
 
     // add arc to list
-    newEntry = [[OWMemoryCacheEntry alloc] initWithArc:anArc];
-    cacheRow = [self _keyForSubject:[anArc subject]];
-    existingEntry = [arcsBySubject objectForKey:cacheRow];
+    OWMemoryCacheEntry *newEntry = [[OWMemoryCacheEntry alloc] initWithArc:anArc];
+    id cacheRow = [self _keyForSubject:[anArc subject]];
+    OWMemoryCacheEntry *existingEntry = [arcsBySubject objectForKey:cacheRow];
+    NSMutableArray *priorArcs;
     if (existingEntry != nil) {
         //... look for possibly duplicate/superseded arcs while walking to the end of the list
         priorArcs = [[NSMutableArray alloc] init];
-        for(;;) {
+        for (;;) {
             if (!(existingEntry->flags.shouldRemove) && !(existingEntry->flags.superseded))
                 [priorArcs addObject:existingEntry];
             if (!(existingEntry->next)) {
-                existingEntry->next = [newEntry retain];
+                existingEntry->next = newEntry;
                 break;
             }
             existingEntry = existingEntry->next;
@@ -269,11 +250,10 @@ RCS_ID("$Id$");
     } else {
         // ... we don't have any entries for this subject yet.
         priorArcs = nil;
-        CFDictionarySetValue((CFMutableDictionaryRef)arcsBySubject, cacheRow, newEntry);
+        CFDictionarySetValue((CFMutableDictionaryRef)arcsBySubject, CFBridgingRetain(cacheRow), CFBridgingRetain(newEntry));
         OBASSERT(newEntry->next == nil);
     }
     [newEntry touch];
-    [newEntry release];
 
     [knownOtherContent addObject:[anArc object]];
     if ([anArc source] != nil)
@@ -309,7 +289,7 @@ RCS_ID("$Id$");
             [lock unlock];
         }
     }
-    [priorArcs release];
+    priorArcs = nil;
     
     // TODO: adjust expiration according to arc info, destination content type, and all sorts of extremely clever things like that. Hey, maybe lifetime should be an attribute of the arc.
     
@@ -321,9 +301,6 @@ RCS_ID("$Id$");
 
 - (OWContent *)storeContent:(OWContent *)someContent;
 {
-    OWContent *existingContent;
-    OWMemoryCacheEntry *existingEntry;
-    
     //... validate cacheability
     if (someContent == nil || ![someContent isHashable])
         return nil;
@@ -332,25 +309,25 @@ RCS_ID("$Id$");
     
     // search for equivalent content, return it
     
-    existingEntry = [arcsBySubject objectForKey:[self _keyForSubject:someContent]];
+    OWMemoryCacheEntry *existingEntry = [arcsBySubject objectForKey:[self _keyForSubject:someContent]];
+    ;
+    
     while (existingEntry != nil) {
-        existingContent = [[existingEntry arc] subject];
+        OWContent *existingContent = [[existingEntry arc] subject];
         if ([someContent isEqual:existingContent]) {
-            [existingContent retain];
             [lock unlock];
-            return [existingContent autorelease];
+            return existingContent;
         }
         existingEntry = existingEntry->next;
     }
         
-    existingContent = [knownOtherContent member:someContent];
+    OWContent *existingContent = [knownOtherContent member:someContent];
     if (existingContent != nil && existingContent != someContent) {
-        [existingContent retain];
         [lock unlock];
 #ifdef DEBUG_kc0
         NSLog(@"-[%@ %s]: Found equivalent existing content, returning it rather than the new content: %@",  OBShortObjectDescription(self), _cmd, someContent);
 #endif
-        return [existingContent autorelease];
+        return existingContent;
     }
     
     [lock unlock];
@@ -539,33 +516,23 @@ RCS_ID("$Id$");
 
 - (void)_expire;
 {
-    NSTimeInterval now, nextExpire;
-    NSEnumerator *cacheRowEnumerator;
-    NSMutableArray *entriesToOffer;
-    NSMutableSet *shouldPurge;
-    OWMemoryCacheEntry *entry;
-    id thisRowKey;
-    BOOL anExpire;
-    unsigned arcIndex, arcsAccepted;
-
     [lock lock];
 
-    [expireEvent release];
     expireEvent = nil;
 
-    nextExpire = 60 * 60;
-    anExpire = NO;
-    arcsAccepted = 0;
-    entriesToOffer = [[NSMutableArray alloc] init];
-    shouldPurge = [NSMutableSet set];
+    NSTimeInterval nextExpire = 60.0 * 60.0;
+    BOOL anExpire = NO;
+    unsigned arcsAccepted = 0;
+    NSMutableArray *entriesToOffer = [[NSMutableArray alloc] init];
+    NSMutableSet *shouldPurge = [NSMutableSet set];
     [knownOtherContent removeAllObjects];
-    now = [NSDate timeIntervalSinceReferenceDate];
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
 
-    cacheRowEnumerator = [arcsBySubject keyEnumerator];
-    entry = nil;
-    thisRowKey = nil;
+    NSEnumerator *cacheRowEnumerator = [arcsBySubject keyEnumerator];
+    OWMemoryCacheEntry *entry = nil;
+    id thisRowKey = nil;
 
-    for(;;) {
+    for (;;) {
         NSTimeInterval timeToLive;
 
         if (entry != nil)
@@ -610,7 +577,7 @@ RCS_ID("$Id$");
     [lock unlock];
 
     [OWPipeline lock];
-    for(arcIndex = 0; arcIndex < [entriesToOffer count]; arcIndex ++) {
+    for (unsigned arcIndex = 0; arcIndex < [entriesToOffer count]; arcIndex ++) {
         BOOL storable = [backingCache canStoreArc:[[entriesToOffer objectAtIndex:arcIndex] arc]];
         if (!storable) {
             [entriesToOffer removeObjectAtIndex:arcIndex];
@@ -621,7 +588,7 @@ RCS_ID("$Id$");
     
     NS_DURING {
         // Without camping on the cache lock, offer any cacheable arcs to the next cache.
-        for(arcIndex = 0; arcIndex < [entriesToOffer count]; arcIndex ++) {
+        for (unsigned arcIndex = 0; arcIndex < [entriesToOffer count]; arcIndex ++) {
             OWStaticArc *storedArc;
 
             entry = [entriesToOffer objectAtIndex:arcIndex];
@@ -651,8 +618,6 @@ RCS_ID("$Id$");
         NSLog(@"-[%@ %s] Offered %u arcs to %@, accepted %u", [self shortDescription], _cmd, [entriesToOffer count], [(id)backingCache shortDescription], arcsAccepted);
 #endif
 
-    [entriesToOffer release];
-
     // Schedule the next sweep.
     if (anExpire) {
         nextExpire = MAX(nextExpire, 3.0);
@@ -672,23 +637,19 @@ RCS_ID("$Id$");
     NSLog(@"-[%@ %s], touchedRows=%@", OBShortObjectDescription(self), _cmd, touchedRows);
 #endif
 
-    unsigned rowsTouched, entriesRemoved, rowsEmptied;
-    
     [lock lock];
 #if defined(DEBUG_CacheTiming)
     NSTimeInterval began = [NSDate timeIntervalSinceReferenceDate];
 #endif
 
-    rowsTouched = 0;
-    rowsEmptied = 0;
-    entriesRemoved = 0;
+    unsigned rowsTouched = 0;
+    unsigned rowsEmptied = 0;
+    unsigned entriesRemoved = 0;
 
     while ([touchedRows count] > 0) {
         OWContent *purgeRow = [touchedRows anyObject];
-        OWMemoryCacheEntry *cursor, *lastEntry;
-
-        lastEntry = nil;
-        cursor = [arcsBySubject objectForKey:purgeRow];
+        OWMemoryCacheEntry *lastEntry = nil;
+        OWMemoryCacheEntry *cursor = [arcsBySubject objectForKey:purgeRow];
         rowsTouched++;
         while (cursor != nil) {
 
@@ -701,12 +662,11 @@ RCS_ID("$Id$");
                         rowsEmptied++;
                         [arcsBySubject removeObjectForKey:purgeRow];
                     } else {
-                        CFDictionarySetValue((CFMutableDictionaryRef)arcsBySubject, purgeRow, cursor);
+                        CFDictionarySetValue((CFMutableDictionaryRef)arcsBySubject, CFBridgingRetain(purgeRow), CFBridgingRetain(cursor));
                     }
                 } else {
                     OBASSERT(lastEntry->next == cursor);
-                    lastEntry->next = [cursor->next retain];
-                    [cursor release];
+                    lastEntry->next = cursor->next;
                     cursor = lastEntry->next;
                 }
             } else {
@@ -732,29 +692,25 @@ RCS_ID("$Id$");
         return;
 
     [[OWContentCacheGroup scheduler] abortEvent:expireEvent];
-    [expireEvent release];
     expireEvent = nil;
 }
 
 - (void)_removeAllArcs;
 {
-    NSMutableDictionary *retainedArcsBySubject;
-    NSMutableSet *retainedKnownOtherContent;
-
     [lock lock];
     
     [self _lockedCancelCurrentExpireEvent];
 
     // Clear out our instance variables inside the lock, but don't actually release their contents yet
-    retainedArcsBySubject = arcsBySubject;
-    retainedKnownOtherContent = knownOtherContent;
-    arcsBySubject = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    NSMutableDictionary *retainedArcsBySubject = arcsBySubject;
+    NSMutableSet *retainedKnownOtherContent = knownOtherContent;
+    arcsBySubject = CFBridgingRelease(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
     knownOtherContent = [[NSMutableSet alloc] init];
     [lock unlock];
 
     // OK, now release those former instance variables
-    [retainedArcsBySubject release];
-    [retainedKnownOtherContent release];
+    retainedArcsBySubject = nil;
+    retainedKnownOtherContent = nil;
 }
 
 - (void)_invalidateAllArcs;

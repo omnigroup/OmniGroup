@@ -53,7 +53,6 @@ RCS_ID("$Id$");
 
     arc = [[OWFilteredAddressArc alloc] initWithSubject:anEntry];
     result = [NSArray arrayWithObject:arc];
-    [arc release];
 
     return result;
 }
@@ -77,8 +76,6 @@ static OWContent *filteredAddressResult = nil;
     NSException *filteredNotice = [[NSException alloc] initWithName:OWFilteredAddressErrorName reason:filterMessage userInfo:nil];
     filteredAddressResult = [[OWContent alloc] initWithContent:filteredNotice];
     [filteredAddressResult markEndOfHeaders];
-
-    [filteredNotice release];
 }
 
 - initWithSubject:(OWContent *)anEntry
@@ -86,17 +83,10 @@ static OWContent *filteredAddressResult = nil;
     if (!(self = [super init]))
         return nil;
 
-    subject = [anEntry retain];
+    subject = anEntry;
     created = [[NSDate alloc] init];
 
     return self;
-}
-
-- (void)dealloc
-{
-    [subject release];
-    [created release];
-    [super dealloc];
 }
 
 - (NSArray *)entriesWithRelation:(OWCacheArcRelationship)relation
@@ -108,7 +98,7 @@ static OWContent *filteredAddressResult = nil;
     if (relation & OWCacheArcObject)
         [result addObject:filteredAddressResult];
 
-    return [result autorelease];
+    return result;
 }
 
 - (OWCacheArcType)arcType { return OWCacheArcDerivedContent; }

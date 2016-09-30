@@ -85,11 +85,11 @@ static inline void _locked_checkCookiesLoaded()
 
     domainLock = [[NSRecursiveLock alloc] init];
     
-    endNameSet = [[NSCharacterSet characterSetWithCharactersInString:@"=;, \t\r\n"] retain];
-    endDateSet = [[NSCharacterSet characterSetWithCharactersInString:@";\r\n"] retain];
-    endNameValueSet = [[NSCharacterSet characterSetWithCharactersInString:@";\r\n"] retain];
-    endValueSet = [[NSCharacterSet characterSetWithCharactersInString:@"; \t\r\n"] retain];
-    endKeySet = [[NSCharacterSet characterSetWithCharactersInString:@"=;, \t\r\n"] retain];
+    endNameSet = [NSCharacterSet characterSetWithCharactersInString:@"=;, \t\r\n"];
+    endDateSet = [NSCharacterSet characterSetWithCharactersInString:@";\r\n"];
+    endNameValueSet = [NSCharacterSet characterSetWithCharactersInString:@";\r\n"];
+    endValueSet = [NSCharacterSet characterSetWithCharactersInString:@"; \t\r\n"];
+    endKeySet = [NSCharacterSet characterSetWithCharactersInString:@"=;, \t\r\n"];
     
     distantPastInterval = [[NSDate distantPast] timeIntervalSinceReferenceDate];
 }
@@ -99,42 +99,6 @@ static inline void _locked_checkCookiesLoaded()
     [[OFController sharedController] queueSelector:@selector(_loadCookies) forObject:(id)self whenStatus:OFControllerStatusInitialized];
     [[OFController sharedController] queueSelector:@selector(saveCookies) forObject:(id)self whenStatus:OFControllerStatusTerminating];
 }
-
- + (void)readDefaults;
-{
-#warning 2003-12-19 [LEN] IMPLEMENT ME!
-    /*
-    NSUserDefaults *userDefaults;
-    NSString *value;
-    
-    [domainLock lock];
-
-    userDefaults = [NSUserDefaults standardUserDefaults];
-
-    // Upgrade our defaults -- check if the old default exists, and if so, what it was
-    if ([userDefaults boolForKey:@"OWHTTPRefuseAllCookies"]) {
-        [[OWSitePreference preferenceForKey:@"AcceptCookies" address:anAddress] setBoolValue:NO]
-        [userDefaults removeObjectForKey:@"OWHTTPRefuseAllCookies"];
-        [userDefaults synchronize];
-    }
-        
-    // Upgrade "Default behavior" preference
-    if ((value = [userDefaults objectForKey:@"OWHTTPCookieDefaultBehavior"])) {
-        switch (value) {
-            case 0: // OWCookieDomainDefaultBehavior = 0,
-            case 1: // OWCookieDomainPromptBehavior = 1, // i.e., ask the delegate
-            case 2: // OWCookieDomainAcceptBehavior = 2,
-            case 3: // OWCookieDomainAcceptForSessionBehavior = 3,
-            case 4: // OWCookieDomainRejectBehavior = 4,
-        [userDefaults setObject:value forKey:@"CookieBehavior"];
-        [userDefaults removeObjectForKey:@"OWHTTPCookieDefaultBehavior"];
-        [userDefaults synchronize];
-    }
-        
-    [domainLock unlock];
-        */
-}
-
 
 + (void)registerCookie:(OWCookie *)newCookie fromURL:(OWURL *)url siteURL:(OWURL *)siteURL;
 {
@@ -309,13 +273,12 @@ static inline void _locked_checkCookiesLoaded()
 
     NSMutableString *cookieString = nil;
     NSUInteger cookieCount = [cookies count];
-    NSUInteger cookieIndex;
     
-    for (cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
+    for (NSUInteger cookieIndex = 0; cookieIndex < cookieCount; cookieIndex++) {
         OWCookie *cookie = [cookies objectAtIndex:cookieIndex];
 
         if (cookieString == nil)
-            cookieString = [[[NSMutableString alloc] initWithString:@""] autorelease];
+            cookieString = [NSMutableString string];
         else
             [cookieString appendString:@"; "];
 
@@ -485,24 +448,20 @@ static inline void _locked_checkCookiesLoaded()
 
 - (NSArray *)paths;
 {
-    NSArray *paths;
-    
     [domainLock lock];
-    paths = [[NSArray alloc] initWithArray:_cookiePaths];
+    NSArray *paths = [[NSArray alloc] initWithArray:_cookiePaths];
     [domainLock unlock];
     
-    return [paths autorelease];
+    return paths;
 }
 
 - (OWCookiePath *)pathNamed:(NSString *)pathName;
 {
-    OWCookiePath *path;
-    
     [domainLock lock];
-    path = [[self locked_pathNamed:pathName shouldCreate:YES] retain];
+    OWCookiePath *path = [self locked_pathNamed:pathName shouldCreate:YES];
     [domainLock unlock];
     
-    return [path autorelease];
+    return path;
 }
 
 //
@@ -516,17 +475,19 @@ static inline void _locked_checkCookiesLoaded()
     [domainLock lock];
 
     // The paths are not represented in the XML file (since they are usually the default and there are usually few enough cookies per path that it would be a waste.
-    [_cookiePaths makeObjectsPerformSelector:@selector(addCookiesToSaveToArray:) withObject:cookies];
-        
+    for (OWCookiePath *cookiePath in _cookiePaths) {
+        [cookiePath addCookiesToSaveToArray:cookies];
+    }
+    
     // Don't archive domains with zero cookies
     if ([cookies count]) {
         OFDataBufferAppendCString(xmlBuffer, "<domain name=\"");
         // This *shouldn't* have entities in it, but ...
-        OFDataBufferAppendXMLQuotedString(xmlBuffer, (CFStringRef)_name);
+        OFDataBufferAppendXMLQuotedString(xmlBuffer, (__bridge CFStringRef)_name);
         OFDataBufferAppendCString(xmlBuffer, "\">\n");
-
-        [cookies makeObjectsPerformSelector:@selector(appendXML:) withObject:(id)xmlBuffer];
-                
+        for (OWCookie *cookie in cookies) {
+            [cookie appendXML:xmlBuffer];
+        }
         OFDataBufferAppendCString(xmlBuffer, "</domain>\n");
     }
     
@@ -586,15 +547,13 @@ static inline void _locked_checkCookiesLoaded()
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-    return [self retain];
+    return self;
 }
 
 #pragma mark - OWCookieDomain (PrivateAPI)
 
 + (void)_loadCookies;
 {
-    [self readDefaults];
-    
     [domainLock lock];
     
     domainsByName = [[NSMutableDictionary alloc] init];
@@ -634,7 +593,6 @@ static inline void _locked_checkCookiesLoaded()
 
     [domainLock lock];
     
-    [saveEvent release];
     saveEvent = nil;
     
     OFDataBufferInit(&xmlBuffer);
@@ -658,27 +616,23 @@ static inline void _locked_checkCookiesLoaded()
             nil];
             
     OFDataBufferFlush(&xmlBuffer);
-    CFDataRef xmlData;
-    OFDataBufferRelease(&xmlBuffer, NULL, &xmlData);
+    CFDataRef xmlDataRef;
+    OFDataBufferRelease(&xmlBuffer, NULL, &xmlDataRef);
+    NSData *xmlData = CFBridgingRelease(xmlDataRef);
 
-    if (![[NSFileManager defaultManager] atomicallyCreateFileAtPath:cookieFilename contents:(NSData *)xmlData attributes:attributes]) {
+    if (![[NSFileManager defaultManager] atomicallyCreateFileAtPath:cookieFilename contents:xmlData attributes:attributes]) {
 #warning TJW: There is not currently any good way to pop up a panel telling the user that they need to check the file permissions for a particular path.
         NSLog(@"Unable to save cookies to %@", cookieFilename);
     }
 
-    CFRelease(xmlData);
-    
     [domainLock unlock];
 }
 
 + (NSString *)cookiePath:(NSString *)fileName;
 {
-    NSString *directory;
-    NSFileManager *fileManager;
+    NSString *directory = [[[NSUserDefaults standardUserDefaults] objectForKey:@"OWLibraryDirectory"] stringByStandardizingPath];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isDirectory;
-
-    directory = [[[NSUserDefaults standardUserDefaults] objectForKey:@"OWLibraryDirectory"] stringByStandardizingPath];
-    fileManager = [NSFileManager defaultManager];
     if (![fileManager fileExistsAtPath:directory isDirectory:&isDirectory] || !isDirectory)
         return nil;
 
@@ -687,17 +641,14 @@ static inline void _locked_checkCookiesLoaded()
 
 + (void)locked_didChange;
 {
-    OFScheduler *mainScheduler;
-    
-    mainScheduler = [OFScheduler mainScheduler];
+    OFScheduler *mainScheduler = [OFScheduler mainScheduler];
     
     // Kill the old scheduled event and schedule one for later
     if (saveEvent) {
         [mainScheduler abortEvent:saveEvent];
-        [saveEvent release];
     }
 
-    saveEvent = [[mainScheduler scheduleSelector:@selector(saveCookies) onObject:self withObject:nil afterTime:60.0] retain];
+    saveEvent = [mainScheduler scheduleSelector:@selector(saveCookies) onObject:self withObject:nil afterTime:60.0];
 
     if (OWCookiesDebug)
         NSLog(@"COOKIES: Did change, saveEvent = %@", saveEvent);
@@ -712,15 +663,13 @@ static inline void _locked_checkCookiesLoaded()
 
 + (OWCookieDomain *)domainNamed:(NSString *)name andNotify:(BOOL)shouldNotify;
 {
-    OWCookieDomain *domain;
-    
     [domainLock lock];
     _locked_checkCookiesLoaded();
-    
-    if (!(domain = [domainsByName objectForKey:name])) {
+
+    OWCookieDomain *domain = [domainsByName objectForKey:name];
+    if (domain == nil) {
         domain = [[self alloc] initWithDomain:name];
         [domainsByName setObject:domain forKey:name];
-        [domain release];
         if (shouldNotify)
             [self locked_didChange];
     }
@@ -732,26 +681,22 @@ static inline void _locked_checkCookiesLoaded()
 
 - (void)addCookie:(OWCookie *)cookie andNotify:(BOOL)shouldNotify;
 {
-    OWCookiePath *path;
-    
     [domainLock lock];
-    path = [self locked_pathNamed:[cookie path] shouldCreate:YES];
+    OWCookiePath *path = [self locked_pathNamed:[cookie path] shouldCreate:YES];
     [path addCookie:cookie andNotify:shouldNotify];
     [domainLock unlock];
 }
 
 - (OWCookiePath *)locked_pathNamed:(NSString *)pathName shouldCreate:(BOOL)shouldCreate;
 {
-    NSUInteger pathIndex;
-    OWCookiePath *path;
-    
     [domainLock lock];
 
-    pathIndex = [_cookiePaths count];
+    OWCookiePath *path;
+
+    NSUInteger pathIndex = [_cookiePaths count];
     while (pathIndex--) {
         path = [_cookiePaths objectAtIndex:pathIndex];
         if ([[path path] isEqualToString:pathName]) {
-            [path retain];
             goto found;
         }
     }
@@ -765,53 +710,40 @@ static inline void _locked_checkCookiesLoaded()
 found:
     [domainLock unlock];
     
-    return [path autorelease];
+    return path;
 }
 
 + (NSArray *)searchDomainsForDomain:(NSString *)aDomain;
 {
-    NSMutableArray *searchDomains;
-    NSMutableArray *domainComponents;
-    NSUInteger domainComponentCount;
-    NSUInteger minimumDomainComponents;
-
     if (aDomain == nil)
         return nil;
-    domainComponents = [[aDomain componentsSeparatedByString:@"."] mutableCopy];
-    domainComponentCount = [domainComponents count];
-    minimumDomainComponents = [OWURL minimumDomainComponentsForDomainComponents:domainComponents];
-    searchDomains = [NSMutableArray arrayWithCapacity:domainComponentCount];
+
+    NSMutableArray *domainComponents = [[aDomain componentsSeparatedByString:@"."] mutableCopy];
+    NSUInteger domainComponentCount = [domainComponents count];
+    NSUInteger minimumDomainComponents = [OWURL minimumDomainComponentsForDomainComponents:domainComponents];
+    NSMutableArray *searchDomains = [NSMutableArray arrayWithCapacity:domainComponentCount];
     [searchDomains addObject:[@"." stringByAppendingString:aDomain]];
     [searchDomains addObject:aDomain];
     // Apple sets localhost cookie domains to "localhost.local"
     if (domainComponentCount == 1)
         [searchDomains addObject:[NSString stringWithFormat:@"%@.local", aDomain]];
     if (domainComponentCount < minimumDomainComponents) {
-        [domainComponents release];
 	return searchDomains;
     }
     domainComponentCount -= minimumDomainComponents;
     while (domainComponentCount--) {
-	NSString *searchDomain;
-
 	[domainComponents removeObjectAtIndex:0];
-	searchDomain = [domainComponents componentsJoinedByString:@"."];
+	NSString *searchDomain = [domainComponents componentsJoinedByString:@"."];
 	[searchDomains addObject:[@"." stringByAppendingString:searchDomain]];
     }
-    [domainComponents release];
     return searchDomains;
 }
 
 + (OWCookie *)cookieFromHeaderValue:(NSString *)headerValue defaultDomain:(NSString *)defaultDomain defaultPath:(NSString *)defaultPath;
 {
-    NSString *aName, *aValue;
-    NSDate *aDate = nil;
-    NSString *aDomain = defaultDomain, *aPath = defaultPath;
-    BOOL isSecure = NO;
-    NSScanner *scanner;
-    NSString *aKey;
-    
-    scanner = [NSScanner scannerWithString:headerValue];
+    NSScanner *scanner = [NSScanner scannerWithString:headerValue];
+
+    NSString *aName;
     if (![scanner scanUpToCharactersFromSet:endNameSet intoString:&aName])
         aName = [NSString string];
     
@@ -819,6 +751,7 @@ found:
         return nil;
 
     // Scan the value if possible
+    NSString *aValue;
     if ([scanner scanUpToCharactersFromSet:endNameValueSet intoString:&aValue]) {
         NSUInteger valueLength;
         // Remove trailing whitespace
@@ -841,6 +774,13 @@ found:
     }
 
     [scanner scanCharactersFromSet:endKeySet intoString:NULL];
+
+    NSDate *aDate = nil;
+    NSString *aDomain = defaultDomain;
+    NSString *aPath = defaultPath;
+    BOOL isSecure = NO;
+    
+    NSString *aKey;
     while ([scanner scanUpToCharactersFromSet:endKeySet intoString:&aKey]) {
         aKey = [aKey lowercaseString];
         [scanner scanString:@"=" intoString:NULL];
@@ -895,21 +835,15 @@ found:
         [scanner scanCharactersFromSet:endKeySet intoString:NULL];
     }
         
-    return [[[OWCookie alloc] initWithDomain:aDomain path:aPath name:aName value:aValue expirationDate:aDate secure:isSecure] autorelease];
+    return [[OWCookie alloc] initWithDomain:aDomain path:aPath name:aName value:aValue expirationDate:aDate secure:isSecure];
 }
 
 - (void)locked_addApplicableCookies:(NSMutableArray *)cookies forPath:(NSString *)aPath urlIsSecure:(BOOL)secure includeRejected:(BOOL)includeRejected;
 {
-    NSUInteger pathIndex;
-    OWCookiePath *path;
-    
-    pathIndex = [_cookiePaths count];
-    while (pathIndex--) {
-        path = [_cookiePaths objectAtIndex:pathIndex];
-        if (![path appliesToPath:aPath])
-            continue;
-        
-        [path addNonExpiredCookiesToArray:cookies usageIsSecure:secure includeRejected:includeRejected];
+    for (OWCookiePath *path in _cookiePaths) {
+        if ([path appliesToPath:aPath]) {
+            [path addNonExpiredCookiesToArray:cookies usageIsSecure:secure includeRejected:includeRejected];
+        }
     }
 }
 
@@ -921,97 +855,81 @@ static NSString *OWCookiesElementName = @"OmniWebCookies";
 
 + (BOOL)locked_readOW5Cookies;
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    NSString *filename = [self cookiePath:OW5CookieFileName];
-    if (filename == nil)
-        return NO;
+    @autoreleasepool {
         
-    NSData *cookieData = [NSData dataWithContentsOfFile:filename];
-    if (cookieData == nil || [cookieData length] == 0)
-        return NO;
+        NSString *filename = [self cookiePath:OW5CookieFileName];
+        if (filename == nil)
+            return NO;
         
-    OFXMLWhitespaceBehavior *whitespaceBehavior = [[OFXMLWhitespaceBehavior alloc] init];
-    [whitespaceBehavior setBehavior:OFXMLWhitespaceBehaviorTypeIgnore forElementName:OWCookiesElementName];
-    OFXMLDocument *document = [[OFXMLDocument alloc] initWithData:cookieData whitespaceBehavior:whitespaceBehavior error:NULL];
-    [whitespaceBehavior release];
+        NSData *cookieData = [NSData dataWithContentsOfFile:filename];
+        if (cookieData == nil || [cookieData length] == 0)
+            return NO;
+        
+        OFXMLWhitespaceBehavior *whitespaceBehavior = [[OFXMLWhitespaceBehavior alloc] init];
+        [whitespaceBehavior setBehavior:OFXMLWhitespaceBehaviorTypeIgnore forElementName:OWCookiesElementName];
+        OFXMLDocument *document = [[OFXMLDocument alloc] initWithData:cookieData whitespaceBehavior:whitespaceBehavior error:NULL];
+        
+        // Read domains
+        OFXMLCursor *domainCursor = [document cursor];
+        OFXMLElement *domainElement;
+        while ((domainElement = [domainCursor nextChild]) != nil) {
+            OBASSERT([domainElement isKindOfClass:[OFXMLElement class]]);
+            
+            // Domain name
+            NSString *domainName = [domainElement attributeNamed:@"name"];
+            if ([NSString isEmptyString:domainName])
+                continue;
+            
+            // Create domain
+            OWCookieDomain *domain = [OWCookieDomain domainNamed:domainName andNotify:NO];
+            
+            // Read children
+            NSArray *children = [domainElement children];
+            
+            for (OFXMLElement *cookieElement in children) {
+                OBASSERT([cookieElement isKindOfClass:[OFXMLElement class]]);
+                
+                NSString *name = [cookieElement attributeNamed:@"name"];
+                NSString *path = [cookieElement attributeNamed:@"path"];
+                NSString *value = [cookieElement attributeNamed:@"value"];
+                NSString *expiresString = [cookieElement attributeNamed:@"expires"];
+                NSDate *expires = expiresString != nil ? [NSDate dateWithTimeIntervalSinceReferenceDate:[expiresString doubleValue]] : nil;
+                BOOL secure = [[cookieElement attributeNamed:@"secure"] boolValue];
+                NSString *site = [cookieElement attributeNamed:@"receivedBySite"];
+                
+                OWCookie *cookie = [[OWCookie alloc] initWithDomain:[domain name] path:path name:name value:value expirationDate:expires secure:secure];
+                [cookie setStatus:OWCookieSavedStatus andNotify:NO];
+                [cookie setSite:site];
+                
+                [domain addCookie:cookie andNotify:NO];
+            }
 
-    // Read domains
-    OFXMLCursor *domainCursor = [document cursor];
-    OFXMLElement *domainElement;
-    while ((domainElement = [domainCursor nextChild]) != nil) {
-        OBASSERT([domainElement isKindOfClass:[OFXMLElement class]]);
-        
-        // Domain name
-        NSString *domainName = [domainElement attributeNamed:@"name"];
-        if ([NSString isEmptyString:domainName])
-            continue;
-        
-        // Create domain
-        OWCookieDomain *domain = [OWCookieDomain domainNamed:domainName andNotify:NO];
-        
-        // Read children
-        NSArray *children = [domainElement children];
-        NSUInteger childCount = [children count];
-        NSUInteger childIndex;
-        
-        for (childIndex = 0; childIndex < childCount; childIndex++) {
-            OFXMLElement *cookieElement = [children objectAtIndex:childIndex];
-            OBASSERT([cookieElement isKindOfClass:[OFXMLElement class]]);
-            
-            NSString *name = [cookieElement attributeNamed:@"name"];
-            NSString *path = [cookieElement attributeNamed:@"path"];
-            NSString *value = [cookieElement attributeNamed:@"value"];
-            NSString *expiresString = [cookieElement attributeNamed:@"expires"];
-            NSDate *expires = expiresString != nil ? [NSDate dateWithTimeIntervalSinceReferenceDate:[expiresString doubleValue]] : nil;
-            BOOL secure = [[cookieElement attributeNamed:@"secure"] boolValue];
-            NSString *site = [cookieElement attributeNamed:@"receivedBySite"];
-            
-            OWCookie *cookie = [[OWCookie alloc] initWithDomain:[domain name] path:path name:name value:value expirationDate:expires secure:secure];
-            [cookie setStatus:OWCookieSavedStatus andNotify:NO];
-            [cookie setSite:site];
-            
-            [domain addCookie:cookie andNotify:NO];
-            [cookie release];
         }
+        
     }
-
-    [document release];
-    
-    [pool release];
     
     return YES;
 }
 
 - (id)initWithDomain:(NSString *)domain;
 {
-    if (!(self = [super init]))
+    self = [super init];
+    if (self == nil)
         return nil;
 
     _name = [domain copy];
-    _nameDomain = [[OWURL domainForHostname:_name] retain];
+    _nameDomain = [OWURL domainForHostname:_name];
     _cookiePaths = [[NSMutableArray alloc] init];
     
     return self;
 }
 
-- (void)dealloc;
-{
-    [_name release];
-    [_nameDomain release];
-    [_cookiePaths release];
-    [super dealloc];
-}
-
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *dict;
-    
-    dict = [super debugDictionary];
-    [dict setObject:_name forKey:@"name"];
-    [dict setObject:_cookiePaths forKey:@"cookiePaths"];
-    
-    return dict;
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
+    [debugDictionary setObject:_name forKey:@"name"];
+    [debugDictionary setObject:_cookiePaths forKey:@"cookiePaths"];
+    return debugDictionary;
 }
 
 @end

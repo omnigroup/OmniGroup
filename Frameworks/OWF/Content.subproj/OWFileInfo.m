@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,12 +38,12 @@ static OWContentType *OWFileInfoContentType;
     if (!(self = [super init]))
         return nil;
 
-    address = [anAddress retain];
-    size = [aSize retain];
+    address = anAddress;
+    size = aSize;
     flags.isDirectory = isDirectory;
     flags.isShortcut = isShortcut;
     flags.fileTypeKnown = 1;
-    lastChangeDate = [aDate retain];
+    lastChangeDate = aDate;
 
     return self;
 }
@@ -58,34 +58,20 @@ static OWContentType *OWFileInfoContentType;
     flags.isDirectory = 0;
     flags.isShortcut = 0;
     flags.fileTypeKnown = 0;
-    lastChangeDate = [aDate retain];
+    lastChangeDate = aDate;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [address release];
-    [size release];
-    [lastChangeDate release];
-    [cachedName release];
-    [cachedTitle release];
-    [super dealloc];
 }
 
 - (void)setName:(NSString *)fileName
 {
     OBASSERT(!flags.fixed);
-    [fileName retain];
-    [cachedName release];
     cachedName = fileName;
 }
 
 - (void)setTitle:(NSString *)documentTitle;
 {
     OBASSERT(!flags.fixed);
-    [documentTitle retain];
-    [cachedTitle release];
     cachedTitle = documentTitle;
 }
 
@@ -120,9 +106,8 @@ static OWContentType *OWFileInfoContentType;
 {
     if (cachedName == nil) {
         cachedName = [[address localFilename] lastPathComponent];
-        if (!cachedName)
+        if (cachedName == nil)
             cachedName = [NSString decodeURLString:[[address url] lastPathComponent]];
-        [cachedName retain];
     }
     return cachedName;
 }

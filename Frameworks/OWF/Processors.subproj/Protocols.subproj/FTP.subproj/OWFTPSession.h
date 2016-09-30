@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,29 +17,6 @@
 enum OWFTP_ServerFeature { OWFTP_Yes, OWFTP_No, OWFTP_Maybe };
 
 @interface OWFTPSession : OFObject
-{
-    NSString *sessionCacheKey;
-    ONSocketStream *controlSocketStream;
-    NSString *currentPath;
-    NSString *currentTransferType;
-    NSString *systemType;
-    NSDictionary *systemFeatures;
-    NSString *lastReply;
-    unsigned int lastReplyIntValue;
-    NSString *lastMessage;
-    
-    NSMutableArray *failedCredentials;
-
-    OWAddress *ftpAddress;
-    id <OWProcessorContext> nonretainedProcessorContext;
-    OWProcessor *nonretainedProcessor;
-    ONSocket *abortSocket;
-    BOOL abortOperation;
-
-    enum OWFTP_ServerFeature serverSupportsMLST;
-    enum OWFTP_ServerFeature serverSupportsUTF8;
-    enum OWFTP_ServerFeature serverSupportsTVFS;
-}
 
 + (void)readDefaults;
 + (OWFTPSession *)ftpSessionForAddress:(OWAddress *)anAddress;

@@ -54,7 +54,7 @@ static NSTimeZone *gmtTimeZone;
     longMonthNames = [[NSArray alloc] initWithObjects:@"january", @"february", @"march", @"april", @"may", @"june", @"july", @"august", @"september", @"october", @"november", @"december", nil];
     shortWeekdayNames = [[NSArray alloc] initWithObjects:@"sun", @"mon", @"tue", @"wed", @"thu", @"fri", @"sat", nil];
     longWeekdayNames = [[NSArray alloc] initWithObjects:@"sunday", @"monday", @"tuesday", @"wednesday", @"thursday", @"friday", @"saturday", nil];
-    gmtTimeZone = [[NSTimeZone timeZoneWithName:@"GMT"] retain];
+    gmtTimeZone = [NSTimeZone timeZoneWithName:@"GMT"];
 }
 
 + (void)setDebugHTTPDateParsing:(BOOL)shouldDebug;
@@ -128,7 +128,6 @@ static NSTimeZone *gmtTimeZone;
     }
 
 nonstandardDate:
-    [scanner release];
 
 #if 0
     // Foundation's date parser is REALLY slow (like, 40 seconds) for bogus strings like this one that we get from google ad syndication: "Built on Oct  8 2003 12:43:55 (1065642215)"
@@ -409,7 +408,7 @@ nonstandardDate:
 
 + (OWHoursMinutesSeconds *)objectHoldingHours:(unsigned int)newHours minutes:(unsigned int)newMinutes seconds:(unsigned int)newSeconds;
 {
-    return [[[self alloc] initWithHours:newHours minutes:newMinutes seconds:newSeconds] autorelease];
+    return [[self alloc] initWithHours:newHours minutes:newMinutes seconds:newSeconds];
 }
 
 - initWithHours:(unsigned int)newHours minutes:(unsigned int)newMinutes seconds:(unsigned int)newSeconds;

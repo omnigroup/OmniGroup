@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,6 +65,29 @@ RCS_ID("$Id$")
 @end
 
 @implementation OWFTPSession
+{
+    NSString *sessionCacheKey;
+    ONSocketStream *controlSocketStream;
+    NSString *currentPath;
+    NSString *currentTransferType;
+    NSString *systemType;
+    NSDictionary *systemFeatures;
+    NSString *lastReply;
+    unsigned int lastReplyIntValue;
+    NSString *lastMessage;
+    
+    NSMutableArray *failedCredentials;
+    
+    OWAddress *ftpAddress;
+    __weak id <OWProcessorContext> nonretainedProcessorContext;
+    __weak OWProcessor *nonretainedProcessor;
+    ONSocket *abortSocket;
+    BOOL abortOperation;
+    
+    enum OWFTP_ServerFeature serverSupportsMLST;
+    enum OWFTP_ServerFeature serverSupportsUTF8;
+    enum OWFTP_ServerFeature serverSupportsTVFS;
+}
 
 enum {OPEN_SESSIONS, NO_SESSIONS};
 
@@ -112,7 +135,7 @@ static NSString *defaultPassword = nil;
     NSUserDefaults *userDefaults;
 
     userDefaults = [NSUserDefaults standardUserDefaults];
-    defaultPassword = [[userDefaults stringForKey:@"OWFTPAnonymousPassword"] retain];
+    defaultPassword = [userDefaults stringForKey:@"OWFTPAnonymousPassword"];
     if (defaultPassword == nil || [defaultPassword isEqualToString:@""])
 	defaultPassword = [[NSString alloc] initWithFormat:@"%@@%@", [[NSProcessInfo processInfo] processName], [ONHost domainName]];
     sessionTimeout = [userDefaults floatForKey:@"OWFTPSessionTimeout"];
@@ -120,33 +143,28 @@ static NSString *defaultPassword = nil;
 
 + (OWFTPSession *)ftpSessionForNetLocation:(NSString *)aNetLocation;
 {
+    NSString *cacheKey = aNetLocation;
     OWFTPSession *session;
-    NSString *cacheKey;
-
-    cacheKey = aNetLocation;
     [openSessionsLock lock];
-    NS_DURING {
+    @try {
 	session = [openSessions objectForKey:cacheKey];
-	if (session) {
-	    [session retain];
+	if (session != nil) {
 	    [openSessions removeObjectForKey:cacheKey];
 	}
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         session = nil;
 	NSLog(@"%@", [localException reason]);
-    } NS_ENDHANDLER;
+    }
     [openSessionsLock unlock];
-    if (!session)
+    if (session == nil)
         session = [[self alloc] initWithNetLocation:aNetLocation];
 
-    return [session autorelease];
+    return session;
 }
 
 + (OWFTPSession *)ftpSessionForAddress:(OWAddress *)anAddress;
 {
-    OWFTPSession *session;
-
-    session = [self ftpSessionForNetLocation:[[anAddress url] netLocation]];
+    OWFTPSession *session = [self ftpSessionForNetLocation:[[anAddress url] netLocation]];
     [session setAddress:anAddress];
     return session;
 }
@@ -161,7 +179,7 @@ static NSString *defaultPassword = nil;
     if (!(self = [super init]))
 	return nil;
 
-    sessionCacheKey = [aNetLocation retain];
+    sessionCacheKey = aNetLocation;
     failedCredentials = [[NSMutableArray alloc] init];
     serverSupportsMLST = OWFTP_Maybe;
     serverSupportsUTF8 = OWFTP_Maybe;
@@ -172,17 +190,6 @@ static NSString *defaultPassword = nil;
 - (void)dealloc;
 {
     [self disconnect];
-    [sessionCacheKey release];
-    [controlSocketStream release];
-    [lastReply release];
-    [lastMessage release];
-    [currentPath release];
-    [currentTransferType release];
-    [systemType release];
-    [systemFeatures release];
-    [ftpAddress release];
-    [failedCredentials release];
-    [super dealloc];
 }
 
 - (void)fetchForProcessor:(OWProcessor *)aProcessor inContext:(id <OWProcessorContext>)aPipeline;
@@ -255,7 +262,6 @@ static NSString *defaultPassword = nil;
         OWContent *emptyContent = [OWContent contentWithDataStream:outputDataStream isSource:YES];
         
         [outputDataStream dataEnd];
-        [outputDataStream release];
         [emptyContent markEndOfHeaders];
         [nonretainedProcessorContext addContent:emptyContent fromProcessor:nonretainedProcessor flags:OWProcessorContentIsSource|OWProcessorTypeRetrieval];
     }
@@ -313,8 +319,7 @@ static NSString *defaultPassword = nil;
 {
     if (ftpAddress == anAddress)
 	return;
-    [ftpAddress release];
-    ftpAddress = [anAddress retain];
+    ftpAddress = anAddress;
 }
 
 - (void)setProcessor:(OWProcessor *)aProcessor;
@@ -346,8 +351,7 @@ static NSString *defaultPassword = nil;
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Setting transfer type to %@", @"OWF", [OWFTPSession bundle], @"ftpsession status"), aTransferType];
     if (![self sendCommand:@"TYPE" argumentString:aTransferType])
 	[NSException raise:@"SetTransferTypeFailed" format:NSLocalizedStringFromTableInBundle(@"Failed to change transfer type: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error - TYPE command failed"), lastReply];
-    [currentTransferType release];
-    currentTransferType = [aTransferType retain];
+    currentTransferType = aTransferType;
 }
 
 - (NSString *)systemType;
@@ -356,33 +360,29 @@ static NSString *defaultPassword = nil;
 	return systemType;
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Checking system type", @"OWF", [OWFTPSession bundle], @"ftpsession status - will send SYST command")];
     if ([self sendCommand:@"SYST"])
-	systemType = [[self systemTypeForSystemReply:[lastReply substringFromIndex:4]] retain];
+	systemType = [self systemTypeForSystemReply:[lastReply substringFromIndex:4]];
     else
-	systemType = [@"unknown" retain];
+	systemType = @"unknown";
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"System is %@", @"OWF", [OWFTPSession bundle], @"ftpsession status - result of SYST command"), systemType];
     return systemType;
 }
 
 - (BOOL)querySystemFeatures
 {
-    NSEnumerator *featureEnumerator;
-    NSString *feature;
-    NSMutableDictionary *receivedFeatures;
     NSCharacterSet *whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
     NSCharacterSet *nonWhitespaceSet = [whitespaceSet invertedSet];
 
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Checking server features", @"OWF", [OWFTPSession bundle], @"ftpsession status - will send FEAT command")];
 
     if (![self sendCommand:@"FEAT"]) {
-        [systemFeatures release];
         systemFeatures = [[NSDictionary alloc] init];
         return NO;
     }
 
-    receivedFeatures = [NSMutableDictionary dictionary];
+    NSMutableDictionary *receivedFeatures = [NSMutableDictionary dictionary];
     [receivedFeatures setObject:@"" forKey:@"FEAT"];
-    featureEnumerator = [[lastMessage componentsSeparatedByString:@"\n"] objectEnumerator];
-    for(feature = [featureEnumerator nextObject]; feature != nil; feature = [featureEnumerator nextObject]) {
+    NSEnumerator *featureEnumerator = [[lastMessage componentsSeparatedByString:@"\n"] objectEnumerator];
+    for (NSString *feature in featureEnumerator) {
         NSRange spRange = [feature rangeOfCharacterFromSet:nonWhitespaceSet];
         if (spRange.location == 0 || spRange.length == 0) {
             // All feature lines must start with whitespace; other lines are status codes or terminators, which we ignore. We shouldn't see any lines consisting entirely of whitespace, but if we do, we should ignore them also.
@@ -406,7 +406,6 @@ static NSString *defaultPassword = nil;
         [receivedFeatures setObject:featureOptions forKey:[featureName uppercaseString]];
     }
 
-    [systemFeatures release];
     systemFeatures = [receivedFeatures copy];
     return YES;
 }
@@ -415,26 +414,23 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)readResponse;
 {
-    NSString *reply;
-    NSMutableString *message = nil;
-
     if (abortOperation)
 	[NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
 
-    reply = [controlSocketStream readLine];
+    NSString *reply = [controlSocketStream readLine];
     if (OWFTPSessionDebug)
 	NSLog(@"FTP Rx...%@", reply);
 
     if (reply == nil || [reply length] < 4)
 	[NSException raise:@"ResponseInvalid" format:NSLocalizedStringFromTableInBundle(@"Invalid response from FTP server: %@", @"OWF", [OWFTPSession bundle], "ftpsession error"), reply];
 
+    NSMutableString *message = nil;
+    
     if ([reply characterAtIndex:3] == '-') {
-	NSString *endPrefix;
-	NSString *messageLine;
-
 	message = [reply mutableCopy];
 	[message appendString:@"\n"];
-	endPrefix = [NSString stringWithFormat:@"%@ ", [reply substringToIndex:3]];
+	NSString *endPrefix = [NSString stringWithFormat:@"%@ ", [reply substringToIndex:3]];
+        NSString *messageLine;
 	do {
 	    messageLine = [controlSocketStream readLine];
 	    if (OWFTPSessionDebug)
@@ -446,12 +442,9 @@ static NSString *defaultPassword = nil;
 	} while (![messageLine hasPrefix:endPrefix]);
 	reply = messageLine;
     }
-    [lastReply release];
-    lastReply = [reply retain];
+    lastReply = reply;
     lastReplyIntValue = [reply intValue];
-    [lastMessage release];
-    lastMessage = [(message ? (NSString *)message : reply) retain];
-    [message release];
+    lastMessage = message != nil ? message : reply;
     return lastReplyIntValue < 400;
 }
 
@@ -462,9 +455,7 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)sendCommand:(NSString *)command argumentString:(NSString *)arg;
 {
-    NSData *argData;
-
-    argData = [arg dataUsingEncoding:[controlSocketStream stringEncoding] allowLossyConversion:NO];
+    NSData *argData = [arg dataUsingEncoding:[controlSocketStream stringEncoding] allowLossyConversion:NO];
     if (argData == nil) {
         [NSException raise:NSInvalidArgumentException
                     reason:NSLocalizedStringFromTableInBundle(@"FTP parameter contains invalid characters", @"OWF", [OWFTPSession bundle], "ftpsession error - unexpected or unencodable characters in a command argument")];
@@ -475,12 +466,10 @@ static NSString *defaultPassword = nil;
 
 - (BOOL)sendCommand:(NSString *)command argument:(NSData *)arg;
 {
-    BOOL plainASCII;
-    
     if (abortOperation)
         [NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
 
-    plainASCII = YES;
+    BOOL plainASCII = YES;
     if (arg != nil) {
         // Scan through the arg to make sure it doesn't have any metacharacters in it which could cause protocol violations, security holes, etc.
         // While we're at it, check to see whether the arg looks like it's 100% plain ASCII, so we can decide how to log it.
@@ -527,11 +516,6 @@ static NSString *defaultPassword = nil;
 
 - (void)connect;
 {
-    ONTCPSocket *tcpSocket;
-    OWNetLocation *netLocation;
-    NSString *username, *password, *port;
-    ONHost *serviceHost;
-
     abortOperation = NO;
     if (controlSocketStream) {
 	BOOL connectionStillValid;
@@ -542,51 +526,46 @@ static NSString *defaultPassword = nil;
             OB_UNUSED_VALUE(exc);
 	    connectionStillValid = NO;
 	}
+
 	if (connectionStillValid)
 	    return;
-	[controlSocketStream release];
-	[currentPath release];
-	[currentTransferType release];
-	[systemType release];
-	[lastReply release];
     }
+
     controlSocketStream = nil;
     currentPath = nil;
     currentTransferType = nil;
     systemType = nil;
     lastReply = nil;
 
-    netLocation = [[ftpAddress url] parsedNetLocation];
+    OWNetLocation *netLocation = [[ftpAddress url] parsedNetLocation];
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Finding %@", @"OWF", [OWFTPSession bundle], @"ftp session status"), [netLocation shortDisplayString]];
-    serviceHost = [ONHost hostForHostname:[netLocation hostname]];
+    ONHost *serviceHost = [ONHost hostForHostname:[netLocation hostname]];
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Contacting %@", @"OWF", [OWFTPSession bundle], @"ftp session status"), [netLocation shortDisplayString]];
-    tcpSocket = [ONTCPSocket tcpSocket];
+    ONTCPSocket *tcpSocket = [ONTCPSocket tcpSocket];
     [tcpSocket setReadBufferSize:32*1024];
     controlSocketStream = [[ONSocketStream alloc] initWithSocket:tcpSocket];
-    port = [netLocation port];
+    NSString *port = [netLocation port];
     [tcpSocket connectToHost:serviceHost port:port ? [port intValue] : [[self class] defaultPort]];
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Contacted %@", @"OWF", [OWFTPSession bundle], ftp session status), [netLocation shortDisplayString]];
     if (OWFTPSessionDebug)
         NSLog(@"%@: Connected to %@ (%@)", [[self class] description], [netLocation displayString], [tcpSocket remoteAddress]);
 
     if (![self readResponse]) { // "220 ftp.omnigroup.com ready"
-        NSString *errorReply = [[lastReply retain] autorelease];
+        NSString *errorReply = lastReply;
         [self disconnect];
         [NSException raise:@"ConnectFailed" format:NSLocalizedStringFromTableInBundle(@"Connection to %@ failed: %@", @"OWF", [OWFTPSession bundle], "ftpsession error - connection rejected"), [netLocation shortDisplayString], errorReply];
     }
 
-    username = [netLocation username];
-    password = nil;
-    if (!username) {
+    NSString *username = [netLocation username];
+    NSString *password = nil;
+    if (username == nil) {
 	username = @"anonymous";
     	if (!(password = [netLocation password]))
             password = defaultPassword;
     }
     
     if (![self sendCommand:@"USER" argumentString:username]) {
-	NSString *errorReply;
-	
-	errorReply = [[lastReply retain] autorelease];
+	NSString *errorReply = lastReply;
 	[self disconnect];
         [NSException raise:@"LoginFailed" format:NSLocalizedStringFromTableInBundle(@"Login to %@ failed: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error - USER command rejected"), [netLocation shortDisplayString], errorReply];
     }
@@ -594,44 +573,32 @@ static NSString *defaultPassword = nil;
     if (lastReplyIntValue == 331) { // Need password
         OWAuthorizationCredential *tryThis = nil;
         if (username != nil && password == nil) {
-            OWAuthorizationRequest *getPassword;
-            int credentialIndex;
-            NSArray *moreCredentials;
-            
-            getPassword = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_FTP netLocation:netLocation defaultPort:[[self class] defaultPort] context:[nonretainedProcessor pipeline] challenge:nil promptForMoreThan:failedCredentials];
-            moreCredentials = [getPassword credentials];
-            
-            if (!moreCredentials) {
-                NSString *errorString = [[[getPassword errorString] retain] autorelease];
-                [getPassword release];
+            OWAuthorizationRequest *getPassword = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_FTP netLocation:netLocation defaultPort:[[self class] defaultPort] context:[nonretainedProcessor pipeline] challenge:nil promptForMoreThan:failedCredentials];
+            NSArray *moreCredentials = [getPassword credentials];
+            if (moreCredentials == nil) {
+                NSString *errorString = [getPassword errorString];
                 [self disconnect];
                 [NSException raise:@"LoginFailed" format:NSLocalizedStringFromTableInBundle(@"Login to %@ failed: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error - PASS required but no password available to us"), [netLocation displayString], errorString];
             }
             
             // set tryThis to the first credential returned that's not in failedCredentials.
-            credentialIndex = 0;
+            int credentialIndex = 0;
             while ([failedCredentials indexOfObjectIdenticalTo:(tryThis = [moreCredentials objectAtIndex:credentialIndex])] != NSNotFound)
                 credentialIndex ++;
             // we don't need to check against [moreCredentials count], above, because OWAuthorizationRequest will never return an array containing only objects that are also in failedCredentials.
-            
-            [[tryThis retain] autorelease];
-            [getPassword release];
         }
         
-        if (tryThis)
-            password = [tryThis valueForKey:@"password"];
+        if (tryThis != nil)
+            password = [tryThis valueForKey:@"password"]; // -[OWAuthorizationPassword password]
             
 	if (![self sendCommand:@"PASS" argumentString:password]) {
-	    NSString *errorReply;
-            NSString *locationDescription;
-	    
             if (tryThis) {
                 [failedCredentials addObject:tryThis];
             }
-	    errorReply = [[lastReply retain] autorelease];
+	    NSString *errorReply = lastReply;
 	    // UNDONE: ask for a new password
 	    [self disconnect];
-            locationDescription = [NSString stringWithStrings:username, @"@", [netLocation hostnameWithPort], nil];
+            NSString *locationDescription = [NSString stringWithStrings:username, @"@", [netLocation hostnameWithPort], nil];
             [NSException raise:@"LoginFailed" format:NSLocalizedStringFromTableInBundle(@"Login to %@ failed: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error - PASS command failed"), locationDescription, errorReply];
 	}
     }
@@ -647,7 +614,7 @@ static NSString *defaultPassword = nil;
 
 - (void)disconnect;
 {
-    if (!controlSocketStream)
+    if (controlSocketStream == nil)
 	return;
     @try {
 	[self sendCommand:@"QUIT"];
@@ -655,7 +622,6 @@ static NSString *defaultPassword = nil;
         OB_UNUSED_VALUE(exc);
         // Well, we're closing the connection anyway...
     }
-    [controlSocketStream release];
     controlSocketStream = nil;
 }
 
@@ -663,75 +629,67 @@ static NSString *defaultPassword = nil;
 
 - (ONTCPSocket *)passiveDataSocket;
 {
-    NSCharacterSet *digits;
-    ONTCPSocket *dataSocket;
-    NSScanner *scanner;
-    int returnCode;
-    int byte, byteCount;
-    unsigned int ip = 0, port = 0;
-    struct in_addr ipAddress;
-
     // Note: To support IPv6 we will need to know when to send PASV and when to send LPSV or EPSV.
 
     if (![self sendCommand:@"PASV"])
 	return nil;
 
-    digits = [NSCharacterSet decimalDigitCharacterSet];
-    scanner = [NSScanner scannerWithString:lastReply];
+    NSCharacterSet *digits = [NSCharacterSet decimalDigitCharacterSet];
+    NSScanner *scanner = [NSScanner scannerWithString:lastReply];
+    int returnCode;
     [scanner scanInt:(int *)&returnCode];
     if (returnCode != 227)
 	return nil;
 
-    byteCount = 4;
+    unsigned int ip = 0;
+    int byteCount = 4;
     while (byteCount--) {
 	[scanner scanUpToCharactersFromSet:digits intoString:NULL];
+        int byte;
 	[scanner scanInt:(int *)&byte];
 	ip <<= 8;
 	ip |= byte;
     }
 
+    unsigned int port = 0;
     byteCount = 2;
     while (byteCount--) {
 	[scanner scanUpToCharactersFromSet:digits intoString:NULL];
+        int byte;
 	[scanner scanInt:(int *)&byte];
 	port <<= 8;
 	port |= byte;
     }
 
+    struct in_addr ipAddress;
     ipAddress.s_addr = htonl(ip);
-    dataSocket = [ONTCPSocket tcpSocket];
+    ONTCPSocket *dataSocket = [ONTCPSocket tcpSocket];
     [dataSocket setReadBufferSize:32 * 1024];
-    NS_DURING {
+    @try {
 	abortSocket = dataSocket;
         [dataSocket connectToAddress:
-            [ONHostAddress hostAddressWithInternetAddress:&ipAddress family:AF_INET]
-                                port:port];
+            [ONHostAddress hostAddressWithInternetAddress:&ipAddress family:AF_INET] port:port];
 	abortSocket = nil;
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
 	abortSocket = nil;
 	if (abortOperation)
 	    [localException raise];
 	dataSocket = nil;
-    } NS_ENDHANDLER;
+    }
     return dataSocket;
 }
 
 - (ONTCPSocket *)activeDataSocket;
 {
-    ONTCPSocket *dataSocket;
-    ONPortAddress *controlSocketLocalAddress;
-    NSString *portString;
-    unsigned short port;
-
-    dataSocket = [ONTCPSocket tcpSocket];
+    ONTCPSocket *dataSocket = [ONTCPSocket tcpSocket];
     [dataSocket setReadBufferSize:32*1024];
     [dataSocket startListeningOnAnyLocalPort];
-    controlSocketLocalAddress = [(ONTCPSocket *)[controlSocketStream socket] localAddress];
-    port = [dataSocket localAddressPort];
+    ONPortAddress *controlSocketLocalAddress = [(ONTCPSocket *)[controlSocketStream socket] localAddress];
+    unsigned short port = [dataSocket localAddressPort];
 
+    NSString *portString = nil;
     if ([controlSocketLocalAddress addressFamily] == AF_INET) {
         struct in_addr hostip = ((struct sockaddr_in *)[controlSocketLocalAddress portAddress])->sin_addr;
-
         portString = [NSString stringWithFormat:@"%d,%d,%d,%d,%d,%d",
             (int)*((unsigned char *)(&hostip) + 0),
             (int)*((unsigned char *)(&hostip) + 1),
@@ -742,8 +700,8 @@ static NSString *defaultPassword = nil;
     } else {
         [NSException raise:@"UnsupportedAddressType" format:@"%@ does not support non-IPv4 address families (local socket is bound to [%@], af=%d)", [self class], [[controlSocketLocalAddress hostAddress] description], [controlSocketLocalAddress addressFamily]];
 
-        // See BugSnacker entry #9935:
-        // To implement this we would presumably need to implement the LPRT and LPSV (long-address variants of PORT and PASV) as documented in RFC 1639. Before doing so we should verify that RFC 1639 hasn't been superseded by something else.
+        // See <bug:///9935> (Frameworks-Mac Feature: Support FTP over IPv6 (RFC1545/RFC1639)):
+        // To implement support for FTP over IPv6 we would presumably need to implement the LPRT and LPSV (long-address variants of PORT and PASV) as documented in RFC 1639. Before doing so we should verify that RFC 1639 hasn't been superseded by something else.
         // RFC 1639 ("Experimental") has been superseded by RFC 2428 ("Standards Track").
         // We may also need to do something to ensure that 'dataSocket' is listening on an address in the appropriate address family.
 
@@ -757,11 +715,9 @@ static NSString *defaultPassword = nil;
 
 - (ONSocketStream *)dataSocketStream;
 {
-    ONTCPSocket *dataSocket;
-
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Opening data stream", @"OWF", [OWFTPSession bundle], @"ftpsession status")];
 
-    dataSocket = nil;
+    ONTCPSocket *dataSocket = nil;
 
     if ([OWProxyServer usePassiveFTP]) {
         /* try passive mode first */
@@ -782,7 +738,7 @@ static NSString *defaultPassword = nil;
         return nil;
     }
 
-    return [[[ONSocketStream alloc] initWithSocket:dataSocket] autorelease];
+    return [[ONSocketStream alloc] initWithSocket:dataSocket];
 }
 
 //
@@ -798,8 +754,7 @@ static NSString *defaultPassword = nil;
 	// UNDONE: Try breaking the path into individual components, and CD'ing through each level
 	[NSException raise:@"CannotChangeDirectory" format:NSLocalizedStringFromTableInBundle(@"Changing directory to %@ failed: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error - CWD failed"), path, lastReply];
     }
-    [currentPath release];
-    currentPath = [path retain];
+    currentPath = path;
 }
 
 - (void)getFile:(NSString *)path;
@@ -810,7 +765,6 @@ static NSString *defaultPassword = nil;
     OWDataStream *outputDataStream;
     OWContent *fileContent;
     unsigned int contentLength = 0;
-    NSAutoreleasePool *autoreleasePool = nil;
     NSString *sourceRange;
     NSString *lastModifiedTime;
     BOOL usingRestartCommand = NO;
@@ -864,7 +818,7 @@ static NSString *defaultPassword = nil;
     }
     
     if (![self sendCommand:@"RETR" argument:decodedFileName]) {
-        NSString *oldLastReply = [[lastReply retain] autorelease];
+        NSString *oldLastReply = lastReply;
         int lastReplyMajor, lastReplyMiddle;
         
 	abortSocket = nil;
@@ -878,8 +832,7 @@ static NSString *defaultPassword = nil;
             /* If we can't retrieve a file try chdir'ing into it; if that succeeds, try to retrieve a directory listing */
             if ([self sendCommand:@"CWD" argument:decodedFileName]) {
                 NSString *newPath = [path stringByAppendingString:@"/"];
-                [currentPath release];
-                currentPath = [newPath retain];
+                currentPath = newPath;
                 [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Not a plain file; retrying as directory", @"OWF", [OWFTPSession bundle], @"ftpsession status")];
                 [nonretainedProcessorContext addRedirectionContent:[ftpAddress addressForRelativeString:newPath] sameURI:NO];
                 return;
@@ -924,53 +877,37 @@ static NSString *defaultPassword = nil;
     }
 #endif
 
-    NS_DURING {
-	NSData *data;
-	unsigned int dataBytesRead, bytesInThisPool;
-
-	autoreleasePool = [[NSAutoreleasePool alloc] init];    
-	bytesInThisPool = 0;
-	dataBytesRead = 0;
+    @try {
+	unsigned int dataBytesRead = 0;
 	[nonretainedProcessor processedBytes:dataBytesRead ofBytes:contentLength];
 
-	while ((data = [inputSocketStream readData])) {
-	    NSUInteger dataLength = [data length];
-	    dataBytesRead += dataLength;
-	    bytesInThisPool += dataLength;
-	    [nonretainedProcessor processedBytes:dataBytesRead ofBytes:contentLength];
-	    [outputDataStream writeData:data];
-	    if (bytesInThisPool > 64 * 1024) {
-		[autoreleasePool release];
-		autoreleasePool = [[NSAutoreleasePool alloc] init];
-		bytesInThisPool = 0;
-	    }
+	while (YES) {
+            @autoreleasepool {
+                NSData *data = [inputSocketStream readData];
+                if (data == nil)
+                    break;
+
+                NSUInteger dataLength = [data length];
+                dataBytesRead += dataLength;
+                [nonretainedProcessor processedBytes:dataBytesRead ofBytes:contentLength];
+                [outputDataStream writeData:data];
+            }
 	}
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
 	abortSocket = nil;
 	[outputDataStream dataAbort];
-        [outputDataStream release];
-	[localException retain];
-	[autoreleasePool release];
-	[[localException autorelease] raise];
-    } NS_ENDHANDLER;
+	[localException raise];
+    }
 
     [outputDataStream dataEnd];
-    [outputDataStream release];
     abortSocket = nil;
-    [autoreleasePool release];
+
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"RetrieveStopped" format:NSLocalizedStringFromTableInBundle(@"Retrieve of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
 }    
 	
 - (void)getDirectory:(NSString *)path;
 {
-    ONSocketStream *inputSocketStream;
-    OWDataStream *outputDataStream;
-    OWContent *directoryContent;
-    NSData *data;
-    unsigned int dataBytesRead;
-    NSString *directoryListingType;
-
     [self changeAbsoluteDirectory:path];
     
     /* Check whether we can use MLST / MLSD. */
@@ -983,6 +920,8 @@ static NSString *defaultPassword = nil;
     }
 
     /* Issue either an MLST or a LIST command, as appropriate */
+    ONSocketStream *inputSocketStream;
+    NSString *directoryListingType;
     if (serverSupportsMLST == OWFTP_Yes) {
         inputSocketStream = [self dataSocketStream];
         directoryListingType = @"OWFTPDirectory/MLST";
@@ -998,32 +937,35 @@ static NSString *defaultPassword = nil;
         }
     }
 
-    outputDataStream = [[OWDataStream alloc] init];
-    directoryContent = [OWContent contentWithDataStream:outputDataStream isSource:YES];
+    OWDataStream *outputDataStream = [[OWDataStream alloc] init];
+    OWContent *directoryContent = [OWContent contentWithDataStream:outputDataStream isSource:YES];
     [directoryContent setContentTypeString:directoryListingType];
     [directoryContent markEndOfHeaders];
     [nonretainedProcessorContext addContent:directoryContent fromProcessor:nonretainedProcessor flags:OWProcessorContentIsSource|OWProcessorTypeRetrieval];
 
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Reading directory", @"OWF", [OWFTPSession bundle], @"ftpsession status")];
-    dataBytesRead = 0;
-    NS_DURING {
+    @try {
+        unsigned int dataBytesRead = 0;
         [nonretainedProcessor processedBytes:dataBytesRead];
-        while ((data = [inputSocketStream readData])) {
-            dataBytesRead += [data length];
-            [nonretainedProcessor processedBytes:dataBytesRead];
-            [outputDataStream writeData:data];
-            if (abortOperation)
-                [NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+        while (YES) {
+            @autoreleasepool {
+                NSData *data = [inputSocketStream readData];
+                if (data == nil)
+                    break;
+                dataBytesRead += [data length];
+                [nonretainedProcessor processedBytes:dataBytesRead];
+                [outputDataStream writeData:data];
+                if (abortOperation)
+                    [NSException raise:@"FetchAborted" reason:NSLocalizedStringFromTableInBundle(@"Fetch stopped", @"OWF", [OWFTPSession bundle], @"ftpsession error")];
+            }
         }
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
 	abortSocket = nil;
 	[outputDataStream dataAbort];
-        [outputDataStream release];
 	[localException raise];
-    } NS_ENDHANDLER;
+    }
     
     [outputDataStream dataEnd];
-    [outputDataStream release];
     if (![self readResponse]) // "226 Transfer complete"
 	[NSException raise:@"ListAborted" format:NSLocalizedStringFromTableInBundle(@"List stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), lastReply];
 }
@@ -1033,15 +975,14 @@ static NSString *defaultPassword = nil;
 - (void)storeData:(NSData *)storeData atPath:(NSString *)path;
 {
     ONSocketStream *outputSocketStream = nil;
-    NSAutoreleasePool *autoreleasePool = nil;
 
     NSString *file = [OWURL lastPathComponentForPath:path];
 
     [self changeAbsoluteDirectory:[OWURL stringByDeletingLastPathComponentFromPath:path]];
     [self setCurrentTransferType:imageTransferType];
-    OMNI_POOL_START {
-        outputSocketStream = [[self dataSocketStream] retain];
-    } OMNI_POOL_END;
+    @autoreleasepool {
+        outputSocketStream = [self dataSocketStream];
+    }
     abortSocket = [outputSocketStream socket];
     if (![self sendCommand:@"STOR" argument:[NSData dataWithDecodedURLString:file]]) {
         abortSocket = nil;
@@ -1051,43 +992,25 @@ static NSString *defaultPassword = nil;
     [nonretainedProcessor setStatusString:NSLocalizedStringFromTableInBundle(@"Storing data", @"OWF", [OWFTPSession bundle], @"ftpsession status")];
     NSUInteger contentLength = [storeData length];
 
-    NS_DURING {
-        NSData *data;
-        unsigned int dataBytesWritten, bytesInThisPool;
-
-        autoreleasePool = [[NSAutoreleasePool alloc] init];    
-        bytesInThisPool = 0;
-        dataBytesWritten = 0;
+    @try {
+        unsigned int dataBytesWritten = 0;
         [nonretainedProcessor processedBytes:dataBytesWritten ofBytes:contentLength];
 
         while (dataBytesWritten < contentLength) {
-            NSRange subdataRange;
-
-            subdataRange.location = dataBytesWritten;
-            subdataRange.length = BLOCK_SIZE;
-            if (NSMaxRange(subdataRange) > contentLength)
-                subdataRange.length = contentLength - dataBytesWritten;
-            data = [storeData subdataWithRange:subdataRange];
-            dataBytesWritten += subdataRange.length;
-            bytesInThisPool += subdataRange.length;
-            [nonretainedProcessor processedBytes:dataBytesWritten ofBytes:contentLength];
-            [outputSocketStream writeData:data];
-            if (bytesInThisPool > 64 * 1024) {
-                [autoreleasePool release];
-                autoreleasePool = [[NSAutoreleasePool alloc] init];
-                bytesInThisPool = 0;
+            @autoreleasepool {
+                NSRange subdataRange = {.location = dataBytesWritten, .length = BLOCK_SIZE};
+                if (NSMaxRange(subdataRange) > contentLength)
+                    subdataRange.length = contentLength - dataBytesWritten;
+                NSData *data = [storeData subdataWithRange:subdataRange];
+                dataBytesWritten += subdataRange.length;
+                [nonretainedProcessor processedBytes:dataBytesWritten ofBytes:contentLength];
+                [outputSocketStream writeData:data];
             }
         }
-    } NS_HANDLER {
+    } @finally {
         abortSocket = nil;
-        [localException retain];
-        [autoreleasePool release];
-        [[localException autorelease] raise];
-    } NS_ENDHANDLER;
+    }
 
-    abortSocket = nil;
-    [autoreleasePool release];
-    [outputSocketStream release];
     if (![self readResponse]) // "226 Transfer complete"
         [NSException raise:@"StoreAborted" format:NSLocalizedStringFromTableInBundle(@"Store of %@ stopped: %@", @"OWF", [OWFTPSession bundle], @"ftpsession error"), file, lastReply];
 }    

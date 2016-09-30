@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,13 +23,14 @@ RCS_ID("$Id$")
 
 typedef struct _OWObjectStreamBuffer {
     unsigned int nextIndex;
-    id objects[OWObjectStreamBuffer_BufferedObjectsLength];
+    const void *objects[OWObjectStreamBuffer_BufferedObjectsLength];
     struct _OWObjectStreamBuffer *next;
 } OWObjectStreamBuffer;
 
 @implementation OWObjectStream
 {
-    id *nextObjectInBuffer, *beyondBuffer;
+    const void **nextObjectInBuffer;
+    const void **beyondBuffer;
     OWObjectStreamBuffer *first, *last;
     unsigned int count;
     BOOL endOfObjects;
@@ -72,13 +73,10 @@ enum {
         if (first->nextIndex > count)
             beyondBuffer -= (first->nextIndex - count);
         while (nextObjectInBuffer < beyondBuffer)
-            [*nextObjectInBuffer++ release];
+            CFRelease(*nextObjectInBuffer++);
         free(first);
         first = last;
     }
-    [objectsLock release];
-    [endOfDataLock release];
-    [super dealloc];
 }
 
 //
@@ -88,7 +86,7 @@ enum {
     if (!anObject)
 	return;
     [objectsLock lock];
-    *nextObjectInBuffer = [anObject retain];
+    *nextObjectInBuffer = CFRetain((__bridge CFTypeRef)(anObject));
     count++;
     if (++nextObjectInBuffer == beyondBuffer) {
         last->next = calloc(sizeof(OWObjectStreamBuffer), 1);
@@ -126,7 +124,7 @@ enum {
         buffer = buffer->next;
     *(OWObjectStreamBuffer **)hint = buffer;
     
-    return buffer->objects[index - (buffer->nextIndex - OWObjectStreamBuffer_BufferedObjectsLength)];
+    return (__bridge id)(buffer->objects[index - (buffer->nextIndex - OWObjectStreamBuffer_BufferedObjectsLength)]);
 }
 
 - (id)objectAtIndex:(NSUInteger)index;

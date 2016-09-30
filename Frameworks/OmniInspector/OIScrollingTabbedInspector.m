@@ -30,6 +30,11 @@ RCS_ID("$Id$")
 
 @implementation OIScrollingTabbedInspector
 
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
 - (NSString *)nibName;
 {
     return @"OIScrollingTabbedInspector";
@@ -65,6 +70,7 @@ RCS_ID("$Id$")
         
         lastTab = tab;
         [contentView.widthAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.widthAnchor constant:0].active = YES;
+        [contentView.leftAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.leftAnchor constant:0].active = YES;
     }
     NSLayoutConstraint *compressionConstraint = [contentView.widthAnchor constraintEqualToConstant:0];
     compressionConstraint.priority = NSLayoutPriorityDefaultHigh;

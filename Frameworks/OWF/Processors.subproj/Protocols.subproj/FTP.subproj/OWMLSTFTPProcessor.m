@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,15 +35,6 @@ RCS_ID("$Id$");
 {
     [self registerForContentTypeString:@"OWFTPDirectory/MLST" cost:1.0f];
 }
-
-// Init and dealloc
-
-- (void)dealloc;
-{
-    [lastNameCharset release];
-    [super dealloc];
-}
-
 
 // As an OWDataStreamCharacterProcessor subclass we can override this method
 - (CFStringEncoding)chooseStringEncoding:(OWDataStreamCursor *)dataCursor content:(OWContent *)sourceContent
@@ -162,8 +153,7 @@ RCS_ID("$Id$");
     } else {
         nameEncoding = [OWDataStreamCharacterProcessor stringEncodingForIANACharSetName:nameCharset];
         /* Cache the result of -stringEncodingForIANACharSetName: here ... */
-        [lastNameCharset release];
-        lastNameCharset = [nameCharset retain];
+        lastNameCharset = nameCharset;
         lastNameEncoding = nameEncoding;
     }
     NSString *unicodeFilename = [filename stringByApplyingDeferredCFEncoding:nameEncoding];
@@ -177,7 +167,7 @@ RCS_ID("$Id$");
     OWFileInfo *fileInfo = [[OWFileInfo alloc] initWithAddress:[baseAddress addressForRelativeString:urlCodedFilename] size:fileSize isDirectory:isDir isShortcut:isLink lastChangeDate:modDate];
     [fileInfo setName:unicodeFilename];
 
-    return [fileInfo autorelease];
+    return fileInfo;
 }
 
 @end

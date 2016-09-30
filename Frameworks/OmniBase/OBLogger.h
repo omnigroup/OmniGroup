@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,10 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+typedef void(^OBLogFileHandler)(NSURL *url);
 
 /**
  This is a utility class for doing user-preference and environment-variable controlled logging with customizable levels. Log messages are written to the console log and, optionally, to files in iOS (where the console log can be truncated). Typical interaction with the class is via the OBLoggerInitializeLogLevel() macro and by the OBLog() function, perhaps wrapping the later in a custom macro for a particular logger instance.
@@ -28,6 +32,11 @@
  */
 - (id)initWithName:(NSString *)name shouldLogToFile:(BOOL)shouldLogToFile; // We support logging to files for iOS only, where the console is truncated by the system.
 - (void)log:(NSString *)format arguments:(va_list)args;
+
+/**
+ A convenience method for processing log files. The handler will be invoked with every current log file for this logger.
+ */
+- (void)processLogFilesWithHandler:(OBLogFileHandler)handler;
 @end
 
 /**
@@ -37,15 +46,18 @@
  \param format a format string, as in -[NSString initWithFormat:]
  \param ... additional arguments to format string
  */
-extern void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...);
+extern void OBLog(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *format, ...);
 
 /// Log just the given message, without any format arguments. (Useful for Swift compatibility.)
-extern void OBLogS(OBLogger *logger, NSInteger messageLevel, NSString *message);
+extern void OBLogS(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *message);
 
 /// Helper for initializing log level globals. Invokes -[OBLogger initWithName:shouldLogToFile] and sets outLogger to point to the result.
-extern void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile);
+extern void _OBLoggerInitializeLogLevel(OBLogger * __strong _Nullable * _Nonnull outLogger, NSString *name, BOOL useFile);
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OBLoggerInitializeLogLevel(name) _OBLoggerInitializeLogLevel(&name, @#name, YES)
 #else
 #define OBLoggerInitializeLogLevel(name) _OBLoggerInitializeLogLevel(&name, @#name, NO)
 #endif
+
+NS_ASSUME_NONNULL_END
+

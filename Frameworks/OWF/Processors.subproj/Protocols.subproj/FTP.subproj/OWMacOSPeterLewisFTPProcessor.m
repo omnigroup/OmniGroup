@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -89,13 +89,9 @@ RCS_ID("$Id$")
     }
 
     fileAddress = [baseAddress addressForRelativeString:[NSString encodeURLString:name asQuery:NO leaveSlashes:NO leaveColons:NO]];
-    fileInfo = [[OWFileInfo alloc] initWithAddress:fileAddress
-                                              size:isFolder ? nil : [NSNumber numberWithUnsignedLong:size]
-                                       isDirectory:(isFolder || [directoryFlag isEqualToString:@"d"])
-                                        isShortcut:[directoryFlag isEqualToString:@"l"]
-                                    lastChangeDate:changeDate];
+    fileInfo = [[OWFileInfo alloc] initWithAddress:fileAddress size:isFolder ? nil : [NSNumber numberWithUnsignedLong:size] isDirectory:(isFolder || [directoryFlag isEqualToString:@"d"]) isShortcut:[directoryFlag isEqualToString:@"l"] lastChangeDate:changeDate];
 
-    return [fileInfo autorelease];
+    return fileInfo;
 }
 
 @end

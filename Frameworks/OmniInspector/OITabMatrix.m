@@ -101,9 +101,19 @@ RCS_ID("$Id$");
     [self setNeedsDisplay:YES];
     oldSelection = [self selectedCells];
     [[self cells] makeObjectsPerformSelector:@selector(saveState)];
-    
+
+    // PBS 13 Sep 2016: switching between tabs is logy because of the double-click delay for pinning.
+    // So, instead, allow pinning — but only when double-clicking on a selected cell.
+
+    OITabCell *clickedCell = nil;
+    NSInteger row, column;
+    if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
+        clickedCell = [self cellAtRow:row column:column];
+    }
+    BOOL didClickSelectedCell = (clickedCell && [oldSelection containsObjectIdenticalTo:clickedCell]);
+
     // Wait to see if this is a double-click before proceeding
-    if ([event clickCount] == 1) {
+    if (didClickSelectedCell && [event clickCount] == 1) {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         float doubleClickTime = 0.25f;  // Wait a maximum of a quarter of a second to see if it's a double-click
         id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
@@ -114,10 +124,7 @@ RCS_ID("$Id$");
             event = nextEvent;
     }
     NSArray *allCells = [self cells];
-    NSInteger row, column;
-    if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
-        OITabCell *clickedCell = [self cellAtRow:row column:column];
-        OBASSERT(clickedCell != nil);   // -getRow:column:forPoint: would return NO if the point didn't hit a cell, right?
+    if (clickedCell) {
         if ([event clickCount] == 2) {  // double-click pins/unpins an inspector
             [clickedCell setIsPinned:![clickedCell isPinned]];  // The action method is responsible for checking the pinnedness of the tabs and making sure that attribute gets propagated to the inspector tab controllers as appropriate
         }

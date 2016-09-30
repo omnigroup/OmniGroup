@@ -11,18 +11,12 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
+#import "GeneratedOIDs.h"
 #import <OmniBase/rcsid.h>
 
 #import <Security/Security.h>
 
 RCS_ID("$Id$");
-
-struct parsedTag {
-    unsigned short tag;              // tag
-    uint8_t classAndConstructed;     // class and constructed flags bits from first octet
-    BOOL indefinite;
-    NSRange content;
-};
 
 struct asnWalkerState {
     NSUInteger startPosition;        // The position at which 'v' was parsed
@@ -38,11 +32,25 @@ static enum OFASN1ErrorCodes enterObject(NSData *buffer, struct asnWalkerState *
 static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState, BOOL allowTrailing);
 
 static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v);
+static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange *outParameterRange);
 
-#define asn1ParseError(a, b) OFNSErrorFromASN1Error(a, b)
+#define MAX_BER_INDEFINITE_OBJECT_DEPTH 127 // Arbitrary. In practice we should never exceed a half-dozen or so.
 
-#define ARRAYLENGTH(a) (sizeof(a)/sizeof((a)[0]))
-static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
+static const CFStringRef asn1ErrorCodeStrings[] = {
+#define E(x) [ OFASN1 ## x ] = CFSTR( #x )
+    E(Success),
+    E(EndOfObject),
+    E(Truncated),
+    E(TagOverflow),
+    E(LengthOverflow),
+    E(InconsistentEncoding),
+    E(UnexpectedType),
+    E(UnexpectedIndefinite),
+    E(TrailingData)
+#undef E
+};
+
+enum OFASN1ErrorCodes OFASN1ParseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
 {
     unsigned char buf[16];
     
@@ -136,33 +144,25 @@ static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where
         return OFASN1Success;
     }
 }
+#define parseTagAndLength OFASN1ParseTagAndLength
 
-#if 1
-#define parseTagAndLength(b,w,m,d,t) parseTagAndLength_(b,w,m,d,t)
-#else
-static enum OFASN1ErrorCodes parseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
-{
-    enum OFASN1ErrorCodes rc = parseTagAndLength_(buffer, where, maxIndex, requireDER, outTL);
-    if (rc) {
-        NSLog(@"Next object: pos=%lu err=%d", where, rc);
-    } else {
-        NSLog(@"Next object: pos=%lu cc=%02X tag=0x%X len=%lu", where, outTL->classAndConstructed, outTL->tag, outTL->content.length);
-    }
-    return rc;
-}
-#endif
 
 /* Set up the outermost walker state, and leave it pointing at the first (usually only) object in the buffer */
-static enum OFASN1ErrorCodes initializeWalker(NSData *buffer, BOOL requireDER, struct asnWalkerState *st)
+static enum OFASN1ErrorCodes initializeWalkerAt(NSData *buffer, BOOL requireDER, struct asnWalkerState *st, NSUInteger location, NSUInteger length)
 {
     *st = (struct asnWalkerState){
-        .startPosition = 0,
-        .maxIndex = [buffer length],
+        .startPosition = location,
+        .maxIndex = location + length,
         .containerIsIndefinite = NO,
         .requireDER = requireDER
     };
     
-    return parseTagAndLength(buffer, 0, st->maxIndex, st->requireDER, &(st->v));
+    return parseTagAndLength(buffer, location, st->maxIndex, st->requireDER, &(st->v));
+}
+
+static enum OFASN1ErrorCodes initializeWalker(NSData *buffer, BOOL requireDER, struct asnWalkerState *st)
+{
+    return initializeWalkerAt(buffer, requireDER, st, 0, [buffer length]);
 }
 
 /* Assuming the walker is pointing at a BIT STRING, start a sub-walker pointing at the ASN.1 encoded object inside the BIT STRING (as if the BIT STRING were a SEQUENCE or other container) */
@@ -194,18 +194,19 @@ static enum OFASN1ErrorCodes enterBitString(NSData *buffer, const struct asnWalk
 static enum OFASN1ErrorCodes nextObject(NSData *buffer, struct asnWalkerState *st)
 {
     if (st->v.indefinite) {
-        enum OFASN1ErrorCodes rc;
-        struct asnWalkerState innerWalker;
-        rc = enterObject(buffer, st, &innerWalker);
+        NSUInteger pos;
+        enum OFASN1ErrorCodes rc = OFASN1IndefiniteObjectExtent(buffer, st->v.content.location, st->maxIndex, &pos);
         if (rc)
             return rc;
-        rc = exitObject(buffer, st, &innerWalker, YES);
-        return rc;
+        // Update the state info as if we'd called enterObject/exitObject.
+        st->v.content.length = pos - st->v.content.location;
+        return objectAt(buffer, pos, st);
     } else {
         return objectAt(buffer, NSMaxRange(st->v.content), st);
     }
 }
 
+/* Similar to nextObject(), but sets the walker to a particular position within its container */
 static enum OFASN1ErrorCodes objectAt(NSData *buffer, NSUInteger pos, struct asnWalkerState *st)
 {
     if (pos == st->maxIndex && !st->containerIsIndefinite) {
@@ -224,6 +225,41 @@ static BOOL isSentinelObject(const struct parsedTag *v)
     return (v->tag == 0 && v->classAndConstructed == 0 && !v->indefinite);
 }
 
+enum OFASN1ErrorCodes OFASN1IndefiniteObjectExtent(NSData *buf, NSUInteger position, NSUInteger maxIndex, NSUInteger *outEndPos)
+{
+    enum OFASN1ErrorCodes rc;
+    unsigned depth = 0;
+    
+    for (;;) {
+        struct parsedTag t;
+        rc = parseTagAndLength(buf, position, maxIndex, NO, &t);
+        if (rc) {
+            if (rc == OFASN1EndOfObject)
+                rc = OFASN1Truncated;
+            return rc;
+        }
+        
+        if (isSentinelObject(&t)) {
+            if (depth == 0) {
+                *outEndPos = NSMaxRange(t.content);
+                return OFASN1Success;
+            } else {
+                depth --;
+                position = NSMaxRange(t.content);
+            }
+        } else if (!t.indefinite) {
+            position = NSMaxRange(t.content);
+        } else {
+            // An embedded indefinite object.
+            depth ++;
+            if (depth > MAX_BER_INDEFINITE_OBJECT_DEPTH)
+                return OFASN1LengthOverflow;
+            position = t.content.location;
+        }
+    }
+}
+
+/* Similar to nextObject(), but returns an error if the new pointed-to object is not of the expected type */
 static enum OFASN1ErrorCodes nextObjectExpecting(NSData *buffer, struct asnWalkerState *st, uint8_t expectClassAndConstructed, unsigned short expectTag)
 {
     enum OFASN1ErrorCodes rc = nextObject(buffer, st);
@@ -310,45 +346,120 @@ static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *c
     return objectAt(buffer, nextReadPosition, containerState);
 }
 
-static BOOL unDerInt(NSData *buffer, const struct parsedTag *v, int32_t *result)
-{
-    if (v->classAndConstructed != FLAG_PRIMITIVE ||
-        v->tag != BER_TAG_INTEGER) {
-        /* not an INTEGER */
-        return NO;
-    }
-    
-    if (v->content.length > 4) {
-        /* too large for an int32 */
-        return NO;
-    }
-    unsigned l = (unsigned)(v->content.length);
-    if (l == 0) {
-        /* invalid integer encoding */
-        return NO;
-    }
-    
-    char buf[4];
-    [buffer getBytes:buf+(4-l) range:v->content];
-    
-    if (l < 4)
-        memset(buf, ( buf[4-l] & 0x80 )? 0xFF : 0x00, 4-l);
-    
-    *result = OSReadBigInt32(buf, 0);
-    return YES;
-}
-
 /* Some macros for using the walker functions */
 
-#define IS_TYPE(st, cls, tagnumber) (st.v.classAndConstructed == (cls) && st.v.tag == (tagnumber))
-#define EXPECT_TYPE(st, cls, tagnumber) if (!IS_TYPE(st, cls, tagnumber)) { return OFASN1UnexpectedType; }
+#define IS_TYPE(st, cls, tagnumber) ((st).v.classAndConstructed == (cls) && (st).v.tag == (tagnumber))
+#define EXPECT_TYPE(st, cls, tagnumber) if (!IS_TYPE((st), (cls), (tagnumber))) { return OFASN1UnexpectedType; }
 #define EXPLICIT_TAGGED(st, tagnumber) (st.v.classAndConstructed == (CLASS_CONTEXT_SPECIFIC|FLAG_CONSTRUCTED) && st.v.tag == (tagnumber))
 #define IMPLICIT_TAGGED(st, tagnumber) ((st.v.classAndConstructed & CLASS_MASK) == CLASS_CONTEXT_SPECIFIC && st.v.tag == (tagnumber))
-#define DER_FIELD_RANGE(walker) ((NSRange){ walker.startPosition, walker.v.content.length + ( walker.v.content.location - walker.startPosition)})
-#define FIELD_CONTENTS_RANGE(walker) (walker.v.content)
+#define DER_FIELD_RANGE(walker) ((NSRange){ (walker).startPosition, (walker).v.content.length + ( (walker).v.content.location - (walker).startPosition)})
+#define FIELD_CONTENTS_RANGE(walker) ((walker).v.content)
 
-#define ADVANCE(buf, walker) do{ rc = nextObject(buf, &walker); if (rc) return rc; }while(0)
+#define ADVANCE(buf, walker) do{ rc = nextObject(buf, &(walker)); if (rc) return rc; }while(0)
 #define ADVANCE_E(buf, walker) do{ rc = nextObject(buf, &(walker)); if (rc != OFASN1Success && rc != OFASN1EndOfObject) return rc; }while(0)
+
+#pragma mark Generic SEQUENCE scanner
+
+enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, NSUInteger endPosition, BOOL requireDER, const struct scanItem *items, struct parsedItem *found, unsigned count)
+{
+    BOOL containerIsIndefinite;
+    
+    if (endPosition > 0) {
+        containerIsIndefinite = NO;
+    } else {
+        endPosition = [buf length];
+        containerIsIndefinite = YES;
+    }
+    
+    enum OFASN1ErrorCodes rc;
+    struct parsedTag tagBuf;
+    unsigned itemIndex = 0;
+    
+    for (;;) {
+        if (position == endPosition) {
+            rc = OFASN1EndOfObject;
+        } else {
+            rc = parseTagAndLength(buf, position, endPosition, requireDER, &tagBuf);
+        }
+        if (rc == OFASN1EndOfObject) {
+            if (containerIsIndefinite) {
+                return OFASN1Truncated; // Should have seen an end object before running out of data!
+            } else {
+                // We've reached the end of the input; exit the loop.
+                break;
+            }
+        }
+        if (rc != OFASN1Success) {
+            return rc;
+        }
+        
+        // See if we're pointing at the end-of-indefinite-length-encoding sentinel object
+        if (isSentinelObject(&tagBuf)) {
+            if (!containerIsIndefinite) {
+                return OFASN1InconsistentEncoding; // Not expecting a sentinel in a definite-length container
+            }
+            position = NSMaxRange(tagBuf.content);
+            // We've reached the end of the input; exit the loop.
+            // rc = OFASN1EndOfObject;
+            break;
+        }
+        
+        // Find the length of the object and the offset of the next object. This can be complex if the object is of indefinite length.
+        NSUInteger nextPosition;
+        if (!tagBuf.indefinite) {
+            nextPosition = NSMaxRange(tagBuf.content);
+        } else {
+            // Need to traverse the object to find its length. This is less efficient than using an asnWalkerState because anyone using this object will end up having to traverse it again. But for most of our situations the structure can't be too deep.
+            NSUInteger endPos = 0;
+            rc = OFASN1IndefiniteObjectExtent(buf, tagBuf.content.location, endPosition, &endPos);
+            if (rc)
+                return rc;
+            tagBuf.content.length = (endPos - BER_SENTINEL_LENGTH) - tagBuf.content.location;
+            nextPosition = endPos;
+        }
+        
+        /* Check whether the item we found matches the next item in the caller's list, skipping over optionals as needed. */
+        for (;;) {
+            if (!(itemIndex < count)) {
+                // We've reached the end of our item list without running out of items in the incoming data.
+                return OFASN1TrailingData;
+            }
+            
+            if ((items[itemIndex].flags & FLAG_ANY_OBJECT) ||
+                (tagBuf.classAndConstructed == (items[itemIndex].flags & FLAG_BER_MASK) &&
+                 tagBuf.tag == items[itemIndex].tag)) {
+                // The scanned item matches what we expect.
+                found[itemIndex].startPosition = position;
+                found[itemIndex].i = tagBuf;
+                itemIndex ++;
+                break;
+            } else if (items[itemIndex].flags & FLAG_OPTIONAL) {
+                // This is an optional item; advance past it.
+                found[itemIndex].startPosition = position;
+                found[itemIndex].i = (struct parsedTag){ 0, FLAG_OPTIONAL, NO, { 0, 0 } };
+                itemIndex ++;
+            } else {
+                return OFASN1UnexpectedType;
+            }
+        }
+        
+        position = nextPosition;
+    }
+    
+    // We've reached the end of our input. Make sure that any remaining items in the scan list are optional, and zero out their result buffers.
+    while (itemIndex < count) {
+        if (!(items[itemIndex].flags & FLAG_OPTIONAL)) {
+            // Whoops. Non-optional item missing from the end of the sequence.
+            return OFASN1UnexpectedType;
+        }
+        
+        found[itemIndex].startPosition = position;
+        found[itemIndex].i = (struct parsedTag){ 0, FLAG_OPTIONAL, NO, { 0, 0 } };
+        itemIndex ++;
+    }
+    
+    return OFASN1Success;
+}
 
 #pragma mark - ASN.1 scanning and creation utility functions
 
@@ -693,15 +804,15 @@ BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(
             return NO;
         
         {
-            int32_t parsedAttributeType;
-            int32_t parsedAttributeVersion;
+            int parsedAttributeType;
+            int parsedAttributeVersion;
             NSRange attributeValueLocation;
             
-            if (!unDerInt(payload, &valueSt.v, &parsedAttributeType))
+            if (OFASN1UnDERSmallInteger(payload, &valueSt.v, &parsedAttributeType) != OFASN1Success)
                 return NO;
             if (nextObjectExpecting(payload, &valueSt, FLAG_PRIMITIVE, BER_TAG_INTEGER) != OFASN1Success)
                 return NO;
-            if (!unDerInt(payload, &valueSt.v, &parsedAttributeVersion))
+            if (OFASN1UnDERSmallInteger(payload, &valueSt.v, &parsedAttributeVersion) != OFASN1Success)
                 return NO;
             if (nextObjectExpecting(payload, &valueSt, FLAG_PRIMITIVE, BER_TAG_OCTET_STRING) != OFASN1Success)
                 return NO;
@@ -814,6 +925,333 @@ static NSData *_pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentTy
 }
 
 #endif
+
+int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL expectTrailing, enum OFASN1Algorithm *outAlg, NSRange *outParameterRange)
+{
+    NSRange oidRange;
+    int rc = OFASN1ParseIdentifierAndParameter(buf, expectTrailing, &oidRange, outParameterRange);
+    if (rc)
+        return rc;
+    *outAlg = OFASN1LookUpOID(OFASN1Algorithm, [buf bytes] + oidRange.location, oidRange.length);
+    return 0;
+}
+
+int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL expectTrailing, NSRange *outOIDRange, NSRange *outParameterRange)
+{
+    enum OFASN1ErrorCodes rc;
+    struct asnWalkerState stx;
+    rc = initializeWalker(buf, YES, &stx);
+    if (rc)
+        return rc;
+    if (!expectTrailing && stx.maxIndex != NSMaxRange(stx.v.content))
+        return OFASN1TrailingData;
+    rc = parseIdentifierAndValue(buf, &stx, outOIDRange, outParameterRange);
+    if (expectTrailing) {
+        if (rc == OFASN1EndOfObject)
+            return OFASN1Truncated;
+    } else {
+        if (rc == OFASN1EndOfObject)
+            return OFASN1Success;
+        else if (rc == OFASN1Success)
+            return OFASN1TrailingData;
+    }
+    
+    return rc;
+}
+
+/** Parses a structure of the form SEQUENCE { OBJECT IDENTIFIER, ANY OPTIONAL } */
+static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange *outParameterRange)
+{
+    enum OFASN1ErrorCodes rc;
+    
+    /* We're expecting a SEQUENCE, but in some situations that sequence is implicitly tagged. So accept either a sequence, or any implicitly tagged constructed object. */
+    if (!( (stx->v.classAndConstructed == FLAG_CONSTRUCTED && stx->v.tag == BER_TAG_SEQUENCE) ||
+           (stx->v.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) ))) {
+        return OFASN1UnexpectedType;
+    }
+    
+    struct asnWalkerState walker;
+    rc = enterObject(buf, stx, &walker);
+    if (rc)
+        return rc == OFASN1EndOfObject ? OFASN1Truncated : rc;
+    
+    EXPECT_TYPE(walker, FLAG_PRIMITIVE, BER_TAG_OID);
+    *outOIDRange = walker.v.content;
+    
+    rc = nextObject(buf, &walker);
+    if (rc == OFASN1EndOfObject) {
+        *outParameterRange = (NSRange){ .location = walker.maxIndex, .length = 0 };
+    } else if (rc != OFASN1Success) {
+        return rc;
+    } else {
+        *outParameterRange = DER_FIELD_RANGE(walker);
+        
+        /* Check here that there is exactly one object in the algorithm parameters field */
+        
+        rc = nextObject(buf, &walker);
+        if (rc == OFASN1Success)
+            rc = OFASN1TrailingData;
+        if (rc != OFASN1EndOfObject)
+            return rc;
+    }
+    
+    rc = exitObject(buf, stx, &walker, NO);
+    
+    return rc;
+}
+
+static BOOL parseNULLParameters(NSData *buf, NSRange r)
+{
+    if (r.length == 0) {
+        // Omitted, DEFAULT NULL
+        return YES;
+    }
+    
+    if (r.length == 2) {
+        char nulb[2];
+        [buf getBytes:nulb range:r];
+        if (nulb[0] == BER_TAG_NULL && nulb[1] == 0) {
+            // Explicit NULL
+            return YES;
+        }
+    }
+    
+    return NO;
+}
+
+enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum OFASN1Algorithm algid, NSRange range, NSData **outNonce, int *outTagSize)
+{
+    enum OFASN1ErrorCodes rc;
+
+    switch (algid) {
+        case OFASN1Algorithm_aes128_ccm:
+        case OFASN1Algorithm_aes192_ccm:
+        case OFASN1Algorithm_aes256_ccm:
+
+        case OFASN1Algorithm_aes128_gcm:
+        case OFASN1Algorithm_aes192_gcm:
+        case OFASN1Algorithm_aes256_gcm:
+
+        {
+            /*
+             CCMParameters ::= SEQUENCE {
+                 aes-nonce         OCTET STRING (SIZE(7..13)),
+                 aes-ICVlen        AES-CCM-ICVlen DEFAULT 12
+             }
+             
+             GCMParameters ::= SEQUENCE {
+                 aes-nonce        OCTET STRING,
+                 aes-ICVlen       AES-GCM-ICVlen DEFAULT 12
+             }
+            */
+            struct asnWalkerState walker, pst;
+            
+            rc = initializeWalkerAt(buf, YES, &walker, range.location, range.length);
+            if (rc)
+                return rc;
+            EXPECT_TYPE(walker, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE);
+            rc = enterObject(buf, &walker, &pst);
+            if (rc)
+                return rc;
+            EXPECT_TYPE(pst, FLAG_PRIMITIVE, BER_TAG_OCTET_STRING);
+            rc = OFASN1ExtractStringContents(buf, pst.v, outNonce);
+            if (rc)
+                return rc;
+            ADVANCE_E(buf, pst);
+            if (rc == OFASN1Success) {
+                EXPECT_TYPE(pst, FLAG_PRIMITIVE, BER_TAG_INTEGER);
+                rc = OFASN1UnDERSmallInteger(buf, &pst.v, outTagSize);
+                if (rc)
+                    return rc;
+                ADVANCE_E(buf, pst);
+            } else {
+                *outTagSize = 12;
+            }
+            
+            rc = exitObject(buf, &walker, &pst, NO);
+            if (rc != OFASN1EndOfObject) {
+                return rc? rc : OFASN1UnexpectedType;
+            }
+            
+            return OFASN1Success;
+        }
+            break;
+            
+        case OFASN1Algorithm_aes128_cbc:
+        case OFASN1Algorithm_aes192_cbc:
+        case OFASN1Algorithm_aes256_cbc:
+        case OFASN1Algorithm_des_ede_cbc:
+        {
+            /* RFC3565: "the parameters field MUST contain a AES-IV" (aka OCTET STRING) */
+            struct asnWalkerState pst;
+            rc = initializeWalkerAt(buf, YES, &pst, range.location, range.length);
+            if (rc)
+                return rc;
+            EXPECT_TYPE(pst, FLAG_PRIMITIVE, BER_TAG_OCTET_STRING);
+            rc = OFASN1ExtractStringContents(buf, pst.v, outNonce);
+            if (rc)
+                return rc;
+            ADVANCE_E(buf, pst);
+            return OFASN1Success;
+        }
+            break;
+
+            /* Algorithms with no parameters structure go here. We accept either an omitted parameters field or a NULL parameters field. */
+        case OFASN1Algorithm_aes128_wrap:
+        case OFASN1Algorithm_aes192_wrap:
+        case OFASN1Algorithm_aes256_wrap:
+            /* RFC3565: "In all cases the parameters field MUST be absent." */
+            if (!parseNULLParameters(buf, range))
+                return OFASN1UnexpectedType;
+            return OFASN1Success;
+            break;
+            
+        default:
+            return OFASN1UnexpectedType;
+    }
+}
+
+/* This is essentially the reverse of OFProduceDEKForCMSPWRIPBKDF2(). */
+enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData **outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF)
+{
+    /*
+     PBKDF2-params ::= SEQUENCE {
+         salt CHOICE {
+             specified OCTET STRING,
+             otherSource PBKDF2-SaltSourcesAlgorithmIdentifier
+         },
+         iterationCount INTEGER (1..MAX),
+         keyLength INTEGER (1..MAX) OPTIONAL,
+         prf PBKDF2-PRFsAlgorithmIdentifier DEFAULT defaultPBKDF2
+     }
+     */
+
+    enum OFASN1ErrorCodes rc;
+    struct asnWalkerState derivAlg;
+    
+    rc = initializeWalkerAt(buf, YES, &derivAlg, range.location, range.length);
+    if (rc)
+        return rc;
+    EXPECT_TYPE(derivAlg, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE);
+
+    {
+        struct asnWalkerState derivParams;
+        rc = enterObject(buf, &derivAlg, &derivParams);
+        
+        /* salt CHOICE { specified OCTET STRING, ... } */
+        if (!rc && (derivParams.v.classAndConstructed != FLAG_PRIMITIVE || derivParams.v.tag != BER_TAG_OCTET_STRING)) {
+            rc = OFASN1UnexpectedType;  // The ASN.1 allows other choices, but the RFC for PBKDF2 doesn't.
+        }
+        if (rc)
+            return rc;
+        rc = OFASN1ExtractStringContents(buf, derivParams.v, outSalt);
+        if (rc)
+            return rc;
+        
+        /* iterationCount INTEGER (1..MAX) */
+        rc = nextObjectExpecting(buf, &derivParams, FLAG_PRIMITIVE, BER_TAG_INTEGER);
+        if (rc)
+            return rc;
+        rc = OFASN1UnDERSmallInteger(buf, &derivParams.v, outIterations);
+        if (rc)
+            return rc;
+        
+        /* keyLength INTEGER (1..MAX) OPTIONAL */
+        rc = nextObject(buf, &derivParams);
+        if (rc == OFASN1Success && derivParams.v.classAndConstructed == FLAG_PRIMITIVE && derivParams.v.tag == BER_TAG_INTEGER) {
+            /* The OPTIONAL (but highly useful) key length parameter */
+            rc = OFASN1UnDERSmallInteger(buf, &derivParams.v, outKeyLength);
+            if (rc)
+                return rc;
+            rc = nextObject(buf, &derivParams);
+        } else {
+            *outKeyLength = 0;
+        }
+        
+        /* prf AlgorithmIdentifier DEFAULT { algorithm hMAC-SHA1, parameters NULL } }*/
+        if (rc == OFASN1Success && derivParams.v.classAndConstructed == FLAG_CONSTRUCTED && derivParams.v.tag == BER_TAG_SEQUENCE) {
+            
+            NSRange prfAlgorithmRange, prfParameterRange;
+            rc = parseIdentifierAndValue(buf, &derivParams, &prfAlgorithmRange, &prfParameterRange);
+            
+            if (rc == OFASN1Success || rc == OFASN1EndOfObject) {
+                /* Verify the NULL parameters. */
+                if (!parseNULLParameters(buf, prfParameterRange))
+                    return OFASN1UnexpectedType;
+            } else {
+                return rc;
+            }
+            
+            *outPRF = OFASN1LookUpOID(OFASN1Algorithm, [buf bytes] + prfAlgorithmRange.location, prfAlgorithmRange.length);
+        } else {
+            *outPRF = OFASN1Algorithm_prf_hmacWithSHA1;
+        }
+        
+        if (rc != OFASN1EndOfObject)
+            return rc ? rc : OFASN1TrailingData;
+        rc = exitObject(buf, &derivAlg, &derivParams, NO);
+        if (rc != OFASN1EndOfObject)
+            return rc ? rc : OFASN1TrailingData;
+    }
+
+    return OFASN1Success;
+}
+
+/* Extracts the contents of a string type (OCTET STRING, BIT STRING, etc.) into an NSData. For a definite-length string this is just -subdataWithRange:, but for indefinite encodings it concatenates the successive fragments. */
+enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData **outData)
+{
+    if (!(s.indefinite)) {
+        *outData = [buf subdataWithRange:s.content];
+        return OFASN1Success;
+    }
+    
+    NSUInteger position = s.content.location;
+    NSUInteger maxIndex = ( s.content.length ? NSMaxRange(s.content) : [buf length] );
+    NSMutableData *mbuffer = [NSMutableData data];
+
+    for(;;) {
+        struct parsedTag fragment;
+        enum OFASN1ErrorCodes rc;
+        rc = parseTagAndLength(buf, position, maxIndex, YES, &fragment);
+        if (rc) {
+            if (rc == OFASN1EndOfObject)
+                return OFASN1Truncated;
+            else
+                return rc;
+        }
+        
+        if (isSentinelObject(&fragment)) {
+            if (s.content.length != 0 && NSMaxRange(fragment.content) != NSMaxRange(s.content)) {
+                return OFASN1TrailingData; // Unexpected early sentinel?
+            }
+            break;
+        }
+        
+        if (fragment.indefinite) {
+            // No recursive indefinite encodings!
+            return OFASN1UnexpectedIndefinite;
+        }
+        
+        if ((s.classAndConstructed & CLASS_MASK) == CLASS_UNIVERSAL && s.tag != fragment.tag) {
+            return OFASN1InconsistentEncoding;
+        }
+        
+        if (fragment.classAndConstructed & FLAG_CONSTRUCTED) {
+            return OFASN1InconsistentEncoding;
+        }
+        
+        /* Okay, append this fragment to our buffer */
+        /* TODO: Make use of dispatch_data_create_concat() to avoid copying large segments */
+        [mbuffer appendData:[buf subdataWithRange:fragment.content]];
+        
+        position = NSMaxRange(fragment.content);
+    }
+    
+    *outData = [[mbuffer copy] autorelease];
+    return OFASN1Success;
+}
+
+#pragma mark Primitive value helpers
 
 /* Convert a DER-encoded string to an NSString. Intended for the strings found in PKIX certificates. */
 NSString *OFASN1UnDERString(NSData *derString)
@@ -1010,6 +1448,47 @@ static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parse
     return result;
 }
 
+enum OFASN1ErrorCodes OFASN1UnDERSmallInteger(NSData *buf, const struct parsedTag *v, int *resultp)
+{
+    if (v->classAndConstructed != FLAG_PRIMITIVE ||
+        v->tag != BER_TAG_INTEGER) {
+        /* not an INTEGER */
+        return OFASN1UnexpectedType;
+    }
+    
+    if (v->indefinite) {
+        return OFASN1UnexpectedIndefinite;
+    }
+
+    // WORD_BIT is defined as the number of bits in an int
+    _Static_assert(WORD_BIT == 8*sizeof(*resultp), "");
+
+    /* We assume we don't have a large number of leading zeroes; this is usually used for DER. */
+    if (v->content.length > sizeof(*resultp)) {
+        /* too large for a machine integer */
+        return OFASN1LengthOverflow;
+    }
+    
+    if (v->content.length == 0) {
+        /* This is actually an invalid encoding */
+        *resultp = 0;
+        return OFASN1InconsistentEncoding;
+    }
+    
+    uint8_t b[sizeof(*resultp)];
+    memset(b, 0, sizeof(b));
+    [buf getBytes:b + (sizeof(b) - v->content.length) range:v->content];
+    
+#if WORD_BIT == 32
+    *resultp = OSReadBigInt32(b, 0);
+#elif WORD_BIT == 64
+    *resultp = OSReadBigInt64(b, 0);
+#else
+#error Unexpected word size
+#endif
+    return OFASN1Success;
+}
+
 NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
 {
     struct parsedTag tagged;
@@ -1020,7 +1499,11 @@ NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
     if (NSMaxRange(tagged.content) != NSMaxRange(r))
         return nil;
     
-    return [buf subdataWithRange:tagged.content];
+    NSData *result = nil;
+    if (OFASN1ExtractStringContents(buf, tagged, &result) != OFASN1Success)
+        return nil;
+    else
+        return result;
 }
 
 /* Convert a DER-encoded OID to its conventional text representation (e.g. "1.3.12.42") */
@@ -1103,11 +1586,6 @@ NSData *OFASN1OIDFromString(NSString *s)
     return result;
 }
 
-static uint8_t id_rsaEncryption_der[]    = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };  /* RFC 2313 aka PKCS#1 - 1.2.840.113549.1.1.1 */
-static uint8_t id_dsa_der[]              = { 0x2A, 0x86, 0x48, 0xCE, 0x38, 0x04, 0x01 };    /* RFC 3279 [2.3.2] - 1.2.840.10040.4.1 */
-static uint8_t id_ecPublicKey_der[]      = { 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01 };    /* RFC 5480 [2.1.1] - 1.2.840.10045.2.1 - unrestricted key usage */
-static uint8_t id_ecDH_der[]             = { 0x2B, 0x81, 0x04, 0x01, 0x0C };                /* RFC 5480 [2.1.2] - 1.3.132.1.12 - ECDH only */
-
 static unsigned bitSizeOfInteger(NSData *buffer, const struct parsedTag *st)
 {
     NSRange r = st->content;
@@ -1158,8 +1636,7 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
     
     enum OFASN1ErrorCodes rc, savedAlgidParamRc;
     struct asnWalkerState st, spkiSt, savedAlgParamSt;
-    const void *oidPtr;
-    size_t oidLen;
+    enum OFASN1Algorithm keyAlgorithm;
     
     rc = initializeWalker(publicKeyInformation, YES, &st);
     if (rc || !IS_TYPE(st, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
@@ -1178,8 +1655,9 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
         if (rc || !IS_TYPE(algidSt, FLAG_PRIMITIVE, BER_TAG_OID))
             return ka_Failure;
         
-        oidPtr = [publicKeyInformation bytes] + algidSt.v.content.location;
-        oidLen = algidSt.v.content.length;
+        keyAlgorithm = OFASN1LookUpOID(OFASN1Algorithm,
+                                       [publicKeyInformation bytes] + algidSt.v.content.location,
+                                       algidSt.v.content.length);
         
         savedAlgidParamRc = nextObject(publicKeyInformation, &algidSt);
         savedAlgParamSt = algidSt;
@@ -1194,10 +1672,8 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
     /* spkiSt, after exiting from the algorithm identifier, should be looking at the BIT STRING which contains the actual public key */
     if (!IS_TYPE(spkiSt, FLAG_PRIMITIVE, BER_TAG_BIT_STRING))
         return ka_Failure;
-    
-#define IS_OID(o) (oidLen == sizeof(o) && !memcmp(oidPtr, (o), sizeof(o)))
-    
-    if (IS_OID(id_rsaEncryption_der)) {
+            
+    if (keyAlgorithm == OFASN1Algorithm_rsaEncryption_pkcs1_5) {
         if (outKeySize) {
             /*
              RSAPublicKey ::= SEQUENCE {
@@ -1217,7 +1693,7 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
         return ka_RSA;
     }
     
-    if (IS_OID(id_dsa_der)) {
+    if (keyAlgorithm == OFASN1Algorithm_DSA) {
         if (outKeySize || outOtherSize) {
             
             /*
@@ -1248,7 +1724,7 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
         return ka_DSA;
     }
     
-    if (IS_OID(id_ecPublicKey_der) || IS_OID(id_ecDH_der)) {
+    if (keyAlgorithm == OFASN1Algorithm_ecPublicKey || keyAlgorithm == OFASN1Algorithm_ecDH) {
         if (outKeySize || outOtherSize) {
             
             /*
@@ -1284,223 +1760,29 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
     return ka_Other;
 }
 
-#pragma mark Construction helpers
+#pragma mark Error helpers
 
-/*" Formats the tag byte and length field of an ASN.1 item and appends the result to the passed-in buffer. Currently the 'tag' is the whole tag+class+constructed field--- we don't handle multibyte tags at all (since they don't appear in any PKIX structures). "*/
-void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount)
+NSError *OFNSErrorFromASN1Error(int errCode_, NSString *extra)
 {
-    uint8_t buf[ 2 + sizeof(NSUInteger) ];
-    unsigned int bufUsed;
+    NSString *detail;
+    int errCode = errCode_;
     
-    buf[0] = tag;
-    bufUsed = 1;
-    
-    if (byteCount < 128) {
-        /* Short lengths have a 1-byte direct representation */
-        buf[1] = (uint8_t)byteCount;
-        bufUsed = 2;
+    if (errCode >= 0 && errCode < (int)((sizeof(asn1ErrorCodeStrings)/sizeof(asn1ErrorCodeStrings[0])))) {
+        detail = (__bridge NSString *)asn1ErrorCodeStrings[errCode];
     } else {
-        /* Longer lengths have a count-and-value representation */
-        uint_fast8_t n;
-        uint8_t bytebuf[ sizeof(NSUInteger) ];
-        NSUInteger value = byteCount;
-        for(n = 0; n < sizeof(NSUInteger); n++) {
-            bytebuf[n] = ( value & 0xFF );
-            value >>= 8;
-        }
-        while(bytebuf[n-1] == 0)
-            n--;
-        buf[bufUsed++] = 0x80 | n;
-        while (n--) {
-            buf[bufUsed++] = bytebuf[n];
-        };
+        detail = nil;
     }
     
-    OBASSERT(bufUsed == OFASN1SizeOfTagLength(tag, byteCount));
+    if (!detail) {
+        detail = [NSString stringWithFormat:@"Error %d", errCode];
+    }
     
-    [buffer appendBytes:buf length:bufUsed];
+    if (extra) {
+        detail = [detail stringByAppendingFormat:@" (%@)", extra];
+    }
+    
+    return [NSError errorWithDomain:OFErrorDomain code:OFASN1Error userInfo: detail ? @{NSLocalizedDescriptionKey: detail} : nil];
 }
 
-unsigned int OFASN1SizeOfTagLength(uint8_t tag, NSUInteger byteCount)
-{
-    unsigned int bufUsed;
-    
-    bufUsed = 1;
-    
-    if (byteCount < 128) {
-        /* Short lengths have a 1-byte direct representation */
-        return bufUsed + 1;
-    } else {
-        /* Longer lengths have a count-and-value representation */
-        uint_fast8_t n;
-        uint8_t bytebuf[8];
-        memset(bytebuf, 0, sizeof(bytebuf)); /// Redundant memset, but apparently clang analyze doesn't understand OSWriteLittleInt64()
-        OSWriteLittleInt64(bytebuf, 0, byteCount);
-        n = 7;
-        while (bytebuf[n] == 0) {
-            n--;
-        }
-        return bufUsed + 2 + n;
-    }
-}
 
-NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...)
-{
-    struct piece {
-        unsigned tagAndClass;
-        size_t length;
-        const uint8_t *rawBytes;
-        NSData * __unsafe_unretained obj;
-        
-        size_t contentLength;
-        int container;
-        int lastContent;
-        int stuffing;
-    } *pieces;
-    
-    /* As an upper bound, there are as many pieces as characters in the format string */
-    pieces = malloc(sizeof(*pieces) * strlen(fmt));
-    
-    int lastOpen = -1;
-    int pieceCount = 0;
-    const char *cp = fmt;
-    
-    va_list argList;
-    va_start(argList, fmt);
-    for (;;) {
-        int tag = 0;
-        BOOL stuffByte;
-        
-        if (!*cp)
-            break;
-        
-        if (*cp == '!') {
-            tag = va_arg(argList, int);
-            cp++;
-        } else {
-            tag = 0;
-        }
-        
-        switch(*cp) {
-            case ' ':
-                break;
-            case 'd':
-            {
-                NSData * __unsafe_unretained obj = va_arg(argList, NSData * __unsafe_unretained);
-                pieces[pieceCount++] = (struct piece){
-                    .tagAndClass = 0,
-                    .length = [obj length],
-                    .rawBytes = NULL,
-                    .obj = obj,
-                    
-                    .container = -1,
-                    .lastContent = -1
-                };
-            }
-                break;
-                
-            case '*':
-            {
-                size_t len = va_arg(argList, size_t);
-                const uint8_t *buf = va_arg(argList, const uint8_t *);
-                
-                pieces[pieceCount++] = (struct piece){
-                    .tagAndClass = 0,
-                    .length = len,
-                    .rawBytes = buf,
-                    .obj = NULL,
-                    
-                    .container = -1,
-                    .lastContent = -1
-                };
-            }
-                break;
-                
-            case '(':
-                if (!tag)
-                    tag = BER_TAG_SEQUENCE | FLAG_CONSTRUCTED;
-                stuffByte = NO;
-                goto beginConstructed;
-            case '{':
-                if (!tag)
-                    tag = BER_TAG_SET | FLAG_CONSTRUCTED;
-                stuffByte = NO;
-                goto beginConstructed;
-            case '[':
-                if (!tag)
-                    tag = BER_TAG_OCTET_STRING;
-                stuffByte = NO;
-                goto beginConstructed;
-            case '<':
-                if (!tag)
-                    tag = BER_TAG_BIT_STRING;
-                stuffByte = YES;
-                goto beginConstructed;
-                
-            beginConstructed:
-                pieces[pieceCount] = (struct piece){
-                    .tagAndClass = tag,
-                    .length = 0,
-                    .rawBytes = NULL,
-                    .obj = nil,
-                    
-                    .container = lastOpen,
-                    .lastContent = -1,
-                    .stuffing = stuffByte? 1 : 0
-                };
-                lastOpen = pieceCount;
-                pieceCount ++;
-                break;
 
-            case ')':
-            case '}':
-            case ']':
-            case '>':
-                assert(lastOpen >= 0);
-                assert(pieceCount > lastOpen);
-                pieces[lastOpen].lastContent = pieceCount-1;
-                lastOpen = pieces[lastOpen].container;
-                break;
-                
-            default:
-                abort();
-        }
-        
-        cp++;
-    }
-    va_end(argList);
-
-    /* Run through backwards to compute lengths */
-    size_t totalLength = 0;
-    for (int pieceIndex = pieceCount-1; pieceIndex >= 0; pieceIndex --) {
-        if (pieces[pieceIndex].tagAndClass) {
-            size_t summedLength = 0;
-            for (int ci = pieceIndex+1; ci <= pieces[pieceIndex].lastContent; ci++) {
-                summedLength += pieces[ci].length;
-            }
-            pieces[pieceIndex].contentLength = summedLength;
-            pieces[pieceIndex].length = OFASN1SizeOfTagLength((uint8_t)pieces[pieceIndex].tagAndClass, summedLength + pieces[pieceIndex].stuffing) + pieces[pieceIndex].stuffing;
-        }
-        totalLength += pieces[pieceIndex].length;
-    }
-    
-    /* And accumulate everything into the supplied buffer */
-    if (!buffer)
-        buffer = [NSMutableData dataWithCapacity:totalLength];
-    
-    for (int pieceIndex = 0; pieceIndex < pieceCount; pieceIndex ++) {
-        if (pieces[pieceIndex].tagAndClass) {
-            OFASN1AppendTagLength(buffer, (uint8_t)pieces[pieceIndex].tagAndClass, pieces[pieceIndex].contentLength + pieces[pieceIndex].stuffing);
-            if (pieces[pieceIndex].stuffing)
-                [buffer appendBytes:"" length:1];
-        } else if (pieces[pieceIndex].rawBytes) {
-            [buffer appendBytes:pieces[pieceIndex].rawBytes length:pieces[pieceIndex].length];
-        } else if (pieces[pieceIndex].obj) {
-            [buffer appendData:pieces[pieceIndex].obj];
-        }
-    }
-
-    free(pieces);
-    
-    return buffer;
-}

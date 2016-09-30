@@ -20,6 +20,7 @@
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXDocumentStoreScope.h>
 #import <OmniFileExchange/OFXServerAccount.h>
@@ -27,7 +28,6 @@
 
 #import "OUIDocumentParameters.h"
 #import "OUIAddCloudAccountViewController.h"
-#import "OUIServerAccountSetupViewController.h"
 #import "OUIDocumentHomeScreenAnimator.h"
 #import "OUIDocumentPickerAdaptableContainerViewController.h"
 #import "OUIDocumentPicker-Internal.h"

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,27 +17,31 @@
 RCS_ID("$Id$")
 
 @implementation OWFileDataStream
+{
+    NSString *inputFilename;
+}
 
 // Init and dealloc
 
-- initWithData:(NSData *)data filename:(NSString *)aFilename;
+- (instancetype)initWithData:(NSData *)data filename:(NSString *)aFilename;
 {
     if (data == nil) {
-	[self release];
+	self = nil;
 	return nil;
     }
 
-    if (!(self = [super init]))
+    self = [super init];
+    if (self == nil)
         return nil;
-
-    inputFilename = [aFilename retain];
+    
+    inputFilename = aFilename;
     [self writeData:data];
     [self dataEnd];
 
     return self;
 }
 
-- initWithContentsOfFile:(NSString *)aFilename;
+- (instancetype)initWithContentsOfFile:(NSString *)aFilename;
 {
     NSData *data;
     id returnValue;
@@ -45,30 +49,16 @@ RCS_ID("$Id$")
     aFilename = [aFilename stringByExpandingTildeInPath];
     data = [[NSData alloc] initWithContentsOfFile:aFilename];
     returnValue = [self initWithData:data filename:aFilename];
-    [data release];
     return returnValue;
 }
 
-- initWithContentsOfMappedFile:(NSString *)aFilename;
+- (instancetype)initWithContentsOfMappedFile:(NSString *)aFilename;
 {
     aFilename = [aFilename stringByExpandingTildeInPath];
 
     NSData *data = [[NSData alloc] initWithContentsOfFile:aFilename options:NSDataReadingMappedIfSafe error:NULL];
     id returnValue = [self initWithData:data filename:aFilename];
-    [data release];
     return returnValue;
-}
-
-// DEPRECATED as of 12/10/2001: This method exists only for backwards compatibility
-- initWithData:(NSData *)data;
-{
-    return [self initWithData:data filename:nil];
-}
-
-- (void)dealloc;
-{
-    [inputFilename release];
-    [super dealloc];
 }
 
 // OWDataStream subclass

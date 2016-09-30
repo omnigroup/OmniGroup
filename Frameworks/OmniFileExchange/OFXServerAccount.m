@@ -99,6 +99,7 @@ static NSURL *URLWithBookmarkData(NSData *data, BOOL *outStale, NSError **outErr
 }
 
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 static BOOL _validateNotDropbox(NSURL *url, NSError **outError)
 {
     NSArray *components = [url pathComponents];
@@ -111,10 +112,22 @@ static BOOL _validateNotDropbox(NSURL *url, NSError **outError)
         return NO;
     }
     
+    NSString *homeDirectory = OFUnsandboxedHomeDirectory();
+    NSString *desktopFolder = [homeDirectory stringByAppendingPathComponent:@"Desktop"];
+    NSString *documentsFolder = [homeDirectory stringByAppendingPathComponent:@"Documents"];
+    NSString *urlPath = url.path;
+    if ([urlPath hasPrefix:desktopFolder] || [urlPath hasPrefix:documentsFolder]) { // 10.12 Sierra prompts people to store their desktop and documents in iCloud
+        if (outError) {
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            NSString *reason = NSLocalizedStringFromTableInBundle(@"The proposed local documents folder is in a location which can be synchronized by iCloud. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            OFXError(outError, OFXLocalAccountDirectoryNotUsable, description, reason);
+        }
+        return NO;
+    }
+    
     return YES;
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 {
     struct statfs fs_info = {0};
@@ -168,11 +181,11 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         OBASSERT(validationReason == OFXServerAccountValidateLocalDirectoryForSyncing);
     }
     
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     // Make sure the proposed URL isn't located inside other synchronized folders.
     if (!_validateNotDropbox(documentsURL, outError))
         return NO;
     
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if (!_validateLocalFileSystem(documentsURL, outError))
         return NO;
 #endif
@@ -193,10 +206,10 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
 + (BOOL)validatePotentialLocalDocumentsParentURL:(NSURL *)documentsURL registry:(OFXServerAccountRegistry *)registry error:(NSError **)outError;
 {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if (!_validateNotDropbox(documentsURL, outError))
         return NO;
     
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     if (!_validateLocalFileSystem(documentsURL, outError))
         return NO;
 #endif

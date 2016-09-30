@@ -1446,27 +1446,6 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
     return success;
 }
 
-typedef struct {
-    NSMutableArray *validationErrors;
-    SEL sel;
-} ValidationContext;
-
-typedef BOOL (*validationMethod)(id self, SEL _cmd, NSError **outError);
-
-static void _validateApplier(const void *value, void *context)
-{
-    ODOObject *object = (ODOObject *)value;
-    ValidationContext *ctx = context;
-    
-    NSError *error = nil;
-    BOOL success = ((validationMethod)objc_msgSend)(object, ctx->sel, &error);
-    if (!success) {
-        if (!ctx->validationErrors)
-            ctx->validationErrors = [NSMutableArray array];
-        [ctx->validationErrors addObject:error];
-    }
-}
-
 // Delete validation occurs when -deleteObject: is called
 - (BOOL)_validateInsertsAndUpdates:(NSError **)outError;
 {
@@ -1474,29 +1453,42 @@ static void _validateApplier(const void *value, void *context)
     OBPRECONDITION(!_recentlyUpdatedObjects);
     OBPRECONDITION(!_recentlyDeletedObjects);
     
-    ValidationContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
+    NSMutableArray <NSError *> *validationErrors = [NSMutableArray new];
+    __block NSError *localError = nil;
     
-    if (_processedInsertedObjects) {
-        ctx.sel = @selector(validateForInsert:);
-        CFSetApplyFunction((CFSetRef)_processedInsertedObjects, _validateApplier, &ctx);
-    }
-    if (_processedUpdatedObjects) {
-        ctx.sel = @selector(validateForUpdate:);
-        CFSetApplyFunction((CFSetRef)_processedUpdatedObjects, _validateApplier, &ctx);
+    void(^checkSuccess)(BOOL isSuccess) = ^(BOOL isSuccess) {
+        if (!isSuccess) {
+            [validationErrors addObject:localError];
+        }
+        localError = nil;
+    };
+    
+    for (ODOObject *object in _processedInsertedObjects) {
+        checkSuccess([object validateForInsert:&localError]);
     }
     
-    if (!ctx.validationErrors)
+    for (ODOObject *object in _processedUpdatedObjects) {
+        checkSuccess([object validateForUpdate:&localError]);
+    }
+    
+    if (validationErrors.count == 0) {
         return YES;
+    }
     
-    // TODO: Should we collect the validation errors into an ivar?  This approach will build an array of arrays of errors rather than a flat array of all errors across all objects.
-    if ([ctx.validationErrors count] == 1) {
-        if (outError != NULL)
-            *outError = [ctx.validationErrors lastObject];
+    if (validationErrors.count == 1) {
+        if (outError != NULL) {
+            *outError = [validationErrors lastObject];
+        }
     } else {
+#ifdef DEBUG
+        NSArray *errors = validationErrors;
+        for (NSError *error in errors) {
+            NSLog(@"Validation error: %@", error);
+        }
+#endif
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple validation errors occurred while saving.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        ODOErrorWithInfo(outError, ODOUnableToSave, description, reason, ODODetailedErrorsKey, ctx.validationErrors, nil);
+        ODOErrorWithInfo(outError, ODOUnableToSave, description, reason, ODODetailedErrorsKey, validationErrors, nil);
     }
     
     return NO;

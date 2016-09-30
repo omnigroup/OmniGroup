@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,16 +17,7 @@ RCS_ID("$Id$")
 
 @implementation OWTask
 
-static NSBundle *OWF_Bundle = nil;
-
 #define OFMessageQueueSchedulingInfoCleaningUp OFMessageQueueSchedulingInfoDefault
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-
-    OWF_Bundle = [[NSBundle bundleForClass:[OWTask class]] retain];
-}
 
 + (NSString *)HMSStringFromTimeInterval:(NSTimeInterval)interval;
 {
@@ -58,7 +49,7 @@ static NSBundle *OWF_Bundle = nil;
     if (!(self = [self init]))
         return nil;
 
-    compositeTypeString = [name retain];
+    compositeTypeString = name;
     [self setContentInfo:aContentInfo];
     [self setParentContentInfo:aParentContentInfo];
 
@@ -70,12 +61,7 @@ static NSBundle *OWF_Bundle = nil;
     OBPRECONDITION(parentContentInfo == nil);
     OBPRECONDITION(_contentInfo == nil);
 
-    [compositeTypeString release];
-
     OFSimpleLockFree(&displayablesSimpleLock);
-    [_contentInfoLock release];
-    [parentContentInfoLock release];
-    [super dealloc];
 }
 
 
@@ -272,9 +258,9 @@ static NSBundle *OWF_Bundle = nil;
 - (NSString *)statusString;
 {
     if (taskFlags.wasActiveOnLastCheck)
-        return NSLocalizedStringFromTableInBundle(@"Loading elements", @"OWF", OWF_Bundle, @"task statusString");
+        return NSLocalizedStringFromTableInBundle(@"Loading elements", @"OWF", OMNI_BUNDLE, @"task statusString");
     else
-        return NSLocalizedStringFromTableInBundle(@"Activity finished", @"OWF", OWF_Bundle, @"task statusString");
+        return NSLocalizedStringFromTableInBundle(@"Activity finished", @"OWF", OMNI_BUNDLE, @"task statusString");
 }
 
 // Network activity panel / inspector helper methods
@@ -302,18 +288,17 @@ static NSBundle *OWF_Bundle = nil;
         
         OWContentInfo *oldParentContentInfo = parentContentInfo;
 
-        parentContentInfo = [aParentContentInfo retain];
-        if (parentContentInfo) {
+        parentContentInfo = aParentContentInfo;
+        if (parentContentInfo != nil) {
             [parentContentInfo addChildTask:self];
             if (taskFlags.wasActiveOnLastCheck)
                 [parentContentInfo addActiveChildTask:self];
         }
 
-        if (oldParentContentInfo) {
+        if (oldParentContentInfo != nil) {
             [oldParentContentInfo removeChildTask:self];
             if (taskFlags.wasActiveOnLastCheck)
                 [oldParentContentInfo removeActiveChildTask:self];
-            [oldParentContentInfo release];
         }
 
     } [parentContentInfoLock unlock];
@@ -324,7 +309,7 @@ static NSBundle *OWF_Bundle = nil;
     OWContentInfo *info;
 
     [parentContentInfoLock lock]; {
-        info = [[parentContentInfo retain] autorelease];
+        info = parentContentInfo;
     } [parentContentInfoLock unlock];
 
     return info;
@@ -339,20 +324,17 @@ static NSBundle *OWF_Bundle = nil;
         newContentInfo = nil;
     [_contentInfoLock lock];
     if (_contentInfo != newContentInfo) {
-        OWContentInfo *oldContentInfo;
-
-        oldContentInfo = _contentInfo;
+        OWContentInfo *oldContentInfo = _contentInfo;
         _contentInfo = newContentInfo;
         if (newContentInfo != nil) {
-            [newContentInfo retain];
             [newContentInfo setAddress:[self lastAddress]];
             [newContentInfo addTask:self]; // Note retain cycle, requires -nullifyContentInfo to break
         }
         if (oldContentInfo != nil) {
-            if (newContentInfo == nil)
-                [[self retain] autorelease]; // Make sure we're not deallocated out from underneath our caller when we remove ourselves from our oldContentInfo's tasks
+            if (newContentInfo == nil) {
+                OBRetainAutorelease(self); // Make sure we're not deallocated out from underneath our caller when we remove ourselves from our oldContentInfo's tasks
+            }
             [oldContentInfo removeTask:self];
-            [oldContentInfo release];
         }
     }
     [_contentInfoLock unlock];
@@ -363,9 +345,9 @@ static NSBundle *OWF_Bundle = nil;
     OWContentInfo *contentInfo;
 
     [_contentInfoLock lock];
-    contentInfo = [_contentInfo retain];
+    contentInfo = _contentInfo;
     [_contentInfoLock unlock];
-    return [contentInfo autorelease];
+    return contentInfo;
 }
 
 - (void)nullifyContentInfo;
@@ -394,9 +376,7 @@ static NSBundle *OWF_Bundle = nil;
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
     if (_contentInfo)
         [debugDictionary setObject:_contentInfo forKey:@"_contentInfo"];

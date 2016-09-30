@@ -12,15 +12,16 @@ NS_ASSUME_NONNULL_BEGIN
 @class OUIPasswordAlertViewController;
 @protocol OUIPasswordAlertDelegate;
 
-typedef enum {
-    OUIPasswordAlertActionCancel,
-    OUIPasswordAlertActionLogIn
-} OUIPasswordAlertAction;
+typedef NS_ENUM(NSUInteger, OUIPasswordAlertAction) {
+    OUIPasswordAlertActionCancel = 0,
+    OUIPasswordAlertActionLogIn,
+};
 
-typedef enum {
-    OUIPasswordAlertOptionShowUsername = 0x01,
-    OUIPasswordAlertOptionAllowsEditingUsername = 0x02
-} OUIPasswordAlertOptions;
+typedef NS_OPTIONS(NSUInteger, OUIPasswordAlertOptions) {
+    OUIPasswordAlertOptionShowUsername = 1 << 0,
+    OUIPasswordAlertOptionAllowsEditingUsername = 1 << 1,
+    OUIPasswordAlertOptionRequiresPasswordConfirmation = 1 << 2,
+};
 
 // This is the placeholder we use when presenting UI with a previously stored password to obfuscate its length
 extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
@@ -28,9 +29,10 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @interface OUIPasswordAlert : NSObject
 
 - (id)init NS_UNAVAILABLE;
-- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(nullable NSString *)title options:(NSUInteger)options NS_DESIGNATED_INITIALIZER;
+- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(nullable NSString *)title options:(OUIPasswordAlertOptions)options NS_DESIGNATED_INITIALIZER;
 
 @property (nonatomic, readonly) NSString *title;
+@property (nonatomic, copy) NSString *message; // Detail text for the presented alert. Overridden by username if the ShowUsername option is set.
 @property (nonatomic, readonly) NSURLProtectionSpace *protectionSpace;
 
 @property (nonatomic, weak, nullable) id <OUIPasswordAlertDelegate> delegate;
@@ -40,6 +42,7 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @property (nonatomic, copy, nullable) NSString *password;
 
 @property (nonatomic, readonly, getter=isUsingObfuscatedPasswordPlaceholder) BOOL usingObfuscatedPasswordPlaceholder;
+@property (nonatomic, assign) NSUInteger minimumPasswordLength;
 
 @property (nonatomic, strong, null_resettable) UIColor *tintColor;
 

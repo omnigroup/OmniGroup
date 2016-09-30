@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,12 +26,7 @@ static OWContentType *sourceContentType;
 
 + (void)initialize;
 {
-    static BOOL initialized = NO;
-
-    [super initialize];
-    if (initialized)
-        return;
-    initialized = YES;
+    OBINITIALIZE;
 
     sourceContentType = [OWContentType contentTypeForString:@"application/x-url"];
 }
@@ -48,10 +43,7 @@ static OWContentType *sourceContentType;
 
 - (void)process;
 {
-    NSString *line;
-    OWAddress *anAddress;
-
-    line = [characterCursor readLine];
+    NSString *line = [characterCursor readLine];
 
     // Internet Explorer writes .url files that look like this:
     //
@@ -64,10 +56,8 @@ static OWContentType *sourceContentType;
             line = [line substringFromIndex:4];
     }
 
-    anAddress = [OWAddress addressForDirtyString:line];
-    [pipeline addContent:[OWContent contentWithAddress:anAddress]
-           fromProcessor:self
-                   flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
+    OWAddress *anAddress = [OWAddress addressForDirtyString:line];
+    [self.pipeline addContent:[OWContent contentWithAddress:anAddress] fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
 }
 
 @end

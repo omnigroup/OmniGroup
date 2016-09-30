@@ -31,6 +31,27 @@ RCS_ID("$Id$");
 @end
 
 @implementation OWCacheSearch
+{
+    /* The parameters of the search */
+    OWContent *sourceEntry;
+    OWCacheArcRelationship searchRelation;
+    __weak OWPipeline *weaklyRetainedPipeline;
+    float unacceptableCost;
+    
+    /* Queues of objects to consider */
+    OFHeap *cachesToSearch;
+    OFHeap *arcsToConsider;
+    
+    /* Arcs already considered and either rejected or previously traversed */
+    NSMutableSet *rejectedArcs;
+    /* These arcs were given to the pipeline in -init, and should be considered effectively free */
+    NSMutableSet *freeArcs;
+#ifdef DEBUG_kc
+    struct {
+        unsigned int debug:1;
+    } flags;
+#endif
+}
 
 // Init and dealloc
 
@@ -40,12 +61,12 @@ RCS_ID("$Id$");
         return nil;
 
     searchRelation = aRelation;
-    sourceEntry = [anEntry retain];
+    sourceEntry = anEntry;
 #ifdef DEBUG_kc
     if ([sourceEntry isAddress] && [[[sourceEntry address] addressString] isEqualToString:[[NSUserDefaults standardUserDefaults] stringForKey:@"OWPipelineDebugAddress"]])
         flags.debug = YES;
 #endif
-    weaklyRetainedPipeline = [context weakRetain];
+    weaklyRetainedPipeline = context;
 
     cachesToSearch = [[OFHeap alloc] initWithComparator:^NSComparisonResult (id a, id b) { return [self compareByCacheCost:a to:b]; }];
     arcsToConsider = [[OFHeap alloc] initWithComparator:^NSComparisonResult (id a, id b) { return [self compareByCostAndDate:a to:b]; }];
@@ -54,17 +75,6 @@ RCS_ID("$Id$");
     unacceptableCost = FLT_MAX;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [sourceEntry release];
-    [weaklyRetainedPipeline weakRelease];
-    [cachesToSearch release];
-    [arcsToConsider release];
-    [rejectedArcs release];
-    [freeArcs release];
-    [super dealloc];
 }
 
 // API
@@ -83,8 +93,6 @@ RCS_ID("$Id$");
 
 - (void)setRejectedArcs:(NSSet *)someArcs
 {
-    if (rejectedArcs)
-        [rejectedArcs release];
     rejectedArcs = [someArcs mutableCopy];
 }
 

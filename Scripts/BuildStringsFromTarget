@@ -72,10 +72,24 @@ $SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" xib,storyboard "$PROJECT_FIL
     xib_basename=`basename $x`
     if [[ "$x" =~ "Base.lproj/$xib_basename\$" ]]; then
         string_table_name="${xib_basename%.*}"
-        echo "Creating string table '$string_table_name' from $x" # without this line here, zsh segfaults. (!?)
-        ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$SRCROOT/$x"
         echo "$x" >> "$LOCALIZABLE_FILE_LIST"-tmp
-        EXPECTED_STRINGS_FILES+=$string_table_name
+        echo "Creating string table '$string_table_name' from $x" # without this line here, zsh segfaults. (!?)
+		
+		# Extract the strings
+        ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$SRCROOT/$x"
+		
+		# ibtool writes UTF-16 and doesn't seem to have a switch to requested a string encoding. Also, when it emits 'empty' strings files, they have a single newline.
+		echo "  -- converting to utf-8"
+		$SCRIPTS_DIR/ChangeStringEncoding --input utf-16 --output utf-8 "$TMP_OUTPUT/${string_table_name}.strings"
+		
+		# But only copy the strings file into the product if it is non-empty
+		size=$(stat -n -f %z "$TMP_OUTPUT/${string_table_name}.strings")
+		if [ $size -gt 1 ]; then
+	        EXPECTED_STRINGS_FILES+=$string_table_name
+		else
+			rm "$TMP_OUTPUT/${string_table_name}.strings"
+			echo "  -- ignoring since it is empty"
+		fi
     fi
 done
 

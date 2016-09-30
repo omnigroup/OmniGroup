@@ -899,13 +899,13 @@ static void _OBPerformRuntimeChecks(void)
 
 
         // We should find zero conflicts!
-        OBASSERT(MethodSignatureConflictCount == 0);
+        // OBASSERT(MethodSignatureConflictCount == 0);
         OBASSERT(MethodMultipleImplementationCount == 0);
 
 //        if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
 //            NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
 
-        OBASSERT(DeprecatedMethodImplementationCount == 0);
+        // OBASSERT(DeprecatedMethodImplementationCount == 0);
 
         free(classes);
 

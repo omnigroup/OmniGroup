@@ -37,6 +37,11 @@ RCS_ID("$Id$")
     OBASSERT_NOT_REACHED("Don't tell us to change our text color - we're managing it based on our enabled state");
 }
 
+- (BOOL)allowsVibrancy
+{
+    return NO;
+}
+
 #pragma mark - Private
 
 - (void)_updateTextColor;

@@ -13,30 +13,26 @@
 RCS_ID("$Id$");
 
 @implementation OWImmutableObjectStream
+{
+    NSArray *objects;
+}
 
 // Init and dealloc
 
-- initWithObject:(NSObject *)anObject
+- (instancetype)initWithObject:(NSObject *)anObject
 {
-    return [self initWithArray:[NSArray arrayWithObject:anObject]];
+    return [self initWithArray:@[anObject]];
 }
 
-- initWithArray:(NSArray *)contents;
+- (instancetype)initWithArray:(NSArray *)contents;
 {
     if (!(self = [super init]))
         return nil;
 
-    objects = [contents retain];
+    objects = contents;
 
     return self;
 }
-
-- (void)dealloc;
-{
-    [objects release];
-    [super dealloc];
-}
-
 
 // API
 - (id)objectAtIndex:(NSUInteger)objectIndex;

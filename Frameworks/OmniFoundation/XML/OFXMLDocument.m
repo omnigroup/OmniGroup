@@ -124,28 +124,40 @@ NS_ASSUME_NONNULL_BEGIN
     return [self initWithData:[NSData dataWithContentsOfFile:path] whitespaceBehavior:whitespaceBehavior error:outError];
 }
 
-- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
     // Preserve whitespace by default
     return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve error:outError];
 }
 
-- (nullable instancetype)initWithData:(nullable NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+{
+    NSInputStream *inputStream = [[[NSInputStream alloc] initWithData:xmlData] autorelease];
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError];
+}
+
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+{
+    // Preserve whitespace by default
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve error:outError];
+}
+
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
     if (!(self = [super init]))
         return nil;
     [self _preInit];
-    
+
     if (!whitespaceBehavior)
         whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
-
+    
     _whitespaceBehavior = [whitespaceBehavior retain];
-
-    if (![self _parseData:xmlData defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError]) {
+    
+    if (![self _parseInputStream:inputStream defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError]) {
         [self release];
         return nil;
     }
-        
+    
     return [self _commonSetupSuffix:outError];
 }
 
@@ -607,9 +619,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 
     // Really only want the element addresses to be displayed here.
-    [debugDictionary setObject: _elementStack forKey: @"_elementStack"];
+    [debugDictionary setObject: [_elementStack arrayByPerformingSelector:@selector(shortDescription)] forKey: @"_elementStack"];
 
-    [debugDictionary setObject: _rootElement forKey: @"_rootElement"];
+    [debugDictionary setObject: [_rootElement shortDescription] forKey: @"_rootElement"];
 
     [debugDictionary setObject: [NSString stringWithFormat: @"0x%08lx", (unsigned long)_stringEncoding] forKey: @"_stringEncoding"];
 
@@ -642,10 +654,10 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (BOOL)_parseData:(NSData *)xmlData defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (BOOL)_parseInputStream:(NSInputStream *)inputStream defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[self whitespaceBehavior] defaultWhitespaceBehavior:defaultWhitespaceBehavior target:self];
-    if (![parser parseData:xmlData error:outError]) {
+    if (![parser parseInputStream:inputStream error:outError]) {
         [parser release];
         return NO;
     }

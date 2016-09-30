@@ -59,9 +59,6 @@
       location = "container:"
       name = "Deprecated">
       <FileRef
-         location = "group:../Frameworks/OIF/OIF.xcodeproj">
-      </FileRef>
-      <FileRef
          location = "group:../Frameworks/OWF/OWF.xcodeproj">
       </FileRef>
    </Group>

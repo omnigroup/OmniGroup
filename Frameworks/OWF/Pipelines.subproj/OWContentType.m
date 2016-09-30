@@ -248,7 +248,6 @@ static NSString *privateSupertypes[] = {
 	[contentTypeDictionary setObject:contentType forKey:aString];
         if ([contentType isEncoding])
             [contentEncodings addObject:contentType];
-        [contentType autorelease];
     }
     [contentTypeLock unlock];
 
@@ -368,35 +367,26 @@ got_path:
 
 + (void)registerFileExtension:(NSString *)extension forContentType:(OWContentType *)contentType;
 {
-    NSString *key;
-    OWContentType *oldContentType;
-    NSArray *oldExtensions;
-    NSMutableArray *newExtensions;
-
     if ([NSString isEmptyString:extension])
         return;
 
     [contentTypeLock lock];
     
-    key = [[extension lowercaseString] copy];
-    if ((oldContentType = [extensionToContentTypeDictionary objectForKey:key])) {
-        if (contentType != oldContentType) {
-            NSLog(@"Overriding extension to content type mapping for extension '%@'.  Old mapping was %@, new mapping is %@.", extension, oldContentType, contentType);
-        }
+    NSString *key = [[extension lowercaseString] copy];
+    OWContentType *oldContentType = [extensionToContentTypeDictionary objectForKey:key];
+    if (oldContentType != nil && contentType != oldContentType) {
+        NSLog(@"Overriding extension to content type mapping for extension '%@'.  Old mapping was %@, new mapping is %@.", extension, oldContentType, contentType);
     }
     
     [extensionToContentTypeDictionary setObject:contentType forKey:key];
 
-    oldExtensions = [contentType extensions];
-    if (!oldExtensions || [oldExtensions indexOfObject:extension] == NSNotFound) {
-        newExtensions = oldExtensions ? [oldExtensions mutableCopy] : [[NSMutableArray alloc] init];
+    NSArray *oldExtensions = [contentType extensions];
+    if (oldExtensions == nil || [oldExtensions indexOfObject:extension] == NSNotFound) {
+        NSMutableArray *newExtensions = oldExtensions ? [oldExtensions mutableCopy] : [[NSMutableArray alloc] init];
         [newExtensions addObject:extension];
         [contentType setExtensions:newExtensions];
-        [newExtensions release];
     }
     
-    [key release];
-
     [contentTypeLock unlock];
 }
 
@@ -442,29 +432,21 @@ got_path:
 
 + (OFMultiValueDictionary *)contentTypeAndEncodingForFilename:(NSString *)aFilename isLocalFile:(BOOL)isLocalFile;
 {
-    OWContentType *type;
-    NSMutableArray *encodings;
-    NSString *trimmedFilename;
-    OFMultiValueDictionary *headers;
+    OWContentType *type = [OWContentType contentTypeForFilename:aFilename isLocalFile:isLocalFile];
+    NSMutableArray *encodings = [[NSMutableArray alloc] init];
 
-    type = [OWContentType contentTypeForFilename:aFilename isLocalFile:isLocalFile];
-
-    encodings = [[NSMutableArray alloc] init];
-
-    trimmedFilename = [aFilename lastPathComponent];
+    NSString *trimmedFilename = [aFilename lastPathComponent];
     while ([type isEncoding]) {
         [encodings insertObject:[type contentTypeString] atIndex:0];
         trimmedFilename = [trimmedFilename stringByDeletingPathExtension];
         type = [OWContentType contentTypeForFilename:trimmedFilename isLocalFile:NO];
     }
 
-    headers = [[OFMultiValueDictionary alloc] initWithCaseInsensitiveKeys:YES];
-    [headers autorelease];
+    OFMultiValueDictionary *headers = [[OFMultiValueDictionary alloc] initWithCaseInsensitiveKeys:YES];
     if (type != nil && type != [OWUnknownDataStreamProcessor unknownContentType])
         [headers addObject:[type contentTypeString] forKey:OWContentTypeHeaderString];
     if ([encodings count])
         [headers addObjects:encodings forKey:OWContentEncodingHeaderString];
-    [encodings release];
     
     return headers;
 }
@@ -479,25 +461,10 @@ got_path:
     return self;
 }
 
-- (id)retain;
-{
-    return self;
-}
-
-- (id)autorelease;
-{
-    return self;
-}
-
-- (oneway void)release;
-{
-}
-
 - (void)dealloc;
 {
     OBASSERT_NOT_REACHED("Who be deallocing me?");
-    if(0)
-        [super dealloc];
+    assert(0);
 }
 
 
@@ -507,15 +474,15 @@ got_path:
 {
     if (!(self = [super init]))
         return nil;
-    contentTypeString = [[archiver decodeObject] retain];
+    contentTypeString = [archiver decodeObject];
     // This object will be deallocated in -awakeAfterUsingCoder: and replaced with a real OWContent.
     return self;
 }
 
 - (id)awakeAfterUsingCoder:(NSCoder *)archiver
 {
-    OWContentType *actualInstance = [[[self class] contentTypeForString:contentTypeString] retain];
-    [super release];
+    OWContentType *actualInstance = [[self class] contentTypeForString:contentTypeString];
+    self = nil;
     return actualInstance;
 }
 
@@ -530,7 +497,6 @@ got_path:
 {
     if (extensions == someExtensions)
 	return;
-    [extensions release];
     extensions = [someExtensions copy];
 }
 
@@ -572,11 +538,7 @@ got_path:
 {
     // This normally only is called once per instance, and only from +registerIconsDictionary:
     if (imageName != newImageName) {
-        NSString *oldImageName;
-
-        oldImageName = imageName;
         imageName = [newImageName copy];
-        [oldImageName release];
     }
 }
 
@@ -626,7 +588,6 @@ got_path:
     }
     [contentTypeDictionary setObject:self forKey:key];
     [contentTypeLock unlock];
-    [key release];
 }
 
 // Links
@@ -667,7 +628,6 @@ got_path:
 
     link = [[OWContentTypeLink alloc] initWithProcessorDescription:aProcessorDescription sourceContentType:self targetContentType:targetContentType cost:aCost];
     [links addObject:link];
-    [link release];
     [targetContentType _addReverseContentType:self];
     
     [contentTypeLock unlock];
@@ -675,15 +635,13 @@ got_path:
 
 - (OWConversionPathElement *)bestPathForTargetContentType: (OWContentType *) targetType;
 {
-    OWConversionPathElement *path;
-    
     [contentTypeLock lock];
-    path = [[self _locked_computeBestPathForType:targetType visitedTypes:nil recursionLevel:0] retain];
+    OWConversionPathElement *path = [self _locked_computeBestPathForType:targetType visitedTypes:nil recursionLevel:0];
     if (path == nil)
         [bestPathByType setObject:[NSNull null] forKey:targetType];
     [contentTypeLock unlock];
 
-    return [path autorelease];
+    return path;
 }
 
 - (NSArray *)directTargetContentTypes;
@@ -698,22 +656,18 @@ got_path:
 
 - (NSSet *)indirectSourceContentTypes;
 {
-    NSMutableSet *indirectSources;
-    NSMutableArray *targets;
-    OWContentType *target, *source;
-    NSEnumerator *sourceEnumerator;
-    
-    indirectSources = [[NSMutableSet alloc] init];
-    targets = [[NSMutableArray alloc] initWithCapacity:5];
+    NSMutableSet *indirectSources = [[NSMutableSet alloc] init];
+    NSMutableArray *targets = [[NSMutableArray alloc] initWithCapacity:5];
     
     [targets addObject:self];
     
     while ([targets count]) {
-        target = [targets objectAtIndex:0];
-	sourceEnumerator = [[target directSourceContentTypes] objectEnumerator];
+        OWContentType *target = [targets objectAtIndex:0];
+	NSEnumerator *sourceEnumerator = [[target directSourceContentTypes] objectEnumerator];
 	[targets removeObjectAtIndex:0];
 	
-	while ((source = [sourceEnumerator nextObject])) {
+        OWContentType *source;
+	while ((source = [sourceEnumerator nextObject]) != nil) {
 	    if (![indirectSources containsObject:source]) {
 		[indirectSources addObject:source];
 		[targets addObject:source];
@@ -721,9 +675,7 @@ got_path:
 	}
     }
     
-    [targets release];
-    
-    return [indirectSources autorelease];
+    return indirectSources;
 }
 
 // Content expiration
@@ -822,9 +774,7 @@ got_path:
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
     [debugDictionary setObject:contentTypeString forKey:@"contentType"];
     [debugDictionary setObject:links forKey:@"links"];
@@ -1066,9 +1016,8 @@ got_path:
     [reverseLinks addObject:sourceContentType];
 }
 
-- (void) _locked_flushConversionPaths;
+- (void)_locked_flushConversionPaths;
 {
-    [bestPathByType release];
     bestPathByType = nil;
 }
 

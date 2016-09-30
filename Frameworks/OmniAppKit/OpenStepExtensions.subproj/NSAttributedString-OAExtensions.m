@@ -11,6 +11,9 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OATextStorage.h> // OAAttachmentCharacter
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <AppKit/NSStringDrawing.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -461,117 +464,47 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 #endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-// See <bug:///79949> (Update NSAttributedString extension method drawInRectangle:alignment:verticallyCentered:)
-- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
-    // ASSUMPTION: This is for one line
+// ASSUMPTION: These are for one line
+- (void)drawInRectangle:(NSRect)rectangle verticallyCentered:(BOOL)verticallyCenter;
 {
-    OBPRECONDITION([NSThread isMainThread]); // statics make this not thread-safe
-    
-    static NSTextStorage *showStringTextStorage = nil;
-    static NSLayoutManager *showStringLayoutManager = nil;
-    static NSTextContainer *showStringTextContainer = nil;
-
-    NSRange drawGlyphRange;
-    NSRange lineCharacterRange;
-    NSRect lineFragmentRect;
-    NSSize lineSize;
-    NSString *ellipsisString;
-    NSSize ellipsisSize;
-    NSDictionary *ellipsisAttributes;
-    BOOL requiresEllipsis;
-    BOOL lineTooLong;
-    BOOL isRightToLeft = NO;
-    
-    if ([self length] == 0)
-        return;
-
-    if (showStringTextStorage == nil) {
-        showStringTextStorage = [[NSTextStorage alloc] init];
-
-        showStringLayoutManager = [[NSLayoutManager alloc] init];
-        [showStringTextStorage addLayoutManager:showStringLayoutManager];
-
-        showStringTextContainer = [[NSTextContainer alloc] initWithContainerSize:NSMakeSize(1.0e7f, 1.0e7f)];
-        [showStringTextContainer setLineFragmentPadding:0.0f];
-        [showStringLayoutManager addTextContainer:showStringTextContainer];
+    if (verticallyCenter) {
+        NSRect boundingRect = [self boundingRectWithSize:rectangle.size options:NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin context:nil];
+        rectangle = OAInsetRectBySize(rectangle, NSMakeSize(0, (NSHeight(rectangle) - NSHeight(boundingRect)) / 2.0f));
     }
     
-    [showStringTextStorage setAttributedString:self];
+    [self drawWithRect:rectangle options:NSStringDrawingTruncatesLastVisibleLine | NSStringDrawingUsesLineFragmentOrigin context:nil];
+}
+
+- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment verticallyCentered:(BOOL)verticallyCenter;
+{
+    NSMutableParagraphStyle *pStyle = [[NSMutableParagraphStyle alloc] init];
+    pStyle.alignment = alignment;
+    [self drawInRectangle:rectangle paragraphStyle:pStyle verticallyCentered:verticallyCenter];
+}
+
+- (void)drawInRectangle:(NSRect)rectangle alignment:(NSTextAlignment)alignment lineBreakMode:(NSLineBreakMode)lineBreakMode verticallyCentered:(BOOL)verticallyCenter;
+{
+    NSMutableParagraphStyle *pStyle = [[NSMutableParagraphStyle alloc] init];
+    pStyle.alignment = alignment;
+    pStyle.lineBreakMode = lineBreakMode;
+    [self drawInRectangle:rectangle paragraphStyle:pStyle verticallyCentered:verticallyCenter];
+}
+
+- (void)drawInRectangle:(NSRect)rectangle paragraphStyle:(NSParagraphStyle *)pStyle verticallyCentered:(BOOL)verticallyCenter;
+{
+#ifdef OMNI_ASSERTIONS_ON
+    [self enumerateAttribute:NSParagraphStyleAttributeName inRange:NSMakeRange(0, self.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+        if (value) {
+            OBASSERT_NOT_REACHED("This is a convenience method for mashing a paragraph style into an attributed string and drawing it. If you are already providing paragraph styles provide all attributes as desired and call drawWithRect:options: instead");
+            *stop = YES;
+        }
+    }];
+#endif
     
-    lineFragmentRect = [showStringLayoutManager lineFragmentUsedRectForGlyphAtIndex:0 effectiveRange:&drawGlyphRange];
-    lineSize = lineFragmentRect.size;
-    lineTooLong = lineSize.width > NSWidth(rectangle);
-    lineCharacterRange = [showStringLayoutManager characterRangeForGlyphRange:drawGlyphRange actualGlyphRange:NULL];
-    requiresEllipsis = lineTooLong || NSMaxRange(lineCharacterRange) < [self length];
+    NSMutableAttributedString *mutableCopy = [self mutableCopy];
+    [mutableCopy addAttribute:NSParagraphStyleAttributeName value:pStyle range:NSMakeRange(0, mutableCopy.length)];
     
-    if (requiresEllipsis) {
-        NSRange lastGlyphRange = NSMakeRange([showStringLayoutManager numberOfGlyphs] - 1, 1);
-        unsigned char bidiLevel = 0xff;
-        [showStringLayoutManager getGlyphsInRange:lastGlyphRange glyphs:NULL properties:NULL characterIndexes:NULL bidiLevels:&bidiLevel];
-        isRightToLeft = (bidiLevel != 0);
-
-        NSUInteger ellipsisAttributeCharacterIndex;
-        if (lineCharacterRange.length != 0)
-            ellipsisAttributeCharacterIndex = NSMaxRange(lineCharacterRange) - 1;
-        else
-            ellipsisAttributeCharacterIndex = 0;
-        ellipsisAttributes = [self attributesAtIndex:ellipsisAttributeCharacterIndex longestEffectiveRange:NULL inRange:NSMakeRange(0, 1)];
-        ellipsisString = [NSString horizontalEllipsisString];
-        ellipsisSize = [ellipsisString sizeWithAttributes:ellipsisAttributes];
-
-        if (lineTooLong || lineSize.width + ellipsisSize.width > NSWidth(rectangle)) {
-            NSPoint glyphLocation;
-            glyphLocation.x = (isRightToLeft) ? ellipsisSize.width : NSWidth(rectangle) - ellipsisSize.width;
-            glyphLocation.y = 0.5f * lineSize.height;
-            drawGlyphRange.length = [showStringLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:showStringTextContainer];
-
-            if (drawGlyphRange.length == 0) {
-                // We couldn't fit any characters with the ellipsis, so try drawing some without it (rather than drawing nothing)
-                requiresEllipsis = NO;
-                glyphLocation.x = (isRightToLeft) ? 0.0f : NSWidth(rectangle);
-                drawGlyphRange.length = [showStringLayoutManager glyphIndexForPoint:glyphLocation inTextContainer:showStringTextContainer];
-            }
-            lineSize.width = [showStringLayoutManager locationForGlyphAtIndex:NSMaxRange(drawGlyphRange)].x;
-            if (isRightToLeft)
-                lineSize.width = NSWidth(rectangle) - lineSize.width;
-        }
-        if (requiresEllipsis) // NOTE: Could have been turned off if the ellipsis didn't fit
-            lineSize.width += ellipsisSize.width;
-    } else {
-        // Make the compiler happy, since it doesn't know we're not going to take the requiresEllipsis branch later
-        ellipsisString = nil;
-        ellipsisSize = NSMakeSize(0, 0);
-        ellipsisAttributes = nil;
-    }
-
-    if (drawGlyphRange.length) {
-        NSPoint drawPoint;
-
-        // determine drawPoint based on alignment
-        drawPoint.y = NSMinY(rectangle);
-        switch (alignment) {
-            default:
-            case NSLeftTextAlignment:
-                drawPoint.x = NSMinX(rectangle);
-                break;
-            case NSCenterTextAlignment:
-                drawPoint.x = NSMidX(rectangle) - lineSize.width / 2.0f;
-                break;
-            case NSRightTextAlignment:
-                drawPoint.x = NSMaxX(rectangle) - lineSize.width;
-                break;
-        }
-        
-        if (verticallyCenter)
-            drawPoint.y = NSMidY(rectangle) - lineSize.height / 2.0f;
-
-        [showStringLayoutManager drawGlyphsForGlyphRange:drawGlyphRange atPoint:drawPoint];
-        if (requiresEllipsis) {
-            if (!isRightToLeft)
-                drawPoint.x += lineSize.width - ellipsisSize.width;
-            [ellipsisString drawAtPoint:drawPoint withAttributes:ellipsisAttributes];
-        }
-    }
+    [mutableCopy drawInRectangle:rectangle verticallyCentered:verticallyCenter];
 }
 
 - (void)drawCenteredShrinkingToFitInRect:(NSRect)rect;

@@ -56,13 +56,13 @@ RCS_ID("$Id$")
                 
                 if (entityName) {
                     OFDataBufferAppendUnichar(&dataBuffer, '&');
-                    OFDataBufferAppendUnicodeString(&dataBuffer, (CFStringRef)entityName);
+                    OFDataBufferAppendUnicodeString(&dataBuffer, (__bridge CFStringRef)entityName);
                     OFDataBufferAppendUnichar(&dataBuffer, ';');
                     continue;
                 }
             }
             
-            OFDataBufferAppendUnicodeString(&dataBuffer, (CFStringRef)[NSString stringWithFormat:numericFormat, ch]);
+            OFDataBufferAppendUnicodeString(&dataBuffer, (__bridge CFStringRef)[NSString stringWithFormat:numericFormat, ch]);
         } else
             OFDataBufferAppendUnichar(&dataBuffer, ch);
     } OFStringEndLoopThroughCharacters;
@@ -70,10 +70,9 @@ RCS_ID("$Id$")
     // Slurp data into string
     CFDataRef data = NULL;
     OFDataBufferRelease(&dataBuffer, kCFAllocatorDefault, &data);
-    escapedString = [[NSString alloc] initWithData:(NSData *)data encoding:NSUnicodeStringEncoding];
-    CFRelease(data);
+    escapedString = [[NSString alloc] initWithData:CFBridgingRelease(data) encoding:NSUnicodeStringEncoding];
 
-    return [escapedString autorelease];
+    return escapedString;
 }
 
 // OWSGMLToken protocol

@@ -30,18 +30,30 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
 {
     __weak id _weakObject;
     void *_nonretainedObjectPointer;
+    BOOL _isDeallocating;
 }
 
 @synthesize object = _weakObject;
 
-- initWithObject:(id)object;
+- (instancetype)initWithObject:(id)object;
 {
     if (!(self = [super init]))
         return nil;
     
     _weakObject = object;
     _nonretainedObjectPointer = (__bridge void *)object;
+    
+    return self;
+}
 
+- (instancetype)initWithDeallocatingObject:(id)object;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _nonretainedObjectPointer = (__bridge void *)object;
+    _isDeallocating = YES;
+    
     return self;
 }
 
@@ -82,7 +94,7 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
         _Nullable id existing = reference.object;
 
 #ifdef OMNI_ASSERTIONS_ON
-        found |= (object == existing);
+        found |= (existing == object) || (existing == nil && reference->_nonretainedObjectPointer == (__bridge void *)(object));
 #endif
         return (existing == object) || (existing == nil); // Clean up any deallocated references at the same time.
     }];
@@ -138,6 +150,25 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
     }
 
     return count;
+}
+
+#pragma mark - NSObject protocol
+
+- (BOOL)isEqual:(id)otherObject;
+{
+    if (self == otherObject)
+        return YES;
+
+    if (![otherObject isKindOfClass:[self class]])
+        return NO;
+
+    OFWeakReference *otherReference = (OFWeakReference *)otherObject;
+    return otherReference->_nonretainedObjectPointer == _nonretainedObjectPointer && (otherReference->_weakObject == _weakObject || _isDeallocating || otherReference->_isDeallocating);
+}
+
+- (NSUInteger)hash;
+{
+    return (NSUInteger)_nonretainedObjectPointer;
 }
 
 #pragma mark - Debugging

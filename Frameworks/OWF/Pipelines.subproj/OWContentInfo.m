@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,7 @@ static NSLock *headerContentInfoLock = nil;
 static NSMutableDictionary *headerContentInfoDictionary = nil;
 static NSMutableArray *allActiveTasks = nil;
 static NSLock *allActiveTasksLock = nil;
+static NSMutableArray *headerTasks = nil;
 
 + (void)initialize;
 {
@@ -46,6 +47,7 @@ static NSLock *allActiveTasksLock = nil;
 
     allActiveTasks = [[NSMutableArray alloc] initWithCapacity:16];
     allActiveTasksLock = [[NSLock alloc] init];
+    headerTasks = [[NSMutableArray alloc] init];
 }
 
 + (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(NSDictionary *)description;
@@ -77,7 +79,8 @@ static NSLock *allActiveTasksLock = nil;
             newContentInfo = [[self alloc] initWithContent:nil];
     
             // OWTask object is permanent header
-            [[OWTask alloc] initWithName:name contentInfo:newContentInfo parentContentInfo:topLevelActiveContentInfo];
+            OWTask *headerTask = [[OWTask alloc] initWithName:name contentInfo:newContentInfo parentContentInfo:topLevelActiveContentInfo];
+            [headerTasks addObject:headerTask];
     
             newContentInfo->flags.isHeader = YES;
     
@@ -87,11 +90,8 @@ static NSLock *allActiveTasksLock = nil;
         } NS_HANDLER {
             [headerContentInfoLock unlock];
             NSLog(@"%@ %@ : %@", NSStringFromSelector(_cmd), name, localException);
-            [newContentInfo release];
             [localException raise];
         } NS_ENDHANDLER;
-        
-        [newContentInfo release];
     }
     
     [headerContentInfoLock unlock];
@@ -151,7 +151,7 @@ static NSLock *allActiveTasksLock = nil;
     activeChildTasks = [[NSMutableArray alloc] init];
 
     workToBeDoneIncludingChildren = 0;
-    schedulingInfo.group = self;
+    schedulingInfo.group = (__bridge const void *)(self);
     schedulingInfo.priority = OFMediumPriority;
     schedulingInfo.maximumSimultaneousThreadsInGroup = 4;
 
@@ -164,22 +164,6 @@ static NSLock *allActiveTasksLock = nil;
     OBPRECONDITION([tasks count] == 0);
     OBPRECONDITION([childTasks count] == 0);
     OBPRECONDITION([activeChildTasks count] == 0);
-
-    [typeString release];
-    [tasksLock release];
-    [childTasksLock release];
-    [childFossilsLock release];
-    [activeChildTasksLock release];
-    [addressLock release];
-    [flagsLock release];
-    [tasks release];
-    [childTasks release];
-    [activeChildTasks release];
-    [childFossils release];
-
-    [address release];
-
-    [super dealloc];
 }
 
 // Actions
@@ -188,7 +172,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - (OWContent *)content;
 {
-    return [[nonretainedContent retain] autorelease];
+    return nonretainedContent;
 }
 
 - (void)nullifyContent;
@@ -202,7 +186,7 @@ static NSLock *allActiveTasksLock = nil;
 
 - (NSString *)typeString;
 {
-    return [[typeString copy] autorelease];
+    return typeString;
 }
 
 - (BOOL)isHeader;
@@ -214,8 +198,7 @@ static NSLock *allActiveTasksLock = nil;
 {
     [addressLock lock];
     if (address != newAddress) {
-        [address release];
-        address = [newAddress retain];
+        address = newAddress;
     }
     [addressLock unlock];
 }
@@ -225,9 +208,9 @@ static NSLock *allActiveTasksLock = nil;
     OWAddress *snapshotAddress;
 
     [addressLock lock];
-    snapshotAddress = [address retain];
+    snapshotAddress = address;
     [addressLock unlock];
-    return [snapshotAddress autorelease];
+    return snapshotAddress;
 }
 
 
@@ -303,9 +286,9 @@ static NSLock *allActiveTasksLock = nil;
 
     [childTasksLock lock];
     if (childIndex < [childTasks count])
-        childTask = [[childTasks objectAtIndex:childIndex] retain];
+        childTask = [childTasks objectAtIndex:childIndex];
     [childTasksLock unlock];
-    return [childTask autorelease];
+    return childTask;
 }
 
 - (NSUInteger)childTasksCount;
@@ -330,7 +313,6 @@ static NSLock *allActiveTasksLock = nil;
         work = 0;
         for (OWTask *childTask in childTasksCopy)
             work += [childTask workDoneIncludingChildren];
-        [childTasksCopy release];
     } else
         work = 0;
 
@@ -349,7 +331,6 @@ static NSLock *allActiveTasksLock = nil;
         work = 0;
         for (OWTask *childTask in childTasksCopy)
             work += [childTask workToBeDoneIncludingChildren];
-        [childTasksCopy release];
         workToBeDoneIncludingChildren = work;
     } else
         work = 0;
@@ -365,7 +346,6 @@ static NSLock *allActiveTasksLock = nil;
 
     for (OWTask *childTask in childTasksCopy)
         [childTask calculateDeadPipelines:deadPipelines totalPipelines:totalPipelines];
-    [childTasksCopy release];
 }
 
 - (void)addChildFossil:(id <NSObject>)childFossil;
@@ -445,7 +425,7 @@ static NSLock *allActiveTasksLock = nil;
     [activeChildTasksLock lock];
     childrenCopy = [[NSArray alloc] initWithArray:activeChildTasks];
     [activeChildTasksLock unlock];
-    return [childrenCopy autorelease];
+    return childrenCopy;
 }
 
 - (OWTask *)activeChildTaskAtIndex:(NSUInteger)childIndex;
@@ -454,9 +434,9 @@ static NSLock *allActiveTasksLock = nil;
 
     [activeChildTasksLock lock];
     if (childIndex < [activeChildTasks count])
-        activeChildTask = [[activeChildTasks objectAtIndex:childIndex] retain];
+        activeChildTask = [activeChildTasks objectAtIndex:childIndex];
     [activeChildTasksLock unlock];
-    return [activeChildTask autorelease];
+    return activeChildTask;
 }
 
 - (NSUInteger)activeChildTasksCount;
@@ -478,7 +458,6 @@ static NSLock *allActiveTasksLock = nil;
     [activeChildTasksLock unlock];
 
     [activeChildrenCopy makeObjectsPerformSelector:@selector(abortTreeActivity)];
-    [activeChildrenCopy release];
 }
 
 - (NSTimeInterval)timeSinceTreeActivationIntervalForActiveChildTasks;
@@ -492,7 +471,6 @@ static NSLock *allActiveTasksLock = nil;
         
         for (OWTask *childTask in childTasksCopy)
             maxTimeInterval = MAX(maxTimeInterval, [childTask timeSinceTreeActivationInterval]);
-        [childTasksCopy release];
     }
     return maxTimeInterval;
 }
@@ -508,7 +486,6 @@ static NSLock *allActiveTasksLock = nil;
         
         for (OWTask *childTask in childTasksCopy)
             maxTimeInterval = MAX(maxTimeInterval, [childTask estimatedRemainingTreeTimeInterval]);
-        [childTasksCopy release];
     }
     return maxTimeInterval;
 }
@@ -575,34 +552,31 @@ static NSLock *allActiveTasksLock = nil;
 
     // Are we dead, but just don't know it yet?
     if (treeHasActiveChildren && !flags.isHeader && !nonretainedContent && [[self childTasks] count] == 0) {
-        NSArray *oldTasks;
-
-        [[self retain] autorelease];
+        OWContentInfo *strongSelf = self;
         [tasksLock lock];
-        oldTasks = tasks;
+        NSArray *oldTasks = tasks;
         tasks = nil;
         [tasksLock unlock];
         [oldTasks makeObjectsPerformSelector:@selector(nullifyContentInfo)];
-        [oldTasks release];
+        strongSelf = nil;
     }
 }
 
 - (OWTask *)_taskWithLowestPriority;
 {
-    NSUInteger taskCount;
     OWTask *taskWithLowestPriority;
 
     [tasksLock lock];
-    taskCount = [tasks count];
+    NSUInteger taskCount = [tasks count];
     switch (taskCount) {
         case 0:
             taskWithLowestPriority = nil;
             break;
         case 1: // Common optimization
-            taskWithLowestPriority = [[[tasks objectAtIndex:0] retain] autorelease];
+            taskWithLowestPriority = [tasks objectAtIndex:0];
             break;
         default:
-            taskWithLowestPriority = [[[tasks objectAtIndex:[self _indexOfTaskWithLowestPriority]] retain] autorelease];
+            taskWithLowestPriority = [tasks objectAtIndex:[self _indexOfTaskWithLowestPriority]];
             break;
     }
     [tasksLock unlock];
@@ -612,18 +586,14 @@ static NSLock *allActiveTasksLock = nil;
 - (NSUInteger)_indexOfTaskWithLowestPriority;
     // Tasks MUST be locked before entering this routine.
 {
-    NSUInteger lowestPriority;
-    NSUInteger lowestPriorityTaskIndex;
-    NSUInteger taskIndex;
-
     OBPRECONDITION(!flags.isHeader);
 
-    taskIndex = [tasks count];
+    NSUInteger taskIndex = [tasks count];
     if (taskIndex == 1)
         return 0;
     
-    lowestPriority = INT_MAX;
-    lowestPriorityTaskIndex = NSNotFound;
+    NSUInteger lowestPriority = INT_MAX;
+    NSUInteger lowestPriorityTaskIndex = NSNotFound;
 
     while (taskIndex--) {
         OWTask *task = [tasks objectAtIndex:taskIndex];

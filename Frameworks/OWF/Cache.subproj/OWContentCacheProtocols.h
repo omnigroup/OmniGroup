@@ -55,10 +55,10 @@ typedef enum {
 @protocol OWCacheArcProvider <NSObject>
 
 // This returns the list of all arcs contained in the cache
-- (NSArray *)allArcs;
+- (NSArray <id <OWCacheArc>> *)allArcs;
 
 // This returns a list of arcs in the cache which have the specified relation to the specified entry. (It may return nil instead of an empty array if there are no relevant arcs.) The pipeline argument, if non-nil, serves as a hint that arcs that aren't valid in the given pipeline need not be included.
-- (NSArray *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)aPipeline;  // pipeline is just a hint, may be nil
+- (NSArray <id <OWCacheArc>> *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)aPipeline;  // pipeline is just a hint, may be nil
 
 // The cost of querying the cache for arcs. Traversing an arc may have its own cost; you'll need to query the individual arc for that.
 - (float)cost;

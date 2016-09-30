@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010,2016 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,17 +9,16 @@
 
 #import <OmniFoundation/OFXMLMaker.h>
 
+@class NSOutputStream;
+struct _xmlTextWriter;
+
 /* OFXMLTextWriterSink is a concrete subclass of XMLSink which writes its nodes into a libxml2 'xmlTextWriter'. */
 @interface OFXMLTextWriterSink : OFXMLSink
-{
-    struct _xmlTextWriter *writer;
-#ifdef DEBUG
-    OFXMLMaker *currentElt;
-#endif
-}
 
 // API
-- initWithTextWriter:(struct _xmlTextWriter *)w freeWhenDone:(BOOL)shouldFree;
+- (instancetype)initWithTextWriter:(struct _xmlTextWriter *)w freeWhenDone:(BOOL)shouldFree
+        NS_SWIFT_UNAVAILABLE("libxml2 types are not available to Swift");
+- (instancetype)initWithStream:(NSOutputStream *)outputStream;
 - (void)flush;
 
 @end

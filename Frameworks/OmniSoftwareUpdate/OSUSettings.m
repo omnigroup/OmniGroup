@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,21 +33,24 @@ static void _OSUSettingInitialize(void)
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        // We have no good way of checking these entitlements on iOS, but still need them.
+        @autoreleasepool { // Constructors are called outside of any autorelease pool
+            
+            // We have no good way of checking these entitlements on iOS, but still need them.
 #if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && defined(OMNI_ASSERTIONS_ON)
-        // OmniGroupCrashCatcher links OmniSoftwareUpdate and inherits the containing app's sandbox settings. But, the signing entitlements we get back in this case don't list the parent entitlements. The parent app launching should have checked this (though I suppose it could be crashing since it didn't have the entitlement).
-        if ([[NSProcessInfo processInfo] isSandboxed] && ![[[NSProcessInfo processInfo] processName] isEqual:@"OmniGroupCrashCatcher"]) {
-            NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
-            id value = [entitlements objectForKey:@"com.apple.security.temporary-exception.shared-preference.read-only"];
-            if (value == nil)
-                value = [NSArray array];
-            NSArray *preferenceDomains = [value isKindOfClass:[NSArray class]] ? value : [NSArray arrayWithObject:value];
-            assert([preferenceDomains containsObject:@OSU_IDENTIFIER]);
-        }
+            // OmniGroupCrashCatcher links OmniSoftwareUpdate and inherits the containing app's sandbox settings. But, the signing entitlements we get back in this case don't list the parent entitlements. The parent app launching should have checked this (though I suppose it could be crashing since it didn't have the entitlement).
+            if ([[NSProcessInfo processInfo] isSandboxed] && ![[[NSProcessInfo processInfo] processName] isEqual:@"OmniGroupCrashCatcher"]) {
+                NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+                id value = [entitlements objectForKey:@"com.apple.security.temporary-exception.shared-preference.read-only"];
+                if (value == nil)
+                    value = [NSArray array];
+                NSArray *preferenceDomains = [value isKindOfClass:[NSArray class]] ? value : [NSArray arrayWithObject:value];
+                assert([preferenceDomains containsObject:@OSU_IDENTIFIER]);
+            }
 #endif
-      
-        NSString *containerIdentifier = [[NSFileManager defaultManager] groupContainerIdentifierForBaseIdentifier:@OSU_IDENTIFIER];
-        OSUDefaults = [[NSUserDefaults alloc] initWithSuiteName:containerIdentifier];
+            
+            NSString *containerIdentifier = [[NSFileManager defaultManager] groupContainerIdentifierForBaseIdentifier:@OSU_IDENTIFIER];
+            OSUDefaults = [[NSUserDefaults alloc] initWithSuiteName:containerIdentifier];
+        };
     });
 }
 

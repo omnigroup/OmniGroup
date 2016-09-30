@@ -13,7 +13,6 @@
 @class /* OmniFoundation */ OFInvocation, OFPreference;
 @class /* OWF */ OWAddress, OWCacheSearch, OWContentCacheGroup, OWContentInfo, OWHeaderDictionary, OWProcessor, OWPipelineCoordinator, OWURL;
 
-#import <OWF/OWFWeakRetainConcreteImplementation.h>
 #import <OWF/OWTargetProtocol.h>
 
 #define ASSERT_OWPipeline_Locked() OBASSERT([OWPipeline isLockHeldByCallingThread])
@@ -26,7 +25,7 @@ typedef enum {
 
 @protocol OWCacheArc, OWPipelineDeallocationObserver;
 
-@interface OWPipeline : OWTask <OWFWeakRetain>
+@interface OWPipeline : OWTask
 // For notification of pipeline fetches. Notifications' objects are a pipeline, their info dictionary keys are listed below. 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector address:(OWAddress *)anAddress;
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector;
@@ -48,7 +47,7 @@ typedef enum {
 + (OWPipeline *)lastActivePipelineForTarget:(id <OWTarget>)aTarget;
 
 // For notifying groups of pipelines semi-synchronously (locks and invokes in background)
-+ (void)postSelector:(SEL)aSelector toPipelines:(NSArray *)pipelines withObject:(NSObject *)arg;
++ (void)postUpdateToPipelines:(NSArray *)pipelines withBlock:(void (^)(OWPipeline *))updateBlock;
 
 // Status Monitoring
 + (void)activeTreeHasChanged;
@@ -67,12 +66,12 @@ typedef enum {
 + (NSString *)stringForTargetContentOffer:(OWTargetContentOffer)offer;
 
 // Init and dealloc
-+ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
++ (void)startPipelineWithAddress:(OWAddress *)anAddress target:(id <OWTarget, NSObject>)aTarget;
 
-- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
-- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (id)initWithContent:(OWContent *)aContent target:(id <OWTarget, NSObject>)aTarget;
+- (id)initWithAddress:(OWAddress *)anAddress target:(id <OWTarget, NSObject>)aTarget;
 
-- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;  // Designated initializer
+- (id)initWithCacheGroup:(OWContentCacheGroup *)someCaches content:(NSArray *)someContent arcs:(NSArray *)someArcs target:(id <OWTarget, NSObject>)aTarget;  // Designated initializer
 
 // Pipeline management
 - (void)startProcessingContent;
@@ -81,7 +80,7 @@ typedef enum {
 - (void)fetch;
 
 // Target
-- (id <OWTarget, OWFWeakRetain, NSObject>)target;
+- (id <OWTarget, NSObject>)target;
 - (void)invalidate;
     // Called in +invalidatePipelinesForTarget:, if the pipeline was pointing at the target that wants to be invalidated.
     // Also called in -pipelineBuilt if our target rejects the content we offer and didn't suggest a new target, and in +_target:acceptedContentFromPipeline: on all pipelines created before the parameter that point at the same target (eg, some other pipeline beat you to the punch, sorry, guys).
@@ -106,7 +105,7 @@ typedef enum {
 - (OWHeaderDictionary *)headerDictionary;  // inefficient
 - (NSArray *)validator;  // Useful for making a value for OWCacheArcConditionalKey. (calls -headerDictionary)
 
-- (OWPipeline *)cloneWithTarget:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
+- (OWPipeline *)cloneWithTarget:(id <OWTarget, NSObject>)aTarget;
 
 - (NSNumber *)estimateCostFromType:(OWContentType *)aType;
 
@@ -116,8 +115,8 @@ typedef enum {
 - (void)arcHasResult:(NSDictionary *)info;
 
 // Some objects are interested in knowing when we're about to deallocate
-- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
-- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver, OWFWeakRetain>)anObserver;
+- (void)addDeallocationObserver:(id <OWPipelineDeallocationObserver>)anObserver;
+- (void)removeDeallocationObserver:(id <OWPipelineDeallocationObserver>)anObserver;
 
 @end
 

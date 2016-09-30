@@ -1,4 +1,4 @@
-// Copyright 2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,8 +12,12 @@
 enum {
     // zip
     OmniUnzipUnableToOpenZipFile = 1012,
+    OmniUnzipUnableToCloseZipFile,
     OmniUnzipUnableToReadZipFileContents,
     OmniUnzipUnableToCreateZipFile,
+    OmniUnzipOpenSentToStreamInInvalidState,
+    OmniUnzipReadSentToStreamInInvalidState,
+    OmniUnzipCloseSentToStreamInInvalidState,
 };
 
 extern NSString * const OmniUnzipErrorDomain;

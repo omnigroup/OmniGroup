@@ -41,8 +41,6 @@
 #import <OWF/OWFTPListingProcessor.h>
 #import <OWF/OWFTPProcessor.h>
 #import <OWF/OWFTPSession.h>
-#import <OWF/OWFWeakRetainConcreteImplementation.h>
-#import <OWF/OWFWeakRetainProtocol.h>
 #import <OWF/OWFileDataStream.h>
 #import <OWF/OWFileInfo.h>
 #import <OWF/OWFileProcessor.h>

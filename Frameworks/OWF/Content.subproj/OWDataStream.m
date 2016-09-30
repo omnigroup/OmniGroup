@@ -209,16 +209,12 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 
     pthread_cond_destroy(&lengthChangedCondition);
     pthread_mutex_destroy(&lengthMutex);
-    
-    [saveFilename release];
-    [finalFileAttributes release];
-    [super dealloc];
 }
 
 - (id)createCursor;
 {
     _raiseIfInvalid(self);
-    return [[[OWDataStreamConcreteCursor alloc] initForDataStream:self] autorelease];
+    return [[OWDataStreamConcreteCursor alloc] initForDataStream:self];
 }
 
 - (NSData *)bufferedData;
@@ -238,7 +234,7 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
         return [NSData dataWithBytes:local_first->buffer length:local_first->bufferUsed];
         
     // General case.
-    result = [[[NSMutableData alloc] initWithCapacity:readLength] autorelease];
+    result = [[NSMutableData alloc] initWithCapacity:readLength];
     for (cursor = local_first; cursor != NULL; cursor = nextCursor) {
         nextCursor = cursor->next;  // look at the 'next' pointer before we look at the 'bufferUsed' pointer, in case someone adds to this block and appends a new block while we're appending to 'result'; this way we get a consistent view of the data stream
         [result appendBytes:cursor->buffer length:cursor->bufferUsed];
@@ -322,10 +318,9 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
         // General case: create a mutable data object and copy (partial) blocks into it
         NSMutableData *subdata = [[NSMutableData alloc] initWithLength:range.length];
         if (!copyBuffersOut(dsBuffer, offsetIntoBlock, [subdata mutableBytes], range.length)) {
-            [subdata release];
             return nil;
         }
-        return [subdata autorelease];
+        return subdata;
     }
 }
 
@@ -390,23 +385,14 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 
 - (void)scheduleInvocationAtEOF:(OFInvocation *)anInvocation inQueue:(OFMessageQueue *)aQueue;
 {
-    BOOL shouldInvoke;
-
     pthread_mutex_lock(&lengthMutex);
 
-    if (flags.hasThrownAwayData || flags.endOfData)
-        shouldInvoke = YES;
-    else
-        shouldInvoke = NO;
-
+    BOOL shouldInvoke = flags.hasThrownAwayData || flags.endOfData;
     if (!shouldInvoke) {
-        OFInvocation *repeatInvocation;
-        
         if (lengthChangedInvocations == nil)
             lengthChangedInvocations = [[NSMutableArray alloc] init];
-        repeatInvocation = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:anInvocation withObject:aQueue];
+        OFInvocation *repeatInvocation = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:anInvocation withObject:aQueue];
         [lengthChangedInvocations addObject:repeatInvocation];
-        [repeatInvocation release];
     }
 
     pthread_mutex_unlock(&lengthMutex);
@@ -466,19 +452,15 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 
 - (void)writeString:(NSString *)string;
 {
-    CFStringEncoding encoding;
-    CFDataRef bytes;
-
     if (string == nil)
 	return;
 
-    encoding = writeEncoding;
+    CFStringEncoding encoding = writeEncoding;
     if (encoding == kCFStringEncodingInvalidId)
         encoding = [OWDataStreamCharacterProcessor defaultStringEncoding];
         
-    bytes = CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)string, encoding, 0);
-    [self writeData:(NSData *)bytes];
-    CFRelease(bytes);
+    NSData *bytes = CFBridgingRelease(CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)string, encoding, 0));
+    [self writeData:bytes];
 }
 
 - (void)writeFormat:(NSString *)formatString, ...;
@@ -490,7 +472,6 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
     string = [[NSString alloc] initWithFormat:formatString arguments:argList];
     va_end(argList);
     [self writeString:string];
-    [string release];
 }
 
 
@@ -513,95 +494,23 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 
 - (void)wroteBytesToUnderlyingBuffer:(NSUInteger)count;    
 {
-    NSArray *notifications;
-    
     pthread_mutex_lock(&lengthMutex);
 
     _last->bufferUsed += count;
     OBINVARIANT(_last->bufferUsed <= _last->bufferSize);
     readLength += count;
 
-    notifications = lengthChangedInvocations;
+    NSArray *notifications = lengthChangedInvocations;
     lengthChangedInvocations = nil;
 
     pthread_mutex_unlock(&lengthMutex);
 
     [notifications makeObjectsPerformSelector:@selector(invoke)];
-    [notifications release];
     
     pthread_cond_broadcast(&lengthChangedCondition);
     if (saveFilename)
         [self flushContentsToFile];
 }
-
-#if 0
-- (CFStringEncoding)stringEncoding;
-{
-    return stringEncoding;
-}
-
-- (enum OWStringEncodingProvenance)stringEncodingProvenance;
-{
-    return stringEncodingProvenance;
-}
-
-- (void)setCFStringEncoding:(CFStringEncoding)aStringEncoding provenance:(enum OWStringEncodingProvenance)whence;
-{
-    NSString *encodingName;
-    OWParameterizedContentType *parameterizedContentType;
-
-    // Don't let less-reliable provenances override more-reliable ones. Allow a newer value to override an older one of equal reliability.
-    // (The one case in which we don't want a newer value of the same type to override an older one is charsets specified in META tags, and that's handled by the META tag parser.)
-    if (whence < stringEncodingProvenance)
-        return;
-
-    stringEncoding = aStringEncoding;
-    stringEncodingProvenance = whence;
-#warning blegga blegga blegga
-#if 0
-    encodingName = [OWDataStreamCharacterProcessor charsetForCFEncoding:stringEncoding];
-    parameterizedContentType = [self fullContentType];
-    if (![[parameterizedContentType objectForKey:@"charset"] isEqual:encodingName]) {
-        [parameterizedContentType setObject:encodingName forKey:@"charset"];
-    }
-#endif
-}
-
-- (OWContentType *)contentEncoding;
-{
-    return contentEncoding;
-}
-
-- (OWParameterizedContentType *)encodedContentType;
-{
-    return [super fullContentType];
-}
-
-- (void)setContentEncoding:(OWContentType *)aContentEncoding;
-{
-    if (aContentEncoding == unencodedContentEncoding)
-	aContentEncoding = nil;
-    contentEncoding = aContentEncoding;
-}
-
-- (NSString *)pathExtensionForContentTypeAndEncoding;
-{
-    NSString *typeExtension;
-    NSString *encodingExtension;
-    
-    typeExtension = [[[self encodedContentType] contentType] primaryExtension];
-    encodingExtension = [contentEncoding primaryExtension];
-    if (encodingExtension == nil)
-	return typeExtension;
-    else if (typeExtension == nil)
-	return encodingExtension;
-    else
-	return [typeExtension stringByAppendingPathExtension:encodingExtension];
-}
-
-#endif
-
-//
 
 - (BOOL)pipeToFilename:(NSString *)aFilename contentType:(OWContentType *)myType shouldPreservePartialFile:(BOOL)shouldPreserve;
 {
@@ -652,13 +561,13 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 	[NSException raise:@"Can't save" format:NSLocalizedStringFromTableInBundle(@"Can't open file %@ for writing: %s", @"OWF", [OWDataStream bundle], "datastream error: format items are path and errno string"), aFilename, strerror(OMNI_ERRNO())];
     [_lock lock];
 #warning What if flags.hasThrownAwayData gets set after we check it but before here?
-    saveFileHandle = [newFileHandle retain];
+    saveFileHandle = newFileHandle;
 #ifdef DEBUG_DataStream
     NSLog(@"new fd: %d", [saveFileHandle fileDescriptor]);
 #endif
 
     flags.shouldPreservePartialFile = shouldPreserve;
-    saveFilename = [aFilename retain];
+    saveFilename = aFilename;
 #ifdef USE_TEMPORARY_ATTRIBUTES
     finalFileAttributes = [requestedFileAttributes retain];
 #endif
@@ -687,13 +596,13 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
     [newFileHandle truncateFileAtOffset:startPositionInFile];
     [_lock lock];
 #warning What if flags.hasThrownAwayData gets set after we check it but before here?
-    saveFileHandle = [newFileHandle retain];
+    saveFileHandle = newFileHandle;
 #ifdef DEBUG_DataStream
     NSLog(@"new fd: %d", [saveFileHandle fileDescriptor]);
 #endif
 
     flags.shouldPreservePartialFile = YES;
-    saveFilename = [aFilename retain];
+    saveFilename = aFilename;
     finalFileAttributes = nil;
 
     savedBuffer = _first;
@@ -750,12 +659,9 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
     [self _noMoreData];
 
     if (saveFilename && !flags.shouldPreservePartialFile) {
-        NSString *oldFilename;
-
-        oldFilename = saveFilename;
+        NSString *oldFilename = saveFilename;
         saveFilename = nil;
         [[NSFileManager defaultManager] removeItemAtPath:oldFilename error:NULL];
-        [oldFilename release];
     }
 }
 
@@ -886,12 +792,10 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
         NSUInteger bytesCount = savedBuffer->bufferUsed - savedInBuffer;
         
         if (bytesCount > 0) {
-            NSData *data;
-            data = [[NSData alloc] initWithBytes:bytesPointer length:bytesCount];
+            NSData *data = [[NSData alloc] initWithBytes:bytesPointer length:bytesCount];
             [_lock lock];
             [saveFileHandle writeData:data];
             [_lock unlock];
-            [data release];
             savedInBuffer += bytesCount;
         }
         
@@ -930,19 +834,16 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 
 - (void)flushAndCloseSaveFile;
 {
-    NSString *savedFilename;
-    
     [self flushContentsToFile];
     [_lock lock];
 #ifdef DEBUG_DataStream
     NSLog(@"release fd: %d thread: %d", [saveFileHandle fileDescriptor], [NSThread currentThread]);
 #endif
-    [saveFileHandle release];
     saveFileHandle = nil;
-    savedFilename = [[saveFilename retain] autorelease];
+    NSString *savedFilename = saveFilename;
     [_lock unlock];
 
-    if (savedFilename && finalFileAttributes) {
+    if (savedFilename != nil && finalFileAttributes) {
         NSFileManager *manager = [NSFileManager defaultManager];
         [manager setAttributes:finalFileAttributes ofItemAtPath:savedFilename error:NULL];
     }
@@ -963,16 +864,6 @@ static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
     pthread_cond_broadcast(&lengthChangedCondition);
 
     [notifications makeObjectsPerformSelector:@selector(invoke)];
-    [notifications release];
-}
-
-// This function seems like a good idea, except that madvise(2) doesn't actually do what its documentation says it does (10.1, apple bug ID #2789078  ---wim)
-- (void)_adviseDataPages:(int)madviseFlags
-{
-    OWDataStreamBufferDescriptor *cursor;
-
-    for (cursor = _first; cursor != NULL; cursor = cursor->next)
-        madvise(cursor->buffer, cursor->bufferSize, madviseFlags);
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,48 +17,47 @@
 RCS_ID("$Id$")
 
 
-// TJW: We could probably get away with one global lock since the vast majority of the time we should expect successful lookups.
+// We can get away with one global lock since the vast majority of the time we should expect successful lookups.
+
+static NSLock *_globalLock;
 
 void OWFLowercaseStringCacheInit(OWFLowercaseStringCache *cache)
 {
     cache->set = CFSetCreateMutable(kCFAllocatorDefault, 0, &OFCaseInsensitiveStringSetCallbacks);
-    cache->lock = [[NSLock alloc] init];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _globalLock = [[NSLock alloc] init];
+    });
 }
 
 void OWFLowercaseStringCacheClear(OWFLowercaseStringCache *cache)
 {
     CFRelease(cache->set);
     cache->set = NULL;
-    [cache->lock release];
-    cache->lock = nil;
 }
-
 
 NSString *_OWFLowercaseStringCacheAdd(OWFLowercaseStringCache *cache, NSString *string)
 {
-    CFMutableSetRef newSet, oldSet;
-    NSString *lower;
-    
-    [cache->lock lock];
+    [_globalLock lock];
     
     // NSLog(@"OWFLowercaseStringCache: 0x%08x Adding %@", cache, string);
     
     // Create a new unlimited size set with the same callbacks and values
-    newSet =  CFSetCreateMutableCopy(kCFAllocatorDefault, 0, cache->set);
+    CFMutableSetRef newSet = CFSetCreateMutableCopy(kCFAllocatorDefault, 0, cache->set);
     
     // Add the new value
-    lower = [string lowercaseString];
-    CFSetSetValue(newSet, lower);
+    NSString *lower = [string lowercaseString];
+    CFSetSetValue(newSet, CFBridgingRetain(lower));
 
     // Replace the set atomically (only this thread can change the pointer and pointer
     // sets are atomic).
-    oldSet = cache->set;
+    CFMutableSetRef oldSet = cache->set;
     cache->set = newSet;
     
     // Schedule the old set to be released in one minute
-    [[OFScheduler mainScheduler] scheduleSelector: @selector(release) onObject: (id)oldSet withObject: nil afterTime: 60.0];
+    [[OFScheduler mainScheduler] scheduleSelector:@selector(self) onObject:CFBridgingRelease(oldSet) withObject:nil afterTime:60.0];
 
-    [cache->lock unlock];
+    [_globalLock unlock];
     
     return lower;
 }

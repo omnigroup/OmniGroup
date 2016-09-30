@@ -1,4 +1,4 @@
-// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,29 +12,31 @@
 @class NSArray, NSData, NSDictionary, NSMutableArray, NSMutableSet, NSMutableDictionary;
 @class OFXMLMakerElement, OFXMLSink;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OFXMLMaker : NSObject
 {
-    OFXMLMakerElement *openChild; /* The currently open child-element, or nil */
-    NSDictionary *namespaceBindings;  /* Maps namespace strings to namespace prefixes */
+    OFXMLMakerElement * __nullable openChild; /* The currently open child-element, or nil */
+    NSDictionary * __nullable namespaceBindings;  /* Maps namespace strings to namespace prefixes */
 }
 
 // API
 
 /* Creating child elements */
 - (OFXMLMakerElement *)openElement:(NSString *)elementName;
-- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString *)ns;
-- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString *)ns defaultNamespace:(NSString *)defaultNamespace;
+- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString * __nullable)ns;
+- (OFXMLMakerElement *)openElement:(NSString *)elementName xmlns:(NSString * __nullable)ns defaultNamespace:(NSString * __nullable)defaultNamespace;
 - (void)close;
 
 /* Creating child strings. These all return self for convenience. */
-- (OFXMLMaker *)addString:(NSString *)cdata;
-- (OFXMLMaker *)addEOL;
-- (OFXMLMaker *)addComment:(NSString *)cdata;
-- (OFXMLMaker *)addBase64Data:(NSData *)bytes;  // A convenience
+- (instancetype)addString:(NSString *)cdata NS_SWIFT_NAME(add(string:));
+- (instancetype)addEOL;
+- (instancetype)addComment:(NSString *)cdata;
+- (instancetype)addBase64Data:(NSData *)bytes NS_SWIFT_NAME(addBase64(data:));  // A convenience
 
 /* Managing namespaces */
-- (NSString *)prefixForNamespace:(NSString *)ns hint:(NSString *)prefixHint;
-- (NSDictionary *)namespaceBindings;
+- (NSString * __nullable)prefixForNamespace:(NSString *)ns hint:(NSString * __nullable)prefixHint;
+- (NSDictionary * __nullable)namespaceBindings;
 
 /* Where all this generated XML is going */
 - (OFXMLSink *)target;
@@ -51,8 +53,8 @@
 }
 
 // API
-- (OFXMLMakerElement *)addAttribute:(NSString *)elementName value:(NSString *)attValue;
-- (OFXMLMakerElement *)addAttribute:(NSString *)elementName xmlns:(NSString *)ns value:(NSString *)attValue;
+- (instancetype)addAttribute:(NSString *)elementName value:(NSString *)attValue;
+- (instancetype)addAttribute:(NSString *)elementName xmlns:(NSString *)ns value:(NSString *)attValue;
 - (NSString *)name;
 - (OFXMLMaker *)parent;
 
@@ -73,7 +75,7 @@
 }
 
 /* Returns a string suitable for use as a namespace prefix. prefixHint is a suggested return value, or nil */
-- (NSString *)assignPrefixForNamespace:(NSString *)ns hint:(NSString *)prefixHint;
+- (NSString *)assignPrefixForNamespace:(NSString *)ns hint:(NSString * __nullable)prefixHint;
 
 /* perhaps these should be on OFXMLMaker? */
 - (void)setIsStandalone:(BOOL)isStandalone;
@@ -98,3 +100,5 @@
 - (void)learnAncestralNamespace:(NSString *)ns prefix:(NSString *)nsPrefix;
 
 @end
+
+NS_ASSUME_NONNULL_END

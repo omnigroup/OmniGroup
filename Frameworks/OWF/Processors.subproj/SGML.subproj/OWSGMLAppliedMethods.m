@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,8 +20,8 @@ RCS_ID("$Id$")
 
 @implementation OWSGMLAppliedMethods
 {
-    OWSGMLMethodHandler *_tagHandlers;
-    OWSGMLMethodHandler *_endTagHandlers;
+    __strong OWSGMLMethodHandler *_tagHandlers;
+    __strong OWSGMLMethodHandler *_endTagHandlers;
     NSUInteger _tagCount;
 }
 
@@ -65,8 +65,8 @@ inline BOOL sgmlAppliedMethodsInvokeEndTag(OWSGMLAppliedMethods *self, unsigned 
 
     _tagCount = [dtd tagCount];
     if (_tagCount > 0) {
-        _tagHandlers = malloc(_tagCount * sizeof(*_tagHandlers));
-        _endTagHandlers = malloc(_tagCount * sizeof(*_tagHandlers));
+        _tagHandlers = (__strong OWSGMLMethodHandler *)calloc(_tagCount, sizeof(*_tagHandlers));
+        _endTagHandlers = (__strong OWSGMLMethodHandler *)calloc(_tagCount, sizeof(*_tagHandlers));
     }
     
     for (NSUInteger tagIndex = 0; tagIndex < _tagCount; tagIndex++) {
@@ -105,8 +105,6 @@ inline BOOL sgmlAppliedMethodsInvokeEndTag(OWSGMLAppliedMethods *self, unsigned 
         free(_tagHandlers);
     if (_endTagHandlers)
         free(_endTagHandlers);
-    
-    [super dealloc];
 }
 
 @end

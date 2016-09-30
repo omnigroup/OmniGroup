@@ -2268,7 +2268,7 @@
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
-				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)$(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
@@ -2284,7 +2284,7 @@
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
-				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
+				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)$(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)";
 				SKIP_INSTALL = YES;
 			};
 			name = Release;

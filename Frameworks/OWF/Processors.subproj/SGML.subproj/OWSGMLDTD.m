@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,9 +44,7 @@ static NSMutableDictionary *dtdForType = nil;
 
 + (OWSGMLDTD *)registeredDTDForSourceContentType:(OWContentType *)aSourceType destinationContentType:(OWContentType *)aDestinationType;
 {
-    OWSGMLDTD *dtd;
-
-    dtd = [[[self alloc] initWithSourceType:aSourceType destinationType:aDestinationType] autorelease];
+    OWSGMLDTD *dtd = [[self alloc] initWithSourceType:aSourceType destinationType:aDestinationType];
 
     OBASSERT(![dtdForType objectForKey:[aSourceType contentTypeString]]);
     [dtdForType setObject:dtd forKey:[aSourceType contentTypeString]];
@@ -57,13 +55,16 @@ static NSMutableDictionary *dtdForType = nil;
 - initWithSourceType:(OWContentType *)aSource 
     destinationType:(OWContentType *)aDestination;
 {
-    if (!(self = [super init]))
+    self = [super init];
+    if (self == nil)
         return nil;
-    sourceType = [aSource retain];
-    destinationType = [aDestination retain];
+
+    sourceType = aSource;
+    destinationType = aDestination;
     tagTrie = [[OFTrie alloc] initCaseSensitive:NO];
     tagCount = 0;
     allTags = [[NSMutableArray alloc] init];
+
     return self;
 }
 
@@ -94,16 +95,14 @@ static NSMutableDictionary *dtdForType = nil;
 
 - (OWSGMLTagType *)tagTypeNamed:(NSString *)aName;
 {
-    OWSGMLTagType *tagType;
+    OWSGMLTagType *tagType = (OWSGMLTagType *)[tagTrie bucketForString:aName];
 
-    tagType = (OWSGMLTagType *)[tagTrie bucketForString:aName];
-
-    if (!tagType) {
+    if (tagType == nil) {
         tagType = [[OWSGMLTagType alloc] initWithName:aName dtdIndex:tagCount++];
         [tagTrie addBucket:tagType forString:aName];
         [allTags addObject:tagType];
-        [tagType release];
     }
+
     return tagType;
 }
 
@@ -114,9 +113,7 @@ static NSMutableDictionary *dtdForType = nil;
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
     [debugDictionary setObject:tagTrie forKey:@"tagTrie"];
     [debugDictionary setObject:sourceType forKey:@"sourceType"];

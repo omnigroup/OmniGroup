@@ -32,6 +32,12 @@ RCS_ID("$Id$");
 @end
 
 @implementation OWProcessorCache
+{
+    NSLock *lock;
+    
+    OFMultiValueDictionary *processorsFromHashableSources;
+    NSMutableArray <OFWeakReference *> *otherProcessors;
+}
 
 - init
 {
@@ -50,25 +56,24 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OWContentCacheFlushNotification object:nil];
-    [lock release];
-    [processorsFromHashableSources release];
-    [otherProcessors release];
-    [super dealloc];
 }
 
-- (NSArray *)allArcs;
+- (NSArray <id <OWCacheArc>> *)allArcs;
 {
-    __block NSMutableArray *arcs = nil;
+    __block NSArray *arcs = nil;
 
     OFWithLock(lock, ^{
-        arcs = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
-        [arcs addObjectsFromArray:otherProcessors];
+        NSMutableArray *arcReferences = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
+        [arcReferences addObjectsFromArray:otherProcessors];
+        arcs = [arcReferences arrayByPerformingBlock:^id(OFWeakReference *weakReference) {
+            return weakReference.object;
+        }];
     });
     
-    return [arcs autorelease];
+    return arcs;
 }
 
-- (NSArray *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)pipe
+- (NSArray <id <OWCacheArc>> *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)pipe
 {
     /* We're only able to look up arcs (processors) by their source */
     if (!(relation & (OWCacheArcSubject | OWCacheArcSource)))
@@ -122,7 +127,16 @@ RCS_ID("$Id$");
         // We also may have some processors whose source content is not yet hashable; we have to scan through those as well.
         preexistingProcessorCount = [otherProcessors count];
         for (NSUInteger processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex++) {
-            OWProcessorCacheArc *extant = [otherProcessors objectAtIndex:processorIndex];
+            OFWeakReference *extantReference = [otherProcessors objectAtIndex:processorIndex];
+            OWProcessorCacheArc *extant = extantReference.object;
+            if (extant == nil) {
+                // Our weak reference is stale, remove it
+                [otherProcessors removeObjectAtIndex:processorIndex];
+                processorIndex--;
+                preexistingProcessorCount--;
+                continue;
+            }
+
             OWContent *extantSource = [extant source];
             
             if ([anEntry isEqual:extantSource]) {
@@ -131,7 +145,7 @@ RCS_ID("$Id$");
             
             // If this processor's source content has become hashable since the last time we looked at it, move it to the (more efficient) OFMultiValueDictionary.
             if ([extantSource isHashable]) {
-                [processorsFromHashableSources addObject:extant forKey:extantSource];
+                [processorsFromHashableSources addObject:extantReference forKey:extantSource];
                 [delayedRelease addObject:extant];
                 // Adding the arc to the delayedRelease array (above) gives it a strong retain which prevents it from trying to invalidate itself. Otherwise, if its last (external) strong retain went away while we were processing, it could try to invalidate itself when we remove it from our otherProcessors array (below), and we'd deadlock with ourselves.
                 [otherProcessors removeObjectAtIndex:processorIndex];
@@ -144,30 +158,26 @@ RCS_ID("$Id$");
         for (NSUInteger linkIndex = 0; linkIndex < linkCount; linkIndex++) {
             OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex];
             OWProcessorDescription *proc = [possible processorDescription];
-            OWProcessorCacheArc *newArc;
             
             if (localOnly && [proc usesNetwork])
                 continue;
             
-            newArc = [[OWProcessorCacheArc alloc] initWithSource:anEntry link:possible inCache:self forPipeline:pipe];
+            OWProcessorCacheArc *newArc = [[OWProcessorCacheArc alloc] initWithSource:anEntry link:possible inCache:self forPipeline:pipe];
             
             OBASSERT(processorsFromHashableSources != nil);
             OBASSERT(otherProcessors != nil);
+            OFWeakReference *weakReference = [[OFWeakReference alloc] initWithObject:newArc];
             if (anEntryIsHashable)
-                [processorsFromHashableSources addObject:newArc forKey:anEntry];
+                [processorsFromHashableSources addObject:weakReference forKey:anEntry];
             else
-                [otherProcessors addObject:newArc];
-            OBASSERT([newArc retainCount] >= 2);
-            [newArc incrementWeakRetainCount]; // Convert the strong retain from the processorsFromHashableSources or otherProcessors container into a weak retain
+                [otherProcessors addObject:weakReference];
             
             [result addObject:newArc];
-            
-            [newArc release]; // Pairs with -alloc above
         }
         
     });
 
-    [delayedRelease release];
+    delayedRelease = nil;
 
     return result;
 }
@@ -180,24 +190,22 @@ RCS_ID("$Id$");
 
 - (void)removeArc:(OWProcessorCacheArc *)anArc
 {
-    [anArc retain]; // Avoid weak-retain-release shenanigans inside the lock.
+    OWProcessorCacheArc *retainedArc = anArc; // Avoid weak-retain-release shenanigans inside the lock.
     
     OFWithLock(lock, ^{
         BOOL removed;
-        
-        NSUInteger arrayIndex = [otherProcessors indexOfObjectIdenticalTo:anArc];
+        OFWeakReference *weakReference = [[OFWeakReference alloc] initWithDeallocatingObject:anArc];
+        NSUInteger arrayIndex = [otherProcessors indexOfObject:weakReference];
         if (arrayIndex != NSNotFound) {
             [otherProcessors removeObjectAtIndex:arrayIndex];
             removed = YES;
         } else {
-            removed = [processorsFromHashableSources removeObjectIdenticalTo:anArc forKey:[anArc source]];
+            removed = [processorsFromHashableSources removeObject:weakReference forKey:[anArc source]];
         }
-        if (removed)
-            [anArc decrementWeakRetainCount];
         OBASSERT(removed);
     });
     
-    [anArc release];
+    retainedArc = nil;
 }
 
 // Debugging
@@ -232,10 +240,9 @@ RCS_ID("$Id$");
     [lock lock];
 
     // We don't want to hold the lock longer than necessary, so within our lock we just nullify our instance variables (after caching their values on our stack)
-    OFMultiValueDictionary *retainedProcessorsFromHashableSources = processorsFromHashableSources;
+    __strong OFMultiValueDictionary *retainedProcessorsFromHashableSources = processorsFromHashableSources;
+    __strong NSMutableArray *retainedOtherProcessors = otherProcessors;
     processorsFromHashableSources = nil;
-
-    NSMutableArray *retainedOtherProcessors = otherProcessors;
     otherProcessors = nil;
     
     [self _allocateProcessorContainers];
@@ -243,10 +250,8 @@ RCS_ID("$Id$");
     [lock unlock];
 
     // Now that we're out of the lock, let's go ahead and release these (weakly retained) processor arcs
-    [[retainedProcessorsFromHashableSources allValues] makeObjectsPerformSelector:@selector(decrementWeakRetainCount)];
-    [retainedProcessorsFromHashableSources release];
-    [retainedOtherProcessors makeObjectsPerformSelector:@selector(decrementWeakRetainCount)];
-    [retainedOtherProcessors release];
+    retainedProcessorsFromHashableSources = nil;
+    retainedOtherProcessors = nil;
 }
 
 @end

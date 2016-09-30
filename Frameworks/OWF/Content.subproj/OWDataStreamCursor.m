@@ -59,26 +59,20 @@ NSMutableDictionary *encoders, *decoders;
 
 static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *aCursor)
 {
-    OFBundledClass *coderClassBundle;
-    Class coderClass;
-    NSString *coderInitMethod;
-    SEL coderInitSel;
-    OWDataStreamCursor *newCursor;
-    
-    coderClassBundle = [coderInfo objectAtIndex:0];
-    coderInitMethod = [coderInfo objectAtIndex:1];
+    OFBundledClass *coderClassBundle = [coderInfo objectAtIndex:0];
+    NSString *coderInitMethod = [coderInfo objectAtIndex:1];
 
-    coderClass = [coderClassBundle bundledClass];
+    Class coderClass = [coderClassBundle bundledClass];
     OBASSERT(OBClassIsSubclassOfClass(coderClass, [OWDataStreamCursor class]));
-    coderInitSel = NSSelectorFromString(coderInitMethod);
+    SEL coderInitSel = NSSelectorFromString(coderInitMethod);
     // NSLog(@"Coder class: %@ (%p), sel=%s", coderClass, coderClass, coderInitSel);
     OBASSERT(coderInitSel != NULL);
     OBASSERT([coderClass instancesRespondToSelector:coderInitSel]);
 
     // objc_msgSend avoids confusing clang-sa's reference tracking
-    OWDataStreamCursor *(*imp)(Class cls, SEL _cmd) = (typeof(imp))objc_msgSend;
-    newCursor = imp(coderClass, @selector(alloc));
-    newCursor = [newCursor performSelector:coderInitSel withObject:aCursor];
+    OWDataStreamCursor *(*allocMsgSend)(Class cls, SEL _cmd) = (typeof(allocMsgSend))objc_msgSend;
+    OWDataStreamCursor *(*initMsgSend)(OWDataStreamCursor *, SEL _cmd, OWDataStreamCursor *) = (typeof(initMsgSend))objc_msgSend;
+    OWDataStreamCursor *newCursor = initMsgSend(allocMsgSend(coderClass, @selector(alloc)), coderInitSel, aCursor);
     
     OBAutorelease(newCursor);
 
@@ -200,14 +194,14 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
 {
     void *buf;
     NSUInteger count = [self readUnderlyingBuffer:&buf];
-    return [[[NSData alloc] initWithBytes:buf length:count] autorelease];
+    return [[NSData alloc] initWithBytes:buf length:count];
 }
 
 - (NSData *)peekData
 {
     void *buf;
     NSUInteger count = [self peekUnderlyingBuffer:&buf];
-    return [[[NSData alloc] initWithBytes:buf length:count] autorelease];
+    return [[NSData alloc] initWithBytes:buf length:count];
 }
 
 - (NSData *)readBytes:(NSUInteger)count
@@ -218,7 +212,7 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
     
     buffer = malloc(count);
     [self readBytes:count intoBuffer:buffer];
-    return [[[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES] autorelease];
+    return [[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES];
 }
 
 - (NSData *)peekBytes:(NSUInteger)count
@@ -229,7 +223,7 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
 
     buffer = malloc(count);
     [self peekBytes:count intoBuffer:buffer];
-    return [[[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES] autorelease];
+    return [[NSData alloc] initWithBytesNoCopy:buffer length:count freeWhenDone:YES];
 }
 
 - (NSUInteger)readMaximumBytes:(NSUInteger)maximum intoBuffer:(void *)buffer;
@@ -407,7 +401,6 @@ PEEK_DATA_OF_TYPE(double, Double);
     }
 
     NSMutableData *accumulator = [[NSMutableData alloc] initWithBytes:fetch length:bufferSize];
-    [accumulator autorelease];
 
     while (![self isAtEOF]) {
         bufferSize = [self readUnderlyingBuffer:&fetch];
@@ -484,7 +477,7 @@ PEEK_DATA_OF_TYPE(double, Double);
         return [NSString stringWithFormat:@"<Invalid: %@>", [exception name]];
     }
 
-    NSMutableString *descript = [[[NSMutableString alloc] initWithCapacity:LOG_BYTES_LEN + 6] autorelease];
+    NSMutableString *descript = [[NSMutableString alloc] initWithCapacity:LOG_BYTES_LEN + 6];
 
     for (NSUInteger peekIndex = 0; peekIndex < peeked; peekIndex ++) {
         int ch = peekBuffer[peekIndex];
@@ -519,7 +512,7 @@ PEEK_DATA_OF_TYPE(double, Double);
     if (!(self = [super init]))
         return nil;
 
-    dataStream = [aStream retain];
+    dataStream = aStream;
     [dataStream _adjustCursorCount:1];
     byteOrder = NS_UnknownByteOrder;
     dataOffset = 0;
@@ -536,8 +529,6 @@ PEEK_DATA_OF_TYPE(double, Double);
 - (void)dealloc;
 {
     [dataStream _adjustCursorCount:-1];
-    [dataStream release];
-    [super dealloc];
 }
 
 // These inlines make the data access functions use the same code base without being deadly slow
@@ -741,12 +732,8 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
 
 - (void)scheduleInQueue:(OFMessageQueue *)aQueue invocation:(OFInvocation *)anInvocation
 {
-    OFInvocation *thisAgain;
-    BOOL rightNow;
-
-    thisAgain = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:aQueue withObject:anInvocation];
-    rightNow = [dataStream _checkForAvailableIndex:dataOffset+1 orInvoke:thisAgain];
-    [thisAgain release];
+    OFInvocation *thisAgain = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:aQueue withObject:anInvocation];
+    BOOL rightNow = [dataStream _checkForAvailableIndex:dataOffset+1 orInvoke:thisAgain];
 #ifdef DEBUG_scheduling
     NSLog(@"-[%@ %s], available=%d, invocation=%@", self, _cmd, rightNow, [anInvocation description]);
 #endif
@@ -763,9 +750,7 @@ static inline NSData *_getBufferedData(OWDataStreamConcreteCursor *self, BOOL in
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
     if (dataStream)
         [debugDictionary setObject:dataStream forKey:@"dataStream"];
     [debugDictionary setObject:[NSNumber numberWithUnsignedInteger:dataOffset] forKey:@"dataOffset"];

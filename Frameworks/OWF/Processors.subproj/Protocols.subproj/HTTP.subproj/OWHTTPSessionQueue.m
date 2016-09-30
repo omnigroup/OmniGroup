@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,30 +54,27 @@ static NSTimeInterval sessionTimeout;
 
 + (OWHTTPSessionQueue *)httpSessionQueueForAddress:(OWAddress *)anAddress;
 {
-    NSAutoreleasePool *pool;
-    OFDatedMutableDictionary *cache;
-    NSString *cacheKey;
     OWHTTPSessionQueue *queue;
 
-    pool = [[NSAutoreleasePool alloc] init];
-    cache = [self cache];
-    cacheKey = [self cacheKeyForSessionQueueForAddress:anAddress];
-    OBASSERT(cacheKey != nil);
-
-    [queueLock lock];
-
-    // Lookup the queue for this address, creating if neccesary
-    queue = [[cache objectForKey:cacheKey] retain];
-    if (queue == nil) {
-        queue = [[self alloc] initWithAddress:anAddress];
-        [cache setObject:queue forKey:cacheKey];
+    @autoreleasepool {
+        OFDatedMutableDictionary *cache = [self cache];
+        NSString *cacheKey = [self cacheKeyForSessionQueueForAddress:anAddress];
+        OBASSERT(cacheKey != nil);
+        
+        [queueLock lock];
+        
+        // Lookup the queue for this address, creating if neccesary
+        queue = [cache objectForKey:cacheKey];
+        if (queue == nil) {
+            queue = [[self alloc] initWithAddress:anAddress];
+            [cache setObject:queue forKey:cacheKey];
+        }
+        [self _lockedCleanSessionQueuesOlderThanTimeoutExcludingQueue:queue];
+        
+        [queueLock unlock];
     }
-    [self _lockedCleanSessionQueuesOlderThanTimeoutExcludingQueue:queue];
 
-    [queueLock unlock];
-
-    [pool release];
-    return [queue autorelease];
+    return queue;
 }
 
 + (NSString *)cacheKeyForSessionQueueForAddress:(OWAddress *)anAddress;
@@ -110,7 +107,7 @@ static NSTimeInterval sessionTimeout;
     if (!(self = [super init]))
         return nil;
 
-    address = [anAddress retain];
+    address = anAddress;
     idleSessions = [[NSMutableArray alloc] init];
     sessions = [[NSMutableArray alloc] init];
     queuedProcessors = [[NSMutableArray alloc] init];
@@ -120,17 +117,6 @@ static NSTimeInterval sessionTimeout;
     flags.serverCannotHandlePipelinedRequestsReliably = NO;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [idleSessions release];
-    [sessions release];
-    [address release];
-    [queuedProcessors release];
-    [abortedProcessors release];
-    [lock release];
-    [super dealloc];
 }
 
 - (BOOL)queueProcessor:(OWHTTPProcessor *)aProcessor;
@@ -164,7 +150,6 @@ static NSTimeInterval sessionTimeout;
         } else {
             session = [[[[self class] sessionClass] alloc] initWithAddress:address inQueue:self];
             [sessions addObject:session];
-            [session release];
         }
     } else
         session = nil;
@@ -197,14 +182,14 @@ static NSTimeInterval sessionTimeout;
 
     [lock lock];
     if ([queuedProcessors count]) {
-        result = [[queuedProcessors objectAtIndex:0] retain];
+        result = [queuedProcessors objectAtIndex:0];
         [queuedProcessors removeObjectAtIndex:0];
     } else {
         result = nil;
     }
     [lock unlock];
 
-    return [result autorelease];
+    return result;
 }
 
 - (OWHTTPProcessor *)anyProcessor;
@@ -213,13 +198,13 @@ static NSTimeInterval sessionTimeout;
 
     [lock lock];
     if ([queuedProcessors count]) {
-        result = [[queuedProcessors objectAtIndex:0] retain];
+        result = [queuedProcessors objectAtIndex:0];
     } else {
         result = nil;
     }
     [lock unlock];
 
-    return [result autorelease];
+    return result;
 }
 
 - (BOOL)sessionIsIdle:(OWHTTPSession *)session;
@@ -305,30 +290,25 @@ static NSTimeInterval sessionTimeout;
 + (void)_lockedCleanSessionQueuesOlderThanTimeoutExcludingQueue:(OWHTTPSessionQueue *)excludedQueue;
 {
     static NSDate *lastCleanDate = nil;
-    NSDate *currentDate;
 
     // TODO: lastCleanDate is local to this class, but we need to clean up the HTTPS cache also.  Maybe we should just have a single cache with modified keys for each protocol, rather than maintaining separate caches.
-    currentDate = [[NSDate alloc] init];
+    NSDate *currentDate = [[NSDate alloc] init];
     if (lastCleanDate != nil && [currentDate timeIntervalSinceDate:lastCleanDate] < sessionTimeout) {
-        [currentDate release];
         return;
     }
 
     [self _lockedFlushSessionQueuesOlderThanDate:[NSDate dateWithTimeIntervalSinceNow:-sessionTimeout] excludingQueue:excludedQueue];
-    [lastCleanDate release];
     lastCleanDate = currentDate;
 }
 
 + (void)_lockedFlushSessionQueuesOlderThanDate:(NSDate *)aDate excludingQueue:(OWHTTPSessionQueue *)excludedQueue;
 {
-    OFDatedMutableDictionary *cache;
-    NSEnumerator *enumerator;
     OWHTTPSessionQueue *aQueue;
 
     if (!aDate)
         aDate = [NSDate distantFuture];
-    cache = [self cache];
-    enumerator = [[cache objectsOlderThanDate:aDate] objectEnumerator];
+    OFDatedMutableDictionary *cache = [self cache];
+    NSEnumerator *enumerator = [[cache objectsOlderThanDate:aDate] objectEnumerator];
     while ((aQueue = [enumerator nextObject])) {
         if (aQueue != excludedQueue && [aQueue queueEmptyAndAllSessionsIdle]) {
             [cache removeObjectForKey:[aQueue queueKey]];
@@ -338,12 +318,10 @@ static NSTimeInterval sessionTimeout;
 
 - (NSArray *)_queuedProcessorsSnapshot;
 {
-    NSArray *snapshot;
-
     [lock lock];
-    snapshot = [[NSArray alloc] initWithArray:queuedProcessors];
+    NSArray *snapshot = [[NSArray alloc] initWithArray:queuedProcessors];
     [lock unlock];
-    return [snapshot autorelease];
+    return snapshot;
 }
 
 @end

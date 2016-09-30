@@ -219,18 +219,18 @@ foreach my $emit (sort keys %aliases) {
 
 print HFILE <<'EOF';
 
-struct oid_lut {
+struct oid_lut_entry {
     int nid;
     const uint8_t *der;
     size_t der_len;
 };
-extern int lookUpOID(const uint8_t *, size_t, const struct oid_lut *, int) __attribute__((visibility("internal")));
+extern int _OFASN1LookUpOIDInTable(const uint8_t *, size_t, const struct oid_lut_entry *, int) __attribute__((visibility("internal")));
 
 EOF
 
 print CFILE <<'EOF';
 
-int lookUpOID(const uint8_t *oid, size_t oidlen, const struct oid_lut *lut, int lutsize)
+int _OFASN1LookUpOIDInTable(const uint8_t *oid, size_t oidlen, const struct oid_lut_entry *lut, int lutsize)
 {
     for(int i = 0; i < lutsize; i++) {
         if (oidlen == lut[i].der_len - 2 &&
@@ -251,7 +251,7 @@ foreach my $lut (sort keys %lookups) {
 
     @names = sort { &cmpoid($revaliases{$lu->{$a}}, $revaliases{$lu->{$b}}) } @names;
 
-    print CFILE "\nconst struct oid_lut oid_lut_${lut}[$namecount] = {\n";
+    print CFILE "\nconst struct oid_lut_entry oid_lut_${lut}[$namecount] = {\n";
     print HFILE "\nenum ${lut};\n";
     foreach my $entry (@names) {
         my($dername) = $lu->{$entry};
@@ -264,22 +264,26 @@ foreach my $lut (sort keys %lookups) {
     print CFILE "};\n";
 
     print HFILE "#define oid_lut_${lut}_size $namecount\n";
-    print HFILE "extern const struct oid_lut oid_lut_${lut}[oid_lut_${lut}_size] __attribute__((visibility(\"internal\")));\n";
-    print HFILE "static inline enum $lut OFASN1LookUp${lut}OID(const uint8_t *ptr, size_t len) {\n";
-    print HFILE "    _Static_assert(${lut}_Unknown == 0, \"\");\n";
-    print HFILE "    return (enum $lut)lookUpOID(ptr, len, oid_lut_${lut}, oid_lut_${lut}_size);\n";
-    print HFILE "}\n";
+    print HFILE "extern const struct oid_lut_entry oid_lut_${lut}[oid_lut_${lut}_size] __attribute__((visibility(\"internal\")));\n";
+    print HFILE "_Static_assert(${lut}_Unknown == 0, \"The 'Unknown' value of the ${lut} enum must be zero\");\n";
+    print HFILE "#define ${lut}OIDTable oid_lut_${lut}, oid_lut_${lut}_size\n";
 }
+
+print HFILE "\n";
+print HFILE "#define OFASN1LookUpOID(tp, ptr, len) ((enum tp)_OFASN1LookUpOIDInTable((ptr), (len), tp ## OIDTable))\n";
 
 __DATA__
 
+# Some useful prefixes
 rsadsi = 1.2.840.113549
 pkcs = rsadsi 1
 csor = 2.16.840.1.101.3
 certicom = 1.3.132
-x9-62 = 1.1.2.840.10045
+x9-57 = 1.2.840.10040
+x9-62 = 1.2.840.10045
 gnu = 1.3.6.1.4.1.11591
 pgut = 1.3.6.1.4.1.3029
+aes = csor 4 1
 
 sha256 = csor 4 2 1
 sha512 = csor 4 2 3
@@ -291,7 +295,6 @@ hmacWithSHA512 = rsadsi 2 11
 emit hmacWith* as prf-hmacWith*
 lookup prf-* in OFASN1Algorithm
 
-aes = csor 4 1
 
 aes128-cbc = aes 2
 aes192-cbc = aes 22
@@ -310,10 +313,21 @@ aes192-ccm = aes 27
 aes256-ccm = aes 47
 emit aes* as alg-aes*
 
+# From RFC6476
+alg-authEnc-128 = pkcs 9 16 15
+alg-authEnc-256 = pkcs 9 16 16
+
 # From RFC3211
 PBKDF2 = pkcs 5 12    # PKCS#5, RFC2898 [A.2], RFC3370 [4.4.1]
 emit PBKDF2
 lookup PBKDF2 in OFASN1Algorithm
+
+# These algorithms are from RFC3211, but we never use them for generation.
+# We include them so that we can test our parsing and higher-level code against sample data from the RFCs.
+PWRI-KEK = pkcs 9 16 3 9
+alg-des-ede-cbc = rsadsi 3 7
+emit PWRI-KEK, alg-des-ede-cbc
+lookup PWRI-KEK in OFASN1Algorithm
 
 # Content types from RFC5652, RFC5911
 ct-data = pkcs 7 1
@@ -335,13 +349,20 @@ lookup ct-* in OFCMSContentType as *
 attr-contentType = pkcs 9 3
 attr-messageDigest = pkcs 9 4
 attr-signingTime = pkcs 9 5
+attr-contentIdentifier = pkcs 9 16 2 7
 emit attr-*
+lookup attr-* in OFCMSAttribute as *
 
 alg-zlibCompress = pkcs 9 16 3 8
 emit alg-zlibCompress
 
 alg-rsaEncryption-pkcs1_5 = pkcs 1 1
 emit alg-rsaEncryption-pkcs1_5
+
+alg-ecPublicKey = x9-62 2 1
+alg-ecDH = certicom 1 12
+alg-DSA = x9-57 4 1
+emit alg-DSA, alg-ecPublicKey, alg-ecDH
 
 # RSAES-OAEP OIDs from RFC3560
 alg-rsaEncryption_OAEP = pkcs 1 7

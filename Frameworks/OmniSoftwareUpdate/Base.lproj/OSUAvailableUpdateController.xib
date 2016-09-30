@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="10117" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11198.2" systemVersion="16A313a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="10117"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="10117"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11198.2"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="11198.2"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OSUAvailableUpdateController">
@@ -42,7 +43,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="424" y="252" width="480" height="550"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
             <view key="contentView" verticalHuggingPriority="750" verticalCompressionResistancePriority="1000" id="226" userLabel="Content View">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="550"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -57,7 +58,7 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnResizing="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" id="PR2-X6-Bji">
-                                            <rect key="frame" x="0.0" y="0.0" width="438" height="19"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="438" height="64"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -132,24 +133,23 @@
                                             </connections>
                                         </tableView>
                                     </subviews>
-                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
                                 <constraints>
                                     <constraint firstAttribute="height" priority="725" constant="66" identifier="item-tableview-height" id="Ki9-vv-1Zg"/>
                                 </constraints>
-                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="odA-Jr-aQL">
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="odA-Jr-aQL">
                                     <rect key="frame" x="-100" y="-100" width="223" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
-                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="dPc-Yf-2vr">
+                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="dPc-Yf-2vr">
                                     <rect key="frame" x="-14" y="1" width="15" height="0.0"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
-                            <customView horizontalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="248">
+                            <customView horizontalCompressionResistancePriority="1000" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="248">
                                 <rect key="frame" x="0.0" y="282" width="440" height="90"/>
                                 <subviews>
-                                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Kv0-Sz-fmN">
+                                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Kv0-Sz-fmN">
                                         <rect key="frame" x="3" y="23" width="64" height="64"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="64" id="2eo-WK-vUN"/>
@@ -157,7 +157,7 @@
                                         </constraints>
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="NSCaution" id="s9K-Ar-e7f"/>
                                     </imageView>
-                                    <button verticalHuggingPriority="750" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="255">
+                                    <button verticalHuggingPriority="750" ambiguous="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="255">
                                         <rect key="frame" x="151" y="30" width="121" height="19"/>
                                         <buttonCell key="cell" type="roundRect" title="(DNL) Ignore Track" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="256">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -173,7 +173,7 @@
                                             </binding>
                                         </connections>
                                     </button>
-                                    <button horizontalHuggingPriority="249" verticalHuggingPriority="750" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="253">
+                                    <button horizontalHuggingPriority="249" verticalHuggingPriority="750" ambiguous="YES" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="253">
                                         <rect key="frame" x="299" y="30" width="121" height="19"/>
                                         <buttonCell key="cell" type="roundRect" title="Ignore All but Final" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="254">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -183,7 +183,7 @@
                                             <action selector="ignoreCertainTracks:" target="-2" id="299"/>
                                         </connections>
                                     </button>
-                                    <textField autoresizesSubviews="NO" horizontalHuggingPriority="249" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="355" translatesAutoresizingMaskIntoConstraints="NO" id="251" customClass="OSUAvailableUpdateControllerMessageTextField">
+                                    <textField autoresizesSubviews="NO" horizontalHuggingPriority="249" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="250" ambiguous="YES" preferredMaxLayoutWidth="355" translatesAutoresizingMaskIntoConstraints="NO" id="251" customClass="OSUAvailableUpdateControllerMessageTextField">
                                         <rect key="frame" x="71" y="53" width="359" height="34"/>
                                         <constraints>
                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="34" id="sfq-v4-UVU"/>
@@ -213,14 +213,12 @@
                                     <constraint firstItem="255" firstAttribute="top" secondItem="251" secondAttribute="bottom" constant="4" id="szE-F1-CLX"/>
                                 </constraints>
                             </customView>
-                            <customView placeholderIntrinsicWidth="440" placeholderIntrinsicHeight="176" translatesAutoresizingMaskIntoConstraints="NO" id="257" userLabel="Release Notes View" customClass="OSUThinBorderView">
+                            <customView ambiguous="YES" placeholderIntrinsicWidth="440" placeholderIntrinsicHeight="176" translatesAutoresizingMaskIntoConstraints="NO" id="257" userLabel="Release Notes View" customClass="OSUThinBorderView">
                                 <rect key="frame" x="0.0" y="82" width="440" height="200"/>
                                 <subviews>
-                                    <webView translatesAutoresizingMaskIntoConstraints="NO" id="258">
+                                    <webView ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="258">
                                         <rect key="frame" x="1" y="1" width="438" height="198"/>
-                                        <webPreferences key="preferences" defaultFontSize="12" defaultFixedFontSize="12">
-                                            <nil key="identifier"/>
-                                        </webPreferences>
+                                        <webPreferences key="preferences" identifier="com.omnigroup.framework.OmniSoftwareUpdate.releaseNotes" defaultFontSize="12" defaultFixedFontSize="12"/>
                                         <connections>
                                             <outlet property="UIDelegate" destination="-2" id="285"/>
                                             <outlet property="downloadDelegate" destination="-2" id="286"/>

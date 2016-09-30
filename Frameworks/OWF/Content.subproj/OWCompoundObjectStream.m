@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,26 +41,17 @@ RCS_ID("$Id$")
     
     [newCursor seekToOffset:newCursorPosition fromPosition:OWCursorSeekFromStart];
 
-    [newStream release];
-
     return newCursor;
 }
 
 - initWithStream:(OWAbstractObjectStream *)aStream interjectingStream:(OWAbstractObjectStream *)anotherStream atIndex:(NSUInteger)index;
 {
     self = [super init];
-    framingStream = [aStream retain];
-    interjectedStream = [anotherStream retain];
+    framingStream = aStream;
+    interjectedStream = anotherStream;
     interjectedAtIndex = index;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [framingStream release];
-    [interjectedStream release];
-    [super dealloc];
 }
 
 - (id)objectAtIndex:(NSUInteger)index;

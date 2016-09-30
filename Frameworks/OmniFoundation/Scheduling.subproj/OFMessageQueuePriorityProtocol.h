@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010, 2016 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@ enum {
 };
 
 typedef struct {
-    void *group;
+    const void *group;
     unsigned int priority:16;
     unsigned int maximumSimultaneousThreadsInGroup:8;
     unsigned int _private:8; // Input ignored, used internally to hold state

@@ -88,6 +88,8 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 - (NSString *)stringForKeyPath:(NSString * )keyPath;
 - (NSDictionary *)dictionaryForKeyPath:(NSString *)keyPath;
 
+- (BOOL)isLightLuma:(CGFloat)luma;
+
 - (OA_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
     // value must be a dictionary suitable for +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
 
@@ -144,6 +146,9 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 @interface OAAppearance (Subclasses)
 /// Returns the singleton instance of the given appearance subclass. Any overrides must call super and should vend the returned result. The default implementation dynamically creates classes that are necessary for correct subclassing behavior of dynamic accessors.
 + (instancetype)appearanceForClass:(Class)cls NS_REQUIRES_SUPER;
+
+/// Subclasses may override this method to return a different bundle in which vended subclass appearance singletons will look for their backing plists. This is an up-front thing. To dynamically switch plists on the fly, see switchablePlist methods below.
++ (NSBundle *)bundleForPlist;
 
 /// Subclasses may override this method to return a URL in which vended subclass appearance singletons will look for their backing plists. 
 /// 

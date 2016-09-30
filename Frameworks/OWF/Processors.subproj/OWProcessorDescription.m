@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,16 +19,11 @@ RCS_ID("$Id$")
 
 static NSLock *registrationLock = nil;
 static NSMutableDictionary *descriptionByName = nil;
-static NSMutableArray      *allDescriptions;
-
-@interface OWProcessorDescription (PrivateAPI)
-- (id) _initWithProcessorClassName: (NSString *) name;
-- (void) setProxyTypes: (NSDictionary *)proxyTypes;
-@end
+static NSMutableArray *allDescriptions;
 
 @implementation OWProcessorDescription
 
-+ (void) initialize;
++ (void)initialize;
 {
     OBINITIALIZE;
     
@@ -37,17 +32,14 @@ static NSMutableArray      *allDescriptions;
     allDescriptions = [[NSMutableArray alloc] init];
 }
 
-+ (OWProcessorDescription *) processorDescriptionForProcessorClassName: (NSString *) className;
++ (OWProcessorDescription *)processorDescriptionForProcessorClassName:(NSString *)className;
 {
-    OWProcessorDescription *aDescription;
-    
     [registrationLock lock];
-    aDescription = [descriptionByName objectForKey: className];
+    OWProcessorDescription *aDescription = [descriptionByName objectForKey: className];
     if (!aDescription) {
         aDescription = [[self alloc] _initWithProcessorClassName: className];
         [descriptionByName setObject: aDescription forKey: className];
         [allDescriptions addObject: aDescription];
-        [aDescription release];
     }
     [registrationLock unlock];
 
@@ -55,27 +47,23 @@ static NSMutableArray      *allDescriptions;
 }
 
 /*" Returns a new autoreleased processor description that is not registered in the cache queried by +processorDescriptionForProcessorClassName:.  This is necessary for implementing processors where one class has multiple pieces of functionality and wants to report them seperately and register them in code, rather than through the Info plist in the processor bundle.  A good example of this is the Netscape plugin support in OmniWeb.  One ObjC class represents all of the Netscape plugins, but we want a different plugin description for each Netscape plugin so that JavaScript can report each Netscape plugin on its own. "*/
-+ (OWProcessorDescription *) createUnregisteredProcessorDescriptionForProcessorClassName: (NSString *) className;
++ (OWProcessorDescription *)createUnregisteredProcessorDescriptionForProcessorClassName:(NSString *)className;
 {
-    OWProcessorDescription *aDescription;
-
-    aDescription = [[self alloc] _initWithProcessorClassName: className];
+    OWProcessorDescription *aDescription = [[self alloc] _initWithProcessorClassName:className];
     [registrationLock lock];
-    [allDescriptions addObject: aDescription];
+    [allDescriptions addObject:aDescription];
     [registrationLock unlock];
     
-    return [aDescription autorelease];
+    return aDescription;
 }
 
-+ (NSArray *) processorDescriptions;
++ (NSArray *)processorDescriptions;
 {
-    NSArray *processorDescriptions;
-    
     [registrationLock lock];
-    processorDescriptions = [[NSArray alloc] initWithArray: allDescriptions];
+    NSArray *processorDescriptions = [[NSArray alloc] initWithArray:allDescriptions];
     [registrationLock unlock];
     
-    return [processorDescriptions autorelease];
+    return processorDescriptions;
 }
 
 - init;
@@ -84,67 +72,54 @@ static NSMutableArray      *allDescriptions;
     return [super init];
 }
 
-- (void) dealloc;
-{
-    [processorClassName release];
-    [bundlePath release];
-    [sourceContentTypes release];
-    [description release];
-    [name release];
-    [super dealloc];
-}
-
-- (NSString *) processorClassName;
+- (NSString *)processorClassName;
 {
     return processorClassName;
 }
 
-- (NSArray *) sourceContentTypes;
+- (NSArray *)sourceContentTypes;
 {
     return sourceContentTypes;
 }
 
-- (OFBundledClass *) processorClass;
+- (OFBundledClass *)processorClass;
 {
-    if (!processorClass)
-        processorClass = [OFBundledClass bundledClassNamed: processorClassName];
+    if (processorClass == nil)
+        processorClass = [OFBundledClass bundledClassNamed:processorClassName];
     return processorClass;
 }
 
-- (NSString *) bundlePath;
+- (NSString *)bundlePath;
 {
     return bundlePath;
 }
 
-- (void) setBundlePath: (NSString *) aPath;
+- (void)setBundlePath:(NSString *)aPath;
 {
-    [bundlePath autorelease];
     bundlePath = [aPath copy];
 }
 
-- (NSString *) name;
+- (NSString *)name;
 {
     return name;
 }
 
-- (void) setName: (NSString *) aName;
+- (void)setName:(NSString *)aName;
 {
-    [name autorelease];
     name = [aName copy];
 }
 
-- (NSString *) description;
+- (NSString *)description;
 {
     return description;
 }
 
-- (void) setDescription: (NSString *) aDescription;
+- (void)setDescription:(NSString *)aDescription;
 {
-    [description autorelease];
     description = [aDescription copy];
 }
 
-- (BOOL)usesNetwork
+- (BOOL)usesNetwork;
 {
     return usesNetwork;
 }
@@ -157,26 +132,24 @@ static NSMutableArray      *allDescriptions;
 - (OWContentType *)contentTypeForURL:(OWURL *)request whenProxiedBy:(OWURL *)proxy;
 {
     if (proxiedTypeTable) {
-        OWContentType *aType;
-
-        aType = [proxiedTypeTable objectForKey:[proxy scheme]];
-        if (aType)
+        OWContentType *aType = [proxiedTypeTable objectForKey:[proxy scheme]];
+        if (aType != nil)
             return aType;
         aType = [proxiedTypeTable objectForKey:@"*"];
-        if (aType)
+        if (aType != nil)
             return aType;
     }
     return [proxy contentType];
 }
 
-- (void) registerProcessesContentType: (OWContentType *) sourceContentType toContentType:(OWContentType *)resultContentType cost:(float)cost;
+- (void)registerProcessesContentType:(OWContentType *)sourceContentType toContentType:(OWContentType *)resultContentType cost:(float)cost;
 {
     [self registerProcessesContentType:sourceContentType toContentType:resultContentType cost:cost producingSource:NO];
 }
 
-- (void) registerProcessesContentType: (OWContentType *) sourceContentType toContentType:(OWContentType *)resultContentType cost:(float)cost producingSource:(BOOL)resultMayBeSource;
+- (void)registerProcessesContentType:(OWContentType *)sourceContentType toContentType:(OWContentType *)resultContentType cost:(float)cost producingSource:(BOOL)resultMayBeSource;
 {
-    [sourceContentTypes addObject: sourceContentType];
+    [sourceContentTypes addObject:sourceContentType];
     [sourceContentType linkToContentType:resultContentType usingProcessorDescription:self cost:cost];
     if (resultMayBeSource) {
         // This allows the planner in OWContentType to find a path for targets which want "source" but don't care what kind of source they get, e.g. the downloader. It might be better to put a "result is source" bit on the OWContentTypeLink instead. But this works for now.
@@ -188,39 +161,27 @@ static NSMutableArray      *allDescriptions;
 
 + (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(NSDictionary *)descriptionDict;
 {
-    NSEnumerator *conversionEnumerator;
-    NSDictionary *conversionDictionary;
-    OWProcessorDescription *processorDescription;
-    NSString *descriptionString, *nameString;
-    BOOL acceptsAddresses, networkFlag;
-    id proxyBehavior;
-    
     [OFBundledClass createBundledClassWithName:itemName bundle:bundle description:descriptionDict];
 
-    processorDescription = [self processorDescriptionForProcessorClassName: itemName];
+    OWProcessorDescription *processorDescription = [self processorDescriptionForProcessorClassName: itemName];
     [processorDescription setBundlePath: [bundle bundlePath]];
 
-    descriptionString = [descriptionDict objectForKey: @"description"];
+    NSString *descriptionString = [descriptionDict objectForKey: @"description"];
     if (descriptionString)
         [processorDescription setDescription: descriptionString];
     
-    nameString = [descriptionDict objectForKey: @"name"];
+    NSString *nameString = [descriptionDict objectForKey: @"name"];
     if (nameString)
         [processorDescription setName: nameString];
 
-    acceptsAddresses = NO;
-    conversionEnumerator = [[descriptionDict objectForKey:@"converts"] objectEnumerator];
-    while ((conversionDictionary = [conversionEnumerator nextObject])) {
-	OWContentType *inputType, *outputType;
-	NSString *aCostObject;
-	float aCost;
-        BOOL dothProduceSourceForsooth;
-
-	inputType = [OWContentType contentTypeForString:[conversionDictionary objectForKey:@"input"]];
-	outputType = [OWContentType contentTypeForString:[conversionDictionary objectForKey:@"output"]];
-	aCostObject = [conversionDictionary objectForKey:@"cost"];
-	aCost = aCostObject ? [aCostObject floatValue] : 1.0f;
-        dothProduceSourceForsooth = [conversionDictionary boolForKey:@"source" defaultValue:NO];
+    BOOL acceptsAddresses = NO;
+    NSEnumerator *conversionEnumerator = [[descriptionDict objectForKey:@"converts"] objectEnumerator];
+    for (NSDictionary *conversionDictionary in conversionEnumerator) {
+	OWContentType *inputType = [OWContentType contentTypeForString:[conversionDictionary objectForKey:@"input"]];
+	OWContentType *outputType = [OWContentType contentTypeForString:[conversionDictionary objectForKey:@"output"]];
+	NSString *aCostObject = [conversionDictionary objectForKey:@"cost"];
+	float aCost = aCostObject ? [aCostObject floatValue] : 1.0f;
+        BOOL dothProduceSourceForsooth = [conversionDictionary boolForKey:@"source" defaultValue:NO];
         
         [processorDescription registerProcessesContentType: inputType toContentType: outputType cost: aCost producingSource: dothProduceSourceForsooth];
         
@@ -228,10 +189,10 @@ static NSMutableArray      *allDescriptions;
             acceptsAddresses = YES;
     }
     
-    networkFlag = [descriptionDict boolForKey: @"network" defaultValue: acceptsAddresses];
+    BOOL networkFlag = [descriptionDict boolForKey: @"network" defaultValue: acceptsAddresses];
     [processorDescription setUsesNetwork: networkFlag];
 
-    proxyBehavior = [descriptionDict objectForKey:@"proxied-type"];
+    id proxyBehavior = [descriptionDict objectForKey:@"proxied-type"];
     if (proxyBehavior) {
         if ([proxyBehavior isKindOfClass:[NSString class]])
             [processorDescription setProxyTypes: [NSDictionary dictionaryWithObject:proxyBehavior forKey:@"*"]];
@@ -268,44 +229,34 @@ static NSMutableArray      *allDescriptions;
     return [NSString stringWithFormat:@"%@ (%@)", OBShortObjectDescription(self), processorClassName];
 }
 
-@end
+#pragma mark - OWProcessorDescription (Internal)
 
-
-@implementation OWProcessorDescription (PrivateAPI)
-
-- (id) _initWithProcessorClassName: (NSString *) className;
+- (instancetype)_initWithProcessorClassName:(NSString *)className;
 {
     if (!(self = [super init]))
         return nil;
 
     processorClassName = [className copy];
-    description = [processorClassName retain];
-    name = [processorClassName retain];
+    description = processorClassName;
+    name = processorClassName;
     sourceContentTypes = [[NSMutableArray alloc] init];
-    bundlePath = [[[NSBundle mainBundle] bundlePath] retain];
+    bundlePath = [[NSBundle mainBundle] bundlePath];
     
     return self;
 }
 
-- (void)setProxyTypes: (NSDictionary *)proxyBehavior
+- (void)setProxyTypes:(NSDictionary *)proxyBehavior;
 {
-    NSMutableDictionary *proxyTable;
-    NSEnumerator *schemes;
-    NSString *scheme;
-
-    proxyTable = proxiedTypeTable? [proxiedTypeTable mutableCopy] : [[NSMutableDictionary alloc] init];
-    [proxyTable autorelease];
+    NSMutableDictionary *proxyTable = proxiedTypeTable? [proxiedTypeTable mutableCopy] : [[NSMutableDictionary alloc] init];
 
     OBASSERT([proxyBehavior isKindOfClass:[NSDictionary class]]);
-    schemes = [proxyBehavior keyEnumerator];
-    while( (scheme = [schemes nextObject]) != nil ) {
+    NSEnumerator *schemes = [proxyBehavior keyEnumerator];
+    for (NSString *scheme in schemes) {
         [proxyTable setObject:[OWContentType contentTypeForString:[proxyBehavior objectForKey:scheme]] forKey:scheme];
     }
 
-    [proxiedTypeTable release];
     proxiedTypeTable = [proxyTable copy];
 }
-
 
 @end
 

@@ -66,36 +66,29 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
 
 + (NSData *)entropy;
 {
-    NSAutoreleasePool *pool;
-    NSMutableString *buffer;
     NSData *entropyBytes;
-    NSEnumerator *cacheKeyEnumerator;
-    NSString *cacheKey;
-    NSArray *cacheValue;
-    
-    pool = [[NSAutoreleasePool alloc] init];
-    buffer = [[NSMutableString alloc] init];
-    [credentialCacheLock lock];
-    cacheKeyEnumerator = [credentialCache keyEnumerator];
-    while ((cacheKey = [cacheKeyEnumerator nextObject]) != nil) {
-        cacheValue = [credentialCache arrayForKey:cacheKey];
+    @autoreleasepool {
+        NSMutableString *buffer = [[NSMutableString alloc] init];
+        [credentialCacheLock lock];
+        NSEnumerator *cacheKeyEnumerator = [credentialCache keyEnumerator];
+        NSString *cacheKey;
+        while ((cacheKey = [cacheKeyEnumerator nextObject]) != nil) {
+            NSArray *cacheValue = [credentialCache arrayForKey:cacheKey];
+            
+            [buffer appendFormat:@"{*}%lu;%lu;%@{*}", (unsigned long)cacheKey, (unsigned long)cacheValue, cacheKey];
+            NS_DURING {
+                [buffer appendString:[cacheValue description]];
+            } NS_HANDLER {
+                NSLog(@"Ignoring unexpected exception: %@", localException);
+            } NS_ENDHANDLER;
+        }
+        [credentialCacheLock unlock];
         
-        [buffer appendFormat:@"{*}%lu;%lu;%@{*}", (unsigned long)cacheKey, (unsigned long)cacheValue, cacheKey];
-        NS_DURING {
-            [buffer appendString:[cacheValue description]];
-        } NS_HANDLER {
-            NSLog(@"Ignoring unexpected exception: %@", localException);
-        } NS_ENDHANDLER;
+        NSData *bufferData = [buffer dataUsingEncoding:[buffer fastestEncoding] allowLossyConversion:YES];
+        entropyBytes = [bufferData sha1Signature];
     }
-    [credentialCacheLock unlock];
-        
-    entropyBytes = [buffer dataUsingEncoding:[buffer fastestEncoding] allowLossyConversion:YES];
-    [buffer release];
-    entropyBytes = [[entropyBytes sha1Signature] retain];
     
-    [pool release];
-    
-    return [entropyBytes autorelease];
+    return entropyBytes;
 }
 
 + (void)initialize;
@@ -141,10 +134,10 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         return nil;
     
     type = authType;
-    server = [aHost retain];
-    pipeline = [aPipe retain];
-    challenge = [aChallenge retain];
-    theseDidntWork = [iWantMore retain];
+    server = aHost;
+    pipeline = aPipe;
+    challenge = aChallenge;
+    theseDidntWork = iWantMore;
     
     portSpecification = [server port];
     if (portSpecification != nil && [portSpecification length] != 0) {
@@ -153,8 +146,8 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         parsedPortnumber = 0;
     }
     defaultPortnumber = defaultPort;
-    parsedHostname = [[[server hostname] lowercaseString] retain];
-    parsedChallenges = [[[self class] findParametersOfType:type headers:challenge] retain];
+    parsedHostname = [[server hostname] lowercaseString];
+    parsedChallenges = [[self class] findParametersOfType:type headers:challenge];
 	
     requestCondition = [[NSConditionLock alloc] initWithCondition:NO];
     results = nil;
@@ -168,7 +161,6 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         [newCredential setParameters:bestChallenge];
         [[self class] cacheCredentialIfAbsent:newCredential];
         results = [[NSArray alloc] initWithObjects:newCredential, nil];
-        [newCredential release];
         [requestCondition unlockWithCondition:YES];
     } else {
         if (![self checkForSatisfaction])
@@ -176,20 +168,6 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
     }
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [server release];
-    [pipeline release];
-    [challenge release];
-    [theseDidntWork release];
-    [requestCondition release];
-    [results release];
-    [parsedHostname release];
-    [parsedChallenges release];
-    
-    [super dealloc];
 }
 
 - (enum OWAuthorizationType)type;
@@ -220,7 +198,6 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         // If we've already tried at least one authorization that failed, why not try no authorization at all, just for kicks?  This is because resources in Public folders on Mac.com work if you give them no credential at all, but will give you a permissions error if you try to give them the wrong credential.
         if ([theseDidntWork count] > 0 && ![theseDidntWork containsObjectIdenticalTo:[OWAuthorizationCredential nullCredential]]) {
             satisfied = YES;
-            [results release];
             results = [[NSArray alloc] initWithObjects:[OWAuthorizationCredential nullCredential], nil];
         } else {
             NSArray *cacheContents;
@@ -245,15 +222,12 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
                     }
                 }
                 if (satisfied) {
-                    [results release];
-                    results = [mutableResults retain];
+                    results = mutableResults;
                 }
-                [mutableResults release];
             } else {
                 // If theseDidntWork is nil, then the caller doesn't want to do anything expensive, they're just optimistically querying the cache.  In that case, we're satisfied no matter what -findCachedCredentials returned.
                 
                 satisfied = YES;
-                [results release];
                 if (cacheContents == nil)
                     results = [[NSArray alloc] init];
                 else
@@ -269,20 +243,15 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
 
 - (NSArray *)credentials;
 {
-    NSArray *result;
-    
     [requestCondition lockWhenCondition:YES];
-    
-    result = [[results retain] autorelease];  // caller will probably release us immediately after calling this method
-    
+    NSArray *result = results;
     [requestCondition unlock];
-    
     return result;
 }
 
 - (NSString *)errorString;
 {
-    if (!errorString && !results)
+    if (errorString == nil && results == nil)
         return NSLocalizedStringFromTableInBundle(@"No useful credentials found or generated.", @"OWF", [OWAuthorizationRequest bundle], @"error when authenticating - unable to find any credentials [passwords or other info] which can be used for this server");
     return errorString;
 }
@@ -290,8 +259,8 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
 - (void)failedToCreateCredentials:(NSString *)reason;
 {
     [requestCondition lock];
-    if (!errorString && reason)
-        errorString = [reason retain];
+    if (errorString == nil && reason != nil)
+        errorString = reason;
     if (OWAuthorizationDebug)
         NSLog(@"cred failure: reason=%@", reason);
     [requestCondition unlockWithCondition:YES];
@@ -299,23 +268,15 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
 
 + (BOOL)cacheCredentialIfAbsent:(OWAuthorizationCredential *)newCredential;
 {
-    NSEnumerator *credentialEnumerator;
-    NSMutableArray *credentialsToReplace;
-    NSArray *cachedCredentials;
-    OWAuthorizationCredential *cachedCredential;
-    NSString *cacheKey;
-    BOOL alreadyHaveIt;
-
-    if (!newCredential)
+    if (newCredential == nil)
         return NO;
     
-    cacheKey = [newCredential hostname];
+    NSString *cacheKey = [newCredential hostname];
     [credentialCacheLock lock];
-    alreadyHaveIt = NO;
-    credentialsToReplace = [[NSMutableArray alloc] init];
-    cachedCredentials = [credentialCache arrayForKey:cacheKey];
-    credentialEnumerator = [cachedCredentials objectEnumerator];
-    while ((cachedCredential = [credentialEnumerator nextObject]) != nil) {
+    BOOL alreadyHaveIt = NO;
+    NSMutableArray *credentialsToReplace = [[NSMutableArray alloc] init];
+    NSArray *cachedCredentials = [credentialCache arrayForKey:cacheKey];
+    for (OWAuthorizationCredential *cachedCredential in cachedCredentials) {
         int compare;
 
         compare = [cachedCredential compareToNewCredential:newCredential];
@@ -329,8 +290,7 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
     }
     
     if (!alreadyHaveIt) {
-        credentialEnumerator = [credentialsToReplace objectEnumerator];
-        while ((cachedCredential = [credentialEnumerator nextObject]) != nil) {
+        for (OWAuthorizationCredential *cachedCredential in credentialsToReplace) {
             [credentialCache removeObject:cachedCredential forKey:cacheKey];
         }
     
@@ -339,8 +299,7 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         // Instead of actually getting rid of replaced crdentials, we move them to the end of the array. We need to do this in case there are two nearly-identical items in the keychain: if we don't do this, then we'll loop forever fetching one and then the other, not realizing we've already seen them both. TODO: Think about this. 
         [credentialCache addObjects:credentialsToReplace forKey:cacheKey];
     }
-    [credentialsToReplace release];
-        
+    
     [credentialCacheLock unlock];
     
     if (OWAuthorizationDebug)
@@ -357,9 +316,7 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
 
 - (BOOL)cacheUsername:(NSString *)aName password:(id)aPassword forChallenge:(NSDictionary *)useParameters;
 {
-    OWAuthorizationCredential *newCredential;
-
-    newCredential = [self _credentialForUsername:aName password:aPassword challenge:useParameters];
+    OWAuthorizationCredential *newCredential = [self _credentialForUsername:aName password:aPassword challenge:useParameters];
     if (newCredential) {
         return [[self class] cacheCredentialIfAbsent:newCredential];
     } else
@@ -437,8 +394,7 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
     for (headerIndex = 0; headerIndex < headerCount; headerIndex++) {
         OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:[headers objectAtIndex:headerIndex]];
         NSString *token = [scanner readFullTokenWithDelimiterOFCharacterSet:delimiterSet forceLowercase:YES];
-        if (!token) {
-            [scanner release];
+        if (token == nil) {
             continue;
         }
         NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
@@ -479,8 +435,7 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
                     [fragment appendLongCharacter:character];
                 }
  
-                value = [[fragment copy] autorelease];
-                [fragment release];
+                value = [fragment copy];
             } else {
                 value = [scanner readFullTokenWithDelimiterOFCharacterSet:delimiterSet forceLowercase:NO];
             }
@@ -492,14 +447,12 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
         }
         
         [parmsArray addObject:parameters];
-        [scanner release];
-        [parameters release];
     }
     
     if (OWAuthorizationDebug && [parmsArray count])
         NSLog(@"Auth parameters: %@", parmsArray);
     
-    return [parmsArray autorelease];
+    return parmsArray;
 }
 
 @end
@@ -649,24 +602,17 @@ NSString * const OWAuthorizationCacheChangedNotificationName = @"OWAuthorization
     
     [credentialCacheLock lock];
     NS_DURING {
-        NSArray *cacheEntry;
- 
-        cacheEntry = [credentialCache arrayForKey:parsedHostname];
-        if (cacheEntry)
+        NSArray *cacheEntry = [credentialCache arrayForKey:parsedHostname];
+        if (cacheEntry != nil)
             [myCacheLine addObjectsFromArray:cacheEntry];
     } NS_HANDLER {
-        NSString *fmt;
         [credentialCacheLock unlock];
-        [errorString release];
-        fmt = NSLocalizedStringFromTableInBundle(@"Credential cache access exception: %@ (%@)", @"OWF", [OWAuthorizationRequest bundle], @"error when authenticating - exception raised while using the credentials cache - parameters are exception reason and name - this should rarely if ever happen");
+        NSString *fmt = NSLocalizedStringFromTableInBundle(@"Credential cache access exception: %@ (%@)", @"OWF", [OWAuthorizationRequest bundle], @"error when authenticating - exception raised while using the credentials cache - parameters are exception reason and name - this should rarely if ever happen");
         errorString = [[NSString alloc] initWithFormat:fmt, [localException reason], [localException name]];
         NSLog(@"%@", errorString);
-        [myCacheLine release];
         [localException raise];
     } NS_ENDHANDLER;
     [credentialCacheLock unlock];
-    
-    [myCacheLine autorelease];
     
     if (OWAuthorizationDebug)
         NSLog(@"findCachedCredentials: host cache = %@", [myCacheLine description]);
@@ -752,7 +698,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     if (!newCredential)
         NSLog(@"Don't know how to create a credential for type=%d scheme=%@", type, scheme);
     
-    return [newCredential autorelease];
+    return newCredential;
 }
 
 @end
@@ -761,7 +707,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
 - (NSSet *)keychainTags;
 {
-    NSMutableSet *knownKeychainTags = [[[NSMutableSet alloc] init] autorelease];
+    NSMutableSet *knownKeychainTags = [NSMutableSet set];
     [credentialCacheLock lock];
     NS_DURING {
         NSArray *line = [credentialCache arrayForKey:parsedHostname];
@@ -781,7 +727,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;
 {
-    CFTypeRef authType = kSecAttrAuthenticationTypeDefault;
+    CFStringRef authType = kSecAttrAuthenticationTypeDefault;
     
     NSMutableDictionary *keychainSearch = [NSMutableDictionary dictionary];
     keychainSearch[(id)kSecMatchLimit] = @10000; // kSecMatchLimitAll, though documented to work, returnes errSecParam on the Mac
@@ -822,7 +768,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     }
 
     if (authType != kSecAttrAuthenticationTypeDefault)
-        keychainSearch[(id)kSecAttrAuthenticationType] = authType;
+        keychainSearch[(id)kSecAttrAuthenticationType] = (__bridge id _Nullable)(authType);
 
     // TODO: what are the sematics of the path? security implications?
     // rfc2617 states that we can assume that all Basic/Digest credentials for a given <realm,server> can safely be sent in any request for a path that is 'below' one that they've already been sent to, even if we don't already know that the server considers that URI to be in the same realm. Hm.
@@ -839,8 +785,9 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     BOOL foundAnything = NO;
     BOOL tryAgain;
     do {
-        NSArray *matches = nil;
-        OSStatus keychainStatus = SecItemCopyMatching((CFDictionaryRef)keychainSearch, (CFTypeRef *)&matches);
+        CFTypeRef matchRef = NULL; // This will be a CFArrayRef
+        OSStatus keychainStatus = SecItemCopyMatching((CFDictionaryRef)keychainSearch, &matchRef);
+        NSArray *matches = CFBridgingRelease(matchRef);
         // keychainStatus = OWKCBeginKeychainSearch(NULL, search, &grepstate);
         if (OWAuthorizationDebug)
             NSLog(@"-[%@ %@]: SecItemCopyMatching: keychainStatus=%ld, matches=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), (long)keychainStatus, matches);
@@ -852,7 +799,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                 // we don't want the username "Passwords not saved" with nbsp for the spaces
                 static NSString *notSavedString = nil;
                 if (notSavedString == nil) {
-                    notSavedString = (NSString *)CFStringCreateWithCString(NULL, "Passwords\\312not\\312saved", kCFStringEncodingNonLossyASCII);
+                    notSavedString = CFBridgingRelease(CFStringCreateWithCString(NULL, "Passwords\\312not\\312saved", kCFStringEncodingNonLossyASCII));
                 }
 
                 if ([[keychainEntry objectForKey:(NSString *)kSecAttrAccount] isEqualToString:notSavedString]) {
@@ -879,7 +826,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                 // TODO: Perform similar check for the protocol (probably not as important)
             
                 if (acceptable) {
-                    SecKeychainItemRef item = (SecKeychainItemRef)keychainEntry[(id)kSecValueRef];
+                    SecKeychainItemRef item = (__bridge SecKeychainItemRef)keychainEntry[(id)kSecValueRef];
                     NSData *itemData;
                     keychainStatus = OWKCExtractKeyData(item, &itemData);
                     if (keychainStatus == noErr) {
@@ -890,8 +837,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                     } else if (keychainStatus == userCanceledErr) {
                         NSString *msg = NSLocalizedStringFromTableInBundle(@"User canceled keychain access", @"OWF", [OWAuthorizationRequest bundle], @"error when authenticating using keychain - user canceled");
                         [requestCondition lock];
-                        [errorString autorelease];
-                        errorString = [msg retain];
+                        errorString = msg;
                         [requestCondition unlock];  // Store an error message, but don't signal completion.
                         foundAnything = NO;
                         break;  // we will fall through the remaining tests & return NO.

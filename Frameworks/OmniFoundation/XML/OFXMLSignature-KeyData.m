@@ -1,4 +1,4 @@
-// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,15 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <OmniFoundation/OFCDSAUtilities.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
+#if TARGET_OS_MAC
+#import "OFASN1-Internal.h"
+#endif
 
 #include <libxml/tree.h>
 
@@ -25,8 +27,9 @@
 
 RCS_ID("$Id$");
 
-#pragma mark Utility functions
+#if TARGET_OS_OSX
 
+#pragma mark Utility functions
 
 static xmlNode *singleChildOrFail(const xmlNode *node, const char *nodename, const xmlChar *nsuri, NSError **outError)
 {
@@ -584,6 +587,45 @@ static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, int *log2_p, NS
     return result;
 }
 
+#endif
+
+#if !TARGET_OS_IPHONE
+
+static void appendPEMBlob(NSMutableData *pemBlob, const char *type, NSData *der)
+{
+    size_t typelen = strlen(type);
+    [pemBlob appendBytes:"-----BEGIN " length:11];
+    [pemBlob appendBytes:type length:typelen];
+    [pemBlob appendBytes:"-----\r\n" length:7];
+    [pemBlob appendData:[der base64EncodedDataWithOptions:NSDataBase64Encoding64CharacterLineLength]];
+    [pemBlob appendBytes:"\r\n-----END " length:11];
+    [pemBlob appendBytes:type length:typelen];
+    [pemBlob appendBytes:"-----\r\n" length:7];
+}
+
+SecKeyRef OFSecCopyPrivateKeyFromPKCS1Data(NSData *keyBytes)
+{
+    SecExternalFormat ioFormat = kSecFormatPEMSequence;
+    SecExternalItemType ioType = kSecItemTypeUnknown;
+    CFArrayRef results = NULL;
+    
+    NSMutableData *pemBlob = [NSMutableData data];
+    appendPEMBlob(pemBlob, "RSA PRIVATE KEY", keyBytes);
+    
+    OSStatus err = SecItemImport((__bridge CFDataRef)pemBlob, NULL, &ioFormat, &ioType, 0, NULL, NULL, &results);
+    if (err || !results) {
+        return nil;
+    }
+    
+    SecKeyRef kr = (SecKeyRef)CFRetain(CFArrayGetValueAtIndex(results, 0));
+    CFRelease(results);
+    return kr;
+}
+
+#endif
+
+#if TARGET_OS_OSX
+
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -650,4 +692,4 @@ SecKeyRef OFXMLSigCopyKeyFromHMACKey(NSString *hmacAlg, const void *bytes, unsig
     }
 }
 
-
+#endif

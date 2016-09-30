@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,10 +74,11 @@
         #import <Foundation/NSClassDescription.h>
     #endif
 
-#endif
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // +[UIApplication sharedApplication] is not available in application extensions. This works around that for APIs in this framework, but those APIs should not be called w/in app extensions (and should be marked with NS_EXTENSION_UNAVAILABLE_IOS("message...") like +sharedApplication is).
 @class UIApplication;
 UIApplication *OFSharedApplication(void) OB_HIDDEN;
+#endif
+
 #endif

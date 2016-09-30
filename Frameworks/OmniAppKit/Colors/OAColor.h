@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 @class OA_PLATFORM_COLOR_CLASS;
 
+// To expose to Swift:
+typedef OA_PLATFORM_COLOR_CLASS *OAPlatformColorClass;
+
 typedef struct {
     CGFloat r, g, b, a;
 } OALinearRGBA;

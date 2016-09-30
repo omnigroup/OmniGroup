@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,7 +67,7 @@ RCS_ID("$Id$")
 //    aHostname = [NSString decodeURLString:aHostname];
     aPort     = [NSString decodeURLString:aPort];
         
-    return [[[self alloc] initWithUsername:aUsername password:aPassword hostname:aHostname port:aPort] autorelease];
+    return [[self alloc] initWithUsername:aUsername password:aPassword hostname:aHostname port:aPort];
 }
 
 // Init and dealloc
@@ -78,23 +78,13 @@ RCS_ID("$Id$")
 	return nil;
 
     /* Empty usernames/passwords are possible, and are distinct from having no username or password ... */
-    username = [aUsername retain];
-    password = [aPassword retain];
+    username = aUsername;
+    password = aPassword;
     /* ... but an empty hostname or port is the same as having no hostname or port. To simplify logic elsewhere in this class, we guarantee that hostname is non-nil, and we guarantee that port is non-nil if and only if it is non-empty.  */
-    hostname = [NSString isEmptyString:aHostname]? @"" : [aHostname retain];
-    port     = [NSString isEmptyString:aPort    ]? nil : [aPort     retain];
+    hostname = [NSString isEmptyString:aHostname] ? @"" : aHostname;
+    port     = [NSString isEmptyString:aPort] ? nil : aPort;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [username release];
-    [password release];
-    [hostname release];
-    [port release];
-    [shortDisplayName release];
-    [super dealloc];
 }
 
 // Access methods
@@ -174,7 +164,7 @@ RCS_ID("$Id$")
             useableRange.length -= implicitPrefixLength;
         }
 
-        shortDisplayName = [[hostname substringWithRange:useableRange] retain];
+        shortDisplayName = [hostname substringWithRange:useableRange];
     }
     return shortDisplayName;
 }

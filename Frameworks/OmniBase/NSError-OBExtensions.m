@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -130,7 +130,12 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
 
 - (BOOL)causedByMissingFile;
 {
-    return [self hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] || [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError];
+    return [self hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]
+            || [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+            || [self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:fnfErr]
+#endif
+    ;
 }
 
 - (BOOL)causedByUnreachableHost;

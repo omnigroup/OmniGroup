@@ -63,7 +63,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         [otherHeaders addObject:[calendarDate descriptionWithCalendarFormat:@"%a, %d %b %Y %H:%M:%S"] forKey:@"Last-Modified"];
     }
         
-    return [otherHeaders autorelease];
+    return otherHeaders;
 }
 
 - (void)process;
@@ -72,9 +72,9 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     // Don't allow access to local files from remote resources
 
     OWAddress *restrictedRemoteResourceAddress = nil;
-    OWAddress *referringAddress = [pipeline contextObjectForKey:OWCacheArcReferringAddressKey];
+    OWAddress *referringAddress = [self.pipeline contextObjectForKey:OWCacheArcReferringAddressKey];
 
-    NSArray *tasks = [pipeline tasks];
+    NSArray *tasks = [self.pipeline tasks];
     NSUInteger taskIndex = [tasks count];
     while (taskIndex-- > 0) {
         OWTask *task = [tasks objectAtIndex:taskIndex];
@@ -98,7 +98,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     NSString *resolvedPath = [[[NSFileManager defaultManager] resolveAliasesInPath:filePath] stringByStandardizingPath];
     if (resolvedPath != nil && ![resolvedPath isEqualToString:[filePath stringByStandardizingPath]]) { // redirect if our file is a Mac alias
         // NSLog(@"filePath: %@, resolvedPath: %@", filePath, resolvedPath);
-        [pipeline addRedirectionContent:[OWAddress addressWithFilename:resolvedPath] sameURI:NO];
+        [self.pipeline addRedirectionContent:[OWAddress addressWithFilename:resolvedPath] sameURI:NO];
         return;
     }
 
@@ -135,7 +135,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 #warning Document wrappers (including RTFD) are not supported at present
 
     // Redirect from file:/.../x to file:/.../x/
-    [pipeline addRedirectionContent:[OWAddress addressWithFilename:[filePath stringByAppendingString:@"/"]] sameURI:YES];
+    [self.pipeline addRedirectionContent:[OWAddress addressWithFilename:[filePath stringByAppendingString:@"/"]] sameURI:YES];
 }
 
 - (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
@@ -160,9 +160,8 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     OWContent *newContent = [[OWContent alloc] initWithName:@"DirectoryListing" content:objectStream]; // TODO: Localize.
     [newContent setContentTypeString:@"ObjectStream/OWFileInfoList"];
     [newContent markEndOfHeaders];
-    [pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
-    [pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
-    [newContent release];
+    [self.pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
+    [self.pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
     
     NSArray *sortedFilenames = [filenames sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     for (NSString *filename in sortedFilenames) {
@@ -171,10 +170,8 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         NSString *fileType = [attributes objectForKey:NSFileType];
         OWFileInfo *fileInfo = [[OWFileInfo alloc] initWithAddress:[OWAddress addressWithFilename:path] size:[attributes objectForKey:NSFileSize] isDirectory:fileType == NSFileTypeDirectory isShortcut:fileType == NSFileTypeSymbolicLink lastChangeDate:[attributes objectForKey:NSFileModificationDate]];
         [objectStream writeObject:fileInfo];
-        [fileInfo release];
     }
     [objectStream dataEnd];
-    [objectStream release];
 }
 
 - (void)_fetchRegularFileWithPath:(NSString *)filePath;
@@ -194,63 +191,47 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         [newContent addHeaders:[OWContentType contentTypeAndEncodingForFilename:filePath isLocalFile:YES]];
     [newContent addHeaders:[[self class] headersForFilename:filePath]];
     [newContent markEndOfHeaders];
-    [pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
-    [pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentIsSource|OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
-    [newContent release];
-    [fileStream release];
+    [self.pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
+    [self.pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentIsSource|OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];
 
-    [self setStatusString:NSLocalizedStringFromTableInBundle(@"Finished reading", @"OWF", [OWFileProcessor bundle], @"fileprocessor status")];
+    [self setStatusString:NSLocalizedStringFromTableInBundle(@"Finished reading", @"OWF", OMNI_BUNDLE, @"fileprocessor status")];
 }
 
 - (BOOL)_redirectToFTP;
 {
-    OWURL *url;
-    NSString *netLocation;
-    OWURL *ftpURL;
-
-    url = [sourceAddress url];
-    netLocation = [url netLocation];
+    OWURL *url = [sourceAddress url];
+    NSString *netLocation = [url netLocation];
     if (netLocation == nil || [netLocation length] == 0 || [netLocation isEqualToString:@"localhost"])
 	return NO;
 
-    ftpURL = [OWURL urlWithScheme:@"ftp" netLocation:netLocation path:[url path] params:[url params] query:[url query] fragment:[url fragment]];
+    OWURL *ftpURL = [OWURL urlWithScheme:@"ftp" netLocation:netLocation path:[url path] params:[url params] query:[url query] fragment:[url fragment]];
     
-    [pipeline addRedirectionContent:[OWAddress addressWithURL:ftpURL] sameURI:YES];
+    [self.pipeline addRedirectionContent:[OWAddress addressWithURL:ftpURL] sameURI:YES];
     return YES;
 }
 
+#if SUPPORT_HFS_PATHS
+// <bug:///89060> (Stop using deprecated API in OWFileProcessor)
+
 - (NSString *)_pathForVolumeNamed:(NSString *)name;
 {
-    // <bug:///89060> (Stop using deprecated API in OWFileProcessor)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    unsigned int volumeIndex;
+    unsigned int volumeIndex = 1;
     HFSUniStr255 volumeName;
     FSRef volumeFSRef;
-    
-    volumeIndex = 1;
     while (FSGetVolumeInfo(kFSInvalidVolumeRefNum, volumeIndex++, NULL, kFSVolInfoNone, NULL, &volumeName, &volumeFSRef) == noErr) {
         if ([[NSString stringWithCharacters:volumeName.unicode length:volumeName.length] isEqualToString:name]) {
-            NSURL *url;
-
-            url = [(NSURL *)CFURLCreateFromFSRef(NULL, &volumeFSRef) autorelease];
+            NSURL *url = CFBridgingRelease(CFURLCreateFromFSRef(NULL, &volumeFSRef));
             return [url path];
         }
     }
     return nil;
-#pragma clang diagnostic pop
 }
 
 - (BOOL)_redirectHFSPathToPosixPath;
 {
-    NSMutableArray *pathComponents;
-    NSString *volumeName;
-    NSString *volumePath;
-    NSString *posixPath;
-
-    pathComponents = [[[[[sourceAddress url] path] componentsSeparatedByString:@"/"] mutableCopy] autorelease];
-    volumeName = [pathComponents objectAtIndex:0];
-    volumePath = [self _pathForVolumeNamed:volumeName];
+    NSMutableArray *pathComponents = [[[[sourceAddress url] path] componentsSeparatedByString:@"/"] mutableCopy];
+    NSString *volumeName = [pathComponents objectAtIndex:0];
+    NSString *volumePath = [self _pathForVolumeNamed:volumeName];
 #ifdef DEBUG_HFS_PATHS
     NSLog(@"volumeName = %@, volumePath = %@", volumeName, volumePath);
 #endif
@@ -259,12 +240,20 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     if ([volumePath hasSuffix:@"/"])
         volumePath = [volumePath substringToIndex:[volumePath length] - 1];
     [pathComponents replaceObjectAtIndex:0 withObject:volumePath];
-    posixPath = [pathComponents componentsJoinedByString:@"/"]; 
+    NSString *posixPath = [pathComponents componentsJoinedByString:@"/"];
 #ifdef DEBUG_HFS_PATHS
     NSLog(@"posixPath = %@", posixPath);
 #endif
-    [pipeline addRedirectionContent:[OWAddress addressWithFilename:posixPath] sameURI:YES];
+    [self.pipeline addRedirectionContent:[OWAddress addressWithFilename:posixPath] sameURI:YES];
     return YES;
 }
+#else
+
+- (BOOL)_redirectHFSPathToPosixPath;
+{
+    return NO;
+}
+
+#endif
 
 @end

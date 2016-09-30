@@ -31,9 +31,6 @@
 
 RCS_ID("$Id$")
 
-@interface OWSGMLProcessor (Private)
-@end
-
 @implementation OWSGMLProcessor
 
 static NSMutableDictionary *sgmlMethodsDictionary = nil;
@@ -48,19 +45,16 @@ static BOOL debugSGMLProcessing = NO;
     [super initialize];
 
     if (initialized) {
-        OWSGMLMethods *superclassSGMLMethods;
-
-        superclassSGMLMethods = [sgmlMethodsDictionary objectForKey:[(NSObject *)[self superclass] description]];
+        OWSGMLMethods *superclassSGMLMethods = [sgmlMethodsDictionary objectForKey:NSStringFromClass([self superclass])];
         classSGMLMethods = [[OWSGMLMethods alloc] initWithParent:superclassSGMLMethods];
     } else {
         initialized = YES;
 
         sgmlMethodsDictionary = [[NSMutableDictionary alloc] init];
-        classSGMLMethods = [[OWSGMLMethods alloc] init];
         defaults = [NSUserDefaults standardUserDefaults];
+        classSGMLMethods = [[OWSGMLMethods alloc] init];
     }
-    [sgmlMethodsDictionary setObject:classSGMLMethods forKey:[(NSObject *)self description]];
-    [classSGMLMethods release];
+    [sgmlMethodsDictionary setObject:classSGMLMethods forKey:NSStringFromClass(self)];
 }
 
 + (OWSGMLMethods *)sgmlMethods;
@@ -80,16 +74,13 @@ static BOOL debugSGMLProcessing = NO;
 
 - initWithContent:(OWContent *)initialContent context:(id <OWProcessorContext>)aPipeline;
 {
-    OWAddress *pipelineAddress;
-    OWSGMLDTD *dtd;
-    unsigned int tagCount;
-
-    if (!(self = [super initWithContent:initialContent context:aPipeline]))
+    self = [super initWithContent:initialContent context:aPipeline];
+    if (self == nil)
         return nil;
 
-    pipelineAddress = [pipeline contextObjectForKey:OWCacheArcSourceAddressKey];
-    if (!pipelineAddress)
-        pipelineAddress = [pipeline contextObjectForKey:OWCacheArcHistoryAddressKey];
+    OWAddress *pipelineAddress = [self.pipeline contextObjectForKey:OWCacheArcSourceAddressKey];
+    if (pipelineAddress == nil)
+        pipelineAddress = [self.pipeline contextObjectForKey:OWCacheArcHistoryAddressKey];
 
 #warning TODO [wiml nov2003] - Verify that base addresses are still set properly
 
@@ -98,10 +89,10 @@ static BOOL debugSGMLProcessing = NO;
     //[OWDocumentTitle cacheRealTitle:nil forAddress:baseAddress];
 
     Class myClass = [self class];
-    dtd = [myClass dtd];
+    OWSGMLDTD *dtd = [myClass dtd];
     appliedMethods = [[OWSGMLAppliedMethods alloc] initFromSGMLMethods:[myClass sgmlMethods] dtd:dtd forTargetClass:myClass];
 
-    tagCount = [dtd tagCount];
+    unsigned int tagCount = [dtd tagCount];
     if (tagCount > 0) {
         openTags = calloc(tagCount,sizeof(unsigned int));
         implicitlyClosedTags = calloc(tagCount,sizeof(unsigned int));
@@ -111,22 +102,16 @@ static BOOL debugSGMLProcessing = NO;
 
 - (void)dealloc;
 {
-    [appliedMethods release];
-    [baseAddress release];
     if (openTags)
         free(openTags);
     if (implicitlyClosedTags)
         free(implicitlyClosedTags);
-    [undoers release];
-    [super dealloc];
 }
 
 - (void)setBaseAddress:(OWAddress *)anAddress;
 {
     if (baseAddress == anAddress)
 	return;
-    [anAddress retain];
-    [baseAddress release];
     baseAddress = anAddress;
 }
 
@@ -153,13 +138,14 @@ static size_t remainingStackSize(void)
 #warning Do not know how stack grows on this platform
     // Since we only use this code to parse bookmarks & RSS feeds, and neither of those should nest very deeply, we decided we could cheat & always allow the recursion to continue on x86 processors.
     return MINIMUM_RECURSION_HEADROOM+1;
-#endif
+#else
     char *low;
     char stack;
     
     // The stack grows negatively on PPC
     low = pthread_get_stackaddr_np(pthread_self()) - pthread_get_stacksize_np(pthread_self());
     return &stack - low;
+#endif
 }
 
 - (void)processContentForTag:(OWSGMLTag *)tag;
@@ -346,21 +332,17 @@ static NSUInteger metaCharSetAttributeIndex;
 
 - (OWAddress *)addressForAnchorTag:(OWSGMLTag *)anchorTag;
 {
-    NSString *href, *title, *target;
-    OWAddress *address;
-
-    href = sgmlTagValueForAttributeAtIndex(anchorTag, anchorHrefAttributeIndex);
-
-    if (!href)
+    NSString *href = sgmlTagValueForAttributeAtIndex(anchorTag, anchorHrefAttributeIndex);
+    if (href == nil)
 	return nil;
 
-    target = sgmlTagValueForAttributeAtIndex(anchorTag, anchorTargetAttributeIndex);
-    if (!target)
+    NSString *target = sgmlTagValueForAttributeAtIndex(anchorTag, anchorTargetAttributeIndex);
+    if (target == nil)
 	target = [baseAddress target];
 	
-    address = [baseAddress addressForRelativeString:href inProcessorContext:pipeline target:target effect:[OWAddress effectForString:sgmlTagValueForAttributeAtIndex(anchorTag, anchorEffectAttributeIndex)]];
+    OWAddress *address = [baseAddress addressForRelativeString:href inProcessorContext:self.pipeline target:target effect:[OWAddress effectForString:sgmlTagValueForAttributeAtIndex(anchorTag, anchorEffectAttributeIndex)]];
 
-    title = sgmlTagValueForAttributeAtIndex(anchorTag, anchorTitleAttributeIndex);
+    NSString *title = sgmlTagValueForAttributeAtIndex(anchorTag, anchorTitleAttributeIndex);
     if (title && [title length] > 0) {
 	// We now have a guess as to what this document's title is
 	[OWDocumentTitle cacheGuessTitle:title forAddress:address];
@@ -375,19 +357,17 @@ static NSUInteger metaCharSetAttributeIndex;
 
 - (void)processBaseTag:(OWSGMLTag *)tag;
 {
-    NSString *href, *target;
-    OWAddress *address;
+    NSString *href = sgmlTagValueForAttributeAtIndex(tag, baseHrefAttributeIndex);
+    NSString *target = sgmlTagValueForAttributeAtIndex(tag, baseTargetAttributeIndex);
 
-    href = sgmlTagValueForAttributeAtIndex(tag, baseHrefAttributeIndex);
-    target = sgmlTagValueForAttributeAtIndex(tag, baseTargetAttributeIndex);
-
-    if (href) {
+    OWAddress *address = nil;
+    if (href != nil) {
 	address = [OWAddress addressWithURL:[OWURL urlFromString:href] target:target effect:OWAddressEffectFollowInWindow];
-    } else if (target) {
+    } else if (target != nil) {
 	address = [baseAddress addressWithTarget:target];
-    } else
-	return;
-    if (address)
+    }
+
+    if (address != nil)
         [self setBaseAddress:address];
 }
 
@@ -414,12 +394,10 @@ static NSUInteger metaCharSetAttributeIndex;
 
 - (void)processTitleTag:(OWSGMLTag *)tag;
 {
+    NSMutableString *titleString = [NSMutableString stringWithCapacity:128];
     id <OWSGMLToken> sgmlToken;
-    NSMutableString *titleString;
-    OWSGMLTagType *tagType;
-
-    titleString = [NSMutableString stringWithCapacity:128];
     while ((sgmlToken = [objectCursor readObject])) {
+        OWSGMLTagType *tagType;
         switch ([sgmlToken tokenType]) {
             case OWSGMLTokenTypeCData:
                 [titleString appendString:[sgmlToken string]];
@@ -497,7 +475,4 @@ exitAndCacheTitle:
     return result;
 }
 
-@end
-
-@implementation OWSGMLProcessor (Private)
 @end

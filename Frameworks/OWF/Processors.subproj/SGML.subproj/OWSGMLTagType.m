@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,15 +84,6 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (void)dealloc;
-{
-    [name release];
-    [masterAttributesTagType release];
-    [attributeNames release];
-    [attributeTrie release];
-    [super dealloc];
-}
-
 - (NSString *)name;
 {
     return name;
@@ -105,21 +96,21 @@ RCS_ID("$Id$")
 
 - (OWSGMLTagType *)masterAttributesTagType;
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType masterAttributesTagType];
     return self;
 }
 
 - (NSArray *)attributeNames;
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType attributeNames];
     return attributeNames;
 }
 
 - (OFTrie *)attributeTrie
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType attributeTrie];
     return attributeTrie;
 }
@@ -130,38 +121,32 @@ RCS_ID("$Id$")
     if (aTagType == self)
         return;
 
-    masterAttributesTagType = [aTagType retain];
+    masterAttributesTagType = aTagType;
     for (NSString *attributeName in attributeNames)
          [masterAttributesTagType addAttributeNamed:attributeName];
 
-    [attributeNames release];
-    [attributeTrie release];
     attributeNames = nil;
     attributeTrie = nil;
 }
 
 - (NSUInteger)addAttributeNamed:(NSString *)attributeName;
 {
-    NSUInteger newAttributeIndex;
-    OWSGMLAttribute *attribute;
-
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType addAttributeNamed:attributeName];
 
     if ([attributeNames containsObject:attributeName])
         return [attributeNames indexOfObject:attributeName];
 
-    newAttributeIndex = [attributeNames count];
-    attribute = [[OWSGMLAttribute alloc] initWithOffset:newAttributeIndex];
+    NSUInteger newAttributeIndex = [attributeNames count];
+    OWSGMLAttribute *attribute = [[OWSGMLAttribute alloc] initWithOffset:newAttributeIndex];
     [attributeNames addObject:attributeName];
     [attributeTrie addBucket:attribute forString:attributeName];
-    [attribute release];
     return newAttributeIndex;
 }
 
 - (NSUInteger)indexOfAttribute:(NSString *)attributeName;
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType addAttributeNamed:attributeName];
 
     return [attributeNames indexOfObject:attributeName];
@@ -169,7 +154,7 @@ RCS_ID("$Id$")
 
 - (NSUInteger)attributeCount;
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType attributeCount];
     else
         return [attributeNames count];
@@ -177,7 +162,7 @@ RCS_ID("$Id$")
 
 - (BOOL)hasAttributeNamed:(NSString *)attributeName;
 {
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         return [masterAttributesTagType hasAttributeNamed:attributeName];
 
     return [attributeNames containsObject:attributeName];
@@ -211,18 +196,16 @@ RCS_ID("$Id$")
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
 
-    debugDictionary = [super debugDictionary];
-
-    if (name)
+    if (name != nil)
         [debugDictionary setObject:name forKey:@"name"];
     [debugDictionary setObject:[NSString stringWithFormat:@"%d", dtdIndex] forKey:@"dtdIndex"];
-    if (masterAttributesTagType)
+    if (masterAttributesTagType != nil)
         [debugDictionary setObject:masterAttributesTagType forKey:@"masterAttributesTagType"];
-    if (attributeNames)
+    if (attributeNames != nil)
         [debugDictionary setObject:attributeNames forKey:@"attributeNames"];
-    if (attributeTrie)
+    if (attributeTrie != nil)
         [debugDictionary setObject:attributeTrie forKey:@"attributeTrie"];
 
     return debugDictionary;

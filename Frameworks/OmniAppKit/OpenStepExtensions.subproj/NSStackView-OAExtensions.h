@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*!
  @discussion Hides or unhides an array of views, with optional animation. Any views already in the requested state are unchanged.
- @param subviews The array of views to be hidden or unhidden.
+ @param views The array of views to be hidden or unhidden.
  @param shouldBeHidden YES if the views are to be hidden; NO if they are to be unhidden.
  @param animated YES if the views should be animated in/out.
  @param orientation Specifies whether the animation adjusts the views' horizontal size or their vertical size.
@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 /*!
  @discussion Hides and unhides the specified views as appropriate, with optional animation. Any views already in the requested state are unchanged.
  @param viewsToHide The array of views to be hidden. Any views already in the requested state are unchanged.
- @param viewsToHide The array of views to be unhidden. Any views already in the requested state are unchanged.
+ @param viewsToUnhide The array of views to be unhidden. Any views already in the requested state are unchanged.
  @param animated YES if the subviews should be animated in/out.
  @param orientation Specifies whether the animation adjusts the subviews' horizontal size or their vertical size.
  @param completionBlock An optional block to be called when the animation is complete. If not being animated, this block is called after the hidden state is set as appropriate for all the views.

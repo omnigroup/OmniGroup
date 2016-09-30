@@ -304,7 +304,7 @@
 		348A7B0E1B584CC30082D55D /* OUIButtonGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = E251FF4E17B94C57007F5C51 /* OUIButtonGridView.m */; };
 		348A7B0F1B584CC30082D55D /* OUICompletionMatchCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E25772D71456162900E0A716 /* OUICompletionMatchCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7B101B584CC30082D55D /* OUICompletionMatchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E25772D81456162900E0A716 /* OUICompletionMatchCell.m */; };
-		348A7B111B584CC30082D55D /* OUICustomSubclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 34395328134CF20500355D0A /* OUICustomSubclass.h */; };
+		348A7B111B584CC30082D55D /* OUICustomSubclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 34395328134CF20500355D0A /* OUICustomSubclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7B121B584CC30082D55D /* OUICustomSubclass.m in Sources */ = {isa = PBXBuildFile; fileRef = 34395329134CF20500355D0A /* OUICustomSubclass.m */; };
 		348A7B131B584CC30082D55D /* OUIDrawing.h in Headers */ = {isa = PBXBuildFile; fileRef = 346C4AE91193273600BE8C49 /* OUIDrawing.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7B141B584CC30082D55D /* OUIDrawing.m in Sources */ = {isa = PBXBuildFile; fileRef = 346C4AEA1193273600BE8C49 /* OUIDrawing.m */; };
@@ -501,6 +501,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		108AA8781D9AE4AB006A7B09 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FA154BF1D89D1140053543C;
+			remoteInfo = OUUnitTests;
+		};
 		234940C019D49FFF00F73FC2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
@@ -1309,6 +1316,7 @@
 			children = (
 				27D1BBE41991F7D800976618 /* OmniUnzip.framework */,
 				34A733771B32090B008E2A38 /* OmniUnzip.framework */,
+				108AA8791D9AE4AB006A7B09 /* OUUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2209,6 +2217,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		108AA8791D9AE4AB006A7B09 /* OUUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OUUnitTests.xctest;
+			remoteRef = 108AA8781D9AE4AB006A7B09 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		234940C119D49FFF00F73FC2 /* OmniQuartz.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;

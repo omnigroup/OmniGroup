@@ -22,9 +22,6 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		346BD74C163B66180043F736 /* OWFWeakRetainConcreteImplementation.h in Headers */ = {isa = PBXBuildFile; fileRef = 346BD749163B66180043F736 /* OWFWeakRetainConcreteImplementation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		346BD74D163B66180043F736 /* OWFWeakRetainConcreteImplementation.m in Sources */ = {isa = PBXBuildFile; fileRef = 346BD74A163B66180043F736 /* OWFWeakRetainConcreteImplementation.m */; };
-		346BD74E163B66180043F736 /* OWFWeakRetainProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 346BD74B163B66180043F736 /* OWFWeakRetainProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3475B67D13C39E4C006E3819 /* OWMLSTFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A2228B3004D5BB500097A146 /* OWMLSTFTPProcessor.h */; };
 		3475B67E13C39E4D006E3819 /* OWAboutURLProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B357A6301C182251397A146 /* OWAboutURLProcessor.h */; };
 		348FAB6014FD7DBC006CD106 /* OWFLowercaseStringCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 348FAB5E14FD7DBC006CD106 /* OWFLowercaseStringCache.h */; };
@@ -198,7 +195,7 @@
 		4AA5363108B27DE600F0872D /* OWSGMLDTD.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E5210BFE8AB39F11C9CC38 /* OWSGMLDTD.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5363208B27DE600F0872D /* OWSGMLMethods.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E5210CFE8AB39F11C9CC38 /* OWSGMLMethods.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5363308B27DE600F0872D /* OWSGMLProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E5210EFE8AB39F11C9CC38 /* OWSGMLProcessor.m */; settings = {ATTRIBUTES = (); }; };
-		4AA5363408B27DE600F0872D /* OWSGMLTag.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E5210FFE8AB39F11C9CC38 /* OWSGMLTag.m */; settings = {ATTRIBUTES = (); }; };
+		4AA5363408B27DE600F0872D /* OWSGMLTag.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E5210FFE8AB39F11C9CC38 /* OWSGMLTag.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA5363508B27DE600F0872D /* OWSGMLTagType.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E52110FE8AB39F11C9CC38 /* OWSGMLTagType.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5363708B27DE600F0872D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52132FE8AB39F11C9CC38 /* OmniBase.framework */; };
 		4AA5363808B27DE600F0872D /* OmniNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E52133FE8AB39F11C9CC38 /* OmniNetworking.framework */; };
@@ -616,9 +613,6 @@
 		2810632CFF02D5AAC697A12F /* OWCookiePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWCookiePath.m; sourceTree = "<group>"; };
 		2810632DFF02D5AAC697A12F /* OWCookiePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWCookiePath.h; sourceTree = "<group>"; };
 		33FDC5AC001E9445C697A146 /* OWAuthorization-KeychainFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OWAuthorization-KeychainFunctions.m"; sourceTree = "<group>"; };
-		346BD749163B66180043F736 /* OWFWeakRetainConcreteImplementation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWFWeakRetainConcreteImplementation.h; sourceTree = "<group>"; };
-		346BD74A163B66180043F736 /* OWFWeakRetainConcreteImplementation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWFWeakRetainConcreteImplementation.m; sourceTree = "<group>"; };
-		346BD74B163B66180043F736 /* OWFWeakRetainProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWFWeakRetainProtocol.h; sourceTree = "<group>"; };
 		348FAB5E14FD7DBC006CD106 /* OWFLowercaseStringCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWFLowercaseStringCache.h; sourceTree = "<group>"; };
 		348FAB5F14FD7DBC006CD106 /* OWFLowercaseStringCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWFLowercaseStringCache.m; sourceTree = "<group>"; };
 		34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
@@ -1234,9 +1228,6 @@
 				00E5205DFE8AB39F11C9CC38 /* OWF.h */,
 				0440AFA9FFCFB94CC697A14E /* OWF.strings */,
 				A2DD694405C6EAF00097A146 /* OWF_Prefix.h */,
-				346BD749163B66180043F736 /* OWFWeakRetainConcreteImplementation.h */,
-				346BD74A163B66180043F736 /* OWFWeakRetainConcreteImplementation.m */,
-				346BD74B163B66180043F736 /* OWFWeakRetainProtocol.h */,
 				00E52061FE8AB39F11C9CC38 /* Content */,
 				55136C22FE94C38DC697A14E /* Cache */,
 				00E520A1FE8AB39F11C9CC38 /* Pipelines */,
@@ -1513,8 +1504,6 @@
 				4A5027610944C16E0035E67F /* OWSitePreference.h in Headers */,
 				4A50276E0944C3390035E67F /* OWFTPListingProcessor.h in Headers */,
 				348FAB6014FD7DBC006CD106 /* OWFLowercaseStringCache.h in Headers */,
-				346BD74C163B66180043F736 /* OWFWeakRetainConcreteImplementation.h in Headers */,
-				346BD74E163B66180043F736 /* OWFWeakRetainProtocol.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2025,7 +2014,6 @@
 				4AA5363408B27DE600F0872D /* OWSGMLTag.m in Sources */,
 				4AA5363508B27DE600F0872D /* OWSGMLTagType.m in Sources */,
 				348FAB6114FD7DBC006CD106 /* OWFLowercaseStringCache.m in Sources */,
-				346BD74D163B66180043F736 /* OWFWeakRetainConcreteImplementation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2126,6 +2114,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357D08B27DDC00F0872D /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 			};
 			name = Debug;
 		};
@@ -2133,6 +2122,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357E08B27DDC00F0872D /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 			};
 			name = Release;
 		};

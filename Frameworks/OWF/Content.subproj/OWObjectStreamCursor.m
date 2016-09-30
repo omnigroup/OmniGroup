@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
 	return nil;
 
-    objectStream = [anObjectStream retain];
+    objectStream = anObjectStream;
     [objectStream _adjustCursorCount:1];
     hint = NULL;
     streamIndex = 0;
@@ -41,8 +41,6 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [objectStream _adjustCursorCount:-1];
-    [objectStream release];
-    [super dealloc];
 }
 
 //
@@ -106,12 +104,8 @@ RCS_ID("$Id$")
 
 - (void)scheduleInQueue:(OFMessageQueue *)aQueue invocation:(OFInvocation *)anInvocation
 {
-    OFInvocation *thisAgain;
-    BOOL rightNow;
-
-    thisAgain = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:aQueue withObject:anInvocation];
-    rightNow = [objectStream _checkForAvailableIndex:streamIndex orInvoke:thisAgain];
-    [thisAgain release];
+    OFInvocation *thisAgain = [[OFInvocation alloc] initForObject:self selector:_cmd withObject:aQueue withObject:anInvocation];
+    BOOL rightNow = [objectStream _checkForAvailableIndex:streamIndex orInvoke:thisAgain];
     if (rightNow) {
         if (aQueue)
             [aQueue addQueueEntry:anInvocation];
@@ -124,9 +118,7 @@ RCS_ID("$Id$")
 
 - copyWithZone:(NSZone *)zone
 {
-    OWObjectStreamCursor *copyOfSelf;
-
-    copyOfSelf = [[[self class] allocWithZone:zone] initForObjectStream:objectStream];
+    OWObjectStreamCursor *copyOfSelf = [[[self class] allocWithZone:zone] initForObjectStream:objectStream];
     copyOfSelf->streamIndex = streamIndex;
     return copyOfSelf;
 }
