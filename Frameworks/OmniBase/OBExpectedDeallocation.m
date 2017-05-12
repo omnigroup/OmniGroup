@@ -438,17 +438,9 @@ static float kExpectedWarningTimeout = 3.0;
                 }
 
                 if (failureReason) {
-#ifdef DEBUG
-                    OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
-#else
                     NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
-#endif
                 } else {
-#ifdef DEBUG
-                    OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
-#else
                     NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
-#endif
                 }
 
 #if 0 && defined(DEBUG_bungi)

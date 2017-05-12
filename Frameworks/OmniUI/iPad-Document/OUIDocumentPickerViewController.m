@@ -85,6 +85,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 @property (nonatomic, strong) id <UIViewControllerPreviewing>previewingContext;
 
+@property(nonatomic,readonly) UIActivityIndicatorView *activityIndicator;
+
 @end
 
 @implementation OUIDocumentPickerViewController
@@ -1393,7 +1395,27 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [center addObserver:self selector:@selector(_previewsUpdateForFileItemNotification:) name:OUIDocumentPreviewsUpdatedForFileItemNotification object:nil];
 
     [center postNotificationName:@"DocumentPickerViewControllerViewDidLoadNotification"  object:nil];
+    
+    [self setUpActivityIndicator];
 }
+
+@synthesize activityIndicator = _activityIndicator;
+- (UIActivityIndicatorView *)activityIndicator {
+    return _activityIndicator;
+}
+
+- (void)setUpActivityIndicator
+{
+    _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    _activityIndicator.color = [OAAppearanceDefaultColors appearance].omniGreenColor;
+    _activityIndicator.hidesWhenStopped = YES;
+    _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.mainScrollView.superview addSubview:_activityIndicator];
+    [NSLayoutConstraint activateConstraints:@[ [_activityIndicator.centerXAnchor constraintEqualToAnchor:_activityIndicator.superview.centerXAnchor],
+                                               [_activityIndicator.centerYAnchor constraintEqualToAnchor:_activityIndicator.superview.centerYAnchor]
+                                               ]];
+}
+
 
 - (void)viewDidLayoutSubviews;
 {
@@ -2842,7 +2864,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
     BOOL controlsWereHiddenBeforeDeletion = self.mainScrollView.contentOffset.y >= self.mainScrollView.contentOffsetYToHideTopControls;
     
     OBPRECONDITION([NSThread isMainThread]);
-    
+ 
+    [self.activityIndicator startAnimating];
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
 
     [_documentScope deleteItems:selectedItems completionHandler:^(NSSet *deletedFileItems, NSArray *errorsOrNil) {
@@ -2858,6 +2881,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
         if (controlsWereHiddenBeforeDeletion && self.mainScrollView.contentOffset.y < self.mainScrollView.contentOffsetYToHideTopControls) {
             self.mainScrollView.contentOffset = CGPointMake(self.mainScrollView.contentOffset.x, self.mainScrollView.contentOffsetYToHideTopControls);
         }
+        [self.activityIndicator stopAnimating];
     }];
 }
 
@@ -2946,6 +2970,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
 {
     OBPRECONDITION(parentFolder);
     
+    [self.activityIndicator startAnimating];
     [self _beginIgnoringDocumentsDirectoryUpdates];
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
     
@@ -2955,6 +2980,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
         [self _performDelayedItemPropagationWithCompletionHandler:^{
             [lock unlock];
             [self clearSelection:YES];
+            
+            [self.activityIndicator stopAnimating];
             
             for (NSError *error in errorsOrNil)
                 OUI_PRESENT_ALERT_FROM(error, self);
@@ -2970,6 +2997,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
 - (void)_makeFolderFromSelectedDocuments;
 {
     NSSet *items = self.selectedItems;
+    
+    [self.activityIndicator startAnimating];
     
     [self _beginIgnoringDocumentsDirectoryUpdates];
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
@@ -2995,6 +3024,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 // In case only a portion of the moves worked
                 for (NSError *error in errorsOrNil)
                     OUI_PRESENT_ALERT_FROM(error, self);
+                
+                [self.activityIndicator stopAnimating];
             }];
         }];
     }];

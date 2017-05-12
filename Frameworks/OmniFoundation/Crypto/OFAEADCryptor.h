@@ -16,7 +16,7 @@
 struct OFAuthenticatedStreamEncryptorState;
 struct OFAuthenticatedStreamDecryptorState;
 
-/* Feed a block of data to the decryptor. Except for the last call, it is the caller's responsibility to ensure a integral number of ciphertext blocks per call. */
+/* Feed a block of data to the decryptor. */
 typedef CCCryptorStatus (*OFAuthenticatedStreamDecryptorUpdateFunc)(struct OFAuthenticatedStreamDecryptorState *st,
                                                                     const uint8_t *input, size_t length,
                                                                     uint8_t *output);

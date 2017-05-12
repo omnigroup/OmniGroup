@@ -13,11 +13,21 @@ NS_ASSUME_NONNULL_BEGIN
 // Configuration: You can define this to include RFC3211-style key wrapping support, and activate a unit test against a known message from the RFC. We don't use RFC3211 wrapping (we use RFC3394 wrapping), so by default it isn't included.
 // #define WITH_RFC3211_KEY_WRAP 1
 
+/// User-interaction delegate for document encryption machinery.
 @protocol OFCMSKeySource
 
-/* Performs key lookup for CMS decryption. The CMS machinery treats NSCocoaErrorDomain.NSUserCancelledError and OFErrorDomain.OFKeyNotAvailable specially. In general if the method isn't implemented, OFKeyNotAvailable is the right error to return. */
+/// Perform key lookup for CMS decryption.
+///
+///  @param previousFailureCount  The number of times this has been called for this particular unlock operation already.
+///  @param hintText              User-supplied password hint text, if any.
+/// The CMS machinery treats NSCocoaErrorDomain.NSUserCancelledError and OFErrorDomain.OFKeyNotAvailable specially. In general if the method isn't implemented, OFKeyNotAvailable is the right error to return.
+- (NSString * __nullable)promptForPasswordWithCount:(NSInteger)previousFailureCount hint:(NSString * __nullable)hintText error:(NSError **)outError;
 
-- (NSString * __nullable)promptForPasswordWithCount:(NSInteger)previousFailureCount error:(NSError **)outError;
+/// Whether to prompt for password or keychain access.
+///
+/// When opening a file in the background, for preview generation, this can be made to return NO to only succeed in decrypting if the no user prompts are required.
+/// Returning NO from this method is slightly different from not supplying a key source delegate at all: in that case, no password prompts can happen, but the caller might still query the keychain in ways that cause it to pop up confirmation or unlock dialogs.
+- (BOOL)isUserInteractionAllowed;
 
 #if 0 // We haven't needed this yet in practice; everybody just does a keychain search.
 - (NSArray * __nullable)asymmetricKeysForQuery:(CFDictionaryRef)searchPattern error:(NSError **)outError; /* Returns an array of SecCertificate or SecIdentity depending on the kSecClass search term. */

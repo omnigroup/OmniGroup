@@ -13,6 +13,7 @@
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFSymmetricKeywrap.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDocumentKey-KeychainStorageSupport.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
@@ -328,17 +329,13 @@ NSData *unwrapData(const uint8_t *wrappingKey, size_t wrappingKeyLength, NSData 
     size_t unwrappedDataLength = CCSymmetricUnwrappedSize(kCCWRAPAES, wrappedDataLength);
     void *localData = malloc(MAX(unwrappedDataLength, wrappedDataLength));
     size_t unwrapt = unwrappedDataLength;
-    CCCryptorStatus cerr = CCSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
+    CCCryptorStatus cerr = OFSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
                                                 wrappingKey, wrappingKeyLength,
                                                 [wrappedData bytes], wrappedDataLength,
                                                 localData, &unwrapt);
     /* Note that RFC3394-style key wrapping does effectively include a check field --- if we pass an incorrect wrapping key, or the wrapped key is bogus or something, it should fail. (This is tested by OFUnitTests/OFCryptoTest.m) */
     if (cerr) {
         free(localData);
-        if (cerr < 0 && cerr > -4000) {
-            // CCSymmetricKeyUnwrap() returns bogus error codes.
-            cerr = kCCDecodeError;
-        }
         if (outError)
             *outError = ofsWrapCCError(cerr, @"CCSymmetricKeyUnwrap", nil, nil);
         return nil;
@@ -664,15 +661,12 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
         return ofsWrapCCError(kCCBufferTooSmall, @"CCSymmetricKeyUnwrap", @"len", @( unwrappedKeyBufferLength ));
     }
     size_t unwrapt = blobSize;
-    CCCryptorStatus cerr = CCSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
+    CCCryptorStatus cerr = OFSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen,
                                                 keydata, keylength,
                                                 wrappedBlob, wrappedBlobLength,
                                                 unwrappedKeyBuffer, &unwrapt);
     /* (Note that despite the pointer giving the appearance of an in+out parameter for rawKeyLen, CCSymmetricKeyUnwrap() does not update it (see RADAR 18206798 / 15949620). I'm treating the value of unwrapt as undefined after the call, just in case Apple decides to randomly change the semantics of this function.) */
     if (cerr) {
-        /* Note that, contrary to documentation, the only failure code CCSymmetricKeyUnwrap() returns is -1, which makes no sense as an error code */
-        if (cerr == -1)
-            cerr = kCCDecodeError;
         return ofsWrapCCError(cerr, @"CCSymmetricKeyUnwrap", nil, nil);
     }
     

@@ -654,23 +654,30 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
+
+#define IGNORE_CRASH(clsName, sel) if (selector == (sel) && [NSStringFromClass([object class]) isEqualToString:(clsName)]) crash = NO;
         // NSRemoteSavePanel sometimes fails an assertion when it turns on the "hide extension" checkbox on by itself. Seems harmless?
-        if (selector == @selector(connection:didReceiveRequest:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteSavePanel"])
-            crash = NO;
+        IGNORE_CRASH(@"NSRemoteSavePanel", @selector(connection:didReceiveRequest:))
 
         // Save as PDF (maybe just when the suggested name has 'foo.ext' and you confirm the alert asking to switch to just '.pdf'.
-        if (selector == @selector(updateWindowEdgeResizingRegion) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"])
-            crash = NO;
+        IGNORE_CRASH(@"NSRemoteView", @selector(updateWindowEdgeResizingRegion))
 
         // Bringing up security options for print-to-pdf in a sandboxed app causes a harmless failure. <bug:///87161>
-        if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
-            crash = NO;
+        IGNORE_CRASH(@"NSAccessoryWindow", @selector(sendEvent:))
 
-        if (selector == @selector(_attachSandboxExtensions:toURL:orURLs:) && [NSStringFromClass([object class]) isEqualToString:@"NSVBSavePanel"])
-            crash = NO;
+        IGNORE_CRASH(@"NSVBSavePanel", @selector(_attachSandboxExtensions:toURL:orURLS:))
+        IGNORE_CRASH(@"NSVBSavePanel", @selector(_attachSandboxExtension:toURL:)) // saving a stencil? <bug:///135373>
 
-        if (selector == @selector(_evaluateKeyness:forWindow:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"])
-            crash = NO;
+        IGNORE_CRASH(@"NSRemoteView", @selector(_evaluateKeyness:forWindow:))
+
+        IGNORE_CRASH(@"NSLayerCentricRemoteView", @selector(maintainFirstResponder:inDirection:)) // unknown, <bug:///135373>
+
+
+        // The next two selectors are brought to you by bug:///130794 (Mac-OmniPlan Crasher: Force Click Related Crash: crash_info (AppKit): "Performing @selector(_forceClickMonitorDidChange:) from sender NSForceClickMonitor 0xdeaddead")
+        IGNORE_CRASH(@"LULookupDefinitionModule", @selector(_termWithOrigin:options:forRange:inString:withOptions:originProvider:inView:))
+        IGNORE_CRASH(@"LUTextAccessor", @selector(rangeOfTermInString:containingOffset:language:partOfSpeech:))
+
+#undef IGNORE_CRASH
 
         // XPC services (like the 'define' service) sometimes time out:
         // Object: <NSXPCSharedListener:0x7fff7a5e67a8>

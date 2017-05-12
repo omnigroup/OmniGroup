@@ -55,6 +55,7 @@ This class maintains an in memory and disk cache of decoded preview images for u
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
 + (NSURL *)fileURLForPreviewOfFileEdit:(OFFileEdit *)fileEdit withArea:(OUIDocumentPreviewArea)area;
 + (void)writeEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit;
++ (void)writeEncryptedEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit fileURL:(NSURL *)fileURL;
 
 + (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
 

@@ -621,6 +621,10 @@
 		34FEB26216C6FEE8006A2651 /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25F16C6FEE8006A2651 /* OFRegularExpressionMatch.m */; };
 		3E0D6C721AE18052000633A5 /* NSData-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E0D6C771AE1805F000633A5 /* NSData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */; };
+		3E378DE31DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3E378DE41DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3E378DE51DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; };
+		3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; };
 		3E40D5961D77554B005E7E38 /* OFTimeSpanFormatterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F220577008CF6059004B6007 /* OFTimeSpanFormatterTest.m */; };
 		3E4628B5174D38370032001F /* OFBijection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E4628B3174D38370032001F /* OFBijection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E4628B6174D38370032001F /* OFBijection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4628B4174D38370032001F /* OFBijection.m */; };
@@ -1465,6 +1469,7 @@
 		1E5F988D1D888D2D00A85BC3 /* OFDocumentEncryption-ObjC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFDocumentEncryption-ObjC.h"; sourceTree = "<group>"; };
 		1E657D0E19BFD9EA00D55E8B /* OFByteProviderProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFByteProviderProtocol.h; sourceTree = "<group>"; };
 		1E6A669D1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCredentialChallengeDispositionProtocol.h; sourceTree = "<group>"; };
+		1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCryptoTest-AEAD.m"; sourceTree = "<group>"; };
 		1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = OFDocumentEncryption.md; sourceTree = "<group>"; };
 		1E7F99681D875BCD00CD4533 /* Bundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 		1E8657021CB365B100139490 /* OFAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFAsynchronousOperation.h; sourceTree = "<group>"; };
@@ -1867,6 +1872,8 @@
 		397A06C7000811187F000001 /* OFBTreeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBTreeTest.m; sourceTree = "<group>"; };
 		3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCharacterScanner.h; sourceTree = "<group>"; };
 		3D990C74FF36598CC697A146 /* OFCharacterScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCharacterScanner.m; sourceTree = "<group>"; };
+		3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSymmetricKeywrap.h; sourceTree = "<group>"; };
+		3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSymmetricKeywrap.m; sourceTree = "<group>"; };
 		3E4628B3174D38370032001F /* OFBijection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBijection.h; sourceTree = "<group>"; };
 		3E4628B4174D38370032001F /* OFBijection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBijection.m; sourceTree = "<group>"; };
 		3E4628B8174D39800032001F /* OFBijectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBijectionTests.m; sourceTree = "<group>"; };
@@ -2783,6 +2790,8 @@
 				1E21E6241D233E5100A04AE4 /* OFCMSContentTypes.m */,
 				1E2377911D765CE500CBDA3D /* OFRFC3211Wrap.h */,
 				1E51E82B1D492BB6007037C4 /* OFRFC3211Wrap.m */,
+				3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */,
+				3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */,
 			);
 			path = Crypto;
 			sourceTree = "<group>";
@@ -3182,6 +3191,7 @@
 				34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */,
 				3433588F06415A4C00EEBA57 /* OFCompressionTest.m */,
 				1EB9F9FA1A64627E00222BFD /* OFCryptoTest.m */,
+				1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */,
 				1EFB29CB1D495D72005DC7B3 /* OFCMSTest.swift */,
 				A22C597E0BA88349005F177C /* OFDataTest.m */,
 				8B8DB053039416A313C564E8 /* OFDateTestCase.m */,
@@ -3579,6 +3589,7 @@
 				34F16B77194F6ECC00AD9C4D /* OFUnicodeUtilities.h in Headers */,
 				34F16C29194F796500AD9C4D /* OFXMLElement.h in Headers */,
 				34F16C1C194F77B200AD9C4D /* OFXMLIdentifierRegistryObject.h in Headers */,
+				3E378DE41DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */,
 				34F16C33194F798700AD9C4D /* OFXMLParserTarget.h in Headers */,
 				5FD243A51D12189F009AB347 /* NSCache-OFExtensions.h in Headers */,
 				34F16BF5194F770D00AD9C4D /* NSNumber-OFExtensions.h in Headers */,
@@ -3807,6 +3818,7 @@
 				349950AA0F72FF95007C0BC9 /* OFXMLParserTarget.h in Headers */,
 				343BA6FE0F740AB100329C2F /* OFXMLReader.h in Headers */,
 				343BA7F90F74169D00329C2F /* OFXMLInternedStringTable.h in Headers */,
+				3E378DE31DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */,
 				343BAA030F7440C300329C2F /* OFXMLError.h in Headers */,
 				343E5FBB0F77E69500F9982D /* OFXMLQName.h in Headers */,
 				A2DF1E3B0F782CAA0093FEFA /* OFXMLMaker.h in Headers */,
@@ -4584,6 +4596,7 @@
 				34F16BC8194F758000AD9C4D /* OFCFCallbacks.m in Sources */,
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,
 				34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */,
+				3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
 				1E21E6261D233E5100A04AE4 /* OFCMSContentTypes.m in Sources */,
 				34BDEA381DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */,
 				1E498AA31D6BC95A00996D7D /* OFXMLMaker.m in Sources */,
@@ -4695,6 +4708,7 @@
 				4A4E06B708AA72B10098FF0F /* OFCFCallbacks.m in Sources */,
 				347061681BF65666009BC3AB /* OFSelectionSet.m in Sources */,
 				4A4E06BB08AA72B10098FF0F /* OFBTree.m in Sources */,
+				3E378DE51DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
 				4A4E06BD08AA72B10098FF0F /* OFBulkBlockPool.m in Sources */,
 				3E5F9983177CAC6600E53E41 /* OFOrderedMutableDictionary.m in Sources */,
 				1E51D9BA1D638C42004A6DED /* OFASN1Utilities-Construction.m in Sources */,

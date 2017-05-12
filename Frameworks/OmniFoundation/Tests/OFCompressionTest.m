@@ -139,15 +139,21 @@ static NSData *utf8(NSString *str)
         for (levelIndex = 0; levelIndex < (sizeof(levels) / sizeof(*levels)); levelIndex++) {
             NSError *error = nil;
             NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex] error:&error];
-            OBShouldNotError(gzData != nil);
+            XCTAssertNotNil(gzData, @"Error: %@", error);
+            if (!gzData)
+                break;
 
             NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&error];
-            OBShouldNotError(gzipDecompressed != nil);
+            XCTAssertNotNil(gzipDecompressed, @"Error: %@", error);
+            if (!gzipDecompressed)
+                break;
 
             XCTAssertEqualObjects(data, gzipDecompressed);
 
             NSData *decompressed = [gzData decompressedData:&error];
-            OBShouldNotError(decompressed != nil);
+            XCTAssertNotNil(decompressed, @"Error: %@", error);
+            if (!decompressed)
+                break;
 
             XCTAssertEqualObjects(data, decompressed);
         }

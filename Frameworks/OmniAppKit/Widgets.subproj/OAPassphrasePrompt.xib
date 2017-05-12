@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1004" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11542" systemVersion="15G1004" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
+        <capability name="box content view" minToolsVersion="7.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OAPassphrasePrompt">
@@ -10,7 +12,11 @@
                 <outlet property="OKButton" destination="12" id="714"/>
                 <outlet property="_errorTextField" destination="97" id="33"/>
                 <outlet property="cancelButton" destination="13" id="713"/>
+                <outlet property="hintHintField" destination="sgw-nS-XMf" id="hb3-cV-d1r"/>
+                <outlet property="hintTextBox" destination="snd-FY-67J" id="LKr-ZH-qeE"/>
+                <outlet property="hintTextField" destination="bIq-Lo-Wao" id="YiG-fQ-lrd"/>
                 <outlet property="iconView" destination="34" id="wUE-HP-50M"/>
+                <outlet property="revealHintButton" destination="btn2" id="4bJ-m0-3Bh"/>
                 <outlet property="titleField" destination="7" id="dAL-nj-Igc"/>
                 <outlet property="window" destination="5" id="46"/>
             </connections>
@@ -21,24 +27,32 @@
             <windowStyleMask key="styleMask" titled="YES" resizable="YES"/>
             <windowCollectionBehavior key="collectionBehavior" fullScreenAuxiliary="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="138" y="462" width="400" height="150"/>
+            <rect key="contentRect" x="138" y="462" width="400" height="268"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <value key="minSize" type="size" width="400" height="150"/>
             <view key="contentView" id="6">
-                <rect key="frame" x="0.0" y="0.0" width="400" height="150"/>
+                <rect key="frame" x="0.0" y="0.0" width="400" height="268"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="1000" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="97">
-                        <rect key="frame" x="100" y="54" width="276" height="17"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                    <box autoresizesSubviews="NO" horizontalHuggingPriority="200" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" boxType="secondary" borderType="bezel" title="Password Hint" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="snd-FY-67J">
+                        <rect key="frame" x="99" y="128" width="278" height="46"/>
+                        <view key="contentView" id="yiz-Qm-aaQ">
+                            <rect key="frame" x="11" y="3" width="256" height="40"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        </view>
+                        <size key="contentViewMargins" width="8" height="0.0"/>
+                        <font key="titleFont" metaFont="controlContent"/>
+                    </box>
+                    <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="97">
+                        <rect key="frame" x="100" y="107" width="276" height="17"/>
                         <textFieldCell key="cell" selectable="YES" sendsActionOnEndEditing="YES" title="Error: An error." id="HAPPY-FUN">
                             <font key="font" metaFont="systemBold"/>
                             <color key="textColor" red="1" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="1000" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="1000" preferredMaxLayoutWidth="322" translatesAutoresizingMaskIntoConstraints="NO" id="7">
-                        <rect key="frame" x="100" y="79" width="276" height="51"/>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="1000" preferredMaxLayoutWidth="322" translatesAutoresizingMaskIntoConstraints="NO" id="7">
+                        <rect key="frame" x="100" y="197" width="276" height="51"/>
                         <textFieldCell key="cell" truncatesLastVisibleLine="YES" selectable="YES" sendsActionOnEndEditing="YES" id="58">
                             <font key="font" metaFont="systemBold"/>
                             <string key="title">prompt placeholder
@@ -49,7 +63,7 @@ line 3</string>
                         </textFieldCell>
                     </textField>
                     <imageView translatesAutoresizingMaskIntoConstraints="NO" id="34">
-                        <rect key="frame" x="20" y="66" width="64" height="64"/>
+                        <rect key="frame" x="20" y="184" width="64" height="64"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="64" id="128"/>
                             <constraint firstAttribute="width" constant="64" id="1145"/>
@@ -87,6 +101,36 @@ DQ
                             <outlet property="nextKeyView" destination="6" id="48"/>
                         </connections>
                     </button>
+                    <textField verticalHuggingPriority="750" verticalCompressionResistancePriority="1000" preferredMaxLayoutWidth="256" translatesAutoresizingMaskIntoConstraints="NO" id="bIq-Lo-Wao">
+                        <rect key="frame" x="108" y="137" width="260" height="30"/>
+                        <textFieldCell key="cell" truncatesLastVisibleLine="YES" selectable="YES" allowsUndo="NO" sendsActionOnEndEditing="YES" state="on" id="tnn-xR-5sr">
+                            <font key="font" metaFont="user"/>
+                            <string key="title">Hint hint hint hint,
+hint hint.</string>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="btn2">
+                        <rect key="frame" x="102" y="174" width="13" height="13"/>
+                        <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="left" alignment="center" borderStyle="border" inset="2" id="btn1">
+                            <behavior key="behavior" pushIn="YES" changeBackground="YES" changeGray="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="hideShow:" target="-2" id="TTK-HU-kc0"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" tag="100" translatesAutoresizingMaskIntoConstraints="NO" id="sgw-nS-XMf">
+                        <rect key="frame" x="112" y="173" width="31" height="16"/>
+                        <buttonCell key="cell" type="inline" title="foo" bezelStyle="inline" alignment="justified" inset="2" id="3Pe-72-P3A">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="controlContent"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="performClick:" target="btn2" id="06Z-rh-qSQ"/>
+                        </connections>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstItem="34" firstAttribute="leading" secondItem="6" secondAttribute="leading" constant="20" symbolic="YES" id="232"/>
@@ -97,10 +141,25 @@ DQ
                     <constraint firstItem="7" firstAttribute="leading" secondItem="34" secondAttribute="trailing" constant="18" id="1076"/>
                     <constraint firstItem="34" firstAttribute="top" secondItem="7" secondAttribute="top" id="1130"/>
                     <constraint firstAttribute="trailing" secondItem="7" secondAttribute="trailing" constant="26" id="1138"/>
+                    <constraint firstItem="13" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="34" secondAttribute="trailing" id="Azm-4X-Llp"/>
+                    <constraint firstItem="sgw-nS-XMf" firstAttribute="top" secondItem="7" secondAttribute="bottom" constant="8" symbolic="YES" placeholder="YES" id="CEJ-n9-HdI"/>
+                    <constraint firstItem="bIq-Lo-Wao" firstAttribute="bottom" secondItem="snd-FY-67J" secondAttribute="bottom" constant="-5" id="CWJ-8q-Q8u"/>
+                    <constraint firstItem="bIq-Lo-Wao" firstAttribute="trailing" secondItem="snd-FY-67J" secondAttribute="trailing" constant="-8" id="Gdb-fs-e0b"/>
+                    <constraint firstItem="snd-FY-67J" firstAttribute="trailing" secondItem="7" secondAttribute="trailing" placeholder="YES" id="IE0-Ch-BY6"/>
+                    <constraint firstItem="bIq-Lo-Wao" firstAttribute="leading" secondItem="snd-FY-67J" secondAttribute="leading" constant="8" id="Iqo-w8-CsR"/>
+                    <constraint firstItem="sgw-nS-XMf" firstAttribute="leading" secondItem="btn2" secondAttribute="trailing" constant="-3" id="J1G-ee-g8A"/>
+                    <constraint firstItem="97" firstAttribute="trailing" secondItem="7" secondAttribute="trailing" placeholder="YES" id="M92-El-h43"/>
+                    <constraint firstItem="97" firstAttribute="leading" secondItem="7" secondAttribute="leading" placeholder="YES" id="Pej-EA-bD4"/>
+                    <constraint firstItem="sgw-nS-XMf" firstAttribute="centerY" secondItem="btn2" secondAttribute="centerY" constant="-1" id="PuR-sH-jHD"/>
                     <constraint firstItem="12" firstAttribute="baseline" secondItem="13" secondAttribute="baseline" id="Ugk-FZ-LSs"/>
+                    <constraint firstItem="bIq-Lo-Wao" firstAttribute="top" secondItem="snd-FY-67J" secondAttribute="top" constant="5" id="ZwY-Sf-SWx"/>
+                    <constraint firstItem="snd-FY-67J" firstAttribute="top" secondItem="sgw-nS-XMf" secondAttribute="bottom" constant="1" placeholder="YES" id="dV9-ke-zgg"/>
+                    <constraint firstItem="snd-FY-67J" firstAttribute="leading" secondItem="btn2" secondAttribute="leading" id="lmX-xM-IKY"/>
+                    <constraint firstItem="snd-FY-67J" firstAttribute="leading" secondItem="7" secondAttribute="leading" placeholder="YES" id="wcP-Up-2sL"/>
+                    <constraint firstItem="97" firstAttribute="top" secondItem="snd-FY-67J" secondAttribute="bottom" constant="8" symbolic="YES" placeholder="YES" id="xid-jZ-brG"/>
                 </constraints>
             </view>
-            <point key="canvasLocation" x="-1067" y="-46"/>
+            <point key="canvasLocation" x="-1067" y="13"/>
         </window>
     </objects>
     <resources>

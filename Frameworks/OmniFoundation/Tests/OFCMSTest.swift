@@ -17,7 +17,7 @@ class keysource : OFCMSKeySource {
     var password: String? = nil;
     var keypairs: [ (SecCertificate, SecKey) ] = [];
     
-    @objc(promptForPasswordWithCount:error:) func promptForPassword(withCount _: Int) throws -> String {
+    @objc(promptForPasswordWithCount:hint:error:) func promptForPassword(withCount _: Int, hint: String?) throws -> String {
         
         if let result = self.password {
             return result;
@@ -36,6 +36,11 @@ class keysource : OFCMSKeySource {
             }
             return str as String;
         }
+    }
+    
+    @objc
+    func isUserInteractionAllowed() -> Bool {
+        return true;
     }
     
     #if false  // This part of the protocol has never actually been needed

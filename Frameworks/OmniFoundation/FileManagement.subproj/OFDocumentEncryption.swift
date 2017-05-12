@@ -60,6 +60,8 @@ class OFDocumentEncryptionSettings : NSObject {
     @objc(encryptFileWrapper:schema:error:)
     public func wrap(_ wrapper: FileWrapper, schema: [String:Any]?) throws -> FileWrapper {
         let helper = OFCMSFileWrapper();
+        helper.passwordHint = self.passwordHint;
+        
         for recipient in recipients {
             if let pkrecipient = recipient as? CMSPKRecipient,
                let cert = pkrecipient.cert {
@@ -78,6 +80,10 @@ class OFDocumentEncryptionSettings : NSObject {
     @objc
     public var documentIdentifier : Data?;
     
+    /// The unencrypted password hint text for this document.
+    @objc
+    public var passwordHint : String?;
+    
     internal var recipients : [CMSRecipient];
     internal var unreadableRecipientCount : UInt;
     
@@ -87,6 +93,7 @@ class OFDocumentEncryptionSettings : NSObject {
         // TODO: copy stuff from helper into savedSettings
         recipients = wrapper.recipientsFoo;
         unreadableRecipientCount = 0;
+        passwordHint = wrapper.passwordHint;
         
         let embeddedCertificates = wrapper.embeddedCertificates.lazy.flatMap { SecCertificateCreateWithData(kCFAllocatorDefault, $0 as CFData) };
         
@@ -139,10 +146,12 @@ class OFDocumentEncryptionSettings : NSObject {
             cmsOptions = other.cmsOptions;
             recipients = other.recipients;
             unreadableRecipientCount = other.unreadableRecipientCount;
+            passwordHint = other.passwordHint;
         } else {
             cmsOptions = [];
             recipients = [];
             unreadableRecipientCount = 0;
+            passwordHint = nil;
         }
     }
     
@@ -154,11 +163,14 @@ class OFCMSFileWrapper {
     fileprivate static let indexFileName = "contents.cms";
     fileprivate static let encryptedContentIndexNamespaceURI = "http://www.omnigroup.com/namespace/DocumentEncryption/v1";
     fileprivate static let xLinkNamespaceURI = "http://www.w3.org/1999/xlink";
+    fileprivate static let hintFileName = ".iwph"; // iWork compatibilish
+    fileprivate static let hintFileXattr = "com.omnigroup.DocumentEncryption.Hint";
     
     var recipientsFoo : [CMSRecipient] = [];
     var usedRecipient : CMSRecipient? = nil;
     var embeddedCertificates : [Data] = [];
     var outermostIdentifier: Data? = nil;
+    var passwordHint : String? = nil;
     public var delegate : OFCMSKeySource? = nil;
     public var auxiliaryAsymmetricKeys : [Keypair] = [];
     
@@ -207,6 +219,11 @@ class OFCMSFileWrapper {
             if let fname = input.preferredFilename {
                 wrapped.preferredFilename = fname;
             }
+            if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
+                var xattrs : [String : Any] = ( toplevelFileAttributes[NSFileExtendedAttributes] as? [String : Any] ) ?? [:];
+                xattrs[OFCMSFileWrapper.hintFileXattr] = hintData;
+                toplevelFileAttributes[NSFileExtendedAttributes] = xattrs;
+            }
             wrapped.fileAttributes = toplevelFileAttributes;
             return wrapped;
         } else if input.isDirectory {
@@ -234,7 +251,14 @@ class OFCMSFileWrapper {
                         var fileOptions : OFCMSOptions = [];
                         
                         if let specifiedOptions = setting?[OFDocEncryptionFileOptions] {
-                            fileOptions.formUnion(OFCMSOptions(rawValue: specifiedOptions as! UInt));
+                            if let asOpts = specifiedOptions as? OFCMSOptions {
+                                fileOptions.formUnion(asOpts);
+                            } else if let asNum = specifiedOptions as? UInt {
+                                fileOptions.formUnion(OFCMSOptions(rawValue: asNum));
+                            } else {
+                                // Shouldn't happen.
+                                assert(false, "invalid type in CMSFileWrapper schema");
+                            }
                         }
                         
                         let contentType = (fileOptions.contains(OFCMSOptions.contentIsXML)) ? OFCMSContentType_XML : OFCMSContentType_data;
@@ -294,6 +318,12 @@ class OFCMSFileWrapper {
                 resultItems[obscuredName] = sideFile;
             }
             
+            if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
+                let addition = FileWrapper(regularFileWithContents: hintData);
+                addition.preferredFilename = OFCMSFileWrapper.hintFileName;
+                resultItems[OFCMSFileWrapper.hintFileName] = addition;
+            }
+            
             let result = FileWrapper(directoryWithFileWrappers: resultItems);
             result.fileAttributes = toplevelFileAttributes;
             return result;
@@ -332,6 +362,15 @@ class OFCMSFileWrapper {
     func unwrap(input: FileWrapper) throws -> FileWrapper {
         
         if input.isRegularFile {
+            var fileAttributes = input.fileAttributes;
+            if let xattrs = fileAttributes[NSFileExtendedAttributes] as? [String:Any],
+               let pwhint = xattrs[OFCMSFileWrapper.hintFileXattr] {
+                if let pwhint_data = pwhint as? Data {
+                    passwordHint = String(data: pwhint_data, encoding: String.Encoding.utf8);
+                }
+                fileAttributes[NSFileExtendedAttributes] = fileAttributes[NSFileExtendedAttributes];
+            }
+
             guard let encryptedData = input.regularFileContents else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError, userInfo: nil)
             }
@@ -339,6 +378,7 @@ class OFCMSFileWrapper {
             guard let unwrappedData = decryptedData.primaryContent else {
                 throw miscFormatError();
             }
+            
             recipientsFoo = decryptedData.allRecipients;
             usedRecipient = decryptedData.usedRecipient;
             embeddedCertificates += decryptedData.embeddedCertificates;
@@ -347,7 +387,7 @@ class OFCMSFileWrapper {
             if let fname = input.preferredFilename {
                 unwrapped.preferredFilename = fname;
             }
-            unwrapped.fileAttributes = input.fileAttributes;
+            unwrapped.fileAttributes = fileAttributes;
             return unwrapped;
         } else if input.isDirectory {
             
@@ -361,6 +401,12 @@ class OFCMSFileWrapper {
                   indexFile.isRegularFile,
                   let indexFileContents = indexFile.regularFileContents else {
                 throw missingFileError(filename: OFCMSFileWrapper.indexFileName);
+            }
+            
+            if let hintFile = encryptedFiles[OFCMSFileWrapper.hintFileName],
+               hintFile.isRegularFile,
+               let hintData = hintFile.regularFileContents {
+                passwordHint = String(data: hintData, encoding: String.Encoding.utf8);
             }
             
             let decryptedIndexFile = try self.unwrap(data: indexFileContents);
@@ -406,21 +452,24 @@ class OFCMSFileWrapper {
             
             // Now repopulate the file wrapper hierarchy's regular file data.
             
-            func readSideFileEntries(sideFileName: String, sideFile: OFCMSFileWrapper.ExpandedContent, entries: unwrapQueue) throws {
+            func readSideFileEntries(sideFileNameForDebugging: String, sideFile: OFCMSFileWrapper.ExpandedContent, entries: unwrapQueue) throws {
                 for (cid_, options, realName, dstWrapper) in entries {
                     var fentData : Data?;
+                    var fentId : String;
                     if let cid = cid_ {
                         // One entry in a multipart file.
                         fentData = sideFile.identifiedContent[cid];
+                        fentId = "#" + uglyHexify(cid);
                     } else {
                         // File entry refers to the side file's primary content.
                         fentData = sideFile.primaryContent;
+                        fentId = "";
                     }
                     guard let fentDataBang = fentData else {
                         if options.contains(OFCMSOptions.fileIsOptional) {
                             continue;
                         } else {
-                            throw missingFileError(filename: "\(sideFileName)#\(cid_)");
+                            throw missingFileError(filename: sideFileNameForDebugging + fentId);
                         }
                     }
                     dstWrapper.addRegularFile(withContents: fentDataBang, preferredFilename: realName);
@@ -429,7 +478,7 @@ class OFCMSFileWrapper {
             
             // Any files contained in the main CMS object --- do this first so we can go ahead and deallocate it.
             if let indexFilePackedEntries = leafFiles.removeValue(forKey: "") {
-                try readSideFileEntries(sideFileName: "", sideFile: decryptedIndexFile, entries: indexFilePackedEntries);
+                try readSideFileEntries(sideFileNameForDebugging: OFCMSFileWrapper.indexFileName, sideFile: decryptedIndexFile, entries: indexFilePackedEntries);
             }
             // Then any files contained in auxiliary CMS objects. We do it this way so that we only decrypt/decompress a given file once even if it contains multiple contents.
             for (sideFileName, entries) in leafFiles {
@@ -444,12 +493,14 @@ class OFCMSFileWrapper {
                     continue;
                 }
                 
-                guard dataFile.isRegularFile,
-                      let fileData = dataFile.regularFileContents else {
-                        throw missingFileError(filename: sideFileName);
-                }
-                
-                try readSideFileEntries(sideFileName: sideFileName, sideFile: self.unwrap(data: fileData, auxiliaryKeys: indexEntries.keys), entries: entries);
+                try autoreleasepool(invoking: { () -> () in
+                    guard dataFile.isRegularFile,
+                          let fileData = dataFile.regularFileContents else {
+                            throw missingFileError(filename: sideFileName);
+                    }
+                    
+                    try readSideFileEntries(sideFileNameForDebugging: sideFileName, sideFile: self.unwrap(data: fileData, auxiliaryKeys: indexEntries.keys), entries: entries);
+                })
             }
             
             
@@ -585,6 +636,7 @@ class OFCMSFileWrapper {
         if !auxiliaryAsymmetricKeys.isEmpty {
             decr.addAsymmetricKeys(auxiliaryAsymmetricKeys);
         }
+        decr.passwordHint = passwordHint;
         
         try decr.peelMeLikeAnOnion();
         var result = ExpandedContent(outerIdentifier: decr.contentIdentifier,
@@ -823,11 +875,26 @@ class OFCMSFileWrapper {
     }
 }
 
+private let NSFileExtendedAttributes = "NSFileExtendedAttributes";
+
 private
 func missingFileError(filename: String) -> NSError {
     let msg = NSString(format: NSLocalizedString("The encrypted item \"%@\" is missing or unreadable.", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error message - a file within the encrypted file wrapper can't be read") as NSString,
                        filename) as String;
     return miscFormatError(reason: msg);
+}
+
+private
+func uglyHexify(_ cid: Data) -> String {
+    var buf : String = "";
+    for byte in cid {
+        if byte > 0x20 && byte < 0x7F {
+            buf.append(String(UnicodeScalar(byte)));
+        } else {
+            buf.append(String(format: "%%%02X", UInt(byte)));
+        }
+    }
+    return buf;
 }
 
 private

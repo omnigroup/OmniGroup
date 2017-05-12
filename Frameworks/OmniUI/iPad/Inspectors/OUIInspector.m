@@ -77,6 +77,7 @@ OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation sho
     }
 }
 
+// JCTODO: May need to update to handle new presentation setup.
 - (void)keyboardWillShow:(NSNotification*)note
 {
     if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {

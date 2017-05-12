@@ -196,6 +196,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (void)showFromController:(UIViewController *)controller;
 {
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(self.delegate || _finished_callback); // Otherwise there's no point
     [[OUIPasswordAlert _visibleAlerts] addObject:self]; // we hold a reference to ourselves until -_didDismissWithAction:
     [controller presentViewController:self.alertController animated:YES completion:nil];

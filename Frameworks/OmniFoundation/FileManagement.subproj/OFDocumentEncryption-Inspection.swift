@@ -98,10 +98,9 @@ extension OFDocumentEncryptionSettings {
     
     @objc public
     func addRecipient(certificate: SecCertificate) -> CMSRecipient? {
-        for (i, v) in recipients.enumerated() {
+        for v in recipients {
             if let pk = v as? CMSPKRecipient {
-                if pk.rid.matchesCertificate(certificate) {
-                    pk.resolve(certificate: certificate);
+                if pk.rid.matchesCertificate(certificate) && pk.resolve(certificate: certificate) {
                     return v;
                 }
             }

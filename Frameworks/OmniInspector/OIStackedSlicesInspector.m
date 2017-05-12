@@ -21,6 +21,7 @@ RCS_ID("$Id$")
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
 @property (nonatomic, strong) OFMutableBijection *inspectorViewsByIdentifier;
 @property (nonatomic, strong) NSMutableDictionary *inspectorViewWidthConstraintsByIdentifier;
+@property (nonatomic, assign) BOOL showSlicesWithNoObjects;
 
 @end
 
@@ -30,6 +31,8 @@ RCS_ID("$Id$")
 {
     if ((self = [super initWithDictionary:dict inspectorRegistry:inspectorRegistry bundle:sourceBundle]) == nil)
         return nil;
+    
+    _showSlicesWithNoObjects = [[dict objectForKey:@"showSlicesWithNoObjects"] boolValue];
     
     self.inspectorRegistry = inspectorRegistry;
     _sliceControllers = [[NSMutableArray alloc] init];
@@ -93,6 +96,15 @@ RCS_ID("$Id$")
     return nil;
 }
 
+- (NSArray <OIInspector *> *)sliceInspectors;
+{
+    NSMutableArray *result = [NSMutableArray array];
+    for (OIInspectorController *inspectorController in _sliceControllers) {
+        [result addObject:inspectorController.inspector];
+    }
+    return result;
+}
+
 #pragma mark -
 #pragma mark OIConcreteInspector protocol
 
@@ -110,7 +122,7 @@ RCS_ID("$Id$")
     for (OIAutoLayoutInspectorController *slice in _sliceControllers) {
         OIInspector<OIConcreteInspector> *sliceInspector = slice.inspector;
         NSArray *interestingObjects = [self.inspectorRegistry copyObjectsInterestingToInspector:sliceInspector];
-        BOOL showInspector = NO;
+        BOOL showInspector = self.showSlicesWithNoObjects;
         for (id object in interestingObjects) {
             if ([sliceInspector shouldBeUsedForObject:object]) {
                 showInspector = YES;

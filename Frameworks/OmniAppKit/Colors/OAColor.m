@@ -1006,9 +1006,6 @@ static NSColorSpace *_grayscaleColorSpace(void)
 
 + (OAColor *)colorWithPlatformColor:(NSColor *)color;
 {
-    if (!color)
-        return nil;
-
     // Can't call colorSpace on a named color; it will throw.
     if ([color.colorSpaceName isEqual:NSNamedColorSpace]) {
         color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];

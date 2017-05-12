@@ -31,6 +31,8 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (OFXMLElement *)deepCopyWithName:(NSString *)name NS_RETURNS_RETAINED;
 
 @property(nonatomic,readonly) NSString *name;
+
+// 1 NSString, or any number of OFXMLElements or OFXMLUnparsedElements
 @property(nullable,nonatomic,readonly) NSArray *children;
 @property(nonatomic,readonly) NSUInteger childrenCount;
 - (id)childAtIndex:(NSUInteger)childIndex;

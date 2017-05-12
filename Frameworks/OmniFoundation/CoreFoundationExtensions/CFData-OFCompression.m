@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,12 +34,10 @@ RCS_ID("$Id$")
  We support both bz2 and gzip compression.  We default to using gzip; bz2 compresses better, but its worst-case performance is much, much worse (and we don't want to make users wait when saving).
  "*/
 
-#ifdef HAVE_BZIP2
 static inline Boolean _OFMightBeBzipCompressedData(const unsigned char *bytes, NSUInteger length)
 {
-    return (length >= 2 && bytes[0] == 'B' && bytes[1] == 'Z');
+    return (length >= 4 && bytes[0] == 'B' && bytes[1] == 'Z' && bytes[2] == 'h');
 }
-#endif
 
 static inline Boolean _OFMightBeGzipCompressedData(const unsigned char *bytes, NSUInteger length)
 {
@@ -55,16 +53,22 @@ static inline Boolean _OFMightBeLZMACompressedData(const unsigned char *bytes, N
 }
 
 /*" Returns TRUE if the receiver looks like it might be compressed data that -decompressedData can handle.  Note that if this returns TRUE, it merely looks like the receiver is compressed, not that it is.  This is a simply intended to be a quick check to filter out obviously uncompressed data. "*/
-Boolean OFDataMightBeCompressed(CFDataRef data)
+extern OFCompressionContainerFormat OFDataGuessCompressionContainer(CFDataRef data)
 {
-    const unsigned char *bytes = CFDataGetBytePtr(data);
-    NSUInteger length = CFDataGetLength(data);
-    return _OFMightBeGzipCompressedData(bytes, length)
-#ifdef HAVE_BZIP2
-        || _OFMightBeBzipCompressedData(bytes, length)
-#endif
-        || _OFMightBeLZMACompressedData(bytes, length)
-    ;
+    unsigned char header_buf[64];
+    NSUInteger length = MIN(sizeof(header_buf), (size_t)CFDataGetLength(data));
+    CFDataGetBytes(data, (CFRange){0, length}, header_buf);
+    
+    if (_OFMightBeGzipCompressedData(header_buf, length))
+        return OFCompression_Gzip;
+    
+    if (_OFMightBeBzipCompressedData(header_buf, length))
+        return OFCompression_Bzip2;
+    
+    if (_OFMightBeLZMACompressedData(header_buf, length))
+        return OFCompression_XZ;
+    
+    return OFCompression_None;
 }
 
 CFDataRef OFDataCreateCompressedData(CFDataRef data, CFErrorRef *outError)
@@ -79,7 +83,7 @@ static void *_OFCompressionError(CFErrorRef *outError, NSInteger code, NSString 
     if (outError) {
         // CFErrorRef is toll-free bridged; but CF APIs return retained instances.
         __autoreleasing NSError *error = nil;
-        OFError(&error, OFUnableToDecompressData, description, reason);
+        OFError(&error, code, description, reason);
         
         *outError = (CFErrorRef)CFBridgingRetain(error); // OFError creates an autoreleased instance, but this is a CF API
     }

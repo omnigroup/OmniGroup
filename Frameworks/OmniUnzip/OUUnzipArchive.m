@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation OUUnzipArchive
 {
     NSString *_path;
+    NSString *_displayName;
     NSObject <OFByteProvider> *_store;
     NSArray <OUUnzipEntry *> *_entries;
 }
@@ -52,14 +53,29 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
 }
 #define UNZIP_ERROR(f) _unzipError(self, #f, err, outError)
 
+- init NS_UNAVAILABLE;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return nil;
+}
+
 - initWithPath:(NSString *)path error:(NSError **)outError;
 {
-    return [self initWithPath:path data:nil error:outError];
+    return [self initWithPath:path data:nil description:path error:outError];
 }
 
 // Zip has no real notion of directories, so we just have a flat list of files, like it does.  Some will have slashes in their names.  Some might end in '/' and have directory flags set in their attributes.  We could probably just ignore those (unless they have interesting properties, like finder info or other custom metadata, once we start handling that).
-- initWithPath:(NSString *)path data:(NSObject <OFByteProvider> * _Nullable)store error:(NSError **)outError;
+- initWithPath:(NSString * _Nullable)path data:(NSObject <OFByteProvider> * _Nullable)store description:(NSString *)displayName error:(NSError **)outError;
 {
+    self = [super init];
+ 
+    if (path && store) {
+        OBRejectInvalidCall(self, _cmd, @"Cannot specify both a path and a data provider");
+    }
+    if (!path && !store) {
+        OBRejectInvalidCall(self, _cmd, @"Must specify either a path or a data provider");
+    }
+    
     _path = [path copy];
     
     unzFile unzip;
@@ -73,7 +89,7 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
 
     if (!unzip) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open zip archive.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), path];
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), displayName];
         OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
         return nil;
     }
@@ -97,6 +113,7 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
                 NSString *reason = NSLocalizedStringFromTableInBundle(@"An entry in the zip file had a name that couldn't be converted to a filesystem path.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
                 OmniUnzipError(outError, OmniUnzipUnableToReadZipFileContents, description, reason);
+                return nil;
             }
             
             unz_file_pos position;
@@ -177,6 +194,11 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
 }
 #undef UNZIP_ERROR
 
+- (NSString *)archiveDescription;
+{
+    return _displayName;
+}
+
 // TODO: Add case sensitivity control?
 - (OUUnzipEntry * _Nullable)entryNamed:(NSString *)name;
 {
@@ -248,10 +270,13 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
 
 - (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
 {
-    NSURL *archiveURL = [NSURL fileURLWithPath:_path];
     OUUnzipEntryInputStreamOptions options = raw ? OUUnzipEntryInputStreamOptionRaw : OUUnzipEntryInputStreamOptionNone;
 
-    return [[OUUnzipEntryInputStream alloc] initWithUnzipEntry:entry inZipArchiveAtURL:archiveURL data:_store options:options];
+    if (_store) {
+        return [[OUUnzipEntryInputStream alloc] initWithUnzipEntry:entry inZipArchive:_displayName data:_store options:options];
+    } else {
+        return [[OUUnzipEntryInputStream alloc] initWithUnzipEntry:entry inZipArchiveAtPath:_path options:options];
+    }
 }
 
 - (nullable NSInputStream *)inputStreamForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;

@@ -33,9 +33,9 @@ static OFPreference *newsPublishDate;
     includeHardwareDetails = [OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"];
     updatesToIgnore = [OFPreference preferenceForKey:@"OSUIgnoredUpdates"];
     visibleTracks = [OFPreference preferenceForKey:@"OSUVisibleTracks"];
-    unreadNews = [OFPreference preferenceForKey:@"OSUUnreadNews" defaultValue:@(NO)];
-    currentNewsURL = [OFPreference preferenceForKey:@"OSUCurrentNewsURL" defaultValue:@""];
-    newsPublishDate = [OFPreference preferenceForKey:@"OSUNewsPublishDate" defaultValue:[NSDate distantPast]];
+    unreadNews = [OFPreference preferenceForKey:@"OSUUnreadNews"];
+    currentNewsURL = [OFPreference preferenceForKey:@"OSUCurrentNewsURL"];
+    newsPublishDate = [OFPreference preferenceForKey:@"OSUNewsPublishDate"];
 }
 
 // This provides the capability to do a one-time migration of a persistent value from AutomaticSoftwareUpdateCheckEnabled to OSUSendSystemInfoEnabled for relevant platforms.

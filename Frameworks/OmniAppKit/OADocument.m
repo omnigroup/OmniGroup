@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,6 +95,32 @@ RCS_ID("$Id$");
 {
     _oaFlags.isInsideApplicationWrapper = [self.class isFileURLInApplicationWrapper:fileURL];
     [super setFileURL:fileURL];
+}
+
+// Support the concept of auxiliary window controllers, which should not keep the document open. Closing the last non-auxiliary window controller should close the document. This differs from setting `shouldCloseDocument` on the window controller always since we might want to support multiple non-auxiliary window controllers. Closing one of those shouldn't force the document to close.
+- (void)shouldCloseWindowController:(NSWindowController *)windowController delegate:(nullable id)delegate shouldCloseSelector:(nullable SEL)shouldCloseSelector contextInfo:(nullable void *)contextInfo;
+{
+    NSArray <NSWindowController *> *windowControllers = self.windowControllers;
+    OBASSERT([windowControllers containsObjectIdenticalTo:windowController]);
+
+    // None of this is relevant unless we have more than one window controller.
+    if ([windowControllers count] > 1) {
+        BOOL hasOtherMainWindowController = [windowControllers any:^BOOL(NSWindowController *candidate) {
+            return (candidate != windowController) && !candidate.auxiliary;
+        }];
+
+        if (!hasOtherMainWindowController) {
+            // This is the simplest way to initiate a close of the document, but we are grabbing ownership of this flag as noted in the comment for -isAuxiliary
+            windowController.shouldCloseDocument = YES;
+        } else {
+            // Clear the flag -- if the document was dirty and a save sheet was cancelled, we don't want to leave the flag on. Another main window controller could be created, and the old one closed again, leading to the document being spuriously closed.
+            for (NSWindowController *wc in windowControllers) {
+                wc.shouldCloseDocument = NO;
+            }
+        }
+    }
+
+    [super shouldCloseWindowController:windowController delegate:delegate shouldCloseSelector:shouldCloseSelector contextInfo:contextInfo];
 }
 
 - (void)canCloseDocumentWithDelegate:(id)delegate shouldCloseSelector:(SEL)shouldCloseSelector contextInfo:(void *)contextInfo;
@@ -218,6 +244,16 @@ RCS_ID("$Id$");
         return NO;
     }
     return YES;
+}
+
+@end
+
+
+@implementation NSWindowController (OADocumentExtensions)
+
+- (BOOL)isAuxiliary;
+{
+    return NO;
 }
 
 @end

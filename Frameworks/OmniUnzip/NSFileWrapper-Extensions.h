@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSFileWrapper (OmniUnzipExtensions)
 
 - (nullable NSFileWrapper *)zippedFileWrapper:(NSError **)outError;
-- (nullable NSFileWrapper *)unzippedFileWrapperFromURL:(NSURL *)url error:(NSError **)outError;
+- (nullable NSFileWrapper *)unzippedFileWrapperWithError:(NSError **)outError;
 
 @end
 

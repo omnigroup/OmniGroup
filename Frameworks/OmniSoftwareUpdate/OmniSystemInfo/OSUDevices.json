@@ -204,19 +204,23 @@
   },
   "J127AP": {
     "name": "iPad Pro",
-    "platform": "iPad6,3"
+    "platform": "iPad6,3",
+    "comment": "9.7 inch"
   },
   "J128AP": {
     "name": "iPad Pro",
-    "platform": "iPad6,4"
+    "platform": "iPad6,4",
+    "comment": "9.7 inch"
   },
   "J98aAP": {
     "name": "iPad Pro",
-    "platform": "iPad6,7"
+    "platform": "iPad6,7",
+    "comment": "12.9 inch"
   },
   "J99aAP": {
     "name": "iPad Pro",
-    "platform": "iPad6,8"
+    "platform": "iPad6,8",
+    "comment": "12.9 inch"
   },
   "N45AP": {
     "name": "iPod Touch 1G"
@@ -523,5 +527,17 @@
   },
   "MacBookPro11,5": {
     "name": "MacBook Pro"
+  },
+  "MacBookPro13,1": {
+    "name": "MacBook Pro",
+    "comment": "13-inch, late 2016, two TB3 ports"
+  },
+  "MacBookPro13,2": {
+    "name": "MacBook Pro",
+    "comment": "13-inch, late 2016, Touch Bar, four TB3 ports"
+  },
+  "MacBookPro13,3": {
+    "name": "MacBook Pro",
+    "comment": "15-inch, late 2016, Touch Bar"
   }
 }

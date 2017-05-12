@@ -117,14 +117,15 @@ static id _commonInit(OADatePickerTextField *self)
 - (void)setEnabled:(BOOL)enabled;
 {
     [super setEditable:enabled];
-    self.calendarButton.enabled = enabled;
+    self.calendarButton.enabled = (self.enabled && self.editable);
+    [super setTextColor:(self.enabled && self.editable) ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
 }
 
 - (void)setEditable:(BOOL)editable;
 {
     [super setEditable:editable];
-    [super setTextColor:editable ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
-    self.calendarButton.enabled = editable;
+    self.calendarButton.enabled = (self.enabled && self.editable);
+    [super setTextColor:(self.enabled && self.editable) ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
 }
     
 #pragma mark -

@@ -68,6 +68,7 @@
 #import <OmniFoundation/OFSelectionSet.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
+//#import <OmniFoundation/OFSymmetricKeywrap.h> -- imports non-module headers
 #import <OmniFoundation/OFSyncClient.h>
 #import <OmniFoundation/OFTimeSpan.h>
 #import <OmniFoundation/OFTimeSpanFormatter.h>

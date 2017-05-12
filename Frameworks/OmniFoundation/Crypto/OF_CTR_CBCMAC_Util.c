@@ -54,7 +54,7 @@ CCCryptorStatus ccmProcessHeaderBlocks(CCCryptorRef cbcState, unsigned int authT
         return kCCParamError;
     
     if (aadBytes > 0) {
-        int l_a_encoding;
+        int l_a_encoding; // The length of the encoding of length(aad)
         
         block[0] |= 0x40; /* Set the Adata flag */
         memset(block + 16, 0, sizeof(block) - 16);
@@ -137,6 +137,8 @@ CCCryptorStatus ccmProcessMessage(CCCryptorRef cbcState, uint8_t *outLastBlock, 
     if (byteCount == 0)
         return kCCSuccess;
     
+    assert((byteCount % 16) == 0);
+    
 #define DISCARD_BUF_SIZE 8192
     discardBuf = malloc(DISCARD_BUF_SIZE);
     
@@ -150,22 +152,8 @@ CCCryptorStatus ccmProcessMessage(CCCryptorRef cbcState, uint8_t *outLastBlock, 
     if (byteCount == 0) {
         memcpy(outLastBlock, discardBuf - 16, 16);
     } else {
-        size_t wholeBlocks = byteCount & ~0x0F;
-        
-        if (wholeBlocks) {
-            CHECK_CRYPT(bytes, wholeBlocks, discardBuf, DISCARD_BUF_SIZE);
-            
-            byteCount -= wholeBlocks;
-            bytes += wholeBlocks;
-        }
-        
-        if (byteCount == 0) {
-            memcpy(outLastBlock, discardBuf + wholeBlocks - 16, 16);
-        } else {
-            memset(discardBuf, 0, 16);
-            memcpy(discardBuf, bytes, byteCount);
-            CHECK_CRYPT(discardBuf, 16, outLastBlock, 16);
-        }
+        CHECK_CRYPT(bytes, byteCount, discardBuf, DISCARD_BUF_SIZE);
+        memcpy(outLastBlock, discardBuf + byteCount - 16, 16);
     }
     
     free(discardBuf);
@@ -194,6 +182,7 @@ CCCryptorStatus ccmCreateCTRCryptor(CCOperation operation, const uint8_t *key, u
     memcpy(ctrIV + 1, nonce, 15 - L);  /* L=8 --> 7 bytes of nonce. */
     
     /* Apple's documentation isn't explicit on this point, but the IV input for kCCModeCTR is the contents of the counter buffer for the first block. It is incremented each block as if it were a single big-endian 128-bit number (or perhaps a 64-bit number--- anyway, it's incremented). */
+    /* cf RADAR 27538461 */
     cerr = CCCryptorCreateWithMode(operation, kCCModeCTR, kCCAlgorithmAES, ccNoPadding,
                                    ctrIV, key, keyBytes,
                                    NULL, 0, 0,

@@ -143,8 +143,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (CGFloat)desiredHeightWhenExpanded;
 {
-    OBPRECONDITION(headingButton); // That is, -loadInterface must have been called.
-    CGFloat headingButtonHeight = headingButton ? NSHeight([headingButton frame]) : 0.0f;
+    // PBS 22 Nov. 2016: headingButton is optional.
+    // OBPRECONDITION(headingButton); // That is, -loadInterface must have been called.
+    CGFloat headingButtonHeight = headingButton ? self.headingHeight : 0.0f;
     return NSHeight([[self _inspectorView] frame]) + headingButtonHeight;
 }
 

@@ -1419,6 +1419,11 @@ static OFPreference *LastEditsPreference;
     OBRequestConcreteImplementation(self, _cmd);
 }
 
++ (OUIImageLocation *)encryptedPlaceholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 {
     // Subclass responsibility
@@ -1615,7 +1620,7 @@ static OFPreference *LastEditsPreference;
 
 #pragma mark OFDocumentEncryption (OFCMSKeySource)
 
-- (NSString *)promptForPasswordWithCount:(NSInteger)previousFailureCount error:(NSError * _Nullable __autoreleasing *)outError;
+- (NSString *)promptForPasswordWithCount:(NSInteger)previousFailureCount hint:(NSString *)passwordHint error:(NSError * _Nullable __autoreleasing *)outError;
 {
     if ([NSThread isMainThread]) {
         OBFinishPorting;
@@ -1623,6 +1628,7 @@ static OFPreference *LastEditsPreference;
     
     OUIDocumentEncryptionPassphrasePromptOperation *prompt = [[OUIDocumentEncryptionPassphrasePromptOperation alloc] init];
     prompt.document = self;
+    // TOOD: Password hint.
     
     [[[OUIAppController controller] backgroundPromptQueue] addOperation:prompt];
     
@@ -1636,6 +1642,11 @@ static OFPreference *LastEditsPreference;
             *outError = prompt.error;
         return nil;
     }
+}
+
+- (BOOL)isUserInteractionAllowed;
+{
+    return !self.forPreviewGeneration;
 }
 
 @end

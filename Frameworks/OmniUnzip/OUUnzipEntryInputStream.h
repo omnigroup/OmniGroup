@@ -24,20 +24,11 @@ typedef NS_OPTIONS(NSUInteger, OUUnzipEntryInputStreamOptions) {
 
 @interface OUUnzipEntryInputStream : NSInputStream
 
-- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtURL:(NSURL *)archiveURL data:(nullable NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchive:(NSString *)description data:(NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtPath:(NSString *)archivePath options:(OUUnzipEntryInputStreamOptions)options NS_DESIGNATED_INITIALIZER;
 
-@property (nonatomic, copy, readonly) NSURL *zipArchiveURL;
-@property (nonatomic, nullable, strong, readonly) NSObject <OFByteProvider> *dataStore;
 @property (nonatomic, strong, readonly) OUUnzipEntry *unzipEntry;
 @property (nonatomic, readonly) OUUnzipEntryInputStreamOptions options;
-
-@end
-
-#pragma mark 
-
-@interface NSInputStream ()
-
-- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtURL:(NSURL *)archiveURL data:(nullable NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options NS_DESIGNATED_INITIALIZER;
 
 @end
 

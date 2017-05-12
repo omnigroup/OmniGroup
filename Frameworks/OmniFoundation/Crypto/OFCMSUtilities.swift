@@ -168,6 +168,8 @@ enum CMSRecipientIdentifier {
         attrs[kSecMatchLimit as NSString] = kSecMatchLimitAll;
         attrs[kSecReturnRef as NSString] = kCFBooleanTrue;
         
+        // TODO: Set kSecUseAuthenticationUI = kSecUseAuthenticationUISkip if the authentication delegate's isUserInteractionAllowed returns false.
+        
         var found : AnyObject? = nil;
         let oserr = SecItemCopyMatching(attrs, &found);
         if oserr == errSecItemNotFound {
@@ -445,6 +447,7 @@ class OFCMSUnwrapper {
     internal var keySource : OFCMSKeySource?;
     internal var auxiliarySymmetricKeys : [Data : Data]  = [:];
     internal var auxiliaryAsymmetricKeys : [Keypair]     = [];
+    internal var passwordHint : String? = nil;
     
     init(data: Data, keySource ks: OFCMSKeySource?) throws {
         var innerType = OFCMSContentType_Unknown;
@@ -641,10 +644,14 @@ class OFCMSUnwrapper {
             return nil;
         }
         
+        if !keySource.isUserInteractionAllowed() {
+            return nil;
+        }
+        
         var failureCount : Int = 0;
         
         prompting: while true {
-            let password = try keySource.promptForPassword(withCount: failureCount);
+            let password = try keySource.promptForPassword(withCount: failureCount, hint: passwordHint);
             
             // Probably only one password recipient, but potentially several
             var passwordUseError : NSError? = nil;

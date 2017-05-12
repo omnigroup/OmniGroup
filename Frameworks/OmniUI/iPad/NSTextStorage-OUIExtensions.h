@@ -19,6 +19,6 @@
 - (void)removeAllLinks;
 
 /// Detects all likely app-scheme links.
-- (void)detectAppSchemeLinks;
+- (BOOL)detectAppSchemeLinks;
 
 @end

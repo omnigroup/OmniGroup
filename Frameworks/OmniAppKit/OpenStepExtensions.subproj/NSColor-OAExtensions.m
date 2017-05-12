@@ -657,14 +657,14 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
         
 - (NSString *)similarColorNameFromColorLists;
 {
-    NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
-    if (OFISEQUAL(self.colorSpace, sRGBColorSpace)) {
-        // Get the common case out of the way first
-    } else if ([[self colorSpaceName] isEqualToString:NSNamedColorSpace]) {
+    if ([[self colorSpaceName] isEqualToString:NSNamedColorSpace]) {
         return [self localizedColorNameComponent];
     } else if ([[self colorSpaceName] isEqualToString:NSPatternColorSpace]) {
         return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
-    } else if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace]) {
+    }
+
+    NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
+    if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace] && OFNOTEQUAL(self.colorSpace, sRGBColorSpace)) {
         return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
     }
 

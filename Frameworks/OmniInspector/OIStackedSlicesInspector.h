@@ -12,5 +12,6 @@
 @interface OIStackedSlicesInspector : OIInspector <OIConcreteInspector>
 
 - (OIInspector <OIConcreteInspector> *)inspectorWithIdentifier:(NSString *)identifier;
+- (NSArray <OIInspector *> *)sliceInspectors;
 
 @end

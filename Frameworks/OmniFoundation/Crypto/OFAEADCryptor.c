@@ -28,6 +28,14 @@ static const uint8_t allZeroes[16] = { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 };
 
 #pragma mark CCM Encryption
 
+struct OFCBCMacState {
+    uint8_t lastCBCBlock[kCCBlockSizeAES128];
+    uint8_t partialPlaintextBlock[kCCBlockSizeAES128];
+    CCCryptorRef cbcCryptor;
+    CCCryptorStatus errorState;
+    unsigned partialPlaintextLength;
+};
+
 struct OFCCMEncryptionState {
     struct OFAuthenticatedStreamEncryptorState public;
     CCCryptorRef keystreamState;
@@ -35,15 +43,59 @@ struct OFCCMEncryptionState {
     uint8_t authTagEncryptionBuffer[kCCBlockSizeAES128];
     
     /* These members are read and written by code running on a separate thread. Put them on a separate cache line. */
-    uint8_t finalCBCBlock[kCCBlockSizeAES128] CACHE_ALIGN;
-    CCCryptorRef cbcMacState;
-    CCCryptorStatus cmacQueueErrorState;
+    struct OFCBCMacState cbcMacState CACHE_ALIGN;
 };
 
 static CCCryptorStatus ccmEncryptBuffer(struct OFAuthenticatedStreamEncryptorState *st,
                                         const uint8_t *plaintext, size_t plaintextLength,
                                         int (^consumer)(dispatch_data_t));
 static CCCryptorStatus ccmEncryptFinal(struct OFAuthenticatedStreamEncryptorState *st, uint8_t *icv, size_t icvLen);
+
+static void updateCBCMAC(struct OFCBCMacState *param, const uint8_t *plaintext, size_t plaintextLength)
+{
+    if (!plaintextLength || (param->errorState != kCCSuccess))
+        return;
+    
+    /* Process any pending partial block */
+    if (param->partialPlaintextLength) {
+        if (param->partialPlaintextLength + plaintextLength < kCCBlockSizeAES128) {
+            /* little nibbly bits */
+            memcpy(param->partialPlaintextBlock + param->partialPlaintextLength, plaintext, plaintextLength);
+            param->partialPlaintextLength += plaintextLength;
+            return;
+        } else {
+            /* carve off the beginning of the plaintext */
+            unsigned nibble = kCCBlockSizeAES128 - param->partialPlaintextLength;
+            memcpy(param->partialPlaintextBlock + param->partialPlaintextLength, plaintext, nibble);
+            CCCryptorStatus ccerr = ccmProcessMessage(param->cbcCryptor, param->lastCBCBlock, param->partialPlaintextBlock, kCCBlockSizeAES128);
+            param->partialPlaintextLength = 0;
+            memset(param->partialPlaintextBlock, 0, kCCBlockSizeAES128);
+            param->errorState = ccerr;
+            if (ccerr != kCCSuccess)
+                return;
+            plaintext += nibble;
+            plaintextLength -= nibble;
+        }
+    }
+    
+    /* Process any complete blocks in the middle of the plaintext */
+    if (plaintextLength >= kCCBlockSizeAES128) {
+        size_t chomp = plaintextLength & ~(size_t)0x0F;
+        CCCryptorStatus ccerr = ccmProcessMessage(param->cbcCryptor, param->lastCBCBlock, plaintext, chomp);
+        param->errorState = ccerr;
+        if (ccerr != kCCSuccess)
+            return;
+        plaintext += chomp;
+        plaintextLength -= chomp;
+    }
+    
+    /* And save any fragments for later */
+    if (plaintextLength > 0) {
+        memset(param->partialPlaintextBlock, 0, kCCBlockSizeAES128);
+        memcpy(param->partialPlaintextBlock, plaintext, plaintextLength);
+        param->partialPlaintextLength = (unsigned)plaintextLength;
+    }
+}
 
 static void do_nothing_fn(void *dummy)
 {
@@ -90,7 +142,7 @@ CCCryptorStatus OFCCMBeginEncryption(const uint8_t *key, unsigned int keySizeByt
                                    allZeroes, key, keySizeBytes,
                                    NULL, 0, 0,
                                    0,
-                                   &param->cbcMacState);
+                                   &param->cbcMacState.cbcCryptor);
     if (cerr != kCCSuccess) {
         fprintf(stderr, "CCCryptorCreateWithMode[AES-CBC] returns %d", (int)cerr);
         CCCryptorRelease(param->keystreamState);
@@ -99,6 +151,7 @@ CCCryptorStatus OFCCMBeginEncryption(const uint8_t *key, unsigned int keySizeByt
     }
     
     param->cmacComputationQueue = dispatch_queue_create("CCM-CBCMAC", DISPATCH_QUEUE_SERIAL);
+    param->cbcMacState.partialPlaintextLength = 0;
 
     if (aad) {
         CFRetain(aad);
@@ -107,18 +160,18 @@ CCCryptorStatus OFCCMBeginEncryption(const uint8_t *key, unsigned int keySizeByt
         CCCryptorStatus ccerr;
         
         /* The parameters L=8 (15 - c->nonceLength) and M=12 (c->macTag->size) are from RFC5084 [3.1] */
-        ccerr = ccmProcessHeaderBlocks(param->cbcMacState,
+        ccerr = ccmProcessHeaderBlocks(param->cbcMacState.cbcCryptor,
                                        ccmParameterM /* Parameter M, typically 12 */,
                                        ccmParameterL /* Parameter L, typically 8 */,
                                        plaintextLength,
                                        aad? CFDataGetLength(aad) : 0, aad? CFDataGetBytePtr(aad) : NULL,
-                                       nonceBuffer.bytes, param->finalCBCBlock);
+                                       nonceBuffer.bytes, param->cbcMacState.lastCBCBlock);
         
         if (aad) {
             CFRelease(aad);
         }
         
-        param->cmacQueueErrorState = ccerr;
+        param->cbcMacState.errorState = ccerr;
     });
     
     /* The first block of keystream (with counter=0) is not used to encrypt the message itself, but to encrypt the authentication tag. */
@@ -131,8 +184,8 @@ CCCryptorStatus OFCCMBeginEncryption(const uint8_t *key, unsigned int keySizeByt
             if (cerr == kCCSuccess)
                 cerr = kCCUnimplemented;
             dispatch_sync(param->cmacComputationQueue, ^{
-                CCCryptorRelease(param->cbcMacState);
-                param->cbcMacState = NULL;
+                CCCryptorRelease(param->cbcMacState.cbcCryptor);
+                param->cbcMacState.cbcCryptor = NULL;
             });
             dispatch_release(param->cmacComputationQueue);
             CCCryptorRelease(param->keystreamState);
@@ -156,10 +209,7 @@ static CCCryptorStatus ccmEncryptBuffer(struct OFAuthenticatedStreamEncryptorSta
 
     /* Update the running CMAC with this block */
     dispatch_async(param->cmacComputationQueue, ^{
-        if (param->cmacQueueErrorState != kCCSuccess)
-            return;
-        
-        param->cmacQueueErrorState = ccmProcessMessage(param->cbcMacState, param->finalCBCBlock, plaintext, plaintextLength);
+        updateCBCMAC(&(param->cbcMacState), plaintext, plaintextLength);
     });
     
     /* Encrypt the actual data buffer and pass it to the consumer callback */
@@ -201,20 +251,30 @@ static CCCryptorStatus ccmEncryptFinal(struct OFAuthenticatedStreamEncryptorStat
     
     /* This last block is enqueued synchronously so that we will block until the MAC computation is done */
     dispatch_sync(param->cmacComputationQueue, ^{
-        CCCryptorRelease(param->cbcMacState);
+        if(param->cbcMacState.partialPlaintextLength > 0) {
+            // updateCBCMAC() ensures that if partialPlaintextBlock[] is partially filled, then the rest is zeroes.
+            // The padding we want for the CBCMAC is simple zero extension (RFC 3610, page 4).
+            // So it's already set up for our use.
+            CCCryptorStatus ccerr = ccmProcessMessage(param->cbcMacState.cbcCryptor, param->cbcMacState.lastCBCBlock, param->cbcMacState.partialPlaintextBlock, kCCBlockSizeAES128);
+            if (param->cbcMacState.errorState == kCCSuccess)
+                param->cbcMacState.errorState = ccerr;
+        }
+        
+        CCCryptorRelease(param->cbcMacState.cbcCryptor);
+        param->cbcMacState.cbcCryptor = NULL;
 
         /* Compute the auth tag by encrypting it with the first block of keystream (see RFC3610 [2.3], last few paragraphs) */
         for(size_t i = 0; i < icvLen; i++) {
-            icv[i] = param->finalCBCBlock[i] ^ param->authTagEncryptionBuffer[i];
+            icv[i] = param->cbcMacState.lastCBCBlock[i] ^ param->authTagEncryptionBuffer[i];
         }
 
-        memset(param->finalCBCBlock, 0, sizeof(param->finalCBCBlock));
+        memset(param->cbcMacState.lastCBCBlock, 0, sizeof(param->cbcMacState.lastCBCBlock));
         memset(param->authTagEncryptionBuffer, 0, sizeof(param->authTagEncryptionBuffer));
     });
     
     dispatch_release(param->cmacComputationQueue);
     
-    CCCryptorStatus result = param->cmacQueueErrorState;
+    CCCryptorStatus result = param->cbcMacState.errorState;
     free(param);
     return result;
 }
@@ -230,9 +290,7 @@ struct OFCCMDecryptionState {
     
     /* These members are read and written by code running on a separate thread. Put them on a separate cache line. */
     uint8_t authTagEncryptionBuffer[kCCBlockSizeAES128] CACHE_ALIGN;
-    uint8_t authTagWorkingBuffer[kCCBlockSizeAES128];
-    CCCryptorRef cbcMacState;
-    CCCryptorStatus cmacQueueErrorState;
+    struct OFCBCMacState cbcMacState;
 };
 
 static CCCryptorStatus ccmDecryptBuffer(struct OFAuthenticatedStreamDecryptorState *st,
@@ -285,34 +343,35 @@ CCCryptorStatus OFCCMBeginDecryption(const uint8_t *key, unsigned int keySizeByt
     dispatch_async(param->cmacComputationQueue, ^{
         CCCryptorStatus cerr;
 
-        param->cbcMacState = NULL;
+        param->cbcMacState.cbcCryptor = NULL;
         cerr = CCCryptorCreateWithMode(kCCEncrypt, kCCModeCBC, kCCAlgorithmAES, ccNoPadding,
                                        allZeroes, nonceBuffer.key, keySizeBytes,
                                        NULL, 0, 0,
                                        0,
-                                       &param->cbcMacState);
+                                       &param->cbcMacState.cbcCryptor);
         if (cerr != kCCSuccess) {
             fprintf(stderr, "CCCryptorCreateWithMode[AES-CBC] returns %d", (int)cerr);
-            param->cmacQueueErrorState = cerr;
+            param->cbcMacState.errorState = cerr;
             if (aad)
                 CFRelease(aad);
             return;
         }
         
-        cerr = ccmProcessHeaderBlocks(param->cbcMacState,
+        cerr = ccmProcessHeaderBlocks(param->cbcMacState.cbcCryptor,
                                       icvLen /* Parameter M, typically 12 */,
                                       parameterL /* Parameter L, typically 8 */,
                                       plaintextLength,
                                       aad? CFDataGetLength(aad) : 0, aad? CFDataGetBytePtr(aad) : NULL,
-                                      nonceBuffer.nonce, param->authTagWorkingBuffer);
+                                      nonceBuffer.nonce, param->cbcMacState.lastCBCBlock);
         if (aad)
             CFRelease(aad);
 
         if (cerr != kCCSuccess) {
             fprintf(stderr, "CCM process header returns %d", (int)cerr);
-            param->cmacQueueErrorState = cerr;
+            param->cbcMacState.errorState = cerr;
             return;
         }
+        
     });
     
     /* The first block of keystream (with counter=0) is not used to encrypt the message itself, but to encrypt the authentication tag. Compute it now and save it for later. */
@@ -326,8 +385,8 @@ CCCryptorStatus OFCCMBeginDecryption(const uint8_t *key, unsigned int keySizeByt
             if (cerr == kCCSuccess)
                 cerr = kCCUnimplemented;
             dispatch_sync(param->cmacComputationQueue, ^{
-                CCCryptorRelease(param->cbcMacState);
-                param->cbcMacState = NULL;
+                CCCryptorRelease(param->cbcMacState.cbcCryptor);
+                param->cbcMacState.cbcCryptor = NULL;
             });
             dispatch_release(param->cmacComputationQueue);
             CCCryptorRelease(param->keystreamState);
@@ -363,11 +422,7 @@ static CCCryptorStatus ccmDecryptBuffer(struct OFAuthenticatedStreamDecryptorSta
             return kCCAlignmentError;
         
         dispatch_block_t updateCMAC = ^{
-            if (param->cmacQueueErrorState != kCCSuccess)
-                return;
-            
-            CCCryptorStatus err = ccmProcessMessage(param->cbcMacState, param->authTagWorkingBuffer, output, chunkLength);
-            param->cmacQueueErrorState = err;
+            updateCBCMAC(&(param->cbcMacState), output, chunkLength);
         };
         
         /* Our last block should be run synchronously, so that we don't return before we're done using the caller's buffer */
@@ -392,37 +447,44 @@ static CCCryptorStatus ccmDecryptFinal(struct OFAuthenticatedStreamDecryptorStat
     
     /* This last dispatch is synchronous */
     dispatch_sync(param->cmacComputationQueue, ^{
-        CCCryptorRelease(param->cbcMacState);
-        param->cbcMacState = NULL;
+        if(param->cbcMacState.partialPlaintextLength > 0) {
+            // updateCBCMAC() has padded the buffer for us --- see comment in ccmEncryptFinal()
+            CCCryptorStatus ccerr = ccmProcessMessage(param->cbcMacState.cbcCryptor, param->cbcMacState.lastCBCBlock, param->cbcMacState.partialPlaintextBlock, kCCBlockSizeAES128);
+            if (param->cbcMacState.errorState == kCCSuccess)
+                param->cbcMacState.errorState = ccerr;
+        }
         
-        if (param->cmacQueueErrorState != kCCSuccess)
+        CCCryptorRelease(param->cbcMacState.cbcCryptor);
+        param->cbcMacState.cbcCryptor = NULL;
+        
+        if (param->cbcMacState.errorState != kCCSuccess)
             return;
         
         if (!icv || icvLen < 1 || icvLen > kCCBlockSizeAES128) {
-            param->cmacQueueErrorState = kCCParamError;
+            param->cbcMacState.errorState = kCCParamError;
             return;
         }
         
         /* Verify the auth tag. It's computed by XORing outFinalCBCBlock[] with authTagEncryptionBuffer[]. We then do the usual constant-time compare by XORing that with icv[] and accumulating the mismatch bits. */
         uint8_t neq = 0;
         for(unsigned short i = 0; i < icvLen; i++) {
-            neq |= ( param->authTagWorkingBuffer[i] ^ param->authTagEncryptionBuffer[i] ^ icv[i] );
+            neq |= ( param->cbcMacState.lastCBCBlock[i] ^ param->authTagEncryptionBuffer[i] ^ icv[i] );
         }
         
         if (neq) {
             /* Auth tag mismatch. */
-            param->cmacQueueErrorState = kCCDecodeError;
+            param->cbcMacState.errorState = kCCDecodeError;
         }
         
         memset(param->authTagEncryptionBuffer, 0, sizeof(param->authTagEncryptionBuffer));
-        memset(param->authTagWorkingBuffer, 0, sizeof(param->authTagWorkingBuffer));
+        memset(param->cbcMacState.lastCBCBlock, 0, sizeof(param->cbcMacState.lastCBCBlock));
         
         return;
     });
     
     dispatch_release(param->cmacComputationQueue);
     
-    CCCryptorStatus result = param->cmacQueueErrorState;
+    CCCryptorStatus result = param->cbcMacState.errorState;
     free(param);
     return result;
 }

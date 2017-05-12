@@ -19,6 +19,7 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
     OAPassphrasePromptEditableUserField       = 1 << 1,
     OAPassphrasePromptConfirmPassword         = 1 << 2,
     OAPassphrasePromptShowKeychainOption      = 1 << 3,
+    OAPassphrasePromptOfferHintText           = 1 << 4,
 };
 
 
@@ -40,7 +41,8 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
 /// Set this to YES to show "*****" in the password field indicating we already have a password (possibly not a password whose value we can directly access). If the user edits the password field, this will change to NO, and you can fetch the user-entered password using the password property.
 @property (nonatomic) BOOL usingObfuscatedPasswordPlaceholder;
 
-// @property (nonatomic, copy, nullable) NSString *hint;  // TODO
+/// Set this to non-nil to provide password hint text which can be revealed by the user.
+@property (nonatomic, copy, nullable) NSString *hint;
 
 @property (nonatomic) NSUInteger minimumPasswordLength;
 

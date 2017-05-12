@@ -26,7 +26,8 @@ RCS_ID("$Id$");
     NSError *_streamError;
 }
 
-@property (nonatomic, copy, readwrite) NSURL *zipArchiveURL;
+@property (nonatomic, nullable, copy, readwrite) NSString *archiveDescription;
+@property (nonatomic, nullable, copy, readwrite) NSString *archivePath;
 @property (nonatomic, nullable, strong, readwrite) NSObject <OFByteProvider> *dataStore;
 @property (nonatomic, strong, readwrite) OUUnzipEntry *unzipEntry;
 @property (nonatomic, readwrite) OUUnzipEntryInputStreamOptions options;
@@ -38,25 +39,9 @@ RCS_ID("$Id$");
 
 @end
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
-
-@implementation NSInputStream (OUUnzipEntryInputStreamExtensions)
-
-- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtURL:(NSURL *)archiveURL data:(nullable NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options;
-{
-    if ([self isKindOfClass:[OUUnzipEntryInputStream class]]) {
-        return [super init];
-    } else {
-        return [[OUUnzipEntryInputStream alloc] initWithUnzipEntry:unzipEntry inZipArchiveAtURL:archiveURL data:store options:options];
-    }
-}
-
+@interface NSInputStream ()
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 @end
-
-#pragma clang diagnostic pop
-
-#pragma mark -
 
 @implementation OUUnzipEntryInputStream
 
@@ -78,23 +63,38 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtURL:(NSURL *)archiveURL data:(nullable NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options;
+- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchive:(NSString *)description data:(NSObject <OFByteProvider> *)store options:(OUUnzipEntryInputStreamOptions)options;
 {
     OBPRECONDITION(unzipEntry != nil);
-    OBPRECONDITION(archiveURL != nil);
-    OBPRECONDITION([archiveURL isFileURL]);
+    OBPRECONDITION(store != nil);
     
-    self = [super initWithUnzipEntry:unzipEntry inZipArchiveAtURL:archiveURL data:store options:options];
+    self = [super init];
     if (self == nil) {
         return nil;
     }
     
-    if (![archiveURL isFileURL]) {
+    _dataStore = store;
+    _archiveDescription = [description copy];
+    _unzipEntry = unzipEntry;
+    _options = options;
+    _delegate = self;
+    _streamStatus = NSStreamStatusNotOpen;
+    
+    return self;
+}
+
+- (instancetype)initWithUnzipEntry:(OUUnzipEntry *)unzipEntry inZipArchiveAtPath:(NSString *)archivePath options:(OUUnzipEntryInputStreamOptions)options;
+{
+    OBPRECONDITION(unzipEntry != nil);
+    OBPRECONDITION(archivePath != nil);
+    
+    self = [super init];
+    if (self == nil) {
         return nil;
     }
     
-    _zipArchiveURL = [archiveURL copy];
-    _dataStore = store;
+    _archivePath = [archivePath copy];
+    _archiveDescription = _archivePath;
     _unzipEntry = unzipEntry;
     _options = options;
     _delegate = self;
@@ -232,7 +232,7 @@ RCS_ID("$Id$");
 static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *func, int err, NSError **outError)
 {
     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, self.unzipEntry.name, self.zipArchiveURL.path];
+    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\".", @"OmniUnzip", OMNI_BUNDLE, @"error reason"),  func, err, self.unzipEntry.name, self.archiveDescription];
     OmniUnzipError(outError, OmniUnzipUnableToReadZipFileContents, description, reason);
     
     NSLog(@"%s returned %d", func, err);
@@ -254,12 +254,12 @@ static _Nullable id _unzipDataError(OUUnzipEntryInputStream *self, const char *f
     if (self.dataStore != nil) {
         self.unzipFileHandle = unzOpen2((__bridge void *)self.dataStore, &OUReadIOImpl);
     } else {
-        self.unzipFileHandle = unzOpen(self.zipArchiveURL.path.fileSystemRepresentation);
+        self.unzipFileHandle = unzOpen(self.archivePath.fileSystemRepresentation);
     }
     
     if (self.unzipFileHandle == nil) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open zip archive.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), self.zipArchiveURL.path.fileSystemRepresentation];
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), self.archiveDescription];
         OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
         return NO;
     }

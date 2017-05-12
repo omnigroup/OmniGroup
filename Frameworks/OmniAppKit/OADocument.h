@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,5 +20,12 @@
 
 // Block-based version of -canCloseDocumentWithDelegate:shouldCloseSelector:contextInfo:.
 - (void)canCloseDocument:(void (^)(BOOL shouldClose))completion;
+
+@end
+
+@interface NSWindowController (OADocumentExtensions)
+
+// If set, then this window controller will be ignored for the purposes of deciding whether to close the document when another window controller is closed. Defaults to NO. If you subclass to return YES, note that your 'main' window controllers will have their `shouldCloseDocument` property modified.
+@property(nonatomic,readonly,getter=isAuxiliary) BOOL auxiliary;
 
 @end

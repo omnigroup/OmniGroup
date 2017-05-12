@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [[NSFileWrapper alloc] initRegularFileWithContents:zippedData];
 }
 
-- (nullable NSFileWrapper *)unzippedFileWrapperFromURL:(NSURL *)url error:(NSError **)outError;
+- (nullable NSFileWrapper *)unzippedFileWrapperWithError:(NSError **)outError;
 {
     if (!self.isRegularFile) {
         if (outError)
@@ -41,22 +41,16 @@ NS_ASSUME_NONNULL_BEGIN
     
     OUUnzipArchive *unzipArchive;
     
-    if (url != nil && url.isFileURL) {
-        unzipArchive = [[OUUnzipArchive alloc] initWithPath:url.path error:outError];
-        if (!unzipArchive)
-            return nil;
-    } else {
-        NSData *zippedData = [self regularFileContents];
-        if (!zippedData) {
-            if (outError)
-                *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:EIO userInfo:nil];
-            return nil;
-        }
-
-        unzipArchive = [[OUUnzipArchive alloc] initWithPath:url.path data:zippedData error:outError];
-        if (!unzipArchive) {
-            return nil;
-        }
+    NSData *zippedData = [self regularFileContents];
+    if (!zippedData) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:EIO userInfo:nil];
+        return nil;
+    }
+    
+    unzipArchive = [[OUUnzipArchive alloc] initWithPath:nil data:zippedData description:[self filename] error:outError];
+    if (!unzipArchive) {
+        return nil;
     }
     
     return [unzipArchive fileWrapperWithTopLevelWrapper:YES error:outError];

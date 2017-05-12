@@ -75,8 +75,9 @@ static NSDataDetector *_linkDataDectector;
     [self endEditing];
 }
 
-- (void)detectAppSchemeLinks;
+- (BOOL)detectAppSchemeLinks;
 {
+    __block BOOL didMakeChanges = NO;
     [self beginEditing];
     {
         // We iterate over the raw string so we aren't mutating the thing over which we're iterating. We ensure that mutation never changes the length of the string so that detected ranges correspond to attributed ranges.
@@ -93,20 +94,29 @@ static NSDataDetector *_linkDataDectector;
                 NSURL *linkURL = nil;
                 switch (result.resultType) {
                     case NSTextCheckingTypeLink:
-                        linkURL = _probablyAppScheme(result.URL) ? result.URL : nil;
+                        linkURL = result.URL;
                         break;
                         
                     default:
                         OBASSERT_NOT_REACHED(@"Received unexpected data detection result: %@", @(result.resultType));
                 }
+                
                 if (linkURL != nil) {
-                    [self addAttribute:NSLinkAttributeName value:linkURL range:matchRange];
+                    BOOL hasExistingLink = [self attribute:NSLinkAttributeName atIndex:matchRange.location effectiveRange:NULL] != nil;
+                    BOOL isProbablyAppScheme = _probablyAppScheme(linkURL);
+                    BOOL shouldAddLink = (isProbablyAppScheme && !hasExistingLink);
+                    if (shouldAddLink) {
+                        didMakeChanges = YES;
+                        [self addAttribute:NSLinkAttributeName value:linkURL range:matchRange];
+                    }
                 }
+
             }];
             location = NSMaxRange(remainingRange);
         }
     }
     [self endEditing];
+    return didMakeChanges;
 }
 
 static BOOL _probablyAppScheme(NSURL *url) {

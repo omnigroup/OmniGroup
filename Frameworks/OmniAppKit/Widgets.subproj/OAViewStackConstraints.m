@@ -46,7 +46,7 @@ OB_REQUIRE_ARC
     return self;
 }
 
-- (NSLayoutConstraint *)_constraintFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex outCacheKey:(NSString **)outKey;
+- (NSLayoutConstraint *)_constraintFromIndex:(NSInteger)fromIndex toIndex:(NSInteger)toIndex fallback:(BOOL)isFallbackConstraint outCacheKey:(NSString **)outKey;
 {
     CGFloat thisSpacing;
     NSString * __autoreleasing constraintKey;
@@ -68,6 +68,9 @@ OB_REQUIRE_ARC
             constraintKey = [NSString stringWithFormat:@"%" PRIdNS ":%" PRIdNS, fromIndex, toIndex];
         }
     }
+    
+    if (isFallbackConstraint)
+        constraintKey = [@"F " stringByAppendingString:constraintKey];
     
     if (outKey)
         *outKey = constraintKey;
@@ -93,6 +96,7 @@ OB_REQUIRE_ARC
     constraint.identifier = constraintKey;
 #endif
     [cache setObject:constraint forKey:constraintKey];
+    constraint.priority = isFallbackConstraint? NSLayoutPriorityDefaultLow-1 : NSLayoutPriorityRequired;
 
     return constraint;
 }
@@ -107,15 +111,16 @@ OB_REQUIRE_ARC
     NSUInteger viewCount = views.count;
     for(NSUInteger viewIndex = 0; viewIndex < viewCount; viewIndex ++) {
         
+        BOOL thisViewIsHidden = [views objectAtIndex:viewIndex].hiddenOrHasHiddenAncestor;
+        
         // To avoid ambiguous layout, we pin hidden views to the previous visible view even though they're hidden.
         NSString * __autoreleasing constraintKey;
-        NSLayoutConstraint *constraint = [self _constraintFromIndex:previousVisibleView toIndex:viewIndex outCacheKey:&constraintKey];
+        NSLayoutConstraint *constraint = [self _constraintFromIndex:previousVisibleView toIndex:viewIndex fallback:thisViewIsHidden outCacheKey:&constraintKey];
         [oldConstraints removeObject:constraintKey];
         if (!constraint.active)
             [constraintsToActivate addObject:constraint];
 
-        NSView *thisView = [views objectAtIndex:viewIndex];
-        if (thisView.hiddenOrHasHiddenAncestor) {
+        if (thisViewIsHidden) {
             continue;
         } else {
             previousVisibleView = viewIndex;
@@ -124,7 +129,8 @@ OB_REQUIRE_ARC
     
     {
         NSString * __autoreleasing constraintKey;
-        NSLayoutConstraint *constraint = [self _constraintFromIndex:previousVisibleView toIndex:-1 outCacheKey:&constraintKey];
+        NSLayoutConstraint *constraint = [self _constraintFromIndex:previousVisibleView toIndex:-1 fallback:NO outCacheKey:&constraintKey];
+        constraint.priority = NSLayoutPriorityRequired;
         [oldConstraints removeObject:constraintKey];
         if (!constraint.active)
             [constraintsToActivate addObject:constraint];
@@ -147,7 +153,7 @@ OB_REQUIRE_ARC
     if (fromIndex >= toIndex)
         OBRejectInvalidCall(self, _cmd, @"Views are not in the right order");
     
-    return [self _constraintFromIndex:fromIndex toIndex:toIndex outCacheKey:NULL];
+    return [self _constraintFromIndex:fromIndex toIndex:toIndex fallback:NO outCacheKey:NULL];
 }
 
 - (NSArray <NSLayoutConstraint *> *)constraints;

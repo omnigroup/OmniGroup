@@ -124,10 +124,17 @@ RCS_ID("$Id$");
     if ([qname.name isEqual:@"root"]) {
         _rootElementQName = [qname copy];
 
-        OBASSERT(multipleAttributeGenerator);
-        [multipleAttributeGenerator generateAttributesWithQNames:^(NSMutableArray<OFXMLQName *> *qnames, NSMutableArray<NSString *> *values) {
-            _rootElementAttributeQNames = qnames;
-        }];
+        if (multipleAttributeGenerator) {
+            [multipleAttributeGenerator generateAttributesWithQNames:^(NSMutableArray<OFXMLQName *> *qnames, NSMutableArray<NSString *> *values) {
+                _rootElementAttributeQNames = qnames;
+            }];
+        } else if (singleAttributeGenerator) {
+            [singleAttributeGenerator generateAttributeWithQName:^(OFXMLQName *attributeQName, NSString *attributeValue) {
+                _rootElementAttributeQNames = @[attributeQName];
+            }];
+        } else {
+            _rootElementAttributeQNames = nil;
+        }
     }
 
     _elementQNameByPlainName[qname.name] = qname;

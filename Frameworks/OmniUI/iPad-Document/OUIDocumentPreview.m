@@ -624,10 +624,27 @@ static NSString *cacheKeyForFileURL(NSURL *fileURL)
     }
 }
 
-static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area) CF_RETURNS_RETAINED;
-static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area)
++ (void)writeEncryptedEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit fileURL:(NSURL *)fileURL;
 {
-    OUIImageLocation *placeholderImage = [documentClass placeholderPreviewImageForFileURL:fileURL area:area];
+    for (OUIDocumentPreviewArea area = OUIDocumentPreviewAreaLarge; area <= OUIDocumentPreviewAreaSmall; area++) {
+        Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:fileURL];
+        CGImageRef imageRef = _copyPlaceholderPreviewImage([self class], documentClass, fileURL, YES, area); // returns +1 CF
+        [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage){
+            cacheImage(fileEdit, imageRef);
+            CGImageRelease(imageRef);
+        }];
+    }
+}
+
+static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, BOOL isEncrypted, OUIDocumentPreviewArea area) CF_RETURNS_RETAINED;
+static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, BOOL isEncrypted, OUIDocumentPreviewArea area)
+{
+    OUIImageLocation *placeholderImage;
+    if (isEncrypted) {
+        placeholderImage = [documentClass encryptedPlaceholderPreviewImageForFileURL:fileURL area:area];
+    } else {
+        placeholderImage = [documentClass placeholderPreviewImageForFileURL:fileURL area:area];
+    }
     if (!placeholderImage) {
         OBASSERT_NOT_REACHED("No default preview image registered?");
         return NULL;
@@ -1018,7 +1035,7 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
     if (_empty) {
         // There is a zero length file or was an error reading the image
         _type = OUIDocumentPreviewTypeEmpty;
-        _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area); // returns +1 CF
+        _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, NO, _area); // returns +1 CF
         if (_image) {
             DEBUG_PREVIEW(1, @"Caching badged placeholder for empty %@ %lu", [_fileEdit shortDescription], _area);
             return;
@@ -1027,7 +1044,7 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
     }
     
     _type = OUIDocumentPreviewTypePlaceholder;
-    _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area); // returns +1 CF
+    _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, NO, _area); // returns +1 CF
     DEBUG_PREVIEW(1, @"Caching badged placeholder for missing %@ %lu", [_fileEdit shortDescription], _area);
     
     OBPOSTCONDITION(_image);

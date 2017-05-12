@@ -30,6 +30,12 @@
         <integer>0</integer>
         <key>OSURuntimeDebug</key>
         <integer>0</integer>
-		
+
+				<key>OSUCurrentNewsURL</key>
+				<string/>
+				<key>OSUUnreadNews</key>
+				<false/>
+				<key>OSUNewsPublishDate</key>
+				<date>0000-12-30T00:00:00Z</date> <!-- +distantPast -->
     </dict>
 </plist>

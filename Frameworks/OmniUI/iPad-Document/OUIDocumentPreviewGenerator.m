@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -226,9 +226,19 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
                 }];
             }];
         } else {
-            OUIDocumentHandleDocumentOpenFailure(document, ^(BOOL success){
-                [self _finishedUpdatingPreview];
-            });
+            if (document.isDocumentEncrypted) {
+                [OUIDocumentPreviewGenerator _performOrQueueBlock:^{
+                    OUIDocumentHandleDocumentOpenFailure(document, ^(BOOL success){
+                        OFFileEdit *fileEdit = document.fileItem.fileEdit;
+                        [OUIDocumentPreview writeEncryptedEmptyPreviewsForFileEdit:fileEdit fileURL:document.fileURL];
+                        [self _finishedUpdatingPreview];
+                    });
+                }];
+            } else {
+                OUIDocumentHandleDocumentOpenFailure(document, ^(BOOL success){
+                    [self _finishedUpdatingPreview];
+                });
+            }
         }
     }];
 }

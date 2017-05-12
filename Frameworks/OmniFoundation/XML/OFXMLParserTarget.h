@@ -27,7 +27,7 @@
 // For the case of a single attribute, where we can potentially avoid building collections, this is passed.
 @protocol OFXMLParserSingleAttributeGenerator
 
-- (void)generateAttributeWithQName:(void (^ NS_NOESCAPE)(OFXMLQName *qnames, NSString *value))receiver;
+- (void)generateAttributeWithQName:(void (^ NS_NOESCAPE)(OFXMLQName *qname, NSString *value))receiver;
 - (void)generateAttributeWithPlainName:(void (^ NS_NOESCAPE)(NSString *name, NSString *value))receiver;
 
 @end

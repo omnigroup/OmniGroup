@@ -45,6 +45,7 @@
 @property(nonatomic,readonly) UIViewController *viewControllerToPresent;
 @property(nonatomic,readonly) UIViewController <OUIDocumentViewController> *documentViewController;
 @property(nonatomic,readonly) BOOL editingDisabled;
+@property(nonatomic) BOOL isDocumentEncrypted; // If it is encrypted, it will be unreadable.
 
 @property(nonatomic,readonly) UIResponder *defaultFirstResponder; // Defaults to the documentViewController, or if that view controller implements -defaultFirstResponder, returns the result of that.
 
@@ -104,6 +105,7 @@
 
 // Support for previews
 + (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
++ (OUIImageLocation *)encryptedPlaceholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 
 // UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).

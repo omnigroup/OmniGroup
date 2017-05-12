@@ -284,7 +284,7 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 
 - (void)logging_replacement_removeAllActions;
 {
-    OBASSERT([self isUndoRegistrationEnabled]);
+    OBASSERT([self isUndoRegistrationEnabled], @"If undo registration is not enabled, -removeAllActions will unconditionally enable it, and subsequent -enableUndoRegistration messages will raise.");
     if ((OFUndoManagerLoggingOptions != OFUndoManagerNoLogging))
         _log(self, NO, @"REMOVE ALL ACTIONS(%p)\n", self);
     logging_original_removeAllActions(self, _cmd);
