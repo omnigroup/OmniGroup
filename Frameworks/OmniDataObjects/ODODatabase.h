@@ -41,6 +41,8 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 
 - (BOOL)fetchCommitedInt64Sum:(int64_t *)outSum fromAttribute:(ODOAttribute *)attribute entity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
 
+- (nullable NSArray<NSArray<id> *> *)fetchCommittedAttributes:(NSArray<ODOAttribute *> *)attributes fromEntity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
+
 // Dangerous API
 - (BOOL)executeSQLWithoutResults:(NSString *)sql error:(NSError **)outError;
 

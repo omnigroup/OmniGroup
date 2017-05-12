@@ -105,8 +105,8 @@ static BOOL _validateNotDropbox(NSURL *url, NSError **outError)
     NSArray *components = [url pathComponents];
     if ([components containsObject:@"Dropbox"]) { // Dropbox allows you to move your folder, but not to rename it.
         if (outError) {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
-            NSString *reason = NSLocalizedStringFromTableInBundle(@"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Please choose another location for your synced documents.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            NSString *reason = NSLocalizedStringFromTableInBundle(@"The selected local folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
             OFXError(outError, OFXLocalAccountDirectoryNotUsable, description, reason);
         }
         return NO;
@@ -116,10 +116,12 @@ static BOOL _validateNotDropbox(NSURL *url, NSError **outError)
     NSString *desktopFolder = [homeDirectory stringByAppendingPathComponent:@"Desktop"];
     NSString *documentsFolder = [homeDirectory stringByAppendingPathComponent:@"Documents"];
     NSString *urlPath = url.path;
-    if ([urlPath hasPrefix:desktopFolder] || [urlPath hasPrefix:documentsFolder]) { // 10.12 Sierra prompts people to store their desktop and documents in iCloud
+    BOOL onDesktop = [urlPath hasPrefix:desktopFolder];
+    BOOL inDocuments = [urlPath hasPrefix:documentsFolder];
+    if (onDesktop || inDocuments) { // 10.12 Sierra prompts people to store their desktop and documents in iCloud
         if (outError) {
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
-            NSString *reason = NSLocalizedStringFromTableInBundle(@"The proposed local documents folder is in a location which can be synchronized by iCloud. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Please choose another location for your synced documents.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
+            NSString *reason = onDesktop ? NSLocalizedStringFromTableInBundle(@"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description") : NSLocalizedStringFromTableInBundle(@"The selected local folder is in your Documents folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
             OFXError(outError, OFXLocalAccountDirectoryNotUsable, description, reason);
         }
         return NO;

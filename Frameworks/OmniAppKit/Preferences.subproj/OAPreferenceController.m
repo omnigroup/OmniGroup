@@ -92,7 +92,6 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
     
     OAPreferencesViewStyle viewStyle;
     
-    NSToolbar *toolbar;
     NSArray *defaultToolbarItems;
     NSArray *allowedToolbarItems;
     
@@ -236,7 +235,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         return;
     
     _hiddenPreferenceIdentifiers = hiddenPreferenceIdentifiers;
-    [self _resetInterface];
+    [self resetInterface];
 }
 
 // API
@@ -335,8 +334,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     // We don't just tell the window to resize, because that tends to move the upper left corner (which will confuse the user)
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
     CGFloat newWindowHeight = controlBoxSize.height + NSHeight([_globalControlsView frame]);
-    if ([toolbar isVisible])
-        newWindowHeight += NSHeight([[toolbar _toolbarView] frame]); 
+    if ([self.toolbar isVisible])
+        newWindowHeight += NSHeight([[self.toolbar _toolbarView] frame]); 
     
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, controlBoxSize.width), newWindowHeight) styleMask:[_window styleMask]];
     BOOL animate = [_window isVisible];
@@ -686,15 +685,15 @@ static NSString *windowFrameSaveName = @"Preferences";
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];
     [_window setFrameUsingName:windowFrameSaveName force:YES];
-    [self _resetInterface];
+    [self resetInterface];
 }
 
-- (void)_resetInterface;
+- (void)resetInterface;
 {
     NSArray *visibleClientRecordIdentifiers = [self _visibleClientRecordIdentifiers];
     if (visibleClientRecordIdentifiers.count == 1) {
         viewStyle = OAPreferencesViewSingle;
-        [toolbar setVisible:NO];
+        [self.toolbar setVisible:NO];
     } else if (visibleClientRecordIdentifiers.count > 10 || [[self _categoryNames] count] > 1) {
         viewStyle = OAPreferencesViewCustomizable;
     } else {
@@ -719,7 +718,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         default:
         case OAPreferencesViewMultiple:
             [self _setupMultipleToolbar];
-	    if (initialClientRecordIdentifier == nil)
+            if (initialClientRecordIdentifier == nil)
                 initialClientRecordIdentifier = visibleClientRecordIdentifiers[0];
             break;
     }
@@ -798,11 +797,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     allowedToolbarItems = [self _visibleClientRecordIdentifiers];
     defaultToolbarItems = allowedToolbarItems;
     
-    toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferences"];
-    [toolbar setAllowsUserCustomization:NO];
-    [toolbar setAutosavesConfiguration:NO]; // Don't store the configured items or new items won't show up!
-    [toolbar setDelegate:self];
-    [_window setToolbar:toolbar];
+    self.toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferences"];
+    [self.toolbar setAllowsUserCustomization:NO];
+    [self.toolbar setAutosavesConfiguration:NO]; // Don't store the configured items or new items won't show up!
+    [self.toolbar setDelegate:self];
+    [_window setToolbar:self.toolbar];
 }
 
 - (void)_setupShowAllToolbar;
@@ -820,11 +819,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     defaultToolbarItems = [constantToolbarItems arrayByAddingObjectsFromArray:defaultClients];
     allowedToolbarItems = [constantToolbarItems arrayByAddingObjectsFromArray:allClients];
 
-    toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferenceIdentifiers"];
-    [toolbar setAllowsUserCustomization:NO];
-    [toolbar setAutosavesConfiguration:NO];
-    [toolbar setDelegate:self];
-    [_window setToolbar:toolbar];
+    self.toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferenceIdentifiers"];
+    [self.toolbar setAllowsUserCustomization:NO];
+    [self.toolbar setAutosavesConfiguration:NO];
+    [self.toolbar setDelegate:self];
+    [_window setToolbar:self.toolbar];
 }
 
 - (void)_resetWindowTitle;
@@ -833,11 +832,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     
     if (viewStyle != OAPreferencesViewSingle) {
         name = [nonretained_currentClientRecord title];
-        if ([toolbar respondsToSelector:@selector(setSelectedItemIdentifier:)]) {
+        if ([self.toolbar respondsToSelector:@selector(setSelectedItemIdentifier:)]) {
             if (nonretained_currentClientRecord != nil)
-                [toolbar setSelectedItemIdentifier:[nonretained_currentClientRecord identifier]];
+                [self.toolbar setSelectedItemIdentifier:[nonretained_currentClientRecord identifier]];
             else
-                [toolbar setSelectedItemIdentifier:@"OAPreferencesShowAll"];
+                [self.toolbar setSelectedItemIdentifier:@"OAPreferencesShowAll"];
         }
     }
     if (name == nil || [name isEqualToString:@""])
@@ -879,8 +878,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     // Resize window
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
     CGFloat newWindowHeight = NSHeight([showAllIconsView frame]);
-    if ([toolbar isVisible])
-        newWindowHeight += NSHeight([[toolbar _toolbarView] frame]);
+    if ([self.toolbar isVisible])
+        newWindowHeight += NSHeight([[self.toolbar _toolbarView] frame]);
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, idealWidth, newWindowHeight) styleMask:[_window styleMask]];
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
 

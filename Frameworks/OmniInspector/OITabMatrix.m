@@ -23,6 +23,26 @@ RCS_ID("$Id$");
     OITabMatrixHighlightStyle highlightStyle;
 }
 
+- (instancetype)initWithFrame:(NSRect)frameRect
+{
+    if (!(self = [super initWithFrame:frameRect]))
+        return nil;
+    
+    _allowPinning = YES;
+    
+    return self;
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)coder
+{
+    if (!(self = [super initWithCoder:coder]))
+        return nil;
+    
+    _allowPinning = YES;
+
+    return self;
+}
+
 - (void)setTabMatrixHighlightStyle:(enum OITabMatrixHighlightStyle)newHighlightStyle;
 {
     if (newHighlightStyle != highlightStyle) {
@@ -100,42 +120,45 @@ RCS_ID("$Id$");
     [self setAllowsEmptySelection:YES];
     [self setNeedsDisplay:YES];
     oldSelection = [self selectedCells];
-    [[self cells] makeObjectsPerformSelector:@selector(saveState)];
-
-    // PBS 13 Sep 2016: switching between tabs is logy because of the double-click delay for pinning.
-    // So, instead, allow pinning — but only when double-clicking on a selected cell.
-
-    OITabCell *clickedCell = nil;
-    NSInteger row, column;
-    if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
-        clickedCell = [self cellAtRow:row column:column];
-    }
-    BOOL didClickSelectedCell = (clickedCell && [oldSelection containsObjectIdenticalTo:clickedCell]);
-
-    // Wait to see if this is a double-click before proceeding
-    if (didClickSelectedCell && [event clickCount] == 1) {
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        float doubleClickTime = 0.25f;  // Wait a maximum of a quarter of a second to see if it's a double-click
-        id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
-        if (object && [object floatValue] < 0.25f)
-            doubleClickTime = [object floatValue];
-        NSEvent *nextEvent = [[self window] nextEventMatchingMask:NSLeftMouseDownMask untilDate:[NSDate dateWithTimeIntervalSinceNow:doubleClickTime] inMode:NSEventTrackingRunLoopMode dequeue:YES];
-        if (nextEvent)
-            event = nextEvent;
-    }
     NSArray *allCells = [self cells];
-    if (clickedCell) {
-        if ([event clickCount] == 2) {  // double-click pins/unpins an inspector
-            [clickedCell setIsPinned:![clickedCell isPinned]];  // The action method is responsible for checking the pinnedness of the tabs and making sure that attribute gets propagated to the inspector tab controllers as appropriate
+    [allCells makeObjectsPerformSelector:@selector(saveState)];
+
+    if (self.allowPinning) {
+        // PBS 13 Sep 2016: switching between tabs is logy because of the double-click delay for pinning.
+        // So, instead, allow pinning — but only when double-clicking on a selected cell.
+        
+        OITabCell *clickedCell = nil;
+        NSInteger row, column;
+        if ([self getRow:&row column:&column forPoint:[self convertPoint:[event locationInWindow] fromView:nil]]) {
+            clickedCell = [self cellAtRow:row column:column];
         }
-        if ([self mode] == NSRadioModeMatrix) { // If we're in single-selection mode, clear the pinnedness of any other tab cells
-            for (OITabCell *tabCell in allCells) {
-                if (tabCell != clickedCell) {
-                    [tabCell setIsPinned:NO];
+        BOOL didClickSelectedCell = (clickedCell && [oldSelection containsObjectIdenticalTo:clickedCell]);
+
+        // Wait to see if this is a double-click before proceeding
+        if (didClickSelectedCell && [event clickCount] == 1) {
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            float doubleClickTime = 0.25f;  // Wait a maximum of a quarter of a second to see if it's a double-click
+            id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
+            if (object && [object floatValue] < 0.25f)
+                doubleClickTime = [object floatValue];
+            NSEvent *nextEvent = [[self window] nextEventMatchingMask:NSLeftMouseDownMask untilDate:[NSDate dateWithTimeIntervalSinceNow:doubleClickTime] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+            if (nextEvent)
+                event = nextEvent;
+        }
+        if (clickedCell) {
+            if ([event clickCount] == 2) {  // double-click pins/unpins an inspector
+                [clickedCell setIsPinned:![clickedCell isPinned]];  // The action method is responsible for checking the pinnedness of the tabs and making sure that attribute gets propagated to the inspector tab controllers as appropriate
+            }
+            if ([self mode] == NSRadioModeMatrix) { // If we're in single-selection mode, clear the pinnedness of any other tab cells
+                for (OITabCell *tabCell in allCells) {
+                    if (tabCell != clickedCell) {
+                        [tabCell setIsPinned:NO];
+                    }
                 }
             }
         }
     }
+    
     @try {
         // <bug:///71831> (Exception Crash after after moving the inspectors [no repro])
         // mouseDown can throw and we don't want OmniPlan to crash.
@@ -144,7 +167,7 @@ RCS_ID("$Id$");
         NSLog(@"Exception raised in -[%@ %@]: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), exception);
     } 
     [allCells makeObjectsPerformSelector:@selector(clearState)];
-    [self  setNeedsDisplay:YES];
+    [self setNeedsDisplay:YES];
     oldSelection = nil;
 }
 

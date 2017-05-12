@@ -50,21 +50,23 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
-          dtdSystemID:(nullable CFURLRef)dtdSystemID
-          dtdPublicID:(nullable NSString *)dtdPublicID
-   whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
-       stringEncoding:(CFStringEncoding)stringEncoding
-                error:(NSError **)outError;
+                                 dtdSystemID:(nullable CFURLRef)dtdSystemID
+                                 dtdPublicID:(nullable NSString *)dtdPublicID
+                                    schemaID:(nullable CFURLRef)schemaID
+                             schemaNamespace:(nullable NSString *)schemaNamespace
+                          whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
+                              stringEncoding:(CFStringEncoding)stringEncoding
+                                       error:(NSError **)outError;
 {
     OBPRECONDITION(rootElement);
-    
+
     if (!(self = [super init]))
         return nil;
     [self _preInit];
 
     if (!whitespaceBehavior)
         whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
-    
+
     NSString *encodingName = (NSString *)CFStringConvertEncodingToIANACharSetName(stringEncoding);
     if (!encodingName) {
         OBASSERT_NOT_REACHED("Unable to determine the IANA character set name for the given CFStringEncoding");
@@ -77,14 +79,28 @@ NS_ASSUME_NONNULL_BEGIN
     if (dtdSystemID)
         _dtdSystemID = CFRetain(dtdSystemID);
     _dtdPublicID = [dtdPublicID copy];
-    
+
+    if (schemaID)
+        _schemaID = CFRetain(schemaID);
+    _schemaNamespace = [schemaNamespace copy];
+
     _stringEncoding = stringEncoding;
     _rootElement = [rootElement retain];
     _whitespaceBehavior = [whitespaceBehavior retain];
-    
+
     [_elementStack addObject:_rootElement];
-    
+
     return [self _commonSetupSuffix:outError];
+}
+
+- (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
+          dtdSystemID:(nullable CFURLRef)dtdSystemID
+          dtdPublicID:(nullable NSString *)dtdPublicID
+   whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
+       stringEncoding:(CFStringEncoding)stringEncoding
+                error:(NSError **)outError;
+{
+    return [self initWithRootElement:rootElement dtdSystemID:dtdSystemID dtdPublicID:dtdPublicID schemaID:NULL schemaNamespace:nil whitespaceBehavior:whitespaceBehavior stringEncoding:stringEncoding error:outError];
 }
 
 - (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
@@ -101,6 +117,22 @@ NS_ASSUME_NONNULL_BEGIN
                   whitespaceBehavior:whitespaceBehavior
                       stringEncoding:stringEncoding
                                error:outError];
+    [element release];
+    return self;
+}
+
+- (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
+                                        schemaID:(nullable CFURLRef)schemaID
+                                 schemaNamespace:(nullable NSString *)schemaNamespace
+                                    namespaceURL:(nullable NSURL *)rootElementNameSpace
+                              whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
+                                  stringEncoding:(CFStringEncoding)stringEncoding
+                                           error:(NSError **)outError;
+{
+    OFXMLElement *element = [[OFXMLElement alloc] initWithName:rootElementName];
+    if (rootElementNameSpace)
+        [element setAttribute:@"xmlns" string:[rootElementNameSpace absoluteString]];
+    self = [self initWithRootElement:element dtdSystemID:NULL dtdPublicID:nil schemaID:schemaID schemaNamespace:schemaNamespace whitespaceBehavior:whitespaceBehavior stringEncoding:stringEncoding error:outError];
     [element release];
     return self;
 }
@@ -244,7 +276,13 @@ NS_ASSUME_NONNULL_BEGIN
                     OFXMLBufferAppendUTF8CString(xml, "?>\n");
                 }
             }
-            
+            if (_schemaID && _schemaNamespace) {
+                OFXMLBufferAppendUTF8CString(xml, "<?xml-model href=\"");
+                OFXMLBufferAppendString(xml, CFURLGetString(_schemaID));
+                OFXMLBufferAppendUTF8CString(xml, "\" type=\"application/xml\" schematypens=\"");
+                OFXMLBufferAppendString(xml, (__bridge CFStringRef)_schemaNamespace);
+                OFXMLBufferAppendUTF8CString(xml, "?>\n");
+            }
             if (_dtdPublicID || _dtdSystemID) {
                 OFXMLBufferAppendUTF8CString(xml, "<!DOCTYPE ");
                 OFXMLBufferAppendString(xml, (CFStringRef)[_rootElement name]);

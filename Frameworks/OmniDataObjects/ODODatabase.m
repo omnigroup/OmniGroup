@@ -446,6 +446,57 @@ static BOOL _fetchSumCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement
     return success;
 }
 
+typedef struct {
+    NSArray<ODOAttribute *> *attributes;
+    NSMutableArray<NSArray *> *results;
+} FetchAttributesCallbackContext;
+
+static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
+{
+    FetchAttributesCallbackContext *callbackContext = (FetchAttributesCallbackContext *)context;
+    
+    int columnCount = sqlite3_column_count(statement->_statement);
+    NSMutableArray *row = [NSMutableArray array];
+    
+    for (int column = 0; column < columnCount; column++) {
+        ODOAttribute *attribute = [callbackContext->attributes objectAtIndex:column];
+        id value = nil;
+        if (!ODOSQLStatementCreateValue(sqlite, statement, column, &value, attribute.type, attribute.valueClass, outError)) {
+            callbackContext->results = nil;
+            return NO;
+        }
+        [row addObject:value];
+        [value release]; // returned retained by ODOSQLStatementCreateValue, but now owned by the row array
+    }
+    
+    [callbackContext->results addObject:row];
+    return YES;
+}
+
+- (nullable NSArray *)fetchCommittedAttributes:(NSArray<ODOAttribute *> *)attributes fromEntity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
+{
+    OBPRECONDITION(_sqlite);
+    OBPRECONDITION(attributes != nil);
+    
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initSelectProperties:attributes fromEntity:entity database:self predicate:predicate error:outError];
+    if (statement == nil) {
+        return nil;
+    }
+    
+    ODOSQLStatementCallbacks callbacks;
+    memset(&callbacks, 0, sizeof(callbacks));
+    callbacks.row = _fetchAttributesCallback;
+    
+    FetchAttributesCallbackContext context;
+    context.attributes = attributes;
+    context.results = [NSMutableArray array];
+    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, &context, outError);
+    
+    [statement release];
+    
+    return (success ? context.results : nil);
+}
+
 #pragma mark Dangerous API
 
 // The given SQL is expected to be a single statement that is executed once and returns no result rows.  Any quoting should have already happened.

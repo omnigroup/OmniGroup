@@ -20,6 +20,8 @@ typedef NS_ENUM(NSUInteger, OITabMatrixHighlightStyle) {
 - (void)setTabMatrixHighlightStyle:(enum OITabMatrixHighlightStyle)highlightStyle;
 - (enum OITabMatrixHighlightStyle)tabMatrixHighlightStyle;
 
+@property (nonatomic) BOOL allowPinning;
+
 - (NSArray *)pinnedCells;
 
 @end

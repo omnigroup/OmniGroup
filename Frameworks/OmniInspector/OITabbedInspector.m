@@ -380,7 +380,7 @@ RCS_ID("$Id$")
 
         [tabControllers addObject:tabController];
     }
-    
+
     [tabControllers sortUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
         return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
     }];
@@ -389,6 +389,10 @@ RCS_ID("$Id$")
     
     _trackingRectTags = [[NSMutableArray alloc] init];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_tabTitleDidChange:) name:TabTitleDidChangeNotification object:nil];
+
+    // Default to the first tab in case nobody else picks. Maybe we're not autoswitching
+    [self setSelectedTabIdentifiers:@[[self tabIdentifiers].firstObject] pinnedTabIdentifiers:@[]];
+
     return self;
 }
 
@@ -415,8 +419,17 @@ RCS_ID("$Id$")
     
     _tabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     
-    if (buttonMatrix)
+    if (buttonMatrix) {
         [self _createButtonCellForAllTabs];
+    }
+}
+
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
+    if (!_preferredTabIdentifierForInspectionIdentifier.count)
+        buttonMatrix.allowPinning = NO;
 }
 
 - (NSArray *)menuItemsForTarget:(nullable id)target action:(SEL)action;

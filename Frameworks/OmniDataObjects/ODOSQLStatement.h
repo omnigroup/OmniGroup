@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 // This is an internal class that should only be used by ODO.
 
-@class ODODatabase, ODOEntity, ODOEditingContext, ODOObject;
+@class ODODatabase, ODOEntity, ODOEditingContext, ODOObject, ODOProperty;
 
 @interface ODOSQLStatement : OFObject
 {
@@ -24,7 +24,7 @@
 }
 
 - initWithDatabase:(ODODatabase *)database sql:(NSString *)sql error:(NSError **)outError;
-- initSelectProperties:(NSArray *)properties fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+- initSelectProperties:(NSArray<ODOProperty *> *)properties fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
 - initRowCountFromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
 
 - (void)invalidate;

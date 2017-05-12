@@ -52,6 +52,7 @@ typedef void (^OAPreferenceClientChangeCompletion)(__kindof OAPreferenceClient *
 - (void)setCurrentClientByClassName:(NSString *)name completion:(OAPreferenceClientChangeCompletion)completion;
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord completion:(OAPreferenceClientChangeCompletion)completion;
 - (void)reloadCurrentClient;
+- (void)resetInterface;
 - (NSArray <OAPreferenceClientRecord *> *)clientRecords;
 - (NSString *)defaultKeySuffix;
 - (OAPreferenceClientRecord *)clientRecordWithShortTitle:(NSString *)shortTitle;
@@ -69,6 +70,8 @@ typedef void (^OAPreferenceClientChangeCompletion)(__kindof OAPreferenceClient *
 - (IBAction)showPreviousClient:(id)sender;
 - (IBAction)setCurrentClientFromToolbarItem:(id)sender;
 - (IBAction)showHelpForClient:(id)sender;
+
+@property (strong, nonatomic) NSToolbar *toolbar;
 
 @end
 

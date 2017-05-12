@@ -62,6 +62,12 @@ enum {
     
     // OFHandleChangeDebugLevelURL
     OFChangeDebugLevelURLError,
+    
+    // Code signing & entitlements
+    OFEmbeddedProvisioningProfileMissingError,
+    OFEmbeddedProvisioningProfileUnreadableError,
+    OFEmbeddedProvisioningProfileMalformedPKCS7Error,
+    OFEmbeddedProvisioningProfileMalformedPlistError,
 };
 
 

@@ -637,6 +637,8 @@
 		3E9EBCB11CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; };
 		3E9EBCB81CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
 		3E9EBCB91CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
+		3EAA8C721DAC4A4F00F61578 /* NSBundle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342877B108EC788400D89442 /* NSBundle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; };
 		42DB7D6F1C8F8BC0008100E4 /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; };
 		49C39BFE18109E8A005B4248 /* OFNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 49C39BFC18109E8A005B4248 /* OFNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3503,6 +3505,7 @@
 				34F16BCB194F766200AD9C4D /* OFRelativeDateFormatter.h in Headers */,
 				34F16BEB194F76EA00AD9C4D /* NSMutableAttributedString-OFExtensions.h in Headers */,
 				34F16B9D194F6F7A00AD9C4D /* OFNull.h in Headers */,
+				3EAA8C721DAC4A4F00F61578 /* NSBundle-OFExtensions.h in Headers */,
 				34F16B88194F6F2300AD9C4D /* OFCharacterSet.h in Headers */,
 				34F16B97194F6F6900AD9C4D /* OFMultiValueDictionary.h in Headers */,
 				34F16C12194F776D00AD9C4D /* NSURL-OFExtensions.h in Headers */,
@@ -4578,6 +4581,7 @@
 				34F16B94194F6F5E00AD9C4D /* OFIndexPath.m in Sources */,
 				34F16C07194F774500AD9C4D /* NSString-OFReplacement.m in Sources */,
 				34F16BF0194F76FB00AD9C4D /* NSMutableSet-OFExtensions.m in Sources */,
+				3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */,
 				34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */,
 				34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */,
 				34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */,

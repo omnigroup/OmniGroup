@@ -16,11 +16,13 @@
 
 @interface NSBundle (OFExtensions)
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+/// Various pieces of information extraced from the code signature for this bundle.
+/// See Security/SecCode.h for the dictionary keys.
 - (NSDictionary *)codeSigningInfoDictionary:(NSError **)error;
-    // Various pieces of information extraced from the code signature for this bundle.
-    // See Security/SecCode.h for the dictionary keys
+#endif
 
+/// The code signing entitlements for this process. On iOS, these can only be extracted from the embedded provisioning profile, if one exists.
 - (NSDictionary *)codeSigningEntitlements:(NSError **)error;
-    // The code sign entitlements for this process
 
 @end

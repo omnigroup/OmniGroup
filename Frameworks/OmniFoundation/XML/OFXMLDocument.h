@@ -26,9 +26,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
           dtdSystemID:(nullable CFURLRef)dtdSystemID
           dtdPublicID:(nullable NSString *)dtdPublicID
+             schemaID:(nullable CFURLRef)schemaID
+      schemaNamespace:(nullable NSString *)schemaNamespace
    whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
        stringEncoding:(CFStringEncoding)stringEncoding
                 error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+
+- (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
+                                 dtdSystemID:(nullable CFURLRef)dtdSystemID
+                                 dtdPublicID:(nullable NSString *)dtdPublicID
+                          whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
+                              stringEncoding:(CFStringEncoding)stringEncoding
+                                       error:(NSError **)outError;
 
 - (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
               dtdSystemID:(nullable CFURLRef)dtdSystemID
@@ -36,6 +45,14 @@ NS_ASSUME_NONNULL_BEGIN
        whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
            stringEncoding:(CFStringEncoding)stringEncoding
                     error:(NSError **)outError;
+
+- (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
+                                        schemaID:(nullable CFURLRef)schemaID
+                                 schemaNamespace:(nullable NSString *)schemaNamespace
+                                    namespaceURL:(nullable NSURL *)rootElementNameSpace
+                              whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior
+                                  stringEncoding:(CFStringEncoding)stringEncoding
+                                           error:(NSError **)outError;
 
 - (nullable instancetype)initWithRootElementName:(NSString *)rootElementName
              namespaceURL:(nullable NSURL *)rootElementNameSpace
@@ -55,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,nullable) CFURLRef dtdSystemID;
 @property(nonatomic,readonly,nullable) NSString *dtdPublicID;
 @property(nonatomic,readonly) CFStringEncoding stringEncoding;
+@property(nonatomic,readonly,nullable) CFURLRef schemaID;
+@property(nonatomic,readonly,nullable) NSString *schemaNamespace;
 
 @property(nonatomic,nullable,readonly) NSArray *loadWarnings;
 
