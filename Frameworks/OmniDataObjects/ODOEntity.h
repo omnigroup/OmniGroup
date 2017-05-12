@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <CoreFoundation/CFArray.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSString, NSArray, NSDictionary, NSSet;
 @class ODOObject, ODOEditingContext, ODOModel, ODOAttribute, ODOProperty, ODOSQLStatement;
@@ -58,9 +60,10 @@
 
 @property(readonly) NSArray *properties;
 @property(readonly) NSDictionary *propertiesByName;
-- (ODOProperty *)propertyNamed:(NSString *)name;
-- (ODOProperty *)propertyWithGetter:(SEL)getter;
-- (ODOProperty *)propertyWithSetter:(SEL)setter;
+
+- (nullable ODOProperty *)propertyNamed:(NSString *)name;
+- (nullable ODOProperty *)propertyWithGetter:(SEL)getter;
+- (nullable ODOProperty *)propertyWithSetter:(SEL)setter;
 
 @property(readonly) NSDictionary *relationshipsByName;
 @property(readonly) NSArray *relationships;
@@ -75,8 +78,10 @@
 @property(readonly) NSSet *derivedPropertyNameSet;
 @property(readonly) NSSet *nonDateModifyingPropertyNameSet;
 
-+ (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(id)primaryKey;
-+ (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;
-+ (ODOEntity *)entityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;
++ (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey;
++ (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;
++ (nullable ODOEntity *)entityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;
 
 @end
+
+NS_ASSUME_NONNULL_END

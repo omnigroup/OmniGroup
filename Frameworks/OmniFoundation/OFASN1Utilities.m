@@ -980,11 +980,16 @@ static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalk
     
     rc = nextObject(buf, &walker);
     if (rc == OFASN1EndOfObject) {
-        *outParameterRange = (NSRange){ .location = walker.maxIndex, .length = 0 };
+        if (outParameterRange) {
+            outParameterRange->location = walker.maxIndex;
+            outParameterRange->length = 0;
+        }
     } else if (rc != OFASN1Success) {
         return rc;
     } else {
-        *outParameterRange = DER_FIELD_RANGE(walker);
+        if (outParameterRange) {
+            *outParameterRange = DER_FIELD_RANGE(walker);
+        }
         
         /* Check here that there is exactly one object in the algorithm parameters field */
         
@@ -1494,10 +1499,16 @@ NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
     struct parsedTag tagged;
     if (parseTagAndLength(buf, r.location, NSMaxRange(r), YES, &tagged) != OFASN1Success)
         return nil;
-    if (tagged.tag != BER_TAG_OCTET_STRING || tagged.classAndConstructed != 0) /* We only support DER OCTET STRINGs here, not indefinite-length BER strings */
+    if (tagged.tag != BER_TAG_OCTET_STRING ||
+        (tagged.classAndConstructed & CLASS_MASK) != CLASS_UNIVERSAL)
         return nil;
-    if (NSMaxRange(tagged.content) != NSMaxRange(r))
-        return nil;
+    
+    if (tagged.indefinite) {
+        tagged.content.length = NSMaxRange(r) - tagged.content.location;
+    } else {
+        if (NSMaxRange(tagged.content) != NSMaxRange(r))
+            return nil;
+    }
     
     NSData *result = nil;
     if (OFASN1ExtractStringContents(buf, tagged, &result) != OFASN1Success)

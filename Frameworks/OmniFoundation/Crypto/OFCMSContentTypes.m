@@ -35,6 +35,8 @@ static enum OFASN1ErrorCodes parseCMSEncryptedContentInfo(NSData *buf, const str
 static enum OFASN1ErrorCodes extractMembersAsDER(NSData *buf, struct parsedTag obj, NSMutableArray *into);
 static enum OFASN1ErrorCodes enumerateMembersAsBERRanges(NSData *, struct parsedTag, enum OFASN1ErrorCodes (^cb)(NSData *, struct parsedTag, NSRange));
 static NSData *OFCMSCreateMAC(NSData *hmacKey, NSData *content, NSData *contentType, NSArray<NSData *> *authenticatedAttributes, NSData **outAttrElement);
+static BOOL typeRequiresOctetStringWrapper(enum OFCMSContentType ct);
+static const uint8_t *rawCMSOIDFromContentType(enum OFCMSContentType ct);
 
 #pragma mark EnvelopedData
 
@@ -96,7 +98,7 @@ dispatch_data_t OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipie
     /* No OriginatorInfo; we can omit it */
     OFASN1AppendSet(prologue, BER_TAG_SET | FLAG_CONSTRUCTED, recipientInfos);
     
-    return OFASN1MakeStructure("(dd(d(+[*])![d]))",
+    return OFASN1MakeStructure("(d(d(+[*])![d]))",
                                prologue,               // Version and recipientInfos
                                innerContentType,       // Wrapped content type
                                contentEncryptionAlgOID, sizeof(iv), iv,  // Algorithm structure (OID and parameters)
@@ -148,6 +150,10 @@ int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSM
 
 dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, NSUInteger options, NSData *innerContentType, NSData *content, NSArray <NSData *> *authenticatedAttributes, NSError **outError)
 {
+    if (!innerContentType) {
+        [NSException raise:NSInvalidArgumentException format:@"%s: missing innerContentType", __PRETTY_FUNCTION__];
+    }
+    
     BOOL ccm;
     
 #ifdef OF_AEAD_GCM_ENABLED
@@ -486,7 +492,7 @@ int OFASN1ParseCMSSignedData(NSData *pkcs7, NSRange range, int *cmsVersion, NSMu
            eContent [0] EXPLICIT OCTET STRING OPTIONAL
        }
      
-     Note that this is identical to the structure of ContentInfo except that the content data is OPTIONAL, and we'll need to unwrap the data from the OCTET STRING. Our parseCMSContentInfo() utility function handles optional content so we just parse this as if it were ContentInfo.
+     Note that this is identical to the structure of ContentInfo except that the content data is OPTIONAL, and we'll always need to unwrap the data from the OCTET STRING. Our parseCMSContentInfo() utility function handles optional content so we just parse this as if it were ContentInfo.
      */
     rc = parseCMSContentInfo(pkcs7, NSMaxRange(signedDataValues[2].i.content), signedDataValues[2].i, innerContentType, innerContentObjectLocation);
     if (rc)
@@ -565,6 +571,14 @@ int OFASN1ParseCMSMultipartData(NSData *pkcs7, NSRange range, int (^cb)(enum OFC
     return rc0;
 }
 
+dispatch_data_t OFCMSCreateMultipart(NSArray <NSData *> *parts)
+{
+    // This is just a SEQUENCE wrapped around the parts. The caller is responsible for putting everything into ContentInfo structures (unlike OFASN1ParseCMSMultipartData).
+    return OFASN1MakeStructure("(a)", parts);
+}
+
+#pragma mark Attributed content
+
 int OFASN1ParseCMSAttributedContent(NSData *pkcs7, NSRange range, enum OFCMSContentType *outContentType, NSRange *outContentRange, NSArray **outAttrs)
 {
     enum OFASN1ErrorCodes rc;
@@ -586,7 +600,7 @@ int OFASN1ParseCMSAttributedContent(NSData *pkcs7, NSRange range, enum OFCMSCont
         return rc;
     
     if (outContentType || outContentRange) {
-        rc = parseCMSContentInfo(pkcs7, NSMaxRange(cwaValues[1].i.content), cwaValues[1].i, outContentType, outContentRange);
+        rc = parseCMSContentInfo(pkcs7, NSMaxRange(cwaValues[0].i.content), cwaValues[0].i, outContentType, outContentRange);
         if (rc)
             return rc;
     }
@@ -602,11 +616,51 @@ int OFASN1ParseCMSAttributedContent(NSData *pkcs7, NSRange range, enum OFCMSCont
     return OFASN1Success;
 }
 
+dispatch_data_t OFCMSWrapIdentifiedContent(enum OFCMSContentType ct, NSData *content, NSData *cid)
+{
+    // This is a one-shot for:
+    //   - Wrapping (oid+content) to get a ContentInfo
+    //   - Creating a ContentIdentifier attribute from cid
+    //   - Wrapping the contentinfo and the (single) attribute in a ContentWithAttributes
+    //   - Bundling that with its oid to get a ContentInfo
+    
+    /*
+    SEQUENCE {     --  ContentInfo
+        contentType OBJECT IDENTIFIER = id-ct-contentWithAttributes,
+        content [0] EXPLICIT SEQUENCE { --  ContentWithAttributes
+            content SEQUENCE { -- ContentInfo
+                contentType OBJECT IDENTIFIER,
+                content [0] EXPLICIT ANY,
+            },
+            attrs SEQUENCE { -- of Attribute
+                SEQUENCE { -- the first attribute
+                    attrType OBJECT IDENTIFIER = id-aa-contentIdentifier,
+                    attrValues SET OF OCTET STRING -- cid is an octet string
+                }
+            }
+        }
+     }
+     */
+    
+    const char *fmt = typeRequiresOctetStringWrapper(ct)?
+        "(+!(((+!([d]))((+{[d]})))))" :
+        "(+!(((+!( d ))((+{[d]})))))";
+    
+    const uint8_t *oid = rawCMSOIDFromContentType(ct);
+    
+    return OFASN1MakeStructure(fmt,
+                               der_ct_contentWithAttributes, 0 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC,
+                               oid, 0 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC, content,
+                               der_attr_contentIdentifier, cid);
+}
+
 #pragma mark Top-Level CMS Data
 
-dispatch_data_t OFCMSWrapContent(NSData *ctype, NSData *content)
+dispatch_data_t OFCMSWrapContent(enum OFCMSContentType ctype, NSData *content)
 {
-    return OFASN1MakeStructure("(d!(d))", ctype, 0 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC, content);
+    const char *fmt = typeRequiresOctetStringWrapper(ctype)? "(+!([d]))" : "(+!(d))";
+    const uint8_t *oid = rawCMSOIDFromContentType(ctype);
+    return OFASN1MakeStructure(fmt, oid, 0 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC, content);
 }
 
 int OFASN1ParseCMSContent(NSData *buf, enum OFCMSContentType *innerContentType, NSRange *innerContentRange)
@@ -1141,6 +1195,34 @@ NSData *OFCMSOIDFromContentType(enum OFCMSContentType ct)
     return nil;
 }
 
+static const uint8_t *rawCMSOIDFromContentType(enum OFCMSContentType ct)
+{
+    for (int i = 0; i < oid_lut_OFCMSContentType_size; i++) {
+        if (oid_lut_OFCMSContentType[i].nid == (int)ct) {
+            return oid_lut_OFCMSContentType[i].der;
+        }
+    }
+    return NULL;
+}
+
+static BOOL typeRequiresOctetStringWrapper(enum OFCMSContentType ct)
+{
+    // There's a slight irregularity in the CMS format that isn't really called out in the spec. When a given CMS content type occurs in a ContentInfo, it's either stored directly as the tagged object, or if it isn't an ASN.1-formatted value it's stored in an OCTET STRING. However, when it occurs as the result of decrypting (or decompressing) a blob of data, it is not wrapped in an OCTET STRING, it's just stored directly; same if it's stored out-of-line in a detached signature. So in order to correctly wrap up a piece of data in a ContentInfo, we need to know this bit of information about the type.
+    
+    switch (ct) {
+        case OFCMSContentType_data:
+        case OFCMSContentType_XML:
+            /* If we support other non-CMS data types in the future they will need to be added here */
+            return YES;
+            
+        default:
+            /* signedData, compressedData, contentCollection, etc. */
+            return NO;
+    }
+}
+
+#pragma mark Attribute parsing
+
 NSError *OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned int *outRelevantIndex, NSData **outRelevantData)
 {
     NSRange oidRange, valueRange;
@@ -1239,49 +1321,8 @@ NSError *OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned
     return nil;
 }
 
-#if 0
-static
-dispatch_data_t englobulate_dispatch_data(NSMutableData *outer, NSUInteger offset, dispatch_data_t inner)
+NSData *OFCMSIdentifierAttribute(NSData *cid)
 {
-    /* If there is trailing data, chop it off of the outer buffer and into its own segment */
-    NSUInteger outerLength = [outer length];
-    if (offset != outerLength) {
-        dispatch_data_t right = dispatch_data_create([outer bytes] + offset, outerLength - offset, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-        [outer setLength:offset];
-        inner = dispatch_data_create_concat(inner, right);
-    }
-    
-    /* If the middle content has a small segment at its beginning, merge it with our own still-mutable buffer. This will be common when assembling a CMS message. */
-    for (;;) {
-        
-        size_t innerLength = dispatch_data_get_size(inner);
-        if (innerLength <= 0) {
-            inner = NULL;
-            break;
-        }
-        
-        /* Find the size of the first segment of 'inner' */
-        size_t pfx_offset = 0;
-        dispatch_data_t pfx = dispatch_data_copy_region(inner, 0, &pfx_offset);
-        assert(pfx_offset == 0);
-        size_t pfx_len = dispatch_data_get_size(pfx);
-        
-        /* If things are small enough, just copy those bytes into our buffer */
-        /* These size thresholds are pretty arbitrary */
-        if (pfx_len + offset <= 8192 || pfx_len < 128) {
-            [outer appendData:(NSData *)pfx];
-            offset += pfx_len;
-            inner = dispatch_data_create_subrange(inner, pfx_len, innerLength - pfx_len);
-        } else {
-            break;
-        }
-    }
-    
-    /* Finally, concatenate the segments we have */
-    dispatch_data_t left = dispatch_data_create([outer bytes], [outer length], NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-    if (inner)
-        left = dispatch_data_create_concat(left, inner);
-    return left;
+    return OFASN1AppendStructure(nil, "(+{[d]})", der_attr_contentIdentifier, cid);
 }
-#endif
 

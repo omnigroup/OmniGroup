@@ -1,0 +1,42 @@
+#
+# A RelaxNG schema for the index/TOC of an encrypted
+# file package document.
+#
+# This is in the human-readable "compact" syntax; it can be converted
+# to the XML syntax using a tool such as Trang or rnc2rng.
+#
+# $Id$
+
+default namespace = "http://www.omnigroup.com/namespace/DocumentEncryption/v1"
+namespace xlink = "http://www.w3.org/1999/xlink"
+namespace rnga = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+start = element index { filetree & key* }
+
+plaintextName =
+    attribute name {
+        xsd:string {
+            pattern="[^/]+"
+        }
+    }
+
+filetree =
+  (
+    element file {
+        plaintextName,
+        attribute xlink:href { text },
+        [rnga:defaultValue = "0"] attribute optional { xsd:boolean }?,
+        attribute key { token }?
+    } |
+    element directory {
+        plaintextName,
+        filetree
+    }
+  )*
+
+key =
+    element key {
+        attribute id { xsd:hexBinary },
+        xsd:hexBinary
+    }
+

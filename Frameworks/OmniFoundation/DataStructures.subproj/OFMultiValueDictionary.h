@@ -14,28 +14,28 @@
 
 @class NSArray, NSEnumerator, NSMutableDictionary;
 
-@interface OFMultiValueDictionary : NSObject </*NSCoding,*/ NSMutableCopying>
+@interface OFMultiValueDictionary <__covariant KeyType, __covariant ObjectType> : NSObject </*NSCoding,*/ NSMutableCopying>
 
 - init;
 - initWithCaseInsensitiveKeys:(BOOL)caseInsensitivity;
 - initWithKeyCallBacks:(const CFDictionaryKeyCallBacks *)keyBehavior;
 
-- (NSArray *)arrayForKey:(id)aKey;
-- (id)firstObjectForKey:(id)aKey;
-- (id)lastObjectForKey:(id)aKey;
-- (void)addObject:(id)anObject forKey:(id)aKey;
-- (void)addObjects:(NSArray *)moreObjects forKey:(id)aKey;
-- (void)addObjects:(NSArray *)manyObjects keyedByBlock:(OFObjectToObjectBlock)keyBlock;
-- (void)setObjects:(NSArray *)replacementObjects forKey:(id)aKey;
-- (void)insertObject:(id)anObject forKey:(id)aKey atIndex:(unsigned int)anIndex;
-- (BOOL)removeObject:(id)anObject forKey:(id)aKey;
-- (BOOL)removeObjectIdenticalTo:(id)anObject forKey:(id)aKey;
+- (NSArray<ObjectType> *)arrayForKey:(KeyType)aKey;
+- (ObjectType)firstObjectForKey:(KeyType)aKey;
+- (ObjectType)lastObjectForKey:(KeyType)aKey;
+- (void)addObject:(ObjectType)anObject forKey:(KeyType)aKey;
+- (void)addObjects:(NSArray<ObjectType> *)moreObjects forKey:(KeyType)aKey;
+- (void)addObjects:(NSArray<ObjectType> *)manyObjects keyedByBlock:(KeyType (^)(ObjectType object))keyBlock;
+- (void)setObjects:(NSArray<ObjectType> *)replacementObjects forKey:(KeyType)aKey;
+- (void)insertObject:(ObjectType)anObject forKey:(KeyType)aKey atIndex:(unsigned int)anIndex;
+- (BOOL)removeObject:(ObjectType)anObject forKey:(KeyType)aKey;
+- (BOOL)removeObjectIdenticalTo:(ObjectType)anObject forKey:(KeyType)aKey;
 - (void)removeAllObjects;
-- (NSEnumerator *)keyEnumerator;
-- (NSArray *)allKeys;
-- (NSArray *)allValues;
+- (NSEnumerator<KeyType> *)keyEnumerator;
+- (NSArray<KeyType> *)allKeys;
+- (NSArray<ObjectType> *)allValues;
 
-- (NSMutableDictionary *)dictionary;
+- (NSMutableDictionary<KeyType, NSArray<ObjectType> *> *)dictionary;
 
 @end
 

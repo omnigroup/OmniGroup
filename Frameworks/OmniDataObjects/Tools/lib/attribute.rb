@@ -5,6 +5,7 @@ module OmniDataObjects
     def initialize(entity, name, type, options = {})
       super(entity, name, options)
       @type = type
+      @copy = options.key?(:copy) ? options[:copy] : true
       @value_class = options[:value_class]
       @default_value = options[:default]
       @primary = options[:primary]
@@ -67,6 +68,10 @@ module OmniDataObjects
       names << objcValueClass
     end
     
+    def copy?
+        @copy
+    end
+    
     def read_only?
       primary || calculated
     end
@@ -75,13 +80,23 @@ module OmniDataObjects
       # We don't currently make any pretense at being thread-safe (other that the whole stack being used in a thread).  So, use nonatomic.  Also, all attribute values should be copied on assignment _if_ they are writable.  Calculated properties are declared to be read-only, but their implementations my redefine the property internally to be writable. We have to still use 'copy' in that case, though, else the compiler signals a storage mechanism conflict when redefining.
       return if self.inherited_from # don't redeclare inherited attributes since they'll have the same definition in the superclass
       
-      if read_only?
-        read_only_attribute = ",readonly"
+      additional_attributes = ""
+
+      if optional || default_value.nil?
+        additional_attributes += ", nullable"
+      end
+            
+      if copy?
+        additional_attributes += ", copy"
       else
-        read_only_attribute = ""
+        additional_attributes += ", strong"
       end
       
-      f << "@property(nonatomic,copy#{read_only_attribute}) #{objcValueClass} *#{name};\n"
+      if read_only?
+        additional_attributes += ", readonly"
+      end
+      
+      f << "@property (nonatomic#{additional_attributes}) #{objcValueClass} *#{name};\n"
     end
     
     def emitCreation(f)

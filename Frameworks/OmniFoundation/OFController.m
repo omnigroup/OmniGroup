@@ -666,6 +666,12 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
             crash = NO;
 
+        if (selector == @selector(_attachSandboxExtensions:toURL:orURLs:) && [NSStringFromClass([object class]) isEqualToString:@"NSVBSavePanel"])
+            crash = NO;
+
+        if (selector == @selector(_evaluateKeyness:forWindow:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"])
+            crash = NO;
+
         // XPC services (like the 'define' service) sometimes time out:
         // Object: <NSXPCSharedListener:0x7fff7a5e67a8>
         // Selector: connectionForListenerNamed:fromServiceNamed:

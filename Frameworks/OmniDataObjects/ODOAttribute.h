@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,13 +26,20 @@ typedef enum {
     ODOAttributeTypeCount,
 } ODOAttributeType;
 
+typedef enum {
+    ODOAttributeSetterBehaviorCopy,
+    ODOAttributeSetterBehaviorRetain,
+    ODOAttributeSetterBehaviorDetermineAtRuntime,
+} ODOAttributeSetterBehavior;
+
 @interface ODOAttribute : ODOProperty
 {
-@private
+@package
     ODOAttributeType _type;
     NSObject <NSCopying> *_defaultValue;
     BOOL _isPrimaryKey;
     Class _valueClass;
+    ODOAttributeSetterBehavior _setterBehavior;
 }
 
 @property(readonly) ODOAttributeType type;

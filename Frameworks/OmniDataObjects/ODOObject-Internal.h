@@ -141,7 +141,6 @@ static inline void _ODOObjectSetValueAtIndex(ODOObject *self, NSUInteger snapsho
     if (value == self->_valueStorage[snapshotIndex])
         return;
     
-    // Not doing -copy since this might be a mutable to-many set.  Higher level code should copy attribute values?  Maybe we should have a setter that passes in a retained value.
     [self->_valueStorage[snapshotIndex] release];
     self->_valueStorage[snapshotIndex] = [value retain];
 }

@@ -1451,6 +1451,7 @@
 		1E1CF5481A5208040068FA07 /* OFASN1-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "OFASN1-Internal.h"; path = "Crypto/OFASN1-Internal.h"; sourceTree = "<group>"; };
 		1E21E6241D233E5100A04AE4 /* OFCMSContentTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCMSContentTypes.m; sourceTree = "<group>"; };
 		1E2377911D765CE500CBDA3D /* OFRFC3211Wrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRFC3211Wrap.h; sourceTree = "<group>"; };
+		1E3184AF1DADE81B0022430C /* OFDocumentEncryption.rnc */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFDocumentEncryption.rnc; sourceTree = "<group>"; };
 		1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OFDocumentEncryption.swift; sourceTree = "<group>"; };
 		1E3C71B81D63EB160039813D /* OFCMS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCMS.h; sourceTree = "<group>"; };
 		1E51D9B91D638C42004A6DED /* OFASN1Utilities-Construction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFASN1Utilities-Construction.m"; sourceTree = SOURCE_ROOT; };
@@ -2329,6 +2330,7 @@
 				1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */,
 				1E5F988D1D888D2D00A85BC3 /* OFDocumentEncryption-ObjC.h */,
 				1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */,
+				1E3184AF1DADE81B0022430C /* OFDocumentEncryption.rnc */,
 			);
 			name = FileManagement;
 			path = FileManagement.subproj;

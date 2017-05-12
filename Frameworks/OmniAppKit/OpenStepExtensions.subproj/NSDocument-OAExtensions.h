@@ -1,4 +1,4 @@
-// Copyright 2003-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,11 @@
 
 @interface NSDocument (OAExtensions)
 
-- (NSArray *)orderedWindowControllers;
+- (NSArray <__kindof NSWindowController *> *)windowControllersOfClass:(Class)windowControllerClass;
+- (NSArray <__kindof NSWindowController *> *)orderedWindowControllersOfClass:(Class)windowControllerClass;
+- (__kindof NSWindowController *)frontWindowControllerOfClass:(Class)windowControllerClass;
+
+- (NSArray <NSWindowController *> *)orderedWindowControllers;
 - (NSWindowController *)frontWindowController;
 
 // Status for long operations

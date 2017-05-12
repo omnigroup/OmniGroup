@@ -15,8 +15,7 @@ def usage
 usage: #{$prog} [options] Foo.odomodel
     --help [-h]                   Print this help
     --debug [-d]                  Turn on debug output
-    --output-directory [-D] dir   The directory in which to place output; normally it is placed as a sibling to the input
-    --check [-C]                  The tool will not write any output, but instead will exit with an error if the output is not there or differs from the expected value.
+    --output-directory [-D] dir   The directory in which to place output; placed in DERIVED_FILE_DIR by default
 EOS
   STDERR.print msg
   exit 1
@@ -25,20 +24,27 @@ end
 options = GetoptLong.new(
 [ "--help", "-h", GetoptLong::NO_ARGUMENT ],
 [ "--debug", "-d", GetoptLong::NO_ARGUMENT ],
+[ "--output-directory", "-D", GetoptLong::REQUIRED_ARGUMENT ],
 )
 
-output_directory = ENV["DERIVED_FILE_DIR"] || fail("DERIVED_FILE_DIR not defined!")
-FileUtils.mkdir_p(output_directory)
-OmniDataObjects::Options.model_output_directory = output_directory
+output_directory = nil
 
 options.each do |opt, arg|
   case opt
   when "--debug"
     OmniDataObjects::Options.debug = true
+  when "--output-directory"
+    output_directory = arg
   else
     usage()
   end
 end
+
+if output_directory == nil
+    output_directory = ENV["DERIVED_FILE_DIR"] || fail("DERIVED_FILE_DIR not defined!")
+end    
+FileUtils.mkdir_p(output_directory)
+OmniDataObjects::Options.model_output_directory = output_directory
 
 fail "Should be exactly one model file specified" unless ARGV.length == 1
 

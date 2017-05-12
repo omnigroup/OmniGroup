@@ -180,8 +180,6 @@ enum CMSRecipientIdentifier {
 
 class CMSPasswordRecipient : CMSRecipient {
     
-    let type = OFCMSRPassword;
-
     // A PasswordRecipient can have various subsets of information depending on its history:
     // When a new document is saved (or a password is changed), the user supplies a password; we generate the AlgorithmIdentifier (containing salt and iteration parameters) when needed; and derive the KEK when needed.
     // When reading an existing document, we start with just the AlgorithmIdentifier, and gain the password when the user supplies one. Similar to the other case, we derive the KEK from the password and parameters when we need it.
@@ -258,11 +256,8 @@ class CMSPasswordRecipient : CMSRecipient {
     }
 }
 
+/// A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has.
 class CMSKEKRecipient : CMSRecipient {
-    
-    let type = OFCMSRPreSharedKey;
-
-    // A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has.
     
     var keyIdentifier: Data;
     var kek: Data?;
@@ -315,8 +310,6 @@ class CMSKEKRecipient : CMSRecipient {
  The keypair is identified by a `CMSRecipientIdentifier`, although we may also store a reference to the recipient's public key.
  */
 class CMSPKRecipient : CMSRecipient {
-    
-    let type = OFCMSRKeyTransport;
 
     var rid: CMSRecipientIdentifier;
     var cert: SecCertificate?;
@@ -328,8 +321,7 @@ class CMSPKRecipient : CMSRecipient {
         }
         
         var errbuf : NSError? = nil;
-        let rinfo = OFProduceRIForCMSRSAKeyTransport(encryptionKey, rid.asDER(), cek, &errbuf);
-        if let rinfo = rinfo {
+        if let rinfo = OFProduceRIForCMSRSAKeyTransport(encryptionKey, rid.asDER(), cek, &errbuf) {
             return rinfo;
         } else {
             throw errbuf!;
@@ -382,6 +374,13 @@ class CMSPKRecipient : CMSRecipient {
 
     }
     
+    func resolve(certificate: SecCertificate) -> Bool {
+        if cert == nil && rid.matchesCertificate(certificate) {
+            cert = certificate;
+        }
+        return cert != nil;
+    }
+    
     func canWrap() -> Bool {
         if cert != nil {
             return true;
@@ -415,20 +414,23 @@ internal final
 class OFCMSUnwrapper {
     
     // These are modified as we unwrap each layer.
-    var cms: Data;  // This is actually a DispatchData most of the time, but the DispatchData class isn't quite usable as of Xcode8b6
+    var cms: Data?;  // This is actually a DispatchData most of the time, but the DispatchData class isn't quite usable as of Xcode8
     var contentRange: NSRange;
     var contentType: OFCMSContentType;
+    var fromContentInfo: Bool;  // Whether our content range came from a ContentInfo and therefore might be wrapped in an OCTET STRING
     
     // These contain information accumulated during unwrapping.
-    var usedRecipient: CMSRecipient?;
-    var allRecipients: [CMSRecipient];
-    var discardedRecipientCount: UInt;
-    var contentIdentifier: Data?;
-    var authenticated: Bool;
+    var usedRecipient: CMSRecipient?     = nil;
+    var allRecipients: [CMSRecipient]    = [];
+    var discardedRecipientCount: UInt    = 0;
+    var contentIdentifier: Data?         = nil;
+    var authenticated: Bool              = false;
+    var embeddedCertificates: [Data]     = [];
     
+    // Sources of key material.
     internal var keySource : OFCMSKeySource?;
-    internal var auxiliarySymmetricKeys : [Data : Data];
-    internal var auxiliaryAsymmetricKeys : [Keypair];
+    internal var auxiliarySymmetricKeys : [Data : Data]  = [:];
+    internal var auxiliaryAsymmetricKeys : [Keypair]     = [];
     
     init(data: Data, keySource ks: OFCMSKeySource?) throws {
         var innerType = OFCMSContentType_Unknown;
@@ -441,13 +443,17 @@ class OFCMSUnwrapper {
         cms = data;
         contentType = innerType;
         contentRange = innerLocation;
-        usedRecipient = nil;
-        allRecipients = [];
-        discardedRecipientCount = 0;
-        authenticated = false;
+        fromContentInfo = true;
         keySource = ks;
-        auxiliarySymmetricKeys = [:];
-        auxiliaryAsymmetricKeys = [];
+    }
+    
+    private
+    init(data: Data, location: NSRange, type: OFCMSContentType, keySource ks: OFCMSKeySource?) {
+        cms = data;
+        contentType = type;
+        contentRange = location;
+        fromContentInfo = true;
+        keySource = ks;
     }
     
     public final func addSymmetricKeys(_ keys: [Data: Data]) {
@@ -460,19 +466,41 @@ class OFCMSUnwrapper {
         auxiliaryAsymmetricKeys += keys;
     }
     
-    func content() -> Data {
-        return cms.subdata(in: contentRange.location ..< NSMaxRange(contentRange));
+    func content() throws -> Data {
+        if let cms_ = cms {
+            if fromContentInfo {
+                switch contentType {
+                case OFCMSContentType_XML, OFCMSContentType_data:
+                    return OFASN1UnwrapOctetString(cms_, contentRange);
+                default:
+                    // fallthrough
+                    break
+                }
+            }
+            return cms_.subdata(in: contentRange.location ..< NSMaxRange(contentRange));
+        } else {
+            throw unexpectedNullContent();
+        }
     }
     
-    private func recoverContentKey(recipientBlobs: NSArray) throws -> (cek: Data, CMSRecipient, [CMSRecipient]) {
-        // Parse the recipients, looking for something we can use.
+    var hasNullContent : Bool {
+        get {
+            if cms != nil {
+                return contentRange.length == 0;
+            } else {
+                return true;
+            }
+        }
+    }
+    
+    private struct assortedRecipients {
         var passwordRecipients : [(CMSPasswordRecipient, Data)] = [];
         var pkRecipients : [(CMSPKRecipient, Data)] = [];
         var pskRecipients : [(CMSKEKRecipient, Data)] = [];
-        var allRecipients : [CMSRecipient] = [];
+        var discardedRecipientCount : UInt = 0;
         
-        for (recipientBlob) in recipientBlobs {
-            
+        mutating
+        func parse(recipientBlob: Data) throws {
             var recipientType : OFCMSRecipientType = OFCMSRUnknown;
             var who, what : NSData?;
             
@@ -485,17 +513,14 @@ class OFCMSUnwrapper {
             case OFCMSRPassword:
                 let recip = CMSPasswordRecipient(info: who! as Data);
                 passwordRecipients.append( (recip, what! as Data) );
-                allRecipients.append(recip);
                 
             case OFCMSRKeyTransport:
                 let recip = CMSPKRecipient(rid: try CMSRecipientIdentifier.fromDER(who! as Data));
                 pkRecipients.append( (recip, what! as Data) )
-                allRecipients.append(recip);
                 
             case OFCMSRPreSharedKey:
                 let recip = CMSKEKRecipient(keyIdentifier: who! as Data, key: nil);
                 pskRecipients.append( (recip, what! as Data) )
-                allRecipients.append(recip);
                 
             default:
                 discardedRecipientCount += 1;
@@ -504,12 +529,25 @@ class OFCMSUnwrapper {
             }
         }
         
+        func allRecipients() -> [CMSRecipient] {
+            return passwordRecipients.map { $0.0 as CMSRecipient } + pskRecipients.map { $0.0 as CMSRecipient } + pkRecipients.map { $0.0 as CMSRecipient };
+        }
+    };
+    
+    
+    private func recoverContentKey(recipientBlobs: NSArray) throws -> (cek: Data, CMSRecipient, [CMSRecipient]) {
+        var allRecipients = assortedRecipients();
+        
+        for (recipientBlob) in recipientBlobs {
+            try allRecipients.parse(recipientBlob: recipientBlob as! Data);
+        }
+        
         var cek : Data? = nil; // The content encryption key.
         var keyAccessError : NSError? = nil; // Stored error encountered while iterating over recipients.
         var usedRecipient : CMSRecipient? = nil; // The specific recipient we used.
         
         // Try boring pre-shared key recipients.
-        for (recip, wrappedKey) in pskRecipients {
+        for (recip, wrappedKey) in allRecipients.pskRecipients {
             if let psk = auxiliarySymmetricKeys[recip.keyIdentifier] {
                 do {
                     cek = try recip.unwrap(kek: psk, data: wrappedKey);
@@ -524,7 +562,7 @@ class OFCMSUnwrapper {
         
         // Try public-key recipients
         if cek == nil {
-            for (recip, wrappedKey) in pkRecipients {
+            for (recip, wrappedKey) in allRecipients.pkRecipients {
                 var idents = try recip.rid.findIdentities();
                 
                 for kp in auxiliaryAsymmetricKeys {
@@ -563,14 +601,14 @@ class OFCMSUnwrapper {
         
         // Try passwords
         if cek == nil {
-            if let (aCek, aRecip) = try passphrase(passwordRecipients) {
+            if let (aCek, aRecip) = try passphrase(allRecipients.passwordRecipients) {
                 cek = aCek;
                 usedRecipient = aRecip;
             }
         }
         
         if let contentKey = cek {
-            return (contentKey, usedRecipient!, allRecipients);
+            return (contentKey, usedRecipient!, allRecipients.allRecipients());
         } else {
             if let err = keyAccessError {
                 throw err;
@@ -628,6 +666,10 @@ class OFCMSUnwrapper {
                 try decryptUED();
             case OFCMSContentType_authenticatedEnvelopedData:
                 try decryptAEAD();
+            case OFCMSContentType_signedData:
+                try discardSignature();
+            case OFCMSContentType_contentWithAttributes:
+                try readAttributes();
             case OFCMSContentType_Unknown:
                 throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [NSLocalizedDescriptionKey: "Unimplemented content-type" /* TODO: Localize. */]);
             default:
@@ -647,15 +689,13 @@ class OFCMSUnwrapper {
         var algorithm : NSData? = nil;
         var innerContent : NSData? = nil;
         
-        let rc = OFASN1ParseCMSEnvelopedData(cms, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent);
+        let rc = OFASN1ParseCMSEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent);
         if (rc != 0) {
             throw OFNSErrorFromASN1Error(rc, "EnvelopedData");
         }
 
         // Check version number. Version 4 indicates some features we don't support, but we should fail reasonably on them, so accept it anyway. See RFC5652 [6.1].
-        guard cmsVersion >= 0 && cmsVersion <= 4 else {
-            throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unknown EnvelopedData version" ]);
-        }
+        try checkVersion(cmsVersion, "EnvelopedData", min: 0, max: 4);
 
         let (contentKey, usedRecipient, allRecipients) = try self.recoverContentKey(recipientBlobs: recipientBlobs);
         
@@ -669,6 +709,7 @@ class OFCMSUnwrapper {
         self.cms = plaintext_ as Data;
         self.contentRange = NSRange(location: 0, length: plaintext_.count);
         self.contentType = innerType;
+        self.fromContentInfo = false;
         self.usedRecipient = usedRecipient;
         self.allRecipients += allRecipients;
     }
@@ -686,15 +727,13 @@ class OFCMSUnwrapper {
         var authenticatedAttributes : NSArray? = nil;
         var mac : NSData?;
         
-        let rc = OFASN1ParseCMSAuthEnvelopedData(cms, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent, &authenticatedAttributes, &mac);
+        let rc = OFASN1ParseCMSAuthEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent, &authenticatedAttributes, &mac);
         if (rc != 0) {
             throw OFNSErrorFromASN1Error(rc, "AuthEnvelopedData");
         }
         
         // Check version number. See RFC5083 [2.1].
-        guard cmsVersion == 0 else {
-            throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unknown AuthEnvelopedData version" ]);
-        }
+        try checkVersion(cmsVersion, "AuthEnvelopedData", min: 0, max: 0);
 
         // Parse the attributes.
         let attrs = try OFCMSUnwrapper.parseAttributes(authenticatedAttributes, innerType: innerType);
@@ -719,9 +758,87 @@ class OFCMSUnwrapper {
         self.cms = plaintext_ as Data;
         self.contentRange = NSRange(location: 0, length: plaintext_.count);
         self.contentType = innerType;
+        self.fromContentInfo = false;
         self.authenticated = true;
         self.usedRecipient = usedRecipient;
         self.allRecipients += allRecipients;
+    }
+    
+    func discardSignature() throws {
+
+        assert(contentType == OFCMSContentType_signedData);
+
+        var cmsVersion : Int32 = -1;
+        let certificateAccumulator = NSMutableArray();
+        let signatureAccumulator = NSMutableArray();
+        var innerType : OFCMSContentType = OFCMSContentType_Unknown;
+        var innerContentLocation = NSRange();
+
+        let rc = OFASN1ParseCMSSignedData(cms!, contentRange, &cmsVersion, certificateAccumulator, signatureAccumulator, &innerType, &innerContentLocation);
+        if (rc != 0) {
+            throw OFNSErrorFromASN1Error(rc, "SignedData");
+        }
+        
+        for certificate in certificateAccumulator {
+            embeddedCertificates.append(certificate as! Data);
+        }
+        
+        if innerContentLocation.length != 0 {
+            cms = OFASN1UnwrapOctetString(cms!, innerContentLocation);
+            contentRange = NSRange(location: 0, length: cms!.count);
+        } else {
+            cms = nil;
+        }
+        contentType = innerType;
+        fromContentInfo = false;
+        
+    }
+    
+    func splitParts() throws -> [OFCMSUnwrapper] {
+        
+        assert(contentType == OFCMSContentType_contentCollection);
+        
+        let cms_ = cms!;
+        
+        var results : [OFCMSUnwrapper] = [];
+        let rc = OFASN1ParseCMSMultipartData(cms_, contentRange) { (ct: OFCMSContentType, r: NSRange) -> Int32 in
+            let part = OFCMSUnwrapper(data: cms_, location: r, type: ct, keySource: keySource);
+            part.fromContentInfo = true;
+            part.authenticated = authenticated;
+            results.append(part);
+            return 0;
+        };
+        if (rc != 0) {
+            throw OFNSErrorFromASN1Error(rc, "ContentCollection");
+        }
+        
+        return results;
+    }
+        
+    func readAttributes() throws {
+
+        assert(contentType == OFCMSContentType_contentWithAttributes);
+
+        var innerType : OFCMSContentType = OFCMSContentType_Unknown;
+        var innerContentLocation = NSRange();
+        var attributes : NSArray? = nil;
+
+        let rc = OFASN1ParseCMSAttributedContent(cms!, contentRange, &innerType, &innerContentLocation, &attributes);
+        if (rc != 0) {
+            throw OFNSErrorFromASN1Error(rc, "ContentWithAttributes");
+        }
+
+        // Parse the attributes.
+        let attrs = try OFCMSUnwrapper.parseAttributes(attributes, innerType: innerType);
+        
+        contentRange = innerContentLocation;
+        contentType = innerType;
+        fromContentInfo = true;
+        
+        // The only atribute we process in this case is the content identifier
+        if attrs.contentIdentifier != nil {
+            self.contentIdentifier = attrs.contentIdentifier;
+        }
     }
     
     private struct parsedAttributes {
@@ -767,6 +884,13 @@ class OFCMSUnwrapper {
     }
 }
 
-/* RFC3274: Compressed content */
-/* RFC4073: Multiple content */
+private func unexpectedNullContent() -> Error {
+    return NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unexpected null content" ]);
+}
 
+private
+func checkVersion(_ version: Int32, _ location: String, min: Int32, max: Int32) throws {
+    if (version < min || version > max) {
+        throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unsupported \(location) version (\(version))" ]);
+    }
+}

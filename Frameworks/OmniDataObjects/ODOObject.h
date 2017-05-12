@@ -13,6 +13,8 @@
 #import <OmniDataObjects/ODOFeatures.h>
 #import <OmniBase/macros.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSString, NSArray, NSError, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
@@ -39,13 +41,13 @@
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
 
-- (id)initWithEditingContext:(ODOEditingContext *)context entity:(ODOEntity *)entity primaryKey:(id)primaryKey;
+- (id)initWithEditingContext:(ODOEditingContext *)context entity:(ODOEntity *)entity primaryKey:(nullable id)primaryKey;
 
 - (void)willAccessValueForKey:(NSString *)key;
 - (void)didAccessValueForKey:(NSString *)key;
 
-- (void)setPrimitiveValue:(id)value forKey:(NSString *)key; // do not subclass
-- (id)primitiveValueForKey:(NSString *)key; // do not subclass
+- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key; // do not subclass
+- (nullable id)primitiveValueForKey:(NSString *)key; // do not subclass
 
 - (void)setDefaultAttributeValues;
 
@@ -58,9 +60,9 @@
 
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 
-@property(readonly) ODOEntity *entity; // do not subclass
-@property(readonly) ODOEditingContext *editingContext; // do not subclass
-@property(readonly) ODOObjectID *objectID; // do not subclass
+@property (nonnull, nonatomic, readonly) ODOEntity *entity; // do not subclass
+@property (nonnull, nonatomic, readonly) ODOEditingContext *editingContext; // do not subclass
+@property (nonnull, nonatomic, readonly) ODOObjectID *objectID; // do not subclass
 
 - (void)willSave;
 - (void)willInsert NS_REQUIRES_SUPER; // Just calls -willSave
@@ -90,10 +92,10 @@
 - (BOOL)isUndeletable;
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
-- (NSDictionary *)changedValues;
-- (NSDictionary *)changedNonDerivedValues;
+- (nullable NSDictionary *)changedValues;
+- (nullable NSDictionary *)changedNonDerivedValues;
 
-- (id)committedValueForKey:(NSString *)key;
+- (nullable id)committedValueForKey:(NSString *)key;
 // - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 
 + (void)addDerivedPropertyNames:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
@@ -105,18 +107,18 @@
 @end
 
 // Helper functions that handle the guts of most common custom property setter/getter methods.
-extern BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue);
-extern BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint32_t value, uint32_t *outOldValue);
+extern BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue);
+extern BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint32_t value, uint32_t * _Nullable outOldValue);
 
 extern id ODOGetPrimitiveProperty(ODOObject *object, NSString *key);
-extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue);
+extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue);
 
-typedef id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
+typedef _Nullable id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
 
-typedef id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
+typedef _Nullable id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
 
 /// Returns the value of the given key for the object by reading the given snapshot, instead of querying the object directly. Useful if you have taken a snapshot of the object at some earlier point in time, and care about what the value of a particular key was at that point.
-extern id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler);
+extern _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We wouldn't implement this -- we need to switch to the newer API on the iPhone.  But, this will let things compile for now.
@@ -124,3 +126,5 @@ extern id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editi
 + (void)setKeys:(NSArray *)keys triggerChangeNotificationsForDependentKey:(NSString *)dependentKey;
 @end
 #endif
+
+NS_ASSUME_NONNULL_END

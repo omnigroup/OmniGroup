@@ -199,7 +199,7 @@ struct piece {
     size_t contentLength;        // If this is an object header, the total length of any other pieces "contained" by this one
     
     const uint8_t *rawBytes;            // A pointer to 'length' bytes
-    NSData * __unsafe_unretained obj;   // Or an NSData
+    id <NSObject> __unsafe_unretained obj; // Or an NSData or NSArray
     uint8_t stuffData[sizeof(uint32_t)];
     
     size_t *placeholder;  // Caller wants to know the location of this piece in the output data.
@@ -234,6 +234,7 @@ static struct computedSizes ofASN1ComputePieceSizes(const char *fmt, va_list arg
         if (!*cp)
             break;
         
+        /* '!' allows the caller to override the tag+class value of the next object. (This is mostly useful for implicit context tagging.) */
         if (*cp == '!') {
             tag = va_arg(argList, int);
             cp++;
@@ -249,11 +250,34 @@ static struct computedSizes ofASN1ComputePieceSizes(const char *fmt, va_list arg
             case 'd':
             {
                 NSData * __unsafe_unretained obj = va_arg(argList, NSData * __unsafe_unretained);
+                OBASSERT([obj isKindOfClass:[NSData class]]);
                 pieces[pieceCount++] = (struct piece){
                     .tagAndClass = 0,
                     .length = [obj length],
                     .rawBytes = NULL,
                     .obj = obj,
+                    .placeholder = NULL,
+                    
+                    .container = -1,
+                    .lastContent = -1
+                };
+            }
+                break;
+                
+            /* Raw bytes, as an array of NSDatas */
+            case 'a':
+            {
+                NSArray <NSData *> * __unsafe_unretained arr = va_arg(argList, NSArray <NSData *> * __unsafe_unretained);
+                OBASSERT([arr isKindOfClass:[NSArray class]]);
+                NSUInteger totalLength = 0;
+                NSUInteger count = [arr count];
+                for (NSUInteger i = 0; i < count; i++)
+                    totalLength += [[arr objectAtIndex:i] length];
+                pieces[pieceCount++] = (struct piece){
+                    .tagAndClass = 0,
+                    .length = totalLength,
+                    .rawBytes = NULL,
+                    .obj = arr,
                     .placeholder = NULL,
                     
                     .container = -1,
@@ -412,6 +436,8 @@ static struct computedSizes ofASN1ComputePieceSizes(const char *fmt, va_list arg
         cp++;
     }
 
+    assert(lastOpen == -1); // Assert that the open/close parens are balanced
+    
     /* Run through backwards to compute lengths */
     size_t totalLength = 0;
     for (int pieceIndex = pieceCount-1; pieceIndex >= 0; pieceIndex --) {
@@ -444,7 +470,7 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
     
     /* Accumulate everything into the supplied buffer */
     if (!buffer)
-        buffer = [NSMutableData dataWithCapacity:sizes.totalLength];
+        buffer = [NSMutableData dataWithCapacity:sizes.totalLength - sizes.totalPlaceholderLength];
     
     for (int pieceIndex = 0; pieceIndex < sizes.pieceCount; pieceIndex ++) {
         const struct piece *piece = &sizes.pieces[pieceIndex];
@@ -458,7 +484,14 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
         } else if (piece->rawBytes) {
             [buffer appendBytes:piece->rawBytes length:piece->length];
         } else if (piece->obj) {
-            [buffer appendData:piece->obj];
+            if ([piece->obj isKindOfClass:[NSData class]]) {
+                [buffer appendData:(NSData *)piece->obj];
+            } else {
+                NSUInteger count = [(NSArray <NSData *> *)(piece->obj) count];
+                for (NSUInteger i = 0; i < count; i++) {
+                    [buffer appendData:[(NSArray <NSData *> *)(piece->obj) objectAtIndex:i]];
+                }
+            }
         } else {
             OBASSERT_NOT_REACHED("?");
         }
@@ -471,6 +504,32 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
     return buffer;
 }
 
+static inline dispatch_data_t accumulatePiece(dispatch_data_t accum, NSMutableData *buffer, NSData *piece)
+{
+    size_t pieceLength = piece.length;
+    if (pieceLength < 256) {
+        // It's not worth creating a separate segment for this.
+        [buffer appendData:piece];
+        return accum;
+    }
+    
+    size_t bufferLength = buffer.length;
+    if (pieceLength + bufferLength < 16384) {
+        // Or this.
+        [buffer appendData:piece];
+        return accum;
+    }
+    
+    dispatch_data_t segment = dispatch_of_NSData(piece);
+    if (bufferLength > 0) {
+        dispatch_data_t chunk = dispatch_data_create(buffer.bytes, bufferLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
+        segment = dispatch_data_create_concat(chunk, segment);
+        [buffer setLength:0];
+    }
+    
+    return dispatch_data_create_concat(accum, segment);
+}
+
 dispatch_data_t OFASN1MakeStructure(const char *fmt, ...)
 {
     /* Parse the format string and compute offsets */
@@ -481,7 +540,7 @@ dispatch_data_t OFASN1MakeStructure(const char *fmt, ...)
     
     /* Accumulate everything into buffers */
     dispatch_data_t accum = dispatch_data_empty;
-    NSMutableData *buffer = [NSMutableData dataWithCapacity:sizes.totalLength];
+    NSMutableData *buffer = [NSMutableData data];
     
     for (int pieceIndex = 0; pieceIndex < sizes.pieceCount; pieceIndex ++) {
         const struct piece *piece = &sizes.pieces[pieceIndex];
@@ -495,18 +554,13 @@ dispatch_data_t OFASN1MakeStructure(const char *fmt, ...)
         } else if (piece->rawBytes) {
             [buffer appendBytes:piece->rawBytes length:piece->length];
         } else if (piece->obj) {
-            size_t pieceLength = [(piece->obj) length];
-            size_t bufferLength = buffer.length;
-            if (pieceLength < 256 || pieceLength + bufferLength < 16384) {
-                // It's not worth creating a separate segment for this.
-                [buffer appendData:piece->obj];
+            if ([piece->obj isKindOfClass:[NSData class]]) {
+                accum = accumulatePiece(accum, buffer, (NSData *)piece->obj);
             } else {
-                if (bufferLength > 0) {
-                    dispatch_data_t chunk = dispatch_data_create(buffer.bytes, bufferLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
-                    accum = dispatch_data_create_concat(accum, chunk);
-                    [buffer setLength:0];
+                NSUInteger count = [(NSArray <NSData *> *)(piece->obj) count];
+                for (NSUInteger i = 0; i < count; i++) {
+                    accum = accumulatePiece(accum, buffer, [(NSArray <NSData *> *)(piece->obj) objectAtIndex:i]);
                 }
-                accum = dispatch_data_create_concat(accum, dispatch_of_NSData(piece->obj));
             }
         } else {
             OBASSERT_NOT_REACHED("?");

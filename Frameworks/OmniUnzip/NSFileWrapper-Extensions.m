@@ -13,9 +13,11 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSFileWrapper (OmniUnzipExtensions)
 
-- (NSFileWrapper *)zippedFileWrapper:(NSError **)outError;
+- (nullable NSFileWrapper *)zippedFileWrapper:(NSError **)outError;
 {
     NSData *zippedData = [OUZipArchive zipDataFromFileWrappers:self.fileWrappers.allValues error:outError];
     OBASSERT(zippedData);
@@ -27,7 +29,7 @@ RCS_ID("$Id$")
     return [[NSFileWrapper alloc] initRegularFileWithContents:zippedData];
 }
 
-- (NSFileWrapper *)unzippedFileWrapperFromURL:(NSURL *)url error:(NSError **)outError;
+- (nullable NSFileWrapper *)unzippedFileWrapperFromURL:(NSURL *)url error:(NSError **)outError;
 {
     if (!self.isRegularFile) {
         if (outError)
@@ -61,3 +63,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

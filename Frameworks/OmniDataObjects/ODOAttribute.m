@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,7 +64,7 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
     OBPRECONDITION(type > ODOAttributeTypeInvalid);
     OBPRECONDITION(type < ODOAttributeTypeCount);
     OBPRECONDITION(valueClass);
-    OBPRECONDITION([valueClass conformsToProtocol:@protocol(NSCopying)] || (valueClass == [NSObject class] && transient)); // Can use NSObject/transient w/o having the class itself require NSCopying.  The values will require it, though.
+    OBPRECONDITION([valueClass conformsToProtocol:@protocol(NSCopying)] || (type == ODOAttributeTypeUndefined && transient)); // Can use NSObject/transient w/o having the class itself require NSCopying.  The values will require it, though.
     
     ODOAttribute *attr = [[ODOAttribute alloc] init];
     attr->_isPrimaryKey = isPrimaryKey;
@@ -82,6 +82,17 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
     attr->_type = type;
     attr->_valueClass = valueClass;
     attr->_defaultValue = [defaultValue copy];
+    
+    if (type == ODOAttributeTypeUndefined) {
+        if (valueClass == [NSObject class]) {
+            attr->_setterBehavior = ODOAttributeSetterBehaviorDetermineAtRuntime;
+        } else {
+            attr->_setterBehavior = [valueClass conformsToProtocol:@protocol(NSCopying)] ? ODOAttributeSetterBehaviorCopy : ODOAttributeSetterBehaviorRetain;
+        }
+    } else {
+        [valueClass conformsToProtocol:@protocol(NSCopying)];
+        attr->_setterBehavior = ODOAttributeSetterBehaviorCopy;
+    }
     
     return attr;
 }

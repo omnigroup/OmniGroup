@@ -43,6 +43,13 @@ RCS_ID("$Id$");
     return self;
 }
 
+- (void)awakeFromNib
+{
+    [super awakeFromNib];
+    self.allowPinning = YES;
+    //default to allow pinning, you can explicitly turn it off after loading the view
+}
+
 - (void)setTabMatrixHighlightStyle:(enum OITabMatrixHighlightStyle)newHighlightStyle;
 {
     if (newHighlightStyle != highlightStyle) {

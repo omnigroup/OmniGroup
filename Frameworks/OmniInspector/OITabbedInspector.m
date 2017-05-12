@@ -391,7 +391,9 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_tabTitleDidChange:) name:TabTitleDidChangeNotification object:nil];
 
     // Default to the first tab in case nobody else picks. Maybe we're not autoswitching
-    [self setSelectedTabIdentifiers:@[[self tabIdentifiers].firstObject] pinnedTabIdentifiers:@[]];
+    NSString *firstIdentifier = [self tabIdentifiers].firstObject;
+    NSArray *selectedTabIdentifiers = firstIdentifier ? @[firstIdentifier] : @[];
+    [self setSelectedTabIdentifiers:selectedTabIdentifiers pinnedTabIdentifiers:@[]];
 
     return self;
 }
@@ -424,13 +426,6 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)viewDidLoad;
-{
-    [super viewDidLoad];
-    
-    if (!_preferredTabIdentifierForInspectionIdentifier.count)
-        buttonMatrix.allowPinning = NO;
-}
 
 - (NSArray *)menuItemsForTarget:(nullable id)target action:(SEL)action;
 {

@@ -24,7 +24,6 @@
 
 + (void)registerAdditionalPanel:(NSWindowController *)additionalController;
 + (OIInspectorRegistry *)inspectorRegistryForMainWindow;
-+ (OIInspectorRegistry *)inspectorRegistryCurrentDocumentWindow;
 + (BOOL)allowsEmptyInspectorList;
 
 - (void)tabShowHidePanels;

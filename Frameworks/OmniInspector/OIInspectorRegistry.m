@@ -145,16 +145,13 @@ static NSMutableArray *additionalPanels = nil;
     return NO;
 }
 
-+ (OIInspectorRegistry *)inspectorRegistryCurrentDocumentWindow;
++ (OIInspectorRegistry *)inspectorRegistryForMainWindow;
 {
     NSDocumentController *sharedDocumentController = [NSDocumentController sharedDocumentController];
     NSDocument *currentDocument = sharedDocumentController.currentDocument;
-    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:currentDocument.frontWindowController.window];
-}
 
-+ (OIInspectorRegistry *)inspectorRegistryForMainWindow;
-{
-    return [self inspectorRegistryCurrentDocumentWindow];
+    OBFinishPortingLater("How do we narrow this down to exclude the scripting console window controller?");
+    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:currentDocument.frontWindowController.window];
 }
 
 static NSMutableArray *hiddenGroups = nil;

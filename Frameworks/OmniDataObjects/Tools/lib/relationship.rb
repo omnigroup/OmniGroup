@@ -32,6 +32,7 @@ module OmniDataObjects
     def objcTypeName
       "Relationship"
     end
+
     def objcDeleteRuleEnum
       "ODORelationshipDeleteRule#{delete.capitalize_first}"
     end
@@ -43,34 +44,41 @@ module OmniDataObjects
     
     # Would be better to have emitInterface have a way for use to declare properties and pass the class.  Then it could collect those and emit the @class w/o us repeating this logic.
     def add_class_names(names)
+      return if self.inherited_from
       if @many
-        return if self.inherited_from
         names << "NSSet"
+        names << target_name
       else
         if entity.abstract
           names << entity.instance_class
         else
-          names << @target.instance_class
+          names << target.instance_class
        end
       end
     end
+
     def emitInterface(f)
       if @many
-        # To many relationships are all sets and are (currently) read-only.  For now the inverse to-one is the editing point.
-        return if self.inherited_from # don't redeclare inherited to-many relationships since they'll have the same definition in the superclass
-        f << "@property(readonly) NSSet *#{name};\n"
+        # Don't emit this relationship if we've already emitted an inherited concrete property for it.
+        # Otherwise we want to emit a covariant override at each level of the hierarchy
+        if self.inherited_from
+          inherited_relationship = self.inherited_from.property_named(self.name)
+          return if !inherited_relationship.abstract_target?
+        end
+        kindof_attribute = abstract_target? ? "__kindof " : ""
+        f << "@property (nonatomic, nullable, readonly) NSSet<#{kindof_attribute}#{target_name} *> *#{name};\n"
       else
-        if entity.abstract
-          # Hacky; we have abstract self relationships for parent children.  Abstract entities don't have their relationship destinations resolved since they don't point to something real. We can at least declare the type of the to-one as specifically as we know it. Declare it read-only though, since we would prefer typechecking of the exact right class for writes.
+        if entity.abstract || abstract_target?
+          # Hacky; we have abstract self relationships for parent children.  Abstract entities don't have their relationship destinations resolved since they don't point to something real. We can at least declare the type of the to-one as specifically as we know it. Declare it read-only though (with the __kindof qualifier), since we would prefer typechecking of the exact right class for writes.
           fail "Expect abstract entities to be self joins." unless entity.name == target
-          f << "@property(readonly) #{entity.instance_class} *#{name};\n"
+          f << "@property (nonatomic, nullable, readonly) __kindof #{entity.instance_class} *#{name};\n"
         else
           if read_only?
-            read_only_attribute = ",readonly"
+            read_only_attribute = ", readonly"
           else
             read_only_attribute = ""
           end
-          f << "@property(nonatomic#{read_only_attribute},retain) #{@target.instance_class} *#{name};\n"
+          f << "@property (nonatomic, nullable#{read_only_attribute}, strong) #{target.instance_class} *#{name};\n"
        end
       end
     end
@@ -81,6 +89,31 @@ module OmniDataObjects
 
     def emitBinding(f)
       f << "    ODORelationshipBind(#{varName}, #{entity.varName}, #{target.varName}, #{inverse.varName});\n"
+    end
+
+    def target_name
+        case target
+        when String
+          target_entity = entity.model.entity_named(target)
+          return target_entity ? target_entity.instance_class : "#{entity.model.name}#{target}"
+        when Entity
+          return target.instance_class
+        else
+          fail "Unexpected type for target on relationship #{entity.name}.#{name}"
+        end
+    end
+    
+    def abstract_target?
+        case target
+        when String
+          target_entity = entity.model.entity_named(target)
+          return target_entity ? target_entity.abstract : true
+        when Entity
+          target_name = target.instance_class
+          return target.abstract
+        else
+          fail "Unexpected type for target on relationship #{entity.name}.#{name}"
+        end
     end
   end
 end

@@ -362,7 +362,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 // This is in OmniDataObjects so that model classes can call it on super w/o worring about whether they are the base class.  ODO doesn't itself support unarchiving, but this is a convenient place to put a generic awake method that is agnostic about the unarchiving strategy.  For example, and XML-base archiving might call a more complex method that does something specific to that archiver type and then call this generic method.
 - (void)awakeFromUnarchive;
 {
-    
+    // Nothing; for model classes
 }
 
 - (void)didAwakeFromFetch;

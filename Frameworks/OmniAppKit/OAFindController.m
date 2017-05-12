@@ -48,6 +48,7 @@ RCS_ID("$Id$")
 @implementation OAFindController
 {
     id <OAFindPattern> _currentPattern;
+    BOOL _hasMatch; // YES if the last find operation found a match.
 }
 
 - (instancetype)init;
@@ -132,19 +133,25 @@ RCS_ID("$Id$")
         NSBeep();
         return;
     }
-    
-    NSString *replacement = [_replaceTextField stringValue];
-    if (_currentPattern) {
-        [_currentPattern setReplacementString:replacement];
-        replacement = [_currentPattern replacementStringForLastFind];
+
+    if (!_currentPattern || !_hasMatch) {
+        NSBeep();
+        return;
     }
+
+    NSString *replacement = [_replaceTextField stringValue];
+    [_currentPattern setReplacementString:replacement];
+    replacement = [_currentPattern replacementStringForLastFind];
 
     [target replaceSelectionWithString:replacement];
 }
 
 - (IBAction)replaceAndFind:(id)sender;
 {
-    [self replace:sender];
+    // Clicking 'Find and Replace' w/o having previously done a find should just find the next match.
+    if (_currentPattern && _hasMatch) {
+        [self replace:sender];
+    }
     [self panelFindNext:sender];
 }
 
@@ -356,6 +363,8 @@ RCS_ID("$Id$")
     }
     
     _currentPattern = pattern;
+    _hasMatch = NO;
+
     return pattern;
 }
 
@@ -365,7 +374,6 @@ RCS_ID("$Id$")
 {
     id <OAFindControllerTarget> target;
     id <OAFindPattern> pattern;
-    BOOL result;
 
     pattern = [self currentPatternWithBackwardsFlag:backwardsFlag];
     if (!pattern)
@@ -375,9 +383,9 @@ RCS_ID("$Id$")
     if (!target)
         return NO;
 
-    result = [target findPattern:pattern backwards:backwardsFlag wrap:YES];
+    _hasMatch = [target findPattern:pattern backwards:backwardsFlag wrap:YES];
     [_searchTextField selectText:self];
-    return result;
+    return _hasMatch;
 }
 
 - (NSText *)enterSelectionTarget;

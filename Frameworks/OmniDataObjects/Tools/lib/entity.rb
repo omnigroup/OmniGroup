@@ -8,7 +8,7 @@ module OmniDataObjects
       @name = name
       @instance_class = options[:instance_class] || "#{model.name}#{name}"
       @properties = []
-      @abstract = options[:abstract]
+      @abstract = options[:abstract] || false
     end
 
     def property_named(name)
@@ -38,12 +38,15 @@ module OmniDataObjects
     def objcTypeName
       "Entity"
     end
+    
     def keyName
       "#{model.name}#{name}#{objcTypeName}Name"
     end
+    
     def varName
       "#{name}"
     end
+    
     def statementKey(k)
       "@\"#{k.to_s}:#{name}\""
     end
@@ -65,13 +68,13 @@ module OmniDataObjects
         fp.h << "@class #{c};\n"
       }
       
-      fp.h << "@interface #{instance_class} ()\n"
+      fp.h << "\n@interface #{instance_class} ()\n\n"
       begin
         properties.each {|p|
           p.emitInterface(fp.h)
         }
       end
-      fp.h << "@end\n"
+      fp.h << "\n@end\n"
       fp.h.br
       
       if properties.length > 0
@@ -98,6 +101,7 @@ module OmniDataObjects
       f << "nil]);\n"
 
     end
+    
     def emitBinding(f)
       f << "    ODOEntityBind(#{varName}, model);\n"
     end

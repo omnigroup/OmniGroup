@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <OmniBase/OBObject.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSURL;
 @class ODOEntity;
@@ -19,9 +21,11 @@
     id _primaryKey;
 }
 
-- initWithEntity:(ODOEntity *)entity primaryKey:(id)primaryKey;
+- (instancetype)initWithEntity:(ODOEntity *)entity primaryKey:(id)primaryKey;
 
-- (ODOEntity *)entity;
-- (id)primaryKey;
+@property (nonatomic, readonly) ODOEntity *entity;
+@property (nonatomic, readonly) id primaryKey;
 
 @end
+
+NS_ASSUME_NONNULL_END

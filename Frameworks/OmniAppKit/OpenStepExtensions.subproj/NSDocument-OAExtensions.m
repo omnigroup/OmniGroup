@@ -79,16 +79,50 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 }
 #endif
 
-- (NSArray *)orderedWindowControllers;
+- (NSArray <__kindof NSWindowController *> *)windowControllersOfClass:(Class)windowControllerClass;
 {
+    return [self.windowControllers select:^BOOL(NSWindowController *wc){
+        return !windowControllerClass || [wc isKindOfClass:windowControllerClass];
+    }];
+}
+
+- (NSArray <__kindof NSWindowController *> *)orderedWindowControllersOfClass:(Class)windowControllerClass;
+{
+    NSArray <NSWindowController *> *candidateWindowControllers = [self.windowControllers select:^(NSWindowController *wc){
+        // Ignore window controllers of the wrong class
+        if (windowControllerClass && ![wc isKindOfClass:windowControllerClass]) {
+            return NO;
+        }
+
+        // Don't provoke loading of windows we don't need
+        return wc.isWindowLoaded;
+    }];
+
+    if ([candidateWindowControllers count] <= 1) {
+        return candidateWindowControllers;
+    }
+
+    NSMutableArray <NSWindow *> *loadedWindows = [[[candidateWindowControllers arrayByPerformingBlock:^(NSWindowController *wc){
+        return wc.window;
+    }] mutableCopy] autorelease];
+
     NSArray *orderedWindows = [NSWindow windowsInZOrder]; // Doesn't include miniaturized or ordered out windows
-    NSArray *loadedWindowControllers = [[self windowControllers] objectsSatisfyingCondition:@selector(isWindowLoaded)]; // don't provoke loading of windows we don't need
-    
-    NSMutableArray *loadedWindows = [[[loadedWindowControllers valueForKey:@"window"] mutableCopy] autorelease];
     [loadedWindows sortBasedOnOrderInArray:orderedWindows identical:YES unknownAtFront:NO];
-    
+
     // Actually want the window controllers
-    return [loadedWindows valueForKey:@"windowController"];
+    return [loadedWindows arrayByPerformingBlock:^(NSWindow *window) {
+        return window.windowController;
+    }];
+}
+
+- (__kindof NSWindowController *)frontWindowControllerOfClass:(Class)windowControllerClass;
+{
+    return [[self orderedWindowControllersOfClass:windowControllerClass] firstObject];
+}
+
+- (NSArray <NSWindowController *> *)orderedWindowControllers;
+{
+    return [self orderedWindowControllersOfClass:[NSWindowController class]];
 }
 
 - (NSWindowController *)frontWindowController;

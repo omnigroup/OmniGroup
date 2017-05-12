@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODOModel.h>
 
+#import "ODOAttribute-Internal.h"
 #import "ODOObject-Internal.h"
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
@@ -374,7 +375,33 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, id value, ODOPropert
         }
     }
     
+    id valueCopy = nil;
+    if (!flags.relationship) {
+        ODOAttribute *attribute = OB_CHECKED_CAST(ODOAttribute, prop);
+        switch (_ODOAttributeSetterBehavior(attribute)) {
+            case ODOAttributeSetterBehaviorCopy: {
+                valueCopy = [value copy];
+                value = valueCopy;
+                break;
+            }
+                
+            case ODOAttributeSetterBehaviorRetain: {
+                break;
+            }
+                
+            case ODOAttributeSetterBehaviorDetermineAtRuntime: {
+                if ([value conformsToProtocol:@protocol(NSCopying)]) {
+                    valueCopy = [value copy];
+                    value = valueCopy;
+                }
+                break;
+            }
+        }
+    }
+
     _ODOObjectSetValueAtIndex(self, flags.snapshotIndex, value);
+    
+    [valueCopy release];
 }
 
 // If you copy the OmniDataObjects source into your project, you'll also need a shell script build phase like the "Generate Accessors" one in the OmniDataObjects framework project. This build phase needs to be ordered before the 'Compile Sources' phase.  If you prefer, you could run the script once (see its source to figure out how) and add the result to your project.  In this case you run the risk of a new version of ODO requiring a new format for this file.
@@ -393,8 +420,21 @@ void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *pro
 {
     // We don't allow editing to-many relationships from the to-many side.  We don't have many-to-many right now; edit the to-one on the other side.
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    if (flags.relationship  && flags.toMany)
+    if (flags.relationship  && flags.toMany) {
         OBRejectInvalidCall(object, _cmd, @"Attempted to set %@.%@, but we don't allow setting to-many relationships directly right now.", [object shortDescription], [prop name]);
+    }
+    
+    if (flags.relationship  && !flags.toMany && value != nil) {
+        if (![value isKindOfClass:[ODOObject class]]) {
+            OBRejectInvalidCall(object, _cmd, @"Attempted to set %@.%@ to something other than an ODOObject or nil.", [object shortDescription], [prop name]);
+        }
+        
+        ODOObject *objectValue = OB_CHECKED_CAST(ODOObject, value);
+        ODORelationship *rel = OB_CHECKED_CAST(ODORelationship, prop);
+        if (objectValue.entity != rel.destinationEntity) {
+            OBRejectInvalidCall(object, _cmd, @"Attempted to set %@.%@ to an ODOObject of the wrong entity type.", [object shortDescription], [prop name]);
+        }
+    }
     
     NSString *key = prop->_name;
     [object willChangeValueForKey:key];

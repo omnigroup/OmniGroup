@@ -92,17 +92,21 @@ module OmniDataObjects
       # Emit variables and property definitions for the inherited entities.  These only have property names (which are shared across all entities inheriting from them).  There is no entity name variable.
       @ordered_inherits.each {|e|
         efp = entity_pair(e,fs,fp)
+        efp.h << "NS_ASSUME_NONNULL_BEGIN\n"
+        efp.br
         e.emit(efp)
         efp.br
         e.properties.each {|p|
           next if p.inherited_from
           p.emit(efp)
         }
+        efp.h << "\n\nNS_ASSUME_NONNULL_END\n"
       }
       
       # Emit variables for the real entities; skipping those that are from the inherited entities
       entities.each {|e|
         efp = entity_pair(e,fs,fp)
+        efp.h << "NS_ASSUME_NONNULL_BEGIN\n"
         efp.br
         e.emit(efp)
         efp.br
@@ -110,19 +114,25 @@ module OmniDataObjects
           next if p.inherited_from
           p.emit(efp)
         }
+        efp.h << "\n\nNS_ASSUME_NONNULL_END\n"
       }
       
       func = "#{name}Model"
       fp.br
 
+      fp.h << "NS_ASSUME_NONNULL_BEGIN\n\n"
       fp.h << "@class ODOModel;\n"
-      fp.h << "extern ODOModel *#{func}(void);\n"
+      fp.h << "extern ODOModel *#{func}(void);\n\n"
+      fp.h << "NS_ASSUME_NONNULL_END\n"
 
       # Disable clang scan-build in the model creation function.  We allocate a bunch of stuff and don't bother releasing it since we intend for it to stick around anyway.
       fp.m << "#ifdef __clang__\n"
       fp.m << "static void DisableAnalysis(void) __attribute__((analyzer_noreturn));\n"
       fp.m << "#endif\n"
       fp.m << "static void DisableAnalysis(void) {}\n\n"
+
+      fp.m << "#pragma clang diagnostic push\n"
+      fp.m << "#pragma clang diagnostic ignored \"-Wundeclared-selector\"\n\n"
       
       fp.m << "ODOModel * #{func}(void)\n{\n"
       fp.m << "    DisableAnalysis();\n\n"
@@ -152,7 +162,9 @@ module OmniDataObjects
         fp.m << "    #{@on_load}();\n" if @on_load
       end
       fp.m << "    return model;\n"
-      fp.m << "}\n"
+      fp.m << "}\n\n"
+
+      fp.m << "#pragma clang diagnostic pop\n\n"
       
       fs.write
     end

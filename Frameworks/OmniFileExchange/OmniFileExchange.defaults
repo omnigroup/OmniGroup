@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>OFXMaximumAutomaticDownloadSize</key>
-	<integer>250000</integer>
-	<key>OFXSyncClientIdentifier</key>
-	<string/>
-	<key>OFXHiddenShouldUseCellularDataForSync</key>
-	<true/>
-    <key>OFXFileItemRecentErrorExpirationTimeInterval</key>
-    <real>120</real>
-    <key>OFXFileItemSkipTransfersWithErrorsInTimeInterval</key>
-    <real>5</real>
-    <key>OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping</key>
-    <integer>10</integer>
-</dict>
+    <dict>
+        <key>OFXMaximumAutomaticDownloadSize</key>
+        <integer>250000</integer>
+        <key>OFXSyncClientIdentifier</key>
+        <string/>
+        <key>OFXHiddenShouldUseCellularDataForSync</key>
+        <true/>
+        <key>OFXFileItemRecentErrorExpirationTimeInterval</key>
+        <real>120</real>
+        <key>OFXFileItemSkipTransfersWithErrorsInTimeInterval</key>
+        <real>5</real>
+        <key>OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping</key>
+        <integer>10</integer>
+        <key>OFXDangerousSyncedFolders</key>
+        <array>
+            <string>Dropbox</string>
+        </array>
+        <key>OFXDangerousSierraFolders</key>
+        <array>
+            <string>Desktop</string>
+            <string>Documents</string>
+        </array>
+        <key>OFXDangerousHomeFolders</key>
+        <array>
+            <string>Amazon Drive</string>
+            <string>Box Sync</string>
+            <string>Google Drive</string>
+            <string>OneDrive</string>
+            <string>SpiderOak Hive</string>
+        </array>
+    </dict>
 </plist>
