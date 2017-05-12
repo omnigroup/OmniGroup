@@ -15,12 +15,34 @@
 
 RCS_ID("$Id$");
 
+void * _OAConstructionTimeViewTabbedWindowsObservationContext = &_OAConstructionTimeViewTabbedWindowsObservationContext;
+
 @interface _OAConstructionTimeView : NSView
+
+@property (nonatomic, readonly) BOOL wantsBorder;
+
 @end
+
+#pragma mark -
 
 #define CONSTRUCTION_WARNING_HEIGHT (14)
 
 @implementation _OAConstructionTimeView
+
+- (id)initWithFrame:(NSRect)frameRect;
+{
+    self = [super initWithFrame:frameRect];
+    if (self == nil) {
+        return nil;
+    }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAConstructionTimeView_windowDidBecomeMain:) name:NSWindowDidBecomeMainNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAConstructionTimeView_windowDidResignMain:) name:NSWindowDidResignMainNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAConstructionTimeView_windowWillClose:) name:NSWindowWillCloseNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAConstructionTimeView_menuDidSendAction:) name:NSMenuDidSendActionNotification object:nil];
+
+    return self;
+}
 
 - (BOOL)isOpaque;
 {
@@ -60,6 +82,17 @@ RCS_ID("$Id$");
 	    CGContextFillPath(ctx);
 	}
 	CGContextEndTransparencyLayer(ctx);
+        
+        if (self.wantsBorder) {
+            NSRect border, remainder;
+            NSDivideRect(bounds, &border, &remainder, 1.0f, NSRectEdgeMaxY);
+
+            CGContextSetBlendMode(ctx, kCGBlendModeNormal);
+            CGContextSetAlpha(ctx, 1.0f);
+            
+            [[NSColor colorWithCalibratedWhite:0.0f alpha:0.115f] setFill];
+            NSRectFill(border);
+        }
     }
     CGContextRestoreGState(ctx);
 }
@@ -72,6 +105,59 @@ RCS_ID("$Id$");
 - (CGSize)intrinsicContentSize;
 {
     return CGSizeMake(NSViewNoInstrinsicMetric, CONSTRUCTION_WARNING_HEIGHT);
+}
+
+- (BOOL)wantsBorder;
+{
+    if (![NSWindow instancesRespondToSelector:@selector(tabbedWindows)]) {
+        return NO;
+    }
+    
+    return (self.window.tabbedWindows != nil);
+}
+
+- (void)viewDidMoveToWindow;
+{
+    [super viewDidMoveToWindow];
+    [self _setNeedsUpdateWantsBorder];
+}
+
+- (void)_OAConstructionTimeView_windowDidBecomeMain:(NSNotification *)notification;
+{
+    [self _setNeedsUpdateWantsBorder];
+}
+
+- (void)_OAConstructionTimeView_windowDidResignMain:(NSNotification *)notification;
+{
+    [self _setNeedsUpdateWantsBorder];
+}
+
+- (void)_OAConstructionTimeView_windowWillClose:(NSNotification *)notification;
+{
+    if (notification.object != self.window) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self _setNeedsUpdateWantsBorder];
+        }];
+    }
+}
+
+- (void)_OAConstructionTimeView_menuDidSendAction:(NSNotification *)notification;
+{
+    NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, notification.userInfo[@"MenuItem"]);
+    if (menuItem.action == @selector(toggleTabBar:)) {
+        [self _setNeedsUpdateWantsBorder];
+    }
+}
+
+- (void)_setNeedsUpdateWantsBorder;
+{
+    // We want to draw a border on top of ourselves if there is a tab bar in the window.
+    // Really, we want a border on the top and or bottom depending upon neighboring titlebar accessory view controllers, but the tab test is simpler for now and covers nearly all the use cases.
+    //
+    // tabbedWindows is not KVO compliant, we we watch for main resignation and window closes to refresh our wantsBorder flag.
+    // We don't actually recalculate this until draw time, because we become main before tabbedWindows is updated in the new tab case.
+
+    [self setNeedsDisplay:YES];
 }
 
 @end

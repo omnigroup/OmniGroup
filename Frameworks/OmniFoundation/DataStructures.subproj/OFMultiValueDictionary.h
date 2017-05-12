@@ -14,7 +14,7 @@
 
 @class NSArray, NSEnumerator, NSMutableDictionary;
 
-@interface OFMultiValueDictionary : OFObject </*NSCoding,*/ NSMutableCopying>
+@interface OFMultiValueDictionary : NSObject </*NSCoding,*/ NSMutableCopying>
 
 - init;
 - initWithCaseInsensitiveKeys:(BOOL)caseInsensitivity;

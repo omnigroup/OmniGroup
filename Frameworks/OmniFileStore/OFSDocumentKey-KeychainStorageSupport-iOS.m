@@ -310,7 +310,7 @@ static int whined = 0;
     return YES;
 }
 
-- (BOOL)storeWithKeychainIdentifier:(NSString *)label error:(NSError **)outError;
+- (BOOL)storeWithKeychainIdentifier:(NSString *)ident displayName:(NSString *)displayName error:(NSError **)outError;
 {
     NSData *appTag = [self applicationLabel];
     
@@ -321,10 +321,10 @@ static int whined = 0;
     }
     
     // Key label is documented to be a CFString, but it's actually a CFData. (RADAR 24496368)
-    NSData *labelbytes = [label dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *identbytes = [ident dataUsingEncoding:NSUTF8StringEncoding];
     
     CFDataRef material = CFDataCreate(kCFAllocatorDefault, wk.bytes, wk.len);
-    BOOL stored = storeInKeychain(material, (__bridge CFDataRef)appTag, label, outError);
+    BOOL stored = storeInKeychain(material, (__bridge CFDataRef)appTag, displayName, outError);
     CFRelease(material);
     
     if (!stored) {
@@ -344,8 +344,8 @@ static int whined = 0;
     NSUInteger count = readback.count;
     for(NSUInteger i = 0; i < count; i++) {
         NSDictionary *item = [readback objectAtIndex:i];
-        if (([[item objectForKey:(__bridge id)kSecAttrApplicationLabel] isEqual:label] ||
-             [[item objectForKey:(__bridge id)kSecAttrApplicationLabel] isEqual:labelbytes]) &&
+        if (([[item objectForKey:(__bridge id)kSecAttrApplicationLabel] isEqual:ident] ||
+             [[item objectForKey:(__bridge id)kSecAttrApplicationLabel] isEqual:identbytes]) &&
             [[item objectForKey:(__bridge id)kSecAttrApplicationTag] isEqual:appTag]) {
             found = YES;
             break;

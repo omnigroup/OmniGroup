@@ -288,6 +288,8 @@
 		34B4392F0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B4392D0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m */; };
 		34BA2B9215B6200E00228508 /* OFCredentials.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA2B8D15B6200E00228508 /* OFCredentials.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34BDC53117134B0400F4E9C4 /* OFXMLIdentifierTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BDC53017134B0400F4E9C4 /* OFXMLIdentifierTests.m */; };
+		34BDEA371DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34BDEA361DA45C70006389CF /* NSLocking-OFExtensions.swift */; };
+		34BDEA381DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34BDEA361DA45C70006389CF /* NSLocking-OFExtensions.swift */; };
 		34BED7D316E124C300FCE296 /* NSFileCoordinator-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BED7D116E124C300FCE296 /* NSFileCoordinator-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34BED7D516E124C300FCE296 /* NSFileCoordinator-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */; };
 		34C4D94008C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */; };
@@ -1784,6 +1786,7 @@
 		34BA2B8B15B6200E00228508 /* OFCredentials-iOS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCredentials-iOS.m"; sourceTree = "<group>"; };
 		34BA2B8D15B6200E00228508 /* OFCredentials.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCredentials.h; sourceTree = "<group>"; };
 		34BDC53017134B0400F4E9C4 /* OFXMLIdentifierTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifierTests.m; sourceTree = "<group>"; };
+		34BDEA361DA45C70006389CF /* NSLocking-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSLocking-OFExtensions.swift"; sourceTree = "<group>"; };
 		34BED7D116E124C300FCE296 /* NSFileCoordinator-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileCoordinator-OFExtensions.h"; sourceTree = "<group>"; };
 		34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileCoordinator-OFExtensions.m"; sourceTree = "<group>"; };
 		34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFComparisonPredicateExtensions.m; sourceTree = "<group>"; };
@@ -2435,6 +2438,7 @@
 				A2C67D820D91A4BB00BD7911 /* NSIndexSet-OFExtensions.m */,
 				00E51D33FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.h */,
 				00E51D16FE8AAEA611C9CC38 /* NSInvocation-OFExtensions.m */,
+				34BDEA361DA45C70006389CF /* NSLocking-OFExtensions.swift */,
 				00E51D34FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.h */,
 				00E51D17FE8AAEA611C9CC38 /* NSMutableArray-OFExtensions.m */,
 				34E9110B05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.h */,
@@ -4561,6 +4565,7 @@
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,
 				34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */,
 				1E21E6261D233E5100A04AE4 /* OFCMSContentTypes.m in Sources */,
+				34BDEA381DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */,
 				1E498AA31D6BC95A00996D7D /* OFXMLMaker.m in Sources */,
 				34F16B9E194F6F8000AD9C4D /* OFNull.m in Sources */,
 				34F16C0B194F775500AD9C4D /* NSString-OFUnicodeCharacters.m in Sources */,
@@ -4851,6 +4856,7 @@
 				34F8271C107E904600458A71 /* OFExtent.m in Sources */,
 				A25B740910B200C200195654 /* OFMetricPrefixFormatter.m in Sources */,
 				3455B53111116CCA00074705 /* NSFileManager-OFSimpleExtensions.m in Sources */,
+				34BDEA371DA45C70006389CF /* NSLocking-OFExtensions.swift in Sources */,
 				6C391FA5114C1B4E0049E917 /* OFNetChangeNotifier.m in Sources */,
 				349CCB0F118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				344D0AAA1190DDE400264D89 /* OFErrors.m in Sources */,

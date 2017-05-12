@@ -93,10 +93,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
 
 - (NSWindowController *)frontWindowController;
 {
-    NSArray *windowControllers = [self orderedWindowControllers];
-    if ([windowControllers count] == 0)
-        return nil;
-    return [windowControllers objectAtIndex:0];
+    return self.orderedWindowControllers.firstObject;
 }
 
 - (void)startingLongOperation:(NSString *)operationName automaticallyEnds:(BOOL)shouldAutomaticallyEnd;

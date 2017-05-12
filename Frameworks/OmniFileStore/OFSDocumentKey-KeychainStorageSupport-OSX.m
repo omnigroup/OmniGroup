@@ -135,6 +135,7 @@ static BOOL storeInKeychain(CFDataRef keymaterial, NSString *keyLabel, NSData *a
             kSecAttrAccount,
             kSecAttrService,
             kSecAttrGeneric,
+            kSecAttrLabel,
             
             kSecValueData,
         };
@@ -144,6 +145,7 @@ static BOOL storeInKeychain(CFDataRef keymaterial, NSString *keyLabel, NSData *a
             (__bridge CFStringRef)keychainAccountAttributeValue,
             (__bridge CFStringRef)keyLabel,
             (__bridge CFDataRef)applicationLabel,
+            (__bridge CFStringRef)displayName,
             
             keymaterial,
         };
@@ -199,7 +201,7 @@ static NSData *readFromKeychain(NSString *keyLabel, NSData *applicationLabel, NS
 
 @implementation OFSDocumentKey (Keychain)
 
-- (BOOL)storeWithKeychainIdentifier:(NSString *)identifier error:(NSError *__autoreleasing *)outError;
+- (BOOL)storeWithKeychainIdentifier:(NSString *)identifier displayName:(NSString *)displayName error:(NSError *__autoreleasing *)outError;
 {
     if (!wk.len) {
         OFSError(outError, OFSEncryptionNeedAuth, NSLocalizedStringFromTableInBundle(@"No key available", @"OmniFileStore", OMNI_BUNDLE, @"missing encryption key error description"), @"");
@@ -207,7 +209,7 @@ static NSData *readFromKeychain(NSString *keyLabel, NSData *applicationLabel, NS
     }
     
     CFDataRef material = CFDataCreate(kCFAllocatorDefault, wk.bytes, wk.len);
-    BOOL success = storeInKeychain(material, identifier, [self applicationLabel], identifier, outError);
+    BOOL success = storeInKeychain(material, identifier, [self applicationLabel], displayName, outError);
     CFRelease(material);
     return success;
 }

@@ -808,37 +808,21 @@ static void setupTintTable(void)
 @end
 
 @implementation _OATintedImage
-{
-    id _tintObserver;
-}
 
-- (id)initWithSize:(NSSize)aSize;
+- (instancetype)initWithSize:(NSSize)aSize;
 {
     self = [super initWithSize:aSize];
-    if (self == nil)
+    if (self == nil) {
         return nil;
+    }
 
-    [self _subscribeToTintNotifications];
-
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateTintedImage) name:NSControlTintDidChangeNotification object:nil];
     return self;
 }
 
 - (void)dealloc;
 {
-    if (_tintObserver != nil)
-        [[NSNotificationCenter defaultCenter] removeObserver:_tintObserver];
-}
-
-- (void)_subscribeToTintNotifications;
-{
-    if (_tintObserver != nil)
-        return;
-
-    __weak _OATintedImage *weakSelf = self;
-    _tintObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSControlTintDidChangeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-        _OATintedImage *strongSelf = weakSelf;
-        [strongSelf _updateTintedImage];
-    }];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)_updateTintedImage;

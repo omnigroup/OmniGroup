@@ -16,6 +16,8 @@
 
 @interface NSWindow (OAExtensions)
 
+@property (class, nonatomic, readonly) BOOL hasTabbedWindowSupport;
+
 + (NSArray *)windowsInZOrder;
 
 /// This block will be executed before -displayIfNeeded on *any* window.
@@ -51,3 +53,13 @@
 
 @end
 
+#pragma mark -
+
+@interface NSWindow (NSWindowTabbingExtensions)
+
+/// Temporarily sets the tabbing mode to the passed value, executes the block, then restore the previous value
+- (void)withTabbingMode:(NSWindowTabbingMode)tabbingMode performBlock:(void (^)(void))block;
+
+@end
+
+extern NSNotificationName const OAWindowUserTabbingPreferenceDidChange;

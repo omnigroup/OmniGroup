@@ -12,6 +12,6 @@
 @interface OFSDocumentKey (Keychain)
 
 - (BOOL)deriveWithKeychainIdentifier:(NSString *)ident error:(NSError **)outError;
-- (BOOL)storeWithKeychainIdentifier:(NSString *)label error:(NSError **)outError;
+- (BOOL)storeWithKeychainIdentifier:(NSString *)ident displayName:(NSString *)displayName error:(NSError **)outError;
 
 @end

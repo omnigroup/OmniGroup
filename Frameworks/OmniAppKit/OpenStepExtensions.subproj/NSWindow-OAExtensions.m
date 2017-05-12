@@ -50,6 +50,18 @@ static NSMutableArray *zOrder;
     return nil;
 }
 
++ (BOOL)hasTabbedWindowSupport;
+{
+    static BOOL _hasTabbedWindowSupport;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _hasTabbedWindowSupport = [NSWindow instancesRespondToSelector:@selector(tabbedWindows)];
+    });
+    
+    return _hasTabbedWindowSupport;
+}
+
+
 // Note that this will not return miniaturized windows (or any other ordered out window)
 + (NSArray *)windowsInZOrder;
 {
@@ -480,3 +492,114 @@ static void *RecalculateKeyViewLoopScheduledKey = &RecalculateKeyViewLoopSchedul
 
 @end
 
+#pragma mark -
+
+static BOOL (*original_validateUserInterfaceItem)(NSWindow *self, SEL _cmd, id <NSValidatedUserInterfaceItem>) = NULL;
+
+@implementation NSWindow (NSWindowTabbingExtensions)
+
++ (void)performPosing;
+{
+    original_validateUserInterfaceItem = (typeof(original_validateUserInterfaceItem))OBReplaceMethodImplementation(self, @selector(validateUserInterfaceItem:), (IMP)[[self class] instanceMethodForSelector:@selector(_replacement_validateUserInterfaceItem:)]);
+}
+
+- (BOOL)_replacement_validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item;
+{
+    BOOL result = original_validateUserInterfaceItem(self, _cmd, item);
+    
+    if (item.action == @selector(toggleTabBar:)) {
+        // Why doesn't NSValidatedUserInterfaceItem conform to NSObject?
+        if ([(id)item isKindOfClass:[NSMenuItem class]]) {
+            // AppKit puts a checkmark on the menu item title, rather than toggling between Show/Hide as is the convention for other AppKit provided menu items.
+            // rdar://problem/28569216
+            NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, item);
+            NSString *title = nil;
+            
+            if (menuItem.state) {
+                title = NSLocalizedStringFromTableInBundle(@"Hide Tab Bar", @"OmniAppKit", OMNI_BUNDLE, "menu item title");
+            } else {
+                title = NSLocalizedStringFromTableInBundle(@"Show Tab Bar", @"OmniAppKit", OMNI_BUNDLE, "menu item title");
+            }
+
+            menuItem.title = title;
+            menuItem.state = 0;
+        }
+    }
+    
+    return result;
+}
+
+- (void)withTabbingMode:(NSWindowTabbingMode)tabbingMode performBlock:(void (^)(void))block;
+{
+    OBPRECONDITION(block != NULL);
+    
+    if ([[self class] hasTabbedWindowSupport]) {
+        NSWindowTabbingMode savedTabbingMode = self.tabbingMode;
+        NSDisableScreenUpdates();
+        @try {
+            self.tabbingMode = tabbingMode;
+            block();
+        } @finally {
+            self.tabbingMode = savedTabbingMode;
+            NSEnableScreenUpdates();
+        }
+    } else {
+        block();
+    }
+}
+
+@end
+
+#pragma mark -
+
+NSNotificationName const OAWindowUserTabbingPreferenceDidChange = @"OAWindowUserTabbingPreferenceDidChange";
+void *OAWindowUserTabbingPreferenceDidChangeObservationContext = &OAWindowUserTabbingPreferenceDidChangeObservationContext;
+
+@interface OAWinderUserTabbingPreferenceObserver : NSObject {
+  @private
+    NSUserDefaults *_userDefaults;
+}
+
+@end
+
+#pragma mark -
+
+static OAWinderUserTabbingPreferenceObserver *_sharedUserWindowTabbingPreferenceObserver;
+
+@implementation OAWinderUserTabbingPreferenceObserver : NSObject
+
++ (void)didLoad;
+{
+    if (_sharedUserWindowTabbingPreferenceObserver == nil) {
+        _sharedUserWindowTabbingPreferenceObserver = [[OAWinderUserTabbingPreferenceObserver alloc] init];
+    }
+}
+
+- (instancetype)init;
+{
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+    
+    _userDefaults = [NSUserDefaults standardUserDefaults];
+    [_userDefaults addObserver:self forKeyPath:@"AppleWindowTabbingMode" options:0 context:OAWindowUserTabbingPreferenceDidChangeObservationContext];
+    
+    return self;
+}
+
+- (void)dealloc;
+{
+    OBASSERT_NOT_REACHED("Global instance should never be deallocated.");
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context;
+{
+    if (context == OAWindowUserTabbingPreferenceDidChangeObservationContext) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:OAWindowUserTabbingPreferenceDidChange object:nil];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
+@end
