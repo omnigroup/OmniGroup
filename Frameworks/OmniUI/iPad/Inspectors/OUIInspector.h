@@ -51,26 +51,28 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
 @property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
 
-// this is exposed so that OG-iPad can swap to the image picker. It probably shouldn't be used for much, if anything else.
-@property(readwrite,strong,nonatomic) UINavigationController *navigationController;
+@property(nonatomic, strong, readonly) UINavigationController *navigationController;
 
-- (BOOL)isEmbededInOtherNavigationController; // Subclass to return YES if you intend to embed the inspector into a your own navigation controller (you might not yet have the navigation controller, though).
-- (UINavigationController *)embeddingNavigationController; // Needed when pushing detail panes with -isEmbededInOtherNavigationController.
-
+// JCTODO: This implementation expects that the navigation controller is being presented. We won't be presented in the new world. Check to see if this is still needed.
 @property(readonly,nonatomic,getter=isVisible) BOOL visible;
 
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason; // If you wrap edits in the will/did change methods below, this will be called automatically on the 'did'.
-- (void)dismissImmediatelyIfVisible;
-- (void)dismiss;
-- (void)dismissAnimated:(BOOL)animated;
+// JCTODO: BEGIN REMOVAL
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//
+//
+//- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//- (void)dismissImmediatelyIfVisible;
+//- (void)dismiss;
+//- (void)dismissAnimated:(BOOL)animated;
+// JCTODO: END REMOVAL
 
 @property (nonatomic) BOOL useFullScreenOnHorizontalCompact;
 
+// JCTODO: Inspector refactor.
+- (void)inspectObjects:(NSArray *)objects;
 - (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitCollection;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
@@ -81,19 +83,25 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 - (void)pushPane:(OUIInspectorPane *)pane; // clones the inspected objects of the current top pane
 - (void)popToPane:(OUIInspectorPane *)pane;
 
+/**
+ Same as `(OUIInspectorPane *)self.navigationController.topViewController`.
+ */
 @property(readonly,nonatomic) OUIInspectorPane *topVisiblePane;
 
+- (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason; // If you wrap edits in the will/did change methods below, this will be called automatically on the 'did'.
 - (void)willBeginChangingInspectedObjects; // start of ui action
 - (void)didEndChangingInspectedObjects;    // end of ui action
 
 - (void)beginChangeGroup;  // start of intermideate event
 - (void)endChangeGroup;    // end of intermediate event
 
+// JCTODO: BEGIN REFACTOR - Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
 @property (copy, nonatomic) void (^presentInspectorCompletion)(void);
 @property (copy, nonatomic) void (^animationsToPerformAlongsidePresentation)(id<UIViewControllerTransitionCoordinatorContext> context);
 @property (copy, nonatomic) void (^dismissInspectorCompletion)(void);
 /// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
 @property (copy, nonatomic) void (^animationsToPerformAlongsideDismissal)(id<UIViewControllerTransitionCoordinatorContext> context);
+// JCTODO: END REFACTOR - Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
 
 @end
 

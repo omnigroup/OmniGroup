@@ -589,6 +589,8 @@ RCS_ID("$Id$")
 
 - (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
 {
+    OBASSERT_NOTNULL(completionHandler);
+    
     completionHandler = [completionHandler copy]; // preserve scope
     
     if (OFISNULL(exportType)) {
@@ -620,15 +622,15 @@ RCS_ID("$Id$")
         pathExtension = @"png";
     }
     
-    if (fileData == nil)
+    if (fileData == nil) {
         completionHandler(nil, error);
+        return;
+    }
     
     NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initRegularFileWithContents:fileData];
     fileWrapper.preferredFilename = [fileItem.name stringByAppendingPathExtension:pathExtension];
     
-    if (completionHandler) {
-        completionHandler(fileWrapper, error);
-    }
+    completionHandler(fileWrapper, error);
 }
 
 #pragma mark - Subclass Overrides

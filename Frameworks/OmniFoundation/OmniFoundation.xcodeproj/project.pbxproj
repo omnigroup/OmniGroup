@@ -36,6 +36,7 @@
 		1E2377931D765CE500CBDA3D /* OFRFC3211Wrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E2377911D765CE500CBDA3D /* OFRFC3211Wrap.h */; };
 		1E2573681CB5E9DF00049669 /* OFAsynchronousOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E8657021CB365B100139490 /* OFAsynchronousOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E25736E1CB5F4F100049669 /* OFAsynchronousOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E8657091CB365BF00139490 /* OFAsynchronousOperation.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		1E3184A91DADE35D0022430C /* OFDocumentEncryption-Inspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */; };
 		1E3274CE1D500E2800F0827C /* OFDocumentEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */; };
 		1E3274CF1D500E2800F0827C /* OFDocumentEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */; };
 		1E3C71B91D63EB160039813D /* OFCMS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3C71B81D63EB160039813D /* OFCMS.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1455,6 +1456,7 @@
 		1E1CF5481A5208040068FA07 /* OFASN1-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "OFASN1-Internal.h"; path = "Crypto/OFASN1-Internal.h"; sourceTree = "<group>"; };
 		1E21E6241D233E5100A04AE4 /* OFCMSContentTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCMSContentTypes.m; sourceTree = "<group>"; };
 		1E2377911D765CE500CBDA3D /* OFRFC3211Wrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFRFC3211Wrap.h; sourceTree = "<group>"; };
+		1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OFDocumentEncryption-Inspection.swift"; sourceTree = "<group>"; };
 		1E3184AF1DADE81B0022430C /* OFDocumentEncryption.rnc */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFDocumentEncryption.rnc; sourceTree = "<group>"; };
 		1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OFDocumentEncryption.swift; sourceTree = "<group>"; };
 		1E3C71B81D63EB160039813D /* OFCMS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCMS.h; sourceTree = "<group>"; };
@@ -2334,6 +2336,7 @@
 				347F09131A9D2CCF00B05908 /* OFFileMotionResult.h */,
 				347F09141A9D2CCF00B05908 /* OFFileMotionResult.m */,
 				1E3274CD1D500E2800F0827C /* OFDocumentEncryption.swift */,
+				1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */,
 				1E5F988D1D888D2D00A85BC3 /* OFDocumentEncryption-ObjC.h */,
 				1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */,
 				1E3184AF1DADE81B0022430C /* OFDocumentEncryption.rnc */,
@@ -4172,6 +4175,7 @@
 		00E51C5BFE8AAEA611C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0800;
 				TargetAttributes = {
@@ -4855,6 +4859,7 @@
 				A2B6E77F0E37D39600A71C3B /* OFSimpleLock.c in Sources */,
 				A2091C1B0E5A149E007B59A7 /* OFFilterProcess.m in Sources */,
 				34D5F9F80E9EF0420055E958 /* OFXMLIdentifier.m in Sources */,
+				1E3184A91DADE35D0022430C /* OFDocumentEncryption-Inspection.swift in Sources */,
 				341F551E0F72F08100632558 /* OFXMLParser.m in Sources */,
 				343BA6FF0F740AB100329C2F /* OFXMLReader.m in Sources */,
 				343BA7FA0F74169D00329C2F /* OFXMLInternedStringTable.m in Sources */,

@@ -120,6 +120,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return isLater;
 }
 
++ (BOOL)isOperatingSystemSierraWithTouchBarOrLater; // 10.12.1 with Touch Bar support (build 12B2657 or later)
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = NSClassFromString(@"NSTouchBar") != nil; // Apple's ToolbarSample app tests for NSClassFromString(@"NSTouchBar"), so that's what we do too. (We can't just test for 10.12.1, because the first App Store update that called itself 10.12.1 didn't include Touch Bar support.)
+    });
+
+    return isLater;
+}
+
 #endif
 
 /* Initializes the receiver from a string representation of a version number.  The input string may have an optional leading 'v' or 'V' followed by a sequence of positive integers separated by '.'s.  Any trailing component of the input string that doesn't match this pattern is ignored.  If no portion of this string matches the pattern, nil is returned. */

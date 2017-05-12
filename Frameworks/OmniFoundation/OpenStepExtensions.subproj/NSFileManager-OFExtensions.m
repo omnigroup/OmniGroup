@@ -650,6 +650,12 @@ static mode_t permissionsMask = 0022;
         return YES;
     }
     
+#ifdef DEBUG_kc0
+    if (error != NULL)
+        *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+    return NO;
+#endif
+    
     OSStatus sandboxStatus = SecStaticCodeCheckValidity(applicationCode, kSecCSDefaultFlags, sandboxRequirement);
     switch (sandboxStatus) {
         case errSecSuccess: {

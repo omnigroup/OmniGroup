@@ -9,10 +9,10 @@
 
 #import <OmniFoundation/OFPreference.h>
 #import <Foundation/Foundation.h>
-#import <libkern/OSAtomic.h>
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
+#import <stdatomic.h>
 
 RCS_ID("$Id$")
 
@@ -22,7 +22,7 @@ static OFDeclareDebugLogLevel(OFBackgroundActivityDebug);
         NSLog(@"BACKGROUND (%d) %@: " format, RunningActivityCount, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
-static int32_t RunningActivityCount = 0;
+static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
 
 @implementation OFBackgroundActivity
 {
@@ -55,11 +55,11 @@ static int32_t RunningActivityCount = 0;
     if (_task == UIBackgroundTaskInvalid)
         NSLog(@"OFBackgroundActivity %@ unable to start background task", _identifier);
     else
-        OSAtomicIncrement32(&RunningActivityCount);
+        atomic_fetch_add_explicit(&RunningActivityCount, 1, memory_order_relaxed);
 #else
     [[NSProcessInfo processInfo] disableSuddenTermination];
     _suddenTerminationDisabled = YES;
-    OSAtomicIncrement32(&RunningActivityCount);
+    atomic_fetch_add_explicit(&RunningActivityCount, 1, memory_order_relaxed);
 #endif
     
     DEBUG_ACTIVITY(1, @"started");
@@ -98,7 +98,7 @@ static int32_t RunningActivityCount = 0;
     if (task != UIBackgroundTaskInvalid) {
         // Delay ending the task until the current call stack is done, letting other resources possible be deallocated in the autorelease pool (since we may be going to sleep and not dying outright). Also, we might be on a background queue (probably safe to call UIApplication here, but let's not assume so).
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            OSAtomicDecrement32(&RunningActivityCount);
+            atomic_fetch_add_explicit(&RunningActivityCount, -1, memory_order_relaxed);
             DEBUG_ACTIVITY(1, @"finished");
 
             // Do this last since it might be the last thing we do...
@@ -115,7 +115,7 @@ static int32_t RunningActivityCount = 0;
     
     if (disabled) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            OSAtomicDecrement32(&RunningActivityCount);
+            atomic_fetch_add_explicit(&RunningActivityCount, -1, memory_order_relaxed);
             DEBUG_ACTIVITY(1, @"finished");
             
             // Do this last since it might be the last thing we do...

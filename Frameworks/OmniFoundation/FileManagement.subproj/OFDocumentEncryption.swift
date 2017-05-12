@@ -26,7 +26,15 @@ class OFDocumentEncryptionSettings : NSObject {
         if (OFCMSFileWrapper.mightBeEncrypted(wrapper)) {
             let helper = OFCMSFileWrapper();
             helper.delegate = keys;
-            let unwrapped = try helper.unwrap(input: wrapper);
+            let unwrapped : FileWrapper;
+            do {
+                unwrapped = try helper.unwrap(input: wrapper);
+            } catch let e as NSError {
+                if e.domain == OFErrorDomain && (e.code == OFKeyNotAvailable || e.code == OFKeyNotApplicable) {
+                    info.pointee = OFDocumentEncryptionSettings(from: helper);
+                }
+                throw e;
+            }
             info.pointee = OFDocumentEncryptionSettings(from: helper);
             return unwrapped;
         } else {
@@ -50,7 +58,7 @@ class OFDocumentEncryptionSettings : NSObject {
     
     /** Encrypts a file wrapper using the receiver's settings. */
     @objc(encryptFileWrapper:schema:error:)
-    public func wrap(_ wrapper: FileWrapper, schema: [String:AnyObject]?) throws -> FileWrapper {
+    public func wrap(_ wrapper: FileWrapper, schema: [String:Any]?) throws -> FileWrapper {
         let helper = OFCMSFileWrapper();
         for recipient in recipients {
             if let pkrecipient = recipient as? CMSPKRecipient,
@@ -64,6 +72,9 @@ class OFDocumentEncryptionSettings : NSObject {
     @objc
     public var cmsOptions : OFCMSOptions;
     
+    /// The unencrypted, outer identifier for this document.
+    ///
+    /// This is used to match the document with a password keychain item.
     @objc
     public var documentIdentifier : Data?;
     
@@ -77,32 +88,42 @@ class OFDocumentEncryptionSettings : NSObject {
         recipients = wrapper.recipientsFoo;
         unreadableRecipientCount = 0;
         
-        var unresolvedPKRecipients = recipients.flatMap { (recip) -> CMSPKRecipient? in
-            if let r = recip as? CMSPKRecipient, !r.canWrap() {
-                return r;
-            } else {
-                return nil;
-            }
-        };
+        let embeddedCertificates = wrapper.embeddedCertificates.lazy.flatMap { SecCertificateCreateWithData(kCFAllocatorDefault, $0 as CFData) };
         
-        for certData in wrapper.embeddedCertificates {
-            if unresolvedPKRecipients.isEmpty {
-                break;
-            }
-            
-            guard let cert = SecCertificateCreateWithData(kCFAllocatorDefault, certData as CFData) else {
-                continue;
-            }
-            
-            var i = 0;
-            while i < unresolvedPKRecipients.count {
-                if unresolvedPKRecipients[i].resolve(certificate: cert) {
-                    unresolvedPKRecipients.remove(at: i);
-                } else {
-                    i += 1;
+        for recipient_ in recipients {
+            resolveRecipient:
+            if let recipient = recipient_ as? CMSPKRecipient, !recipient.canWrap() {
+                
+                // First try the embedded certificates
+                for cert in embeddedCertificates {
+                    if recipient.resolve(certificate: cert) {
+                        break resolveRecipient;
+                    }
                 }
+                
+                // Next see if we can resolve from our auxiliary keys
+                for auxiliaryKey in wrapper.auxiliaryAsymmetricKeys {
+                    do {
+                        if let cert = try auxiliaryKey.certificate() {
+                            if recipient.resolve(certificate: cert) {
+                                break resolveRecipient;
+                            }
+                        }
+                    } catch let e {
+                        debugPrint(e);
+                        // Ignore exceptions from here
+                    }
+                }
+                
+                // Or from the keychains
+                if recipient.resolveWithKeychain() {
+                    break resolveRecipient;
+                }
+                
+                // Not much else we can do here?
             }
         }
+
     }
     
     @objc public
@@ -113,31 +134,18 @@ class OFDocumentEncryptionSettings : NSObject {
     }
     
     @objc public
-    init(settings other: OFDocumentEncryptionSettings) {
-        cmsOptions = other.cmsOptions;
-        recipients = other.recipients;
-        unreadableRecipientCount = other.unreadableRecipientCount;
-    }
-    
-    /// Removes any existing password recipients, and adds one given a plaintext passphrase.
-    // - parameter: The password to set.
-    @objc public
-    func setPassword(_ password: String) {
-        recipients = recipients.filter({ (recip: CMSRecipient) -> Bool in !(recip is CMSPasswordRecipient) });
-        recipients.insert(CMSPasswordRecipient(password: password), at: 0);
-    }
-    
-    /// Returns YES if the receiver allows decryption using a password.
-    @objc public
-    func hasPassword() -> ObjCBool {
-        for recip in recipients {
-            if recip is CMSPasswordRecipient {
-                return true;
-            }
+    init(settings other_: OFDocumentEncryptionSettings?) {
+        if let other = other_ {
+            cmsOptions = other.cmsOptions;
+            recipients = other.recipients;
+            unreadableRecipientCount = other.unreadableRecipientCount;
+        } else {
+            cmsOptions = [];
+            recipients = [];
+            unreadableRecipientCount = 0;
         }
-        return false;
     }
-        
+    
 };
 
 internal
@@ -150,6 +158,7 @@ class OFCMSFileWrapper {
     var recipientsFoo : [CMSRecipient] = [];
     var usedRecipient : CMSRecipient? = nil;
     var embeddedCertificates : [Data] = [];
+    var outermostIdentifier: Data? = nil;
     public var delegate : OFCMSKeySource? = nil;
     public var auxiliaryAsymmetricKeys : [Keypair] = [];
     
@@ -188,12 +197,9 @@ class OFCMSFileWrapper {
     private typealias partWrapSpec = (identifier: Data?, contents: dataSrc, type: OFCMSContentType, options: OFCMSOptions);
     
     /** Encrypts a FileWrapper and returns the encrypted version. */
-    func wrap(input: FileWrapper, previous: FileWrapper?, schema: [String: AnyObject]?, recipients: [CMSRecipient], options: OFCMSOptions) throws -> FileWrapper {
+    func wrap(input: FileWrapper, previous: FileWrapper?, schema: [String: Any]?, recipients: [CMSRecipient], docID: Data? = nil, options: OFCMSOptions) throws -> FileWrapper {
         
         var toplevelFileAttributes = input.fileAttributes;
-        guard let docID = toplevelFileAttributes.removeValue(forKey: OFDocEncryptionDocumentIdentifierFileAttribute) as? Data? else {
-            throw CocoaError(.fileWriteInvalidFileName);
-        }
         
         if input.isRegularFile {
             /* For flat files, we can simply encrypt the flat file and write it out. */
@@ -215,20 +221,20 @@ class OFCMSFileWrapper {
             var insideFiles : [ partWrapSpec ] = [];
             var nextPartNumber = 1;
             
-            func wrapWrapperHierarchy(_ w: FileWrapper, settings: [String:AnyObject]?) -> (files: [PackageIndex.FileEntry], directories: [PackageIndex.DirectoryEntry]) {
+            func wrapWrapperHierarchy(_ w: FileWrapper, settings: [String:Any]?) -> (files: [PackageIndex.FileEntry], directories: [PackageIndex.DirectoryEntry]) {
                 guard let items = w.fileWrappers else {
                     return ([], []); // what to do here? when can this happen?
                 }
                 var files : [PackageIndex.FileEntry] = [];
                 var directories : [PackageIndex.DirectoryEntry] = [];
                 for (realName, wrapper) in items {
-                    let setting = settings?[realName] as! [String : AnyObject]?;
+                    let setting = settings?[realName] as! [String : Any]?;
                     if wrapper.isRegularFile {
                         var obscuredName : String;
                         var fileOptions : OFCMSOptions = [];
                         
                         if let specifiedOptions = setting?[OFDocEncryptionFileOptions] {
-                            fileOptions.formUnion(specifiedOptions as! OFCMSOptions);
+                            fileOptions.formUnion(OFCMSOptions(rawValue: specifiedOptions as! UInt));
                         }
                         
                         let contentType = (fileOptions.contains(OFCMSOptions.contentIsXML)) ? OFCMSContentType_XML : OFCMSContentType_data;
@@ -259,7 +265,7 @@ class OFCMSFileWrapper {
                         
                         files.append(PackageIndex.FileEntry(realName: realName, storedName: obscuredName, options: fileOptions))
                     } else if wrapper.isDirectory {
-                        let subSettings : [String : AnyObject]? = setting?[OFDocEncryptionChildren] as! [String : AnyObject]?;
+                        let subSettings : [String : Any]? = setting?[OFDocEncryptionChildren] as! [String : Any]?;
                         let (subFiles, subDirectories) = wrapWrapperHierarchy(wrapper, settings: subSettings);
                         directories.append(PackageIndex.DirectoryEntry(realName: realName, files: subFiles, directories: subDirectories));
                     }
@@ -277,7 +283,7 @@ class OFCMSFileWrapper {
             let wrappedIndex = try self.wrap(parts: insideFiles,
                                              recipients: recipients,
                                              options: options,
-                                             outerIdentifier: nil);
+                                             outerIdentifier: docID);
             var resultItems : [String:FileWrapper] = [:];
             resultItems[OFCMSFileWrapper.indexFileName] = FileWrapper(regularFileWithContents: wrappedIndex);
             
@@ -336,6 +342,7 @@ class OFCMSFileWrapper {
             recipientsFoo = decryptedData.allRecipients;
             usedRecipient = decryptedData.usedRecipient;
             embeddedCertificates += decryptedData.embeddedCertificates;
+            outermostIdentifier = decryptedData.outerIdentifier;
             let unwrapped = FileWrapper(regularFileWithContents: unwrappedData);
             if let fname = input.preferredFilename {
                 unwrapped.preferredFilename = fname;
@@ -360,6 +367,7 @@ class OFCMSFileWrapper {
             recipientsFoo = decryptedIndexFile.allRecipients;
             usedRecipient = decryptedIndexFile.usedRecipient;
             embeddedCertificates += decryptedIndexFile.embeddedCertificates;
+            outermostIdentifier = decryptedIndexFile.outerIdentifier;
             guard let indexData = decryptedIndexFile.primaryContent else {
                 throw miscFormatError(reason: "Missing table of contents");
             }
@@ -639,9 +647,10 @@ class OFCMSFileWrapper {
     private func unexpectedContentTypeError(_ ct: OFCMSContentType) -> NSError {
         return NSError(domain: OFErrorDomain,
                        code: OFUnsupportedCMSFeature,
-                       userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unexpected CMS content-type found while unwrapping")]);
+                       userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object")]);
     }
     
+    /// PackageIndex represents the table-of-contents object of an encrypted file wrapper.
     private struct PackageIndex {
         
         struct FileEntry {
@@ -832,14 +841,12 @@ func miscFormatError(reason: String? = nil, underlying: NSError? = nil) -> NSErr
         userInfo[NSUnderlyingErrorKey] = underlyingError;
     }
     
-    if let message_ = reason {
-        userInfo[NSLocalizedFailureReasonErrorKey] = message_ as NSString;
+    if let message = reason {
+        userInfo[NSLocalizedFailureReasonErrorKey] = message as NSString;
     }
     
     return NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: userInfo.isEmpty ? nil : userInfo);
 }
-
-
 
 private extension OFXMLReader {
     /// Swifty cover on -copyValueOfAttribute:named:error:

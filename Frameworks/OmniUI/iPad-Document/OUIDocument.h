@@ -10,6 +10,7 @@
 #import <UIKit/UIDocument.h>
 
 #import <OmniFoundation/OFSaveType.h>
+#import <OmniFoundation/OFCMS.h>
 #import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
 @class UIResponder, UIView, UIViewController;
@@ -18,7 +19,7 @@
 
 @protocol OUIDocumentViewController;
 
-@interface OUIDocument : UIDocument
+@interface OUIDocument : UIDocument <OFCMSKeySource>
 
 + (BOOL)shouldShowAutosaveIndicator;
 

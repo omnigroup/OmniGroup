@@ -16,9 +16,13 @@
 		159F5E491CE503DA003EF102 /* OmniAppKit.strings in Resources */ = {isa = PBXBuildFile; fileRef = 159F5E401CE503DA003EF102 /* OmniAppKit.strings */; };
 		1E2573661CB5AF8A00049669 /* OACertificateTrustPrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E2573671CB5AF8A00049669 /* OACertificateTrustPrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */; };
+		1E70DCA51DAC704F00FD7872 /* OAViewStackConstraints.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E70DCA31DAC704F00FD7872 /* OAViewStackConstraints.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E70DCA61DAC704F00FD7872 /* OAViewStackConstraints.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E70DCA41DAC704F00FD7872 /* OAViewStackConstraints.m */; };
 		1EF6651C1D908DD600B207AA /* OAPassphrasePrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EF665191D908DD600B207AA /* OAPassphrasePrompt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EF6651D1D908DD600B207AA /* OAPassphrasePrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EF6651A1D908DD600B207AA /* OAPassphrasePrompt.m */; };
 		1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */; };
+		1EFC4ECA1DB5B7CE006C7922 /* OASecCertificateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EFC4EC81DB5B7CE006C7922 /* OASecCertificateProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1EFC4ECB1DB5B7CE006C7922 /* OASecCertificateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
@@ -751,9 +755,13 @@
 		1D0E8F7703FBA2F90097A138 /* OACautionIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OACautionIcon.png; sourceTree = "<group>"; };
 		1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACertificateTrustPrompt.h; sourceTree = "<group>"; };
 		1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACertificateTrustPrompt.m; sourceTree = "<group>"; };
+		1E70DCA31DAC704F00FD7872 /* OAViewStackConstraints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAViewStackConstraints.h; sourceTree = "<group>"; };
+		1E70DCA41DAC704F00FD7872 /* OAViewStackConstraints.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAViewStackConstraints.m; sourceTree = "<group>"; };
 		1EF665191D908DD600B207AA /* OAPassphrasePrompt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPassphrasePrompt.h; sourceTree = "<group>"; };
 		1EF6651A1D908DD600B207AA /* OAPassphrasePrompt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPassphrasePrompt.m; sourceTree = "<group>"; };
 		1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAPassphrasePrompt.xib; sourceTree = "<group>"; };
+		1EFC4EC81DB5B7CE006C7922 /* OASecCertificateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASecCertificateProxy.h; sourceTree = "<group>"; };
+		1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASecCertificateProxy.m; sourceTree = "<group>"; };
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
 		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
@@ -1728,6 +1736,8 @@
 				0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */,
 				1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */,
 				1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */,
+				1EFC4EC81DB5B7CE006C7922 /* OASecCertificateProxy.h */,
+				1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */,
 				B5F31284051140420097A10E /* Search Field */,
 			);
 			name = Widgets;
@@ -1737,6 +1747,8 @@
 		3FDA4133020968290297A14E /* View Containers */ = {
 			isa = PBXGroup;
 			children = (
+				1E70DCA31DAC704F00FD7872 /* OAViewStackConstraints.h */,
+				1E70DCA41DAC704F00FD7872 /* OAViewStackConstraints.m */,
 				5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */,
 				5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */,
 				00EB4311FEF05391C697A12D /* OAGridView.h */,
@@ -2609,6 +2621,7 @@
 				4AA1E6C008AA764600E2FF6B /* NSTextStorage-OAExtensions.h in Headers */,
 				4AA1E6C108AA764600E2FF6B /* NSToolbar-OAExtensions.h in Headers */,
 				4AA1E6C208AA764600E2FF6B /* NSToolbarItem-OAExtensions.h in Headers */,
+				1EFC4ECA1DB5B7CE006C7922 /* OASecCertificateProxy.h in Headers */,
 				4AA1E6C308AA764600E2FF6B /* NSUserDefaults-OAExtensions.h in Headers */,
 				4AA1E6C408AA764600E2FF6B /* NSView-OAExtensions.h in Headers */,
 				4AA1E6C508AA764600E2FF6B /* NSWindow-OAExtensions.h in Headers */,
@@ -2656,6 +2669,7 @@
 				4AA1E6F408AA764600E2FF6B /* OASpringLoadHelper.h in Headers */,
 				4AA1E6F508AA764600E2FF6B /* OAStackView.h in Headers */,
 				4AA1E6F808AA764600E2FF6B /* OASwoopView.h in Headers */,
+				1E70DCA51DAC704F00FD7872 /* OAViewStackConstraints.h in Headers */,
 				4AA1E6F908AA764600E2FF6B /* OATabbedWindowController.h in Headers */,
 				4AA1E6FA08AA764600E2FF6B /* OATabView.h in Headers */,
 				4AA1E6FB08AA764600E2FF6B /* OATabViewController.h in Headers */,
@@ -3195,6 +3209,7 @@
 				4AA1E79C08AA764600E2FF6B /* NSPasteboard-OAExtensions.m in Sources */,
 				4AA1E79D08AA764600E2FF6B /* NSPopUpButton-OAExtensions.m in Sources */,
 				342F051A1B69795900C7BB34 /* OAAppearance.m in Sources */,
+				1E70DCA61DAC704F00FD7872 /* OAViewStackConstraints.m in Sources */,
 				4AA1E79E08AA764600E2FF6B /* NSScrollView-OAExtensions.m in Sources */,
 				4AA1E79F08AA764600E2FF6B /* NSSliderCell-OAExtensions.m in Sources */,
 				4AA1E7A008AA764600E2FF6B /* NSSplitView-OAExtensions.m in Sources */,
@@ -3283,6 +3298,7 @@
 				9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */,
 				345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */,
 				420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */,
+				1EFC4ECB1DB5B7CE006C7922 /* OASecCertificateProxy.m in Sources */,
 				34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */,
 				4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */,
 				349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */,

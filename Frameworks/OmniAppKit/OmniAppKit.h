@@ -89,6 +89,7 @@
 #import <OmniAppKit/OAColorSpaceManager.h>
 #import <OmniAppKit/OAColorWell.h>
 #import <OmniAppKit/OACompositeColorProfile.h>
+#import <OmniAppKit/OAViewStackConstraints.h>
 #import <OmniAppKit/OAConstraintBasedStackView.h>
 #import <OmniAppKit/OAConfigurableColumnTableView.h>
 #import <OmniAppKit/OAContextButton.h>
@@ -127,6 +128,7 @@
 #import <OmniAppKit/OAScriptToolbarHelper.h>
 #import <OmniAppKit/OAScrollView.h>
 #import <OmniAppKit/OASearchField.h>
+#import <OmniAppKit/OASecCertificateProxy.h>
 #import <OmniAppKit/OASendFeedbackErrorRecovery.h>
 #import <OmniAppKit/OAShrinkingTextDisplayer.h>
 #import <OmniAppKit/OAShrinkyTextField.h>

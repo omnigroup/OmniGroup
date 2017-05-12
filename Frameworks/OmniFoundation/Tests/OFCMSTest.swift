@@ -38,6 +38,7 @@ class keysource : OFCMSKeySource {
         }
     }
     
+    #if false  // This part of the protocol has never actually been needed
     @objc(asymmetricKeysForQuery:error:) func asymmetricKeys(forQuery searchPattern: CFDictionary) throws -> [Any] {
         
         if !keypairs.isEmpty {
@@ -53,6 +54,7 @@ class keysource : OFCMSKeySource {
         
         throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
     }
+    #endif
 }
 
 class OFCMSTest : XCTestCase {
@@ -300,7 +302,7 @@ class OFCMSTest : XCTestCase {
         let wrapped = try wr.wrap(input: input, previous: nil, schema: nil, recipients: [ CMSPasswordRecipient(password: password) ], options: []);
         
         XCTAssertTrue(wrapped.isRegularFile);
-        XCTAssertGreaterThan(wrapped.regularFileContents!.count, plaintext.count);
+        XCTAssertGreaterThan(wrapped.regularFileContents!.count, plaintext.count, "Encryption has nonzero overhead");
         
         let unwrapped = try wr.unwrap(input: wrapped);
         

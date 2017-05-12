@@ -48,22 +48,26 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(OUIPasswordAlertOptions)options;
 {
-    self = [super init];
-    if (!self)
-        return nil;
-
-    _protectionSpace = [protectionSpace copy];
-    _title = [title copy];
-    _options = options;
-
-    if ([NSString isEmptyString:_title]) {
+    if ([NSString isEmptyString:title]) {
         NSString *name = [protectionSpace realm];
         if ([NSString isEmptyString:name]) {
             name = [protectionSpace host];
         }
-    
-        _title = [name copy];
+        
+        title = name;
     }
+    
+    return [self initWithTitle:title options:options];
+}
+
+- (id)initWithTitle:(NSString *)title options:(OUIPasswordAlertOptions)options;
+{
+    self = [super init];
+    if (!self)
+        return nil;
+
+    _title = [title copy];
+    _options = options;
     
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     BOOL allowEditingUsername = (_options & OUIPasswordAlertOptionAllowsEditingUsername) != 0;

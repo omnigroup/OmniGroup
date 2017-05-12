@@ -18,21 +18,33 @@ NS_ASSUME_NONNULL_BEGIN
 /* Performs key lookup for CMS decryption. The CMS machinery treats NSCocoaErrorDomain.NSUserCancelledError and OFErrorDomain.OFKeyNotAvailable specially. In general if the method isn't implemented, OFKeyNotAvailable is the right error to return. */
 
 - (NSString * __nullable)promptForPasswordWithCount:(NSInteger)previousFailureCount error:(NSError **)outError;
+
+#if 0 // We haven't needed this yet in practice; everybody just does a keychain search.
 - (NSArray * __nullable)asymmetricKeysForQuery:(CFDictionaryRef)searchPattern error:(NSError **)outError; /* Returns an array of SecCertificate or SecIdentity depending on the kSecClass search term. */
+#endif
 
 @end
 
 /* Option flags for the various CMS functions. Mostly these select alternative algorithms. The default values are chosen to be reasonable for our document encryption use case. */
 typedef NS_OPTIONS(NSUInteger, OFCMSOptions) {
-    OFCMSOptionPreferCCM      = 0x0001,  // Use CCM mode instead of GCM if both are available
-    OFCMSOptionWithoutAEAD    = 0x0002,  // Use CBC mode instead of either CCM or GCM
-    OFCMSOptionPreferRFC3211  = 0x0010,  // Use RFC3211 key wrapping instead of RFC3394 AESWRAP
+    OFCMSOptionPreferCCM      = 0x0001,  /// Use CCM mode instead of GCM if both are available
+    OFCMSOptionWithoutAEAD    = 0x0002,  /// Use CBC mode instead of either CCM or GCM
+    OFCMSOptionPreferRFC3211  = 0x0010,  /// Use RFC3211 key wrapping instead of RFC3394 AESWRAP
     
-    OFCMSOptionCompress       = 0x0100,  // Compress content
-    OFCMSOptionContentIsXML   = 0x0200,  // Content is XML
-    OFCMSOptionFileIsOptional = 0x0400,  // A file in the file package can be removed without breaking the document
-    OFCMSOptionStoreInMain    = 0x0800,  // It makes sense to combine this file into the main cms object (e.g. it is the main document XML or something that changes equally reliably)
+    OFCMSOptionCompress       = 0x0100,  /// Compress content
+    OFCMSOptionContentIsXML   = 0x0200,  /// Content is XML
+    OFCMSOptionFileIsOptional = 0x0400,  /// A file in the file package can be removed without breaking the document
+    OFCMSOptionStoreInMain    = 0x0800,  /// It makes sense to combine this file into the main cms object (e.g. it is the main document XML or something that changes equally reliably)
 };
+
+enum OFCMSRecipientType {
+    OFCMSRUnknown,            /// Return value from inner functions (never the type of an instantiated recipient)
+    OFCMSRKeyTransport,       /// Key transport, e.g. RSA
+    OFCMSRKeyAgreement,       /// Key agreement, e.g. elliptic-DH
+    OFCMSRPassword,           /// Password-based key derivation
+    OFCMSRPreSharedKey        /// Side-channel transported key
+};
+
 
 NS_ASSUME_NONNULL_END
 

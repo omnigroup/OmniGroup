@@ -24,6 +24,17 @@ OBDEPRECATED_METHOD(-inspectorSlices:); // --> inspector:makeAvailableSlicesForS
 OBDEPRECATED_METHOD(-inspector:slicesForStackedSlicesPane:); // -> -inspector:makeAvailableSlicesForStackedSlicesPane:
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
+// JCTODO: Inspector refactor — Some of these _might_ come back if we end up needing them.
+OBDEPRECATED_METHOD(-inspectObjects:withViewController:useFullScreenOnHorizontalCompact:useFullScreenOnHorizontalCompact fromBarButtonItem:); // --> -inspectObjects:
+OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromBarButtonItem:); // --> -inspectObjects:
+OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromRect:inView:useFullScreenOnHorizontalCompact:permittedArrowDirections:); // --> -inspectObjects:
+OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromRect:inView:permittedArrowDirections:); // --> -inspectObjects:
+OBDEPRECATED_METHOD(-redisplayInspectorForNewTraitCollection:); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
+OBDEPRECATED_METHOD(-dismissImmediatelyIfVisible); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
+OBDEPRECATED_METHOD(-dismiss); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
+OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
+
+#pragma mark - OUIInspectorNavigationController
 @implementation OUIInspectorNavigationController
 
 - (UIViewController *)childViewControllerForStatusBarHidden;
@@ -141,17 +152,18 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 @end
 
-
+#pragma mark - OUIInspector
 @interface OUIInspector (/*Private*/) <UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate>
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
 - (void)_startObserving;
 - (void)_stopObserving;
 - (void)_keyboardDidHide:(NSNotification *)note;
 
+@property(nonatomic, strong, readwrite) UINavigationController *navigationController;
+
 @property (readonly,retain) id <UIViewControllerAnimatedTransitioning> transition;
 @property (readonly,retain) NSMutableArray *popTransitions;
 @property (nonatomic,strong) OUIInspectorOverlayTransitioningDelegate *inspectorTransitionDelegate;
-@property (nonatomic,weak) UIViewController *viewController;
 @property (nonatomic,weak) UIBarButtonItem *popoverPresentingItem;
 @property (nonatomic,weak) UIView *popoverSourceView;
 @property (nonatomic,assign) CGRect popoverSourceRect;
@@ -183,8 +195,6 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
     BOOL _isObservingNotifications;
     BOOL _keyboardShownWhilePopoverVisible;
 }
-
-@synthesize navigationController = _navigationController;
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
@@ -254,12 +264,11 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
     
     // Avoid loading the view until it is needed. The inspectors themselves should do this.
     //_mainPane.view.frame = CGRectMake(0, 0, OUIInspectorContentWidth, 16);
-        
-    if (!_navigationController && [self isEmbededInOtherNavigationController] == NO) {
-        _navigationController = [[OUIInspectorNavigationController alloc] initWithRootViewController:_mainPane];
-        _navigationController.delegate = self;
-        _navigationController.toolbarHidden = YES;
-    }
+    
+    _navigationController = [[OUIInspectorNavigationController alloc] initWithRootViewController:_mainPane];
+    _navigationController.delegate = self;
+    _navigationController.toolbarHidden = YES;
+    
     return self;
 }
 
@@ -296,16 +305,16 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     return _currentDefaultInspectorContentWidth;
 }
 
-- (void)_useDefaultInspectorContentWidth;
-{
-    UITraitCollection *traitCollection = self.viewController.traitCollection;
-
-    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact) {
-        [self setDefaultInspectorContentWidth:414.0f];
-    } else {
-        [self setDefaultInspectorContentWidth:320.0f];
-    }
-}
+//- (void)_useDefaultInspectorContentWidth;
+//{
+//    UITraitCollection *traitCollection = self.viewController.traitCollection;
+//
+//    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact) {
+//        [self setDefaultInspectorContentWidth:414.0f];
+//    } else {
+//        [self setDefaultInspectorContentWidth:320.0f];
+//    }
+//}
 
 - (OUIInspectorPane *)mainPane;
 {
@@ -313,25 +322,8 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     return _mainPane;
 }
 
-@synthesize height = _height;
-@synthesize delegate = _weak_delegate;
-@synthesize alwaysShowToolbar = _alwaysShowToolbar;
-
-// Subclass to return YES if you intend to embed the inspector into a your own navigation controller.
-- (BOOL)isEmbededInOtherNavigationController;
-{
-    return NO;
-}
-
-- (UINavigationController *)embeddingNavigationController;
-{
-    return nil;
-}
-
 - (BOOL)isVisible;
 {
-    OBPRECONDITION([self isEmbededInOtherNavigationController] == NO); // need to be smarter here if we are embedded
-
     return self.navigationController.presentingViewController != nil;
 }
 
@@ -341,197 +333,213 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     return UIStatusBarStyleDefault;
 }*/
 
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact traitCollection:(UITraitCollection *)traitCollection fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-{
-    OBASSERT(viewController, @"Must provide a valid viewController");
-    if (!viewController) {
-        return NO;
-    }
+// JCTODO: Inspector refactor.
+- (void)inspectObjects:(NSArray *)objects {
     
-    self.viewController = viewController;
-    self.popoverSourceView = nil;
-    self.popoverPresentingItem = item;
-    self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
-    OBASSERT(viewController.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
-    
+    // JCTODO: Moving this here for now. Not sure if keeping longterm.
+//    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
+//        [self.navigationController popToRootViewControllerAnimated:NO];
+//    }
+
     self.mainPane.inspectedObjects = objects;
-    self.shouldShowDoneButton = YES;
-    
-    [self updateInspectorWithTraitCollection:traitCollection];
-    self.navigationController.popoverPresentationController.barButtonItem = item;
-    self.navigationController.popoverPresentationController.delegate = self;
     
     if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
         [self.navigationController popToRootViewControllerAnimated:NO];
     }
-    
-    
-    [viewController presentViewController:self.navigationController animated:YES completion:^{
-        self.navigationController.popoverPresentationController.passthroughViews = nil;
-        if (_presentInspectorCompletion) {
-            _presentInspectorCompletion();
-        }
-    }];
-    if (_animationsToPerformAlongsidePresentation) {
-        [self.navigationController.transitionCoordinator animateAlongsideTransition:_animationsToPerformAlongsidePresentation completion:nil];
-    }
-    
-    return YES;
 }
 
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item;
-{
-    return [self inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:useFullScreenOnHorizontalCompact traitCollection:viewController.traitCollection fromBarButtonItem:item];
-}
 
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item;
-{
-    return [self inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:NO fromBarButtonItem:item];
-}
+//- (BOOL)_inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact traitCollection:(UITraitCollection *)traitCollection fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+//{
+//    OBASSERT(viewController, @"Must provide a valid viewController");
+//    if (!viewController) {
+//        return NO;
+//    }
+//    
+//    self.viewController = viewController;
+//    self.popoverSourceView = nil;
+//    self.popoverPresentingItem = item;
+//    self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
+//    OBASSERT(viewController.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
+//    
+//    self.mainPane.inspectedObjects = objects;
+//    self.shouldShowDoneButton = YES;
+//    
+//    [self updateInspectorWithTraitCollection:traitCollection];
+//    self.navigationController.popoverPresentationController.barButtonItem = item;
+//    self.navigationController.popoverPresentationController.delegate = self;
+//    
+//    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
+//        [self.navigationController popToRootViewControllerAnimated:NO];
+//    }
+//    
+//    
+//    [viewController presentViewController:self.navigationController animated:YES completion:^{
+//        self.navigationController.popoverPresentationController.passthroughViews = nil;
+//        if (_presentInspectorCompletion) {
+//            // JCTODO: Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
+//            _presentInspectorCompletion();
+//        }
+//    }];
+//    
+//    // JCTODO: Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
+//    if (_animationsToPerformAlongsidePresentation) {
+//        [self.navigationController.transitionCoordinator animateAlongsideTransition:_animationsToPerformAlongsidePresentation completion:nil];
+//    }
+//    
+//    return YES;
+//}
 
-- (void)_dismissInspectorAnimated:(BOOL)animated completion:(void (^)(void))completion;
-{
-    _navigationController.willDismissInspector = YES;
-    if (self.animatingPushOrPop) {
-        return;  // hack to prevent dismissing when a navigation controller transition animation is in progress because if we do, the _animationsToPerformAlongsideDismissal will be ignored and they are crucial to the app's functioning
-    }
-    OBASSERT(self.navigationController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact);
-    
-    void (^totalCompletion)(void) = ^(void){
-        if (_dismissInspectorCompletion)
-        {
-            _dismissInspectorCompletion();
-        }
-        if (completion) {
-            completion();
-        }
-        _navigationController.willDismissInspector = NO;
-    };
-    [self.navigationController dismissViewControllerAnimated:animated completion: totalCompletion];
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item;
+//{
+//    return [self _inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:useFullScreenOnHorizontalCompact traitCollection:viewController.traitCollection fromBarButtonItem:item];
+//}
 
-    if (animated && _animationsToPerformAlongsideDismissal) {
-        id<UIViewControllerTransitionCoordinator> coordinator = self.navigationController.transitionCoordinator;
-        if (coordinator) {
-            [coordinator animateAlongsideTransition:_animationsToPerformAlongsideDismissal completion:nil];
-        }
-        else {
-            _animationsToPerformAlongsideDismissal(nil /* we actually have no transitionCoordinator to pass in */);
-        }
-    }
-}
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item;
+//{
+//    return [self inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:NO fromBarButtonItem:item];
+//}
 
-- (void)_dismissInspector:(id)sender;
-{
-    [self dismissAnimated:YES];
-}
-
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-{
-    if ([self isEmbededInOtherNavigationController] == NO) {
-        self.popoverSourceView = view;
-        self.viewController = viewController;
-        self.popoverSourceRect = rect;
-        self.popoverArrowDirections = arrowDirections;
-        self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
-        OBASSERT(view.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
-
-        self.mainPane.inspectedObjects = objects;
-
-        [self updateInspectorWithTraitCollection:view.traitCollection];
-        self.navigationController.popoverPresentationController.sourceView = view;
-        self.navigationController.popoverPresentationController.sourceRect = rect;
-        
-        if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-            [self.navigationController popToRootViewControllerAnimated:NO];
-        }
-        
-        [viewController presentViewController:self.navigationController animated:YES completion:^{
-            self.navigationController.popoverPresentationController.passthroughViews = nil;
-        }];
-    }
-    return YES;
-}
-
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-{
-    return [self inspectObjects:objects withViewController:viewController fromRect:rect inView:view useFullScreenOnHorizontalCompact:NO permittedArrowDirections:arrowDirections];
-}
-
-- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitCollection;
-{
-    NSArray *inspectedObjects = self.mainPane.inspectedObjects;
-    [self _dismissInspectorAnimated:NO completion:^{
-        UIViewController *strong_viewController = self.viewController;
-        UIView *strong_popoverSourceView = self.popoverSourceView;
-
-        if (strong_popoverSourceView && strong_viewController) {
-            [self inspectObjects:inspectedObjects withViewController:strong_viewController fromRect:self.popoverSourceRect inView:strong_popoverSourceView useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact permittedArrowDirections:self.popoverArrowDirections];
-        } else if (strong_viewController) {
-            [self inspectObjects:inspectedObjects withViewController:strong_viewController useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact traitCollection:traitCollection fromBarButtonItem:self.popoverPresentingItem];
-        } else {
-            OBASSERT_NOT_REACHED(@"Inspector muast have either a view controller or an optional UIView defined.");
-        }
-    }];
-}
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+//{
+//    self.popoverSourceView = view;
+//    self.viewController = viewController;
+//    self.popoverSourceRect = rect;
+//    self.popoverArrowDirections = arrowDirections;
+//    self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
+//    OBASSERT(view.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
+//    
+//    self.mainPane.inspectedObjects = objects;
+//    
+//    [self updateInspectorWithTraitCollection:view.traitCollection];
+//    self.navigationController.popoverPresentationController.sourceView = view;
+//    self.navigationController.popoverPresentationController.sourceRect = rect;
+//    
+//    
+//    [viewController presentViewController:self.navigationController animated:YES completion:^{
+//        self.navigationController.popoverPresentationController.passthroughViews = nil;
+//    }];
+//    
+//    return YES;
+//}
+//
+//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+//{
+//    return [self inspectObjects:objects withViewController:viewController fromRect:rect inView:view useFullScreenOnHorizontalCompact:NO permittedArrowDirections:arrowDirections];
+//}
+//
+//- (void)_dismissInspectorAnimated:(BOOL)animated completion:(void (^)(void))completion;
+//{
+//    _navigationController.willDismissInspector = YES;
+//    if (self.animatingPushOrPop) {
+//        return;  // hack to prevent dismissing when a navigation controller transition animation is in progress because if we do, the _animationsToPerformAlongsideDismissal will be ignored and they are crucial to the app's functioning
+//    }
+//    OBASSERT(self.navigationController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact);
+//    
+//    void (^totalCompletion)(void) = ^(void){
+//        if (_dismissInspectorCompletion)
+//        {
+//            _dismissInspectorCompletion();
+//        }
+//        if (completion) {
+//            completion();
+//        }
+//        _navigationController.willDismissInspector = NO;
+//    };
+//    [self.navigationController dismissViewControllerAnimated:animated completion: totalCompletion];
+//
+//    if (animated && _animationsToPerformAlongsideDismissal) {
+//        id<UIViewControllerTransitionCoordinator> coordinator = self.navigationController.transitionCoordinator;
+//        if (coordinator) {
+//            [coordinator animateAlongsideTransition:_animationsToPerformAlongsideDismissal completion:nil];
+//        }
+//        else {
+//            _animationsToPerformAlongsideDismissal(nil /* we actually have no transitionCoordinator to pass in */);
+//        }
+//    }
+//}
+//
+//- (void)_dismissInspector:(id)sender;
+//{
+//    [self dismissAnimated:YES];
+//}
+//
+//- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitCollection;
+//{
+//    NSArray *inspectedObjects = self.mainPane.inspectedObjects;
+//    [self _dismissInspectorAnimated:NO completion:^{
+//        UIViewController *strong_viewController = self.viewController;
+//        UIView *strong_popoverSourceView = self.popoverSourceView;
+//
+//        if (strong_popoverSourceView && strong_viewController) {
+//            [self inspectObjects:inspectedObjects withViewController:strong_viewController fromRect:self.popoverSourceRect inView:strong_popoverSourceView useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact permittedArrowDirections:self.popoverArrowDirections];
+//        } else if (strong_viewController) {
+//            [self _inspectObjects:inspectedObjects withViewController:strong_viewController useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact traitCollection:traitCollection fromBarButtonItem:self.popoverPresentingItem];
+//        } else {
+//            OBASSERT_NOT_REACHED(@"Inspector muast have either a view controller or an optional UIView defined.");
+//        }
+//    }];
+//}
 
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [self.topVisiblePane updateInterfaceFromInspectedObjects:reason];
 }
 
-- (void)dismissImmediatelyIfVisible;
-{
-    if (self.isVisible)
-        [self dismissAnimated:NO];
-}
+//- (void)dismissImmediatelyIfVisible;
+//{
+//    if (self.isVisible)
+//        [self dismissAnimated:NO];
+//}
+//
+//- (void)dismiss;
+//{
+//    [self _dismissInspector:nil];
+//}
+//
+//- (void)dismissAnimated:(BOOL)animated;
+//{
+//    if ([self.delegate respondsToSelector:@selector(inspectorWillDismiss:)]) {
+//        [self.delegate inspectorWillDismiss:self];
+//    }
+//    [self _dismissInspectorAnimated:animated completion:^{
+//        if (self.delegate && [self.delegate respondsToSelector:@selector(inspectorDidDismiss:)]) {
+//            [self.delegate inspectorDidDismiss:self];
+//        }
+//    }];
+//}
+//
+//- (void)_setShowDoneButton:(BOOL)shouldShow;
+//{
+//    UIViewController *topController = [self.navigationController topViewController];
+//    NSMutableArray *items = [NSMutableArray arrayWithArray:topController.navigationItem.rightBarButtonItems];
+//    UIBarButtonItem *doneButton = nil;
+//    for (UIBarButtonItem *item in items) {
+//        if (item.action == @selector(_dismissInspector:)) {
+//            doneButton = item;
+//            break;
+//        }
+//    }
+//    if (shouldShow) {
+//        if (!doneButton) {
+//            doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismissInspector:)];
+//            [items insertObject:doneButton atIndex:0];
+//            topController.navigationItem.rightBarButtonItems = items;
+//        }
+//    } else {
+//        if (doneButton) {
+//            [items removeObjectIdenticalTo:doneButton];
+//            topController.navigationItem.rightBarButtonItems = items;
+//        }
+//    }
+//}
 
-- (void)dismiss;
-{
-    [self _dismissInspector:nil];
-}
-
-- (void)dismissAnimated:(BOOL)animated;
-{
-    if ([self.delegate respondsToSelector:@selector(inspectorWillDismiss:)]) {
-        [self.delegate inspectorWillDismiss:self];
-    }
-    [self _dismissInspectorAnimated:animated completion:^{
-        if (self.delegate && [self.delegate respondsToSelector:@selector(inspectorDidDismiss:)]) {
-            [self.delegate inspectorDidDismiss:self];
-        }
-    }];
-}
-
-- (void)_setShowDoneButton:(BOOL)shouldShow;
-{
-    UIViewController *topController = [self.navigationController topViewController];
-    NSMutableArray *items = [NSMutableArray arrayWithArray:topController.navigationItem.rightBarButtonItems];
-    UIBarButtonItem *doneButton = nil;
-    for (UIBarButtonItem *item in items) {
-        if (item.action == @selector(_dismissInspector:)) {
-            doneButton = item;
-            break;
-        }
-    }
-    if (shouldShow) {
-        if (!doneButton) {
-            doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismissInspector:)];
-            [items insertObject:doneButton atIndex:0];
-            topController.navigationItem.rightBarButtonItems = items;
-        }
-    } else {
-        if (doneButton) {
-            [items removeObjectIdenticalTo:doneButton];
-            topController.navigationItem.rightBarButtonItems = items;
-        }
-    }
-}
-
+// JCTODO: We will no longer be presented. Should be able to remove this code.
 - (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitsCollection;
 {
     [self createFreshNavigationController];  // because iOS 9 doesn't correctly handle switching presentation styles, see related <bug:///116856> (Bug: Half-height inspector with selected text can appear in landscape on the 6+) and jake's rdar:///21189053 (Asking a view controller for its presentationController before changing it causes it to cache and use the 'old' one.)
     
-    if (traitsCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && !_useFullScreenOnHorizontalCompact) {
+    if (traitsCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && !self.useFullScreenOnHorizontalCompact) {
         self.inspectorTransitionDelegate = [[OUIInspectorOverlayTransitioningDelegate alloc] init];
         self.navigationController.transitioningDelegate = self.inspectorTransitionDelegate;
         self.navigationController.modalPresentationStyle = UIModalPresentationCustom;
@@ -540,9 +548,10 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         self.navigationController.popoverPresentationController.barButtonItem = self.popoverPresentingItem;
         self.navigationController.popoverPresentationController.delegate = self;
     }
-    [self _setShowDoneButton:self.shouldShowDoneButton];
+//    [self _setShowDoneButton:self.shouldShowDoneButton];
 }
 
+// JCTODO: We will no longer be presented. Should be able to remove this code.
 - (void)createFreshNavigationController {
     // THIS IS A HACK required to get the presentation to switch properly between popover style and half-height inspector in beta iOS 9
     OUIInspector *freshInspector = [[[self class] alloc] init];
@@ -563,58 +572,41 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {
-    id <OUIInspectorDelegate> delegate = _weak_delegate;
+    id <OUIInspectorDelegate> delegate = self.delegate;
     
     if ([delegate respondsToSelector:@selector(inspector:makeAvailableSlicesForStackedSlicesPane:)])
         return [delegate inspector:self makeAvailableSlicesForStackedSlicesPane:pane];
     return nil;
 }
 
-static UINavigationController *_getNavigationController(OUIInspector *self)
-{
-    if (self->_navigationController) {
-        OBASSERT([self isEmbededInOtherNavigationController] == NO);
-        return self->_navigationController;
-    } else {
-        OBASSERT([self isEmbededInOtherNavigationController] == YES);
-        
-        // Can't use the _mainPane's navigationController (at least in the one embedding case we have now in OmniGraffle). The issue is that the mainPane doesn't get pushed on the nav controller stack owned by OmniGraffle in all cases. In some cases, its view is stolen and combined with other views (not great, but that's the way it is now).
-        //UINavigationController *nc = [self->_mainPane navigationController];
-        UINavigationController *nc = [self embeddingNavigationController];
-        return nc;
-    }
-}
-
-static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFloat height, BOOL animated) NS_EXTENSION_UNAVAILABLE_IOS("")
-{
-    const CGFloat toolbarHeight = 38;
-    
-    BOOL wantsToolbar = self->_alwaysShowToolbar || ([vc.toolbarItems count] > 0);
-    if (wantsToolbar)
-        height -= toolbarHeight;
-    
-    UIWindow *window = [[OUIAppController controller] window];
-    if ([[window traitCollection] horizontalSizeClass] == UIUserInterfaceSizeClassCompact) {
-        [self setDefaultInspectorContentWidth:CGRectGetWidth([window frame])];
-    } else {
-        [self _useDefaultInspectorContentWidth];
-    }
-    
-    vc.preferredContentSize = CGSizeMake(self.defaultInspectorContentWidth, height);
-    [self->_navigationController setToolbarHidden:!wantsToolbar animated:animated];
-    
-    // This is necessary to reset the popover size if it is dismissed while the keyboard is up. It doesn't automatically fix this on itself. See <bug:///71703> (Popover doesn't restore size when closed with keyboard up)
-    // Actually, this makes the popover content controller by 1 border width (~8px) w/o being clipped by the popover. <bug:///71895> (Inspector grows slightly 2nd time opening it and background doesn't fill in the space)
-    // Instead, we now track keyboard visibility and avoid closing if we are editing text (see the life of the _keyboardShownWhilePopoverVisible ivar).
-    //[self->_popoverController setPopoverContentSize:self->_navigationController.contentSizeForViewInPopover animated:animated];    
-}
+//static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFloat height, BOOL animated) NS_EXTENSION_UNAVAILABLE_IOS("")
+//{
+//    const CGFloat toolbarHeight = 38;
+//    
+//    BOOL wantsToolbar = self->_alwaysShowToolbar || ([vc.toolbarItems count] > 0);
+//    if (wantsToolbar)
+//        height -= toolbarHeight;
+//    
+//    UIWindow *window = [[OUIAppController controller] window];
+//    if ([[window traitCollection] horizontalSizeClass] == UIUserInterfaceSizeClassCompact) {
+//        [self setDefaultInspectorContentWidth:CGRectGetWidth([window frame])];
+//    } else {
+//        [self _useDefaultInspectorContentWidth];
+//    }
+//    
+//    vc.preferredContentSize = CGSizeMake(self.defaultInspectorContentWidth, height);
+//    [self->_navigationController setToolbarHidden:!wantsToolbar animated:animated];
+//    
+//    // This is necessary to reset the popover size if it is dismissed while the keyboard is up. It doesn't automatically fix this on itself. See <bug:///71703> (Popover doesn't restore size when closed with keyboard up)
+//    // Actually, this makes the popover content controller by 1 border width (~8px) w/o being clipped by the popover. <bug:///71895> (Inspector grows slightly 2nd time opening it and background doesn't fill in the space)
+//    // Instead, we now track keyboard visibility and avoid closing if we are editing text (see the life of the _keyboardShownWhilePopoverVisible ivar).
+//    //[self->_popoverController setPopoverContentSize:self->_navigationController.contentSizeForViewInPopover animated:animated];    
+//}
 
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated;
 {
     OBPRECONDITION(pane);
-    
-    UINavigationController *navigationController = _getNavigationController(self);
-    OBASSERT(navigationController);
+    OBASSERT(self.navigationController);
     
     if (!inspectedObjects)
         inspectedObjects = self.topVisiblePane.inspectedObjects;
@@ -625,7 +617,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
     [self _configureTitleForPane:pane];
     
-    [navigationController pushViewController:pane animated:animated];
+    [self.navigationController pushViewController:pane animated:animated];
 }
 
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated withPushTransition:(id <UIViewControllerAnimatedTransitioning>)pushTransition popTransition:(id <UIViewControllerAnimatedTransitioning>)popTransition;
@@ -655,29 +647,21 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
 - (void)popToPane:(OUIInspectorPane *)pane;
 {
-    UINavigationController *navigationController = _getNavigationController(self);
-    OBASSERT(navigationController);
+    OBASSERT(self.navigationController);
 
     if (pane)
-        [navigationController popToViewController:pane animated:YES];
+        [self.navigationController popToViewController:pane animated:YES];
     else
-        [navigationController popToRootViewControllerAnimated:YES];
+        [self.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (OUIInspectorPane *)topVisiblePane;
 {
-    UINavigationController *navigationController = _getNavigationController(self);
-    if (!navigationController) {
-        return _mainPane; // This can happen when we are called to update the inspected objects in the embedded case (OmniGraffle).
-    }
+    // We give this navigation controller a rootViewController at creation and the pop API don't allow you to pop the root view controller. We should always have a view controller to return from here so we don't need to fall back to _mainPane.
+    UIViewController *topViewController = self.navigationController.topViewController;
+    OBASSERT([topViewController isKindOfClass:[OUIInspectorPane class]]);
     
-    for (UIViewController *vc in [navigationController.viewControllers reverseObjectEnumerator]) {
-        if ([vc isKindOfClass:[OUIInspectorPane class]])
-            return (OUIInspectorPane *)vc;
-    }
-    
-    // This can happen when we are on the main pane, but it isn't pushed on the embedding navigation controller's stack. OmniGraffle just steals its view and combines it with other views in its view controller. Not great, but that's how it is currently (would be nicer if it just used an OUIInspectorPane or not for each view controller).
-    return _mainPane;
+    return (OUIInspectorPane *)topViewController;
 }
 
 - (void)willBeginChangingInspectedObjects;
@@ -705,47 +689,45 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     
 }
 
-#pragma mark - UIPopoverPresentationControllerDelegate
-- (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController;
-{
-    if (popoverPresentationController.presentedViewController != self.navigationController) {
-        return;
-    }
+//#pragma mark UIPopoverPresentationControllerDelegate
+//- (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController;
+//{
+//    if (popoverPresentationController.presentedViewController != self.navigationController) {
+//        return;
+//    }
+//
+//    self.shouldShowDoneButton = NO;
+//    [self _setShowDoneButton:NO];
+//}
+//
+//- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller;
+//{
+//    if (controller.presentedViewController != self.navigationController) {
+//        return controller.presentedViewController.modalPresentationStyle;
+//    }
+//    
+//    return UIModalPresentationFullScreen;
+//}
+//
+//- (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
+//{
+//    if (controller.presentedViewController != self.navigationController) {
+//        return nil;
+//    }
+//    
+//    // Currently, there is no way to adapt __into__ a popover; A popover is something you adapt out of. So _style_ should never be Popover.
+//    OBASSERT(style != UIModalPresentationPopover);
+//    self.shouldShowDoneButton = YES;
+//    [self _setShowDoneButton:YES];
+//    
+//    return nil;
+//}
+//
+//- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController{
+//    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorPopoverDidDismissNotification object:popoverPresentationController];
+//}
 
-    self.shouldShowDoneButton = NO;
-    [self _setShowDoneButton:NO];
-}
-
-- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller;
-{
-    if (controller.presentedViewController != self.navigationController) {
-        return controller.presentedViewController.modalPresentationStyle;
-    }
-    
-    return UIModalPresentationFullScreen;
-}
-
-- (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
-{
-    if (controller.presentedViewController != self.navigationController) {
-        return nil;
-    }
-    
-    // Currently, there is no way to adapt __into__ a popover; A popover is something you adapt out of. So _style_ should never be Popover.
-    OBASSERT(style != UIModalPresentationPopover);
-    self.shouldShowDoneButton = YES;
-    [self _setShowDoneButton:YES];
-    
-    return nil;
-}
-
-- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController{
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorPopoverDidDismissNotification object:popoverPresentationController];
-}
-
-#pragma mark -
 #pragma mark UINavigationControllerDelegate
-
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     // This delegate method gets called before the pane is queried for its popover content size but before -viewWillAppear: is called.
@@ -755,8 +737,8 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     if ([viewController isKindOfClass:[OUIInspectorPane class]])
         [(OUIInspectorPane *)viewController inspectorWillShow:self];
     
-    _configureContentSize(self, viewController, _height, animated);
-    [self _setShowDoneButton:self.shouldShowDoneButton];
+//    _configureContentSize(self, viewController, _height, animated);
+//    [self _setShowDoneButton:self.shouldShowDoneButton];
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
@@ -778,7 +760,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
 {
-    id <OUIInspectorDelegate> delegate = _weak_delegate;
+    id <OUIInspectorDelegate> delegate = self.delegate;
 
     NSString *title = nil;
     if ([delegate respondsToSelector:@selector(inspector:titleForPane:)])
@@ -823,6 +805,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
 @end
 
+#pragma mark - NSObject (OUIInspectable)
 @implementation NSObject (OUIInspectable)
 
 - (BOOL)shouldBeInspectedByInspectorSlice:(OUIInspectorSlice *)inspector protocol:(Protocol *)protocol;

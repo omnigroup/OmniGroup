@@ -11,7 +11,7 @@ import Foundation
 import OmniFoundation.Private
 
 /** A CMSRecipient instance corresponds to the RecipientInfo datatype in CMS; it gives enough information to derive the CEK for one recipient. */
-internal
+@objc(OFCMSRecipient) public
 protocol CMSRecipient {
     
     /** Produce the CMS recipient information for this recipient, given the current file's content encryption key (CEK).
@@ -24,6 +24,11 @@ protocol CMSRecipient {
     /** Tests whether the receiver has enough information to encrypt a new CEK. */
     func canWrap() -> Bool;
     
+    @objc
+    var type : OFCMSRecipientType { get };
+    
+    @objc optional
+    var certificate : SecCertificate? { get };
 }
 
 /** A CMSRecipientIdentifier corresponds to the RecipientIndentifier datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
@@ -176,9 +181,16 @@ enum CMSRecipientIdentifier {
             return (found as! NSArray) as [CFTypeRef];
         }
     }
+    
+    static func bestCertificate(_ certs: [SecCertificate]) -> SecCertificate? {
+        // TODO: Actually choose best. (Prefer valid, ... what else?)
+        return certs.last;
+    }
 }
 
 class CMSPasswordRecipient : CMSRecipient {
+    
+    let type = OFCMSRPassword;
     
     // A PasswordRecipient can have various subsets of information depending on its history:
     // When a new document is saved (or a password is changed), the user supplies a password; we generate the AlgorithmIdentifier (containing salt and iteration parameters) when needed; and derive the KEK when needed.
@@ -259,6 +271,8 @@ class CMSPasswordRecipient : CMSRecipient {
 /// A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has.
 class CMSKEKRecipient : CMSRecipient {
     
+    let type = OFCMSRPreSharedKey;
+    
     var keyIdentifier: Data;
     var kek: Data?;
     
@@ -311,6 +325,8 @@ class CMSKEKRecipient : CMSRecipient {
  */
 class CMSPKRecipient : CMSRecipient {
 
+    let type = OFCMSRKeyTransport;
+    
     var rid: CMSRecipientIdentifier;
     var cert: SecCertificate?;
     
@@ -366,12 +382,14 @@ class CMSPKRecipient : CMSRecipient {
         }
     }
     
-    func resolve(delegate: OFCMSKeySource?) throws -> () {
+    func resolveWithKeychain() -> Bool {
         
         if cert == nil {
-            cert = try rid.findCertificates().last; // TODO: choose best
+            // Exception here is equivalent to a lookup failure; just drop it on the floor.
+            try? cert = CMSRecipientIdentifier.bestCertificate(rid.findCertificates());
         }
 
+        return cert != nil;
     }
     
     func resolve(certificate: SecCertificate) -> Bool {
@@ -386,17 +404,13 @@ class CMSPKRecipient : CMSRecipient {
             return true;
         }
         
-        // Otherwise, see if we can find a cert.
-        do {
-            let certs = try rid.findCertificates();
-            if certs.count > 0 {
-                return true;
-            }
-        } catch _ {
-            // Exception here is equivalent to a lookup failure; just drop it on the floor.
-        }
-        
         return false;
+    }
+    
+    var certificate : SecCertificate? {
+        get {
+            return cert;
+        }
     }
 }
 
@@ -814,7 +828,7 @@ class OFCMSUnwrapper {
         
         return results;
     }
-        
+    
     func readAttributes() throws {
 
         assert(contentType == OFCMSContentType_contentWithAttributes);

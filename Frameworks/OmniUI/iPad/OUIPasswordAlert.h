@@ -29,11 +29,12 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @interface OUIPasswordAlert : NSObject
 
 - (id)init NS_UNAVAILABLE;
-- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(nullable NSString *)title options:(OUIPasswordAlertOptions)options NS_DESIGNATED_INITIALIZER;
+- (id)initWithTitle:(nullable NSString *)title options:(OUIPasswordAlertOptions)options NS_DESIGNATED_INITIALIZER;
+- (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(nullable NSString *)title options:(OUIPasswordAlertOptions)options /* Convenience initializer */;
 
 @property (nonatomic, readonly) NSString *title;
 @property (nonatomic, copy) NSString *message; // Detail text for the presented alert. Overridden by username if the ShowUsername option is set.
-@property (nonatomic, readonly) NSURLProtectionSpace *protectionSpace;
+@property (nonatomic, readonly) NSURLProtectionSpace *protectionSpace; // Completely unused by this class, but used by the OUIOnePasswordAlert subclass.
 
 @property (nonatomic, weak, nullable) id <OUIPasswordAlertDelegate> delegate;
 @property (nonatomic, copy, nullable) void (^finished)(OUIPasswordAlert *, OUIPasswordAlertAction);

@@ -129,6 +129,7 @@ extern NSString * const OIInspectionSetChangedNotification;
 extern NSString * const OIWorkspacesHelpURLKey;
 
 #import <AppKit/NSView.h>
+#import <AppKit/NSWindowController.h>
 
 @interface NSView (OIInspectorExtensions)
 - (BOOL)isInsideInspector;

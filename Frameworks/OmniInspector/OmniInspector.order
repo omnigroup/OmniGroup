@@ -1,4 +1,3 @@
-OAToolbarWindowController-OIExtensions.o:-[OAToolbarWindowController(OIExtensions) toolbarWillAddItem:]
 OIInspectionSet.o:-[OIInspectionSet debugDictionary]
 OIInspectorController.o:-[OIInspectorController debugDictionary]
 OIInspectorGroup.o:-[OIInspectorGroup debugDictionary]

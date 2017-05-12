@@ -17,17 +17,30 @@ RCS_ID("$Id$");
 
 - (NSUInteger)indexOfFirstItemWithIdentifier:(NSString *)identifier;
 {
-    NSArray *items = [self items];
-    NSUInteger itemCount = [items count];
+    NSUInteger result = [self _indexOfFirstItemWithIdentifier:identifier inItems:self.items];
+    return result;
+}
 
+
+- (NSUInteger)indexOfFirstVisibleItemWithIdentifier:(NSString *)identifier;
+{
+    NSUInteger result = [self _indexOfFirstItemWithIdentifier:identifier inItems:self.visibleItems];
+    return result;
+}
+
+- (NSUInteger)_indexOfFirstItemWithIdentifier:(NSString *)identifier inItems:(NSArray <NSToolbarItem *> *)items;
+{
+    NSUInteger itemCount = items.count;
+    
     for (NSUInteger itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-        NSToolbarItem *item = [items objectAtIndex:itemIndex];
-        NSString *itemIdentifier = [item itemIdentifier];
+        NSToolbarItem *item = items[itemIndex];
+        NSString *itemIdentifier = item.itemIdentifier;
         if (OFISEQUAL(itemIdentifier, identifier))
             return itemIndex;
     }
-
+    
     return NSNotFound;
 }
+
 
 @end

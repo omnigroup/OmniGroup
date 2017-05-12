@@ -7,19 +7,12 @@
 
 #import <OmniUIDocument/OUIDocument.h>
 
+#import <OmniFoundation/OmniFoundation.h>
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFileExchange/OmniFileExchange.h>
-#import <OmniFoundation/NSDate-OFExtensions.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/NSUndoManager-OFExtensions.h>
-#import <OmniFoundation/OFBackgroundActivity.h>
-#import <OmniFoundation/OFFileEdit.h>
-#import <OmniFoundation/OFPreference.h>
-#import <OmniFoundation/OFRelativeDateFormatter.h>
-#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUI/OUIInspector.h>
@@ -27,6 +20,7 @@
 #import <OmniUI/OUIUndoIndicator.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIShieldView.h>
+#import <OmniUI/OUIPasswordAlert.h>
 
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -60,6 +54,13 @@ static int32_t OUIDocumentInstanceCount = 0;
 
 @interface OUIDocument (/**NSUndoManager Observer*/)
 @property (strong,nonatomic) NSUndoManager *observedUndoManager;
+@end
+
+OB_HIDDEN
+@interface OUIDocumentEncryptionPassphrasePromptOperation : OFAsynchronousOperation
+@property (weak) OUIDocument *document;
+@property (readonly, strong) NSError *error;
+@property (readonly, copy) NSString *password;
 @end
 
 @implementation OUIDocument
@@ -1612,7 +1613,92 @@ static OFPreference *LastEditsPreference;
     [self dismissUpdateMessage];
 }
 
+#pragma mark OFDocumentEncryption (OFCMSKeySource)
+
+- (NSString *)promptForPasswordWithCount:(NSInteger)previousFailureCount error:(NSError * _Nullable __autoreleasing *)outError;
+{
+    if ([NSThread isMainThread]) {
+        OBFinishPorting;
+    }
+    
+    OUIDocumentEncryptionPassphrasePromptOperation *prompt = [[OUIDocumentEncryptionPassphrasePromptOperation alloc] init];
+    prompt.document = self;
+    
+    [[[OUIAppController controller] backgroundPromptQueue] addOperation:prompt];
+    
+    [prompt waitUntilFinished];
+    
+    NSString *result = prompt.password;
+    if (result) {
+        return result;
+    } else {
+        if (outError)
+            *outError = prompt.error;
+        return nil;
+    }
+}
+
 @end
+
+@implementation OUIDocumentEncryptionPassphrasePromptOperation
+{
+    OUIDocument * __weak document;
+    NSString *enteredPassword;
+    NSError *enteredError;
+}
+
+@synthesize document = document,
+error = enteredError,
+password = enteredPassword;
+
+- (void)start;
+{
+    [super start];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ODSItem *fileItem;
+        UIViewController *presenter;
+        
+        {
+            OUIDocument *strongDoc = self.document;
+            
+            if (!strongDoc || self.cancelled) {
+                enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                [self finish];
+                return;
+            }
+            
+            fileItem = strongDoc.fileItem;
+            presenter = strongDoc.documentViewController;
+        }
+        
+        if (!presenter)
+            presenter = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+        
+        NSString *promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened"),
+                                   fileItem.name];
+        
+        OUIPasswordAlert *dialog = [[OUIPasswordAlert alloc] initWithTitle:promptMessage options:0];
+        
+        dialog.finished = ^(OUIPasswordAlert *a, OUIPasswordAlertAction action){
+            switch (action) {
+                default:
+                case OUIPasswordAlertActionCancel:
+                    enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                    break;
+                case OUIPasswordAlertActionLogIn:
+                    enteredPassword = a.password;
+                    break;
+            }
+            [self finish];
+        };
+        
+        [dialog showFromController:presenter];
+    });
+}
+
+@end
+
 
 // A helper function to centralize the check for -openWithCompletionHandler: leaving the document 'open-ish' when it fails.
 // Radar 10694414: If UIDocument -openWithCompletionHandler: fails, it is still a presenter

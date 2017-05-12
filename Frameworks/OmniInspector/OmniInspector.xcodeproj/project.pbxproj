@@ -63,8 +63,6 @@
 		34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */; };
 		34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */; };
-		34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34D2B7D108D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */; };
 		34E221EE0932A28400087E32 /* OIInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E221EC0932A28300087E32 /* OIInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E221EF0932A28400087E32 /* OIInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E221ED0932A28300087E32 /* OIInspector.m */; };
 		4281FCB91B5EC02700FD888F /* OITallTitlebarActive.png in Resources */ = {isa = PBXBuildFile; fileRef = 4281FCB51B5EC02700FD888F /* OITallTitlebarActive.png */; };
@@ -188,8 +186,6 @@
 		34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Ice.png"; sourceTree = "<group>"; };
 		34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAApplication-OIExtensions.h"; sourceTree = "<group>"; };
 		34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAApplication-OIExtensions.m"; sourceTree = "<group>"; };
-		34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAToolbarWindowController-OIExtensions.h"; sourceTree = "<group>"; };
-		34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAToolbarWindowController-OIExtensions.m"; sourceTree = "<group>"; };
 		34D2B80708D0E43500C74260 /* OmniInspector.order */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = OmniInspector.order; sourceTree = "<group>"; };
 		34E221EC0932A28300087E32 /* OIInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspector.h; sourceTree = "<group>"; };
 		34E221ED0932A28300087E32 /* OIInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspector.m; sourceTree = "<group>"; };
@@ -317,8 +313,6 @@
 				34B2544308D0DCEE00DD2070 /* OmniInspector.h */,
 				34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */,
 				34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */,
-				34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */,
-				34D2B7CF08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m */,
 				E2BFE0521AFD3AE800F06789 /* OIAppearance.h */,
 				E2BFE0531AFD3AE800F06789 /* OIAppearance.m */,
 				E2BFE0541AFD3AE800F06789 /* OIAppearance.plist */,
@@ -499,7 +493,6 @@
 				34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */,
 				34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */,
 				34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */,
-				34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */,
 				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
 				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
 				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
@@ -655,7 +648,6 @@
 				34B2545D08D0DCEE00DD2070 /* OIInspectorVerticalResizer.m in Sources */,
 				34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */,
 				34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */,
-				34D2B7D108D0E32900C74260 /* OAToolbarWindowController-OIExtensions.m in Sources */,
 				6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */,
 				6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */,
 				6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */,

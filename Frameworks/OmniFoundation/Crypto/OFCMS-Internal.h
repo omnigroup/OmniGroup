@@ -29,7 +29,6 @@ NSData * __nullable OFUnwrapRIForCMSKeyTransport(SecKeyRef privateKey, NSData *e
 NSData *_OFCMSRIDFromIssuerSerial(NSData *issuer, NSData *serial) OB_HIDDEN;
 NSData *_OFCMSRIDFromSKI(NSData *ski) OB_HIDDEN;
 /* PKCS#7 recipient parsing */
-enum OFCMSRecipientType { OFCMSRUnknown, OFCMSRKeyTransport, OFCMSRKeyAgreement, OFCMSRPassword, OFCMSRPreSharedKey };
 NSError * __nullable _OFASN1ParseCMSRecipient(NSData *buf, enum OFCMSRecipientType *outType, NSData NANNP outWho, NSData NANNP outEncryptedKey) /* OB_HIDDEN */;
 enum OFCMSRecipientIdentifierType { OFCMSRIDIssuerSerial, OFCMSRIDSubjectKeyIdentifier };
 NSError * __nullable _OFASN1ParseCMSRecipientIdentifier(NSData *buf, enum OFCMSRecipientIdentifierType *outType, NSData NANNP blob1, NSData NANNP blob2) OB_HIDDEN;

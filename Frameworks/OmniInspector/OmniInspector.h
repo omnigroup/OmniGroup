@@ -8,7 +8,6 @@
 // $Id$
 
 #import <OmniInspector/OAApplication-OIExtensions.h>
-#import <OmniInspector/OAToolbarWindowController-OIExtensions.h>
 
 #import <OmniInspector/OIAppearance.h>
 #import <OmniInspector/OIButtonMatrixBackgroundView.h>

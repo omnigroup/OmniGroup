@@ -16,6 +16,21 @@ NS_ASSUME_NONNULL_BEGIN
 @class NSToolbarItem;
 @class NSBundle, NSDictionary;
 
+/**
+ Posted when we detect that an item will be added to or was removed from the toolbar and when the toolbar's visibility, display mode, or size mode have changed.
+ */
+extern NSString * const OAToolbarDidChangeNotification;
+extern NSString * const OAToolbarDidChangeKindKey;
+
+typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
+    OAToolbarDidChangeKindAddItem,
+    OAToolbarDidChangeKindRemoveItem,
+    OAToolbarDidChangeKindSetVisible,
+    OAToolbarDidChangeKindSetDisplayMode,
+    OAToolbarDidChangeKindSetSizeMode,
+    OAToolbarDidChangeKindPresentCustomizationSheet,
+};
+
 @protocol OAToolbarHelper
 
 // A path suffix that should be on the toolbar items returned from `allowedItems`
@@ -51,6 +66,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)shouldAutosaveToolbarConfiguration;
 - (NSToolbarDisplayMode)defaultToolbarDisplayMode;
 - (NSDictionary *)toolbarConfigurationDictionary; // Used when -shouldAutosaveConfiguration returns NO
+
+// declare that we implement these optional OAToolbarDelegate methods so subclasses that override them can (and must!) call super
+- (void)toolbarWillAddItem:(NSNotification *)notification NS_REQUIRES_SUPER;
+- (void)toolbarDidRemoveItem:(NSNotification *)notification NS_REQUIRES_SUPER;
+- (void)toolbar:(OAToolbar *)aToolbar didSetVisible:(BOOL)visible NS_REQUIRES_SUPER;
+- (void)toolbar:(OAToolbar *)aToolbar didSetDisplayMode:(NSToolbarDisplayMode)displayMode NS_REQUIRES_SUPER;
+- (void)toolbar:(OAToolbar *)aToolbar didSetSizeMode:(NSToolbarSizeMode)sizeMode NS_REQUIRES_SUPER;
+
 
 @end
 

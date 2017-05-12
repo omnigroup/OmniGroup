@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 #else
 + (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
++ (BOOL)isOperatingSystemSierraWithTouchBarOrLater; // 10.12.1
 #endif
 
 - (nullable instancetype)initWithVersionString:(NSString *)versionString;

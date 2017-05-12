@@ -441,25 +441,33 @@ static NSMutableArray *scrollEntries = nil;
     NSRect bounds = [self bounds];
     NSScrollView *enclosingScrollView = [self enclosingScrollView];
     NSRect documentVisibleRect = [enclosingScrollView documentVisibleRect];
+    NSEdgeInsets contentInsets = enclosingScrollView.contentInsets;
 
     NSPoint scrollPosition;
     
     // Vertical position
-    if (NSHeight(documentVisibleRect) >= NSHeight(bounds)) {
-        scrollPosition.y = 0.0f; // We're completely visible
-    } else {
-        scrollPosition.y = (NSMinY(documentVisibleRect) - NSMinY(bounds)) / (NSHeight(bounds) - NSHeight(documentVisibleRect));
+    {
+        // TODO: Need to swap which insets we use here for flipped?
+        CGFloat minYScroll = NSMinY(bounds) - contentInsets.top;
+        CGFloat maxYScroll = (NSMaxY(bounds) + contentInsets.bottom) - NSHeight(enclosingScrollView.bounds);
+        if (NSHeight(documentVisibleRect) >= NSHeight(bounds) + contentInsets.top + contentInsets.bottom) {
+            scrollPosition.y = 0; // We're completely visible
+        } else {
+            scrollPosition.y = CLAMP((documentVisibleRect.origin.y - minYScroll) / (maxYScroll - minYScroll), 0, 1);
+        }
         if (![self isFlipped])
             scrollPosition.y = 1.0f - scrollPosition.y;
-        scrollPosition.y = CLAMP(scrollPosition.y, 0, 1);
     }
 
     // Horizontal position
-    if (NSWidth(documentVisibleRect) >= NSWidth(bounds)) {
-        scrollPosition.x = 0.0f; // We're completely visible
-    } else {
-        scrollPosition.x = (NSMinX(documentVisibleRect) - NSMinX(bounds)) / (NSWidth(bounds) - NSWidth(documentVisibleRect));
-        scrollPosition.x = CLAMP(scrollPosition.x, 0, 1);
+    {
+        CGFloat minXScroll = NSMinX(bounds) - contentInsets.left;
+        CGFloat maxXScroll = (NSMaxX(bounds) + contentInsets.right) - NSWidth(enclosingScrollView.bounds);
+        if (NSWidth(documentVisibleRect) >= NSWidth(bounds) + contentInsets.left + contentInsets.right) {
+            scrollPosition.x = 0; // We're completely visible
+        } else {
+            scrollPosition.x = CLAMP((documentVisibleRect.origin.x - minXScroll) / (maxXScroll - minXScroll), 0, 1);
+        }
     }
 
     return scrollPosition;
@@ -470,29 +478,27 @@ static NSMutableArray *scrollEntries = nil;
     NSRect bounds = [self bounds];
     NSScrollView *enclosingScrollView = [self enclosingScrollView];
     NSRect desiredRect = [enclosingScrollView documentVisibleRect];
-
+    NSEdgeInsets contentInsets = enclosingScrollView.contentInsets;
+    
     // Vertical position
-    if (NSHeight(desiredRect) < NSHeight(bounds)) {
-        scrollPosition.y = CLAMP(scrollPosition.y, 0, 1);
+    {
         if (![self isFlipped])
             scrollPosition.y = 1.0f - scrollPosition.y;
-        desiredRect.origin.y = (CGFloat)rint(NSMinY(bounds) + scrollPosition.y * (NSHeight(bounds) - NSHeight(desiredRect)));
-        if (NSMinY(desiredRect) < NSMinY(bounds))
-            desiredRect.origin.y = NSMinY(bounds);
-        else if (NSMaxY(desiredRect) > NSMaxY(bounds))
-            desiredRect.origin.y = NSMaxY(bounds) - NSHeight(desiredRect);
-    }
 
+        CGFloat minYScroll = NSMinY(bounds) - contentInsets.top;
+        CGFloat maxYScroll = (NSMaxY(bounds) + contentInsets.bottom) - NSHeight(enclosingScrollView.bounds);
+        CGFloat yScroll = minYScroll + (CLAMP(scrollPosition.y, 0, 1) * (maxYScroll - minYScroll));
+        desiredRect.origin.y = yScroll;
+    }
+    
     // Horizontal position
-    if (NSWidth(desiredRect) < NSWidth(bounds)) {
-        scrollPosition.x = CLAMP(scrollPosition.x, 0, 1);
-        desiredRect.origin.x = (CGFloat)rint(NSMinX(bounds) + scrollPosition.x * (NSWidth(bounds) - NSWidth(desiredRect)));
-        if (NSMinX(desiredRect) < NSMinX(bounds))
-            desiredRect.origin.x = NSMinX(bounds);
-        else if (NSMaxX(desiredRect) > NSMaxX(bounds))
-            desiredRect.origin.x = NSMaxX(bounds) - NSHeight(desiredRect);
+    {
+        CGFloat minXScroll = NSMinX(bounds) - contentInsets.left;
+        CGFloat maxXScroll = (NSMaxX(bounds) + contentInsets.right) - NSWidth(enclosingScrollView.bounds);
+        CGFloat xScroll = minXScroll + (CLAMP(scrollPosition.x, 0, 1) * (maxXScroll - minXScroll));
+        desiredRect.origin.x = xScroll;
     }
-
+    
     [self scrollPoint:desiredRect.origin];
 }
 

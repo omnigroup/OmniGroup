@@ -429,7 +429,8 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
 
 - (void)dismissInspectorImmediatelyIfVisible;
 {
-    [_textInspector dismissImmediatelyIfVisible];
+    // JCTODO: Inspector Refactor
+//    [_textInspector dismissImmediatelyIfVisible];
 }
 
 - (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
@@ -438,7 +439,8 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     if (setupBlock != NULL)
         setupBlock(_textInspector);
 
-    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
+//    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
+    [self.textInspector inspectObjects:runs];
     self.alwaysHighlightSelectedText = YES;
 }
 
@@ -891,7 +893,9 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     [super setSelectedTextRange:selectedTextRange];
     [[NSNotificationCenter defaultCenter] postNotificationName:OUITextViewInsertionPointDidChangeNotification object:self];
     
-    [_textInspector dismissAnimated:YES];
+    // JCTODO: Inspector Refactor
+    OBFinishPorting;
+//    [_textInspector dismissAnimated:YES];
 }
 
 #pragma mark - UIResponder subclass

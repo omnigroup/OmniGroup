@@ -75,9 +75,9 @@ static inline OALinearRGBA OABlendLinearRGBAColors(OALinearRGBA A, OALinearRGBA 
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern NSColor *OACompositeColors(NSColor *topColor, NSColor *bottomColor, BOOL * _Nullable isOpaque);
+extern NSColor * _Nullable OACompositeColors(NSColor * _Nullable topColor, NSColor * _Nullable bottomColor, BOOL * _Nullable isOpaque);
 #else
-extern OAColor *OACompositeColors(OAColor *topColor, OAColor *bottomColor, BOOL * _Nullable isOpaque);
+extern OAColor * _Nullable OACompositeColors(OAColor * _Nullable topColor, OAColor * _Nullable bottomColor, BOOL * _Nullable isOpaque);
 #endif
 
 extern CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL * _Nullable isOpaque) CF_RETURNS_RETAINED;

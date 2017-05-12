@@ -187,9 +187,9 @@ OALinearRGBA OACompositeLinearRGBA(OALinearRGBA T, OALinearRGBA B)
 
 // Composites *ioTop on bottom and puts it back in *ioTop, using the sRGB color space. Return YES if the output is opaque.  A nil input is interpreted as clear.
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-NSColor *OACompositeColors(NSColor *topColor, NSColor *bottomColor, BOOL * _Nullable isOpaque)
+NSColor * _Nullable OACompositeColors(NSColor * _Nullable topColor, NSColor * _Nullable bottomColor, BOOL * _Nullable isOpaque)
 #else
-OAColor *OACompositeColors(OAColor *topColor, OAColor *bottomColor, BOOL * _Nullable isOpaque)
+OAColor * _Nullable OACompositeColors(OAColor * _Nullable topColor, OAColor * _Nullable bottomColor, BOOL * _Nullable isOpaque)
 #endif
 {
     OALinearRGBA T = OAGetColorComponents(topColor);
