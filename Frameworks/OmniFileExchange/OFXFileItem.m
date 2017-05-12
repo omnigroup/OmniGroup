@@ -277,8 +277,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     _newestRemoteVersion = OFXFileItemUnknownVersion;
     
     NSString *localRelativePath = [container _localRelativePathForFileURL:localDocumentURL];
-    OBASSERT(![localRelativePath isEqualToString:intendedLocalRelativePath], @"Should be nil or a different path");
-    OBASSERT(!intendedLocalRelativePath || [[localRelativePath pathExtension] isEqualToString:[intendedLocalRelativePath pathExtension]]);
+    OBASSERT(intendedLocalRelativePath == nil || ![localRelativePath isEqualToString:intendedLocalRelativePath], @"Should be nil or a different path");
+    OBASSERT(intendedLocalRelativePath == nil || [[localRelativePath pathExtension] isEqualToString:[intendedLocalRelativePath pathExtension]]);
 
     _localRelativePath = [localRelativePath copy];
     OBASSERT([_localRelativePath isEqual:snapshot.localRelativePath]);

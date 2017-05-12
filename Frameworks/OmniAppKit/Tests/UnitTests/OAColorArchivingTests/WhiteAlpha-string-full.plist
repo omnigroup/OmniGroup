@@ -4,6 +4,8 @@
 <dict>
 	<key>a</key>
 	<string>0.75</string>
+	<key>space</key>
+	<string>gg22</string>
 	<key>w</key>
 	<string>0.5</string>
 </dict>

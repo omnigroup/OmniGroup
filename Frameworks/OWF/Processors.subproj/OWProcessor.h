@@ -10,6 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <OmniFoundation/OFObject.h>
 
+#import <OmniFoundation/OFBundleRegistryTarget.h>
 #import <OmniFoundation/OFSimpleLock.h>
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
 #import <OWF/OWTargetProtocol.h>
@@ -109,7 +110,7 @@ typedef enum {
 @end
 
 
-@interface OWProcessor : OFObject <OFMessageQueuePriority>
+@interface OWProcessor : OFObject <OFMessageQueuePriority, OFBundleRegistryTarget>
 {
     OWContent *originalContent;
 }

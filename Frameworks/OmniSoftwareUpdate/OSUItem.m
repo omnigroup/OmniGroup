@@ -152,7 +152,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     NSFont *boldFont = [[NSFontManager sharedFontManager] convertFont:font toHaveTrait:NSBoldFontMask];
     if (!boldFont)
         boldFont = font;
-    NSColor *paidColor = [NSColor colorWithCalibratedRed:0/255.0f green:128/255.0f blue:0.0f alpha:1.0f];
+    NSColor *paidColor = [NSColor colorWithRed:0/255.0f green:128/255.0f blue:0.0f alpha:1.0f];
     PaidAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:boldFont, NSFontAttributeName, paidColor, NSForegroundColorAttributeName, nil];
     
     itemFont = font;

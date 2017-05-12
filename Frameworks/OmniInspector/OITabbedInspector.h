@@ -21,7 +21,7 @@
 {
     IBOutlet NSView *contentView;
     IBOutlet OITabMatrix *buttonMatrix;
-    NSArray *_tabControllers;
+    NSArray *_enabledTabControllers;
     NSMutableArray *_trackingRectTags;
     BOOL _singleSelection;
     BOOL _shouldInspectNothing;
@@ -44,6 +44,9 @@
 - (NSArray *)selectedTabIdentifiers;
 - (NSArray *)pinnedTabIdentifiers;
 - (void)setSelectedTabIdentifiers:(NSArray *)selectedIdentifiers pinnedTabIdentifiers:(NSArray *)pinnedIdentifiers;
+
+- (NSArray *)allTabIdentifiers; // this includes disabled tabs as well.
+- (void)setEnabledTabIdentifiers:(NSArray *)tabIdentifiers;
 
 - (OIInspectorTabController *)tabWithIdentifier:(NSString *)identifier;
 - (OIInspector <OIConcreteInspector> *)inspectorWithIdentifier:(NSString *)tabIdentifier;

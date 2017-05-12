@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -196,6 +196,10 @@ RCS_ID("$Id$");
 
 - (void)testPipeRunloopEarlyExit
 {
+#ifdef DEBUG_kc
+    return; // -isRunning just returns YES forever when I test this in the debugger, so I'm disabling this test for me so I can test other issues
+#endif
+
     NSRunLoop *l = [NSRunLoop currentRunLoop];
     NSOutputStream *resultStream;
     OFFilterProcess *proc;

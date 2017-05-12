@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -117,16 +117,27 @@ void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEnti
     }
     
     // The to-one side of a one-to-many can't be calculated since presumably the to-many side is the calculated side.
-    if (self.isToMany)
+    if (self.isToMany) {
         OBPRECONDITION(!inverse.isCalculated);
-    else if (inverse.isToMany)
+    } else if (inverse.isToMany) {
         OBPRECONDITION(!self.isCalculated);
+    }
 #endif
     
     ODOPropertyBind(self, sourceEntity);
     
     self->_destinationEntity = [destinationEntity retain];
     self->_inverseRelationship = [inverse retain];
+
+    //
+#ifdef OMNI_ASSERTIONS_ON
+    if (self.isCalculated) {
+        NSString *setterString = [NSString stringWithFormat:@"set%@%@:", [self.name substringToIndex:1].uppercaseString, [self.name substringFromIndex:1]];
+        SEL setter = NSSelectorFromString(setterString);
+        Class cls = self->_nonretained_entity.instanceClass;
+        OBASSERT(![cls instancesRespondToSelector:setter], @"%@ implements -%@. This is a calculated property; the setter will not be invoked at runtime.", NSStringFromClass(cls), setterString);
+    }
+#endif
 }
 
 @end

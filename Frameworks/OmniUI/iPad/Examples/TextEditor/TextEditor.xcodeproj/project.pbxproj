@@ -93,6 +93,13 @@
 			remoteGlobalIDString = 34800E111B19233E0008DC9E;
 			remoteInfo = "OmniUnzip-iOS";
 		};
+		340E07FA1DB924B300709F97 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A260A7A41280C15A004743FA /* OmniUnzip.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FA154BF1D89D1140053543C;
+			remoteInfo = OUUnitTests;
+		};
 		340E551E1676B0EE0085CF55 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
@@ -806,6 +813,7 @@
 			children = (
 				A260A7CC1280C170004743FA /* OmniUnzip.framework */,
 				347A67DC1B38B64D00354BDD /* OmniUnzip.framework */,
+				340E07FB1DB924B300709F97 /* OUUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -845,7 +853,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -939,6 +947,13 @@
 			fileType = archive.ar;
 			path = libODAVUnitTestsTouch.a;
 			remoteRef = 23FB28AB17E383D900DF625D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		340E07FB1DB924B300709F97 /* OUUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OUUnitTests.xctest;
+			remoteRef = 340E07FA1DB924B300709F97 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		340E551F1676B0EE0085CF55 /* OFXMLParsingTest */ = {

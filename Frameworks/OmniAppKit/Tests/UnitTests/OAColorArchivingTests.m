@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,11 +26,12 @@ static void _checkFile(OAColorArchivingTests *self, NSString *path, NSData *actu
     if (!path)
         return;
     
+    // We don't expect the data to be identical
     NSData *expectedData = [NSData dataWithContentsOfFile:path];
     XCTAssertNotNil(expectedData, @"should have expected data in %@", path);
     if (OFNOTEQUAL(expectedData, actualData)) {
         NSString *actualPath = [@"/tmp" stringByAppendingPathComponent:[path lastPathComponent]];
-        NSLog(@"Actual data saved in %@", actualPath);
+        NSLog(@"Archived color data does not match expected data: [diff %@ %@]", path, actualPath);
         [actualData writeToFile:actualPath atomically:YES];
     }
     XCTAssertEqualObjects(expectedData, actualData, @"archived colors should be equal");
@@ -110,22 +111,22 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testRGB;
 {
-    CHECK([NSColor colorWithCalibratedRed:0.125f green:0.25f blue:0.5f alpha:1.0f]);
+    CHECK([NSColor colorWithRed:0.125f green:0.25f blue:0.5f alpha:1.0f]);
 }
 
 - (void)testRGBA;
 {
-    CHECK([NSColor colorWithCalibratedRed:0.125f green:0.25f blue:0.5f alpha:0.75f]);
+    CHECK([NSColor colorWithRed:0.125f green:0.25f blue:0.5f alpha:0.75f]);
 }
 
 - (void)testWhite;
 {
-    CHECK([NSColor colorWithCalibratedWhite:0.5f alpha:1.0f]);
+    CHECK([NSColor colorWithWhite:0.5f alpha:1.0f]);
 }
 
 - (void)testWhiteAlpha;
 {
-    CHECK([NSColor colorWithCalibratedWhite:0.5f alpha:0.75f]);
+    CHECK([NSColor colorWithWhite:0.5f alpha:0.75f]);
 }
 
 - (void)testCatalog;
@@ -135,12 +136,12 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 
 - (void)testHSV;
 {
-    CHECK([NSColor colorWithCalibratedHue:0.75f saturation:0.5f brightness:0.25f alpha:1.0f]);
+    CHECK([NSColor colorWithHue:0.75f saturation:0.5f brightness:0.25f alpha:1.0f]);
 }
 
 - (void)testHSVA;
 {
-    CHECK([NSColor colorWithCalibratedHue:0.75f saturation:0.5f brightness:0.25f alpha:0.75f]);
+    CHECK([NSColor colorWithHue:0.75f saturation:0.5f brightness:0.25f alpha:0.75f]);
 }
 
 - (void)testCMYK;

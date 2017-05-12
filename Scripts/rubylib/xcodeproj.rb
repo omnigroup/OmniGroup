@@ -301,7 +301,7 @@ module Xcode
 
       plist_file = @checkout_location + "/project.pbxproj"
       fail "no project file in #{@checkout_location}\n" unless File.exist?(plist_file)
-      @project = Plist::parse_xml(`plutil -convert xml1 -o - "#{plist_file}"`)
+      @project = Plist::parse_xml(Xcode.read_only_command("plutil -convert xml1 -o - \"#{plist_file}\""))
         
       @objects = {}
       @dict_by_identifier = @project['objects']
@@ -401,7 +401,7 @@ module Xcode
       sourceTree = obj.sourceTree
 
       if ENV['DEVELOPER_DIR'].nil?
-        ENV['DEVELOPER_DIR'] = `xcode-select -print-path`.chomp
+        ENV['DEVELOPER_DIR'] = Xcode.read_only_command("xcode-select -print-path").chomp
       end
       variables = ['DEVELOPER_DIR', 'BUILT_PRODUCTS_DIR', 'DEVELOPER_DIR', 'SDKROOT', 'DERIVED_FILE_DIR', 'PROJECT_DERIVED_FILE_DIR', 'DERIVED_SOURCES_DIR']
       

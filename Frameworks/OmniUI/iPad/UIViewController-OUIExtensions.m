@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,19 +70,18 @@ RCS_ID("$Id$");
 }
 #endif
 
-#ifdef DEBUG
 - (void)expectDeallocationOfControllerTreeSoon;
 {
-    OBExpectDeallocationWithPossibleFailureReason(self, ^NSString *(UIViewController *vc){
-        if (vc.parentViewController)
-            return @"still has parent view controller";
-        return nil;
-    });
-    for (UIViewController *vc in self.childViewControllers) {
-        [vc expectDeallocationOfControllerTreeSoon];
+    if (OBExpectedDeallocationsIsEnabled()) {
+        OBExpectDeallocationWithPossibleFailureReason(self, ^NSString *(UIViewController *vc){
+            if (vc.parentViewController)
+                return @"still has parent view controller";
+            return nil;
+        });
+        for (UIViewController *vc in self.childViewControllers) {
+            [vc expectDeallocationOfControllerTreeSoon];
+        }
     }
 }
-
-#endif
 
 @end

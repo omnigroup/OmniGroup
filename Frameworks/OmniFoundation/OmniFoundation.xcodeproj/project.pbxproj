@@ -362,6 +362,10 @@
 		34E7BCC209A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E7BCC009A4FE9300BB8A5D /* NSScriptClassDescription-OFExtensions.m */; };
 		34EE1AB21BFC04C80067E993 /* OFUTI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34EE1AB11BFC04C80067E993 /* OFUTI.swift */; };
 		34EE1AB31BFC04C80067E993 /* OFUTI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34EE1AB11BFC04C80067E993 /* OFUTI.swift */; };
+		34EE65441DB7CABB00647BC7 /* OFDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */; };
+		34EE65451DB7CABB00647BC7 /* OFDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */; };
+		34EE654E1DB7F94700647BC7 /* OFBundleRegistryTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EE654D1DB7F94700647BC7 /* OFBundleRegistryTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34EE654F1DB7F94700647BC7 /* OFBundleRegistryTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EE654D1DB7F94700647BC7 /* OFBundleRegistryTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B25194F6C3300AD9C4D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F16B1A194F6C3200AD9C4D /* OmniFoundation.framework */; };
 		34F16B47194F6DF000AD9C4D /* OmniFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C82FE8AAEA611C9CC38 /* OmniFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16B48194F6DF500AD9C4D /* OFErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D606DC0CCAA74100467736 /* OFErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1824,6 +1828,8 @@
 		34E9110B05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableAttributedString-OFExtensions.h"; sourceTree = "<group>"; };
 		34E9110C05FE19A40097A113 /* NSMutableAttributedString-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableAttributedString-OFExtensions.m"; sourceTree = "<group>"; };
 		34EE1AB11BFC04C80067E993 /* OFUTI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OFUTI.swift; sourceTree = "<group>"; };
+		34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OFDiagnostics.swift; sourceTree = "<group>"; };
+		34EE654D1DB7F94700647BC7 /* OFBundleRegistryTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBundleRegistryTarget.h; sourceTree = "<group>"; };
 		34F16B1A194F6C3200AD9C4D /* OmniFoundation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34F16B24194F6C3200AD9C4D /* OFUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OFUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34F16B35194F6C6100AD9C4D /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
@@ -2706,6 +2712,7 @@
 				00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */,
 				00E51C70FE8AAEA611C9CC38 /* OFBundleRegistry.h */,
 				00E51C60FE8AAEA611C9CC38 /* OFBundleRegistry.m */,
+				34EE654D1DB7F94700647BC7 /* OFBundleRegistryTarget.h */,
 				3D990C72FF3658F5C697A146 /* OFCharacterScanner.h */,
 				3D990C74FF36598CC697A146 /* OFCharacterScanner.m */,
 				34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */,
@@ -2714,6 +2721,7 @@
 				E218273B145605170097BBFE /* OFCompletionMatch.m */,
 				00E51C72FE8AAEA611C9CC38 /* OFController.h */,
 				00E51C61FE8AAEA611C9CC38 /* OFController.m */,
+				34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */,
 				A2091C180E5A149E007B59A7 /* OFFilterProcess.h */,
 				A2091C190E5A149E007B59A7 /* OFFilterProcess.m */,
 				00E51C77FE8AAEA611C9CC38 /* OFObject.h */,
@@ -3459,6 +3467,7 @@
 				34F16B64194F6E7400AD9C4D /* OFBindingPoint.h in Headers */,
 				34F16BBF194F756400AD9C4D /* CFDictionary-OFExtensions.h in Headers */,
 				34F16BA7194F74F700AD9C4D /* OFRationalNumber.h in Headers */,
+				34EE654F1DB7F94700647BC7 /* OFBundleRegistryTarget.h in Headers */,
 				34F16BD7194F76A300AD9C4D /* NSData-OFEncoding.h in Headers */,
 				34F16C0A194F775100AD9C4D /* NSString-OFUnicodeCharacters.h in Headers */,
 				34F16B5C194F6E5300AD9C4D /* OFMultipleOptionErrorRecovery.h in Headers */,
@@ -3623,6 +3632,7 @@
 				4A4E060708AA72B10098FF0F /* CFString-OFExtensions.h in Headers */,
 				4A4E060808AA72B10098FF0F /* OFCFCallbacks.h in Headers */,
 				4A4E060C08AA72B10098FF0F /* OFBTree.h in Headers */,
+				34EE654E1DB7F94700647BC7 /* OFBundleRegistryTarget.h in Headers */,
 				4A4E060E08AA72B10098FF0F /* OFBulkBlockPool.h in Headers */,
 				4A4E060F08AA72B10098FF0F /* OFByte.h in Headers */,
 				4A4E061008AA72B10098FF0F /* OFByteSet.h in Headers */,
@@ -4500,6 +4510,7 @@
 				34F16BD8194F76A600AD9C4D /* NSData-OFEncoding.m in Sources */,
 				34F16C30194F797C00AD9C4D /* OFXMLString.m in Sources */,
 				34F16BBC194F755C00AD9C4D /* CFData-OFExtensions.m in Sources */,
+				34EE65451DB7CABB00647BC7 /* OFDiagnostics.swift in Sources */,
 				34F16BD2194F768E00AD9C4D /* NSArray-OFExtensions.m in Sources */,
 				34F16BB8194F755200AD9C4D /* CFArray-OFExtensions.m in Sources */,
 				34F16B4D194F6E1000AD9C4D /* OFNetChangeNotifier.m in Sources */,
@@ -4731,6 +4742,7 @@
 				4A4E070108AA72B10098FF0F /* OFStringDecoder.m in Sources */,
 				4A4E070208AA72B10098FF0F /* OFStringScanner.m in Sources */,
 				4A4E070308AA72B10098FF0F /* OFUtilities.m in Sources */,
+				34EE65441DB7CABB00647BC7 /* OFDiagnostics.swift in Sources */,
 				4A4E070608AA72B10098FF0F /* NSArray-OFExtensions.m in Sources */,
 				4A4E070708AA72B10098FF0F /* NSAttributedString-OFExtensions.m in Sources */,
 				4A4E070808AA72B10098FF0F /* NSBundle-OFFixes.m in Sources */,

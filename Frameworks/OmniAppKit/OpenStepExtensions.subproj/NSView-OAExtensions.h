@@ -115,9 +115,7 @@ typedef void (^OACrossfadeCompletionBlock)(void);
 - (void)logConstraintsInvolvingView;
 - (void)logVibrantViews;
 
-#ifdef DEBUG
 - (void)expectDeallocationOfViewTreeSoon;
-#endif
 
 @end
 

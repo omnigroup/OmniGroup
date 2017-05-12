@@ -41,13 +41,14 @@ It may be better to make an OFBundleDescription class eventually.
 NB also, if this dictionary changes, the OmniBundlePreferences bundle (in OmniComponents/Other) should be updated, as well as the NetscapePluginSupport bundle.
 */
     
+NS_ASSUME_NONNULL_BEGIN
 
 static NSString * const PathBundleDescriptionKey = @"path";
 
 static NSMutableSet *registeredBundleNames;
 static NSMutableDictionary *softwareVersionDictionary;
 static NSMutableSet *registeredBundleDescriptions;
-static NSMutableDictionary *additionalBundleDescriptions;
+static NSMutableDictionary * _Nullable additionalBundleDescriptions;
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 static NSArray *oldDisabledBundleNames;
 #endif
@@ -192,7 +193,7 @@ static NSArray *oldDisabledBundleNames;
 }
 #endif
 
-+ (void)noteAdditionalBundles:(NSArray *)additionalBundles owner:bundleOwner
++ (void)noteAdditionalBundles:(nullable NSArray *)additionalBundles owner:(id)bundleOwner;
 {
     if (additionalBundles && ![additionalBundles count])
         additionalBundles = nil;
@@ -378,10 +379,15 @@ static NSString *_normalizedPath(NSString *path)
     // Now find all the bundles from the standard paths
     for (NSString *pathElement in [self standardPath])  {
         pathElement = [pathElement stringByReplacingKeysInDictionary:environmentDictionary startingDelimiter:@"$(" endingDelimiter:@")"];
-        @try {
-            [bundlesFromStandardPath addObjectsFromArray:[self bundlesInDirectory:pathElement ignoringPaths:seenPaths]];
-        } @catch (NSException *exc) {
-            NSLog(@"+[OFBundleRegistry bundlesFromStandardPath]: %@", [exc reason]);
+
+        __autoreleasing NSError *error = nil;
+        NSArray *bundles = [self _bundlesInDirectory:pathElement ignoringPaths:seenPaths error:&error];
+        if (!bundles) {
+            if (![error causedByMissingFile]) {
+                [error log:@"Error finding bundles in %@", pathElement];
+            }
+        } else {
+            [bundlesFromStandardPath addObjectsFromArray:bundles];
         }
     }
 
@@ -391,7 +397,7 @@ static NSString *_normalizedPath(NSString *path)
 }
 
 // Returns an array of bundle descriptions (currently NSMutableDictionaries)
-+ (NSArray *)bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)pathsToIgnore;
++ (nullable NSArray *)_bundlesInDirectory:(NSString *)directoryPath ignoringPaths:(NSSet *)pathsToIgnore error:(NSError **)outError;
 {
     NSString *expandedDirectoryPath = [directoryPath stringByExpandingTildeInPath];
     if (![expandedDirectoryPath hasPrefix:@"/"]) {
@@ -405,7 +411,7 @@ static NSString *_normalizedPath(NSString *path)
     }
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray *candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:NULL] sortedArrayUsingSelector:@selector(compare:)];
+    NSArray *candidates = [[fileManager contentsOfDirectoryAtPath:expandedDirectoryPath error:outError] sortedArrayUsingSelector:@selector(compare:)];
     if (!candidates)
         return nil;
     
@@ -458,7 +464,7 @@ static NSString *_normalizedPath(NSString *path)
             [description setObject:[[bundle infoDictionary] objectForKey:@"CFBundleGetInfoString"] forKey:@"text"];
     }
 
-    return [bundles count] > 0 ? bundles : nil;
+    return bundles;
 }
 
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
@@ -538,7 +544,7 @@ static NSString *_normalizedPath(NSString *path)
 
 #endif
 
-+ (void)registerDictionary:(NSDictionary *)registrationClassToOptionsDictionary forBundle:(NSDictionary *)bundleDescription;
++ (void)_registerDictionary:(NSDictionary *)registrationClassToOptionsDictionary forBundle:(nullable NSDictionary *)bundleDescription;
 {
     NSBundle *bundle = [bundleDescription objectForKey:@"bundle"];
     NSString *bundlePath;
@@ -554,29 +560,31 @@ static NSString *_normalizedPath(NSString *path)
 
     // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
     // We do this before the entries from the bundle infoDictionary so that the main app can override defaults from static libraries.
-    for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
-        if ([path hasPrefix:@"/System/"]) {
-            // Don't grab stuff from "/System/Library/Frameworks/PreferencePanes.framework/Resources/global.defaults"
-            continue;
-        }
-        
-        CFErrorRef error = NULL;
-        CFPropertyListRef plist = OFCreatePropertyListFromFile((OB_BRIDGE CFStringRef)path, kCFPropertyListImmutable, &error);
-        if (!plist) {
-            [(OB_BRIDGE NSError *)error log:@"Unable to parse \"%@\" as a property list", path];
-            if (error)
-                CFRelease(error);
-            continue;
-        }
-        
-        if (![(OB_BRIDGE id)plist isKindOfClass:[NSDictionary class]]) {
-            NSLog(@"Contents of %@ is not a dictionary.", path);
+    if (bundle != nil) {
+        for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
+            if ([path hasPrefix:@"/System/"]) {
+                // Don't grab stuff from "/System/Library/Frameworks/PreferencePanes.framework/Resources/global.defaults"
+                continue;
+            }
+            
+            CFErrorRef error = NULL;
+            CFPropertyListRef plist = OFCreatePropertyListFromFile((OB_BRIDGE CFStringRef)path, kCFPropertyListImmutable, &error);
+            if (!plist) {
+                [(OB_BRIDGE NSError *)error log:@"Unable to parse \"%@\" as a property list", path];
+                if (error)
+                    CFRelease(error);
+                continue;
+            }
+            
+            if (![(OB_BRIDGE id)plist isKindOfClass:[NSDictionary class]]) {
+                NSLog(@"Contents of %@ is not a dictionary.", path);
+                CFRelease(plist);
+                continue;
+            }
+            
+            [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(OB_BRIDGE NSDictionary *)plist];
             CFRelease(plist);
-            continue;
         }
-        
-        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(OB_BRIDGE NSDictionary *)plist];
-        CFRelease(plist);
     }
 
     for (NSString *registrationClassName in registrationClassToOptionsDictionary) {
@@ -586,21 +594,21 @@ static NSString *_normalizedPath(NSString *path)
             NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' not found.", registrationClassName, bundlePath);
             continue;
         }
+        OBASSERT([registrationClass conformsToProtocol:@protocol(OFBundleRegistryTarget)], "The class %@ should conform to the OFBundleRegistryTarget protocol.", registrationClass);
+
         if (![registrationClass respondsToSelector:@selector(registerItemName:bundle:description:)]) {
             NSLog(@"OFBundleRegistry warning: registration class '%@' from bundle '%@' doesn't accept registrations", registrationClassName, bundlePath);
             continue;
         }
 
-        for (NSString *itemName in registrationDictionary) {
-            NSDictionary *descriptionDictionary = [registrationDictionary objectForKey:itemName];
-
+        [registrationDictionary enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
             @try {
-                [registrationClass registerItemName:itemName bundle:bundle description:descriptionDictionary];
+                [registrationClass registerItemName:key bundle:bundle description:obj];
             } @catch (NSException *exc) {
-                NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", [registrationClass description], [itemName description], [bundle description], [descriptionDictionary description], [exc reason]);
+                NSLog(@"+[%@ registerItemName:%@ bundle:%@ description:%@]: %@", registrationClass, key, bundle, obj, [exc reason]);
             };
-        }
-    }    
+        }];
+    }
 }
 
 + (void)registerBundles:(NSArray *)bundleDescriptions
@@ -705,7 +713,7 @@ static NSString *_normalizedPath(NSString *path)
                     continue;
                 }
                 
-                [self registerDictionary:registrations forBundle:description];
+                [self _registerDictionary:registrations forBundle:description];
                 CFRelease(registrations);
             }
         }
@@ -714,7 +722,7 @@ static NSString *_normalizedPath(NSString *path)
         // If this is the main bundle, it is important that this is after the "registraitons" files so that it can override them.
         NSDictionary *registrationDictionary = [infoDictionary objectForKey:OFRegistrations];
         DEBUG_REGISTRY(1, @"Registering %@ (version %@) (%ld registrations)", bundlePath, softwareVersion, [registrationDictionary count]);
-        [self registerDictionary:registrationDictionary forBundle:description];
+        [self _registerDictionary:registrationDictionary forBundle:description];
     }
 }
 
@@ -735,7 +743,7 @@ static NSString *_normalizedPath(NSString *path)
         registrationPath = [registrationPath stringByExpandingTildeInPath];
         registrationDictionary = [[NSDictionary alloc] initWithContentsOfFile:registrationPath];
         if (registrationDictionary) {
-            [self registerDictionary:registrationDictionary forBundle:nil];
+            [self _registerDictionary:registrationDictionary forBundle:nil];
             [registrationDictionary release];
         }
     }
@@ -768,3 +776,5 @@ static NSString *_normalizedPath(NSString *path)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

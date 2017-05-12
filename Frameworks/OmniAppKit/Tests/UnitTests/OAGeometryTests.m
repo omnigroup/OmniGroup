@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -636,6 +636,7 @@ static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoi
     
     for(intersectionIndex = 0; intersectionIndex < (intersectionCount/2); intersectionIndex ++) {
         SWAP(pts[intersectionIndex], pts[intersectionCount-intersectionIndex-1]);
+// Static Analyzer Logic error warning logged as bug:///135498 (Frameworks-Mac Bug: Fix logic error in OAGeometryTests.m checkCurveCurve_)
         SWAP(lens[intersectionIndex], lens[intersectionCount-intersectionIndex-1]);
         SWAP(entryAspects[intersectionIndex], entryAspects[intersectionCount-intersectionIndex-1]);
         SWAP(exitAspects[intersectionIndex], exitAspects[intersectionCount-intersectionIndex-1]);

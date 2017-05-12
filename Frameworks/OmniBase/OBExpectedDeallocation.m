@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,6 @@
 
 RCS_ID("$Id$")
 
-#ifdef DEBUG
-
 #define DEBUG_EXPECTED_DEALLOCATIONS 0
 #if DEBUG_EXPECTED_DEALLOCATIONS
     #define LOG(format, ...) NSLog(@"DEALLOC: " format, ## __VA_ARGS__)
@@ -28,22 +26,131 @@ RCS_ID("$Id$")
     #define LOG(format, ...) do {} while(0)
 #endif
 
-@interface _OBExpectedDeallocation : NSObject
-- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+#ifdef DEBUG
+static BOOL Enabled = YES;
+#else
+static BOOL Enabled = NO;
+#endif
+
+void OBEnableExpectedDeallocations(void)
+{
+    Enabled = YES;
+}
+
+BOOL OBExpectedDeallocationsIsEnabled(void)
+{
+    return Enabled;
+}
+
+static __weak id <OBMissedDeallocationObserver> Observer = nil;
+
+@interface OBMissedDeallocation ()
+
+- initWithPointer:(const void *)pointer originalClass:(Class)originalClass timeInterval:(NSTimeInterval)timeInterval possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+
 @end
 
-@implementation _OBExpectedDeallocation
+@implementation OBMissedDeallocation
 {
+    // Store the pointer as an integer and inverted. Xcode's memory graph support will find potential pointer to the interior (so 'masking' by adding one doesn't help).
+    intptr_t _maskedPointerValue;
+}
+
++ (void)setObserver:(id <OBMissedDeallocationObserver>)observer;
+{
+    OBPRECONDITION(Enabled);
+    Observer = observer;
+}
+
++ (id <OBMissedDeallocationObserver>)observer;
+{
+    return Observer;
+}
+
+- initWithPointer:(const void *)pointer originalClass:(Class)originalClass timeInterval:(NSTimeInterval)timeInterval possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+{
+    _maskedPointerValue = ~(intptr_t)pointer;
+    _originalClass = originalClass;
+    _timeInterval = timeInterval;
+    _possibleFailureReason = [possibleFailureReason copy];
+    return self;
+}
+
+- (const void *)pointer;
+{
+    return (const void *)(~_maskedPointerValue);
+}
+
+- (nullable NSString *)failureReason;
+{
+    if (!_possibleFailureReason)
+        return nil;
+    return _possibleFailureReason((__bridge id)(const void *)(~_maskedPointerValue)); // Not safe since we are racing with a possible eventual deallocation.
+}
+
+- (NSUInteger)hash;
+{
+    return _maskedPointerValue ^ ((uintptr_t)_originalClass >> 4);
+}
+
+- (BOOL)isEqual:(id)otherObject;
+{
+    if (![otherObject isKindOfClass:[self class]]) {
+        return NO;
+    }
+    OBMissedDeallocation *otherMissed = (OBMissedDeallocation *)otherObject;
+
+    return _maskedPointerValue == otherMissed->_maskedPointerValue && _originalClass == otherMissed->_originalClass && _timeInterval == otherMissed->_timeInterval;
+}
+
+@end
+
+// Storage that is strongly retained by the _OBExpectedDeallocationToken and our array of pending deallocations (and thus can only go away on our background queue).
+@interface _OBExpectedDeallocationData : NSObject
+{
+@package
     __unsafe_unretained id _object;
     OBExpectedDeallocationPossibleFailureReason _possibleFailureReason;
     Class _originalClass;
     CFAbsoluteTime _originalTime;
-    NSArray *_backtraceFrames;
     BOOL _hasWarned;
 }
 
+- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+
+@end
+
+@implementation _OBExpectedDeallocationData
+
+- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+{
+    if (!(self = [super init]))
+        return nil;
+
+    _object = object;
+    _possibleFailureReason = [possibleFailureReason copy];
+    _originalClass = [object class];
+
+    LOG(@"Expecting <%@:%p>", NSStringFromClass(_originalClass), object);
+
+    return self;
+}
+
+@end
+
+
+// Object that is used as a trigger to notice when the owning object is deallocated via ObjC associated objects.
+@interface _OBExpectedDeallocationToken : NSObject
+- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
+@end
+
+@implementation _OBExpectedDeallocationToken
+{
+    _OBExpectedDeallocationData *_data;
+}
+
 static dispatch_queue_t WarningQueue;
-static CFMutableArrayRef PendingDeallocations = NULL;
+static NSMutableArray <_OBExpectedDeallocationData *> *PendingDeallocations = nil;
 static NSTimer *WarningTimer = nil;
 
 + (void)initialize;
@@ -51,39 +158,16 @@ static NSTimer *WarningTimer = nil;
     OBINITIALIZE;
     
     WarningQueue = dispatch_queue_create("com.omnigroup.OmniBase.ExpectedDeallocation", DISPATCH_QUEUE_SERIAL);
-    PendingDeallocations = CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL); // non-retaining
+    PendingDeallocations = [[NSMutableArray alloc] init];
 }
 
 - initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
 {
     if (!(self = [super init]))
         return nil;
-    
-    _object = object;
-    _possibleFailureReason = [possibleFailureReason copy];
 
-    _originalClass = [object class];
-    
-    {
-        // Could move this whole thing to OmniFoundation to use the utilities in OFBacktrace.m, but it doesn't have the exact code I want here.
-        NSMutableArray *frameStrings = [[NSMutableArray alloc] init];
-        void *frames[512];
-        int frameCount = backtrace(frames, sizeof(frames)/sizeof(*frames));
-        char **symbols = backtrace_symbols(frames, (unsigned int)frameCount);
+    _data = [[_OBExpectedDeallocationData alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
 
-        for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-            NSString *frame = [[NSString alloc] initWithFormat:@"\t%p -- %s\n", frames[frameIndex], symbols[frameIndex]];
-            [frameStrings addObject:frame];
-        }
-
-        if (symbols)
-            free(symbols); // The individual strings don't need to be free'd.
-        
-        _backtraceFrames = [frameStrings copy];
-    }
-    
-    LOG(@"Expecting <%@:%p>", NSStringFromClass(_originalClass), object);
-    
     dispatch_async(WarningQueue, ^{
         if (!WarningTimer) {
             // Create the timer here so that further enqueue blocks won't, but we flip to the main queue to schedule.
@@ -94,9 +178,8 @@ static NSTimer *WarningTimer = nil;
         }
 
         // Don't start the clock until we actually make it onto the serial queue, in case it gets backed up with lots of objects.
-        _originalTime = CFAbsoluteTimeGetCurrent();
-
-        CFArrayAppendValue(PendingDeallocations, (__bridge void *)self);
+        _data->_originalTime = CFAbsoluteTimeGetCurrent();
+        [PendingDeallocations addObject:_data];
     });
 
     return self;
@@ -104,45 +187,54 @@ static NSTimer *WarningTimer = nil;
 
 - (void)dealloc;
 {
-    void *unsafeSelf = (__bridge void *)self; // Avoid retain by block.
-    
-    // Capture the info we will need later in the block
-    void *object = (__bridge void *)_object;
-    Class originalClass = _originalClass;
+    // Pass our _data off to the background queue to be removed and then return immediately.
+    _OBExpectedDeallocationData *data = _data;
     CFAbsoluteTime deallocTime = CFAbsoluteTimeGetCurrent();
-    CFAbsoluteTime originalTime = _originalTime;
-    
-#ifdef OMNI_ASSERTIONS_ON
-    BOOL hasWarned = _hasWarned;
-#endif
-    
+
     dispatch_async(WarningQueue, ^{
-        CFIndex warningCount = CFArrayGetCount(PendingDeallocations);
-        CFIndex warningIndex = CFArrayGetFirstIndexOfValue(PendingDeallocations, CFRangeMake(0, warningCount), unsafeSelf);
+        NSUInteger warningCount = [PendingDeallocations count];
+        NSUInteger warningIndex = [PendingDeallocations indexOfObjectIdenticalTo:data];
         
-        LOG(@"Actual <%@:%p>", NSStringFromClass(originalClass), object);
+        LOG(@"Actual <%@:%p>", NSStringFromClass(data->_originalClass), data->_object);
 
         // Might have logged and purged the warning already
-        if (warningIndex == kCFNotFound) {
+        if (warningIndex == NSNotFound) {
             OBASSERT_NOT_REACHED("Dealloc is the only place that instances are removed...");
         } else {
             // Order isn't important, so move the last object to this slot. If there is only one entry, this still works.
-            const void *lastValue = CFArrayGetValueAtIndex(PendingDeallocations, warningCount - 1);
-            CFArraySetValueAtIndex(PendingDeallocations, warningIndex, lastValue);
-            CFArrayRemoveValueAtIndex(PendingDeallocations, warningCount - 1);
+            _OBExpectedDeallocationData *lastData = PendingDeallocations[warningCount - 1];
+            PendingDeallocations[warningIndex] = lastData;
+            [PendingDeallocations removeLastObject];
             warningCount--;
             
-            if (hasWarned) {
+            if (data->_hasWarned) {
                 NSUInteger warnedCount = 0;
-                for (warningIndex = 0; warningIndex < warningCount; warningIndex++) {
-                    __unsafe_unretained _OBExpectedDeallocation *other = (__unsafe_unretained _OBExpectedDeallocation *)CFArrayGetValueAtIndex(PendingDeallocations, warningIndex);
+
+                for (_OBExpectedDeallocationData *other in PendingDeallocations) {
                     if (other->_hasWarned)
                         warnedCount++;
                 }
                 
-                NSLog(@"Eventually did deallocate <%@:%p> after %.2fs (%lu left)", NSStringFromClass(originalClass), object, deallocTime - originalTime, warnedCount);
+                NSLog(@"Eventually did deallocate <%@:%p> after %.2fs (%lu left)", NSStringFromClass(data->_originalClass), data->_object, deallocTime - data->_originalTime, warnedCount);
+
+                id <OBMissedDeallocationObserver> observer = Observer;
+                if (observer) {
+                    NSMutableSet <OBMissedDeallocation *> *missedDeallocations = [[NSMutableSet alloc] init];
+
+                    for (_OBExpectedDeallocationData *other in PendingDeallocations) {
+                        if (other->_hasWarned) {
+                            const void *ptr = (__bridge const void *)other->_object;
+
+                            OBMissedDeallocation *missed = [[OBMissedDeallocation alloc] initWithPointer:ptr originalClass:other->_originalClass timeInterval:other->_originalTime possibleFailureReason:other->_possibleFailureReason];
+                            [missedDeallocations addObject:missed];
+                        }
+                    }
+
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [observer missedDeallocationsUpdated:missedDeallocations];
+                    });
+                }
             }
-            
         }
     });
 }
@@ -323,13 +415,20 @@ static float kExpectedWarningTimeout = 3.0;
         LOG(@"Checking for missing deallocation...");
         
         WarningTimer = nil;
-        
+
+        id <OBMissedDeallocationObserver> observer = Observer;
+        NSMutableSet <OBMissedDeallocation *> *missedDeallocations;
+        if (observer) {
+            missedDeallocations = [[NSMutableSet alloc] init];
+        } else {
+            missedDeallocations = nil;
+        }
+
         CFAbsoluteTime currentTime = CFAbsoluteTimeGetCurrent();
-        CFIndex warningIndex = 0, warningCount = CFArrayGetCount(PendingDeallocations);
-        while (warningIndex < warningCount) {
-            __unsafe_unretained _OBExpectedDeallocation *warning = (__bridge _OBExpectedDeallocation *)CFArrayGetValueAtIndex(PendingDeallocations, warningIndex);
-            
+
+        for (_OBExpectedDeallocationData *warning in PendingDeallocations) {
             CFTimeInterval elapsedTime = currentTime - warning->_originalTime;
+
             if (!warning->_hasWarned && elapsedTime > kExpectedWarningTimeout) {
 
                 NSString *failureReason = nil;
@@ -339,9 +438,17 @@ static float kExpectedWarningTimeout = 3.0;
                 }
 
                 if (failureReason) {
+#ifdef DEBUG
                     OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
+#else
+                    NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
+#endif
                 } else {
+#ifdef DEBUG
                     OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
+#else
+                    NSLog(@"*** Expected deallocation of <%@:%p> %.2fs ago", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime);
+#endif
                 }
 
 #if 0 && defined(DEBUG_bungi)
@@ -351,17 +458,26 @@ static float kExpectedWarningTimeout = 3.0;
 #endif
                 // We leave the object in the array so that we can have a running count of the number of expected deallocations that haven't happened.
                 warning->_hasWarned = YES;
-            } else {
-                warningIndex++;
+            }
+
+            if (warning->_hasWarned && missedDeallocations) {
+                OBMissedDeallocation *missed = [[OBMissedDeallocation alloc] initWithPointer:(__bridge const void *)warning->_object originalClass:warning->_originalClass timeInterval:warning->_originalTime possibleFailureReason:warning->_possibleFailureReason];
+                [missedDeallocations addObject:missed];
             }
         }
-        
+
+        if (observer) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [observer missedDeallocationsUpdated:missedDeallocations];
+            });
+        }
+
         CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
         if (endTime - currentTime > 1) {
             NSLog(@"Took %f seconds to process deallocation warnings.", endTime - currentTime);
         }
         
-        if (warningCount > 0) {
+        if ([PendingDeallocations count] > 0) {
             WarningTimer = [NSTimer timerWithTimeInterval:2 target:[self class] selector:@selector(_warnAboutPendingDeallocations:) userInfo:nil repeats:NO];
 
             // We are already on the main queue
@@ -372,23 +488,25 @@ static float kExpectedWarningTimeout = 3.0;
 
 @end
 
-static unsigned DeallocationWarningKey;
+static unsigned DeallocationTokenKey;
 
-void OBExpectDeallocation(id object)
+void _OBExpectDeallocation(id object)
 {
+    OBPRECONDITION(Enabled);
+
     OBExpectDeallocationWithPossibleFailureReason(object, nil);
 }
 
-void OBExpectDeallocationWithPossibleFailureReason(id object, OBExpectedDeallocationPossibleFailureReason possibleFailureReason)
+void _OBExpectDeallocationWithPossibleFailureReason(id object, OBExpectedDeallocationPossibleFailureReason possibleFailureReason)
 {
+    OBPRECONDITION(Enabled);
+
     if (!object)
         return;
 
-    if (objc_getAssociatedObject(object, &DeallocationWarningKey))
+    if (objc_getAssociatedObject(object, &DeallocationTokenKey))
         return;
 
-    _OBExpectedDeallocation *warning = [[_OBExpectedDeallocation alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
-    objc_setAssociatedObject(object, &DeallocationWarningKey, warning, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    _OBExpectedDeallocationToken *token = [[_OBExpectedDeallocationToken alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
+    objc_setAssociatedObject(object, &DeallocationTokenKey, token, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
-
-#endif

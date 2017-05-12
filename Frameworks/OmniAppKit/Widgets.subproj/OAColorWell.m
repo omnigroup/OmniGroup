@@ -40,7 +40,7 @@ NSString * const OAColorWellDidDeactivate = @"OAColorWellDidDeactivate";
 
     // Don't want to retain them and prevent them from being deallocated (and thus deactivated)!
     activeColorWells = (NSMutableArray *)OFCreateNonOwnedPointerArray();
-    OAColorWellInactiveColor = [[NSColor colorWithCalibratedWhite:0.9f alpha:1.0f] retain];
+    OAColorWellInactiveColor = [[NSColor colorWithWhite:0.9f alpha:1.0f] retain];
 }
 
 //

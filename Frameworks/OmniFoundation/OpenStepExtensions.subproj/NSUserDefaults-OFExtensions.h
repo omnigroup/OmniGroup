@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,7 @@
 // Don't try to read defaults in +didLoad, they might not be registered yet.  In +didLoad, register for OFControllerDidInitNotification, then read defaults when that's posted.
 
 #import <Foundation/NSUserDefaults.h>
-
-#import <OmniFoundation/OFBundleRegistry.h> // For OFBundleRegistryTarget
+#import <OmniFoundation/OFBundleRegistryTarget.h>
 
 @interface NSUserDefaults (OFExtensions) <OFBundleRegistryTarget>
 @end

@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc.  All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
@@ -6,5 +6,5 @@
 #include "Touch-Bundle-Common.xcconfig"
 
 // Turn on Swift embedding since we'll likely have Swift code in some/all of the frameworks we are testing. On iOS, the Swift libraries will be copied to Foo.xctest/Frameworks, and the executable is xctest, so we need to use @loader_path to find them
-EMBEDDED_CONTENT_CONTAINS_SWIFT = YES
+ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
 LD_RUNPATH_SEARCH_PATHS = $(value) @loader_path/Frameworks @executable_path/Frameworks

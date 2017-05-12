@@ -43,7 +43,7 @@ OALinearRGBA OAGetColorComponents(NSColor *c)
 {
     OALinearRGBA l;
     if (c)
-        [[c colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getRed:&l.r green:&l.g blue:&l.b alpha:&l.a];
+        [[c colorUsingColorSpace:[NSColorSpace sRGBColorSpace]] getRed:&l.r green:&l.g blue:&l.b alpha:&l.a];
     else
         memset(&l, 0, sizeof(l)); // Treat nil as clear.
     return l;
@@ -185,7 +185,7 @@ OALinearRGBA OACompositeLinearRGBA(OALinearRGBA T, OALinearRGBA B)
     return R;
 }
 
-// Composites *ioTop on bottom and puts it back in *ioTop, using the calibrated RGB color space. Return YES if the output is opaque.  A nil input is interpreted as clear.
+// Composites *ioTop on bottom and puts it back in *ioTop, using the sRGB color space. Return YES if the output is opaque.  A nil input is interpreted as clear.
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 NSColor *OACompositeColors(NSColor *topColor, NSColor *bottomColor, BOOL * _Nullable isOpaque)
 #else
@@ -219,9 +219,9 @@ OAColor *OACompositeColors(OAColor *topColor, OAColor *bottomColor, BOOL * _Null
         *isOpaque = R.a >= 1.0; // Might be fully opaque now if T was translucent and B was opaque.
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    return [NSColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+    return [NSColor colorWithRed:R.r green:R.g blue:R.b alpha:R.a];
 #else
-    return [OAColor colorWithCalibratedRed:R.r green:R.g blue:R.b alpha:R.a];
+    return [OAColor colorWithRed:R.r green:R.g blue:R.b alpha:R.a];
 #endif
 }
 
@@ -259,15 +259,10 @@ CGColorRef OACreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor
     if (isOpaque)
         *isOpaque = R.a >= 1.0; // Might be fully opaque now if T was translucent and B was opaque.
     
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    return CGColorCreateGenericRGB(R.r, R.g, R.b, R.a);
-#else
-    // Seriously, there are no calibrated color spaces at all? Nice.
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     CGColorRef result = CGColorCreate(colorSpace, &R.r);
     CFRelease(colorSpace);
     return result;
-#endif
 }
 #endif
 
@@ -626,7 +621,7 @@ static OALinearRGBA interpRGBA(OALinearRGBA c0, OALinearRGBA c1, CGFloat t)
 #else
 - (NSColor *)toColor;
 {
-    return [NSColor colorWithCalibratedRed:_rgba.r green:_rgba.g blue:_rgba.b alpha:_rgba.a];
+    return [NSColor colorWithRed:_rgba.r green:_rgba.g blue:_rgba.b alpha:_rgba.a];
 }
 
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
@@ -785,7 +780,7 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
 - (NSColor *)toColor;
 {
     OALinearRGBA rgba = OAHSVToRGB(_hsva);
-    return [NSColor colorWithCalibratedRed:rgba.r green:rgba.g blue:rgba.b alpha:rgba.a];
+    return [NSColor colorWithRed:rgba.r green:rgba.g blue:rgba.b alpha:rgba.a];
 }
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
 {
@@ -937,7 +932,7 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 #else
 - (NSColor *)toColor;
 {
-    return [NSColor colorWithCalibratedWhite:_white alpha:_alpha];
+    return [NSColor colorWithWhite:_white alpha:_alpha];
 }
 
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
@@ -998,6 +993,17 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
 }
 
 #else
+
+static NSColorSpace *_grayscaleColorSpace(void)
+{
+    static NSColorSpace *colorSpace = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        colorSpace = [[NSColor colorWithWhite:0.5f alpha:1.0f] colorSpace];
+    });
+    return colorSpace;
+}
+
 + (OAColor *)colorWithPlatformColor:(NSColor *)color;
 {
     if (!color)
@@ -1005,14 +1011,14 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
 
     // Can't call colorSpace on a named color; it will throw.
     if ([color.colorSpaceName isEqual:NSNamedColorSpace]) {
-        color = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+        color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
     }
 
     NSColorSpace *colorSpace = color.colorSpace;
     NSColorSpaceModel colorSpaceModel = colorSpace.colorSpaceModel;
 
     if (colorSpaceModel == NSRGBColorSpaceModel) {
-        NSColor *toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+        NSColor *toConvert = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
 
         OALinearRGBA rgba;
         [toConvert getRed:&rgba.r green:&rgba.g blue:&rgba.b alpha:&rgba.a];
@@ -1020,7 +1026,7 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
     }
 
     if (colorSpaceModel == NSGrayColorSpaceModel) {
-        NSColor *toConvert = [color colorUsingColorSpaceName:NSCalibratedWhiteColorSpace];
+        NSColor *toConvert = [color colorUsingColorSpace:_grayscaleColorSpace()];
 
         CGFloat white, alpha;
         [toConvert getWhite:&white alpha:&alpha];
@@ -1127,21 +1133,6 @@ static void OAColorInitPlatformColor(OAColor *self)
 {
     // Use +blackColor or +whiteColor for 0/1?
     return OAWhiteColorCreate(white, alpha);
-}
-
-+ (OAColor *)colorWithCalibratedRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha;
-{
-    return [self colorWithRed:red green:green blue:blue alpha:alpha];
-}
-
-+ (OAColor *)colorWithCalibratedHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
-{
-    return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:alpha];
-}
-
-+ (OAColor *)colorWithCalibratedWhite:(CGFloat)white alpha:(CGFloat)alpha;
-{
-    return [self colorWithWhite:white alpha:alpha];
 }
 
 + (OAColor *)blackColor;

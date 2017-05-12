@@ -9,13 +9,15 @@
 
 #import <OmniFoundation/OFObject.h>
 
+#import <OmniFoundation/OFBundleRegistryTarget.h>
+
 @class OWContentTypeLink, OWConversionPathElement, OWProcessorDescription;
 @class OFMultiValueDictionary;
 @class NSArray, NSMutableArray, NSMutableSet, NSSet, NSString;
 
 #import <Foundation/NSDate.h> // For NSTimeInterval
 
-@interface OWContentType : OFObject <NSCoding, NSCopying>
+@interface OWContentType : OFObject <NSCoding, NSCopying, OFBundleRegistryTarget>
 {
     NSString *contentTypeString;
     NSUInteger hash;

@@ -237,8 +237,8 @@ static NSString *keyPathByAppendingKey(NSString *keyPath, NSString *key)
 - (NSObject *)_encodedValueForKeyPath:(NSString *)keyPath;
 {
     // We separate encoding lookup from value encoding because the current value may be based on subclass overriding, while the desired export encoding is defined by a superclass.
-    OAAppearanceValueEncoding encoding = [self.codeable valueEncodingForKeyPath:keyPath];
     id value = [self.codeable valueForKeyPath:keyPath];
+    OAAppearanceValueEncoding encoding = [self.codeable valueEncodingForKeyPath:keyPath];
     switch (encoding) {
         case OAAppearanceValueEncodingRaw:
             return value;
@@ -258,7 +258,7 @@ static NSString *keyPathByAppendingKey(NSString *keyPath, NSString *key)
             CGFloat a = 0.0f;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
             // Mac
-            NSColor *colorInAppropriateSpace = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+            NSColor *colorInAppropriateSpace = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
             if (colorInAppropriateSpace != nil) {
                 [colorInAppropriateSpace getHue:&h saturation:&s brightness:&b alpha:&a];
             }

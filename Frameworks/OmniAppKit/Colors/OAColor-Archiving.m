@@ -159,7 +159,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     }
     
     if (getters.component(container, @"c", &v0)) {
-        // No global name for the calibrated CMYK color space
+        // No global name for the generic CMYK color space
         
         CGFloat components[5];
         components[0] = v0;

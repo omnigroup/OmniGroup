@@ -90,7 +90,7 @@ void * _OAConstructionTimeViewTabbedWindowsObservationContext = &_OAConstruction
             CGContextSetBlendMode(ctx, kCGBlendModeNormal);
             CGContextSetAlpha(ctx, 1.0f);
             
-            [[NSColor colorWithCalibratedWhite:0.0f alpha:0.115f] setFill];
+            [[NSColor colorWithWhite:0.0f alpha:0.115f] setFill];
             NSRectFill(border);
         }
     }

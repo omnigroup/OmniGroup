@@ -126,11 +126,6 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
 + (OAColor *)colorWithWhite:(CGFloat)white alpha:(CGFloat)alpha;
 
-// All OAColors are supposedly in the calibrated color space, but add these for API compatibility with NSColor
-+ (OAColor *)colorWithCalibratedRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha;
-+ (OAColor *)colorWithCalibratedHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
-+ (OAColor *)colorWithCalibratedWhite:(CGFloat)white alpha:(CGFloat)alpha;
-
 + (OAColor *)blackColor;
 + (OAColor *)darkGrayColor;
 + (OAColor *)lightGrayColor;

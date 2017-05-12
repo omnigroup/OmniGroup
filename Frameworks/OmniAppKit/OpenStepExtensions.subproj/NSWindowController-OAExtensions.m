@@ -220,8 +220,8 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow * _Nullable window)
             CGContextClosePath(ctx);
         }
         
-        [[NSColor colorWithCalibratedWhite:1.0f alpha:0.9f] setFill];
-        [[NSColor colorWithCalibratedWhite:0.0f alpha:0.9f] setStroke];
+        [[NSColor colorWithWhite:1.0f alpha:0.9f] setFill];
+        [[NSColor colorWithWhite:0.0f alpha:0.9f] setStroke];
         
         CGContextDrawPath(ctx, kCGPathFillStroke);
     }

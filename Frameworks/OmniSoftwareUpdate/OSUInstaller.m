@@ -868,7 +868,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             
             NSWindow *window = nil;
             
-            [presenter presentError:errorToPresent modalForWindow:window delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
+            [presenter presentError:errorToPresent modalForWindow:(NSWindow * _Nonnull)window delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
         }
     }];
 }

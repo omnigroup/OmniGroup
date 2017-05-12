@@ -6,5 +6,5 @@
 #include "Omni-Bundle-Common.xcconfig"
 
 // Turn on Swift embedding since we'll likely have Swift code in some/all of the frameworks we are testing. The Swift libraries will be copied to Foo.xctest/Contents/Frameworks, and the executable is xctest, so we need to use @loader_path to find them
-EMBEDDED_CONTENT_CONTAINS_SWIFT = YES
+ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
 LD_RUNPATH_SEARCH_PATHS = $(value) @loader_path/../Frameworks @executable_path/../Frameworks

@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,7 +76,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
             break;
             
         case OAMouseTipExposeStyle:
-            backgroundColor = [NSColor colorWithCalibratedWhite:0.2f alpha:0.85f];
+            backgroundColor = [NSColor colorWithWhite:0.2f alpha:0.85f];
             cornerRadius = 5.0f;
             [newTextAttributes setObject:[NSFont boldSystemFontOfSize:[NSFont labelFontSize]] forKey:NSFontAttributeName];
             [newTextAttributes setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];

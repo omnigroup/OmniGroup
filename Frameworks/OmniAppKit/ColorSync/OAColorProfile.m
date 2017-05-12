@@ -523,7 +523,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     NSColor *newColor;
 
     if ([NSGraphicsContext currentContextDrawingToScreen]) {
-        NSColor *aColorInRGBColorSpace = [aColor colorUsingColorSpaceName:([[aColor colorSpaceName] isEqualToString:@"NSDeviceCMYKColorSpace"]) ? @"NSDeviceRGBColorSpace":@"NSCalibratedRGBColorSpace"];
+        NSColor *aColorInRGBColorSpace = [aColor colorUsingColorSpaceName:([[aColor colorSpaceName] isEqualToString:NSDeviceCMYKColorSpace]) ? NSDeviceRGBColorSpace : NSCalibratedRGBColorSpace];
         [self _setRGBColor:aColorInRGBColorSpace];
         return;
     }

@@ -13,8 +13,19 @@
 
 require 'pathname'
 
+alias regular_backquote `
+
 module Xcode
   
+	def self.read_only_command(cmd)
+		# If the 'omni' build system is loaded...
+		if Module.const_defined?(:Omni)
+			return Omni.read_only_command(cmd)
+		else
+			return regular_backquote(cmd)
+		end
+	end
+	
   # Pathname.realpath requires the whole path to exist and .realdirpath requires the parent directory to exist (only the last path component can be missing).
   def self.real_relative_path(p)
     fail "Empty path" if p == ""

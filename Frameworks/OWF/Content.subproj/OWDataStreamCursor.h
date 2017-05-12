@@ -13,10 +13,11 @@
 @class OWContentType, OWDataStream;
 
 #import <OmniFoundation/OFByte.h>
+#import <OmniFoundation/OFBundleRegistryTarget.h>
 
 typedef long OFByteOrder;
 
-@interface OWDataStreamCursor : OWCursor
+@interface OWDataStreamCursor : OWCursor <OFBundleRegistryTarget>
 {
     OFByteOrder byteOrder;
 

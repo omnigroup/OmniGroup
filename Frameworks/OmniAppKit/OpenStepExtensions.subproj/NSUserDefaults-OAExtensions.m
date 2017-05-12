@@ -37,7 +37,7 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
     OBASSERT(color != nil); // Caller should be doing fallback
     
     CGFloat r, g, b, a;
-    [[color colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getRed:&r green:&g blue:&b alpha:&a];
+    [[color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]] getRed:&r green:&g blue:&b alpha:&a];
     if (a == 1.0)
 	return [NSString stringWithFormat:@"%g %g %g", r, g, b];
     else
@@ -53,23 +53,32 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
 
 - (NSColor *)grayForKey:(NSString *)defaultName;
 {
-    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0f];
+    return [NSColor colorWithWhite:[self floatForKey:defaultName] alpha:1.0f];
 }
 
 - (void)setColor:(NSColor *)color forKey:(NSString *)defaultName;
 {
-    if (!color) {
+    if (color == nil) {
         [self setObject:@"" forKey:defaultName];
     } else {
         [self setObject:rgbaStringFromNSColor(color) forKey:defaultName];
     }
 }
 
+static NSColorSpace *_grayscaleColorSpace(void)
+{
+    // When archiving gray colors using -setGray:forKey:, make sure we're using the same color space as we use when reading those colors in -grayForKey:
+    static NSColorSpace *colorSpace = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        colorSpace = [[NSColor colorWithWhite:0.5f alpha:1.0f] colorSpace];
+    });
+    return colorSpace;
+}
+
 - (void)setGray:(NSColor *)gray forKey:(NSString *)defaultName;
 {
-    CGFloat grayFloat;
-
-    [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
+    CGFloat grayFloat = [[gray colorUsingColorSpace:_grayscaleColorSpace()] whiteComponent];
     NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
     [self setObject:grayNumber forKey:defaultName];
 }
@@ -116,7 +125,7 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
 
 - (NSColor *)grayForKey:(NSString *)defaultName;
 {
-    return [NSColor colorWithCalibratedWhite:[self floatForKey:defaultName] alpha:1.0f];
+    return [NSColor colorWithWhite:[self floatForKey:defaultName] alpha:1.0f];
 }
 
 - (void)setColor:(NSColor *)color forKey:(NSString *)defaultName;
@@ -130,9 +139,7 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
 
 - (void)setGray:(NSColor *)gray forKey:(NSString *)defaultName;
 {
-    CGFloat grayFloat;
-
-    [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
+    CGFloat grayFloat = [[gray colorUsingColorSpace:_grayscaleColorSpace()] whiteComponent];
     NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
     [self setObject:grayNumber forKey:defaultName];
 }

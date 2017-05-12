@@ -1,4 +1,4 @@
-// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@
 + (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict; // When specifying colors by component, values for abbreviated keys (@"r", @"g", etc.) are floats in [0, 1]. Spelled-out keys (@"red", @"green") are integers in the natural range of the value ([0, 255] for RGB, [0, 100] for HSB and CMYK, [0, 100] for alpha).
 
 + (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict withColorSpaceManager:(OAColorSpaceManager *)manager;
++ (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict withColorSpaceManager:(OAColorSpaceManager *)manager shouldDefaultToGenericSpace:(BOOL)shouldDefaultToGenericSpace;
 
 - (NSMutableDictionary *)propertyListRepresentationWithStringComponentsOmittingDefaultValues:(BOOL)omittingDefaultValues;
 - (NSMutableDictionary *)propertyListRepresentationWithNumberComponentsOmittingDefaultValues:(BOOL)omittingDefaultValues;
@@ -56,5 +57,5 @@ extern NSString * const OANegateBooleanToControlColorTransformerName;
 // Takes rgba in 0..1.  Doubles so that we don't get warnings when using constants about 64->32 implicit casts.
 static inline NSColor *OARGBA(double r, double g, double b, double a)
 {
-    return [NSColor colorWithCalibratedRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b alpha:(CGFloat)a];
+    return [NSColor colorWithRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b alpha:(CGFloat)a];
 }

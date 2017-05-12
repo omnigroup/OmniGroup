@@ -10,5 +10,7 @@
 	<string>0.25</string>
 	<key>r</key>
 	<string>0.125</string>
+	<key>space</key>
+	<string>srgb</string>
 </dict>
 </plist>

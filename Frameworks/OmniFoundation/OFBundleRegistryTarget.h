@@ -7,10 +7,13 @@
 //
 // $Id$
 
-#import <Foundation/NSException.h>
-#import <OmniBase/NSException-OBExtensions.h>
-#import <OmniFoundation/OFBundleRegistryTarget.h>
+@class NSString, NSBundle;
 
-@interface NSException (OFExtensions) <OFBundleRegistryTarget>
-- (NSString *)displayName;
+NS_ASSUME_NONNULL_BEGIN
+
+@protocol OFBundleRegistryTarget
++ (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(id)description;
 @end
+
+NS_ASSUME_NONNULL_END
+

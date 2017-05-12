@@ -224,7 +224,7 @@ static const CGFloat iconBaseline = 36;
 
     // Draw dark gray rectangle around currently selected icon (for MultipleIconView)
     if ([self _isIconSelectedAtIndex:index]) {
-        [[NSColor colorWithCalibratedWhite:0.8f alpha:0.75f] set];
+        [[NSColor colorWithWhite:0.8f alpha:0.75f] set];
         NSRectFillUsingOperation(buttonRect, NSCompositeSourceOver);
     }
 

@@ -504,7 +504,7 @@ class OFCMSUnwrapper {
             var recipientType : OFCMSRecipientType = OFCMSRUnknown;
             var who, what : NSData?;
             
-            let err = _OFASN1ParseCMSRecipient(recipientBlob as! Data, &recipientType, &who, &what);
+            let err = _OFASN1ParseCMSRecipient(recipientBlob, &recipientType, &who, &what);
             if err != nil {
                 throw err!;
             }

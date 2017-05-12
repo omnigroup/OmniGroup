@@ -25,7 +25,7 @@ RCS_ID("$Id$");
         return;
     
     if ([(id <OAMetadataTracking>)windowController hasUnsavedMetadata] && ![window isDocumentEdited]) {
-        [[NSColor colorWithCalibratedWhite:0.0f alpha:[window isKeyWindow] ? 0.6f : 0.3f] set];
+        [[NSColor colorWithWhite:0.0f alpha:[window isKeyWindow] ? 0.6f : 0.3f] set];
         
         NSBezierPath *path = [NSBezierPath bezierPath];
         NSRect bounds = self.bounds;

@@ -465,7 +465,7 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
             callbackContext->results = nil;
             return NO;
         }
-        [row addObject:value];
+        [row addObject:(value ?: [NSNull null])];
         [value release]; // returned retained by ODOSQLStatementCreateValue, but now owned by the row array
     }
     

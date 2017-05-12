@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,6 @@
 @end
 
 #import <math.h> // for pow()
-#import <AppKit/NSColor.h> // for +colorWithCalibratedRed...
 
 OB_DEPRECATED_ATTRIBUTE static inline double
 OAColorPaletteApplyGammaAndNormalize(unsigned int sample, unsigned int maxValue, double gammaValue)

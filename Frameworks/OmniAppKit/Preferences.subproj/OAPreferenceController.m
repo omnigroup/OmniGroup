@@ -37,7 +37,7 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
     return nil;											\
 }
 
-@interface OAPreferenceController ()
+@interface OAPreferenceController () <OFBundleRegistryTarget>
 
 // Outlets
 

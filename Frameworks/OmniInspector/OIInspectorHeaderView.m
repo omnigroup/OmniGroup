@@ -106,8 +106,8 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
     omitTextAndStateWhenCollapsed = [[NSUserDefaults standardUserDefaults] boolForKey:@"OmitTextAndStateWhenCollapsed"];
     
-    unifiedGradientKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.77f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.59f alpha:1.0f]];
-    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedWhite:0.84f alpha:1.0f] endingColor:[NSColor colorWithCalibratedWhite:.72f alpha:1.0f]];
+    unifiedGradientKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithWhite:0.77f alpha:1.0f] endingColor:[NSColor colorWithWhite:.59f alpha:1.0f]];
+    unifiedGradientNonKey = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithWhite:0.84f alpha:1.0f] endingColor:[NSColor colorWithWhite:.72f alpha:1.0f]];
     
 }
 
@@ -215,9 +215,9 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSGradient *blend = keyStatus? unifiedGradientKey : unifiedGradientNonKey;
     [blend drawInRect:gradient angle:90];
     
-    [[NSColor colorWithCalibratedWhite:(keyStatus) ? 0.86f : 0.91f alpha:1.0f] set];
+    [[NSColor colorWithWhite:(keyStatus) ? 0.86f : 0.91f alpha:1.0f] set];
     NSRectFill(NSMakeRect(0,0, backgroundBounds.size.width, 1));
-    [[NSColor colorWithCalibratedWhite:(keyStatus) ? .25f : .53f  alpha:1.0f] set];
+    [[NSColor colorWithWhite:(keyStatus) ? .25f : .53f  alpha:1.0f] set];
     NSRectFill(NSMakeRect(0,backgroundBounds.size.height-1, backgroundBounds.size.width, 1));
 }
 

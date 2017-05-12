@@ -61,7 +61,7 @@ RCS_ID("$Id$")
     [super _layoutSelectedTabs];
     
     OIInspectorTabController *firstTab, *lastTab;
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         if (![tab isVisible])
             continue;
         

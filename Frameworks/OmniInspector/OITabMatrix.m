@@ -185,7 +185,7 @@ RCS_ID("$Id$");
 
     if (highlightStyle == OITabMatrixYosemiteHighlightStyle) {
         NSUInteger cellIndex;
-        [[NSColor colorWithCalibratedWhite:0 alpha:0.07f] set];
+        [[NSColor colorWithWhite:0 alpha:0.07f] set];
         for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRect rect = [self cellFrameAtRow:0 column:cellIndex];
@@ -199,7 +199,7 @@ RCS_ID("$Id$");
     } else if (highlightStyle == OITabMatrixCellsHighlightStyle) {
         // Used to be done by OITabCell; now we draw all the backgrounds first before drawing any cells, and all the foregrounds after drawing all cells
         NSUInteger cellIndex;
-        [[NSColor colorWithCalibratedWhite:.85f alpha:1.0f] set];
+        [[NSColor colorWithWhite:.85f alpha:1.0f] set];
         for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRectFill([self cellFrameAtRow:0 column:cellIndex]);

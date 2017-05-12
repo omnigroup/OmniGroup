@@ -47,8 +47,11 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 // Customized test suite
 + (XCTestSuite *)defaultTestSuite;
 {
-    if (self == [OFXMLMakerTests class])
-        return nil;  // We're an abstract class
+    if (self == [OFXMLMakerTests class]) {
+        OBASSERT_NOT_REACHED("We're an abstract class.");
+        return (XCTestSuite * _Nonnull)nil;
+    }
+
     return [super defaultTestSuite];
 }
 

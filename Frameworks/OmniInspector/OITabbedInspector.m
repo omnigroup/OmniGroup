@@ -42,6 +42,7 @@ RCS_ID("$Id$")
 
 @implementation OITabbedInspector
 {
+    NSArray *_tabControllers;
     NSMutableDictionary *_preferredTabIdentifierForInspectionIdentifier;
 }
 
@@ -120,7 +121,7 @@ RCS_ID("$Id$")
     
     NSString *windowTitle = prefix;
     
-    NSUInteger tabIndex, tabCount = [_tabControllers count];
+    NSUInteger tabIndex, tabCount = [_enabledTabControllers count];
     for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
 	OITabCell *cell = [cells objectAtIndex:tabIndex];
 	if ([cell state]) {
@@ -133,7 +134,7 @@ RCS_ID("$Id$")
 	    } else {
 		windowTitle = [windowTitle stringByAppendingString:@", "];
 	    }
-	    windowTitle = [windowTitle stringByAppendingString:[[_tabControllers objectAtIndex:tabIndex] displayName]];
+	    windowTitle = [windowTitle stringByAppendingString:[[_enabledTabControllers objectAtIndex:tabIndex] displayName]];
 	}
     }
     
@@ -142,7 +143,7 @@ RCS_ID("$Id$")
         point = [buttonMatrix convertPoint:point fromView:nil];
         NSInteger row, column;
         if ([buttonMatrix getRow:&row column:&column forPoint:point]) {
-	    OIInspectorTabController *tab = [_tabControllers objectAtIndex:column];
+	    OIInspectorTabController *tab = [_enabledTabControllers objectAtIndex:column];
             
             windowTitle = prefix;
             if (!hasSingleInspector)
@@ -169,7 +170,7 @@ RCS_ID("$Id$")
     NSMutableArray *selectedIdentifiers = [NSMutableArray array];
     NSMutableArray *pinnedIdentifiers = [NSMutableArray array];
     
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         id tabIdentifier = tab.inspectorIdentifier;
         [tab loadConfiguration:[config objectForKey:tabIdentifier]];
         
@@ -187,8 +188,8 @@ RCS_ID("$Id$")
     }
     
     // If we are starting with a fresh configuration, we might not have anything selected in a radio-style inspector.
-    if ([selectedIdentifiers count] == 0 && _singleSelection && [_tabControllers count] > 0)
-        selectedIdentifiers = [NSMutableArray arrayWithObject:[[_tabControllers objectAtIndex:0] identifier]];
+    if ([selectedIdentifiers count] == 0 && _singleSelection && [_enabledTabControllers count] > 0)
+        selectedIdentifiers = [NSMutableArray arrayWithObject:[[_enabledTabControllers objectAtIndex:0] identifier]];
     
     [self setSelectedTabIdentifiers:selectedIdentifiers pinnedTabIdentifiers:pinnedIdentifiers];
     
@@ -208,8 +209,8 @@ RCS_ID("$Id$")
 - (NSDictionary *)configuration;
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    for (OIInspectorTabController *tab in _tabControllers) {
-	NSDictionary *config = [tab copyConfiguration];
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
+        NSDictionary *config = [tab copyConfiguration];
         [dict setObject:config forKey:tab.inspectorIdentifier];
     }
     return dict;
@@ -217,7 +218,7 @@ RCS_ID("$Id$")
 
 - (NSArray *)tabIdentifiers;
 {
-    return [_tabControllers arrayByPerformingSelector:@selector(inspectorIdentifier)];
+    return [_enabledTabControllers arrayByPerformingSelector:@selector(inspectorIdentifier)];
 }
 
 // While the code doesn't currently strictly require it, the expectation is that pinnedIdentifiers is a subset of selectedIdentifiers. Pass in nil for the pinnedIdentifiers if you wish to keep the currently-pinned selection (in which case selectedIdentifiers need not include the
@@ -235,7 +236,7 @@ RCS_ID("$Id$")
     OBASSERT([pinnedIdentifiersSet isSubsetOfSet:selectedIdentifiersSet]);
     
     BOOL needsLayout = NO;
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         id tabIdentifier = tab.inspectorIdentifier;
         OIVisibilityState visibilityState;
         if ([pinnedIdentifiersSet member:tabIdentifier]) {
@@ -264,9 +265,31 @@ RCS_ID("$Id$")
         [self _layoutSelectedTabs];
 }
 
+- (NSArray *)allTabIdentifiers;
+{
+    return [_tabControllers arrayByPerformingSelector:@selector(inspectorIdentifier)];
+}
+
+- (void)setEnabledTabIdentifiers:(NSArray *)tabIdentifiers;
+{
+    NSMutableArray *newEnabledTabControllers = [NSMutableArray array];
+    for (OIInspectorTabController *tab in _tabControllers) {
+        NSString *tabIdentifier = tab.inspector.inspectorIdentifier;
+        if ([tabIdentifiers containsObject:tabIdentifier]) {
+            [newEnabledTabControllers addObject:tab];
+        }
+    }
+    if (![newEnabledTabControllers isEqualToArray:_enabledTabControllers]) {
+        _enabledTabControllers = [NSArray arrayWithArray:newEnabledTabControllers];
+        [self _createButtonCellForAllTabs];
+        [self _layoutSelectedTabs];
+    }
+}
+
+
 - (OIInspectorTabController *)tabWithIdentifier:(NSString *)identifier;
 {
-    for (OIInspectorTabController *tab in _tabControllers)
+    for (OIInspectorTabController *tab in _enabledTabControllers)
         if (OFISEQUAL(identifier, tab.inspector.inspectorIdentifier))
             return tab;
     return nil;
@@ -281,7 +304,7 @@ RCS_ID("$Id$")
 {
     NSMutableArray *identifiers = [NSMutableArray array];
     
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
 	if ([tab isVisible])
             [identifiers addObject:tab.inspectorIdentifier];
     }
@@ -291,7 +314,7 @@ RCS_ID("$Id$")
 - (NSArray *)pinnedTabIdentifiers;
 {
     NSMutableArray *identifiers = [NSMutableArray array];
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         if ([tab isPinned]) {
             [identifiers addObject:tab.inspectorIdentifier];
         }
@@ -386,6 +409,7 @@ RCS_ID("$Id$")
     }];
     
     _tabControllers = [[NSArray alloc] initWithArray:tabControllers];
+    _enabledTabControllers = [[NSArray alloc] initWithArray:tabControllers];
     
     _trackingRectTags = [[NSMutableArray alloc] init];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_tabTitleDidChange:) name:TabTitleDidChangeNotification object:nil];
@@ -414,12 +438,13 @@ RCS_ID("$Id$")
     if (!tabController)
         return;
     
-    NSMutableArray *newTabControllers = [[NSMutableArray alloc] initWithArray:_tabControllers];
+    NSMutableArray *newTabControllers = [[NSMutableArray alloc] initWithArray:_enabledTabControllers];
     [newTabControllers insertObject:tabController inArraySortedUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
         return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
     }];
-    
+
     _tabControllers = [[NSArray alloc] initWithArray:newTabControllers];
+    _enabledTabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     
     if (buttonMatrix) {
         [self _createButtonCellForAllTabs];
@@ -441,7 +466,7 @@ RCS_ID("$Id$")
         [menuItems addObject:headerItem];
     }
     
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
 	NSMenuItem *item = [tab menuItemForTarget:nil action:@selector(revealEmbeddedInspectorFromMenuItem:)];
         [item setRepresentedObject:tab.inspectorIdentifier];
         if (!hasSingleInspector)
@@ -470,7 +495,7 @@ RCS_ID("$Id$")
     [super setInspectorController:aController];
 
     // Set the controller on all of our child inspectors as well
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         tab.inspector.inspectorController = aController;
     }
 }
@@ -569,7 +594,7 @@ RCS_ID("$Id$")
 
 - (void)_updateSubInspectorObjects;
 {
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
 	[tab inspectObjects:_shouldInspectNothing];
     }
 }
@@ -578,14 +603,14 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(buttonMatrix);
 
-    NSUInteger tabIndex = [_tabControllers count];
+    NSUInteger tabIndex = [_enabledTabControllers count];
     
     [buttonMatrix renewRows:1 columns:tabIndex];
     [buttonMatrix sizeToCells];
     [buttonMatrix deselectAllCells];
     
     while (tabIndex--) {
-        OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+        OIInspectorTabController *tab = [_enabledTabControllers objectAtIndex:tabIndex];
         NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
         [cell setImage:[tab image]];
         [cell setRepresentedObject:tab.inspectorIdentifier];
@@ -602,7 +627,7 @@ RCS_ID("$Id$")
 
     [_trackingRectTags removeAllObjects];
     
-    NSUInteger i, count = [_tabControllers count];
+    NSUInteger i, count = [_enabledTabControllers count];
     for (i=0;i<count;i++) {
         NSRect rect = [buttonMatrix cellFrameAtRow:0 column:i];
         NSInteger tag = [buttonMatrix addTrackingRect:rect owner:self userData:nil assumeInside:NO];
@@ -623,12 +648,12 @@ RCS_ID("$Id$")
 
 - (void)_layoutSelectedTabs;
 {
-    OBPRECONDITION([_tabControllers count] > 0);
+    OBPRECONDITION([_enabledTabControllers count] > 0);
     OBPRECONDITION([contentView isFlipped]); // We use an OITabbedInspectorContentView in the nib to make layout easier.
     
     NSSize size = NSMakeSize([contentView frame].size.width, 0);
     
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
 	if (![tab isVisible]) {
 	    if ([tab hasLoadedView]) { // hack to avoid asking for the view before it's needed; don't want to load the nib just to hide it
 		[[tab inspectorView] removeFromSuperview];
@@ -639,7 +664,7 @@ RCS_ID("$Id$")
     
     NSUInteger selectedTabCount = 0;
     
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         if (![tab isVisible])
             continue;
         
@@ -712,9 +737,9 @@ RCS_ID("$Id$")
     [buttonMatrix deselectAllCells];
     
     NSArray *matrixCells = [buttonMatrix cells];
-    NSUInteger tabIndex, tabCount = [_tabControllers count];
+    NSUInteger tabIndex, tabCount = [_enabledTabControllers count];
     for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
-        OIInspectorTabController *tabController = [_tabControllers objectAtIndex:tabIndex];
+        OIInspectorTabController *tabController = [_enabledTabControllers objectAtIndex:tabIndex];
         if ([tabController isVisible])
             [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
         [[matrixCells objectAtIndex:tabIndex] setIsPinned:[tabController isPinned]];
@@ -724,7 +749,7 @@ RCS_ID("$Id$")
 
 - (OIInspectorTabController *)_tabControllerForInspectorView:(NSView *)view;
 {
-    for (OIInspectorTabController *tab in _tabControllers) {
+    for (OIInspectorTabController *tab in _enabledTabControllers) {
         if ([tab hasLoadedView]) {  // Avoid loading any UI that isn't already loaded - if it's not loaded, it can't be one we care about anyway
             NSView *tabView = [tab inspectorView];
             if ([view isDescendantOf:tabView]) {

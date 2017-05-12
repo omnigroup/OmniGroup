@@ -144,7 +144,7 @@ module Xcode
       @autocreate_schemes = true
       settings_path = @checkout_location + "/xcshareddata/WorkspaceSettings.xcsettings"
       if File.exist?(settings_path)
-        settings = Plist::parse_xml(`plutil -convert xml1 -o - "#{settings_path}"`)
+        settings = Plist::parse_xml(Xcode.read_only_command("plutil -convert xml1 -o - \"#{settings_path}\""))
 
         # Can't check if the value is true, since explicit false will be written too.
         if settings.has_key?('IDEWorkspaceSharedSettings_AutocreateContextsIfNeeded')

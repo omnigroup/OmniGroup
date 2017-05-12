@@ -1094,7 +1094,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     if (tableColumn == [[tableView tableColumns] objectAtIndex:1]) {
         if ([tableView isRowSelected:row])
-            [cell setTextColor:[NSColor colorWithCalibratedWhite:0.86f alpha:1]];
+            [cell setTextColor:[NSColor colorWithWhite:0.86f alpha:1]];
         else
             [cell setTextColor:[NSColor lightGrayColor]];
     } else {

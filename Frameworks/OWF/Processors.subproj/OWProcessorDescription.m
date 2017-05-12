@@ -157,7 +157,7 @@ static NSMutableArray *allDescriptions;
     }
 }
 
-// OFBundleRegistryTarget informal protocol
+#pragma mark - OFBundleRegistryTarget
 
 + (void)registerItemName:(NSString *)itemName bundle:(NSBundle *)bundle description:(NSDictionary *)descriptionDict;
 {

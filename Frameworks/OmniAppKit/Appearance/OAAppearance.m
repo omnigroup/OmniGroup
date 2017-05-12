@@ -701,7 +701,12 @@ static NSURL *urlIfExists(NSURL *url)
 
 - (OA_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
 {
-    return [OA_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
+    NSDictionary *archiveDictionary = [self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath];
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    return [UIColor colorFromPropertyListRepresentation:archiveDictionary];
+#else
+    return [NSColor colorFromPropertyListRepresentation:archiveDictionary withColorSpaceManager:nil shouldDefaultToGenericSpace:NO];
+#endif
 }
 
 - (OAColor *)OAColorForKeyPath:(NSString *)keyPath;

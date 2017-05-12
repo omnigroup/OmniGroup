@@ -45,7 +45,7 @@ RCS_ID("$Id$")
 - (void)_setDefaultColors;
 {
     self.boxType = NSBoxSeparator;
-    self.lineColor = [NSColor colorWithCalibratedWhite:(CGFloat)0.87 alpha:1];
+    self.lineColor = [NSColor colorWithWhite:0.87f alpha:1.0f];
     self.backgroundColor = [NSColor whiteColor];
 }
 

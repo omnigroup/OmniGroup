@@ -15,7 +15,7 @@ LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/Frameworks
 OTHER_LDFLAGS = $(value) -ObjC
 
 // So that frameworks can use Swift, even if the main app doesn't otherwise
-EMBEDDED_CONTENT_CONTAINS_SWIFT = YES
+ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
 
 // Include all public headers vended by static library targets.
 // Since Applications get installed and Libraries don't, TARGET_BUILD_DIR can't be used.

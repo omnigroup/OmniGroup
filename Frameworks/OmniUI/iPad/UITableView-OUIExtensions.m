@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,14 +95,14 @@ OAColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBa
 {
     switch (state) {
         case UIControlStateHighlighted:
-            return [OAColor colorWithCalibratedHue:colors->highlighted.h saturation:colors->highlighted.s brightness:colors->highlighted.v alpha:colors->highlighted.a];
+            return [OAColor colorWithHue:colors->highlighted.h saturation:colors->highlighted.s brightness:colors->highlighted.v alpha:colors->highlighted.a];
         case UIControlStateSelected:
-            return [OAColor colorWithCalibratedHue:colors->selected.h saturation:colors->selected.s brightness:colors->selected.v alpha:colors->selected.a];
+            return [OAColor colorWithHue:colors->selected.h saturation:colors->selected.s brightness:colors->selected.v alpha:colors->selected.a];
         default:
             OBASSERT_NOT_REACHED("Unknown control state");
             // fall through
         case UIControlStateNormal:
-            return [OAColor colorWithCalibratedHue:colors->normal.h saturation:colors->normal.s brightness:colors->normal.v alpha:colors->normal.a];
+            return [OAColor colorWithHue:colors->normal.h saturation:colors->normal.s brightness:colors->normal.v alpha:colors->normal.a];
     }
 }
 

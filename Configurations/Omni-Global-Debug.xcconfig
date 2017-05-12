@@ -16,10 +16,7 @@ GCC_WARN_UNINITIALIZED_AUTOS = NO
 ENABLE_TESTABILITY = YES
 
 SWIFT_OPTIMIZATION_LEVEL = -Onone
-
-// Comment out the following line to build all available architectures in the Debug configuration. This is useful on the Mac for dealing with 64->32 implicit cast warnings and for running unit tests locally on both architectures
-// TJW: Commented out for now since this doesn't work like I expected. This is a per-user configuration option and you have to set it on. each. project. you. build.
-// ONLY_ACTIVE_ARCH = YES
+ONLY_ACTIVE_ARCH = YES
 
 // Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
 OMNI_BUILD_FILE_SUFFIX=-$(CONFIGURATION)

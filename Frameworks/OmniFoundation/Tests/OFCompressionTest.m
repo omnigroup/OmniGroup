@@ -37,11 +37,12 @@ static NSData *utf8(NSString *str)
 
 + (XCTestSuite *)defaultTestSuite;
 {
-    // This abstract class doesn't have a test suite.
-    if (self == [OFCompressionTest class])
-        return nil;
-    else
+    if (self == [OFCompressionTest class]) {
+        OBASSERT_NOT_REACHED("This abstract class doesn't have a test suite.");
+        return (XCTestSuite * _Nonnull)nil;
+    } else {
         return [super defaultTestSuite];
+    }
 }
 
 - (void)doTestWithData:(NSData *)d;

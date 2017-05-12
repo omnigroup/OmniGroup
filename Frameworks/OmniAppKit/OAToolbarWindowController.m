@@ -82,6 +82,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 {
     [super windowDidLoad]; // DOX: These are called immediately before and after the controller loads its nib file.  You can subclass these but should not call them directly.  Always call super from your override.
     [self createToolbar];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_OAToolbarWindowController_windowWillClose:) name:NSWindowWillCloseNotification object:self.window];
 }
 
 - (OAToolbar *)toolbar;
@@ -430,6 +431,32 @@ static void copyProperty(NSToolbarItem *anItem,
     [defaultToolbarItems setObject:[toolbarPropertyList objectForKey:@"defaultItemIdentifiers"] forKey:toolbarName];
     if ([toolbarPropertyList objectForKey:@"stringTable"])
         [toolbarStringsTables setObject:[toolbarPropertyList objectForKey:@"stringTable"] forKey:toolbarName];
+}
+
+- (void)_OAToolbarWindowController_windowWillClose:(NSNotification *)notification;
+{
+    // This is a workaround for rdar://problem/28832571
+    //
+    // After the sequence in that bug, the NSWindow is leaked, but still has dangling references to the window controller as potentially
+    //  - window delegate
+    //  - toolbar delegate
+    //  - toolbar item delegate
+    //  - toolbar item target
+    //
+    // We can't prevent the window leak, but we can mitigate the crash by
+    //  - clearing the window delegate if it is us
+    //  - removing the toolbar
+    
+    OBPRECONDITION([self isWindowLoaded]);
+    OBPRECONDITION(notification.object == self.window);
+    
+    [_toolbar setDelegate:nil];
+    _toolbar = nil;
+    
+    self.window.toolbar = nil;
+    if (self.window.delegate == (id <NSWindowDelegate>)self) {
+        self.window.delegate = nil;
+    }
 }
 
 @end

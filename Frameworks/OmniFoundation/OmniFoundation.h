@@ -18,6 +18,7 @@
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFBundledClass.h>
 #import <OmniFoundation/OFBundleRegistry.h>
+#import <OmniFoundation/OFBundleRegistryTarget.h>
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import <OmniFoundation/OFCancelErrorRecovery.h>
 #import <OmniFoundation/OFCharacterScanner.h>

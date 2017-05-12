@@ -25,7 +25,15 @@ static NSColorList *classicCrayonsColorList(void)
     
     if (classicCrayonsColorList == nil) {
 	NSString *colorListName = NSLocalizedStringFromTableInBundle(@"Classic Crayons", @"OmniAppKit", OMNI_BUNDLE, "color list name");
-	classicCrayonsColorList = [[NSColorList alloc] initWithName:colorListName fromFile:[OMNI_BUNDLE pathForResource:@"Classic Crayons" ofType:@"clr"]];
+	NSColorList *originalColorList = [[NSColorList alloc] initWithName:colorListName fromFile:[OMNI_BUNDLE pathForResource:@"Classic Crayons" ofType:@"clr"]];
+        classicCrayonsColorList = [[NSColorList alloc] initWithName:colorListName];
+        NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
+        for (NSString *colorName in originalColorList.allKeys) {
+            NSColor *originalColor = [originalColorList colorWithKey:colorName];
+            NSColor *sRGBColor = [originalColor colorUsingColorSpace:sRGBColorSpace];
+            [classicCrayonsColorList setColor:sRGBColor forKey:colorName];
+        }
+        [originalColorList release];
     }
     return classicCrayonsColorList;
 }
@@ -111,7 +119,17 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     return result;
 }
 
-+ (NSColor *)_colorFromContainer:(void *)container getters:(OAColorGetters)getters withColorSpaceManager:(OAColorSpaceManager *)manager;
+static NSColorSpace *_defaultGrayColorSpace(void)
+{
+    static NSColorSpace *colorSpace = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        colorSpace = [[NSColor colorWithWhite:0.5f alpha:1.0f] colorSpace];
+    });
+    return colorSpace;
+}
+
++ (NSColor *)_colorFromContainer:(void *)container getters:(OAColorGetters)getters withColorSpaceManager:(OAColorSpaceManager *)manager shouldDefaultToGenericSpace:(BOOL)shouldDefaultToGenericSpace;
 {
     NSData *data = getters.data(container, @"archive");
     if (data) {
@@ -153,10 +171,18 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     }
     
     if (white) {
-        if (!colorSpace || [colorSpace colorSpaceModel] != NSGrayColorSpaceModel)
-            return [NSColor colorWithCalibratedWhite:v0 alpha:alpha];
         CGFloat components[2] = {v0,alpha};
-        return [NSColor colorWithColorSpace:colorSpace components:components count:2];
+        BOOL isDefault = colorSpace == nil;
+        if (isDefault)
+            colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericGrayColorSpace] : _defaultGrayColorSpace();
+        else if (colorSpace.colorSpaceModel != NSGrayColorSpaceModel)
+            colorSpace = _defaultGrayColorSpace();
+
+        NSColor *archivedColor = [NSColor colorWithColorSpace:colorSpace components:components count:2];
+        if (isDefault && shouldDefaultToGenericSpace)
+            return [archivedColor colorUsingColorSpace:_defaultGrayColorSpace()];
+        else
+            return archivedColor;
     }
 
     NSString *catalog = getters.string(container, @"catalog");
@@ -186,10 +212,18 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     }
     
     if (RGB) {
-        if (!colorSpace || [colorSpace colorSpaceModel] != NSRGBColorSpaceModel)
-            return [NSColor colorWithCalibratedRed:v0 green:v1 blue:v2 alpha:alpha];
+        BOOL isDefault = colorSpace == nil;
+        if (isDefault)
+            colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericRGBColorSpace] : [NSColorSpace sRGBColorSpace];
+        else if (colorSpace.colorSpaceModel != NSRGBColorSpaceModel)
+            colorSpace = [NSColorSpace sRGBColorSpace];
+
         CGFloat components[4] = {v0,v1,v2,alpha};
-        return [NSColor colorWithColorSpace:colorSpace components:components count:4];
+        NSColor *archivedColor = [NSColor colorWithColorSpace:colorSpace components:components count:4];
+        if (isDefault && shouldDefaultToGenericSpace)
+            return [archivedColor colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+        else
+            return archivedColor;
     }
 
     BOOL CMYK = NO;
@@ -212,7 +246,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     
     if (CMYK) {
         CGFloat components[5] = {v0, v1, v2, v3, alpha};
-        // No global name for the calibrated CMYK color space
+        // No global name for the generic CMYK color space
         if (!colorSpace || [colorSpace colorSpaceModel] != NSCMYKColorSpaceModel)
             return [NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5];
         return [NSColor colorWithColorSpace:colorSpace components:components count:5];
@@ -224,13 +258,13 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         if (!getters.component(container, @"v", &v2))
             getters.component(container, @"b", &v2);
         
-        return [NSColor colorWithCalibratedHue:v0 saturation:v1 brightness:v2 alpha:alpha];
+        return [NSColor colorWithHue:v0 saturation:v1 brightness:v2 alpha:alpha];
     } else if (getters.component(container, @"hue", &v0)) {
         getters.component(container, @"saturation", &v1);
         if (!getters.component(container, @"value", &v2))
             getters.component(container, @"brightness", &v2);
         
-        return [NSColor colorWithCalibratedHue:(v0 / 360.0f) saturation:(v1 / 100.0f) brightness:(v2 / 100.0f) alpha:alpha];
+        return [NSColor colorWithHue:(v0 / 360.0f) saturation:(v1 / 100.0f) brightness:(v2 / 100.0f) alpha:alpha];
     }
     
     NSData *patternData = getters.data(container, @"png");
@@ -258,17 +292,22 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
 
 + (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict;
 {
-    return [self colorFromPropertyListRepresentation:dict withColorSpaceManager:nil];
+    return [self colorFromPropertyListRepresentation:dict withColorSpaceManager:nil shouldDefaultToGenericSpace:YES];
 }
 
 + (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict withColorSpaceManager:(OAColorSpaceManager *)manager;
+{
+    return [self colorFromPropertyListRepresentation:dict withColorSpaceManager:manager shouldDefaultToGenericSpace:YES];
+}
+
++ (NSColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict withColorSpaceManager:(OAColorSpaceManager *)manager shouldDefaultToGenericSpace:(BOOL)shouldDefaultToGenericSpace;
 {
     OAColorGetters getters = {
         .component = _dictionaryComponentGetter,
         .string = _dictionaryStringGetter,
         .data = _dictionaryDataGetter,
     };
-    return [self _colorFromContainer:dict getters:getters withColorSpaceManager:manager];
+    return [self _colorFromContainer:dict getters:getters withColorSpaceManager:manager shouldDefaultToGenericSpace:shouldDefaultToGenericSpace];
 }
 
 typedef struct {
@@ -319,7 +358,7 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         colorSpace = [self colorSpace];
 
     if (colorSpace) {
-        // NOTE: we used to convert device colors to calibrated colors, but now the user can explicitly pick device colors so we preserve them
+        // NOTE: we used to convert device colors to generic colors, but now that the user can explicitly pick color spaces in the color picker we preserve them
         BOOL archiveCustomSpace = NO;
         
         if (![OAColorSpaceManager isColorSpaceGeneric:colorSpace]) {
@@ -370,9 +409,9 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     }
     
     if (archiveConvertedColor) {
-        NSColor *rgbColor = [self colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+        NSColor *rgbColor = [self colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
         if (!rgbColor)
-            rgbColor = [NSColor colorWithCalibratedRed:1 green:1 blue:1 alpha:1];
+            rgbColor = [NSColor colorWithRed:1 green:1 blue:1 alpha:1];
         [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues withColorSpaceManager:manager];
     }
 
@@ -432,25 +471,43 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     if (self == color)
         return YES;
     
-    NSString *colorSpace = [self colorSpaceName];
+    NSString *colorSpaceName = [self colorSpaceName];
 
-    if (!([colorSpace isEqualToString:[color colorSpaceName]])) {
+    if (!([colorSpaceName isEqualToString:[color colorSpaceName]])) {
         return NO;
     }
 
-    if ([colorSpace isEqualToString:NSCalibratedWhiteColorSpace] || [colorSpace isEqualToString:NSDeviceWhiteColorSpace]) {
+    if ([colorSpaceName isEqualToString:NSCustomColorSpace]) {
+        NSColorSpace *colorSpace = self.colorSpace;
+        NSColorSpace *otherColorSpace = color.colorSpace;
+        if (!OFISEQUAL(colorSpace, otherColorSpace))
+            return NO;
+
+        switch (colorSpace.colorSpaceModel) {
+            case NSColorSpaceModelRGB:
+                return (fabs([self redComponent]-[color redComponent]) < 0.001) && (fabs([self greenComponent]-[color greenComponent]) < 0.001) && (fabs([self blueComponent]-[color blueComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
+            case NSColorSpaceModelGray:
+                return (fabs([self whiteComponent]-[color whiteComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
+            case NSColorSpaceModelCMYK:
+                return (fabs([self cyanComponent]-[color cyanComponent]) < 0.001) && (fabs([self magentaComponent]-[color magentaComponent]) < 0.001) && (fabs([self yellowComponent]-[color yellowComponent]) < 0.001) && (fabs([self blackComponent]-[color blackComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
+            default:
+                return [color isEqual:self];
+        }
+    }
+
+    if ([colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] || [colorSpaceName isEqualToString:NSDeviceWhiteColorSpace]) {
         return (fabs([self whiteComponent]-[color whiteComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
 
-    } else if ([colorSpace isEqualToString:NSCalibratedRGBColorSpace] || [colorSpace isEqualToString:NSDeviceRGBColorSpace]) {
+    } else if ([colorSpaceName isEqualToString:NSCalibratedRGBColorSpace] || [colorSpaceName isEqualToString:NSDeviceRGBColorSpace]) {
         return (fabs([self redComponent]-[color redComponent]) < 0.001) && (fabs([self greenComponent]-[color greenComponent]) < 0.001) && (fabs([self blueComponent]-[color blueComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
 
-    } else if ([colorSpace isEqualToString:NSNamedColorSpace]) {
+    } else if ([colorSpaceName isEqualToString:NSNamedColorSpace]) {
         return [[self catalogNameComponent] isEqualToString:[color catalogNameComponent]] && [[self colorNameComponent] isEqualToString:[color colorNameComponent]];
 
-    } else if ([colorSpace isEqualToString:NSDeviceCMYKColorSpace]) {
+    } else if ([colorSpaceName isEqualToString:NSDeviceCMYKColorSpace]) {
         return (fabs([self cyanComponent]-[color cyanComponent]) < 0.001) && (fabs([self magentaComponent]-[color magentaComponent]) < 0.001) && (fabs([self yellowComponent]-[color yellowComponent]) < 0.001) && (fabs([self blackComponent]-[color blackComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
 
-    } else if ([colorSpace isEqualToString:NSPatternColorSpace]) {
+    } else if ([colorSpaceName isEqualToString:NSPatternColorSpace]) {
         return [[[self patternImage] TIFFRepresentation] isEqualToData:[[color patternImage] TIFFRepresentation]];
     }
     
@@ -535,7 +592,7 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NS
     
     // Make room for the extra entries
     colorEntries = (OANamedColorEntry *)realloc(colorEntries, sizeof(*colorEntries)*(*entryCount + colorCount));
-    
+    NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
     for (colorIndex = 0; colorIndex < colorCount; colorIndex++) {
 	NSString *colorKey = [allColorKeys objectAtIndex:colorIndex];
 	NSColor *color = [colorList colorWithKey:colorKey];
@@ -544,7 +601,7 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NS
         NSString *localizedColorName =  [OMNI_BUNDLE localizedStringForKey:colorKey value:nil table:@"OACrayonNames"];
 	entry->name = [localizedColorName copy];
 	
-	NSColor *rgbColor = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+	NSColor *rgbColor = [color colorUsingColorSpace:sRGBColorSpace];
 	[rgbColor getHue:&entry->h saturation:&entry->s brightness:&entry->v alpha:&entry->a];
 	[rgbColor getRed:&entry->r green:&entry->g blue:&entry->B alpha:&entry->a];
 	
@@ -600,12 +657,16 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
         
 - (NSString *)similarColorNameFromColorLists;
 {
-    if ([[self colorSpaceName] isEqualToString:NSNamedColorSpace])
+    NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
+    if (OFISEQUAL(self.colorSpace, sRGBColorSpace)) {
+        // Get the common case out of the way first
+    } else if ([[self colorSpaceName] isEqualToString:NSNamedColorSpace]) {
         return [self localizedColorNameComponent];
-    else if ([[self colorSpaceName] isEqualToString:NSPatternColorSpace])
-        return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", [OAColorProfile bundle], "generic color name for pattern colors");
-    else if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace])
-        return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", [OAColorProfile bundle], "generic color name for custom colors");
+    } else if ([[self colorSpaceName] isEqualToString:NSPatternColorSpace]) {
+        return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
+    } else if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace]) {
+        return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
+    }
 
     NSUInteger entryCount;
     const OANamedColorEntry *entries = _combinedColorEntries(&entryCount);
@@ -618,7 +679,7 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     
     OANamedColorEntry colorEntry;
     memset(&colorEntry, 0, sizeof(colorEntry));
-    NSColor *rgbColor = [self colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+    NSColor *rgbColor = [self colorUsingColorSpace:sRGBColorSpace];
     [rgbColor getHue:&colorEntry.h saturation:&colorEntry.s brightness:&colorEntry.v alpha:&colorEntry.a];
     [rgbColor getRed:&colorEntry.r green:&colorEntry.g blue:&colorEntry.B alpha:&colorEntry.a];
 
@@ -639,62 +700,63 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     CGFloat brightnessDifference = colorEntry.v - closestEntry->v;
     NSString *brightnessString = nil;
     if (brightnessDifference < -.1 && colorEntry.v < .1)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Near-black", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Near-black", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
     else if (brightnessDifference < -.2)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Dark", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Dark", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
     else if (brightnessDifference < -.1)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Smokey", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Smokey", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
     else if (brightnessDifference > .1 && colorEntry.v > .9)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Off-white", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Off-white", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
     else if (brightnessDifference > .2)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Bright", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Bright", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
     else if (brightnessDifference > .1)
-        brightnessString =  NSLocalizedStringFromTableInBundle(@"Light", @"OmniAppKit", [OAColorProfile bundle], "word comparing color brightnesss");
+        brightnessString =  NSLocalizedStringFromTableInBundle(@"Light", @"OmniAppKit", OMNI_BUNDLE, "word comparing color brightnesss");
 
     // Input saturation less than some value means that the saturation is irrelevant.
     NSString *saturationString = nil;
     if (colorEntry.s > 0.01) {
 	CGFloat saturationDifference = colorEntry.s - closestEntry->s;
 	if (saturationDifference < -0.3)
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Washed-out", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Washed-out", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
 	else if (saturationDifference < -.2)
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Faded", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Faded", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
 	else if (saturationDifference < -.1)
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Mild", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Mild", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
 	else if (saturationDifference > -0.01 && saturationDifference < 0.01)
 	    saturationString = nil;
 	else if (saturationDifference < .1)
 	    saturationString = nil;
 	else if (saturationDifference < .2)
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Rich", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Rich", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
 	else if (saturationDifference < .3)
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Deep", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Deep", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
 	else
-	    saturationString =  NSLocalizedStringFromTableInBundle(@"Intense", @"OmniAppKit", [OAColorProfile bundle], "word comparing color saturations");
+	    saturationString =  NSLocalizedStringFromTableInBundle(@"Intense", @"OmniAppKit", OMNI_BUNDLE, "word comparing color saturations");
     }
     
     NSString *closestColorDescription = nil;
     if (saturationString != nil && brightnessString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@, %@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation and brightness descriptions (brightness, saturation, color name)"), brightnessString, saturationString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@, %@ %@", @"OmniAppKit", OMNI_BUNDLE, "format string for color with saturation and brightness descriptions (brightness, saturation, color name)"), brightnessString, saturationString, closestEntry->name];
     else if (saturationString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation description (saturation, color name)"), saturationString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", OMNI_BUNDLE, "format string for color with saturation description (saturation, color name)"), saturationString, closestEntry->name];
     else if (brightnessString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with brightness description (brightness, color name)"), brightnessString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", OMNI_BUNDLE, "format string for color with brightness description (brightness, color name)"), brightnessString, closestEntry->name];
     else
         closestColorDescription = closestEntry->name;
 
     if (colorEntry.a <= 0.001)
-        return NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", [OAColorProfile bundle], "name of completely transparent color");
+        return NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", OMNI_BUNDLE, "name of completely transparent color");
     else if (colorEntry.a < .999)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d%% %@", @"OmniAppKit", [OAColorProfile bundle], "alpha with color description"), (int)(colorEntry.a * 100), closestColorDescription];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d%% %@", @"OmniAppKit", OMNI_BUNDLE, "alpha with color description"), (int)(colorEntry.a * 100), closestColorDescription];
     else
         return closestColorDescription;
 }
 
 + (NSColor *)_adjustColor:(NSColor *)aColor withAdjective:(NSString *)adjective;
 {
+    NSColorSpace *sRGBColorSpace = [NSColorSpace sRGBColorSpace];
     CGFloat hue, saturation, brightness, alpha;
-    [[aColor colorUsingColorSpaceName:NSCalibratedRGBColorSpace] getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
+    [[aColor colorUsingColorSpace:sRGBColorSpace] getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
 
     if ([adjective isEqualToString:@"Near-black"]) {
         brightness = MIN(brightness, 0.05f);
@@ -721,13 +783,14 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     } else if ([adjective isEqualToString:@"Intense"]) {
         saturation = MIN(1.0f, saturation + 0.35f);
     }
-    return [NSColor colorWithCalibratedHue:hue saturation:saturation brightness:brightness alpha:alpha];
+
+    return [NSColor colorWithHue:hue saturation:saturation brightness:brightness alpha:alpha];
 }
 
 + (NSColor *)colorWithSimilarName:(NSString *)aName;
 {
     // special case clear
-    if ([aName isEqualToString:@"Clear"] || [aName isEqualToString:NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", [OAColorProfile bundle], "name of completely transparent color")])
+    if ([aName isEqualToString:@"Clear"] || [aName isEqualToString:NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", OMNI_BUNDLE, "name of completely transparent color")])
         return [NSColor clearColor];
     
     NSUInteger entryCount;
@@ -909,7 +972,7 @@ static NSData *_xmlCursorDataGetter(void *container, NSString *key)
         .string = _xmlCursorStringGetter,
         .data = _xmlCursorDataGetter
     };
-    return [NSColor _colorFromContainer:cursor getters:getters withColorSpaceManager:nil];
+    return [NSColor _colorFromContainer:cursor getters:getters withColorSpaceManager:nil shouldDefaultToGenericSpace:YES];
 }
 
 @end

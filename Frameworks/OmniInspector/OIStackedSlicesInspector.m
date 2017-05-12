@@ -324,7 +324,7 @@ RCS_ID("$Id$")
     noSelectionShadow.shadowOffset = (NSSize){.width = 0, .height = -1.0f};
     NSString *noSelection = NSLocalizedStringFromTableInBundle(@"No Selection", @"OmniInspector", [OIInspectorRegistry bundle], @"no selection placeholder string");
     NSDictionary *attributes = @{ NSFontAttributeName : [NSFont boldSystemFontOfSize:20.0f],
-                                  NSForegroundColorAttributeName : [NSColor colorWithCalibratedHue:0.0f saturation:0.0f brightness:0.75f alpha:1.0f],
+                                  NSForegroundColorAttributeName : [NSColor colorWithHue:0.0f saturation:0.0f brightness:0.75f alpha:1.0f],
                                   NSShadowAttributeName : noSelectionShadow };
     NSAttributedString *noSelectionString = [[NSAttributedString alloc] initWithString:noSelection
                                                                             attributes:attributes];

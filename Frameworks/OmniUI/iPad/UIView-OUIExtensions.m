@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -510,19 +510,19 @@ static void OUIViewPerformPosingForThreading(void)
     };
 }
 
-#ifdef DEBUG
 - (void)expectDeallocationOfViewTreeSoon;
 {
-    [self applyToViewTree:^(UIView *treeView) {
-        OBExpectDeallocationWithPossibleFailureReason(treeView, ^NSString *(UIView *remainingView){
-            if (remainingView.superview)
-                return @"still has superview";
-            return nil;
-        });
-        return OUIViewVisitorResultContinue;
-    }];
+    if (OBExpectedDeallocationsIsEnabled()) {
+        [self applyToViewTree:^(UIView *treeView) {
+            OBExpectDeallocationWithPossibleFailureReason(treeView, ^NSString *(UIView *remainingView){
+                if (remainingView.superview)
+                    return @"still has superview";
+                return nil;
+            });
+            return OUIViewVisitorResultContinue;
+        }];
+    }
 }
-#endif
 
 @end
 
