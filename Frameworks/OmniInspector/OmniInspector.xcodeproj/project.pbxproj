@@ -15,9 +15,6 @@
 		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
 		346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */; };
 		346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */; };
-		34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */; };
 		34B2544408D0DCEE00DD2070 /* OIColorInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542708D0DCEE00DD2070 /* OIColorInspector.h */; };
 		34B2544508D0DCEE00DD2070 /* OIColorInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2542808D0DCEE00DD2070 /* OIColorInspector.m */; };
 		34B2544608D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542908D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h */; };
@@ -106,6 +103,8 @@
 		E2B8A8CE15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C615BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png */; };
 		E2B8A8CF15BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C715BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png */; };
 		E2B8A8D015BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C815BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png */; };
+		E2BD52661DCAAC5400A5C8BE /* OITabbedInspectorView.h in Headers */ = {isa = PBXBuildFile; fileRef = E2BD52641DCAAC5400A5C8BE /* OITabbedInspectorView.h */; };
+		E2BD52671DCAAC5400A5C8BE /* OITabbedInspectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = E2BD52651DCAAC5400A5C8BE /* OITabbedInspectorView.m */; };
 		E2BFE04F1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h in Headers */ = {isa = PBXBuildFile; fileRef = E2BFE04C1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h */; };
 		E2BFE0501AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = E2BFE04D1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m */; };
 		E2BFE0511AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2BFE04E1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib */; };
@@ -128,9 +127,6 @@
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
 		346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OIInspectorGroup-Internal.h"; sourceTree = "<group>"; };
 		346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OIInspectorController-Internal.h"; sourceTree = "<group>"; };
-		34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OISectionedInspector.h; sourceTree = "<group>"; };
-		34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OISectionedInspector.m; sourceTree = "<group>"; };
-		34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OISectionedInspector.xib; sourceTree = "<group>"; };
 		34B253CF08D0D6BD00DD2070 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		34B253D008D0D6BD00DD2070 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		34B253D208D0D6BD00DD2070 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -232,6 +228,8 @@
 		E2B8A8C615BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Ice@2x.png"; sourceTree = "<group>"; };
 		E2B8A8C715BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Graphite@2x.png"; sourceTree = "<group>"; };
 		E2B8A8C815BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Ice@2x.png"; sourceTree = "<group>"; };
+		E2BD52641DCAAC5400A5C8BE /* OITabbedInspectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabbedInspectorView.h; sourceTree = "<group>"; };
+		E2BD52651DCAAC5400A5C8BE /* OITabbedInspectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabbedInspectorView.m; sourceTree = "<group>"; };
 		E2BFE04C1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIAutolayoutInspectorHeaderView.h; sourceTree = "<group>"; };
 		E2BFE04D1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIAutolayoutInspectorHeaderView.m; sourceTree = "<group>"; };
 		E2BFE04E1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OIAutolayoutInspectorHeaderView.xib; sourceTree = "<group>"; };
@@ -384,11 +382,8 @@
 		34A652330D0A0975003F4D4C /* Sectioned */ = {
 			isa = PBXGroup;
 			children = (
-				34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */,
-				34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */,
 				34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */,
 				34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */,
-				34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */,
 			);
 			name = Sectioned;
 			sourceTree = "<group>";
@@ -454,6 +449,8 @@
 			children = (
 				6C34FC2908DA46430055F81A /* OITabbedInspector.h */,
 				6C34FC2A08DA46430055F81A /* OITabbedInspector.m */,
+				E2BD52641DCAAC5400A5C8BE /* OITabbedInspectorView.h */,
+				E2BD52651DCAAC5400A5C8BE /* OITabbedInspectorView.m */,
 				E253D2D01B430FB500E38E39 /* OIScrollingTabbedInspector.h */,
 				E253D2D11B430FB500E38E39 /* OIScrollingTabbedInspector.m */,
 				E253D2D41B43103C00E38E39 /* OIScrollingTabbedInspector.xib */,
@@ -493,6 +490,7 @@
 				34B2545E08D0DCEE00DD2070 /* OIInspectorWindow.h in Headers */,
 				34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */,
 				34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */,
+				E2BD52661DCAAC5400A5C8BE /* OITabbedInspectorView.h in Headers */,
 				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
 				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
 				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
@@ -506,7 +504,6 @@
 				947D53040B8F699E001F9E30 /* OITableView.h in Headers */,
 				94D1DDDA0B93701E0006D793 /* OIMatrix.h in Headers */,
 				A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */,
-				34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */,
 				34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */,
 				E28BFED91B0E9F60005EF8A0 /* OIStackedSlicesInspector.h in Headers */,
 				346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */,
@@ -594,7 +591,6 @@
 				0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */,
 				4281FCBB1B5EC02700FD888F /* OITallTitlebarInactive.png in Resources */,
 				0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */,
-				34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.xib in Resources */,
 				E2B8A8C915BDF90B00B5F26B /* OICollapsed@2x.png in Resources */,
 				E2B8A8CA15BDF90B00B5F26B /* OIExpanded@2x.png in Resources */,
 				E2B8A8CB15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png in Resources */,
@@ -648,6 +644,7 @@
 				34B2545D08D0DCEE00DD2070 /* OIInspectorVerticalResizer.m in Sources */,
 				34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */,
 				34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */,
+				E2BD52671DCAAC5400A5C8BE /* OITabbedInspectorView.m in Sources */,
 				6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */,
 				6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */,
 				6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */,
@@ -659,7 +656,6 @@
 				94D1DDDB0B93701E0006D793 /* OIMatrix.m in Sources */,
 				E2E26BEF1D53B054006EA86B /* NSWindowController-OIExtensions.m in Sources */,
 				A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */,
-				34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */,
 				E253D2D31B430FB500E38E39 /* OIScrollingTabbedInspector.m in Sources */,
 				E2BFE0501AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m in Sources */,
 				34C4FA910D19B3BE0009E860 /* OIInspectorSection.m in Sources */,

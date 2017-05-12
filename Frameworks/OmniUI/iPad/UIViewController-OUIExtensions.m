@@ -33,6 +33,14 @@ RCS_ID("$Id$");
     return NO;
 }
 
+- (UIViewController *)mostDistantAncestorViewController {
+    if (self.parentViewController == nil) {
+        return self;
+    }
+    
+    return [self.parentViewController mostDistantAncestorViewController];
+}
+
 - (BOOL)isChildViewController:(UIViewController *)child;
 {
     return [self.childViewControllers indexOfObjectIdenticalTo:child] != NSNotFound;

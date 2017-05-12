@@ -107,13 +107,20 @@ RCS_ID("$Id$")
 - (void)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo;
 {
     OBPRECONDITION(recoveryOptionIndex < [_recoveries count]);
-    [[_recoveries objectAtIndex:recoveryOptionIndex] attemptRecoveryFromError:error optionIndex:0 delegate:delegate didRecoverSelector:didRecoverSelector contextInfo:contextInfo];
+    if (recoveryOptionIndex < [_recoveries count]) {
+        [_recoveries[recoveryOptionIndex] attemptRecoveryFromError:error optionIndex:0 delegate:delegate didRecoverSelector:didRecoverSelector contextInfo:contextInfo];
+    }
 }
 
 - (BOOL)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex;
 {
-    OBPRECONDITION(recoveryOptionIndex < [_recoveries count]);
-    return [[_recoveries objectAtIndex:recoveryOptionIndex] attemptRecoveryFromError:error];
+    // We used to have an OBPRECONDITION here that the recoveryOptionIndex was within the range of the _recoveries array, but had to let it go – this path can occur on quit, and when called, the recoveryOptionIndex inexplicably has value 8880. Instead, check the index and perform recovery using the indicated attempter if possible, or claim that recovery failed otherwise.
+    // For more details, see bug:///135893 (Mac-OmniFocus Crasher: Crash closing if OmniFocus thinks we are still syncing)
+    if (recoveryOptionIndex < [_recoveries count]) {
+        return [_recoveries[recoveryOptionIndex] attemptRecoveryFromError:error];
+    } else {
+        return NO;
+    }
 }
 
 @end

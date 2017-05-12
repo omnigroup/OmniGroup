@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class NSArray, NSBundle; // Foundation
 @class NSBox, NSImage, NSMenuItem, NSView; // AppKit
-@class OITabbedInspector;
 
 @interface OIInspectorTabController : NSObject
 {
@@ -30,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
     OIVisibilityState _visibilityState;
 }
 
-- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
+- initWithInspectorDictionary:(NSDictionary *)tabPlist inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
 
 @property(nonatomic,readonly) OIInspector <OIConcreteInspector> *inspector;
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;

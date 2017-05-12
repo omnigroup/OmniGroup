@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,7 +138,7 @@ RCS_ID("$Id$");
     return [_textStorage isEqualToAttributedString:attributedString];
 }
 
-- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
+- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange, OATextAttachment *, BOOL *stop))applier;
 {
     [_textStorage eachAttachment:applier];
 }

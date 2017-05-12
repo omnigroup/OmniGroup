@@ -22,6 +22,7 @@
         <array>
             <string>Desktop</string>
             <string>Documents</string>
+            <string>Library</string>
         </array>
         <key>OFXDangerousHomeFolders</key>
         <array>

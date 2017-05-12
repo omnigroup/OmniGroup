@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,6 +65,16 @@ BOOL OFSShouldOfferToReportError(NSError *error)
         return YES;
     
     return NO;
+}
+
+- (BOOL)causedByEncryptionFailure;
+{
+    if (![[self domain] isEqualToString:OFSErrorDomain]) {
+        return NO;
+    }
+    
+    NSInteger code = [self code];
+    return (code >= OFSEncryptionMinimumErrorCode && code <= OFSEncryptionMaximumErrorCode);
 }
 
 @end

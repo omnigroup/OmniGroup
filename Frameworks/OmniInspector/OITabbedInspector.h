@@ -17,7 +17,7 @@
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 
-@interface OITabbedInspector : OIInspector <OIConcreteInspector> 
+@interface OITabbedInspector : OIInspector <OIConcreteInspector>
 {
     IBOutlet NSView *contentView;
     IBOutlet OITabMatrix *buttonMatrix;

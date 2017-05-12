@@ -22,16 +22,6 @@
 
 RCS_ID("$Id$")
 
-@interface NSColor (PrivateAPI)
-+ (NSColor *)toolbarBackgroundColor;
-@end
-
-@interface OITabbedInspectorView : NSView
-
-@property (nonatomic, weak) IBOutlet OITabbedInspector *inspector;
-
-@end
-
 @interface OITabbedInspector (/*Private*/)
 
 @property (nonatomic) NSTitlebarAccessoryViewController *titlebarAccessory;
@@ -389,10 +379,10 @@ RCS_ID("$Id$")
         NSString *identifier = [inspectorPlist objectForKey:@"identifier"];
         
         NSObject *appDelegate = (NSObject *)[[NSApplication sharedApplication] delegate];
-        if (![appDelegate tabbedInspector:self shouldLoadTabWithIdentifier:identifier])
+        if (![appDelegate shouldLoadInspectorWithIdentifier:identifier inspectorRegistry:inspectorRegistry])
             continue;
 
-        OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self inspectorRegistry:inspectorRegistry bundle:sourceBundle];
+        OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
 	if (!tabController)
 	    continue;
 
@@ -434,7 +424,7 @@ RCS_ID("$Id$")
 
 - (void)registerInspectorDictionary:(NSDictionary *)tabPlist inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle
 {
-    OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self inspectorRegistry:inspectorRegistry bundle:sourceBundle];
+    OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
     if (!tabController)
         return;
     
@@ -772,12 +762,14 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)viewWillMoveToWindow:(NSWindow *)window;
+- (void)viewWillAppear
 {
+    [super viewWillAppear];
+    
     OIInspectorController *inspectorController = self.inspectorController;
 
+    NSWindow *window = self.view.window;
     if (window && !self.titlebarAccessory && self.placesButtonsInTitlebar) {
-        
         NSView *accessory = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 296, 33)];
         self.titlebarAccessory = [[NSTitlebarAccessoryViewController alloc] init];
         self.titlebarAccessory.view = accessory;
@@ -799,17 +791,3 @@ RCS_ID("$Id$")
 
 @end
 
-@implementation OITabbedInspectorView
-
-- (void)viewWillMoveToWindow:(NSWindow *)window;
-{
-    [self.inspector viewWillMoveToWindow:window];
-}
-
-- (void)drawRect:(NSRect)r;
-{
-    [[NSColor colorWithWhite:0.96 alpha:1.0] setFill];
-    NSRectFill(r);
-}
-
-@end

@@ -16,3 +16,6 @@ OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_WATCHOS -DOMNI_BUILDING_FRA
 // On iOS, frameworks have to get copied into the bundle for all builds
 OMNI_FRAMEWORK_TARGET_PATH = $(CONFIGURATION_BUILD_DIR)
 DYLIB_INSTALL_NAME_BASE = @rpath
+
+// Frameworks get signed as they are copied into the containing app
+CODE_SIGN_IDENTITY =

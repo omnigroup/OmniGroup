@@ -14,7 +14,7 @@
 @class NSButton, NSTableView, NSTextField, NSWindow, NSWindowController, NSMenu, NSMenuItem;
 @class OIInspectionSet, OIInspectorGroup, OIWorkspace;
 
-@class OIInspector, OITabbedInspector, OIInspectorController;
+@class OIInspector, OIInspectorController;
 
 @protocol OIConcreteInspector;
 
@@ -143,11 +143,12 @@ extern NSString * const OIWorkspacesHelpURLKey;
 /// Implement this method on your application delegate to support embedded inspectors. Do not call super in your implementation. Your app may decide to return either a window (indicating an embedded inspector registry) or nil (for floating inspectors).
 - (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 
-/// Implement this on your application delegate to prevent an OITabbedInspector from loading a tab with a given identifier. Seeking a pattern here that can be conveniently extended to other inspectors and be called after the registry is initially populated, but for now it just prevents OITabbedInspector from loading a tab.
-- (BOOL)tabbedInspector:(OITabbedInspector *)tabbedInspector shouldLoadTabWithIdentifier:(NSString *)identifier;
+/// Implement this on your application delegate to prevent loading an inspector with a given identifier.
+- (BOOL)shouldLoadInspectorWithIdentifier:(NSString *)identifier inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 @end
 
 @interface NSWindowController (OIInspectorRegistryWindowControllerDelegate)
 // Implement this method on the window controller of your embedded inspectors to do anything required to show the inspectors when the user has explicitly chosen one from the menubar
 - (void)inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:(OIInspectorRegistry *)registry;
+
 @end

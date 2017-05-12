@@ -51,10 +51,11 @@ static NSString *blackColorString;
 + (NSString *)attachmentString;
 {
     static NSString *AttachmentString = nil;
-    if (!AttachmentString) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         unichar c = NSAttachmentCharacter;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
-    }
+    });
     return AttachmentString;
 }
 
@@ -87,7 +88,7 @@ static NSString *blackColorString;
     return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
 }
 
-- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
+- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange, OATextAttachment *, BOOL *stop))applier;
 {
     NSString *string = [self string];
     NSString *attachmentString = [NSAttributedString attachmentString];
@@ -101,7 +102,7 @@ static NSString *blackColorString;
         
         OATextAttachment *attachment = [self attribute:NSAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
         OBASSERT(attachment);
-        applier(attachment, &stop);
+        applier(attachmentRange, attachment, &stop);
         
         location = NSMaxRange(attachmentRange);
     }

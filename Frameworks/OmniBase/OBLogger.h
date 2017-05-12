@@ -15,6 +15,8 @@ typedef void(^OBLogFileHandler)(NSURL *url);
 
 /**
  This is a utility class for doing user-preference and environment-variable controlled logging with customizable levels. Log messages are written to the console log and, optionally, to files in iOS (where the console log can be truncated). Typical interaction with the class is via the OBLoggerInitializeLogLevel() macro and by the OBLog() function, perhaps wrapping the later in a custom macro for a particular logger instance.
+ 
+ SWIFT: Go see OBLogger.swift. It adds a swifty veneer.
  */
 @interface OBLogger : NSObject
 @property (nonatomic, readonly) NSInteger level;
@@ -42,14 +44,15 @@ typedef void(^OBLogFileHandler)(NSURL *url);
 /**
  Log the given format string and arguments to the given logger at the given message priority level.
  \param logger may be nil, in which case the function returns immediately, useful when preferences specify no logging
- \param messageLevel priority level for the current message. Higher levels are more likely to be logged. Level 0 is never logged, so you probably want to start at 1.
+ \param messageLevel priority level for the current message. Higher levels are more likely to be logged. Level 0 is never logged, so you probably want to start at 1. 
+ \note Log levels operate the opposite of Unix verbosity. 1 is "all" and higher numbers in the user default filter out all but the most severe messages.
  \param format a format string, as in -[NSString initWithFormat:]
  \param ... additional arguments to format string
  */
 extern void OBLog(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *format, ...);
 
 /// Log just the given message, without any format arguments. (Useful for Swift compatibility.)
-extern void OBLogS(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *message);
+extern void OBLogSwiftVariadicCover(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *message);
 
 /// Helper for initializing log level globals. Invokes -[OBLogger initWithName:shouldLogToFile] and sets outLogger to point to the result.
 extern void _OBLoggerInitializeLogLevel(OBLogger * __strong _Nullable * _Nonnull outLogger, NSString *name, BOOL useFile);

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,11 +14,8 @@
 
 @protocol OUIInspectorDelegate <NSObject>
 
-#if 0
-// This is the architecture that we would like to move forward with when we have time to worry about iPhone. On iPad, we always present the inspector in a Popover, but on iPhone we'd like to present it modally. To present things modally, we have to have a view controller to present them from. We’re getting rid of -[OUIAppController topViewController] because it becomes ambiguous in a view controller containment world. We’ll need something like the following to figure out which view controller should present the inspector.
 @required
-- (UIViewController *)inspectorViewControllerToPresentFrom:(OUIInspector *)inpspector;
-#endif
+- (NSArray *)objectsToInspectForInspector:(OUIInspector *)inspector;
 
 @optional
 

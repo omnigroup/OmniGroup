@@ -92,6 +92,7 @@ GCC_WARN_MISSING_PARENTHESES = YES
 //GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS
 GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
+//  -Wnullable-to-nonnull-conversion doesn't catch much, sadly. https://llvm.org/bugs/show_bug.cgi?id=30804
 WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
 //GCC_WARN_ABOUT_POINTER_SIGNEDNESS
 GCC_WARN_SIGN_COMPARE = YES

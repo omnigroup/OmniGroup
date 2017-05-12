@@ -13,6 +13,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 
 #import "OUIParameters.h"
 
@@ -52,6 +53,16 @@ OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation sho
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    OUIInspectorPane *firstPane = (OUIInspectorPane *)self.viewControllers.firstObject;
+    OBASSERT([firstPane isKindOfClass:[OUIInspectorPane class]]);
+    
+    OUIInspector *inspector = firstPane.inspector;
+    [inspector updateInspectedObjects];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
@@ -137,7 +148,8 @@ OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation sho
 
 - (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
 {
-    BOOL isCurrentlyPresented = self.presentingViewController != nil;
+    UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
+    BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
     
     if (!isCurrentlyPresented) {
         return NO;
@@ -146,7 +158,7 @@ OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation sho
         // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
         
         // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
-        return (self.modalPresentationStyle == UIModalPresentationCustom && [self.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+        return (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
     }
 }
 
@@ -168,8 +180,6 @@ OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation sho
 @property (nonatomic,weak) UIView *popoverSourceView;
 @property (nonatomic,assign) CGRect popoverSourceRect;
 @property (nonatomic,assign) UIPopoverArrowDirection popoverArrowDirections;
-
-@property (nonatomic, assign) BOOL shouldShowDoneButton;
 @end
 
 // Variable now, should really be turned into an accessor instead of this global. Popovers are required to be between 320 and 600; let's shoot for the minimum.
@@ -252,7 +262,6 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
     if (!(self = [super init]))
         return nil;
     
-    _shouldShowDoneButton = YES;
     _height = height;
     
     if (mainPane)
@@ -334,13 +343,8 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 }*/
 
 // JCTODO: Inspector refactor.
-- (void)inspectObjects:(NSArray *)objects {
-    
-    // JCTODO: Moving this here for now. Not sure if keeping longterm.
-//    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-//        [self.navigationController popToRootViewControllerAnimated:NO];
-//    }
-
+- (void)updateInspectedObjects {
+    NSArray *objects = [self.delegate objectsToInspectForInspector:self];
     self.mainPane.inspectedObjects = objects;
     
     if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
@@ -509,46 +513,33 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 //    }];
 //}
 //
-//- (void)_setShowDoneButton:(BOOL)shouldShow;
-//{
-//    UIViewController *topController = [self.navigationController topViewController];
-//    NSMutableArray *items = [NSMutableArray arrayWithArray:topController.navigationItem.rightBarButtonItems];
-//    UIBarButtonItem *doneButton = nil;
-//    for (UIBarButtonItem *item in items) {
-//        if (item.action == @selector(_dismissInspector:)) {
-//            doneButton = item;
-//            break;
-//        }
-//    }
-//    if (shouldShow) {
-//        if (!doneButton) {
-//            doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismissInspector:)];
-//            [items insertObject:doneButton atIndex:0];
-//            topController.navigationItem.rightBarButtonItems = items;
-//        }
-//    } else {
-//        if (doneButton) {
-//            [items removeObjectIdenticalTo:doneButton];
-//            topController.navigationItem.rightBarButtonItems = items;
-//        }
-//    }
-//}
-
-// JCTODO: We will no longer be presented. Should be able to remove this code.
-- (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitsCollection;
+- (void)_setShowDoneButton:(BOOL)shouldShow;
 {
-    [self createFreshNavigationController];  // because iOS 9 doesn't correctly handle switching presentation styles, see related <bug:///116856> (Bug: Half-height inspector with selected text can appear in landscape on the 6+) and jake's rdar:///21189053 (Asking a view controller for its presentationController before changing it causes it to cache and use the 'old' one.)
-    
-    if (traitsCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && !self.useFullScreenOnHorizontalCompact) {
-        self.inspectorTransitionDelegate = [[OUIInspectorOverlayTransitioningDelegate alloc] init];
-        self.navigationController.transitioningDelegate = self.inspectorTransitionDelegate;
-        self.navigationController.modalPresentationStyle = UIModalPresentationCustom;
-    } else {
-        self.navigationController.modalPresentationStyle = UIModalPresentationPopover;
-        self.navigationController.popoverPresentationController.barButtonItem = self.popoverPresentingItem;
-        self.navigationController.popoverPresentationController.delegate = self;
+    UIViewController *topController = [self.navigationController topViewController];
+    NSMutableArray *items = [NSMutableArray arrayWithArray:topController.navigationItem.rightBarButtonItems];
+    UIBarButtonItem *doneButton = nil;
+    for (UIBarButtonItem *item in items) {
+        if (item.action == @selector(_doneButtonTapped:)) {
+            doneButton = item;
+            break;
+        }
     }
-//    [self _setShowDoneButton:self.shouldShowDoneButton];
+    if (shouldShow) {
+        if (!doneButton) {
+            doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_doneButtonTapped:)];
+            [items insertObject:doneButton atIndex:0];
+            topController.navigationItem.rightBarButtonItems = items;
+        }
+    } else {
+        if (doneButton) {
+            [items removeObjectIdenticalTo:doneButton];
+            topController.navigationItem.rightBarButtonItems = items;
+        }
+    }
+}
+
+- (void)_doneButtonTapped:(id)sender {
+    [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
 // JCTODO: We will no longer be presented. Should be able to remove this code.
@@ -728,6 +719,22 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 //}
 
 #pragma mark UINavigationControllerDelegate
+- (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
+{
+    UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
+    BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
+    
+    if (!isCurrentlyPresented) {
+        return NO;
+    }
+    else {
+        // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
+        
+        // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
+        return (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+    }
+}
+
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     // This delegate method gets called before the pane is queried for its popover content size but before -viewWillAppear: is called.
@@ -738,7 +745,12 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         [(OUIInspectorPane *)viewController inspectorWillShow:self];
     
 //    _configureContentSize(self, viewController, _height, animated);
-//    [self _setShowDoneButton:self.shouldShowDoneButton];
+    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
+        [self _setShowDoneButton:YES];
+    }
+    else {
+        [self _setShowDoneButton:NO];
+    }
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController

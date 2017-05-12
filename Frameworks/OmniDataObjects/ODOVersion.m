@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniDataObjects/ODOVersion.h>
-
-#ifdef DEBUG_bungi
-#define NON_OMNI_BUILD_ENVIRONMENT
-#endif
 
 #if !defined(NON_OMNI_BUILD_ENVIRONMENT)
 

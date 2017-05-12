@@ -26,7 +26,8 @@ inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ..
     va_end(args);
 }
 
-inline void OBLogS(OBLogger *logger, NSInteger messageLevel, NSString *message) {
+// should only be called from OBLogger.swift
+inline void OBLogSwiftVariadicCover(OBLogger *logger, NSInteger messageLevel, NSString *message) {
     OBLog(logger, messageLevel, message);
 }
 

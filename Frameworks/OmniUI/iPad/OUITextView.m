@@ -433,14 +433,16 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
 //    [_textInspector dismissImmediatelyIfVisible];
 }
 
+// JCTODO: Make sure text inspection still works.
 - (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
 {
-    NSArray *runs = [self _configureInspector];
+//    NSArray *runs = [self _configureInspector];
     if (setupBlock != NULL)
         setupBlock(_textInspector);
 
 //    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
-    [self.textInspector inspectObjects:runs];
+//    [self.textInspector inspectObjects:runs];
+    [self.textInspector updateInspectedObjects];
     self.alwaysHighlightSelectedText = YES;
 }
 
@@ -1360,6 +1362,11 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 }
 
 #pragma mark - OUIInspectorDelegate
+
+- (NSArray *)objectsToInspectForInspector:(OUIInspector *)inspector {
+    NSArray *runs = [self _configureInspector];
+    return runs;
+}
 
 - (NSArray *)inspector:(OUIInspector *)inspector makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {

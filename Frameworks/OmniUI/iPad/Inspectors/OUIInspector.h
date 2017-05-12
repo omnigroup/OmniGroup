@@ -67,13 +67,13 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 //- (void)dismissImmediatelyIfVisible;
 //- (void)dismiss;
 //- (void)dismissAnimated:(BOOL)animated;
+//- (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitCollection;
 // JCTODO: END REMOVAL
 
 @property (nonatomic) BOOL useFullScreenOnHorizontalCompact;
 
 // JCTODO: Inspector refactor.
-- (void)inspectObjects:(NSArray *)objects;
-- (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitCollection;
+- (void)updateInspectedObjects;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 

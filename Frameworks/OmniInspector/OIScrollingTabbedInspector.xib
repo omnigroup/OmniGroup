@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="16A201w" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11542" systemVersion="16A323" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11542"/>
         <capability name="box content view" minToolsVersion="7.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OIScrollingTabbedInspector">
@@ -28,7 +29,7 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                             <size key="cellSize" width="34" height="31"/>
                             <size key="intercellSpacing" width="-1" height="2"/>
-                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="3BB17DC1-75C4-41C5-A17E-6F6DC889CA68" imagePosition="only" alignment="center" tag="-1" inset="2" id="fpq-vn-UEj" customClass="OITabCell">
+                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="F7CEA111-7178-4C1A-99DF-785A72A030CB" imagePosition="only" alignment="center" tag="-1" inset="2" id="fpq-vn-UEj" customClass="OITabCell">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                 <font key="font" metaFont="system" size="10"/>
                             </buttonCell>
@@ -161,13 +162,10 @@
                 <constraint firstItem="1ij-T1-gZE" firstAttribute="width" secondItem="8xw-V2-CE9" secondAttribute="width" id="oGr-jv-NxJ"/>
                 <constraint firstItem="kmL-sk-geE" firstAttribute="width" secondItem="1ij-T1-gZE" secondAttribute="width" id="zHG-5C-LAi"/>
             </constraints>
-            <connections>
-                <outlet property="inspector" destination="-2" id="brR-FA-AUR"/>
-            </connections>
         </customView>
     </objects>
     <resources>
-        <image name="3BB17DC1-75C4-41C5-A17E-6F6DC889CA68" width="1" height="1">
+        <image name="F7CEA111-7178-4C1A-99DF-785A72A030CB" width="1" height="1">
             <mutableData key="keyedArchiveRepresentation">
 YnBsaXN0MDDUAQIDBAUGPT5YJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoK4HCBMU
 GR4fIyQrLjE3OlUkbnVsbNUJCgsMDQ4PEBESVk5TU2l6ZVYkY2xhc3NcTlNJbWFnZUZsYWdzVk5TUmVw

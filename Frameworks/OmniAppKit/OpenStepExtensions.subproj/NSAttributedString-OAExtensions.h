@@ -22,7 +22,7 @@
 
 @interface NSAttributedString (OAExtensions)
 
-+ (NSString *)attachmentString;
+@property(class,readonly) NSString *attachmentString;
 
 - (BOOL)containsAttribute:(NSString *)attributeName;
 - (BOOL)containsAttribute:(NSString *)attributeName inRange:(NSRange)range;
@@ -30,7 +30,7 @@
 - (BOOL)containsAttachments;
 - (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
 
-- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
+- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange, OATextAttachment *, BOOL *stop))applier;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;

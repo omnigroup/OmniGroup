@@ -117,7 +117,7 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithPlatformColor:(OA_PLATFORM_COLOR_CLASS *)color;
 
 + (nullable OAColor *)colorFromRGBAString:(NSString *)rgbaString;
-- (NSString *)rgbaString;
+@property(nonatomic,readonly) NSString *rgbaString;
 
 + (nullable OAColor *)colorForPreferenceKey:(NSString *)preferenceKey;
 + (void)setColor:(OAColor *)color forPreferenceKey:(NSString *)preferenceKey;
@@ -126,24 +126,24 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 + (OAColor *)colorWithHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
 + (OAColor *)colorWithWhite:(CGFloat)white alpha:(CGFloat)alpha;
 
-+ (OAColor *)blackColor;
-+ (OAColor *)darkGrayColor;
-+ (OAColor *)lightGrayColor;
-+ (OAColor *)whiteColor;
-+ (OAColor *)grayColor;
-+ (OAColor *)redColor;
-+ (OAColor *)greenColor;
-+ (OAColor *)blueColor;
-+ (OAColor *)cyanColor;
-+ (OAColor *)yellowColor;
-+ (OAColor *)magentaColor;
-+ (OAColor *)orangeColor;
-+ (OAColor *)purpleColor;
-+ (OAColor *)brownColor;
-+ (OAColor *)clearColor;
+@property(class,readonly,nonatomic) OAColor *blackColor;
+@property(class,readonly,nonatomic) OAColor *darkGrayColor;
+@property(class,readonly,nonatomic) OAColor *lightGrayColor;
+@property(class,readonly,nonatomic) OAColor *whiteColor;
+@property(class,readonly,nonatomic) OAColor *grayColor;
+@property(class,readonly,nonatomic) OAColor *redColor;
+@property(class,readonly,nonatomic) OAColor *greenColor;
+@property(class,readonly,nonatomic) OAColor *blueColor;
+@property(class,readonly,nonatomic) OAColor *cyanColor;
+@property(class,readonly,nonatomic) OAColor *yellowColor;
+@property(class,readonly,nonatomic) OAColor *magentaColor;
+@property(class,readonly,nonatomic) OAColor *orangeColor;
+@property(class,readonly,nonatomic) OAColor *purpleColor;
+@property(class,readonly,nonatomic) OAColor *brownColor;
+@property(class,readonly,nonatomic) OAColor *clearColor;
 
-+ (OAColor *)keyboardFocusIndicatorColor;
-+ (OAColor *)selectedTextBackgroundColor;
+@property(class,readonly,nonatomic) OAColor *keyboardFocusIndicatorColor;
+@property(class,readonly,nonatomic) OAColor *selectedTextBackgroundColor;
 
 - (void)set;
 

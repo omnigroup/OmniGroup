@@ -1,4 +1,4 @@
-// Copyright 2006-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 
-#import <Foundation/NSDictionary.h>
+#import <Foundation/Foundation.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFUTI.h>
@@ -26,7 +26,24 @@ RCS_ID("$Id$");
     return [fileWrapper autorelease];
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (NSString *)fileTypeIdentifier;
+{
+    BOOL isDirectory = [self isDirectory];
+
+    // No HFS type, try to look at the extension
+    NSString *path = [self filename];
+    if ([NSString isEmptyString:path])
+        path = [self preferredFilename];
+    OBASSERT(![NSString isEmptyString:path]);
+
+    NSString *fileType = OFUTIForFileExtensionPreferringNative([path pathExtension], @(isDirectory));
+
+    if (!fileType)
+        fileType = (NSString *)(isDirectory ? kUTTypeDirectory : kUTTypeData);
+    return fileType;
+}
+#else
 - (NSString *)fileTypeIdentifier:(BOOL *)isHFSType;
 {
     NSDictionary *attributes = [self fileAttributes];
@@ -44,7 +61,7 @@ RCS_ID("$Id$");
     } else {
         // No HFS type, try to look at the extension
         NSString *path = [self filename];
-        if ([NSString isEmptyString:path] || ![[NSFileManager defaultManager] fileExistsAtPath:path])
+        if ([NSString isEmptyString:path])
             path = [self preferredFilename];
         OBASSERT(![NSString isEmptyString:path]);
 

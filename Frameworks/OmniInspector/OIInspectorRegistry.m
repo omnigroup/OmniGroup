@@ -112,7 +112,7 @@ static NSMutableArray *additionalPanels = nil;
         NSLog(@"%@: Item %@ in %@ is not a registerable inspector", NSStringFromClass(self), itemName, bundle);
         return;
     }
-    
+
     // NSLog(@"%@: registering %@ from %@", NSStringFromClass(self), itemName, bundle);
     
     OIInspectorRegistry *registry = [OIInspectorRegistry inspectorRegistryForMainWindow]; // Make sure the class has woken up
@@ -121,6 +121,10 @@ static NSMutableArray *additionalPanels = nil;
         NSLog(@"Ignoring duplicate inspector %@ from %@", inspectorIdentifier, bundle);
         return;
     }
+    
+    NSObject *appDelegate = (NSObject *)[[NSApplication sharedApplication] delegate];
+    if (![appDelegate shouldLoadInspectorWithIdentifier:inspectorIdentifier inspectorRegistry:registry])
+        return;
     
     NSString *groupIdentifier = [descriptionDictionary objectForKey:@"group"];
     if (groupIdentifier) {
@@ -1491,9 +1495,17 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return nil;
 }
 
-- (BOOL)tabbedInspector:(OITabbedInspector *)tabbedInspector shouldLoadTabWithIdentifier:(NSString *)identier;
+- (BOOL)shouldLoadInspectorWithIdentifier:(NSString *)identifier inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 {
     return YES;
+}
+
+@end
+
+@implementation NSWindowController (OIInspectorRegistryWindowControllerDelegate)
+
+- (void)inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:(OIInspectorRegistry *)registry;
+{
 }
 
 @end

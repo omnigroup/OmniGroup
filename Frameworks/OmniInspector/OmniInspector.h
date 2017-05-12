@@ -23,7 +23,6 @@
 #import <OmniInspector/OIInspectorWindow.h>
 #import <OmniInspector/OIMatrix.h>
 #import <OmniInspector/OIScrollingTabbedInspector.h>
-#import <OmniInspector/OISectionedInspector.h>
 #import <OmniInspector/OIStackedSlicesInspector.h>
 #import <OmniInspector/OITabCell.h>
 #import <OmniInspector/OITabMatrix.h>

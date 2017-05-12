@@ -37,6 +37,14 @@ typedef enum {
 
 - (BOOL)isChildViewController:(UIViewController *)child;
 
+
+/**
+ Walks the -[UIViewController parentViewController] chain to find the most distant ancestor view controller.
+
+ @return Returns the first view controller in the -[UIViewController parentViewController] chain whos parent is nil.
+ */
+- (UIViewController *)mostDistantAncestorViewController;
+
 @property(readonly,nonatomic) OUIViewControllerVisibility visibility;
 
 #if defined(DEBUG)

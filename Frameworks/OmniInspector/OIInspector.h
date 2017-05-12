@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 // This method is called by OITabbedInspector whenever the selection changes if the inspector is in auto-tab-select mode
 @property(nonatomic,readonly,nullable) NSPredicate *shouldBeUsedForObjectPredicate;
 
-// Subclasses should override this if they may need to do something in response to an inspector view programmatically resizing. They should also override this to pass it on to any inspectors they manage. (See OITabbedInspector and OISectionedInspector.) Inspectors which programmatically change the size of their inspectorView should then call this method on their inspectorController so it can notify the inspector chain. This allows an inspector view which contains a child inspector view to know to resize to accommodate changes in the size of that child.
+// Subclasses should override this if they may need to do something in response to an inspector view programmatically resizing. They should also override this to pass it on to any inspectors they manage. (See OITabbedInspector) Inspectors which programmatically change the size of their inspectorView should then call this method on their inspectorController so it can notify the inspector chain. This allows an inspector view which contains a child inspector view to know to resize to accommodate changes in the size of that child.
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
 
 /// The interface type that this inspector would prefer the app to use. (Inspectors should support all interface types, but can have a weak preference for a certain type if that type suits its intended use better.)
@@ -87,17 +87,12 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 @end
 
-@class OITabbedInspector;
-
 @protocol OIConcreteInspector
 @property(nonatomic,readonly) NSPredicate *inspectedObjectsPredicate;
     // Return a predicate to filter the inspected objects down to what this inspector wants sent to its -inspectObjects: method
 
 - (void)inspectObjects:(nullable NSArray *)objects;
     // This method is called whenever the selection changes
-
-@optional // Tabbed inspectors
-- (void)setContainingTabbedInspector:(OITabbedInspector *)containingTabbedInspector;
 
 @optional // Customization
 

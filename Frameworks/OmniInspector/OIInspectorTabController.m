@@ -26,7 +26,7 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
+- initWithInspectorDictionary:(NSDictionary *)tabPlist inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
 {
     if (!(self = [super init]))
         return nil;
@@ -52,10 +52,7 @@ RCS_ID("$Id$");
 	// Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
 	return nil;
     }
-    
-    if ([_inspector respondsToSelector:@selector(setContainingTabbedInspector:)])
-        [_inspector setContainingTabbedInspector:containingInspector];
-    
+        
     if (imageName) {
 	_image = [_inspector imageNamed:imageName];
     } else

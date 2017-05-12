@@ -340,7 +340,7 @@ static void _updateResultSetForChanges(NSMutableArray *results, ODOEntity *entit
         resultIndex = resultCount;
         while (resultIndex--) { // loop reverse so we can modify the array as we go
             ODOObject *object = [results objectAtIndex:resultIndex];
-            if ([updated member:object] && ![predicate evaluateWithObject:object])
+            if ([updated member:object] && (predicate != nil && ![predicate evaluateWithObject:object]))
                 [results removeObjectAtIndex:resultIndex];
         }
         
