@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -661,17 +661,20 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 - (BOOL)isIdenticalToArray:(NSArray *)otherArray;
 {
     if (!otherArray) {
-        OBASSERT([self count] > 0); // Older versions of this method would compare empty to nil as YES.  Do we want that still?
+        return self.count == 0; // Return YES when otherArray is nil and self has 0 members.
+    }
+
+    if (self.count != otherArray.count) {
         return NO;
     }
 
-    CFIndex objectIndex = CFArrayGetCount((CFArrayRef)self);
-    if (objectIndex != CFArrayGetCount((CFArrayRef)otherArray))
-        return NO;
-    
-    while (objectIndex--)
-        if (CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex) != CFArrayGetValueAtIndex((CFArrayRef)otherArray, objectIndex))
+    NSUInteger objectIndex = 0;
+    for (id oneObject in self) {
+        if (oneObject != otherArray[objectIndex]) {
             return NO;
+        }
+        objectIndex++;
+    }
     return YES;
 }
 

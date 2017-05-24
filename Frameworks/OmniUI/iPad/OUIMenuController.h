@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <UIKit/UIViewController.h>
 #import <OmniUI/OUIWrappingViewController.h>
 #import <OmniUI/OUIMenuOption.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class OUIMenuController, OUIMenuOption;
 
@@ -38,3 +40,5 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
 - (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 
 @end
+
+NS_ASSUME_NONNULL_END

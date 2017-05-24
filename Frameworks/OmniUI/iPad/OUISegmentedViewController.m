@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,6 +67,10 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+    [self.selectedViewController setEditing:editing animated:animated];
+}
+
 #pragma mark - Public API
 
 - (void)oui_invalidate;
@@ -107,6 +111,8 @@ RCS_ID("$Id$")
     
     // Remove currently selected view controller.
     if (_selectedViewController) {
+        [_selectedViewController setEditing:NO animated:NO];
+        
           // we used to try to only send appearance transitions if we were "on screen".  But that dropped some on the floor when this controller is in a splitview sidebar.  So now we send them always.  Which sometimes results in child view controllers getting doubled appearance messages.  So we deal with that.
         BOOL performTransition = [self isViewLoaded] && !_invalidated;
 

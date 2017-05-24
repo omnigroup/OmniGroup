@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,16 +21,17 @@ BOOL OBEnableExpensiveAssertions = NO;
 
 void OBLogAssertionFailure(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason)
 {
+    // Make these start with 'Error: ' so that they get highlighted in build logs in various places.
     if (expression && *expression != '\0') {
         if (reason && *reason != '\0')
-            fprintf(stderr, "%s failed: '%s' (reason: '%s') at %s:%d\n", type, expression, reason, file, lineNumber);
+            fprintf(stderr, "Error: %s failed. Requires '%s' (reason: '%s') at %s:%d\n", type, expression, reason, file, lineNumber);
         else
-            fprintf(stderr, "%s failed: requires '%s', at %s:%d\n", type, expression, file, lineNumber);
+            fprintf(stderr, "Error: %s failed. Requires '%s', at %s:%d\n", type, expression, file, lineNumber);
     } else {
         if (reason && *reason != '\0')
-            fprintf(stderr, "%s failed (reason: '%s') at %s:%d\n", type, reason, file, lineNumber);
+            fprintf(stderr, "Error: %s failed (reason: '%s') at %s:%d\n", type, reason, file, lineNumber);
         else
-            fprintf(stderr, "%s failed at %s:%d\n", type, file, lineNumber);
+            fprintf(stderr, "Error: %s failed at %s:%d\n", type, file, lineNumber);
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1384,7 +1384,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     
     return slices;
 }
-
+// bug:///137426 (iOS-OmniGraffle Bug: Fix Text Inspector) - This delegate method no longer exists. For details, please see bug:///137455 (iOS-OmniGraffle Unassigned: Replace uses of -[OUIInspectorDelegate inspector[will/did]Dismiss:])
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 {
     self.alwaysHighlightSelectedText = NO;

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIMenuController (/*Private*/) <UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate>
 @end
 
@@ -22,6 +24,8 @@ RCS_ID("$Id$");
 {
     UINavigationController *_menuNavigationController;
     BOOL _isShowingAsPopover;
+
+    UIColor *_presentingViewTintColor;
 }
 
 - (instancetype)init;
@@ -50,7 +54,7 @@ RCS_ID("$Id$");
     _tintColor = [tintColor copy];
     
     if (self.isViewLoaded)
-        self.view.tintColor = _tintColor;
+        self.view.tintColor = [self _effectiveTintColor];
 }
 
 - (void)setMenuBackgroundColor:(UIColor *)menuBackgroundColor;
@@ -97,7 +101,7 @@ RCS_ID("$Id$");
 
 - (void)viewDidLoad;
 {
-    self.view.tintColor = _tintColor;
+    self.view.tintColor = [self _effectiveTintColor];
     [super viewDidLoad];
 }
 
@@ -109,7 +113,9 @@ RCS_ID("$Id$");
         _menuNavigationController.modalPresentationStyle = UIModalPresentationPopover;
         self.wrappedViewController = _menuNavigationController;
     }
-    
+
+    _presentingViewTintColor = self.presentingViewController.view.tintColor;
+
     [_menuNavigationController setViewControllers:@[[self _makeTopMenu]] animated:NO];
 
     [super viewWillAppear:animated];
@@ -118,7 +124,7 @@ RCS_ID("$Id$");
 - (OUIMenuOptionsController *)_makeTopMenu;
 {
     OUIMenuOptionsController *topMenu = [[OUIMenuOptionsController alloc] initWithController:self options:_topOptions];
-    topMenu.tintColor = _tintColor;
+    topMenu.tintColor = [self _effectiveTintColor];
     topMenu.sizesToOptionWidth = _sizesToOptionWidth;
     topMenu.textAlignment = _textAlignment;
     topMenu.showsDividersBetweenOptions = _showsDividersBetweenOptions;
@@ -133,7 +139,7 @@ RCS_ID("$Id$");
     return topMenu;
 }
 
-- (UIPopoverPresentationController *)popoverPresentationController;
+- (nullable UIPopoverPresentationController *)popoverPresentationController;
 {
     UIPopoverPresentationController *controller = [super popoverPresentationController];
     
@@ -150,15 +156,20 @@ RCS_ID("$Id$");
 // Called by OUIMenuOptionsController
 - (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 {
+    UIViewController *presentingViewController = _menuNavigationController.presentingViewController;
+
     if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionDismiss) {
+        // If the menu option wants to present something of its own, it will likely want to know where the menu was presented from.
+        OBASSERT_NOTNULL(presentingViewController);
+
         [_menuNavigationController dismissViewControllerAnimated:YES completion:^{
             if (option.action != nil) {
-                option.action();
+                option.action(presentingViewController);
             }
         }];
     } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
         if ((option.action != nil) && option.isEnabled) {
-            option.action();
+            option.action(presentingViewController);
         }
         
         _menuNavigationController.viewControllers = @[[self _makeTopMenu]];
@@ -194,7 +205,7 @@ RCS_ID("$Id$");
     return UIModalPresentationFullScreen;
 }
 
-- (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
+- (nullable UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
 {
     _isShowingAsPopover = NO;
     _menuNavigationController.navigationBarHidden = NO;
@@ -242,4 +253,11 @@ RCS_ID("$Id$");
     }
 }
 
+- (UIColor *)_effectiveTintColor;
+{
+    return _tintColor ? _tintColor : _presentingViewTintColor;
+}
+
 @end
+
+NS_ASSUME_NONNULL_END

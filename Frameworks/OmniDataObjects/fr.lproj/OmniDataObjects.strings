@@ -88,8 +88,14 @@
 /* error reason */
 "Model '%@' has multiple properties named '%@'." = "Le modèle « %1$@ » possède plusieurs propriétés nommées « %2$@ ».";
 
+/* Multiple Delete Errors */
+"Multiple Errors" = "Multiples erreurs";
+
 /* error reason */
 "Multiple validation errors occurred while saving." = "Plusieurs erreurs de validation se sont produites durant l’enregistrement.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "L’objet portant l’identifiant %@ est inaccessible.";
 
 /* error reason */
 "Property has no name." = "La propriété ne possède pas de nom.";
@@ -135,6 +141,9 @@
 
 /* error reason */
 "Unable bind int32 to slot %d of statement with SQL '%@'." = "Impossible de lier int32 à l’espace %1$d de la déclaration avec « %2$@ » SQL.";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "Impossible de lier int64 à l’espace %1$d de la déclaration avec %2$@ SQL.";
 
 /* error reason */
 "Unable bind null to slot %d of statement with SQL '%@'." = "Impossible de lier la valeur nulle à l’espace %1$d de la déclaration avec « %2$@ » SQL.";

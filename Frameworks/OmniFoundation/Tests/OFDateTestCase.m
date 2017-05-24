@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,8 @@
 
 #import "OFTestCase.h"
 
-#import <OmniFoundation/NSCalendarDate-OFExtensions.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OmniFoundation.h>
 
 RCS_ID("$Id$")
 

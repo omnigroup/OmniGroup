@@ -396,6 +396,12 @@ OB_REQUIRE_ARC;
 - (IBAction)done:(id)sender;
 {
     NSModalResponse rc = [sender tag];
+    
+    if (_acceptDelegate) {
+        if (!_acceptDelegate(self, &rc))
+            return;
+    }
+    
     [self endModal:rc];
 }
 

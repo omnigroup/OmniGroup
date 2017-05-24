@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -158,14 +158,14 @@ static void __iOS7B5CleanConsoleOutput(void)
     }
 }
 
-+ (instancetype)controller;
++ (nonnull instancetype)controller;
 {
     id controller = [[UIApplication sharedApplication] delegate];
     OBASSERT([controller isKindOfClass:self]);
     return controller;
 }
 
-+ (instancetype)sharedController;
++ (nonnull instancetype)sharedController;
 {
     return [self controller];
 }
@@ -307,7 +307,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     }
 }
 
-- (void)showOnlineHelp:(id)sender;
+- (void)showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self _showOnlineHelp:sender];
 }
@@ -437,6 +437,27 @@ static void __iOS7B5CleanConsoleOutput(void)
     return menuImage(@"OUIMenuItemPurchases.png");
 }
 
+- (BOOL)useCompactBarButtonItemsIfApplicable;
+{
+    return NO;
+}
+
+- (UIImage *)exportBarButtonItemImageInHostViewController:(UIViewController *)hostViewController;
+{
+    NSString *imageName = @"OUIExport";
+
+    if (self.useCompactBarButtonItemsIfApplicable) {
+        BOOL isHorizontallyCompact = hostViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
+        BOOL isVerticallyCompact = hostViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+        if (isHorizontallyCompact || isVerticallyCompact) {
+            imageName = @"OUIExport-Compact";
+        }
+    }
+
+    return [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+
 #pragma mark - App menu support
 
 - (NSString *)feedbackMenuTitle;
@@ -559,7 +580,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self sendFeedbackWithSubject:subject body:nil];
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil)
@@ -583,7 +604,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen];
 }
 
-- (void)_showLatestNewsMessage
+- (void)_showLatestNewsMessage NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     [self showNewsURLString:[self mostRecentNewsURLString] evenIfShownAlready:YES];
 }
@@ -680,7 +701,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self showAboutScreenInNavigationController:nil];
 }
 
-- (void)_showReleaseNotes:(id)sender;
+- (void)_showReleaseNotes:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
 }
@@ -719,7 +740,7 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
     return [mainBundle localizedStringForKey:OUIHelpBookNameKey value:helpBookName table:@"InfoPlist"];
 }
 
-- (void)_showOnlineHelp:(id)sender;
+- (void)_showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSURL *helpIndexURL = [self _onlineHelpURL];
     if (!helpIndexURL) {
@@ -839,8 +860,8 @@ static UIImage *menuImage(NSString *name)
         if ([NSString isEmptyString:purchaseTitle])
             continue;
         
-        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:self.inAppPurchasesMenuImage action:^{
-            [[OUIAppController controller] showInAppPurchases:productIdentifier viewController:self.window.rootViewController];
+        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:self.inAppPurchasesMenuImage action:^(UIViewController *presentingViewController){
+            [[OUIAppController controller] showInAppPurchases:productIdentifier viewController:presentingViewController];
         }];
         [options addObject:option];
     }
@@ -859,7 +880,7 @@ static UIImage *menuImage(NSString *name)
 
 #pragma mark - OUIWebViewControllerDelegate
 
-- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
+- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (webViewController == self.newsViewController
         && self.newsURLCurrentlyShowing != nil

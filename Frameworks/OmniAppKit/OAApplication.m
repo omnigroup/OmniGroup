@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -270,7 +270,8 @@ BOOL OADebugTargetSelection = NO;
 
     if (OATargetSelection) {
         // The normal NSApplication version, sadly, uses internal target lookup for the nil case. It should really call -targetForAction:to:from:.
-        if (!theTarget)
+        // The AppKit version of this uses _NSTargetForSendAction() which has fewer restrictions on the nil target case (since it 'knows' it will pick the right thing _objectFromResponderChainWhichRespondsToAction()). Even if we return the exact same result as it would have calculated, it bails when we are in a modal session and have a menu item targetting a view in the modal window. See bug:///136395 (Mac-OmniOutliner Bug: Should allow pasting into the password decryption field)
+        if (!theTarget && ![[self keyWindow] isModalPanel])
             theTarget = [self targetForAction:theAction to:nil from:sender];
     }
     

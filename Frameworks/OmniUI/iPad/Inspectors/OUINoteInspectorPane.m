@@ -1,4 +1,4 @@
-// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 #import <OmniUI/OUIFullScreenNoteTextViewController.h>
 #import <OmniUI/OUIFullScreenNoteTransition.h>
 #import <OmniUI/OUIKeyboardLock.h>
-
+#import <OmniUI/OUIInspectorPresentationController.h>
 
 RCS_ID("$Id$")
 
@@ -44,8 +44,12 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 {
     [super viewDidAppear:animated];
 
+    // We can't ask for the presentationController before first knowing it's presented or the reciever will cacahe a presentationController until next present/dismiss cycle. This can result in the default full-screen presentation controller being cached if we havne't setup the transitioningDelegate yet.
+    BOOL isCurrentlyPresented = (self.inspector.viewController.presentingViewController != nil);
+    BOOL isUsingInspectorPresentationController = (isCurrentlyPresented && [self.inspector.viewController.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+    
     // If we're already fullscreen, no need for the enter full screen button
-    if (self.view.window.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && self.inspector.useFullScreenOnHorizontalCompact) {
+    if (self.view.window.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && isUsingInspectorPresentationController) {
         self.enterFullScreenButton.hidden = YES;
     } else {
         self.enterFullScreenButton.hidden = NO;

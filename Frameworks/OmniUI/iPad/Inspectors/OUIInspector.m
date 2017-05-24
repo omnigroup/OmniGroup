@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,9 @@ OBDEPRECATED_METHOD(-redisplayInspectorForNewTraitCollection:); // Methods deali
 OBDEPRECATED_METHOD(-dismissImmediatelyIfVisible); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
 OBDEPRECATED_METHOD(-dismiss); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
 OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
+
+OBDEPRECATED_METHOD(-useFullScreenOnHorizontalCompact); // OUIInspector has been decoupled from its presentation style. To get the half-height inspector, assign an instance of OUIInspectorPresentationController as the presented view controller's transitioningDelegate.
+OBDEPRECATED_METHOD(-setUseFullScreenOnHorizontalCompact:); // OUIInspector has been decoupled from its presentation style. To get the half-height inspector, assign an instance of OUIInspectorPresentationController as the presented view controller's transitioningDelegate.
 
 @interface OUIInspector (/*Private*/) <UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate>
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;

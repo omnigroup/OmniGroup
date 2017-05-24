@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,19 +55,19 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
 }
 #define UNZIP_ERROR(f) _unzipError(self, #f, err, outError)
 
-- init NS_UNAVAILABLE;
+- (id)init NS_UNAVAILABLE;
 {
     OBRejectUnusedImplementation(self, _cmd);
     return nil;
 }
 
-- initWithPath:(NSString *)path error:(NSError **)outError;
+- (nullable id)initWithPath:(NSString *)path error:(NSError **)outError;
 {
     return [self initWithPath:path data:nil description:path error:outError];
 }
 
 // Zip has no real notion of directories, so we just have a flat list of files, like it does.  Some will have slashes in their names.  Some might end in '/' and have directory flags set in their attributes.  We could probably just ignore those (unless they have interesting properties, like finder info or other custom metadata, once we start handling that).
-- initWithPath:(NSString * _Nullable)path data:(NSObject <OFByteProvider> * _Nullable)store description:(NSString *)displayName error:(NSError **)outError;
+- (nullable id)initWithPath:(nullable NSString *)path data:(nullable NSObject <OFByteProvider> *)store description:(NSString *)displayName error:(NSError **)outError;
 {
     self = [super init];
  
@@ -203,6 +203,11 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
     return self;
 }
 #undef UNZIP_ERROR
+
+- (nullable NSString *)path;
+{
+    return _path;
+}
 
 - (NSString *)archiveDescription;
 {

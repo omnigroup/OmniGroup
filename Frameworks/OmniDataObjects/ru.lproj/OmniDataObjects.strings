@@ -88,8 +88,14 @@
 /* error reason */
 "Model '%@' has multiple properties named '%@'." = "Модель «%1$@» имеет несколько свойств «%2$@».";
 
+/* Multiple Delete Errors */
+"Multiple Errors" = "Несколько ошибок";
+
 /* error reason */
 "Multiple validation errors occurred while saving." = "При сохранении произошло несколько ошибок проверки.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "Объект с идентификатором «%@» недоступен.";
 
 /* error reason */
 "Property has no name." = "Свойство не имеет имени.";
@@ -135,6 +141,9 @@
 
 /* error reason */
 "Unable bind int32 to slot %d of statement with SQL '%@'." = "Не удается привязать значение int32 к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "Не удается привязать int64 к слоту %1$d выражения с SQL «%2$@».";
 
 /* error reason */
 "Unable bind null to slot %d of statement with SQL '%@'." = "Не удается привязать значение null к слоту %1$d выражения с SQL «%2$@».";

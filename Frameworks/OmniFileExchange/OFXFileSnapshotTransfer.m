@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ RCS_ID("$Id$")
 - initWithConnection:(ODAVConnection *)connection;
 {
     OBPRECONDITION(connection);
-    OBPRECONDITION(connection.validateCertificateForChallenge); // We aren't going to fill in these details -- we expect the caller to have done so
+//    OBPRECONDITION(connection.validateCertificateForChallenge); // We aren't going to fill in these details -- we expect the caller to have done so
     OBPRECONDITION(connection.findCredentialsForChallenge);
     
     if (!(self = [super init]))

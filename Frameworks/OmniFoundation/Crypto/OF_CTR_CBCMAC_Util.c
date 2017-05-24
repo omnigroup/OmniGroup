@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -150,7 +150,7 @@ CCCryptorStatus ccmProcessMessage(CCCryptorRef cbcState, uint8_t *outLastBlock, 
     }
     
     if (byteCount == 0) {
-        memcpy(outLastBlock, discardBuf - 16, 16);
+        memcpy(outLastBlock, discardBuf + DISCARD_BUF_SIZE - 16, 16);
     } else {
         CHECK_CRYPT(bytes, byteCount, discardBuf, DISCARD_BUF_SIZE);
         memcpy(outLastBlock, discardBuf + byteCount - 16, 16);

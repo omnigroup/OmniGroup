@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,15 +24,16 @@ extern NSString * const OUUnzipArchiveFilePathErrorKey;
 @interface OUUnzipArchive : NSObject
 
 /// Create an OUUnzipArchive from a file on disk. The file opened for reading (not mapped into memory) each time an operation is performed.
-- initWithPath:(NSString *)path error:(NSError **)outError;
+- (nullable id)initWithPath:(NSString *)path error:(NSError **)outError;
 
 /// Create an OUUnzipArchive from either a file on disk, or an abstract byte provider (e.g. an NSData).
 ///
 ///  @param path  For a disk file, the file's path; otherwise nil.
 ///  @param store For a byte provider, the provider; otherwise nil.
 ///  @param displayName   A string describing the origin of the data, for use in error messages. For example, the filesystem path or origin URL. Does not need to be exact; this is only used for generating error text.
-- initWithPath:(NSString * _Nullable)path data:(NSObject <OFByteProvider> * _Nullable)store description:(NSString *)displayName error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (nullable id)initWithPath:(nullable NSString *)path data:(nullable NSObject <OFByteProvider> *)store description:(NSString *)displayName error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
 
+@property (readonly, nonatomic, nullable) NSString *path;
 @property (readonly, nonatomic) NSArray <OUUnzipEntry *> *entries;
 @property (readonly, nonatomic) NSString *archiveDescription;
 

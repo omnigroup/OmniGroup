@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,6 +101,29 @@ extension OFDocumentEncryptionSettings {
         if let newPassword = password {
             recipients.insert(CMSPasswordRecipient(password: newPassword), at: 0);
         }
+    }
+    
+    /// Tests whether the receiver was decrypted using the given password.
+    ///
+    /// (Note that a receiver can potentially be unlocked using any of several passwords, although we don't currently expose that possibility in the UI, and probably never will --- it'd be pretty confusing.)
+    /// This cannot necessarily test whether a password matches if we didn't actually decrypt with it at some point in the past, because we don't retain enough intermediate keying material to determine that. However, again, this is probably not a situation a user can get into without dedicated effort.
+    /// Passing nil for the password tests whether *any* password did match, i.e., whether it's possible for this method to ever return true for the current state of the receiver.
+    @objc public
+    func passwordDidMatch(_ password: String?) -> Bool {
+        for recipient in recipients {
+            if let pwri = recipient as? CMSPasswordRecipient {
+                if let pw = password {
+                    if let matched = pwri.didUnwrapWith(password: pw) {
+                        return matched
+                    }
+                } else {
+                    if pwri.canTestPassword() {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     /// Returns YES if the receiver allows decryption using asymmetric cryptography.

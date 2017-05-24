@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,10 @@
 RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface OUZipRawFileMember ()
+@property (nonatomic, copy) NSData *rawData;
+@end
 
 @implementation OUZipRawFileMember
 
@@ -40,6 +44,30 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 #pragma mark -
+#pragma mark API
+
+- (nullable NSData *)readRawData:(NSError * _Nullable __autoreleasing *)error;
+{
+    if (self.rawData == nil) {
+        NSData *rawData = [_archive dataForEntry:_entry raw:YES error:error];
+        if (!rawData) {
+            return nil;
+        }
+        
+        self.rawData = rawData;
+    } else {
+#if defined(OMNI_ASSERTIONS_ON)
+        // Make sure we've cached the appropriate data
+        NSData *rawData = [_archive dataForEntry:_entry raw:YES error:NULL];
+        OBASSERT([rawData isEqualToData:self.rawData]);
+#endif
+    }
+    
+    return self.rawData;
+    
+}
+
+#pragma mark -
 #pragma mark OUZipMember subclass
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
@@ -49,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     @autoreleasepool {
         __autoreleasing NSError *error;
-        NSData *rawData = [_archive dataForEntry:_entry raw:YES error:&error];
+        NSData *rawData = [self readRawData:&error];
         if (!rawData) {
             resultError = error; // strong-ify the error
             result = NO;

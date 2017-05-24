@@ -1,4 +1,4 @@
-// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,5 +48,6 @@ extern void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, N
 
 extern BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...) NS_REQUIRES_NIL_TERMINATION;
 #define OFTypeConformsToOneOfTypes(type, ...) _OFTypeConformsToOneOfTypes(_OFAsNSString(type), ## __VA_ARGS__)
+extern BOOL OFTypeConformsToOneOfTypesInArray(NSString * _Nullable type, NSArray<NSString *> *types);
 
 NS_ASSUME_NONNULL_END

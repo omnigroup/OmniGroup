@@ -685,8 +685,16 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         // File: /SourceCache/ViewBridge/ViewBridge-99/NSXPCSharedListener.m
         // Line: 394
         // Description: NSXPCSharedListener unable to create endpoint for listener named com.apple.view-bridge
-        if (selector == @selector(connectionForListenerNamed:fromServiceNamed:) && (!object || [NSStringFromClass([object class]) isEqualToString:@"NSXPCSharedListener"]))
+        if (selector == @selector(connectionForListenerNamed:fromServiceNamed:) && (!object || [NSStringFromClass([object class]) isEqualToString:@"NSXPCSharedListener"])) {
             crash = NO;
+        }
+
+        // An assertion failure originates from this method on 10.2.2. Seems harmless?
+        // rdar://problem/30105831
+        if (selector == @selector(informAuxServiceOfSelf) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"]) {
+            crash = NO;
+        }
+        
 #pragma clang diagnostic pop
         
         if (crash)

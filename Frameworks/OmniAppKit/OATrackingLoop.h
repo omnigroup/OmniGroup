@@ -1,4 +1,4 @@
-// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,6 +32,8 @@ typedef void (^OATrackingLoopUp)(OATrackingLoop *loop);
 @property(nonatomic,readonly) NSEvent *mouseDownEvent;
 
 // Things like dragging explicitly drive animation by user events. We nearly always want timed animations off and want direct user control. Defaults to YES.
+// REVIEW: On 10.12.x, `disablesAnimation=YES` also has the side effect of not driving screen updates during tracking, which is less than ideal when this is used for custom control tracking.
+// Should we reconsider the default, rather than make each client set `disablesAnimation=NO`?
 @property(nonatomic,assign) BOOL disablesAnimation;
 
 @property(nonatomic,readonly) BOOL insideHysteresisRect;

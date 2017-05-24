@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,7 +81,13 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     OUIScalingView *view = _scalingView(self);
     if (!view || view.scaleEnabled == NO)
         return;
-    
+
+    if (view.scale == effectiveScale) {
+        // early out if we're not changing the scale
+        return;
+    }
+
+
     view.scale = effectiveScale;
     
     // The scroll view has futzed with our transform to make us look bigger, but we're going to do this by fixing our frame/bounds.
@@ -158,11 +164,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     UIEdgeInsets totalInsets = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);  // natural insets to center the canvas
     totalInsets.left = fmax(totalInsets.left, self.minimumInsets.left);
     totalInsets.right = fmax(totalInsets.right, self.minimumInsets.right);
-#if 0 && defined(DEBUG_lizard)
-    totalInsets.left = 0;
-    totalInsets.right = 0;
-#endif
-    
+
     if (ySpace > self.minimumInsets.top + self.minimumInsets.bottom) {
         // need more top or bottom insets
         totalInsets.top = fmax(totalInsets.top, self.minimumInsets.top);

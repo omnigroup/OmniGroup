@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,6 +46,9 @@ static void _replacement_setContentOffsetAnimated(UIScrollView *self, SEL _cmd, 
     if (contentOffset.x == 0) {
         
     }
+#endif
+#if defined(DEBUG_lizard)
+    NSLog(@"%s: {%f, %f}", __func__, contentOffset.x, contentOffset.y);
 #endif
     _original_setContentOffsetAnimated(self, _cmd, contentOffset, animated);
 }

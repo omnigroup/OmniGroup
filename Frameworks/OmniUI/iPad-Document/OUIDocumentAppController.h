@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,6 @@
 
 @property(nonatomic,retain) OUIDocumentPicker *documentPicker;
 
-@property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
 @property(nonatomic,readonly) UIBarButtonItem *closeDocumentBarButtonItem;
 @property(nonatomic,readonly) UIBarButtonItem *compactCloseDocumentBarButtonItem;
 @property(nonatomic,readonly) UIBarButtonItem *infoBarButtonItem;

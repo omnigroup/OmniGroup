@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,20 +67,13 @@ RCS_ID("$Id$")
 
 - (UIBarButtonItem *)barButtonItem
 {
-    NSString *imageName = @"OUIDocumentExport";
-    BOOL useCompactBarButtonItemsIfApplicable = ([self.hostViewController respondsToSelector:@selector(useCompactBarButtonItemsIfApplicable)] && [self.hostViewController useCompactBarButtonItemsIfApplicable]);
-    if (useCompactBarButtonItemsIfApplicable) {
-        BOOL isHorizontallyCompact = self.hostViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
-        BOOL isVerticallyCompact = self.hostViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
-        if (isHorizontallyCompact || isVerticallyCompact) {
-            imageName = @"OUIDocumentExport-Compact";
-        }
-    }
+    UIImage *image = [[OUIAppController controller] exportBarButtonItemImageInHostViewController:self.hostViewController];
+
     if (!_barButtonItem) {
-        _barButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
+        _barButtonItem = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
         _barButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
-    } else if (useCompactBarButtonItemsIfApplicable) {
-        _barButtonItem.image = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    } else {
+        _barButtonItem.image = image; // compactness might have changed
     }
     return _barButtonItem;
 }
@@ -113,7 +106,7 @@ RCS_ID("$Id$")
     if ([MFMailComposeViewController canSendMail]) {
         // All email options should go here (within the test for whether we can send email)
         // more than one option? Display the 'export options sheet'
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             if (availableExportTypes.count > 0) {
                 [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsEmail];
             }
@@ -124,32 +117,32 @@ RCS_ID("$Id$")
     }
     
     if (canExport) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self exportDocument:fileItem];
         }]];
         
         if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue]) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
                 [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToService];
             }]];
         }
     }
     
     if (canUseOpenIn) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToApp];
         }]];
     }
     
     if (availableImageExportTypes.count > 0) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self copyAsImageForFileItem:fileItem];
             [self clearSelection];
         }]];
     }
     
     if (canSendToCameraRoll) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self sendToCameraRollForFileItem:fileItem];
             [self clearSelection];
         }]];
@@ -157,7 +150,7 @@ RCS_ID("$Id$")
     
     if (canPrint) {
         NSString *printTitle = [self _printTitleForFileItem:fileItem];
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self printDocument:fileItem];
         }]];
     }

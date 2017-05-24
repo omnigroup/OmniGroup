@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 
 #import <Foundation/Foundation.h>
+#import <Foundation/NSFileManager.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFUTI.h>
@@ -26,39 +27,31 @@ RCS_ID("$Id$");
     return [fileWrapper autorelease];
 }
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (NSString *)fileTypeIdentifier;
-{
-    BOOL isDirectory = [self isDirectory];
-
-    // No HFS type, try to look at the extension
-    NSString *path = [self filename];
-    if ([NSString isEmptyString:path])
-        path = [self preferredFilename];
-    OBASSERT(![NSString isEmptyString:path]);
-
-    NSString *fileType = OFUTIForFileExtensionPreferringNative([path pathExtension], @(isDirectory));
-
-    if (!fileType)
-        fileType = (NSString *)(isDirectory ? kUTTypeDirectory : kUTTypeData);
-    return fileType;
-}
-#else
 - (NSString *)fileTypeIdentifier:(BOOL *)isHFSType;
 {
+    // We can only use some of the HFS type API on Mac. Default to looking up the extension; only avoid it if we're on Mac *and* find an HFS type code (see below).
+    BOOL lookUpExtension = YES;
+    
+    NSString *fileType = nil;
+    BOOL isDirectory = [self isDirectory];
+    
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     NSDictionary *attributes = [self fileAttributes];
     OSType hfsType = [attributes fileHFSTypeCode];
-    NSString *fileType;
-    BOOL isDirectory = [self isDirectory];
     
     if (hfsType) {
         CFStringRef osTypeString = UTCreateStringForOSType(hfsType);
         fileType = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassOSType, osTypeString, NULL));
         CFRelease(osTypeString);
+        lookUpExtension = NO;
         
-        if (isHFSType)
+        if (isHFSType) {
             *isHFSType = YES;
-    } else {
+        }
+    }
+#endif
+    
+    if (lookUpExtension) {
         // No HFS type, try to look at the extension
         NSString *path = [self filename];
         if ([NSString isEmptyString:path])
@@ -66,15 +59,15 @@ RCS_ID("$Id$");
         OBASSERT(![NSString isEmptyString:path]);
 
         fileType = OFUTIForFileExtensionPreferringNative([path pathExtension], @(isDirectory));
-        if (isHFSType)
+        if (isHFSType) {
             *isHFSType = NO;
+        }
     }
     
     if (!fileType)
         fileType = (NSString *)(isDirectory ? kUTTypeDirectory : kUTTypeData);
     return fileType;
 }
-#endif
 
 // This adds the argument to the receiver.  But, if the receiver already has a file wrapper for the preferred file name of the argument, this method attempts to move the old value aside (thus hopefully yielding the name to the argument wrapper).
 - (void)addFileWrapperMovingAsidePreviousWrapper:(NSFileWrapper *)wrapper;

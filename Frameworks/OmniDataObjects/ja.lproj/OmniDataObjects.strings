@@ -88,8 +88,14 @@
 /* error reason */
 "Model '%@' has multiple properties named '%@'." = "モデル '%1$@' には '%2$@' という名前の複数のプロパティがあります。";
 
+/* Multiple Delete Errors */
+"Multiple Errors" = "複数のエラー";
+
 /* error reason */
 "Multiple validation errors occurred while saving." = "保存中に複数の検証エラーが発生しました。";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "ID '%@' のオブジェクトはアクセス不可能です。";
 
 /* error reason */
 "Property has no name." = "プロパティに名前がありません。";
@@ -135,6 +141,9 @@
 
 /* error reason */
 "Unable bind int32 to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に int32 をバインドできません。";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に int64 をバインドできません。";
 
 /* error reason */
 "Unable bind null to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に null をバインドできません。";

@@ -188,11 +188,6 @@ static unsigned SyncAgentRunningAccountsContext;
     return window;
 }
 
-- (BOOL)useCompactBarButtonItemsIfApplicable;
-{
-    return NO;
-}
-
 @synthesize closeDocumentBarButtonItem = _closeDocumentBarButtonItem;
 - (UIBarButtonItem *)closeDocumentBarButtonItem;
 {
@@ -974,7 +969,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
                 // Import from WebDAV
-                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^{
+                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^(UIViewController *presentingViewController){
                     OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
                     accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
                     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
@@ -993,7 +988,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                     };
                     
                     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-                    [self.window.rootViewController presentViewController:navigationController animated:YES completion:nil];
+                    [presentingViewController presentViewController:navigationController animated:YES completion:nil];
                 }];
                 [options addObject:importOption];
 

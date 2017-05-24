@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,14 +10,15 @@
 import Foundation
 import OmniFoundation.Private
 
-/** A CMSRecipient instance corresponds to the RecipientInfo datatype in CMS; it gives enough information to derive the CEK for one recipient. */
+/** A CMSRecipient instance corresponds to the [RecipientInfo](https://tools.ietf.org/html/rfc5652#section-6.2) datatype in CMS; it gives enough information to derive the CEK for one recipient. */
 @objc(OFCMSRecipient) public
 protocol CMSRecipient {
     
     /** Produce the CMS recipient information for this recipient, given the current file's content encryption key (CEK).
+     Use `canWrap()` to discover whether the receiver actually has enough information to wrap a new CEK.
      
-     - parameter wrapping: The Content-Encryption Key to be used by the receiver.
-     - returns: The DER-encoded RecipientInformation structure.
+    - parameter cek: The Content-Encryption Key to be used by the receiver.
+    - returns: The DER-encoded RecipientInformation structure.
      */
     func recipientInfo(wrapping cek: Data) throws -> Data;
     
@@ -34,7 +35,7 @@ protocol CMSRecipient {
     func debugDictionary() -> NSMutableDictionary;
 }
 
-/** A CMSRecipientIdentifier corresponds to the RecipientIndentifier datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
+/** A CMSRecipientIdentifier corresponds to the [RecipientIndentifier](https://tools.ietf.org/html/rfc5652#section-6.2.1) datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
 enum CMSRecipientIdentifier {
     
     /* The two possibilities for a RecipientIdentifier */
@@ -275,6 +276,30 @@ class CMSPasswordRecipient : CMSRecipient {
         return unwrapped;
     }
     
+    internal
+    func didUnwrapWith(password: String) -> Bool? {
+        guard let info = info else {
+            // Shouldn't happen in normal operation
+            return nil;
+        }
+        
+        guard let kek = self.kek else {
+            return nil;
+        }
+        
+        var error : NSError?;
+        guard let anotherKek = OFDeriveKEKForCMSPWRI(mapPassword(password), info, &error) else {
+            return false;
+        }
+        
+        return kek == anotherKek
+    }
+    
+    internal
+    func canTestPassword() -> Bool {
+        return (info != nil && kek != nil);
+    }
+    
     private func mapPassword(_ password: String) -> Data {
         return password.precomposedStringWithCanonicalMapping.data(using: String.Encoding.utf8)!;
     }
@@ -305,7 +330,7 @@ class CMSPasswordRecipient : CMSRecipient {
     }
 }
 
-/// A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has.
+/** A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has. */
 class CMSKEKRecipient : CMSRecipient {
     
     let type = OFCMSRPreSharedKey;
@@ -356,7 +381,7 @@ class CMSKEKRecipient : CMSRecipient {
     func debugDictionary() -> NSMutableDictionary {
         let debugDictionary = NSMutableDictionary();
         
-        debugDictionary["type"] = "KEK" as NSString;
+        debugDictionary["type"] = "KEKRI" as NSString;
         if let keyId = self.keyIdentifier as NSData? {
             debugDictionary["keyIdentifier"] = keyId;
         }
@@ -509,6 +534,7 @@ class OFCMSUnwrapper {
     internal var auxiliaryAsymmetricKeys : [Keypair]     = [];
     internal var passwordHint : String? = nil;
     
+    /// Create an unwrapper for a BER-encodeed CMS object.
     init(data: Data, keySource ks: OFCMSKeySource?) throws {
         var innerType = OFCMSContentType_Unknown;
         var innerLocation = NSRange();
@@ -524,6 +550,7 @@ class OFCMSUnwrapper {
         keySource = ks;
     }
     
+    /** Internal initializer used for unwrapping multipart items. */
     private
     init(data: Data, location: NSRange, type: OFCMSContentType, keySource ks: OFCMSKeySource?) {
         cms = data;
@@ -533,16 +560,19 @@ class OFCMSUnwrapper {
         keySource = ks;
     }
     
+    /** Provide additional keys for use by KEK recipients. (Currently used for side files in file packages.) */
     public final func addSymmetricKeys(_ keys: [Data: Data]) {
         for kv in keys {
             auxiliarySymmetricKeys[kv.0] = kv.1;
         }
     }
     
+    /** Provide additional asymmetric keys to supplement any found in the keychain. (Currently used by the unit tests.) */
     public final func addAsymmetricKeys(_ keys: [Keypair]) {
         auxiliaryAsymmetricKeys += keys;
     }
     
+    /** Returns the current content of the unwrapper. This is generally only useful if the unwrapper has unwrapped everything down to a Data, XML, or other non-CMS-specific data type. */
     func content() throws -> Data {
         if let cms_ = cms {
             if fromContentInfo {
@@ -560,6 +590,7 @@ class OFCMSUnwrapper {
         }
     }
     
+    /** Some content types contain optional content (for example, a detached signature does not contain its content). */
     var hasNullContent : Bool {
         get {
             if cms != nil {
@@ -570,6 +601,7 @@ class OFCMSUnwrapper {
         }
     }
     
+    /** A helper structure for collections of recipients, parsed and sorted by recipient type. */
     private struct assortedRecipients {
         var passwordRecipients : [(CMSPasswordRecipient, Data)] = [];
         var pkRecipients : [(CMSPKRecipient, Data)] = [];
@@ -611,7 +643,7 @@ class OFCMSUnwrapper {
         }
     };
     
-    
+    /** Parse the provided recipient infos and attempt to recover the message's key (CEK), potentially doing keychain searches or invoking the password prompt on the key source delegate in order to derive keys. */
     private func recoverContentKey(recipientBlobs: NSArray) throws -> (cek: Data, CMSRecipient, [CMSRecipient]) {
         var allRecipients = assortedRecipients();
         
@@ -658,7 +690,7 @@ class OFCMSUnwrapper {
                 
                 for ident in idents {
                     do {
-                        // TODO: We need to pass `allowInteraction` into the underlying crypto operation, but the post-10.7 APIs no longer allow us to do that.
+                        // TODO: We need to pass `allowInteraction` into the underlying crypto operation, but the post-10.7 APIs no longer allow us to do that. (RADAR 29629330, RADAR 29629171)
                         cek = try recip.unwrap(identity: ident, data: wrappedKey);
                         usedRecipient = recip;
                         break; // Success: unwrapped a key.
@@ -701,6 +733,7 @@ class OFCMSUnwrapper {
         }
     }
     
+    /** Helper for recoverContentKey() for passphrase recipients. */
     private func passphrase(_ passwordRecipients: [(CMSPasswordRecipient, Data)]) throws -> (Data, CMSPasswordRecipient)? {
         
         if passwordRecipients.isEmpty {
@@ -747,6 +780,7 @@ class OFCMSUnwrapper {
         };
     }
     
+    /** The workhorse function: repeatedly unwraps the content contained in the receiver, stopping when we reach a content-type that we can't unwrap. */
     func peelMeLikeAnOnion() throws {
         while true {
             switch contentType {
@@ -768,7 +802,7 @@ class OFCMSUnwrapper {
         }
     }
     
-    /** Unwraps an unauthenticated encryption mode (e.g. CBC). See RFC5652 [6]. */
+    /** Unwraps an unauthenticated encryption mode (e.g. CBC). See [RFC5652](https://tools.ietf.org/html/rfc5652#section-6) [6]. */
     func decryptUED() throws {
         
         assert(contentType == OFCMSContentType_envelopedData);
@@ -804,7 +838,7 @@ class OFCMSUnwrapper {
         self.allRecipients += allRecipients;
     }
 
-    /** Unwraps an authenticated encryption mode (e.g. CCM or GCM). See RFC5083. */
+    /** Unwraps an authenticated encryption mode (e.g. CCM or GCM). See [RFC5083](https://tools.ietf.org/html/rfc5083). */
     func decryptAEAD() throws {
         
         assert(contentType == OFCMSContentType_authenticatedEnvelopedData);
@@ -854,6 +888,7 @@ class OFCMSUnwrapper {
         self.allRecipients += allRecipients;
     }
     
+    /** Unwraps a [SignedData](https://tools.ietf.org/html/rfc5652#section-5) content type. The signature itself is ignored, but any associated keys are retained in embeddedCertificates. */
     func discardSignature() throws {
 
         assert(contentType == OFCMSContentType_signedData);
@@ -888,6 +923,7 @@ class OFCMSUnwrapper {
         
     }
     
+    /** Unwraps a [ContentCollection](https://tools.ietf.org/html/rfc4073#section-2) type (RFC 4073). Unlike the other unwrap methods, this returns a sequence of new CMSUnwrapper objects (referencing slices of the receiver's data) rather than modifying the receiver. */
     func splitParts() throws -> [OFCMSUnwrapper] {
         
         assert(contentType == OFCMSContentType_contentCollection);
@@ -909,6 +945,7 @@ class OFCMSUnwrapper {
         return results;
     }
     
+    /** Unwraps a compressed part ([RFC 3274](https://tools.ietf.org/html/rfc3274)) */
     func decompress() throws {
         
         assert(contentType == OFCMSContentType_compressedData);
@@ -938,6 +975,7 @@ class OFCMSUnwrapper {
         fromContentInfo = false;
     }
     
+    /** Unwraps an attributed-data item, for cases where we don't have an enclosing part that holds attributes. ([RFC 4073](https://tools.ietf.org/html/rfc4073#section-3)) */
     func readAttributes() throws {
 
         assert(contentType == OFCMSContentType_contentWithAttributes);
@@ -1014,6 +1052,6 @@ private func unexpectedNullContent() -> Error {
 private
 func checkVersion(_ version: Int32, _ location: String, min: Int32, max: Int32) throws {
     if (version < min || version > max) {
-        throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unsupported \(location) version (\(version))" ]);
+        throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unsupported \(location) version (expected \(min)-\(max), found \(version))" ]);
     }
 }

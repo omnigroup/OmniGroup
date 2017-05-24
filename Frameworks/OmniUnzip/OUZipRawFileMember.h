@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic,readonly) OUUnzipArchive *archive;
 @property(nonatomic,readonly) OUUnzipEntry *entry;
+
+/// Returns the raw (compressed) data backing this zip member, reading it from the underlying archive if necessary.
+- (nullable NSData *)readRawData:(NSError **)error;
 
 @end
 

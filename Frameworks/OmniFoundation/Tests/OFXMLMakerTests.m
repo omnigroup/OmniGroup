@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,7 +48,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFXMLMakerTests class]) {
-        OBASSERT_NOT_REACHED("We're an abstract class.");
+        // This abstract superclass doesn't have tests of its own.
         return (XCTestSuite * _Nonnull)nil;
     }
 

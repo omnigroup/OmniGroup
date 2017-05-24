@@ -73,9 +73,6 @@
 		3458EF921B5D6FC6000011A6 /* OUIDocumentDuplicate.png in Resources */ = {isa = PBXBuildFile; fileRef = 3424E52F16780DAA0019328E /* OUIDocumentDuplicate.png */; };
 		3458EF931B5D6FC6000011A6 /* OUIDocumentDuplicate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3424E53016780DAA0019328E /* OUIDocumentDuplicate@2x.png */; };
 		3458EF941B5D6FC6000011A6 /* OUIDocumentDuplicate@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E3B919D2228900F31468 /* OUIDocumentDuplicate@3x.png */; };
-		3458EF951B5D6FC6000011A6 /* OUIDocumentExport.png in Resources */ = {isa = PBXBuildFile; fileRef = 3424E53116780DAA0019328E /* OUIDocumentExport.png */; };
-		3458EF961B5D6FC6000011A6 /* OUIDocumentExport@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3424E53216780DAA0019328E /* OUIDocumentExport@2x.png */; };
-		3458EF971B5D6FC6000011A6 /* OUIDocumentExport@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E3BA19D2228900F31468 /* OUIDocumentExport@3x.png */; };
 		3458EF981B5D6FC6000011A6 /* OUIDocumentPickerAddLocationIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 94A9109D199AD05900783C68 /* OUIDocumentPickerAddLocationIcon.png */; };
 		3458EF991B5D6FC6000011A6 /* OUIDocumentPickerAddLocationIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 94A9109E199AD05900783C68 /* OUIDocumentPickerAddLocationIcon@2x.png */; };
 		3458EF9A1B5D6FC6000011A6 /* OUIDocumentPickerAddLocationIcon@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E3BB19D2228900F31468 /* OUIDocumentPickerAddLocationIcon@3x.png */; };
@@ -335,9 +332,6 @@
 		3458F1251B5D75F3000011A6 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1241B5D75F3000011A6 /* MessageUI.framework */; };
 		3470A40D1BDEC0AF00D14049 /* OmniUIDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423F4FA91BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = 423F4FAB1BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings */; };
-		429585D31C4963BD009ED770 /* OUIDocumentExport-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D01C4963BD009ED770 /* OUIDocumentExport-Compact.png */; };
-		429585D41C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D11C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png */; };
-		429585D51C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D21C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
 		798474131D636C1D004A7E42 /* OUIServerAccountSetupViewController-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 7984740E1D636B57004A7E42 /* OUIServerAccountSetupViewController-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		79C513E71D5E7F460067B66F /* OUIServerAccountSetupViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E50E16780D970019328E /* OUIServerAccountSetupViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -462,8 +456,6 @@
 		3424E52E16780DAA0019328E /* OUIDocumentDelete@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentDelete@2x.png"; sourceTree = "<group>"; };
 		3424E52F16780DAA0019328E /* OUIDocumentDuplicate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentDuplicate.png; sourceTree = "<group>"; };
 		3424E53016780DAA0019328E /* OUIDocumentDuplicate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentDuplicate@2x.png"; sourceTree = "<group>"; };
-		3424E53116780DAA0019328E /* OUIDocumentExport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentExport.png; sourceTree = "<group>"; };
-		3424E53216780DAA0019328E /* OUIDocumentExport@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentExport@2x.png"; sourceTree = "<group>"; };
 		3424E53B16780DAA0019328E /* OUIDocumentStatusNotDownloaded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentStatusNotDownloaded.png; sourceTree = "<group>"; };
 		3424E53C16780DAA0019328E /* OUIDocumentStatusNotDownloaded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStatusNotDownloaded@2x.png"; sourceTree = "<group>"; };
 		3424E53D16780DAA0019328E /* OUIDocumentStatusNotUploaded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentStatusNotUploaded.png; sourceTree = "<group>"; };
@@ -612,9 +604,6 @@
 		4256FAF61A0813570085A680 /* OUIToolbarDocumentClose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarDocumentClose.png; sourceTree = "<group>"; };
 		4268D9CF17C51A4C005D95ED /* OUIDocumentCreationTemplatePickerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentCreationTemplatePickerViewController.h; sourceTree = SOURCE_ROOT; };
 		4268D9D017C51A4C005D95ED /* OUIDocumentCreationTemplatePickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentCreationTemplatePickerViewController.m; sourceTree = SOURCE_ROOT; };
-		429585D01C4963BD009ED770 /* OUIDocumentExport-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentExport-Compact.png"; sourceTree = "<group>"; };
-		429585D11C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentExport-Compact@2x.png"; sourceTree = "<group>"; };
-		429585D21C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentExport-Compact@3x.png"; sourceTree = "<group>"; };
 		4A030E0B1B16394C00E3EE54 /* OUIMenuItemExternalScope.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemExternalScope.png; sourceTree = "<group>"; };
 		4A030E0F1B16395500E3EE54 /* OUIMenuItemExternalScope@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemExternalScope@2x.png"; sourceTree = "<group>"; };
 		4A030E101B16396000E3EE54 /* OUIMenuItemExternalScope@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemExternalScope@3x.png"; sourceTree = "<group>"; };
@@ -680,7 +669,6 @@
 		AB69E3B719D2228900F31468 /* OUIDocument@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocument@3x.png"; sourceTree = "<group>"; };
 		AB69E3B819D2228900F31468 /* OUIDocumentDelete@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentDelete@3x.png"; sourceTree = "<group>"; };
 		AB69E3B919D2228900F31468 /* OUIDocumentDuplicate@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentDuplicate@3x.png"; sourceTree = "<group>"; };
-		AB69E3BA19D2228900F31468 /* OUIDocumentExport@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentExport@3x.png"; sourceTree = "<group>"; };
 		AB69E3BB19D2228900F31468 /* OUIDocumentPickerAddLocationIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentPickerAddLocationIcon@3x.png"; sourceTree = "<group>"; };
 		AB69E3BC19D2228900F31468 /* OUIDocumentPickerCloudLocationIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentPickerCloudLocationIcon@3x.png"; sourceTree = "<group>"; };
 		AB69E3BD19D2228900F31468 /* OUIDocumentPickerLocalDocumentsLocationIcon@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentPickerLocalDocumentsLocationIcon@3x.png"; sourceTree = "<group>"; };
@@ -852,12 +840,6 @@
 				3424E52F16780DAA0019328E /* OUIDocumentDuplicate.png */,
 				3424E53016780DAA0019328E /* OUIDocumentDuplicate@2x.png */,
 				AB69E3B919D2228900F31468 /* OUIDocumentDuplicate@3x.png */,
-				3424E53116780DAA0019328E /* OUIDocumentExport.png */,
-				3424E53216780DAA0019328E /* OUIDocumentExport@2x.png */,
-				AB69E3BA19D2228900F31468 /* OUIDocumentExport@3x.png */,
-				429585D01C4963BD009ED770 /* OUIDocumentExport-Compact.png */,
-				429585D11C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png */,
-				429585D21C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png */,
 				94A9109D199AD05900783C68 /* OUIDocumentPickerAddLocationIcon.png */,
 				94A9109E199AD05900783C68 /* OUIDocumentPickerAddLocationIcon@2x.png */,
 				AB69E3BB19D2228900F31468 /* OUIDocumentPickerAddLocationIcon@3x.png */,
@@ -1442,7 +1424,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				429585D51C4963BD009ED770 /* OUIDocumentExport-Compact@3x.png in Resources */,
 				2357BEBF1B68105B00BE9DAD /* OUIBetaBadge@3x.png in Resources */,
 				2357BEC11B68106000BE9DAD /* OUIBetaBadge@2x.png in Resources */,
 				2357BEC31B68106500BE9DAD /* OUIBetaBadge.png in Resources */,
@@ -1518,7 +1499,6 @@
 				3458EF901B5D6FC6000011A6 /* OUIDocumentDelete@2x.png in Resources */,
 				3458F0931B5D70D7000011A6 /* OmniUIDocument.keycommands in Resources */,
 				3458F0251B5D6FC6000011A6 /* OUIToolbarButtonImport@3x.png in Resources */,
-				3458EF971B5D6FC6000011A6 /* OUIDocumentExport@3x.png in Resources */,
 				3458F0111B5D6FC6000011A6 /* OUIMenuItemTemplate.png in Resources */,
 				3458EF9D1B5D6FC6000011A6 /* OUIDocumentPickerCloudLocationIcon@3x.png in Resources */,
 				15D93DDF1B5ED67400D3D355 /* de.lproj in Resources */,
@@ -1555,7 +1535,6 @@
 				3458EFF71B5D6FC6000011A6 /* OUIMenuItemLocalScope@2x.png in Resources */,
 				3458EFDD1B5D6FC6000011A6 /* OUIMenuItemCloudSetUp@3x.png in Resources */,
 				3458EF521B5D6FC6000011A6 /* OmniPresenceToolbarIcon-Offline@2x.png in Resources */,
-				429585D31C4963BD009ED770 /* OUIDocumentExport-Compact.png in Resources */,
 				3458EFBC1B5D6FC6000011A6 /* OUIDocumentRemoveFromExternal.png in Resources */,
 				3458F0141B5D6FC6000011A6 /* OUINavigationArrow-White@3x.png in Resources */,
 				2311E3E71BCC6D1A009B4822 /* OUIDocumentPreviewingViewController.xib in Resources */,
@@ -1593,12 +1572,10 @@
 				3458EF9A1B5D6FC6000011A6 /* OUIDocumentPickerAddLocationIcon@3x.png in Resources */,
 				3458EFB61B5D6FC6000011A6 /* OUIDocumentPlaceholder-Text-Large@3x.png in Resources */,
 				3458EFAF1B5D6FC6000011A6 /* OUIDocumentPlaceholder-Plan-Small@3x.png in Resources */,
-				3458EF951B5D6FC6000011A6 /* OUIDocumentExport.png in Resources */,
 				3458EF4C1B5D6FC6000011A6 /* OmniPresenceToolbarIcon-Active@2x.png in Resources */,
 				3458EFED1B5D6FC6000011A6 /* OUIMenuItemFolder.png in Resources */,
 				3458F0071B5D6FC6000011A6 /* OUIMenuItemSendToApp@3x.png in Resources */,
 				3458F0091B5D6FC6000011A6 /* OUIMenuItemSendToMail@2x.png in Resources */,
-				429585D41C4963BD009ED770 /* OUIDocumentExport-Compact@2x.png in Resources */,
 				3458EFCA1B5D6FC6000011A6 /* OUIExportOptionsBorder.png in Resources */,
 				342C5F8A1B5D99FB00B5A80D /* OUIMenuItemRestoreSampleDocuments@2x.png in Resources */,
 				3458F0031B5D6FC6000011A6 /* OUIMenuItemPrint@2x.png in Resources */,
@@ -1632,7 +1609,6 @@
 				3458F00B1B5D6FC6000011A6 /* OUIMenuItemSendToPhotos.png in Resources */,
 				3458EFB71B5D6FC6000011A6 /* OUIDocumentPlaceholder-Text-Medium@3x.png in Resources */,
 				3458F0041B5D6FC6000011A6 /* OUIMenuItemPrint@3x.png in Resources */,
-				3458EF961B5D6FC6000011A6 /* OUIDocumentExport@2x.png in Resources */,
 				3458EFE31B5D6FC6000011A6 /* OUIMenuItemCopyAsImage@3x.png in Resources */,
 				3458EFC71B5D6FC6000011A6 /* OUIExportCancelBadge@3x.png in Resources */,
 				3458EF8E1B5D6FC6000011A6 /* OUIDocument@3x.png in Resources */,

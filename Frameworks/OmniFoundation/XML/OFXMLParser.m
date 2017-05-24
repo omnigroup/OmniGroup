@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -915,11 +915,23 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
         NSInteger bytesRead = [inputStream read:buffer maxLength:maxChunkSize];
         if (bytesRead > 0) {
             rc = xmlParseChunk(_state->ctxt, (const char *)buffer, (int)bytesRead, FALSE);
-            if (rc != 0 && rc != XML_ERR_USER_STOP) {
-                [_progress cancel];
-                break;
+            if (rc != 0) {
+                // We should exit early unconditionally for any error code other than XML_ERR_USER_STOP.
+                // XML_ERR_USER_STOP can occur in two situations:
+                //   - the parser encountered a premature EOF (if so, we should read the next chunk from the input stream)
+                //   - we called xmlStopParser() after generating an error
+                //
+                // The way we distinguish these cases is by looking at _state->error.
+                
+                if (rc == XML_ERR_USER_STOP && _state->error == nil) {
+                    // fall through
+                } else {
+                    // stop processing immediately
+                    [_progress cancel];
+                    break;
+                }
             }
-            
+
             // If we are in the middle of processing an unparsed element, copy the rest of this chunk into unparsedElementData and advance unparsedBlockStart
             if (_state->unparsedBlockStart >= (off_t)_state->ctxt->input->consumed) {
                 OBASSERT(_state->unparsedElementData != nil);

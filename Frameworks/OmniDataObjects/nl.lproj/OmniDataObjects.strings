@@ -88,8 +88,14 @@
 /* error reason */
 "Model '%@' has multiple properties named '%@'." = "Model '%1$@' heeft meerdere eigenschappen met de naam '%2$@'.";
 
+/* Multiple Delete Errors */
+"Multiple Errors" = "Meerdere fouten";
+
 /* error reason */
 "Multiple validation errors occurred while saving." = "Er zijn verschillende validatiefouten opgetreden tijdens het bewaren.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "Object met ID '%@' is niet toegankelijk.";
 
 /* error reason */
 "Property has no name." = "Eigenschap heeft geen naam.";
@@ -135,6 +141,9 @@
 
 /* error reason */
 "Unable bind int32 to slot %d of statement with SQL '%@'." = "Kan int32 niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "Kan int64 niet binden aan slot %1$d van instructie met SQL ‘%2$@’.";
 
 /* error reason */
 "Unable bind null to slot %d of statement with SQL '%@'." = "Kan null niet binden aan slot %1$d van instructie met SQL '%2$@'.";

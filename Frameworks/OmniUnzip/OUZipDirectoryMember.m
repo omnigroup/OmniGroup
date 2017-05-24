@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,6 +95,17 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
 }
 
 #pragma mark - OUZipMember subclass
+
+- (NSFileWrapper *)fileWrapperRepresentation;
+{
+    NSMutableDictionary *childWrappers = [NSMutableDictionary dictionary];
+    for (OUZipMember *child in _children) {
+        childWrappers[[child name]] = [child fileWrapperRepresentation];
+    }
+    
+    NSFileWrapper *directoryWrapper = [[NSFileWrapper alloc] initDirectoryWithFileWrappers:childWrappers];
+    return directoryWrapper;
+}
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {

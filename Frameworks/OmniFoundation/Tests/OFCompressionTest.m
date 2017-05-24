@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ static NSData *utf8(NSString *str)
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFCompressionTest class]) {
-        OBASSERT_NOT_REACHED("This abstract class doesn't have a test suite.");
+        // This abstract superclass doesn't have tests of its own.
         return (XCTestSuite * _Nonnull)nil;
     } else {
         return [super defaultTestSuite];

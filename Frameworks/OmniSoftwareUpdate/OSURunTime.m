@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,10 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
     // Run time
     if (startClockTimeNumber) {
         unsigned startClockTime = [startClockTimeNumber doubleValue];
-        OBASSERT(startClockTime <= currentClockTime);
+
+        // The clock can go "backwards" if the machine is restarted between runs of the app (possibly if the last run crashed) since OSUGetCurrentClockTime() returns the system clock.
+        // OBASSERT(startClockTime <= currentClockTime);
+
         if (startClockTime < currentClockTime) {
             NSNumber *totalRunTimeNumber = [oldScope objectForKey:OSUTotalRunTimeKey];
 

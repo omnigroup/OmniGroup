@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -295,7 +295,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     // Build Options
     OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
-                                                        action:^{
+                                                        action:^(UIViewController *presentingViewController){
                                                             if (target) {
                                                                 [target undo:nil];
                                                             }
@@ -305,7 +305,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     
     OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
-                                                        action:^{
+                                                        action:^(UIViewController *presentingViewController){
                                                             if (target) {
                                                                 [target redo:nil];
                                                             }

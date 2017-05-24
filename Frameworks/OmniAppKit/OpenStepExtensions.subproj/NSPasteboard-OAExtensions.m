@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,16 @@ RCS_ID("$Id$")
     return [self setData:[attributedString RTFFromRange:NSMakeRange(0,[attributedString length]) documentAttributes:@{}] forType:type];
 }
 
+- (NSString *)firstAvailableTypeFromSet:(NSSet <NSString *> *)types;
+{
+    for (NSString *type in self.types) {
+        if ([types containsObject:type]) {
+            return type;
+        }
+    }
+    return nil;
+}
+
 @end
 
 static NSArray <NSString *> *_replaceType(NSArray <NSString *> *types, NSString *oldType, NSString *newType)
@@ -43,12 +53,11 @@ static NSArray <NSString *> *_replaceType(NSArray <NSString *> *types, NSString 
     }
 
     NSMutableArray *updatedTypes = [types mutableCopy];
-    [updatedTypes removeObjectAtIndex:oldTypeIndex];
 
-    // Might already contain the new type
-    if ([types indexOfObject:newType] == NSNotFound) {
-        // Ordering doesn't matter in any calls as of the time of writing, but we have the info, so preserve the precedence of the remaining type.
-        [updatedTypes insertObject:newType atIndex:oldTypeIndex];
+    // The old type can be in the array multiple times, if we are concatenating types from different sources together.
+    while (oldTypeIndex != NSNotFound) {
+        [updatedTypes replaceObjectAtIndex:oldTypeIndex withObject:newType];
+        oldTypeIndex = [updatedTypes indexOfObject:oldType];
     }
 
     return updatedTypes;
@@ -60,6 +69,7 @@ NSArray <NSString *> *OAFixRequestedPasteboardTypes(NSArray <NSString *> *types)
 {
     types = _replaceType(types, NSStringPboardType, NSPasteboardTypeString);
     types = _replaceType(types, NSRTFPboardType, NSPasteboardTypeRTF);
+    types = _replaceType(types, NSRTFDPboardType, NSPasteboardTypeRTFD);
 
     // We should end up with only UTI-based types in the array.
 #ifdef OMNI_ASSERTIONS_ON

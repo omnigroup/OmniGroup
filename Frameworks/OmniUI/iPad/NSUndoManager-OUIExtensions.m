@@ -33,25 +33,33 @@ static void (*original_removeAllActionsWithTarget)(id self, SEL _cmd, id target)
 
 - (void)replacement_removeAllActions;
 {
-    BOOL hadActions = [self canUndo] || [self canRedo];
+    // -[NSUndoManager removeAllActions] will close any open undo groups as a side effect.
+    //
+    // Send OUIUndoManagerDidRemoveAllActionsNotification if we removed actions, *or* closed groups, so that clients can react accordingly, and note that any group they thought they had open has been closed underneath them.
+    
+    BOOL shouldNotify = self.canUndo || self.canRedo || self.groupingLevel > 0;
 
     original_removeAllActions(self, _cmd);
 
-    if (hadActions) {
+    if (shouldNotify) {
+        OBASSERT(self.groupingLevel == 0);
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
     }
 }
 
 - (void)replacement_removeAllActionsWithTarget:(id)target;
 {
-    BOOL hadActions = [self canUndo] || [self canRedo];
+    // -[NSUndoManager removeAllActionsWithTarget:] doesn't appear to close open undo groups (see above), but let's be defensive and send OUIUndoManagerDidRemoveAllActionsNotification if we detect that it has.
+    
+    BOOL hadActions = self.canUndo || self.canRedo;
+    NSInteger priorGroupingLevel = self.groupingLevel;
     
     original_removeAllActionsWithTarget(self, _cmd, target);
     
-    if (hadActions) {
-        BOOL canUndo = [self canUndo];
-        BOOL canRedo = [self canRedo];
-        if (!canUndo && !canRedo) {
+    BOOL closedGroups = self.groupingLevel < priorGroupingLevel;
+    if (hadActions || closedGroups) {
+        BOOL isUndoStackEmpty = !self.canUndo && !self.canRedo;
+        if (isUndoStackEmpty || closedGroups) {
             [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
         }
     }

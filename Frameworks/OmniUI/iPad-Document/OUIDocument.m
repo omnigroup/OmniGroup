@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -168,7 +168,11 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
     OBPRECONDITION(fileItem || url);
     OBPRECONDITION(!fileItem || [fileItem.fileURL isEqual:url]);
-    OBPRECONDITION(OBClassImplementingMethod([self class], @selector(initEmptyDocumentToBeSavedToURL:error:)) == [OUIDocument class]); // Should subclass -initEmptyDocumentToBeSavedToURL:templateURL:error:
+
+#ifdef OMNI_ASSERTIONS_ON
+    Class implementingClass = OBClassImplementingMethod([self class], @selector(initEmptyDocumentToBeSavedToURL:error:));
+    OBPRECONDITION([NSStringFromClass(implementingClass) hasPrefix:@"OUI"], "Should subclass -initEmptyDocumentToBeSavedToURL:templateURL:error:");
+#endif
     
     if (!(self = [super initWithFileURL:url]))
         return nil;
@@ -814,15 +818,20 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
 
     BOOL isChangingFileType = !OFISEQUAL(self.fileType, self.savingFileType);
-    BOOL ensureUniqueName = isChangingFileType && _documentScope != nil;
-    ODSFileItem *fileItem = nil;
-    if (ensureUniqueName) {
-        fileItem = self.fileItem;
-        OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
-        url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
-        if ([url.pathExtension isEqualToString:fileItem.fileURL.pathExtension]) {
-            // this should mean that no rename is necessary.  we should overwrite this file with the same name instead of using the unnecessary unique name we just generated (e.g. we are changing from a flat .graffle to a package .graffle)
-            url = fileItem.fileURL;
+    bool ensureUniqueName = NO;
+    if (isChangingFileType) {
+        // TODO: This will hit an assertion if it actually executed. See bug:///137297 (iOS-OmniGraffle Crasher: Assertion fail shortly after editing document -[ODSScope urlForNewDocumentInFolderAtURL:baseName:fileType:])
+        // In this particular case, though we are going to end up with the same URL (we are upgrading a document from flat file to file wrapper but with the same path extension).
+        ensureUniqueName = _documentScope != nil && ![[url pathExtension] isEqual:[self fileNameExtensionForType:self.savingFileType saveOperation:saveOperation]];
+
+        if (ensureUniqueName) {
+            ODSFileItem *fileItem = self.fileItem;
+            OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
+            url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
+            if ([url.pathExtension isEqualToString:fileItem.fileURL.pathExtension]) {
+                // this should mean that no rename is necessary.  we should overwrite this file with the same name instead of using the unnecessary unique name we just generated (e.g. we are changing from a flat .graffle to a package .graffle)
+                url = fileItem.fileURL;
+            }
         }
     }
     
@@ -874,9 +883,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     };
 
     if (ensureUniqueName) {
-        OBASSERT(fileItem);
+        OBASSERT(self.fileItem);
         // this ensures that our fileItem gets its URL updated to match.
-        [_documentScope updateFileItem:fileItem withBlock:saveBlock completionHandler:nil];
+        [_documentScope updateFileItem:self.fileItem withBlock:saveBlock completionHandler:nil];
     } else
         saveBlock(nil);
 }

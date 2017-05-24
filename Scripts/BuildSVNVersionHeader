@@ -20,8 +20,8 @@ Usage () {
     exit 1
 }
 
-# If we are running for the public source, which is not in svn, quitely exit
-if [ -d .git ]; then
+# If we are running for the public source, which is not in svn, quitely exit.
+if [ ! -d ../.svn ]; then
     exit;
 fi
 

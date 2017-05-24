@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -669,7 +669,8 @@ static NSString *_normalizedPath(NSString *path)
             OBASSERT([bundlePath hasSuffix:@"/usr/lib"] ||
                      [bundlePath hasSuffix:@"/usr/lib/system"] ||
                      [bundlePath hasSuffix:@"/usr/lib/system/introspection"] ||
-                     [bundlePath hasSuffix:@"/System/Library/PrivateFrameworks/UserFS.framework"]);
+                     [bundlePath hasSuffix:@"/iPhoneSimulator.platform/Developer/Library/Xcode/Agents"] ||
+                     [bundlePath hasSuffix:@"/System/Library/PrivateFrameworks/UserFS.framework"], "Unexpected bundle path %@", bundlePath);
             continue;
         }
 #endif

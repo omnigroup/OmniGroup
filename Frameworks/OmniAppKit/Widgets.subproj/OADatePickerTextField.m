@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,19 +41,7 @@ static id _commonInit(OADatePickerTextField *self)
         [self setAutoresizesSubviews:YES];
     }
     
-    // <bug:///104044> (Unassigned: 10.10: OADatePickerTextField pokes the isa of its cell, but shouldn't need to)
-#if 0
-    // Sadly can't set this in IB 2.x; only 3.x; smack it for now.
-    Class cls = [OADatePickerTextFieldCell class];
-
-    OBASSERT(class_getInstanceSize(cls) == class_getInstanceSize(class_getSuperclass(cls))); // Must not add ivars
-    NSCell *cell = [self cell];
-    if (![cell isKindOfClass:cls]) {  // if we're already a datepicker we don't need to do this
-        OBASSERT([cell class] == [NSTextFieldCell class]);
-        *(Class *)cell = cls;
-    }
-#endif
-    OBPOSTCONDITION([[self cell] isKindOfClass:[OADatePickerTextFieldCell class]]);
+    OBPOSTCONDITION([[self cell] isKindOfClass:[OADatePickerTextFieldCell class]], @"If this OADatePickerTextField is coming out of a nib/xib/storyboard, make sure to set the class of its cell to OADatePickerTextFieldCell.");
     
     return self;
 }

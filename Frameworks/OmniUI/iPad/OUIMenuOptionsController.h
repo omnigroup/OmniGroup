@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,15 @@
 
 #import <UIKit/UIViewController.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 // A single page of menu options.
 
 @class OUIMenuController;
 
 @interface OUIMenuOptionsController : UIViewController
+
+- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 
 - initWithController:(OUIMenuController *)controller options:(NSArray *)options;
 
@@ -24,3 +28,5 @@
 @property(nonatomic,assign) BOOL showsDividersBetweenOptions;
 
 @end
+
+NS_ASSUME_NONNULL_END

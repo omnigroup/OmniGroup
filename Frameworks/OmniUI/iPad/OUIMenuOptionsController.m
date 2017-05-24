@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,31 @@ RCS_ID("$Id$");
 
 #import "OUIParameters.h"
 #import <OmniAppKit/OAAppearanceColors.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface OUIMenuOptionSection : NSObject
+
+- initWithTitle:(NSString *)title options:(NSArray <OUIMenuOption *> *)options;
+
+@property(nonatomic,readonly) NSString *title;
+@property(nonatomic,readonly) NSArray <OUIMenuOption *> *options;
+
+@end
+
+@implementation OUIMenuOptionSection
+
+- initWithTitle:(NSString *)title options:(NSArray <OUIMenuOption *> *)options;
+{
+    OBPRECONDITION([options count] > 0);
+
+    _title = [title copy];
+    _options = [options copy];
+
+    return self;
+}
+
+@end
 
 @interface OUIMenuOptionTableViewCell : UITableViewCell
 @property (nonatomic) BOOL showsFullwidthSeparator;
@@ -83,7 +108,12 @@ RCS_ID("$Id$");
 @implementation OUIMenuOptionsController
 {
     __weak OUIMenuController *_weak_controller;
+
+    // The specified options are turned into sections and the sections are then used to back the table view.
+    NSArray <OUIMenuOptionSection *> *_sections;
 }
+
+@synthesize options = _originalOptions;
 
 - initWithController:(OUIMenuController *)controller options:(NSArray *)options;
 {
@@ -95,12 +125,13 @@ RCS_ID("$Id$");
     // We could also get at this from our navigation controller's delegate...
     _weak_controller = controller;
     _showsDividersBetweenOptions = YES;
-    _options = [options copy];
+    _originalOptions = [options copy];
+    _sections = [[[self class] sectionsFromOptions:_originalOptions] copy];
 
     return self;
 }
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil
 {
     OBRejectUnusedImplementation(self, _cmd);
 }
@@ -192,7 +223,7 @@ RCS_ID("$Id$");
     self.preferredContentSize = (CGSize){.width = preferredWidth, .height = ((UITableView *)self.view).contentSize.height};
 }
 
-- (void)willMoveToParentViewController:(UIViewController *)parent
+- (void)willMoveToParentViewController:(nullable UIViewController *)parent
 {
     //When we move to our parent view controller, its view encompasses the whole screen because that is the default size. So, starting in iOS9, when we move to the parent, we also inherit that size. If we calculate our preferred content size *after* moving, our calculation that relies on our table view staying at its initial size is wrong. Calculating before the move makes our preferred content size calculation correct, and everything resizes properly.
     [self _updatePreferredContentSizeFromOptions];
@@ -210,26 +241,52 @@ RCS_ID("$Id$");
 
 #pragma mark - UITableView dataSource
 
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
+{
+    return [_sections count];
+}
+
 - (NSInteger)tableView:(UITableView *)table numberOfRowsInSection:(NSInteger)section;
 {
-    if (section == 0) {
-        OBASSERT(_options);
-        return [_options count];
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown section index %ld", section);
+        return 0;
     }
-    return 0;
+
+    return [_sections[section].options count];
+}
+
+- (nullable NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+{
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown section requested at %ld", section);
+        return @"??";
+    }
+
+    NSString *title = _sections[section].title;
+    if ([NSString isEmptyString:title]) {
+        return nil;
+    }
+    return title;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    // Returning a nil cell will cause UITableView to throw an exception
-    if (indexPath.section != 0)
-        return [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-    
-    if (indexPath.row >= (NSInteger)[_options count]) {
-        OBASSERT_NOT_REACHED("Unknown menu item row requested");
+    NSInteger section = indexPath.section;
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
         return [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     }
-    OUIMenuOption *option = [_options objectAtIndex:indexPath.row];
+
+    NSArray <OUIMenuOption *> *options = _sections[section].options;
+    NSInteger row = indexPath.row;
+
+    if (row < 0 || (NSUInteger)row >= [options count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+    }
+    
+    OUIMenuOption *option = options[row];
     
     OUIMenuOptionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"option"];
     if (!cell) {
@@ -292,7 +349,7 @@ RCS_ID("$Id$");
     cell.indentationWidth = kOUIMenuOptionIndentationWidth;
     cell.indentationLevel = option.indentationLevel;
 
-    if (_showsDividersBetweenOptions && (NSUInteger)indexPath.row < (_options.count - 1))
+    if (_showsDividersBetweenOptions && (NSUInteger)row < (options.count - 1))
         cell.showsFullwidthSeparator = YES;
     
     if (option.options) {
@@ -320,7 +377,21 @@ RCS_ID("$Id$");
 
 - (BOOL)tableView:(UITableView *)tableView shouldHighlightRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    OUIMenuOption *option = [_options objectAtIndex:indexPath.row];
+    NSInteger section = indexPath.section;
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return NO;
+    }
+
+    NSArray <OUIMenuOption *> *options = _sections[section].options;
+    NSInteger row = indexPath.row;
+
+    if (row < 0 || (NSUInteger)row >= [options count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return NO;
+    }
+
+    OUIMenuOption *option = options[row];
 
     if (option.action == nil && [option.options count] == 0)
         return NO; // Disabled placeholder action
@@ -330,13 +401,24 @@ RCS_ID("$Id$");
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    OBPRECONDITION(indexPath.section == 0);
+    NSInteger section = indexPath.section;
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return;
+    }
 
-    
+    NSArray <OUIMenuOption *> *options = _sections[section].options;
+    NSInteger row = indexPath.row;
+
+    if (row < 0 || (NSUInteger)row >= [options count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return;
+    }
+
+    OUIMenuOption *option = options[row];
+
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-    OUIMenuOption *option = [_options objectAtIndex:indexPath.row];
-    
     OUIMenuOptionAction action = option.action;
     if (action) {
         [_weak_controller dismissAndInvokeOption:option];
@@ -346,6 +428,38 @@ RCS_ID("$Id$");
 }
 
 #pragma mark - Private
+
++ (NSArray <OUIMenuOptionSection *> *)sectionsFromOptions:(NSArray <OUIMenuOption *> *)options;
+{
+    NSMutableArray <OUIMenuOptionSection *> *sections = [NSMutableArray array];
+    __block OUIMenuOption *lastSeparator = nil;
+    __block NSMutableArray <OUIMenuOption *> *currentSectionOptions = [NSMutableArray array];
+
+    void (^flushSection)(OUIMenuOption *option) = ^(OUIMenuOption *option){
+        if ([currentSectionOptions count] > 0) {
+            // Empty section
+            NSString *title = lastSeparator ?  lastSeparator.title : @"";
+            OUIMenuOptionSection *section = [[OUIMenuOptionSection alloc] initWithTitle:title options:currentSectionOptions];
+            [sections addObject:section];
+        }
+
+        lastSeparator = option;
+        currentSectionOptions = [NSMutableArray array];
+    };
+
+    for (OUIMenuOption *option in options) {
+        if (option.separator) {
+            flushSection(option);
+        } else {
+            [currentSectionOptions addObject:option];
+        }
+    }
+
+    // Emit the last group
+    flushSection(nil);
+
+    return sections;
+}
 
 - (void)_showSubmenuForParentOption:(OUIMenuOption *)parentOption;
 {
@@ -370,8 +484,27 @@ RCS_ID("$Id$");
     UITableView *tableView = (UITableView *)self.view;
     UITableViewCell *cell = [sender containingViewOfClass:[UITableViewCell class]];
     NSIndexPath *indexPath = [tableView indexPathForCell:cell];
-    
-    [self _showSubmenuForParentOption:_options[indexPath.row]];
+
+    NSInteger section = indexPath.section;
+    if (section < 0 || (NSUInteger)section >= [_sections count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return;
+    }
+
+    NSArray <OUIMenuOption *> *options = _sections[section].options;
+    NSInteger row = indexPath.row;
+
+    if (row < 0 || (NSUInteger)row >= [options count]) {
+        OBASSERT_NOT_REACHED("Unknown menu item row requested at index path %@", indexPath);
+        return;
+    }
+
+    OUIMenuOption *option = options[row];
+
+
+    [self _showSubmenuForParentOption:option];
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@ class OFDocumentEncryptionSettings : NSObject {
     /// If the file is encrypted, it is unwrapped and a new file wrapper is returned, and information about the encryption settings is stored in `info`. Otherwise the original file wrapper is returned. If the file is encrypted but cannot be decrypted, an error is thrown, but `info` may still be filled in with whatever information is publicly visible on the encryption wrapper.
     ///
     /// - Parameter wrapper: The possibly-encrypted document.
-    /// - Parameter info: May be filled in with a new instance of `OFDocumentEncryptionSettings`.
+    /// - Parameter info: (out) May be filled in with a new instance of `OFDocumentEncryptionSettings`.
     /// - Parameter keys: Will be used to resolve password/key queries.
     @objc(decryptFileWrapper:info:keys:error:)
     public class func unwrapIfEncrypted(_ wrapper: FileWrapper, info: AutoreleasingUnsafeMutablePointer<OFDocumentEncryptionSettings?>, keys: OFCMSKeySource?) throws -> FileWrapper {
@@ -236,7 +236,13 @@ class OFCMSFileWrapper {
     
     private typealias partWrapSpec = (identifier: Data?, contents: dataSrc, type: OFCMSContentType, options: OFCMSOptions);
     
-    /** Encrypts a FileWrapper and returns the encrypted version. */
+    /// Encrypts a FileWrapper and returns the encrypted version.
+    ///
+    /// - parameter input: The FileWrapper (either a file or directory) to encrypt.
+    /// - parameter previous: (Currently unused; pass nil) a previous version of the file wrapper, for efficient save-in-place of file packages.
+    /// - parameter schema: Options to apply to individual elements of the document.
+    /// - parameter recipients: Password and public-key recipients.
+    /// - parameter docID: Optional outer document identifier to attach to the envelope of the encrypted document.
     func wrap(input: FileWrapper, previous: FileWrapper?, schema: [String: Any]?, recipients: [CMSRecipient], docID: Data? = nil, options: OFCMSOptions) throws -> FileWrapper {
         
         var toplevelFileAttributes = input.fileAttributes;
@@ -266,6 +272,7 @@ class OFCMSFileWrapper {
             var insideFiles : [ partWrapSpec ] = [];
             var nextPartNumber = 1;
             
+            /** Helper function, used for recursively descending the plantext file wrapper and collecting items to encrypt. */
             func wrapWrapperHierarchy(_ w: FileWrapper, settings: [String:Any]?) -> (files: [PackageIndex.FileEntry], directories: [PackageIndex.DirectoryEntry]) {
                 guard let items = w.fileWrappers else {
                     return ([], []); // what to do here? when can this happen?
@@ -326,17 +333,22 @@ class OFCMSFileWrapper {
                 return (files: files, directories: directories);
             }
             
+            // Traverse the plaintext file wrapper, extracting a list of file contents and where they should go.
             var packageIndex = PackageIndex();
             packageIndex.keys[sides.keyIdentifier] = sides.kek;
             (packageIndex.files, packageIndex.directories) = wrapWrapperHierarchy(input, settings: schema);
             
+            // Include the table-of-contents item in the list of things to encrypt.
             try insideFiles.insert( (nil, dataSrc.data(packageIndex.serialize()), OFCMSContentType_XML, options), at: 0);
+            
+            // Embed recipients' certificates.
             if !embeddedCertificates.isEmpty {
                 let certBundle = OFCMSCreateSignedData(OFCMSContentType_data.asDER(), nil, embeddedCertificates, [Data]());
                 insideFiles.insert( (nil, dataSrc.data(OFNSDataFromDispatchData(certBundle)), OFCMSContentType_signedData, [OFCMSOptions.storeInMain, OFCMSOptions.compress] ),
                                     at: 1);
             }
             
+            // Wrap the main object, containing the table-of-contents and any files we've decided to store with it.
             let wrappedIndex = try self.wrap(parts: insideFiles,
                                              recipients: recipients,
                                              options: options,
@@ -344,6 +356,7 @@ class OFCMSFileWrapper {
             var resultItems : [String:FileWrapper] = [:];
             resultItems[OFCMSFileWrapper.indexFileName] = FileWrapper(regularFileWithContents: wrappedIndex);
             
+            // Wrap any side files.
             for (obscuredName, wrapper, fileOptions) in sideFiles {
                 let wrappedData = try self.wrap(data: wrapper.regularFileContents!, recipients: [sides], options: fileOptions);
                 let sideFile = FileWrapper(regularFileWithContents: wrappedData);
@@ -351,6 +364,7 @@ class OFCMSFileWrapper {
                 resultItems[obscuredName] = sideFile;
             }
             
+            // Insert the password hint if we have one
             if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
                 let addition = FileWrapper(regularFileWithContents: hintData);
                 addition.preferredFilename = OFCMSFileWrapper.hintFileName;
@@ -361,6 +375,7 @@ class OFCMSFileWrapper {
             result.fileAttributes = toplevelFileAttributes;
             return result;
         } else {
+            // We can't store symlinks
             throw NSError(domain: NSCocoaErrorDomain, code: NSFileWriteUnknownError, userInfo: nil /* TODO: Better error for this should-never-happen case? */)
         }
     }
@@ -395,6 +410,7 @@ class OFCMSFileWrapper {
     func unwrap(input: FileWrapper) throws -> FileWrapper {
         
         if input.isRegularFile {
+            // Extract the password hint, if any
             var fileAttributes = input.fileAttributes;
             if let xattrs = fileAttributes[NSFileExtendedAttributes] as? [String:Any],
                let pwhint = xattrs[OFCMSFileWrapper.hintFileXattr] {
@@ -404,6 +420,7 @@ class OFCMSFileWrapper {
                 fileAttributes[NSFileExtendedAttributes] = fileAttributes[NSFileExtendedAttributes];
             }
 
+            // Read and decrypt the file
             guard let encryptedData = input.regularFileContents else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownError, userInfo: nil)
             }
@@ -436,12 +453,14 @@ class OFCMSFileWrapper {
                 throw missingFileError(filename: OFCMSFileWrapper.indexFileName);
             }
             
+            // Extract the password hint, if any
             if let hintFile = encryptedFiles[OFCMSFileWrapper.hintFileName],
                hintFile.isRegularFile,
                let hintData = hintFile.regularFileContents {
                 passwordHint = String(data: hintData, encoding: String.Encoding.utf8);
             }
             
+            // Decrypt the main object to get the index / table-of-contents
             let decryptedIndexFile = try self.unwrap(data: indexFileContents);
             recipientsFoo = decryptedIndexFile.allRecipients;
             usedRecipient = decryptedIndexFile.usedRecipient;
@@ -451,6 +470,7 @@ class OFCMSFileWrapper {
                 throw miscFormatError(reason: "Missing table of contents");
             }
             
+            // Parse the index to get a list of plaintext files and where they live in the final file wrapper
             let indexEntries : PackageIndex;
             do {
                 indexEntries = try PackageIndex.unserialize(indexData);
@@ -509,7 +529,7 @@ class OFCMSFileWrapper {
                 }
             }
             
-            // Any files contained in the main CMS object --- do this first so we can go ahead and deallocate it.
+            // Extract any files contained in the main CMS object --- do this first so we can go ahead and deallocate it.
             if let indexFilePackedEntries = leafFiles.removeValue(forKey: "") {
                 try readSideFileEntries(sideFileNameForDebugging: OFCMSFileWrapper.indexFileName, sideFile: decryptedIndexFile, entries: indexFilePackedEntries);
             }
@@ -567,24 +587,29 @@ class OFCMSFileWrapper {
         #endif
     }
     
+    /// Wrap some input data (which may itself already be a CMS object).
     private func wrap(data input_: Data, type type_: OFCMSContentType = OFCMSContentType_Unknown, recipients: [CMSRecipient], embeddedCertificates certs: [Data]? = nil, options: OFCMSOptions, outerIdentifier: Data? = nil) throws -> Data {
         
         var input = input_;
         var contentType = type_;
         
+        // Determine the content type if it wasn't specified
         if contentType == OFCMSContentType_Unknown {
             contentType = (options.contains(.contentIsXML) ? OFCMSContentType_XML : OFCMSContentType_data);
         }
         
+        // Optionally compress
         if options.contains(.compress) {
             (input, contentType) = try compressPart(data: input, contentType: contentType);
         }
         
+        // If there are embedded certificates, embed them using a signature-less SignedData content
         if let certs = certs, !certs.isEmpty {
             input = OFNSDataFromDispatchData(OFCMSCreateSignedData(contentType.asDER(), input, certs, [Data]()));
             contentType = OFCMSContentType_signedData;
         }
         
+        // Generate the seesion key (CEK), and produce a wrapped CEK for each recipient
         let cek = NSData.cryptographicRandomData(ofLength: 32);
         let rinfos = try recipients.map( { (recip) -> Data in try recip.recipientInfo(wrapping: cek) } );
         
@@ -598,6 +623,7 @@ class OFCMSFileWrapper {
             attributes = nil;
         }
         
+        // Perform the actual bulk encryption
         if !options.contains(.withoutAEAD) {
             var error : NSError? = nil;
             guard let enveloped_ = OFCMSCreateAuthenticatedEnvelopedData(cek, rinfos, options, contentType.asDER(), input, attributes, &error) else {
@@ -617,6 +643,7 @@ class OFCMSFileWrapper {
         return OFNSDataFromDispatchData(OFCMSWrapContent(envelopeType, envelope));
     }
     
+    // Wrap multiple plaintext items into one ciphertext file
     private func wrap(parts: [partWrapSpec], recipients: [CMSRecipient], options: OFCMSOptions, outerIdentifier: Data?) throws -> Data {
 
         // If we only have one part, we don't need to use a ContentCollection
@@ -765,6 +792,7 @@ class OFCMSFileWrapper {
     /// PackageIndex represents the table-of-contents object of an encrypted file wrapper.
     private struct PackageIndex {
         
+        // A single file in the plaintext wrapper
         struct FileEntry {
             let realName: String;
             let storedName: String;
@@ -790,6 +818,7 @@ class OFCMSFileWrapper {
             }
         }
         
+        // A directory in the plaintext wrapper
         struct DirectoryEntry {
             let realName: String;
             let files : [FileEntry];
@@ -811,6 +840,7 @@ class OFCMSFileWrapper {
         var keys : [Data : Data] = [:];
         var directories : [DirectoryEntry] = [];
         
+        /// Produce an XML representation of the PackageIndex
         func serialize() throws -> Data {
             let strm = OutputStream(toMemory: ());
             let sink = OFXMLTextWriterSink(stream: strm)!;
@@ -844,6 +874,7 @@ class OFCMSFileWrapper {
             return (v as? Data) ?? Data();  // RADAR 6160521
         }
         
+        /// Parse a PackageIndex from its XML representation
         static func unserialize(_ input: Data) throws -> PackageIndex {
             let reader = try OFXMLReader(data: input);
             guard let rtelt = reader.elementQName() else {

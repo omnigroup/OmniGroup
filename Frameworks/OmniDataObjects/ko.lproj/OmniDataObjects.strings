@@ -1,0 +1,230 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "연결되지 않은 상태에서 연결을 해제하려고 시도했습니다.";
+
+/* error reason */
+"Attribute %@.%@ has type %d with unknown SQL column type." = "%1$@.%2$@ 특성에 알 수 없는 SQL 열 유형의 %3$d 유형이 포함됩니다.";
+
+/* error reason */
+"Attribute %@.%@ has unknown value type but isn't transient." = "%1$@.%2$@ 특성에 일시적이 아닌 알 수 없는 값 유형이 포함되었습니다.";
+
+/* error reason */
+"Attribute %@.%@ specified a transient or optional primary key." = "%1$@.%2$@ 특성에 일시적이거나 선택적인 기본 키가 지정되었습니다.";
+
+/* error reason */
+"Attribute has type unsupported type %d." = "특성에 지원되지 않는 유형 %d이(가) 포함됩니다.";
+
+/* error reason */
+"Attribute specified default value '%@' for attribute of type of '%@'." = "특성에 '%2$@' 유형의 특성성에 대해 기본값 '%1$@'이(가) 지정되었습니다.";
+
+/* error reason */
+"Attribute specified invalid type of '%@'." = "특성에 '%@'의 잘못된 유형이 지정되었습니다.";
+
+/* error reason */
+"Attribute specified no type." = "특성에 유형이 지정되지 않았습니다.";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "데이터베이스가 이미 '%2$@'에 연결되었으므로 '%1$@'에 연결할 수 없습니다.";
+
+/* error reason */
+"Cannot disconnect from database at '%@'." = "'%@'에서 데이터베이스의 연결을 해제할 수 없습니다.";
+
+/* error reason */
+"Cannot open database at '%@'." = "'%@'에서 데이터베이스를 열 수 없습니다.";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "데이터베이스에 연결된 상태에서 %2$@ 쿼리에 대해 %1$@ 키의 인출을 준비할 수 없습니다.";
+
+/* error reason */
+"Couldn't create OFXMLDocument." = "OFXMLDocument를 생성할 수 없습니다.";
+
+/* error reason */
+"Entity '%@' has multiple primary key attributes." = "'%@' 엔티티에 기본 키 특성이 여러 개 포함됩니다.";
+
+/* error reason */
+"Entity '%@' has multiple properties named '%@'." = "'%1$@' 엔티티에 이름이 '%2$@'인 속성이 여러 개 포함됩니다.";
+
+/* error reason */
+"Entity '%@' has no instance class name." = "'%@' 엔티티에 인스턴스 클래스 이름이 없습니다.";
+
+/* error reason */
+"Entity '%@' has no primary key attributes." = "'%@' 엔티티에 기본 키 특성이 없습니다.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but no such class was found." = "'%1$@' 엔티티에 '%2$@'(이)라는 인스턴스 클래스 이름이 지정되었지만 그러한 클래스를 찾을 수 없습니다.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "'%1$@' 엔티티에 '%2$@'(이)라는 인스턴스 클래스 이름이 지정되었지만 이 클래스는 ODOObject의 하위 클래스가 아닙니다.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with a default value." = "'%1$@' 엔티티에 기본값을 포함한 기본 키 특성 '%2$@'이(가) 지정되었습니다.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "'%1$@' 엔티티에 %3$d 유형의 기본 키 특성 '%2$@'이(가) 지정되었지만 문자열만 지원됩니다.";
+
+/* error reason */
+"Entity has no name." = "엔티티에 이름이 없습니다.";
+
+/* error reason */
+"Entity name '%@' is reserved." = "엔티티 이름 '%@'은(는) 예약된 이름입니다.";
+
+/* error description */
+"Error disconnecting from database." = "데이터베이스에서 연결을 해제하는 중 오류가 발생했습니다.";
+
+/* error reason */
+"Exception raised while saving: %@" = "저장 중 예외 발생: %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "-willSave를 전송하는 중 예외 발생: %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "'%1$@'을(를) 속성 목록 데이터로 변환 실패: %2$@.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "결함 인출로 ID가 '%@'인 개체가 반환되었고 해당 개체가 등록되지 않았습니다.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "결함 인출로 ID가 '%@'인 개체가 반환되었지만 해당 개체의 결함이 이미 정리되었습니다.";
+
+/* error reason */
+"Model '%@' has multiple properties named '%@'." = "'%1$@' 모델에 이름이 '%2$@'인 속성이 여러 개 포함됩니다.";
+
+/* Multiple Delete Errors */
+"Multiple Errors" = "다중 오류";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "저장하는 동안 여러 검증 오류가 발생했습니다.";
+
+/* error reason */
+"Object with ID '%@' is inaccessible." = "ID가 '%@'인 개체에 액세스할 수 없습니다.";
+
+/* error reason */
+"Property has no name." = "속성에 이름이 없습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "%1$@.%2$@ 관계에 '%3$@'의 대상 엔티티가 지정되었지만, 해당 엔티티가 없습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "%1$@.%2$@ 관계에 역방향 관계 %3$@.%4$@이(가) 지정되었지만 해당 관계가 없습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified invalid type of '%@'." = "%1$@.%2$@ 관계에 '%3$@'의 잘못된 유형이 지정되었습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified no destination entity." = "%1$@.%2$@ 관계에 대상 엔티티가 지정되지 않았습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified no inverse relationship." = "%1$@.%2$@ 관계에 역방향 관계가 지정되지 않았습니다.";
+
+/* error reason */
+"Relationship %@.%@ specified no type." = "%1$@.%2$@ 관계에 유형이 지정되지 않았습니다.";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "캐시 데이터베이스가 열려 있는 상태에서 제거되었습니다. 데이터베이스를 닫고 다시 열어서 복구하십시오.";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "-willSave 조정을 100번 시도했지만 편집이 작성된 상태로 보존되었습니다.";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 부울을 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "SQL '%3$@'(으)로 알 수 없는 유형의 상수 '%1$@'을(를) 명령문의 %2$d 슬롯에 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 데이터를 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 날짜를 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 float64를 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 int32를 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind int64 to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 int64를 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 널을 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "SQL '%4$@'(으)로 %2$ld 유형의 숫자 '%1$@'을(를) 명령문의 %3$d 슬롯에 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "'%2$@'(으)로 명령문의 %1$d 슬롯에 문자열을 바인드할 수 없습니다.";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "%1$lu(%2$@) 유형의 식을 변환할 수 없습니다.";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "IN 식을 비상수 값 %@(으)로 변환할 수 없습니다.";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "%1$lu(%2$@) 유형의 조건자를 변환할 수 없습니다.";
+
+/* error reason */
+"Unable get value of type %d for result column %d of '%@'." = "'%3$@'의 결과 열 %2$d에 대해 %1$d 유형의 값을 가져올 수 없습니다.";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "SQL '%@'에 대한 명령문을 준비할 수 없습니다.";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "SQL에 특성 값을 바인드할 수 없습니다.";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "SQL 문에 상수를 바인드할 수 없습니다.";
+
+/* error description */
+"Unable to bind null to SQL statement." = "SQL 문에 널을 바인드할 수 없습니다.";
+
+/* error description */
+"Unable to bind value to SQL statement." = "SQL 문에 값을 바인드할 수 없습니다.";
+
+/* error description */
+"Unable to connect to database." = "데이터베이스에 연결할 수 없습니다.";
+
+/* error description */
+"Unable to create schema." = "스키마를 생성할 수 없습니다.";
+
+/* error description */
+"Unable to create SQL query." = "SQL 쿼리를 생성할 수 없습니다.";
+
+/* error description */
+"Unable to create SQL statement." = "SQL 문을 생성할 수 없습니다.";
+
+/* error description */
+"Unable to disconnect from database." = "데이터베이스에서 연결을 해제할 수 없습니다.";
+
+/* error description */
+"Unable to execute SQL." = "SQL을 실행할 수 없습니다.";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "결함을 이행할 수 없음: %@";
+
+/* error description */
+"Unable to fulfill fault." = "결함을 이행할 수 없습니다.";
+
+/* error description */
+"Unable to load model." = "모델을 로드할 수 없습니다.";
+
+/* error description */
+"Unable to open database." = "데이터베이스를 열 수 없습니다.";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "'%@' 문에 대해 SQL을 실행할 수 없습니다.";
+
+/* error description */
+"Unable to save changes to database" = "변경 사항을 데이터베이스에 저장할 수 없음";
+
+/* error description */
+"Unable to save metadata to database." = "메타데이터를 데이터베이스에 저장할 수 없습니다.";
+
+/* error description */
+"Unable to save." = "저장할 수 없습니다.";
+
+/* error reason */
+"Wrong root element name.  Was expecting '%@' but found '%@'." = "루트 요소 이름이 잘못되었습니다.  '%1$@'이(가) 필요하지만 '%2$@'을(를) 찾았습니다.";
+
+/* error reason */
+"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "루트 요소 네임스페이스이 잘못되었습니다.  '%1$@'이(가) 필요하지만 '%2$@'을(를) 찾았습니다.";

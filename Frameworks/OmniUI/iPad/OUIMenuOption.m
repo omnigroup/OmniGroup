@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,13 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUIMenuOption
 
-+ (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
++ (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    void (^action)(void) = ^{
+    OUIMenuOptionAction action = ^(UIViewController *presentingViewController){
         // Try the first responder and then the app delegate.
         UIApplication *app = [UIApplication sharedApplication];
         if ([app sendAction:selector to:nil from:self forEvent:nil])
@@ -27,22 +29,33 @@ RCS_ID("$Id$");
     return [[self alloc] initWithTitle:title image:image action:action];
 }
 
-+ (instancetype)optionWithTitle:(NSString *)title image:(UIImage *)image action:(OUIMenuOptionAction)action;
++ (instancetype)optionWithTitle:(NSString *)title image:(nullable UIImage *)image action:(nullable OUIMenuOptionAction)action;
 {
     return [[self alloc] initWithTitle:title image:image action:action];
 }
 
-+ (instancetype)optionWithTitle:(NSString *)title action:(OUIMenuOptionAction)action;
++ (instancetype)optionWithTitle:(NSString *)title action:(nullable OUIMenuOptionAction)action;
 {
     return [[self alloc] initWithTitle:title image:nil action:action];
 }
 
-+ (instancetype)optionWithTitle:(NSString *)title action:(OUIMenuOptionAction)action validator:(OUIMenuOptionValidatorAction)validator;
++ (instancetype)optionWithTitle:(NSString *)title action:(nullable OUIMenuOptionAction)action validator:(nullable OUIMenuOptionValidatorAction)validator;
 {
     return [[self alloc] initWithTitle:title image:nil options:nil destructive:NO action:action validator:validator];
 }
 
-- initWithTitle:(NSString *)title image:(UIImage *)image options:(NSArray *)options destructive:(BOOL)destructive action:(OUIMenuOptionAction)action validator:(OUIMenuOptionValidatorAction)validator;
++ (instancetype)separator;
+{
+    return [self separatorWithTitle:@""];
+}
+
++ (instancetype)separatorWithTitle:(NSString *)title;
+{
+    return [[self alloc] _initSeparatorWithTitle:title];
+}
+
+
+- initWithTitle:(NSString *)title image:(nullable UIImage *)image options:(nullable NSArray <OUIMenuOption *> *)options destructive:(BOOL)destructive action:(nullable OUIMenuOptionAction)action validator:(nullable OUIMenuOptionValidatorAction)validator;
 {
     OBPRECONDITION(title);
     //OBPRECONDITION(action || [options count] > 0); We allow placeholder disabled actions
@@ -59,12 +72,12 @@ RCS_ID("$Id$");
     
     return self;
 }
-- initWithTitle:(NSString *)title image:(UIImage *)image options:(NSArray *)options destructive:(BOOL)destructive action:(OUIMenuOptionAction)action;
+- initWithTitle:(NSString *)title image:(nullable UIImage *)image options:(nullable NSArray <OUIMenuOption *> *)options destructive:(BOOL)destructive action:(nullable OUIMenuOptionAction)action;
 {
     return [self initWithTitle:title image:image options:options destructive:destructive action:action validator:NULL];
 }
 
-- initWithTitle:(NSString *)title image:(UIImage *)image action:(OUIMenuOptionAction)action;
+- initWithTitle:(NSString *)title image:(nullable UIImage *)image action:(nullable OUIMenuOptionAction)action;
 {
     return [self initWithTitle:title image:image options:nil destructive:NO action:action];
 }
@@ -79,4 +92,21 @@ RCS_ID("$Id$");
     }
 }
 
+#pragma mark - Private
+
+- (id)_initSeparatorWithTitle:(NSString *)title;
+{
+    OBPRECONDITION(title);
+
+    if (!(self = [super init]))
+        return nil;
+
+    _title = [title copy];
+    _separator = YES;
+
+    return self;
+}
+
 @end
+
+NS_ASSUME_NONNULL_END

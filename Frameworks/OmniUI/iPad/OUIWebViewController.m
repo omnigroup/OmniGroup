@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,13 @@
 
 #import <MessageUI/MessageUI.h>
 #import <WebKit/WebKit.h>
+#import <MobileCoreServices/MobileCoreServices.h>
 
 #import <OmniFoundation/OFOrderedMutableDictionary.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -70,16 +72,20 @@ RCS_ID("$Id$")
 
 #pragma mark - API
 
-- (void)_updateBarButtonItemForURL:(NSURL *)aURL;
+- (void)_updateBarButtonItems;
 {
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)];
+    NSMutableArray <UIBarButtonItem *> *items = [NSMutableArray array];
+
+    [items addObject: [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)]];
+
+    self.navigationItem.rightBarButtonItems = items;
 }
 
 - (void)setURL:(NSURL *)aURL;
 {
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:aURL];
     [self.webView loadRequest:request];
-    [self _updateBarButtonItemForURL:aURL];
+    [self _updateBarButtonItems];
     [self startSpinner];
 }
 
@@ -188,7 +194,7 @@ RCS_ID("$Id$")
     }
 
     // Go ahead and load this in the WebView
-    [self _updateBarButtonItemForURL:requestURL];
+    [self _updateBarButtonItems];
 
     // we have removed the back button so if you get here, hopefully you are our initial launch page and nothing else.
     decisionHandler(WKNavigationActionPolicyAllow);

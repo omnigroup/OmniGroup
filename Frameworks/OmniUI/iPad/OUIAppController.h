@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,11 +30,11 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 
 @interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIWebViewControllerDelegate>
 
-+ (instancetype)controller NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
++ (nonnull instancetype)controller NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 // +sharedController is a synonym for +controller.
 // The Swift bridge allows us to use +sharedController, but generates a compile error on +controller, suggesting we use a constructor instead.
-+ (instancetype)sharedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
++ (nonnull instancetype)sharedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 + (NSString *)applicationName;
 
@@ -56,7 +56,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
 - (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController;
-- (void)showOnlineHelp:(nullable id)sender;
+- (void)showOnlineHelp:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -80,7 +80,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 // App menu support
 @property (nonatomic, strong, nullable) NSString *newsURLStringToShowWhenReady;
 @property (nonatomic, strong, nullable) NSString *newsURLCurrentlyShowing;
-@property (nonatomic, weak) OUIWebViewController *newsViewController;
+@property (nonatomic, weak) OUIWebViewController *newsViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 - (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
 
 @property (nonatomic, readonly) BOOL hasUnreadNews;
@@ -89,7 +89,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 /// The most recent news URL, which could be an unread one or just the most recently shown one. Will be nil if there is no unread news and no already-read news stored in preferences.
 - (NSString *)mostRecentNewsURLString;
 
-- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat;
+- (OUIWebViewController * _Nullable)showNewsURLString:(NSString *)urlString evenIfShownAlready:(BOOL)showNoMatterWhat NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionAfterReleaseNotes,
@@ -112,10 +112,14 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 
 /// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title;
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
+
+@property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
+
+- (UIImage *)exportBarButtonItemImageInHostViewController:(UIViewController *)hostViewController;
 
 - (void)willWaitForSnapshots;
 - (void)didFinishWaitingForSnapshots;

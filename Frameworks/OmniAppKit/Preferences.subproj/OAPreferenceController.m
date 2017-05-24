@@ -367,6 +367,7 @@ static NSString *windowFrameSaveName = @"Preferences";
             // Attempt to only call the completion block if the client is still current at the time of dispatch
             if (targetClient == _currentClient) {
                 [oldView removeFromSuperview];
+                [showAllIconsView removeFromSuperview];
 
                 if (completion) {
                     completion(targetClient);
@@ -381,6 +382,7 @@ static NSString *windowFrameSaveName = @"Preferences";
             }
         };
 
+        showAllIconsView.animator.alphaValue = 0;
         oldView.animator.alphaValue = 0;
 
         controlBox.animator.alphaValue = 1;
@@ -904,6 +906,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
 
     // Add new icons view
+    showAllIconsView.alphaValue = 1;
     [self.containerView addSubview:showAllIconsView];
 }
 
@@ -932,6 +935,8 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
             OBASSERT(!likelyUsingAutoLayout, @"OAPreferenceClient subclass %@ appears to use autolayout but does not override %@ to adopt autosizing of its controlBox. It probably should eventually. Maybe soon?", _currentClientRecord.className, NSStringFromSelector(@selector(wantsAutosizing)));
         }
 #endif
+        controlBox.autoresizingMask = 0; // Otherwise as we change the size of the window, we'll resize the controls. bug:///137878 (Frameworks-Mac Regression: Preferences no longer draw properly after switching from the Show All view (OAPreferencesViewCustomizable))
+
         return controlBox.frame.size;
     }
     

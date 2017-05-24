@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
@@ -295,6 +296,11 @@ static BOOL errorIndicatesPlaintext(NSError *err);
 - (NSIndexSet *)unusedKeySlotsOfSet:(NSIndexSet *)slots amongFiles:(NSArray <ODAVFileInfo *> *)files error:(NSError **)outError;
 {
     NSMutableArray <ODAVFileInfo *> *byAge = [files mutableCopy];
+    
+    // Make sure we're not considering directories when tasting later
+    [byAge removeObjectsSatisfyingPredicate:^BOOL(ODAVFileInfo *fileInfo) {
+        return [fileInfo isDirectory];
+    }];
 
     [byAge sortUsingComparator:^(id a, id b){
         NSDate *aDate = ((ODAVFileInfo *)a).lastModifiedDate;

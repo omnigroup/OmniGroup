@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -150,9 +150,11 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     OUIScalingView *view = _scalingView(self);
     if (!view)
         return;
-    
-    effectiveScale = [self snapZoomScale:effectiveScale];
-    
+
+    // LMTODO: put this back when I'm done debugging...
+    if (effectiveScale <= 0) {
+        effectiveScale = [self snapZoomScale:effectiveScale];
+    }
     [self adjustScaleToExactly:effectiveScale];
 }
 

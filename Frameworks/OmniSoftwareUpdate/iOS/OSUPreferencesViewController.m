@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,7 +173,7 @@ enum {
 {
     UIImage *settingsImage = [[OUIAppController controller] settingsMenuImage];
     
-    return [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Settings", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings menu title") image:settingsImage action:^{
+    return [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Settings", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings menu title") image:settingsImage action:^(UIViewController *presentingViewController){
         UIViewController *settingsViewController = [[self alloc] init];
         
         settingsViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:settingsViewController action:@selector(_dismissStandaloneViewController:)];
@@ -181,8 +181,7 @@ enum {
         navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
         navController.modalPresentationStyle = UIModalPresentationFormSheet;
         
-        UIWindow *window = [[OUIAppController controller] window];
-        [window.rootViewController presentViewController:navController animated:YES completion:nil];
+        [presentingViewController presentViewController:navController animated:YES completion:nil];
     }];
 }
 

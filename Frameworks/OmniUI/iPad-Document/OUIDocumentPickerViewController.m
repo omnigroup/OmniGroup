@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -508,7 +508,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
-        Class cls = [[OUIDocumentAppController controller] documentClassForURL:temporaryURL];
+        Class cls = [[OUIDocumentAppController controller] documentClassForURL:templateFileItem.fileURL];
         
         // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
         
@@ -942,8 +942,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // Move submenu
     if (willAddNewFolder && [moveOptions count] > 0) {
         topLevelMenuTitle = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
-        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:[UIImage imageNamed:@"OUIMenuItemMoveToScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
-                                                                    options:moveOptions destructive:NO action:nil]];
+        UIImage *image = [UIImage imageNamed:@"OUIMenuItemMoveToScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:image options:moveOptions destructive:NO action:nil]];
     } else {
         topLevelMenuTitle = moveMenuTitle;
         [topLevelMenuOptions addObjectsFromArray:moveOptions];
@@ -952,7 +952,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // New folder
     OUIMenuOption *newFolderOption = nil;
     if (willAddNewFolder) {
-        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
+        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
             [self _makeFolderFromSelectedDocuments];
         }];
         [topLevelMenuOptions addObject:newFolderOption];
@@ -1004,7 +1004,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
     } else {
         // This is a valid destination. Great!
-        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^{
+        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^(UIViewController *presentingViewController){
             [self _moveSelectedDocumentsToFolder:candidateParentFolder];
         }];
     }
@@ -1970,7 +1970,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
         [self _addMoveToFolderOptions:folderOptions candidateParentFolder:scope.rootFolder currentFolder:currentFolder excludedTreeFolders:selectedFolders];
         
-        void (^moveToScopeRootAction)(void) = ^{
+        OUIMenuOptionAction moveToScopeRootAction = ^(UIViewController *presentingViewController){
             [self _moveSelectedDocumentsToFolder:scope.rootFolder];
         };
         

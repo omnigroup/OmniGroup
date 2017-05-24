@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,9 +13,6 @@
 RCS_ID("$Id$");
 
 @interface OFHashTests : OFTestCase
-{
-}
-
 @end
 
 @implementation OFHashTests
@@ -257,6 +254,44 @@ static NSString *md5string(NSString *input)
     XCTAssertNil([abc signatureWithAlgorithm:@"sha-1"]);
     XCTAssertEqualObjects([abc signatureWithAlgorithm:@"sha256"], [NSData dataWithHexString:@"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" error:NULL]);
     XCTAssertEqualObjects([abc signatureWithAlgorithm:@"Sha256"], [NSData dataWithHexString:@"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" error:NULL]);
+}
+
+@end
+
+/// Test cases to get a rough sense of how fast it is to hash a certain amount of data on whatever platform is running the tests.
+@interface OFHashPerformanceTests : OFTestCase
+@end
+
+@implementation OFHashPerformanceTests
+
+- (void)testSHA256Speed_10MB;
+{
+    NSMutableData *data = [[NSMutableData alloc] initWithLength:(10 * 1024 * 1024)];
+    memset([data mutableBytes], 'x', [data length]);
+    
+    [self measureBlock:^{
+        [data sha256Signature];
+    }];
+}
+
+- (void)testSHA256Speed_100MB;
+{
+    NSMutableData *data = [[NSMutableData alloc] initWithLength:(100 * 1024 * 1024)];
+    memset([data mutableBytes], 'x', [data length]);
+    
+    [self measureBlock:^{
+        [data sha256Signature];
+    }];
+}
+
+- (void)testSHA256Speed_1GB;
+{
+    NSMutableData *data = [[NSMutableData alloc] initWithLength:(1024 * 1024 * 1024)];
+    memset([data mutableBytes], 'x', [data length]);
+    
+    [self measureBlock:^{
+        [data sha256Signature];
+    }];
 }
 
 @end

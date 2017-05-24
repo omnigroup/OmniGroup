@@ -623,6 +623,7 @@
 		34FEB26216C6FEE8006A2651 /* OFRegularExpressionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = 34FEB25F16C6FEE8006A2651 /* OFRegularExpressionMatch.m */; };
 		3E0D6C721AE18052000633A5 /* NSData-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E0D6C771AE1805F000633A5 /* NSData-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */; };
+		3E2EE08D1D930A0700FB00AF /* OFHashTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2177C9704FEB5350097A146 /* OFHashTests.m */; };
 		3E378DE31DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3E378DE41DDCB78E007F6BC4 /* OFSymmetricKeywrap.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E378DE11DDCB78E007F6BC4 /* OFSymmetricKeywrap.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3E378DE51DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E378DE21DDCB78E007F6BC4 /* OFSymmetricKeywrap.m */; };
@@ -4412,7 +4413,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "perl -w ${SOURCE_ROOT}/Crypto/generateOIDs.pl";
+			shellScript = "perl -w \"${SOURCE_ROOT}/Crypto/generateOIDs.pl\"";
 			showEnvVarsInLog = 0;
 		};
 		1EBFA42A1D35AC5C00771F02 /* Generate Derived Sources */ = {
@@ -4430,7 +4431,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "perl -w ${SOURCE_ROOT}/Crypto/generateOIDs.pl";
+			shellScript = "perl -w \"${SOURCE_ROOT}/Crypto/generateOIDs.pl\"";
 			showEnvVarsInLog = 0;
 		};
 		E281002E15DB1EFE0060C2EE /* Build String Files */ = {
@@ -4687,6 +4688,7 @@
 				34DAC7E2194F874300499116 /* OFRangeExtensionsTests.m in Sources */,
 				1E71649D1D92FD0B001B2FBB /* OFCryptoTest-AEAD.m in Sources */,
 				34DAC7DF194F873000499116 /* OFIndexPathTests.m in Sources */,
+				3E2EE08D1D930A0700FB00AF /* OFHashTests.m in Sources */,
 				34DAC7E5194F87DA00499116 /* OFNetStateMock.m in Sources */,
 				34DAC7E4194F876000499116 /* OFCredentialsTests.m in Sources */,
 				3E9EBCB81CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */,

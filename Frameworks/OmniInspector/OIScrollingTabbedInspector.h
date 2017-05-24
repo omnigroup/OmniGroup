@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,12 @@
 
 @import Foundation;
 #import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorTabController.h>
 
 @class OIInspectorTabController;
 @class OITabMatrix;
 
-@interface OIScrollingTabbedInspector : OIInspector <OIConcreteInspector>
+@interface OIScrollingTabbedInspector : OIInspector <OIConcreteInspector, OIInspectorTabContainer>
 
 @property (nonatomic, readonly) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
 @property (nonatomic, readonly) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist

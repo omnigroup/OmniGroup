@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -731,8 +731,8 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     if ([item action] == @selector(revealEmbeddedInspectorFromMenuItem:)) {
         NSString *identifier = [item representedObject];
         for (OIInspectorController *controller in self.controllers) {
-            OBASSERT([[controller inspector] isKindOfClass:[OITabbedInspector class]]);
-            OITabbedInspector *tabbedInspector = OB_CHECKED_CAST(OITabbedInspector, [controller inspector]);
+            OBASSERT([[controller inspector] conformsToProtocol:@protocol(OIInspectorTabContainer)]);
+            id <OIInspectorTabContainer> tabbedInspector = (id <OIInspectorTabContainer>)[controller inspector];
             OIInspectorTabController *inspectorTab = [tabbedInspector tabWithIdentifier:identifier];
             [item setState:[inspectorTab isVisible] ? NSOnState : NSOffState];
             return YES;
