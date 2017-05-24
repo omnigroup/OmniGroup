@@ -918,7 +918,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 {
     // Probably not worth building a hash table for the (likely) low number of documents.
     for (OADocument *document in [self orderedDocuments]) {
-        // Needed so that -identifer on OADocument(Scriptability) doesn't recurse infinitely
+        // Needed so that -identifier on OADocument(Scriptability) doesn't recurse infinitely
         if (document == ignoringDocument)
             continue;
         

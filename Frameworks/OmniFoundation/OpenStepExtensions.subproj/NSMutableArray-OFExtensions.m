@@ -85,6 +85,17 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)removeLastObjectSatisfyingPredicate:(BOOL (^)(id))predicate;
+{
+    // Index based iteration since we'll be altering the array (and fast enumeration / block based enumeration will assert in that case).
+    NSUInteger objectIndex = [self count];
+    while (objectIndex--) {
+        if (predicate(self[objectIndex])) {
+            [self removeObjectAtIndex:objectIndex];
+            break;
+        }
+    }
+}
 
 - (BOOL)addObjectIfAbsent:(id)anObject;
 {

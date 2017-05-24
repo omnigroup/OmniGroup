@@ -44,6 +44,7 @@ RCS_ID("$Id$");
         
         void (*addWhitespace)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
         void (*addString)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *string);
+        void (*addComment)(NSObject <OFXMLParserTarget> *target, SEL _cmd, OFXMLParser *parser, NSString *string);
     } targetImp;
     
     NSUInteger elementDepth;
@@ -577,6 +578,20 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
     OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
 }
 
+static void _commentSAXFunc(void *ctx, const xmlChar *value)
+{
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
+    OFXMLParser *parser = state->parser;
+
+    if (state->targetImp.addComment) {
+        NSString *comment = [[NSString alloc] initWithUTF8String:(const char *)value];
+        if (comment) {
+            state->targetImp.addComment(state->target, @selector(parser:addComment:), parser, comment);
+        }
+        [comment release];
+    }
+}
+
 typedef NS_ENUM(NSInteger, OFXMLStringClassification) {
     OFXMLStringClassificationAllWhitespace,
     OFXMLStringClassificationSomeNonWhitespace,
@@ -612,7 +627,6 @@ static OFXMLStringClassification _classifyNSString(NSString *str, NSCharacterSet
     }
     return OFXMLStringClassificationSomeNonWhitespace;
 }
-
 
 static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
 {
@@ -797,6 +811,7 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:identifier:contents:));
     GET_IMP(addWhitespace, @selector(parser:addWhitespace:));
     GET_IMP(addString, @selector(parser:addString:));
+    GET_IMP(addComment, @selector(parser:addComment:));
 #undef GET_IMP
 
     if ([target respondsToSelector:@selector(internedNameTableForParser:)]) {
@@ -862,6 +877,9 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     sax.startElementNs = _startElementNsSAX2Func;
     sax.endElementNs = _endElementNsSAX2Func;
     sax.serror = _xmlStructuredErrorFunc;
+    if (self.parseComments) {
+        sax.comment =_commentSAXFunc;
+    }
     
     // xmlSAXUserParseMemory hides the xmlParserCtxtPtr.  But, this means we can't get the source encoding, so we use the push approach.
     

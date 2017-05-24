@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -152,17 +152,25 @@ NSRange OFURLRangeOfHost(NSString *rfc1808URL)
 
 NSURL *OFURLWithTrailingSlash(NSURL *baseURL)
 {
-    if (baseURL == nil)
+    if (baseURL == nil) {
         return nil;
+    }
     
-    if ([[baseURL path] hasSuffix:@"/"])
+    if ([[baseURL path] hasSuffix:@"/"]) {
         return baseURL;
+    }
     
     NSString *baseURLString = [baseURL absoluteString];
     NSRange pathRange = OFURLRangeOfPath(baseURLString);
     
-    if (pathRange.length && [baseURLString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].length > 0)
+    if (pathRange.location == NSNotFound) {
+        // No path, so we can't append a / to the path
         return baseURL;
+    }
+    
+    if (pathRange.location != NSNotFound && [baseURLString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].location != NSNotFound) {
+        return baseURL;
+    }
     
     NSMutableString *newString = [baseURLString mutableCopy];
     [newString insertString:@"/" atIndex:NSMaxRange(pathRange)];

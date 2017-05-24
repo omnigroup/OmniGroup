@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,6 +120,9 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
 
 + (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
 {
+    if (!view.window) {
+        return nil;
+    }
     OUIActivityIndicator *indicator = (__bridge OUIActivityIndicator *)CFDictionaryGetValue(ViewToActivityIndicator, (__bridge CFTypeRef)view);
     if (!indicator)
         indicator = [[OUIActivityIndicator alloc] initWithView:view color:color];

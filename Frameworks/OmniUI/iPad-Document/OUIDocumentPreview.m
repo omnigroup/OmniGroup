@@ -365,7 +365,12 @@ static void _registerPreview(OUIDocumentPreview *preview, NSString *previewFilen
         OBASSERT_IF(preview.exists,
                     (existingPreview == nil || // nothing in the cache
                      existingPreview.exists == NO || // cached missing value
-                     existingPreview.empty), // cached empty file
+                     existingPreview.empty || // cached empty file
+
+                     // We Noticed a preview file that exists on disk, but haven't load it, and the new preview is loaded already.
+                     // This is a race between noticing new previews and the document closing path saving them. There is no big performance issue if the preview we have hasn't been loaded.
+                     // See bug:///137636 (iOS-OmniGraffle Crasher: assertion fails sometimes saving document preview on close)
+                     (existingPreview.fileEdit == preview.fileEdit && existingPreview->_image == NULL && existingPreview->_loadOperation == nil && preview->_image != NULL)),
                     @"We should not have an existing preview for a file/date with an image if we are caching a new preview with an image.");
     }
 #endif
@@ -1073,7 +1078,8 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
 - (void)startLoadingPreview;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    
+    OBPRECONDITION([[OUIDocumentAppController controller] document] == nil, "Don't load previews while we have an open document.");
+
     if (_image)
         return; // Already loaded!
     

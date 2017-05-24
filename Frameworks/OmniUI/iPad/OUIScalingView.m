@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,22 +73,9 @@ static id _commonInit(OUIScalingView *self)
 
 - (CGPoint)viewPointForTouchPoint:(CGPoint)point;
 {
-    OBPRECONDITION(_scale > 0);
-    
-    CGRect bounds = self.bounds;
-    OBASSERT(CGPointEqualToPoint(bounds.origin, CGPointZero)); // Don't bother with this ever so slightly more complicated transform unless we need to.
-    
-    // Account for our flip and scale.
-    CGPoint result;
-    result.x = point.x / _scale;
-    
-    if (self.wantsUnflippedCoordinateSystem) {
-        result.y = (bounds.size.height - point.y) / _scale;
-    } else {
-        result.y = point.y / _scale;
-    }
-    
-    return result;
+    return point;
+    // TODO: delete this method, stop using it anywhere. adjustScaleTo: handles the scaling, so by the time we're processing a touch, the touch point's locationInView IS the view point.
+
 }
 
 - (CGPoint)viewPointForTouch:(UITouch *)touch;

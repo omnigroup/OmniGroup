@@ -2,7 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-
 	<key>OUIColorSwatchPickerTextBackgroundPalette</key>
 	<array>
 		<string>1 1 1</string>
@@ -31,13 +30,8 @@
 		<string>0.930953 0.643015 0.482506</string>
 	</array>
 
-    <!-- OUIAppController+InAppStore.m -->
+	<!-- OUIAppController+InAppStore.m -->
 	<key>OUIVendorID</key>
 	<string></string>
-	
-	<!-- OUISecureWindowSettingsViewController.swift -->
-	<key>OUISecureWindowLearnMoreURL</key>
-	<string>https://support.omnigroup.com</string>
-
 </dict>
 </plist>

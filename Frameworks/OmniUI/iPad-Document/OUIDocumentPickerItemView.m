@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -673,8 +673,10 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     // In the case that a new document is appearing from iCloud/iTunes, the one second timestamp of the filesystem is not enough to ensure that our rewritten preview is considered newer than the placeholder that is initially generated. <bug:///75191> (Added a document to the iPad via iTunes File Sharing doesn't add a preview)
     for (OUIDocumentPreviewView *previewView in _contentView.sortedPreviewViews)
         previewView.preview.superseded = YES;
-    
-    [self loadPreviews];
+
+    if (self.window) {
+        [self loadPreviews];
+    }
 }
 
 - (NSArray *)loadedPreviews;

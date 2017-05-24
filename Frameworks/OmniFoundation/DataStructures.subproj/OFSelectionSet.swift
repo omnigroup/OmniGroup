@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@ import Foundation
 extension OFSelectionSet {
     public func insertOrderSortedObjects<Class : NSObject>(ofClass cls: Class.Type) -> [Class] {
         // TODO: The guts of this method could be cleaner once the rest of the class is more type-safe.
-        guard let predicateResults = (copyObjectsSatisfyingPredicateBlock { $0 is Class }) else { return [] }
+        let predicateResults = copyObjectsSatisfyingPredicateBlock { $0 is Class }
         let instances:[Class] = predicateResults as! [Class]
         return objectsSorted(byInsertionOrder: instances) as! [Class]
     }

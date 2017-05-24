@@ -22,10 +22,13 @@
 #import <OmniInspector/OIInspectorTabController.h>
 #import <OmniInspector/OITabbedInspector.h>
 #import <OmniInspector/OIWorkspace.h>
+#import <OmniInspector/OIInspectorWindow.h>
 
 #import "OIInspectorGroup-Internal.h"
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OIInspectorRegistry () <NSTableViewDelegate>
 
@@ -800,7 +803,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
 
 - (NSMenuItem *)resetPanelsItem;
 {
-    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Reset Inspector Locations", @"OmniInspector", [OIInspectorRegistry bundle], @"Reset Inspector Locations menu item") action:@selector(switchToDefault:) keyEquivalent:@""];
+    NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Reset Inspector Locations", @"OmniInspector", [OIInspectorRegistry bundle], @"Reset Inspector Locations menu item") action:@selector(_switchToDefault:) keyEquivalent:@""];
     [item setTarget:self];
     return item;
 }
@@ -920,7 +923,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     [deleteAlert beginSheetModalForWindow:[_editWorkspaceTable window] completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertFirstButtonReturn) {
-            [self deleteWithoutConfirmation:nil];
+            [self deleteWithoutConfirmation:sender];
         }
     }];
 }
@@ -980,14 +983,19 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [self queueSelectorOnce:@selector(_loadConfigurations)];
 }
 
-- (IBAction)switchToDefault:(id)sender;
+- (IBAction)_switchToDefault:(id)sender;
+{
+    [self switchToDefaultWorkspace];
+}
+
+- (void)switchToDefaultWorkspace;
 {
     [OIWorkspace.sharedWorkspace reset];
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
     [OIWorkspace.sharedWorkspace save];
     [self restoreInspectorGroups];
-    [self queueSelectorOnce:@selector(_loadConfigurations)];    
+    [self queueSelectorOnce:@selector(_loadConfigurations)];
 }
 
 - (IBAction)showWorkspacesHelp:(id)sender;
@@ -1013,7 +1021,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return inspectorWidth;
 }
 
-- (void)setLastWindowAskedToInspect:(NSWindow *)aWindow;
+- (void)setLastWindowAskedToInspect:(nullable NSWindow *)aWindow;
 {
     lastWindowAskedToInspect = aWindow;
 }
@@ -1101,7 +1109,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 #pragma mark - NSTableViewDelegate
 
-- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row;
+- (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row;
 {
     if (tableColumn == [[tableView tableColumns] objectAtIndex:1]) {
         if ([tableView isRowSelected:row])
@@ -1173,7 +1181,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return controller;
 }
 
-- (void)_inspectWindow:(NSWindow *)window queue:(BOOL)queue onlyIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
+- (void)_inspectWindow:(nullable NSWindow *)window queue:(BOOL)queue onlyIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
 {
     [self setLastWindowAskedToInspect:window];
     
@@ -1470,7 +1478,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 @end
 
 
-#import <OmniInspector/OIInspectorWindow.h>
 
 @implementation NSView (OIInspectorExtensions)
 
@@ -1485,7 +1492,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 @implementation NSObject (OIInspectorRegistryApplicationDelegate)
 
-- (OIInspectorRegistry *)inspectorRegistryForWindow:(NSWindow *)window;
+- (nullable OIInspectorRegistry *)inspectorRegistryForWindow:(nullable NSWindow *)window;
 {
     static dispatch_once_t onceToken;
     if (self != (NSObject *)[[NSApplication sharedApplication] delegate]) {
@@ -1497,7 +1504,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return nil;
 }
 
-- (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
+- (nullable NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 {
     static dispatch_once_t onceToken;
     if (self != (NSObject *)[[NSApplication sharedApplication] delegate]) {
@@ -1524,3 +1531,4 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 @end
 
+NS_ASSUME_NONNULL_END

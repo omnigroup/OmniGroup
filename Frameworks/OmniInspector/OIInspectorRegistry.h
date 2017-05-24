@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,12 @@
 
 #import <Foundation/NSObject.h>
 #import <AppKit/NSNibDeclarations.h>
+#import <AppKit/NSView.h>
+#import <AppKit/NSWindowController.h>
+#import <OmniAppKit/OAWindowCascade.h> // For the OAWindowCascadeDataSource protocol
+#import <OmniFoundation/OFController.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSArray, NSMutableArray, NSMutableDictionary, NSSet, NSPredicate;
 @class NSButton, NSTableView, NSTextField, NSWindow, NSWindowController, NSMenu, NSMenuItem;
@@ -17,8 +23,6 @@
 @class OIInspector, OIInspectorController;
 
 @protocol OIConcreteInspector;
-
-#import <OmniAppKit/OAWindowCascade.h> // For the OAWindowCascadeDataSource protocol
 
 @interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
 
@@ -94,8 +98,8 @@
 - (IBAction)deleteWithoutConfirmation:(id)sender;
 - (IBAction)cancelWorkspacePanel:(id)sender;
 - (IBAction)switchToWorkspace:(id)sender;
-- (IBAction)switchToDefault:(id)sender;
 - (IBAction)showWorkspacesHelp:(id)sender;
+- (void)switchToDefaultWorkspace;
 
 - (void)restoreInspectorGroups; // called at app startup, defaults change, etc.
 - (void)dynamicMenuPlaceholderSet;
@@ -103,7 +107,7 @@
 - (float)inspectorWidth; // fixed width of inspector window content-views (not window frames)
 - (NSPoint)adjustTopLeftDefaultPositioningPoint:(NSPoint)topLeft;  // point is given in screen coordinates
 
-- (void)setLastWindowAskedToInspect:(NSWindow *)aWindow;
+- (void)setLastWindowAskedToInspect:(nullable NSWindow *)aWindow;
 
 @property (nonatomic, readonly) BOOL applicationDidFinishRestoringWindows;
 - (void)addGroupToShowAfterWindowRestoration:(OIInspectorGroup *)group;
@@ -111,8 +115,6 @@
 @end
 
 // Declare the part of OFControllerStatusObserver that we implement, so we can require subclasses to call super.
-#import <OmniFoundation/OFController.h>
-
 @interface OIInspectorRegistry () <OFControllerStatusObserver>
 - (void)controllerStartedRunning:(OFController *)controller NS_REQUIRES_SUPER;
 @end
@@ -129,9 +131,6 @@
 extern NSString * const OIInspectionSetChangedNotification;
 extern NSString * const OIWorkspacesHelpURLKey;
 
-#import <AppKit/NSView.h>
-#import <AppKit/NSWindowController.h>
-
 @interface NSView (OIInspectorExtensions)
 - (BOOL)isInsideInspector;
 @end
@@ -139,10 +138,10 @@ extern NSString * const OIWorkspacesHelpURLKey;
 /// Informal protocol for apps to provide support for multiple inspector registries. Your app delegate will probably want to implement both of the following methods to provide a mapping between windows and inspector registries (e.g. for differentiating between multiple embedded registries, or between a floating and an embedded registry). You may return nil from either method in the event that a registry has no associated window or vice versa.
 @interface NSObject (OIInspectorRegistryApplicationDelegate)
 /// Implement this method on your application delegate to support inspectors. Do not call super in your implementation. If the given window has no dedicated registry, your app may decide to either return an app-wide registry (e.g. for floating inspectors) or nil (e.g. for windows that should not be inspected at all).
-- (OIInspectorRegistry *)inspectorRegistryForWindow:(NSWindow *)window;
+- (nullable OIInspectorRegistry *)inspectorRegistryForWindow:(nullable NSWindow *)window;
 
 /// Implement this method on your application delegate to support embedded inspectors. Do not call super in your implementation. Your app may decide to return either a window (indicating an embedded inspector registry) or nil (for floating inspectors).
-- (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
+- (nullable NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 
 /// Implement this on your application delegate to prevent loading an inspector with a given identifier.
 - (BOOL)shouldLoadInspectorWithIdentifier:(NSString *)identifier inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
@@ -153,3 +152,5 @@ extern NSString * const OIWorkspacesHelpURLKey;
 - (void)inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:(OIInspectorRegistry *)registry;
 
 @end
+
+NS_ASSUME_NONNULL_END

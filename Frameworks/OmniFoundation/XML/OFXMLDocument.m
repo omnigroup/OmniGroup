@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFXMLString.h>
+#import <OmniFoundation/OFXMLComment.h>
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
 #import <OmniFoundation/OFXMLQName.h>
@@ -158,15 +159,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
-    // Preserve whitespace by default
-    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve error:outError];
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior parseComments:NO error:outError];
 }
+
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
+{
+    // Preserve whitespace by default
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve parseComments:parseComments error:outError];
+}
+
 
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
-    NSInputStream *inputStream = [[[NSInputStream alloc] initWithData:xmlData] autorelease];
-    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError];
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:NO error:outError];
 }
+
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior parseComments:(BOOL)parseComments error:(NSError **)outError;
+{
+    NSInputStream *inputStream = [[[NSInputStream alloc] initWithData:xmlData] autorelease];
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:parseComments error:outError];
+}
+
 
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
@@ -176,20 +189,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:NO error:outError];
+}
+
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
+{
     if (!(self = [super init]))
         return nil;
     [self _preInit];
 
     if (!whitespaceBehavior)
         whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
-    
+
     _whitespaceBehavior = [whitespaceBehavior retain];
-    
+    _parseComments = parseComments;
+
     if (![self _parseInputStream:inputStream defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError]) {
         [self release];
         return nil;
     }
-    
+
     return [self _commonSetupSuffix:outError];
 }
 
@@ -617,6 +636,14 @@ NS_ASSUME_NONNULL_BEGIN
     [top appendChild:string];
 }
 
+- (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
+{
+    OFXMLElement *top = self.topElement;
+    OFXMLComment *comment = [[OFXMLComment alloc] initWithString:string];
+    [top appendChild:comment];
+    [comment release];
+}
+
 - (void)parserEndElement:(OFXMLParser *)parser;
 {
     OBPRECONDITION([_elementStack count] != 0);
@@ -695,6 +722,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)_parseInputStream:(NSInputStream *)inputStream defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[self whitespaceBehavior] defaultWhitespaceBehavior:defaultWhitespaceBehavior target:self];
+
+    parser.parseComments = self.parseComments;
+
     if (![parser parseInputStream:inputStream error:outError]) {
         [parser release];
         return NO;

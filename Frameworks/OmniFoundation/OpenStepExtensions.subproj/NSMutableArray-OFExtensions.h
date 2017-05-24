@@ -22,6 +22,7 @@
 
 - (void)removeObjectsInSet:(NSSet<ObjectType> *)aSet;
 - (void)removeObjectsSatisfyingPredicate:(BOOL (^)(ObjectType))predicate;
+- (void)removeLastObjectSatisfyingPredicate:(BOOL (^)(id))predicate;
 
 - (void)addObjectIgnoringNil:(ObjectType)object; // adds the object if it is not nil, ignoring otherwise.
 

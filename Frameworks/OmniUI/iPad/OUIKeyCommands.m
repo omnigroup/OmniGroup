@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,9 +77,9 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
         NSString *discoverabilityTitle = nil;
         if (hasDiscoverabilityTitleIdentifier) {
             selectorName = [commandComponents objectAtIndex:1];
-            NSString *discoverabilityTitleIdentifer = [commandComponents lastObject];
-            OBASSERT(![NSString isEmptyString:discoverabilityTitleIdentifer]);
-            discoverabilityTitle = [bundle localizedStringForKey:discoverabilityTitleIdentifer value:@"" table:tableName];
+            NSString *discoverabilityTitleIdentifier = [commandComponents lastObject];
+            OBASSERT(![NSString isEmptyString:discoverabilityTitleIdentifier]);
+            discoverabilityTitle = [bundle localizedStringForKey:discoverabilityTitleIdentifier value:@"" table:tableName];
         } else {
             selectorName = [commandComponents lastObject];
         }

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OFGeometry.h>
 
 #import <Foundation/Foundation.h>
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -370,9 +371,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
                 OBASSERT_NOT_REACHED("The incoming font is not equal to self.font.");
             }
             
-            if (self.font.xHeight != font.xHeight) {
-                OBASSERT_NOT_REACHED("The incoming font does not have the same xHeight as self.font.");
-            }
+            OBASSERT(OFFloatEqualToFloatWithAccuracy(self.font.xHeight, font.xHeight, .01), "The incoming font does not have the same xHeight as self.font.");
             
             if (self.font.capHeight != font.capHeight) {
                 OBASSERT_NOT_REACHED("The incoming font does not have the same capHeight as self.font.");

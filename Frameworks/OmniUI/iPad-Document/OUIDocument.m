@@ -1429,7 +1429,9 @@ static OFPreference *LastEditsPreference;
 
 + (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 {
-    OBRequestConcreteImplementation(self, _cmd);
+    OBFinishPortingLater("bug:///138402 (iOS-OmniGraffle Crasher: Crash when closing a document)");
+    return nil;
+ //   OBRequestConcreteImplementation(self, _cmd);
 }
 
 + (OUIImageLocation *)encryptedPlaceholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;

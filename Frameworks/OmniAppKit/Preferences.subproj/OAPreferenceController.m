@@ -303,6 +303,9 @@ static NSString *windowFrameSaveName = @"Preferences";
     }
     completion = [completion copy];
 
+    // Make sure we have a window, or the sizing code below goes south
+    [self window];
+    
     // Save changes in any editing text fields
     [_window setInitialFirstResponder:nil];
     [_window makeFirstResponder:_window];

@@ -1,4 +1,4 @@
-// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -691,7 +691,7 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 
         // An assertion failure originates from this method on 10.2.2. Seems harmless?
         // rdar://problem/30105831
-        if (selector == @selector(informAuxServiceOfSelf) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"]) {
+        if (selector == @selector(informAuxServiceOfSelf) && (!object || [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"])) {
             crash = NO;
         }
         

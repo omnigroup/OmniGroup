@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,9 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // xmlData marked nullable for testing purposes. This will return a nil document.
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
-- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
 
 @property(nonatomic,readonly) OFXMLWhitespaceBehavior *whitespaceBehavior;
 @property(nonatomic,readonly,nullable) CFURLRef dtdSystemID;
@@ -75,6 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,nullable) CFURLRef schemaID;
 @property(nonatomic,readonly,nullable) NSString *schemaNamespace;
 
+@property(nonatomic,readonly) BOOL parseComments;
 @property(nonatomic,nullable,readonly) NSArray *loadWarnings;
 
 - (nullable NSData *)xmlData:(NSError **)outError;
@@ -129,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+- (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
 - (void)parserEndElement:(OFXMLParser *)parser;
 - (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 

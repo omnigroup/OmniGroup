@@ -150,11 +150,9 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     OUIScalingView *view = _scalingView(self);
     if (!view)
         return;
-
-    // LMTODO: put this back when I'm done debugging...
-    if (effectiveScale <= 0) {
-        effectiveScale = [self snapZoomScale:effectiveScale];
-    }
+    
+    effectiveScale = [self snapZoomScale:effectiveScale];
+    
     [self adjustScaleToExactly:effectiveScale];
 }
 

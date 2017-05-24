@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,6 +58,7 @@ typedef enum {
 
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+- (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
 
 // Deprecated
 - (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues OB_DEPRECATED_ATTRIBUTE;

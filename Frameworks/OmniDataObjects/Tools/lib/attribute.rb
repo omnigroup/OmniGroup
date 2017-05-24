@@ -57,6 +57,8 @@ module OmniDataObjects
       case type
       when :int32
         "[[NSNumber alloc] initWithInt:#{default_value}]"
+      when :float64
+        "[[NSNumber alloc] initWithDouble:#{default_value}]"
       when :boolean
         default_value ? "(id)kCFBooleanTrue" : "(id)kCFBooleanFalse"
       else

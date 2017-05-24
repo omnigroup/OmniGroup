@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -304,8 +304,14 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     _hostIdentifierDomain = [hostIdentifierDomain copy];
     _currentFrameworkVersion = [currentFrameworkVersion copy];
     
-    // Make sure this gets cached (ideally on the main queue).
-    [self defaultClientIdentifier];
+    // Make sure this gets cached. Access has to be on the main queue if we're initializing (say when first syncing with an existing database) or we try to set an OFPreference on a background queue, assert, and trap.
+    if ([NSThread isMainThread]) {
+        [self defaultClientIdentifier];
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [self defaultClientIdentifier];
+        });
+    }
     
     return self;
 }

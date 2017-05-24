@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -639,7 +639,7 @@ typedef struct Mem sqlite3_value;
 /*
 ** In the SQL strings input to sqlite3_prepare() and sqlite3_prepare16(),
 ** one or more literals can be replace by parameters "?" or ":AAA" or
-** "$VVV" where AAA is an identifer and VVV is a variable name according
+** "$VVV" where AAA is an identifier and VVV is a variable name according
 ** to the syntax rules of the TCL programming language.
 ** The value of these parameters (also called "host parameter names") can
 ** be set using the routines listed below.

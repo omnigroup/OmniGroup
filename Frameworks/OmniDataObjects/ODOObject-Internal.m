@@ -49,42 +49,6 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
 }
 #endif
 
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault;
-{
-    OBPRECONDITION(context);
-    OBPRECONDITION(objectID);
-    OBPRECONDITION(ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER == nil); // since we use calloc to start our _values
-    
-    _editingContext = [context retain];
-    _objectID = [objectID copy];
-    _flags.isFault = isFault;
-    _flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
-    
-    // Only create values up front if we aren't a fault
-    if (_flags.isFault == NO)
-        _ODOObjectCreateNullValues(self);
-    
-    return self;
-}
-
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot;
-{
-    OBPRECONDITION(context);
-    OBPRECONDITION(objectID);
-    OBPRECONDITION(ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER == nil); // since we use calloc to start our _values
-    OBPRECONDITION(snapshot);
-    OBPRECONDITION((CFIndex)[[[objectID entity] snapshotProperties] count] == CFArrayGetCount(snapshot));
-    
-    _editingContext = [context retain];
-    _objectID = [objectID copy];
-    _flags.isFault = NO;
-    _flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
-
-    _ODOObjectCreateValuesFromSnapshot(self, snapshot);
-    
-    return self;
-}
-
 - (BOOL)_isAwakingFromInsert;
 {
     return _flags.isAwakingFromInsert;

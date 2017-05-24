@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,9 +39,7 @@ RCS_ID("$Id$")
 - (void)viewDidLayoutSubviews{
     // The accessoryAndBackgroundBar is an instance of UINavigationController which provides a place to put the (optional) accessory view provided by the displaying view controller and provides the appearance of a taller navigation bar.  The OUINavigationBar serves as our true navigation bar and is responsible for hiding its own background view.
     
-    if (!_accessoryAndBackgroundBar) {
-        [self _updateAccessory:self.topViewController operation:UINavigationControllerOperationNone animated:NO];
-    }
+    [self _updateAccessory:self.topViewController operation:UINavigationControllerOperationNone animated:NO];
     
 #define UNDO_SUPERCLASS_MUNGING 44.0
     
@@ -74,26 +72,27 @@ RCS_ID("$Id$")
     if ([viewController respondsToSelector:@selector(navigationBarAccessoryView)])
         newAccessory = [viewController navigationBarAccessoryView];
     
-    
     CGRect newAccessoryFrame = newAccessory.frame;
+    CGRect barFrame = self.navigationBar.frame;
+    CGFloat accessoryY = CGRectGetMaxY(barFrame);
+    CGFloat barOriginY = CGRectGetMinY(barFrame);
+    
+    newAccessoryFrame.origin.y  = accessoryY;
+    
+    if (barOriginY) {
+        barFrame.size.height += barOriginY;
+        barFrame.origin.y = 0;
+    }
+    
+    if (newAccessory)
+        barFrame.size.height += CGRectGetHeight(newAccessoryFrame) + BOTTOM_SPACING_BELOW_ACCESSORY;
+    
     if (!_accessoryAndBackgroundBar) {
-        CGRect barFrame = self.navigationBar.frame;
-        CGFloat accessoryY = CGRectGetMaxY(barFrame);
-        CGFloat barOriginY = CGRectGetMinY(barFrame);
-        
-        newAccessoryFrame.origin.y  = accessoryY;
-        
-        if (barOriginY) {
-            barFrame.size.height += barOriginY;
-            barFrame.origin.y = 0;
-        }
-        
-        if (newAccessory)
-            barFrame.size.height += CGRectGetHeight(newAccessoryFrame) + BOTTOM_SPACING_BELOW_ACCESSORY;
-        
         _accessoryAndBackgroundBar = [[UINavigationBar alloc] initWithFrame:barFrame];
         _accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
         [self.view addSubview:_accessoryAndBackgroundBar];
+    } else {
+        self.heightConstraintOnAccessoryAndBackgroundView.constant = self.navigationBar.frame.size.height;
     }
     
     // set up constraints
@@ -129,19 +128,19 @@ RCS_ID("$Id$")
     }
     
     if (_accessory != newAccessory) {
+        UIView *oldAccessory = _accessory;
+        self.accessory = newAccessory;
         if (animated) {
             [[self transitionCoordinator] animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
                 [self.accessoryAndBackgroundBar layoutIfNeeded];
                 newAccessory.alpha = 1.0;
-                _accessory.alpha = 0.0;
+                oldAccessory.alpha = 0.0;
             } completion:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
-               [_accessory removeFromSuperview];
-                self.accessory = newAccessory;
+               [oldAccessory removeFromSuperview];
             }];
         } else {
             newAccessory.alpha = 1.0f;
-            [_accessory removeFromSuperview];
-            self.accessory = newAccessory;
+            [oldAccessory removeFromSuperview];
         }
     }
     

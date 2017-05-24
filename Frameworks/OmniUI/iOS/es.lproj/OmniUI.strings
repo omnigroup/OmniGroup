@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 
 "About %@" = "Acerca de %@";
 
@@ -11,11 +12,13 @@
 /* Bold button accessibility label */
 "Bold" = "Negrita";
 
-/* 'Buy' button title format. The currency symbol will be provided at run time. */
+/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
 "Buy %@" = "Comprar %@";
 
 /* button title
+   button title - password/passphrase prompt
    cancel button title
+   Cancel button title
    toolbar item title */
 
 
@@ -106,15 +109,19 @@
 "Note" = "Nota";
 
 /* button title
-   OK button label */
+   button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   Web view error opening URL cancel button. */
 
 
 
 
 
-"OK" = "OK";
+"OK" = "Aceptar";
 
-/* placeholder text */
+/* placeholder text - password/passphrase field of login/password prompt */
 "password" = "contraseña";
 
 /* alert title */
@@ -170,7 +177,7 @@
 /* Undo button title */
 "Undo" = "Deshacer";
 
-/* placeholder text */
+/* placeholder text - username field of login/password prompt */
 "username" = "nombre de usuario";
 
 /* alert message */

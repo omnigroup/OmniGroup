@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void(^OBLogFileHandler)(NSURL *url);
 
 /**
- This is a utility class for doing user-preference and environment-variable controlled logging with customizable levels. Log messages are written to the console log and, optionally, to files in iOS (where the console log can be truncated). Typical interaction with the class is via the OBLoggerInitializeLogLevel() macro and by the OBLog() function, perhaps wrapping the later in a custom macro for a particular logger instance.
+ This is a utility class for doing user-preference and environment-variable controlled logging with customizable levels. Log messages are written to the console log and, optionally, to files in iOS (where the console log can be truncated). Typical interaction with the class is via the OBLoggerInitializeLogLevel() function and by the OBLog() function, perhaps wrapping the later in a custom macro for a particular logger instance.
  
  SWIFT: Go see OBLogger.swift. It adds a swifty veneer.
  */

@@ -95,10 +95,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     
     // Build the new frame based on an integral scaling of the canvas size and make the bounds match. Thus the view is 1-1 pixel resolution.
     
-    CGSize viewportBufferSize = UIEdgeInsetsInsetRect(self.bounds, self.contentInset).size;
-    CGFloat percentage = self.delegate.scrollBufferAsPercentOfViewportSize;
-    viewportBufferSize.width *= percentage;
-    viewportBufferSize.height *= percentage;
+    CGSize viewportBufferSize = [self scrollBufferSize];
     // Buffer needs to be added to each edge, so * 2
     CGSize fullSize = CGSizeMake(effectiveScale * unscaledContentSize.width + 2 * viewportBufferSize.width,
                                  effectiveScale * unscaledContentSize.height + 2 * viewportBufferSize.height);
@@ -144,6 +141,15 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     self.showsVerticalScrollIndicator = scrollSize.height < viewSize.height;
     
     [view scaleChanged];
+}
+
+- (CGSize)scrollBufferSize
+{
+    CGSize viewportBufferSize = UIEdgeInsetsInsetRect(self.bounds, self.contentInset).size;
+    CGFloat percentage = self.delegate.scrollBufferAsPercentOfViewportSize;
+    viewportBufferSize.width *= percentage;
+    viewportBufferSize.height *= percentage;
+    return viewportBufferSize;
 }
 
 - (void)adjustContentInsetAnimated:(BOOL)animated;

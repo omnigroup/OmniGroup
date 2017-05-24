@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,11 @@ RCS_ID("$Id$");
 - (NSString *)shortDescription;
 {
     return [NSString stringWithFormat:@"<%@:%p '%@' offset:%lu file number:%lu>", NSStringFromClass([self class]), self, _name, _positionInFile, _fileNumber];
+}
+
+- (NSString *)debugDescription;
+{
+    return [self shortDescription];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)parseInputStream:(NSInputStream *)inputStream error:(NSError **)outError;
 - (BOOL)parseInputStream:(NSInputStream *)inputStream expectedStreamLength:(NSUInteger)expectedStreamLength error:(NSError **)outError;
 
+@property (nonatomic) BOOL parseComments;
 @property (nonatomic, readonly) NSUInteger maximumParseChunkSize; // in bytes
 
 @property(nonatomic, readonly) CFStringEncoding encoding;

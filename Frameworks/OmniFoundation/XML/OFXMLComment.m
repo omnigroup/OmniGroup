@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,8 +18,6 @@
 #import <OmniFoundation/NSString-OFReplacement.h>
 
 RCS_ID("$Id$")
-
-// OFXMLDocument currently doesn't generate these when reading documents, though that could be done.  Currently this is just intended to allow writers to emit comments.
 
 @implementation OFXMLComment
 

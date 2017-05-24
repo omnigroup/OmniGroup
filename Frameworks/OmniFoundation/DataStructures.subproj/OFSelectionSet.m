@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
+
+NS_ASSUME_NONNULL_BEGIN
 
 /*
  This could potentially use a NSMutableOrderedSet internally (or be replaced by extensions on it...), except that it doesn't seem clear that we can force NSOrderedSet to use pointer equality.
@@ -40,7 +42,8 @@ OB_REQUIRE_ARC
         return nil;
     
     _predicate = [predicate copy];
-    
+    _results = [[NSMutableArray alloc] init];
+
     return self;
 }
 
@@ -50,8 +53,6 @@ OB_REQUIRE_ARC
 {
     if (_predicate && !_predicate(object))
         return;
-    if (!_results)
-        _results = [[NSMutableArray alloc] init];
     [_results insertObject:object inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         if (obj1 > obj2)
             return NSOrderedDescending;
@@ -228,3 +229,5 @@ static void describeEnt(const void *k, const void *v, void *d)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -33,5 +33,6 @@
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 - (void)adjustContentInsetAnimated:(BOOL)animated;
+- (CGSize)scrollBufferSize;
 
 @end

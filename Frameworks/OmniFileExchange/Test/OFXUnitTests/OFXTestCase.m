@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -648,7 +648,7 @@ static void _logAgentState(OFXAgent *agent)
     OFXAgent *firstAgent = agents[0];
     NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
     
-    NSDictionary *firstAgentFileIdentiferToEditIdentifer = [NSMutableDictionary new];
+    NSDictionary *firstAgentFileIdentifierToEditIdentifier = [NSMutableDictionary new];
     {
         NSMutableDictionary *fileToEdit = [NSMutableDictionary dictionary];
         
@@ -664,14 +664,14 @@ static void _logAgentState(OFXAgent *agent)
             fileToEdit[metadata.fileIdentifier] = metadata.editIdentifier;
         }
         
-        firstAgentFileIdentiferToEditIdentifer = [fileToEdit copy];
+        firstAgentFileIdentifierToEditIdentifier = [fileToEdit copy];
     }
     
     for (OFXAgent *agent in otherAgents) {
-        NSMutableDictionary *fileToEdit = [firstAgentFileIdentiferToEditIdentifer mutableCopy];
+        NSMutableDictionary *fileToEdit = [firstAgentFileIdentifierToEditIdentifier mutableCopy];
         
         NSSet *metadataItems = [self metadataItemsForAgent:agent];
-        if ([metadataItems count] != [firstAgentFileIdentiferToEditIdentifer count])
+        if ([metadataItems count] != [firstAgentFileIdentifierToEditIdentifier count])
             return NO;
         
         for (OFXFileMetadata *metadata in metadataItems) {

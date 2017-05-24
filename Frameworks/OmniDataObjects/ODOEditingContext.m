@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1070,23 +1070,28 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
         [_database didSave]; // Note that we have some chance of having something in the database now.
         
         // Send -didSave to the inserts & updates.  This will be inside the _isValidatingAndWritingChanges flag, ensuring that -didSave doesn't append more edits.
-        [_processedInsertedObjects makeObjectsPerformSelector:@selector(didSave)];
-        [_processedInsertedObjects release];
+        // Clear our local set of inserted and updated objects before doing so, so that -isInserted and -isUpdate is NO inside of -didSave.
+
+        NSSet *inserted = _processedInsertedObjects;
+        NSSet *updated = _processedUpdatedObjects;
+        NSSet *deleted = _processedDeletedObjects;
+
         _processedInsertedObjects = nil;
-        [_processedUpdatedObjects makeObjectsPerformSelector:@selector(didSave)];
-        [_processedUpdatedObjects release];
         _processedUpdatedObjects = nil;
+        _processedDeletedObjects = nil;
+
+        [inserted makeObjectsPerformSelector:@selector(didSave)];
+        [inserted release];
+
+        [updated makeObjectsPerformSelector:@selector(didSave)];
+        [updated release];
         
         // Deleted objects currently get -willDelete, but no -didSave.
-        if (_processedDeletedObjects) {
-            // Move this aside so that ODOObjectClearValues() doesn't assert on the passed in object being -isDeleted.
-            NSSet *deleted = _processedDeletedObjects;
-            _processedDeletedObjects = nil;
-            
+        if (deleted != nil) {
+            // _processedDeletedObjects was moved aside above so that ODOObjectClearValues() doesn't assert on the passed in object being -isDeleted.
             ODOEditingContextDidDeleteObjects(self, deleted);
             [deleted release];
         }
-        
 
         // Finally, post our notification (still inside the _isValidatingAndWritingChanges block).
         [[NSNotificationCenter defaultCenter] postNotification:note];

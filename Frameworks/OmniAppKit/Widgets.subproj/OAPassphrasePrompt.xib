@@ -150,7 +150,7 @@ hint hint.</string>
                     <constraint firstItem="9" firstAttribute="bottom" secondItem="41" secondAttribute="bottom" constant="-5" id="20"/>
                     <constraint firstItem="13" firstAttribute="baseline" secondItem="10" secondAttribute="baseline" id="21"/>
                     <constraint firstItem="12" firstAttribute="baseline" secondItem="13" secondAttribute="baseline" id="22"/>
-                    <constraint firstItem="13" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="10" secondAttribute="trailing" constant="24" id="25"/>
+                    <constraint firstItem="13" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="10" secondAttribute="trailing" constant="60" id="25"/>
                     <constraint firstItem="9" firstAttribute="top" secondItem="41" secondAttribute="top" constant="5" id="26"/>
                     <constraint firstItem="13" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="34" secondAttribute="trailing" id="27"/>
                     <constraint firstItem="42" firstAttribute="centerY" secondItem="btn2" secondAttribute="centerY" constant="-1" id="31"/>

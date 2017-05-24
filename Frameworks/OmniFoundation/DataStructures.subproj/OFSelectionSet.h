@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 
 #import <OmniFoundation/OFUtilities.h> // OFPredicateBlock
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSArray, NSPredicate;
 
 @interface OFSelectionSet : NSObject
@@ -22,9 +24,9 @@
 - (void)removeAllObjects;
 
 - (BOOL)containsObject:(id)object;
-- (NSUInteger)count;
+@property(nonatomic, readonly) NSUInteger count;
 
-- (NSArray *)allObjects;
+@property(nonatomic, readonly) NSArray *allObjects;
 
 - (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
@@ -34,3 +36,5 @@
 - (NSUInteger)insertionOrderForObject:(id)object; // NSNotFound if not present
 
 @end
+
+NS_ASSUME_NONNULL_END

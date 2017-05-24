@@ -16,9 +16,12 @@
 
 #import "ODOEntity-Internal.h"
 
+@interface ODOObject () // Internal initializers
+- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot NS_DESIGNATED_INITIALIZER;
+@end
+
 @interface ODOObject (Internal)
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault;
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot;
 - (BOOL)_isAwakingFromInsert;
 - (void)_setIsAwakingFromInsert:(BOOL)isAwakingFromInsert;
 - (void)_setIsFault:(BOOL)isFault;

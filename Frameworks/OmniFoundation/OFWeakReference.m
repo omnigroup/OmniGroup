@@ -75,7 +75,7 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
         OBASSERT([reference referencesObject:(__bridge void *)object] == NO);
     }
 #endif
-    [self _pruneReferences:references];
+    // [self _pruneReferences:references];
 
     OFWeakReference *reference = [[OFWeakReference alloc] initWithObject:object];
     [references addObject:reference];
@@ -90,13 +90,13 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
     __block BOOL found = NO;
 #endif
 
-    [references removeObjectsSatisfyingPredicate:^BOOL(OFWeakReference *reference){
+    [references removeLastObjectSatisfyingPredicate:^BOOL(OFWeakReference *reference){
         _Nullable id existing = reference.object;
 
 #ifdef OMNI_ASSERTIONS_ON
         found |= (existing == object) || (existing == nil && reference->_nonretainedObjectPointer == (__bridge void *)(object));
 #endif
-        return (existing == object) || (existing == nil); // Clean up any deallocated references at the same time.
+        return existing == object; // Clean up any deallocated references at the same time.
     }];
 
     // **NOTE** If you are hitting this, make sure you aren't trying to remove a reference to an object that is in the middle of its -dealloc. In that case, its wrapping OFWeakReference will return nil from -object and it will have been pruned automatically.
@@ -107,16 +107,19 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
 + (void)forEachReference:(NSMutableArray <OFWeakReference *> *)references perform:(void (^)(id))action;
 {
     // Copying in case the action makes further modifications. Any newly added references will not be considered, and any removed references will still be acted on this time around.
-    NSArray <OFWeakReference *> *copy = [references copy];
+    NSArray <OFWeakReference *> *copy = [references select:^BOOL(OFWeakReference *reference) {
+        return reference.object != nil;
+    }];
+
+    if (copy.count != references.count) {
+        // We filtered out some invalid references
+        [references setArray:copy];
+    }
 
     for (OFWeakReference *reference in copy) {
         id object = reference.object;
         if (object == nil) {
-            // Don't assume that the reference array is unmodified. We *could* probe the original index first if this N^2 approach ever shows up on a profile. Also, something else might have removed it (like a reentrant call to add/remove another reference).
-            NSUInteger referenceIndex = [references indexOfObjectIdenticalTo:reference];
-            if (referenceIndex != NSNotFound) {
-                [references removeObject:object];
-            }
+            // This should have been filtered out when we made the copy above. But we'll catch it next time.
         } else {
             action(object);
         }

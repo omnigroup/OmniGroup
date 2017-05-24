@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -818,7 +818,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         }];
     }
     
-    // Remember what identifers the server knows about.
+    // Remember what identifiers the server knows about.
     NSMutableSet *serverContainerIdentifiers = [NSMutableSet new];
     
     for (ODAVFileInfo *containerFileInfo in containerFileInfos) {
@@ -834,7 +834,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
         [serverContainerIdentifiers addObject:identifier];
         
-        // Start up containers for new identifers if we are running in unfiltered mode.
+        // Start up containers for new identifiers if we are running in unfiltered mode.
         if (OFXShouldSyncAllPathExtensions(_syncPathExtensions))
             [self _containerAgentWithIdentifier:identifier];
         

@@ -1,4 +1,4 @@
-// Copyright 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,9 +10,8 @@
 #import <Foundation/NSObject.h>
 
 @interface OFXMLComment : NSObject
-{
-    NSString *_quotedString;
-}
+
+@property (nonatomic, copy) NSString *quotedString;
 
 - initWithString:(NSString *)unquotedString;
 @end

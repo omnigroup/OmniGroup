@@ -110,12 +110,16 @@ static inline BOOL OFPointEqualToPointWithAccuracy(CGPoint p1, CGPoint p2, CGFlo
 // Checking each dimension. Would area be more meaningful?
 static inline BOOL OFSizeEqualToSizeWithAccuracy(CGSize s1, CGSize s2, CGFloat accuracy)
 {
-    if (s1.width - s2.width > accuracy) {
+    if (fabs(s1.width - s2.width) > accuracy) {
         return false;
     }
-    if (s1.height - s2.height > accuracy) {
+    if (fabs(s1.height - s2.height) > accuracy) {
         return false;
     }
     return true;
 }
 
+static inline BOOL OFFloatEqualToFloatWithAccuracy(CGFloat f1, CGFloat f2, CGFloat accuracy)
+{
+    return fabs(f1 - f2) <= accuracy;
+}

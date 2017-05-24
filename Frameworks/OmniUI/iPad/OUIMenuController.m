@@ -241,7 +241,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     _menuNavigationController.popoverPresentationController.delegate = nil;
     _menuNavigationController = nil;
-    _topOptions = nil;
+    _topOptions = @[];
 }
 
 - (void)_didFinish;
