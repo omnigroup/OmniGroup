@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,32 @@ extern NSString * const OIWorkspaceDidChangeNotification;
 - (void)save;
 - (void)saveAs:(NSString *)workspaceName;
 
-- (id)objectForKey:(id)aKey;
-- (void)updateInspectorsWithBlock:(void (^)(NSMutableDictionary *dictionary))block;
+@property(retain) NSDictionary *sidebarInspectorConfiguration;
+@property(retain) NSArray *floatingInspectorConfiguration;
+@property(retain) NSArray *inspectorGroupIdentifiers;
+@property(retain) NSDictionary *configuration;
+@property(retain) NSDictionary *rulerConfiguration;
+@property(retain) NSArray *floatingStencilConfiguration;
+
+@property NSRect colorPanelFrame;
+@property BOOL colorPanelVisible;
+@property NSRect fontPanelFrame;
+@property BOOL fontPanelVisible;
+
+- (NSPoint)floatingInspectorPositionForIdentifier:(NSString *)identifier;
+- (void)setFloatingInspectorPosition:(NSPoint)position forIdentifier:(NSString *)identifier;
+- (NSArray *)inspectorGroupOrderForIdentifier:(NSString *)identifier;
+- (void)setInspectorGroupOrder:(NSArray *)order forIdentifier:(NSString *)identifier;
+- (NSPoint)inspectorGroupPositionForIdentifier:(NSString *)identifier;
+- (void)setInspectorGroupPosition:(NSPoint)position forIdentifier:(NSString *)identifier;
+- (BOOL)inspectorGroupVisibleForIdentifier:(NSString *)identifier;
+- (void)setInspectorGroupVisible:(BOOL)yn forIdentifier:(NSString *)identifier;
+- (BOOL)inspectorIsDisclosedForIdentifier:(NSString *)identifier;
+- (void)setInspectorIsDisclosed:(BOOL)yn forIdentifier:(NSString *)identifier;
+- (CGFloat)heightforInspectorIdentifier:(NSString *)identifier;
+- (void)setHeight:(CGFloat)height forInspectorIdentifier:(NSString *)identifier;
+
+- (NSArray *)toolPrototypesForIdentifier:(NSString *)identifier;
+- (void)setToolPrototypes:(NSArray *)prototypes forIdentifier:(NSString *)identifier;
 
 @end

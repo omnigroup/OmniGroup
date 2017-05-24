@@ -878,6 +878,7 @@
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0820;
 					};
 					340D5DB40DAACED300BF27F8 = {
 						DevelopmentTeam = 34YW5XSRB7;
@@ -888,6 +889,9 @@
 						CreatedOnToolsVersion = 7.0;
 						DevelopmentTeam = 34YW5XSRB7;
 						DevelopmentTeamName = "The Omni Group";
+					};
+					8DC2EF4F0486A6940098B216 = {
+						LastSwiftMigration = 0820;
 					};
 				};
 			};
@@ -1180,11 +1184,16 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12B0D89940F0006DF9F /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -1192,11 +1201,15 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E12C0D89940F0006DF9F /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -1218,10 +1231,15 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34019F7B1B62ECC8003A5BE4 /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -1229,10 +1247,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34019F7C1B62ECC8003A5BE4 /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -1240,7 +1262,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1258,7 +1279,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1276,7 +1296,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1293,7 +1312,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",

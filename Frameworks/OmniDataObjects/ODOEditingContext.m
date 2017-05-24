@@ -316,7 +316,7 @@ static void _traceForDeletion(ODOObject *object, TraceForDeletionContext *ctx);
 
 static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, TraceForDeletionContext *ctx)
 {
-    OBPRECONDITION(rel.isToMany);
+    OBPRECONDITION([rel isToMany]);
     
     // This is what to do to the *destination* of the relationship
     ODORelationshipDeleteRule rule = [rel deleteRule];
@@ -340,14 +340,14 @@ static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, Tr
     }
     
     // Nullify all the inverse to-ones.
-    OBASSERT(inverseRel.isToMany == NO); // We don't allow many-to-many relationships in the model loading code
-    OBASSERT(inverseRel.isCalculated == NO); // since the to-many is effectively calculated from the to-one, this would be silly.
+    OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
+    OBASSERT([inverseRel isCalculated] == NO); // since the to-many is effectively calculated from the to-one, this would be silly.
 
     NSSet *targets = [object valueForKey:forwardKey];
     OBASSERT([targets isKindOfClass:[NSSet class]]);
     
     for (ODOObject *target in targets) {
-        if (!inverseRel.isCalculated)
+        if (![inverseRel isCalculated])
             _addNullify(target, inverseKey, ctx->relationshipsToNullifyByObjectID);
         if (alsoCascade && !_ODOObjectIsUndeletable(target))
             _traceForDeletion(target, ctx);
@@ -356,7 +356,7 @@ static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, Tr
 
 static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, TraceForDeletionContext *ctx)
 {
-    OBPRECONDITION(!rel.isToMany);
+    OBPRECONDITION(![rel isToMany]);
     
     // This is what to do to the *destination* of the relationship
     ODORelationshipDeleteRule rule = [rel deleteRule];
@@ -380,14 +380,14 @@ static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, Tra
             }
         } else {
             // one-to-one relationship. one side should be marked as calculated.
-            OBASSERT(rel.isCalculated || inverseRel.isCalculated);
+            OBASSERT([rel isCalculated] || [inverseRel isCalculated]);
             
             ODOObject *dest = [object valueForKey:forwardKey];
             if (dest) {
                 // nullify the side that isn't calculated.  we could maybe not do the nullify it is is the forward relationship (since the owner is getting entirely deleted).
-                if (!rel.isCalculated)
+                if (![rel isCalculated])
                     _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
-                if (!inverseRel.isCalculated)
+                if (![inverseRel isCalculated])
                     _addNullify(dest, inverseKey, ctx->relationshipsToNullifyByObjectID);
             }
         }
@@ -399,7 +399,7 @@ static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, Tra
     if (rule == ODORelationshipDeleteRuleCascade) {
         ODOObject *dest = [object valueForKey:forwardKey];
         if (dest) {
-            if (!rel.isCalculated)
+            if (![rel isCalculated])
                 _addNullify(object, forwardKey, ctx->relationshipsToNullifyByObjectID);
             if (!_ODOObjectIsUndeletable(dest))
                 _traceForDeletion(dest, ctx);
@@ -434,7 +434,7 @@ static void _traceForDeletion(ODOObject *object, TraceForDeletionContext *ctx)
     ODOEntity *entity = [object entity];
     NSArray *relationships = [entity relationships];
     for (ODORelationship *rel in relationships) {        
-        if (rel.isToMany)
+        if ([rel isToMany])
             _traceToManyRelationship(object, rel, ctx);
         else
             _traceToOneRelationship(object, rel, ctx);
@@ -519,7 +519,7 @@ static void _nullifyRelationships(const void *dictKey, const void *dictValue, vo
     for (NSString *key in toOneKeys) {
         ODORelationship *rel = [[[object entity] relationshipsByName] objectForKey:key];
         OBASSERT(rel);
-        OBASSERT(rel.isToMany == NO);
+        OBASSERT([rel isToMany] == NO);
         
         // If we are getting deleted, then use the internal path for clearing the forward relationship instead of calling the setter. But, if we are going to stick around (we are on the fringe of the delete cloud), call the setter.
         if ([ctx->toDelete member:object]) {
@@ -1309,48 +1309,60 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     return ctx.results;
 }
 
-- (id)insertObjectWithEntityName:(NSString *)entityName;
+- (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
 {
     ODOEntity *entity = [self.database.model entityNamed:entityName];
     ODOObject *object = [[[entity instanceClass] alloc] initWithEntity:entity primaryKey:nil insertingIntoEditingContext:self];
     return [object autorelease];
 }
 
-- (ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError; // Returns NSNull if the object wasn't found, nil on error.
+- (__kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
 {
     OBPRECONDITION(objectID);
     
+    ODOObject * (^errorReturn)(void) = ^{
+        NSString *format = NSLocalizedStringFromTableInBundle(@"No object with id %@ exists.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+        NSString *reason = [NSString stringWithFormat:format, objectID];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to find object.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        ODOError(outError, ODOUnableToFindObjectWithID, description, reason);
+        return (ODOObject *)nil;
+    };
+
     ODOEntity *entity = [objectID entity];
-    if (!entity) {
-        OBASSERT(entity);
+    if (entity == nil) {
+        OBASSERT(entity != nil);
         return nil;
     }
     
     ODOObject *object = (ODOObject *)[self objectRegisteredForID:objectID];
-    if (object) {
+    if (object != nil) {
         if ([object isInvalid]) {
             OBASSERT_NOT_REACHED("Maybe should have been purged from the registered objects?");
             // ... but maybe it is in the undo stack or otherwise not deallocated.  At any rate, this is happening, so let's be defensive.  See <bug://45150> (Clicking URL to recently deleted task can crash)
-            return (id)[NSNull null];
+            return errorReturn();
         }
         
         OBASSERT([[object objectID] isEqual:objectID]);
         return object;
     }
     
-    if ([_database isFreshlyCreated])
-        return (id)[NSNull null]; // Don't waste time looking for an object in our empty database
+    if ([_database isFreshlyCreated]) {
+        return errorReturn();
+    }
 
     ODOFetchRequest *fetch = [[[ODOFetchRequest alloc] init] autorelease];
     [fetch setEntity:entity];
     [fetch setPredicate:ODOKeyPathEqualToValuePredicate([[entity primaryKeyAttribute] name], [objectID primaryKey])];
     
     NSArray *objects = [self executeFetchRequest:fetch error:outError];
-    if (!objects)
-        return nil; // error
+    if (objects == nil) {
+        // error filled in by fetch request
+        return nil;
+    }
     
-    if ([objects count] == 0)
-        return (id)[NSNull null]; // legitmately not found
+    if (objects.count == 0) {
+        return errorReturn();
+    }
     
     OBASSERT([objects count] == 1);
     
@@ -1361,10 +1373,11 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 }
 
 
-NSString * const ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
-NSString * const ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";
-NSString * const ODOEditingContextWillSaveNotification = @"ODOEditingContextWillSaveNotification";
-NSString * const ODOEditingContextDidSaveNotification = @"ODOEditingContextDidSaveNotification";
+NSNotificationName ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
+NSNotificationName ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";
+NSNotificationName ODOEditingContextDidSaveNotification = @"ODOEditingContextDidSaveNotification";
+NSNotificationName ODOEditingContextWillSaveNotification = @"ODOEditingContextWillSaveNotification";
+
 NSString * const ODOInsertedObjectsKey = @"ODOInsertedObjectsKey";
 NSString * const ODOUpdatedObjectsKey = @"ODOUpdatedObjectsKey";
 NSString * const ODOMateriallyUpdatedObjectsKey = @"ODOMateriallyUpdatedObjectsKey";
@@ -1372,8 +1385,8 @@ NSString * const ODOMateriallyUpdatedObjectPropertiesKey = @"ODOMateriallyUpdate
 NSString * const ODODeletedObjectsKey = @"ODODeletedObjectsKey";
 NSString * const ODODeletedObjectPropertySnapshotsKey = @"ODODeletedObjectPropertySnapshotsKey";
 
-NSString * const ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
-NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
+NSNotificationName ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
+NSNotificationName ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
 
 #pragma mark -
 #pragma mark Private

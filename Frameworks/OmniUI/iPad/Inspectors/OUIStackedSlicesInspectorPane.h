@@ -12,22 +12,24 @@
 @class OUIInspectorSlice;
 @protocol OUIScrollNotifier;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIStackedSlicesInspectorPane : OUIInspectorPane
 
 + (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ... NS_REQUIRES_NIL_TERMINATION;
 
 @property(nonatomic,assign) UIEdgeInsets sliceAlignmentInsets;
-@property(nonatomic,copy) UIColor *sliceSeparatorColor;
+@property(nonatomic,copy,nullable) UIColor *sliceSeparatorColor;
 
-- (NSArray *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)
-@property(nonatomic,copy) NSArray *availableSlices; // All the possible slices. Will get narrowed by applicability.
+- (nullable NSArray<OUIInspectorSlice *> *)makeAvailableSlices; // For subclasses (though the delegate hook can also be used)
+@property(nonatomic,copy,nullable) NSArray<OUIInspectorSlice *> *availableSlices; // All the possible slices. Will get narrowed by applicability.
 
 - (void)sliceSizeChanged:(OUIInspectorSlice *)slice;
 
 // these two classes are here so that OG can get at them in a sub-class to avoid letting us control their viewHierarchy.
-- (void)setSlices:(NSArray *)slices maintainViewHierarchy:(BOOL)maintainHierachy;
-- (NSArray *)appropriateSlicesForInspectedObjects;
-- (NSArray *)appropriateSlices:(NSArray *)availableSlices forInspectedObjects:(NSArray *)inspectedObjects;  // Called from appropriateSlicesForInspectedObjects to allow subclasses the chance to use a subset of objects/slices
+- (void)setSlices:(nullable NSArray<OUIInspectorSlice *> *)slices maintainViewHierarchy:(BOOL)maintainHierachy;
+- (nullable NSArray<OUIInspectorSlice *> *)appropriateSlicesForInspectedObjects;
+- (nullable NSArray<OUIInspectorSlice *> *)appropriateSlices:(nullable NSArray<OUIInspectorSlice *> *)availableSlices forInspectedObjects:(NSArray *)inspectedObjects;  // Called from appropriateSlicesForInspectedObjects to allow subclasses the chance to use a subset of objects/slices
 
 // The default implementation just sets the value of the slices property.  OG will want to instead call setSlices:newSlices maintainViewHierarchy:NO.
 
@@ -44,3 +46,5 @@
 
 @property (nonatomic, assign) BOOL isAnimating;
 @end
+
+NS_ASSUME_NONNULL_END

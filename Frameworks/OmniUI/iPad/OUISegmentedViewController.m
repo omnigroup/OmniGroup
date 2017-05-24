@@ -8,6 +8,7 @@
 //ContentInsets
 
 #import <OmniUI/OUISegmentedViewController.h>
+#import <OmniUI/OUIInspector.h>
 
 RCS_ID("$Id$")
 
@@ -71,7 +72,7 @@ RCS_ID("$Id$")
     [self.selectedViewController setEditing:editing animated:animated];
 }
 
-#pragma mark - Public API
+#pragma mark Public API
 
 - (void)oui_invalidate;
 {
@@ -198,20 +199,33 @@ RCS_ID("$Id$")
     self.selectedViewController = viewControllerToSelect;
 }
 
-#pragma mark - Private API
+#pragma mark Private API
 
 - (void)_setupSegmentedControl;
 {
-    NSMutableArray *segmentTitles = [NSMutableArray array];
+    NSMutableArray *segmentItems = [NSMutableArray array];
     for (UIViewController *vc in self.viewControllers) {
-        NSString *title = vc.title;
-        OBASSERT(title);
-        
-        [segmentTitles addObject:title];
+        // A UIViewController could have both a title and a segmentItem. We'll prefer the OUISegmentItem if one exists and use the title as a fallback.
+        if (vc.segmentItem != nil) {
+            // OUISegmentItem can only be created with either an image or a title. Order
+            OUISegmentItem *item = vc.segmentItem;
+            if (item.title != nil) {
+                [segmentItems addObject:item.title];
+            }
+            else {
+                [segmentItems addObject:item.image];
+            }
+        }
+        else {
+            NSString *title = vc.title;
+            OBASSERT(title);
+            
+            [segmentItems addObject:title];
+        }
     }
     
     
-    self.segmentedControl = [[UISegmentedControl alloc] initWithItems:segmentTitles];
+    self.segmentedControl = [[UISegmentedControl alloc] initWithItems:segmentItems];
     [self.segmentedControl setSelectedSegmentIndex:0];
     [self.segmentedControl addTarget:self action:@selector(_segmentValueChanged:) forControlEvents:UIControlEventValueChanged];
     
@@ -254,7 +268,7 @@ RCS_ID("$Id$")
     [self setShouldShowDismissButton:_shouldShowDismissButton];
 }
 
-#pragma mark - UINavigationBarDelegate
+#pragma mark UINavigationBarDelegate
 
 - (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar;
 {
@@ -265,7 +279,7 @@ RCS_ID("$Id$")
     return UIBarPositionAny;
 }
 
-#pragma mark - UINavigationControllerDelegate
+#pragma mark UINavigationControllerDelegate
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
@@ -329,7 +343,40 @@ RCS_ID("$Id$")
 
 @end
 
+#pragma mark - OUISegmentItem
+@interface OUISegmentItem ()
 
+@property (nonatomic, copy, readwrite) NSString *title;
+@property (nonatomic, strong, readwrite) UIImage *image;
+
+@end
+
+@implementation OUISegmentItem
+
+- (instancetype)init {
+    // You must use either -initWithTitle: or -initWithImage:
+    OBRejectUnusedImplementation(self, _cmd);
+}
+
+- (instancetype)initWithTitle:(NSString *)title {
+    self = [super init];
+    if (self) {
+        _title = title;
+    }
+    return self;
+}
+
+- (instancetype)initWithImage:(UIImage *)image {
+    self = [super init];
+    if (self) {
+        _image = image;
+    }
+    return self;
+}
+
+@end
+
+#pragma mark - UIViewController (OUISegmentedViewControllerExtras)
 @implementation UIViewController (OUISegmentedViewControllerExtras)
 - (BOOL)wantsHiddenNavigationBar;
 {
@@ -349,6 +396,20 @@ RCS_ID("$Id$")
     }
     
     return nil;
+}
+
+- (OUISegmentItem *)segmentItem {
+    return nil;
+}
+
+@end
+
+
+@implementation UINavigationController (OUISegmentedViewControllerExtras)
+
+- (OUISegmentItem *)segmentItem {
+    // We probably don't want the image or title changing every time a new view controller is pushed on. Let's just grab the first view controller's segmentItem if it exists.
+    return self.viewControllers.firstObject.segmentItem;
 }
 
 @end

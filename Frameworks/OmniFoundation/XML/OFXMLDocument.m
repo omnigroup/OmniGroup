@@ -270,14 +270,18 @@ NS_ASSUME_NONNULL_BEGIN
                 encodingName = CFSTR("UTF-8");
             }
             OFXMLBufferAppendString(xml, encodingName);
-            
-            OFXMLBufferAppendUTF8CString(xml, "\" standalone=\"");
-            if (_standalone)
-                OFXMLBufferAppendUTF8CString(xml, "yes");
-            else
-                OFXMLBufferAppendUTF8CString(xml, "no");
-            OFXMLBufferAppendUTF8CString(xml, "\"?>\n");
-            
+
+            OFXMLBufferAppendUTF8CString(xml, "\"");
+            // the standalone pseudo-attribute is only really necessary for DTD declarations not schema or relax ng.
+            if (_dtdPublicID || _dtdSystemID) {
+                OFXMLBufferAppendUTF8CString(xml, " standalone=\"");
+                if (_standalone)
+                    OFXMLBufferAppendUTF8CString(xml, "yes\"");
+                else
+                    OFXMLBufferAppendUTF8CString(xml, "no\"");
+            }
+            OFXMLBufferAppendUTF8CString(xml, "?>\n");
+
             // Add processing instructions.
             {
                 NSCharacterSet *nonWhitespaceCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet];

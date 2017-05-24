@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,6 @@ extern UIImage *OUITableViewItemSelectionMixedImage(void);
 extern UIImage *OUIStepperMinusImage(void);
 extern UIImage *OUIStepperPlusImage(void);
 extern UIImage *OUIToolbarUndoImage(void);
-
-extern UIImage *OUIServerAccountValidationSuccessImage(void);
 
 @interface OUIImageLocation : NSObject
 

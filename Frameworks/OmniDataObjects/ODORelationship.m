@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,22 +105,22 @@ void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEnti
     OBPRECONDITION(inverse);
     
     // We don't support many-to-many
-    OBPRECONDITION(!self.isToMany || !inverse.isToMany);
+    OBPRECONDITION(![self isToMany] || ![inverse isToMany]);
     
     // Both sides can't be calculated; one would (presumably) have to be computed from the other.
-    OBPRECONDITION(!self.isCalculated || !inverse.isCalculated);
+    OBPRECONDITION(![self isCalculated] || ![inverse isCalculated]);
 
     // In a one-to-one, one side must be calculated.
 #ifdef OMNI_ASSERTIONS_ON
-    if (!self.isToMany && !inverse.isToMany) {
-        OBPRECONDITION(self.isCalculated || inverse.isCalculated);
+    if (![self isToMany] && ![inverse isToMany]) {
+        OBPRECONDITION([self isCalculated] || [inverse isCalculated]);
     }
     
     // The to-one side of a one-to-many can't be calculated since presumably the to-many side is the calculated side.
-    if (self.isToMany) {
-        OBPRECONDITION(!inverse.isCalculated);
-    } else if (inverse.isToMany) {
-        OBPRECONDITION(!self.isCalculated);
+    if ([self isToMany]) {
+        OBPRECONDITION(![inverse isCalculated]);
+    } else if ([inverse isToMany]) {
+        OBPRECONDITION(![self isCalculated]);
     }
 #endif
     
@@ -131,7 +131,7 @@ void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEnti
 
     //
 #ifdef OMNI_ASSERTIONS_ON
-    if (self.isCalculated) {
+    if ([self isCalculated]) {
         NSString *setterString = [NSString stringWithFormat:@"set%@%@:", [self.name substringToIndex:1].uppercaseString, [self.name substringFromIndex:1]];
         SEL setter = NSSelectorFromString(setterString);
         Class cls = self->_nonretained_entity.instanceClass;

@@ -154,7 +154,9 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "書類";
 
-/* Duplicate toolbar item accessibility label. */
+/* Duplicate document preview action title.
+   Duplicate toolbar item accessibility label. */
+
 "Duplicate" = "複製";
 
 /* title for alert option confirming duplication of multiple files */
@@ -199,6 +201,9 @@
 
 /* Menu option in the document picker view */
 "Export to…" = "書き出し先...";
+
+/* Export document preview action title. */
+"Export…" = "書き出し...";
 
 /* finished */
 "Finished" = "完了";
@@ -258,13 +263,18 @@
 /* Share menu title */
 "Move to..." = "移動...";
 
+/* Move document preview action title. */
+"Move…" = "Move…";
+
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "書類";
 
 /* Base name for newly created templates. This will have an number appended to it to make it unique. */
 "My Template" = "マイテンプレート";
 
-/* New Document toolbar item accessibility label. */
+/* New Document toolbar item accessibility label.
+   New Template button title */
+
 "New Document" = "新規書類";
 
 /* Action sheet title for making a new folder from the selected documents */
@@ -420,6 +430,9 @@
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。ローカルで行われた編集内容をすべて破棄しますか？";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "操作を完了できませんでした。";

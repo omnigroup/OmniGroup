@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 RCS_ID("$Id$");
 
-#if 0 && defined(DEBUG)
+#if 1 && defined(DEBUG)
 #define DEBUG_KEYBOARD(format, ...) NSLog(@"KEYBOARD: " format, ## __VA_ARGS__)
 #else
 #define DEBUG_KEYBOARD(format, ...)
@@ -179,7 +179,7 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     //
     // This should certainly be logged as a radar. We may wish to turn off this post condition if it generates too much noise.
     
-    OBPOSTCONDITION(_lastKnownKeyboardHeight == 0);
+//    OBPOSTCONDITION(_lastKnownKeyboardHeight == 0);
     _lastKnownKeyboardHeight = 0;
     
     NSDictionary *userInfo = [note userInfo];
@@ -273,7 +273,6 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *s
 
     OB_UNUSED_VALUE(keyboardHeight);
     DEBUG_KEYBOARD("keyboardHeight: %f", keyboardHeight);
-    DEBUG_KEYBOARD("isDocked: %@", isDocked ? @"YES" : @"NO");
 
     CGFloat heightToAvoid = 0;
     CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardEndFrame);

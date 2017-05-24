@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,5 +49,5 @@ static inline NSUInteger ODOPropertySnapshotIndex(ODOProperty *property)
 
 SEL ODOPropertyGetterSelector(ODOProperty *property) OB_HIDDEN;
 SEL ODOPropertySetterSelector(ODOProperty *property) OB_HIDDEN;
-ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property) OB_HIDDEN;
-ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property) OB_HIDDEN;
+IMP ODOPropertyGetterImpl(ODOProperty *property) OB_HIDDEN;
+IMP ODOPropertySetterImpl(ODOProperty *property) OB_HIDDEN;

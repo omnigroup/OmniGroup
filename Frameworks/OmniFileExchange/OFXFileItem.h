@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import "OFXFileState.h"
 
 @class ODAVConnection, ODAVFileInfo;
-@class OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRecentError, OFXRegistrationTable;
+@class OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRecentError;
 @protocol NSFilePresenter;
 
 typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
 @property(nonatomic,readonly) NSString *requestedLocalRelativePath; // Valid even if the item is deleted
 
 @property(nonatomic,readonly) OFXRecentError *mostRecentTransferError;
-- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary <NSString *, NSArray <OFXRecentError *> *> *)recentErrorsByLocalRelativePath;
 - (void)clearRecentTransferErrors;
 
 @property(nonatomic,readonly) NSDate *userCreationDate;

@@ -104,6 +104,7 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     }
     
     NSFileWrapper *directoryWrapper = [[NSFileWrapper alloc] initDirectoryWithFileWrappers:childWrappers];
+    directoryWrapper.preferredFilename = [self name];
     return directoryWrapper;
 }
 

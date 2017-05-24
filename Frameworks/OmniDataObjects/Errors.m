@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniDataObjects/Errors.h>
-
+#import <OmniBase/NSError-OBExtensions.h>
 #import <sqlite3.h>
 
 RCS_ID("$Id$")
@@ -15,7 +15,7 @@ NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.Erro
 NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
 NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
 
-BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors)
+static BOOL ODOWrapMultipleErrors(NSError **outError, NSArray<NSError *> *errors, NSString *errorDomain, NSInteger errorCode)
 {
     OBPRECONDITION(outError != NULL);
     
@@ -28,12 +28,22 @@ BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors)
                     NSLocalizedDescriptionKey: NSLocalizedStringFromTableInBundle(@"Multiple Errors", @"OmniDataObjects", OMNI_BUNDLE, @"Multiple Delete Errors"),
                     ODODetailedErrorsKey: errors,
                 };
-                *outError = [NSError errorWithDomain:ODOErrorDomain code:ODOMultipleDeleteErrorsError userInfo:userInfo];
+                *outError = [NSError errorWithDomain:errorDomain code:errorCode userInfo:userInfo];
             }
         }
     }
 
     return YES;
+}
+
+BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors)
+{
+    return ODOWrapMultipleErrors(outError, errors, ODOErrorDomain, ODOMultipleDeleteErrorsError);
+}
+
+BOOL ODOMultipleUnableToFindObjectWithIDError(NSError **outError, NSArray<NSError *> *errors)
+{
+    return ODOWrapMultipleErrors(outError, errors, ODOErrorDomain, ODOUnableToFindObjectWithIDMultipleErrors);
 }
 
 NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite)
@@ -66,4 +76,23 @@ NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sql
     [userInfo release];
     return error;
 }
+
+#pragma mark -
+
+@implementation NSError (ODOExtensions)
+
+- (BOOL)causedByMissingObject;
+{
+    if ([self hasUnderlyingErrorDomain:ODOErrorDomain code:ODOUnableToFindObjectWithID]) {
+        return YES;
+    }
+
+    if ([self hasUnderlyingErrorDomain:ODOErrorDomain code:ODOUnableToFindObjectWithIDMultipleErrors]) {
+        return YES;
+    }
+
+    return NO;
+}
+
+@end
 

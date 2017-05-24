@@ -84,6 +84,9 @@
 /* account validation error suggestion */
 "Please check that the account information you entered is correct." = "入力したアカウント情報が正しいことを確認してください。";
 
+/* error description */
+"Please choose another location for your synced documents." = "Please choose another location for your synced documents.";
+
 /* account validation error suggestion */
 "Please enter an address for the account." = "アカウントのアドレスを入力してください。";
 
@@ -115,10 +118,19 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "提案されたローカル書類フォルダにはすでにファイルが含まれています。空のフォルダまたはまだ存在しないフォルダを指定してください。";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "提案されたローカル書類フォルダは Dropbox フォルダ内にあるようです。1 つのフォルダで 2 つのファイル同期システムを使用すると、データを損失する可能性があります。";
+"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "提案されたローカル書類フォルダはローカルボリュームにありません。お使いのコンピュータに対してローカルである場所を選択してください。";
 
 /* error description */
-"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "提案されたローカル書類フォルダはローカルボリュームにありません。お使いのコンピュータに対してローカルである場所を選択してください。";
+"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
 
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "このアプリには OmniPresence フォーマット %1$@ が必要ですが、このクラウドアカウントはフォーマット %2$@ を使用しています。 クラウドアカウントをアップグレードしてください。";

@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,6 +47,9 @@ typedef void (*SETFLOAT_IMP)(id, SEL, float);
 @implementation OFTimeSpanFormatter
 
 static NSArray *TimeSpanUnits = nil;
+static NSString *ElapsedString = nil;
+static NSString *ElapsedAbbreviationString = nil;
+static NSString *ElapsedUnlocalizedAbbreviationString = nil;
 
 + (void)initialize;
 {
@@ -57,6 +60,10 @@ static NSArray *TimeSpanUnits = nil;
     NSString *localizedSingularString = nil;
     NSString *localizedAbbreviatedString = nil;
     
+    ElapsedString = NSLocalizedStringFromTableInBundle(@"elapsed ", @"OmniFoundation", bundle, @"time span formatter span - needs one trailing space");
+    ElapsedAbbreviationString = NSLocalizedStringFromTableInBundle(@"e", @"OmniFoundation", bundle, @"time span formatter span - DO NOT add leading or trailing whitespace");
+    ElapsedUnlocalizedAbbreviationString = @"e";
+
     localizedPluralString = NSLocalizedStringFromTableInBundle(@"years", @"OmniFoundation", bundle, @"time span formatter span - DO NOT add leading or trailing whitespace");
     localizedSingularString = NSLocalizedStringFromTableInBundle(@"year", @"OmniFoundation", bundle, @"time span formatter span - DO NOT add leading or trailing whitespace");
     localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"y", @"OmniFoundation", bundle, @"time span formatter span - DO NOT add leading or trailing whitespace");
@@ -471,6 +478,16 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     _setDisplayUnitBit(self, UNITS_YEARS, aBool);
 }
 
+- (BOOL)allowsElapsedUnits;
+{
+    return _flags.allowsElapsedUnits;
+}
+
+- (void)setAllowsElapsedUnits:(BOOL)allowsElapsedUnits;
+{
+    _flags.allowsElapsedUnits = allowsElapsedUnits;
+}
+
 - (void)setStandardWorkTime; // 8h = 1d, 40h = 1w, 160h = 1m
 {
     hoursPerDay = STANDARD_WORK_HOURS_PER_DAY;
@@ -505,8 +522,6 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     return value;
 }
 
-#define FLAGS_DISPLAY_ALL_UNITS ((1 << UNITS_COUNT) - 1)
-
 - (NSString *)_displayStringForUnmodifiedTimeSpan:(OFTimeSpan *)timeSpan;
 {
     NSMutableString *displayString = [NSMutableString string];
@@ -531,6 +546,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
         }
 
         NSString *valueString = [numberFormatter stringFromNumber:[NSNumber numberWithFloat:value]];
+        NSString *elapsedString = timeSpan.elapsed && self.allowsElapsedUnits ? (shouldUseVerboseFormat ? ElapsedString : ElapsedAbbreviationString) : @"";
         if (valueString != nil) {
             if ([displayString length])
                 [displayString appendString:@" "];
@@ -540,9 +556,9 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
             OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
             if (shouldUseVerboseFormat) {
                 NSString *unitString = value > 1.0 ? unit.localizedPluralString : unit.localizedSingularString;
-                [displayString appendFormat:@"%@ %@", valueString, unitString];
+                [displayString appendFormat:@"%@ %@%@", valueString, elapsedString, unitString];
             } else
-                [displayString appendFormat:@"%@%@", valueString, unit.localizedAbbreviatedString];
+                [displayString appendFormat:@"%@%@%@", valueString, elapsedString, unit.localizedAbbreviatedString];
         }
     }
     return displayString;
@@ -797,9 +813,13 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
         
         // Eat more whitespace
         [scanner scanCharactersFromSet:whitespaceCharacterSet intoString:NULL];
-
+        
         unsigned int unitIndex;
         if (_flags.usesArchiveUnitStrings) {
+            if (_flags.allowsElapsedUnits && [scanner scanString:ElapsedUnlocalizedAbbreviationString intoString:NULL]) {
+                [timeSpan setElapsed:YES];
+            }
+            
             // Only look for archive unit strings, not long forms or abbreviations
             for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
                 OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
@@ -809,6 +829,13 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                 }
             }
         } else {
+            if (_flags.allowsElapsedUnits && [scanner scanString:ElapsedString intoString:NULL]) {
+                [timeSpan setElapsed:YES];
+                [scanner scanCharactersFromSet:whitespaceCharacterSet intoString:NULL];
+            } else if (_flags.allowsElapsedUnits && [scanner scanString:ElapsedAbbreviationString intoString:NULL]) {
+                [timeSpan setElapsed:YES];
+            }
+            
             for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
                 OFTimeSpanUnit *unit = TimeSpanUnits[(lastMatchedUnit+unitIndex) % UNITS_COUNT];
                 if ([scanner scanString:unit.localizedPluralString intoString:NULL] || [scanner scanString:unit.localizedSingularString intoString:NULL]) {
@@ -833,7 +860,8 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                     if ([scanner scanString:unit.pluralString intoString:NULL] || [scanner scanString:unit.singularString intoString:NULL]) {
                         lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                         break;
-                    }                }
+                    }
+                }
             if (unitIndex == UNITS_COUNT) {
                 // unlocalized abbreviations?
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
@@ -841,7 +869,8 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                     if ([scanner scanString:unit.abbreviatedString intoString:NULL]) {
                         lastMatchedUnit = (lastMatchedUnit+unitIndex) % UNITS_COUNT;
                         break;
-                    }                }
+                    }
+                }
             }
         }
         if (unitIndex != UNITS_COUNT) {
@@ -870,6 +899,14 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
         *obj = timeSpan;
     DLOG(@">> %@", [*obj shortDescription]);
     return YES;
+}
+
+- (OFTimeSpan *)timeSpanValueForString:(NSString *)string errorDescription:(out NSString **)error;
+{
+    OFTimeSpan *result;
+    if ([self getObjectValue:&result forString:string errorDescription:error])
+        return result;
+    return nil;
 }
 
 @end

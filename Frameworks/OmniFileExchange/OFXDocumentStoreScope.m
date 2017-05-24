@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,13 +35,13 @@ RCS_ID("$Id$");
     
     NSString *_identifier;
     NSURL *_documentsURL;
-    OFXRegistrationTable *_metadataItemRegistrationTable;
-    NSDictionary *_previouslyAppliedMetadataItemsByIdentifier;
+    OFXRegistrationTable <OFXFileMetadata *> *_metadataItemRegistrationTable;
+    NSDictionary <NSString *, OFXFileMetadata *> *_previouslyAppliedMetadataItemsByIdentifier;
     
-    NSMutableSet *_fileItemsToAutomaticallyDownload;
+    NSMutableSet <ODSFileItem *> *_fileItemsToAutomaticallyDownload;
     
     // In the local directory scope, we can scan the filesystem to check the current state, here we get notified of file items in background. We could assume file stubs exist and scan, but instead we maintain a set of used URLs here.
-    NSArray *_usedFileURLs;
+    NSArray <NSURL *> *_usedFileURLs;
 }
 
 static unsigned MetadataRegistrationContext;
@@ -117,7 +117,7 @@ static unsigned MetadataRegistrationContext;
     return YES;
 }
 
-- (void)deleteItems:(NSSet *)items completionHandler:(void (^)(NSSet *deletedFileItems, NSArray *errorsOrNil))completionHandler;
+- (void)deleteItems:(NSSet <ODSItem *> *)items completionHandler:(void (^)(NSSet *deletedFileItems, NSArray *errorsOrNil))completionHandler;
 {
     OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == self; }]);
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with updating of fileItems, and this is the queue we'll invoke the completion handler on.
@@ -129,15 +129,15 @@ static unsigned MetadataRegistrationContext;
     // TODO: Delete of mix of downloaded/undownloaded
     // TODO: Delete of folder with downloaded and undownloaded item
     
-    NSMutableSet *deletedFileItems = [NSMutableSet new];
-    NSMutableArray *errors = [NSMutableArray new];
+    NSMutableSet <ODSFileItem *> *deletedFileItems = [NSMutableSet new];
+    NSMutableArray <NSError *> *errors = [NSMutableArray new];
     
     NSBlockOperation *allDeletionsCompleted = [NSBlockOperation blockOperationWithBlock:^{
         if (completionHandler)
             completionHandler(deletedFileItems, errors);
     }];
     
-    NSMutableSet *undownloadedFileItems = [NSMutableSet new];
+    NSMutableSet <ODSFileItem *> *undownloadedFileItems = [NSMutableSet new];
     {
         for (ODSItem *item in items) {
             [item eachFile:^(ODSFileItem *fileItem){
@@ -408,7 +408,7 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    NSMutableArray *fileURLs = [NSMutableArray new];
+    NSMutableArray <NSURL *> *fileURLs = [NSMutableArray new];
     for (ODSFileItem *fileItem in self.fileItems)
         [fileURLs addObject:fileItem.fileURL];
 

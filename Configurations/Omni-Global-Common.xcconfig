@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
@@ -19,6 +19,7 @@
 OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\""
 
 // These are normally set by the build system when doing a demo build, but you can uncomment them here to do one in Xcode.
+// See the build system notes about why we don't append '.RetailDemo' to the bundle identifier.
 // OMNI_RETAIL_DEMO_PREPROCESSOR_DEFINITIONS=OMNI_RETAIL_DEMO IPAD_RETAIL_DEMO OMNI_PRODUCT_NAME_SUFFIX=-RetailDemo
 // OMNI_PRODUCT_NAME_SUFFIX=-RetailDemo
 

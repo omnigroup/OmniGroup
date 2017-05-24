@@ -21,6 +21,8 @@
 /* Tells OUICertificateTrustAlert what view controller to present the alert from. This block will be invoked on the main thread right before the alert is to be shown. */
 - (void)findViewController:(UIViewController *(^)(void))finder;
 
+@property (readonly) SecTrustRef serverTrust;
+
 @property (copy, nonatomic) void (^cancelBlock)(void);
 @property (copy, nonatomic) void (^trustBlock)(OFCertificateTrustDuration duration);
 @property (assign, nonatomic) BOOL shouldOfferTrustAlwaysOption;

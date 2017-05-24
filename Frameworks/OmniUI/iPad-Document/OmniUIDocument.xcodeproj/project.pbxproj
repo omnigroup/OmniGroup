@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15632E511E527ADF003EB174 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E501E527ADF003EB174 /* pt-BR.lproj */; };
+		15632E571E527AE9003EB174 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E561E527AE8003EB174 /* ko.lproj */; };
 		15D93DDF1B5ED67400D3D355 /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15D93DD71B5ED67400D3D355 /* de.lproj */; };
 		15D93DE01B5ED67400D3D355 /* es.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15D93DD81B5ED67400D3D355 /* es.lproj */; };
 		15D93DE11B5ED67400D3D355 /* fr.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15D93DD91B5ED67400D3D355 /* fr.lproj */; };
@@ -342,6 +344,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15632E501E527ADF003EB174 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
+		15632E561E527AE8003EB174 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
 		15D93DD71B5ED67400D3D355 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15D93DD81B5ED67400D3D355 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
 		15D93DD91B5ED67400D3D355 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
@@ -636,7 +640,7 @@
 		50C8ED821A2E721E00BAD9EB /* OUIExportOptionsCollectionViewLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsCollectionViewLayout.m; sourceTree = SOURCE_ROOT; };
 		6C1FCE9217C68DBA00504B6C /* OUIDocumentTemplateAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentTemplateAnimator.h; sourceTree = SOURCE_ROOT; };
 		6C1FCE9317C68DBA00504B6C /* OUIDocumentTemplateAnimator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentTemplateAnimator.m; sourceTree = SOURCE_ROOT; };
-		6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/CoreSpotlight.framework; sourceTree = DEVELOPER_DIR; };
+		6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreSpotlight.framework; path = System/Library/Frameworks/CoreSpotlight.framework; sourceTree = SDKROOT; };
 		6C36347F16FD27C2000BCA41 /* OmniPresenceToolbarIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OmniPresenceToolbarIcon.png; sourceTree = "<group>"; };
 		6C36348016FD27C2000BCA41 /* OmniPresenceToolbarIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon@2x.png"; sourceTree = "<group>"; };
 		6C660BAD17BD321500950C60 /* OUIDocumentOpenAnimator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentOpenAnimator.h; sourceTree = SOURCE_ROOT; };
@@ -772,7 +776,9 @@
 				15D93DD91B5ED67400D3D355 /* fr.lproj */,
 				15D93DDA1B5ED67400D3D355 /* it.lproj */,
 				15D93DDB1B5ED67400D3D355 /* ja.lproj */,
+				15632E561E527AE8003EB174 /* ko.lproj */,
 				15D93DDC1B5ED67400D3D355 /* nl.lproj */,
+				15632E501E527ADF003EB174 /* pt-BR.lproj */,
 				15D93DDD1B5ED67400D3D355 /* ru.lproj */,
 				15D93DDE1B5ED67400D3D355 /* zh-Hans.lproj */,
 			);
@@ -1425,6 +1431,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2357BEBF1B68105B00BE9DAD /* OUIBetaBadge@3x.png in Resources */,
+				15632E571E527AE9003EB174 /* ko.lproj in Resources */,
 				2357BEC11B68106000BE9DAD /* OUIBetaBadge@2x.png in Resources */,
 				2357BEC31B68106500BE9DAD /* OUIBetaBadge.png in Resources */,
 				3458EFC61B5D6FC6000011A6 /* OUIExportCancelBadge@2x.png in Resources */,
@@ -1614,6 +1621,7 @@
 				3458EF8E1B5D6FC6000011A6 /* OUIDocument@3x.png in Resources */,
 				3458EFAD1B5D6FC6000011A6 /* OUIDocumentPlaceholder-Plan-Large@3x.png in Resources */,
 				3458EFD81B5D6FC6000011A6 /* OUIGreenPlusButton.png in Resources */,
+				15632E511E527ADF003EB174 /* pt-BR.lproj in Resources */,
 				3458F0261B5D6FC6000011A6 /* OUIToolbarDocumentClose.png in Resources */,
 				3458F0281B5D6FC6000011A6 /* OUIToolbarDocumentClose@3x.png in Resources */,
 				3458EFF41B5D6FC6000011A6 /* OUIMenuItemLink@2x.png in Resources */,

@@ -12,11 +12,22 @@
 @class UITouch;
 @class NSData;
 
+@protocol GPVisibleBoundsDelegate <NSObject>
+
+/// The rect in view's coordinates that is unobstructed by any UINavigationControllers' navigationBars or toolbars
+- (CGRect)unobstructedVisibleBoundsOfView:(UIView*)view;
+
+/// The size of the viewport, not including any UINavigationControllers' navigationBars or toolbars
+- (CGSize)sizeOfViewport;
+
+@end
+
 @interface OUIScalingView : UIView
 
 // If this view is within a OUIScalingScrollView, then this property should be considered read-only and the scale should be adjusted via its methods.
 @property(assign,nonatomic) CGFloat scale;
 @property(assign,nonatomic) BOOL scaleEnabled;
+@property (nonatomic, weak) IBOutlet NSObject<GPVisibleBoundsDelegate> *visibleBoundsDelegate;
 
 // For subclasses;
 - (void)scaleChanged;

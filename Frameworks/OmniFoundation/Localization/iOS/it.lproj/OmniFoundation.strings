@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "La libreria bzip2 ha restituito il codice errore %1$d durante la scrittura dei dati. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Annulla";
 
 /* error recovery option */
@@ -83,20 +83,38 @@
 
 "Could not create directory" = "Impossibile creare la directory";
 
-/* time span formatter span */
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "Impossibile analizzare le adesioni dal profilo di provisioning incorporato";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "g";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "giorno";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "giorni";
 
 /* invalid bundle reason */
 "Duplicate bundle name" = "Duplica nome pacchetto";
 
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"e" = "e";
+
+/* time span formatter span - needs one trailing space */
+"elapsed " = "elapsed ";
+
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Elemento “%1$@” non consentito sul percorso: %2$@";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "Il profilo di provisioning incorporato non è un archivio PKCS#7 valido";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "Profilo di provisioning incorporato non trovato";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "Profilo di provisioning incorporato non leggibile";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Creazione della directory per il documento di blocco in “%@” non riuscita.";
@@ -107,13 +125,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Scrittura del documento di blocco non riuscita.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "o";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "ora";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "ore";
 
 /* formatter input error */
@@ -122,22 +140,22 @@
 /* local bundle path readable string */
 "local configuration file" = "documento configurazione locale";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minuto";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minuti";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "mm";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "mese";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "mesi";
 
 /* error reason */
@@ -146,8 +164,11 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Non è un pacchetto valido";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Sostituisci blocco";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "I contenuti PKCS#7 del profilo di provisioning incorporato non costituivano un plist valido";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "Ripristinare il valore di default per \"%@\"";
@@ -155,17 +176,20 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Ripristinare i valori di default di tutte le impostazioni di configurazione interne";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "secondo";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "secondi";
 
 /* alert message format when clicking on a configuration value URL */
 "Set \"%@\" to \"%@\"" = "Impostare \"%1$@\" su \"%2$@\"";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "L'elemento crittigrafato \"%@\" è mancante o illeggibile.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
@@ -209,31 +233,45 @@
 /* error description */
 "Unable to lock document." = "Impossibile bloccare il documento.";
 
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "Tipo di contenuto CMS imprevisto";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Unknown compression algorithm";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "Algoritmo di chiave pubblica sconosciuto";
+
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "Sconosciuto";
 
 /* decompression error reason */
 "unrecognized compression format." = "formato di compressione non riconosciuto.";
 
-/* time span formatter span */
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "Algoritmo di crittografia non supportato";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "s";
 
 /* error description */
 "Warning encountered while loading XML." = "Rilevato un avviso durante il caricamento di XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "settimana";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "settimane";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "a";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "anno";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "anni";
 
 /* zlib error reason */

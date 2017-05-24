@@ -1477,6 +1477,8 @@
 		1E657D0E19BFD9EA00D55E8B /* OFByteProviderProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFByteProviderProtocol.h; sourceTree = "<group>"; };
 		1E6A669D1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCredentialChallengeDispositionProtocol.h; sourceTree = "<group>"; };
 		1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCryptoTest-AEAD.m"; sourceTree = "<group>"; };
+		1E735A3C1E4C1A690058714E /* OFCommonCryptorTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFCommonCryptorTransform.h; path = Crypto/OFCommonCryptorTransform.h; sourceTree = "<group>"; };
+		1E735A3D1E4C1A690058714E /* OFCommonCryptorTransform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFCommonCryptorTransform.m; path = Crypto/OFCommonCryptorTransform.m; sourceTree = "<group>"; };
 		1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = OFDocumentEncryption.md; sourceTree = "<group>"; };
 		1E7F99681D875BCD00CD4533 /* Bundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 		1E84BB961DB582BD00BB0D0A /* OFCryptoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCryptoTest.h; sourceTree = "<group>"; };
@@ -2743,6 +2745,8 @@
 				00E51C61FE8AAEA611C9CC38 /* OFController.m */,
 				1E189AE41DC9774100601271 /* OFDataTransform.h */,
 				1E189AE51DC9774100601271 /* OFDataTransform.m */,
+				1E735A3C1E4C1A690058714E /* OFCommonCryptorTransform.h */,
+				1E735A3D1E4C1A690058714E /* OFCommonCryptorTransform.m */,
 				34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */,
 				A2091C180E5A149E007B59A7 /* OFFilterProcess.h */,
 				A2091C190E5A149E007B59A7 /* OFFilterProcess.m */,

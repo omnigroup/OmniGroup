@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
 
     // Read existing accounts.
     __autoreleasing NSError *error;
-    NSArray *accountURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:_accountsDirectoryURL includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&error];
+    NSArray <NSURL *> *accountURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:_accountsDirectoryURL includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&error];
     if (!accountURLs) {
         if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
             [error hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]) {
@@ -120,7 +120,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         }
     }
 
-    NSMutableArray *allAccounts = [NSMutableArray new];
+    NSMutableArray <OFXServerAccount *> *allAccounts = [NSMutableArray new];
 
     for (NSURL *accountURL in accountURLs) {
         __autoreleasing NSError *infoError;
@@ -392,8 +392,8 @@ static unsigned AccountContext;
 
 - (void)_updateValidatedAccounts;
 {
-    NSMutableArray *validCloudSyncAccounts = [NSMutableArray new];
-    NSMutableArray *validImportExportAccounts = [NSMutableArray new];
+    NSMutableArray <OFXServerAccount *> *validCloudSyncAccounts = [NSMutableArray new];
+    NSMutableArray <OFXServerAccount *> *validImportExportAccounts = [NSMutableArray new];
     for (OFXServerAccount *account in _allAccounts) {
         if ([self _isAccountValid:account]) {
             switch (account.usageMode) {

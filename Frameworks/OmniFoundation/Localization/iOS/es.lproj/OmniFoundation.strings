@@ -83,20 +83,38 @@
 
 "Could not create directory" = "No se ha podido crear el directorio";
 
-/* time span formatter span */
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "No se han podido analizar las autorizaciones del perfil de aprovisionamiento integrado.";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "d";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "día";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "días";
 
 /* invalid bundle reason */
 "Duplicate bundle name" = "Nombre de paquete duplicado";
 
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"e" = "e";
+
+/* time span formatter span - needs one trailing space */
+"elapsed " = "elapsed ";
+
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "El elemento '%1$@' no se admite en la ruta: %2$@";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "El perfil de aprovisionamiento integrado no es un archivo PKCS#7 válido.";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "No se encuentra el perfil de aprovisionamiento integrado.";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "No se puede leer el perfil de aprovisionamiento integrado.";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "No se ha podido crear el directorio del archivo de bloqueo en “%@”.";
@@ -107,13 +125,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "No se ha podido escribir el archivo de bloqueo.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "h";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "hora";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "horas";
 
 /* formatter input error */
@@ -122,22 +140,22 @@
 /* local bundle path readable string */
 "local configuration file" = "archivo de configuración local";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minuto";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minutos";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "me";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "mes";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "meses";
 
 /* error reason */
@@ -149,23 +167,29 @@
 /* OFLockFile recovery option */
 "Override Lock" = "Anular bloqueo";
 
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "El contenido PKCS#7 del perfil de aprovisionamiento integrado no es un plist válido.";
+
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "Restaurar “%@” a su valor por omisión";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Restaurar todos los ajustes de configuración interna a sus valores por omisión";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "segundo";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "segundos";
 
 /* alert message format when clicking on a configuration value URL */
 "Set \"%@\" to \"%@\"" = "Ajustar “%1$@” a “%2$@";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "Falta el ítem encriptado “%@” o no se puede leer.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Parece que el certificado de servidor para “%@” no es válido. Puede que este sitio no sea de confianza. ¿Desea conectarse de todos modos?";
@@ -209,31 +233,45 @@
 /* error description */
 "Unable to lock document." = "No se puede bloquear el documento.";
 
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "Tipo de contenido CMS inesperado";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Unknown compression algorithm";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "Algoritmo de clave pública desconocido";
+
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "Desconocido";
 
 /* decompression error reason */
 "unrecognized compression format." = "formato de compresión desconocido.";
 
-/* time span formatter span */
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "Algoritmo de encriptación incompatible";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "s";
 
 /* error description */
 "Warning encountered while loading XML." = "Se ha encontrado una advertencia al cargar el XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "semana";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "semanas";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "a";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "año";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "años";
 
 /* zlib error reason */

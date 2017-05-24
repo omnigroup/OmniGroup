@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -277,7 +277,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 + (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(NSString *)username excludingAccount:(OFXServerAccount *)excludeAccount;
 {
     OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
-    NSMutableArray *similarAccounts = [NSMutableArray array];
+    NSMutableArray <OFXServerAccount *> *similarAccounts = [NSMutableArray array];
     for (OFXServerAccount *account in [registry allAccounts]) {
         if (account.type != accountType || account == excludeAccount)
             continue;

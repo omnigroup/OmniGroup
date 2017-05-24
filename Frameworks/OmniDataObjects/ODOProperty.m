@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,17 +112,19 @@ static void _ODOPropertyCacheImplementations(ODOProperty *self)
     OBPRECONDITION(self->_imp.set == NULL);
 
     Class instanceClass = [self->_nonretained_entity instanceClass];
-    Method method;
+    Method method = NULL;
 
     // This query should cause dynamic method creation via +[ODOObject resolveInstanceMethod:].
     [instanceClass instancesRespondToSelector:self->_sel.get];
 
-    ODOPropertyGetter getter;
-    if ((method = class_getInstanceMethod(instanceClass, self->_sel.get))) {
-        OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectGetterSignature()) == 0); // Only support id-returning getters for now.
+    IMP getter = NULL;
+    method = class_getInstanceMethod(instanceClass, self->_sel.get);
+    if (method != NULL) {
+        OBASSERT(strcmp(method_getTypeEncoding(method), ODOGetterSignatureForProperty(self)) == 0); // Only support id-returning getters for now.
         getter = (typeof(self->_imp.get))method_getImplementation(method);
-    } else
+    } else {
         getter = ODOGetterForProperty(self);
+    }
     
     // TODO: if "self->_flags.relationship && self->_flags.toMany" and there is a @property, make sure the result type is NSSet, not NSMutableSet.  If the user implements the method themselves, then they are taking their fate into their own hands.
     self->_imp.get = getter;
@@ -130,20 +132,22 @@ static void _ODOPropertyCacheImplementations(ODOProperty *self)
     // Again, provoke the method installation if it is going to be installed
     [instanceClass instancesRespondToSelector:self->_sel.set];
 
-    ODOPropertySetter setter;
-    if ((method = class_getInstanceMethod(instanceClass, self->_sel.set))) {
+    IMP setter = NULL;
+    method = class_getInstanceMethod(instanceClass, self->_sel.set);
+    if (method != NULL) {
         // Only support id-taking setters for now
-        OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectSetterSignature()) == 0);
+        OBASSERT(strcmp(method_getTypeEncoding(method), ODOSetterSignatureForProperty(self)) == 0);
         setter = (typeof(self->_imp.set))method_getImplementation(method);
     } else {
         // TODO: Don't do this for read-only properties.  Only catching the primary key right now
-        if (self->_flags.relationship == NO && [(ODOAttribute *)self isPrimaryKey])
+        if (self->_flags.relationship == NO && [(ODOAttribute *)self isPrimaryKey]) {
             setter = NULL;
-        else
+        } else {
             setter = ODOSetterForProperty(self);
+        }
     }
     
-    if (setter) {
+    if (setter != NULL) {
         if (self->_flags.relationship && self->_flags.toMany) {
             // TODO: Should allow setting to-many sets by setting the inverse on elements of the set, if nothing else.
             self->_imp.set = NULL;
@@ -165,17 +169,21 @@ SEL ODOPropertySetterSelector(ODOProperty *property)
     return property->_sel.set;
 }
 
-ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property)
+IMP ODOPropertyGetterImpl(ODOProperty *property)
 {
-    if (!property->_imp.get)
+    if (property->_imp.get == NULL) {
         _ODOPropertyCacheImplementations(property);
+    }
+    
     return property->_imp.get;
 }
 
-ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property)
+IMP ODOPropertySetterImpl(ODOProperty *property)
 {
-    if (!property->_imp.get)
+    if (property->_imp.get == NULL) {
         _ODOPropertyCacheImplementations(property);
+    }
+    
     return property->_imp.set;
 }
 

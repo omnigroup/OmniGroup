@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,7 +186,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
     self.passwordTextField.text = password;
     self.passwordConfirmationTextField.text = password;
-    OBPOSTCONDITION([self.password isEqualToString:password]);
+    OBPOSTCONDITION([self.password isEqualToString:password] || ([password isEqualToString:OUIPasswordAlertObfuscatedPasswordPlaceholder] && [self isUsingObfuscatedPasswordPlaceholder] && self.password == nil));
 }
 
 - (BOOL)isUsingObfuscatedPasswordPlaceholder;

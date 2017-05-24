@@ -319,15 +319,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)updateSlices;
 {
-    self.slices = [self appropriateSlicesForInspectedObjects];
-    
-#ifdef OMNI_ASSERTIONS_ON
-    if ([_slices count] == 0) {
-        // Inspected objects is nil if the inspector gets closed. Othrwise, if there really would be no applicable slices, the control to get here should have been disabled!    
-        OBASSERT(self.inspectedObjects == nil);
-        OBASSERT(self.visibility == OUIViewControllerVisibilityHidden);
-    }
-#endif
+    self.slices = [self appropriateSlicesForInspectedObjects];    
 }
 
 - (BOOL)inspectorPaneOfClassHasAlreadyBeenPresented:(Class)paneClass;

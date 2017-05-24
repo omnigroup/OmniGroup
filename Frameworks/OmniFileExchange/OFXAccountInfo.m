@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,7 @@ static NSString * const LocalState_LastRemoteTemporaryFileCleanupDate = @"LastTe
     OFXAccountClientParameters *_clientParameters;
     OFXSyncClient *_ourClient;
     
-    NSDictionary *_clientByIdentifier;
+    NSDictionary <NSString *, OFXSyncClient *> *_clientByIdentifier;
 }
 
 static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
@@ -196,7 +196,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     return YES;
 }
 
-- (BOOL)updateWithConnection:(ODAVConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(ODAVConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray <ODAVFileInfo *> *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
 {
     if (![self _updateAccountInfo:accountFileInfo serverDate:serverDate withConnection:connection error:outError])
         return NO;
@@ -225,7 +225,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     OBASSERT_NOTNULL(ourClientIdentifier); // help out clang-sa
     OBASSERT(![NSString isEmptyString:ourClientIdentifier]);
     
-    NSMutableDictionary *clientByIdentifier = [[self class] _updatedClientByIdentifierWithOriginal:_clientByIdentifier
+    NSMutableDictionary <NSString *, OFXSyncClient *> *clientByIdentifier = [[self class] _updatedClientByIdentifierWithOriginal:_clientByIdentifier
                                                                                  propertyListCache:_propertyListCache
                                                                               cachingFromFileInfos:clientFileInfos serverDate:serverDate
                                                                                ourClientIdentifier:ourClientIdentifier
@@ -301,9 +301,9 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     return @{OFXAccountInfo_Group:OFXMLCreateID(), OFXAccountInfo_Version:[_clientParameters.currentFrameworkVersion cleanVersionString]};
 }
 
-+ (NSMutableDictionary *)_updatedClientByIdentifierWithOriginal:(NSDictionary *)previousClientByIdentifier
++ (NSMutableDictionary <NSString *, OFXSyncClient *> *)_updatedClientByIdentifierWithOriginal:(NSDictionary <NSString *, OFXSyncClient *> *)previousClientByIdentifier
                                               propertyListCache:(OFXPropertyListCache *)propertyListCache
-                                           cachingFromFileInfos:(NSArray *)clientFileInfos
+                                           cachingFromFileInfos:(NSArray <ODAVFileInfo *> *)clientFileInfos
                                                      serverDate:(NSDate *)serverDate
                                             ourClientIdentifier:(NSString *)ourClientIdentifier
                                                   staleInterval:(NSTimeInterval)staleInterval

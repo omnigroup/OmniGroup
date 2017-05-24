@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -238,6 +239,32 @@ static NSString *_OFCalculateUniqueMachineIdentifier(void)
     // TODO: We could try using the machine's serial number via <http://developer.apple.com/technotes/tn/tn1103.html>, but even this can fail.  Often all we want is a globally unique string that at least lasts until the machine is rebooted.  It would be nice if the machine had a 'boot-uuid'... perhaps we could write a file in /tmp with a UUID that we'd check for before generating our own.  Race conditions would be an issue there (particularly at login with multple apps auto-launching).
     OBASSERT_NOT_REACHED("No active interfaces?");
     return @"no unique machine identifier found";
+}
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+
+static void _InitIsRunningUnitTests(void) __attribute__((constructor));
+static void _InitIsRunningUnitTests(void)
+{
+    // Grab this up front so that OFCrashImmediately() can read it w/o fear of causing another exception.
+    // Currently only used for Mac OS targets.
+    (void)OFIsRunningUnitTests();
+}
+
+#endif
+
+BOOL OFIsRunningUnitTests(void)
+{
+    static BOOL _IsRunningUnitTests = NO;
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSBundle *controllingBundle = OFControllingBundle();
+        NSString *pathExtension = controllingBundle.bundlePath.pathExtension;
+        _IsRunningUnitTests = [pathExtension isEqual:@"xctest"];
+    });
+    
+    return _IsRunningUnitTests;
 }
 
 NSString *OFUniqueMachineIdentifier(void)

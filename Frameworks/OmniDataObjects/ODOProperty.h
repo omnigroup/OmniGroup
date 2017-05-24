@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,22 +12,19 @@
 
 @class ODOEntity, ODOObject;
 
-#define ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH (27)
+#define ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH (26)
 struct _ODOPropertyFlags {
     unsigned int optional : 1;
     unsigned int transient : 1;
     unsigned int calculated : 1;
     unsigned int relationship : 1;
     unsigned int toMany : 1;
+    unsigned int scalarAccessors : 1;
     unsigned int snapshotIndex : ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH;
 };
 
-typedef id (*ODOPropertyGetter)(ODOObject *self, SEL _cmd);
-typedef void (*ODOPropertySetter)(ODOObject *self, SEL _cmd, id value);
-
-@interface ODOProperty : OBObject <NSCopying>
-{
-@package
+@interface ODOProperty : OBObject <NSCopying> {
+  @package
     ODOEntity *_nonretained_entity;
     NSString *_name;
     
@@ -39,19 +36,19 @@ typedef void (*ODOPropertySetter)(ODOObject *self, SEL _cmd, id value);
     
     // IMPs are cached when needed.  Setter might be NULL (someday) if the property is @dynamic and read-only.
     struct {
-        ODOPropertyGetter get;
-        ODOPropertySetter set;
+        IMP get;
+        IMP set;
     } _imp;
     
     struct _ODOPropertyFlags _flags;
 }
 
-@property(readonly) ODOEntity *entity;
-@property(readonly) NSString *name;
+@property (nonatomic, readonly) ODOEntity *entity;
+@property (nonatomic, readonly) NSString *name;
 
-@property(readonly) BOOL isOptional;
-@property(readonly) BOOL isTransient;
-@property(readonly) BOOL isCalculated;
+@property (nonatomic, readonly, getter=isOptional) BOOL isOptional;
+@property (nonatomic, readonly, getter=isTransient) BOOL isTransient;
+@property (nonatomic, readonly, getter=isCalculated) BOOL isCalculated;
 
 - (NSComparisonResult)compareByName:(ODOProperty *)prop;
 

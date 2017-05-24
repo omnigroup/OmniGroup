@@ -147,9 +147,9 @@
 		34B2542F08D0DCEE00DD2070 /* OIInspectionSet.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectionSet.h; sourceTree = "<group>"; };
 		34B2543008D0DCEE00DD2070 /* OIInspectionSet.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectionSet.m; sourceTree = "<group>"; };
 		34B2543108D0DCEE00DD2070 /* OIInspectorController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = OIInspectorController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		34B2543208D0DCEE00DD2070 /* OIInspectorController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorController.m; sourceTree = "<group>"; };
+		34B2543208D0DCEE00DD2070 /* OIInspectorController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OIInspectorController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		34B2543308D0DCEE00DD2070 /* OIInspectorGroup.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorGroup.h; sourceTree = "<group>"; };
-		34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorGroup.m; sourceTree = "<group>"; };
+		34B2543408D0DCEE00DD2070 /* OIInspectorGroup.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OIInspectorGroup.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		34B2543708D0DCEE00DD2070 /* OIInspectorHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderView.h; sourceTree = "<group>"; };
 		34B2543808D0DCEE00DD2070 /* OIInspectorHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderView.m; sourceTree = "<group>"; };
 		34B2543908D0DCEE00DD2070 /* OIInspectorRegistry.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OIInspectorRegistry.h; sourceTree = "<group>"; };
@@ -235,7 +235,7 @@
 		E2BFE04E1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OIAutolayoutInspectorHeaderView.xib; sourceTree = "<group>"; };
 		E2BFE0521AFD3AE800F06789 /* OIAppearance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIAppearance.h; sourceTree = "<group>"; };
 		E2BFE0531AFD3AE800F06789 /* OIAppearance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIAppearance.m; sourceTree = "<group>"; };
-		E2BFE0541AFD3AE800F06789 /* OIAppearance.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OIAppearance.plist; sourceTree = "<group>"; };
+		E2BFE0541AFD3AE800F06789 /* OIAppearance.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = OIAppearance.plist; sourceTree = "<group>"; };
 		E2E26BEC1D53B054006EA86B /* NSWindowController-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindowController-OIExtensions.h"; sourceTree = "<group>"; };
 		E2E26BED1D53B054006EA86B /* NSWindowController-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindowController-OIExtensions.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */

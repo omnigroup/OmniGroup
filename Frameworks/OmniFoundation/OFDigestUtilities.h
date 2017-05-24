@@ -1,4 +1,4 @@
-// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,10 +35,6 @@
  A set of classes implementing OFDigestionContext for a few of the message digests supported by the CommonDigest.h.
 */
 @interface OFCCDigestContext : NSObject <OFDigestionContext>
-{
-    NSData *result;
-    unsigned int outputLength;
-}
 
 - (BOOL)verifyInit:(NSError **)outError;
 - (BOOL)verifyFinal:(NSData *)digest error:(NSError **)outError; /* Digest may be nil */

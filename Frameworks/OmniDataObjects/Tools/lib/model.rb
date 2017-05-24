@@ -60,8 +60,13 @@ module OmniDataObjects
       # Nothing
     end
     
+    def emitSwiftDefinition(fp)
+      # Nothing
+    end
+    
     def entity_pair(e,fs,fp)
-      SourceFilePair.new(e.header_file(fs), fp.m) # Direct the interface for each entity to its own file, but the constants to the global model source file.
+      # Direct the interface for each entity to its own file, but the constants to the global model source file.
+      SourceFilePair.new(e.header_file(fs), fp.m, e.swift_extension_file(fs)) 
     end
     
     def emit

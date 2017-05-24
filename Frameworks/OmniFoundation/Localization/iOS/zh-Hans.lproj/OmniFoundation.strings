@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "bzip2 资源库在写入数据时返回错误代码 %1$d。%2$s。";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "取消";
 
 /* error recovery option */
@@ -83,20 +83,38 @@
 
 "Could not create directory" = "无法创建目录";
 
-/* time span formatter span */
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "无法从嵌入式配置文件解析权限";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "d";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "天";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "天";
 
 /* invalid bundle reason */
 "Duplicate bundle name" = "复制包的名称";
 
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"e" = "e";
+
+/* time span formatter span - needs one trailing space */
+"elapsed " = "elapsed ";
+
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "嵌入式配置文件不是有效的 PKCS＃7 归档文件";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "找不到嵌入式配置文件";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "嵌入式配置文件不可读";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "针对位于“%@”的锁定文件创建目录失败。";
@@ -107,13 +125,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "h";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "小时";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "小时";
 
 /* formatter input error */
@@ -122,22 +140,22 @@
 /* local bundle path readable string */
 "local configuration file" = "本地配置文件";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分钟";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "分钟";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "mo";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "月";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "月";
 
 /* error reason */
@@ -146,8 +164,11 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "不是有效的包";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "覆盖锁定";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "嵌入式供应配置文件的 PKCS＃7 内容不是有效的 plist";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "将“%@”还原到默认值";
@@ -155,17 +176,20 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "秒";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "秒";
 
 /* alert message format when clicking on a configuration value URL */
 "Set \"%@\" to \"%@\"" = "将“%1$@”设置为“%2$@”";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "缺少加密项“%@”或无法读取。";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。 此站点不受信任。 是否仍要连接？";
@@ -209,31 +233,45 @@
 /* error description */
 "Unable to lock document." = "不能锁定文稿。";
 
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "未预期的 CMS 内容类型";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Unknown compression algorithm";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "未知的公开密钥算法";
+
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "未知的";
 
 /* decompression error reason */
 "unrecognized compression format." = "无法识别的压缩格式。";
 
-/* time span formatter span */
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "不支持的加密算法";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "w";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "周";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "周";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "y";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "年";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "年";
 
 /* zlib error reason */

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -427,7 +427,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 - (void)testRoundTripProcessingInstructions;
 {
     NSString *inputString =
-    @"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+    @"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     @"<?my-pi foozle?>\n"
     @"<?empty-pi?>\n"
     @"<root-element/>\n";
@@ -448,7 +448,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 - (void)testCDATAMerging;
 {
     NSString *inputString =
-    @"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+    @"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     @"<?my-pi foozle?>\n"
     @"<?empty-pi?>\n"
     @"<root-element>foo<![CDATA[<wonga>]]>blegga</root-element>\n";

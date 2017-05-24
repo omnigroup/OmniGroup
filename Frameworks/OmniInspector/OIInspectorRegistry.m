@@ -502,11 +502,14 @@ static NSMutableArray *hiddenPanels = nil;
         if (identifier)
             [identifiers addObject:identifier];
     }
-    
-    [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-        [dictionary setObject:identifiers forKey:@"_groups"];
-    }];
-    [OIWorkspace.sharedWorkspace save];
+
+    OIWorkspace *sharedWorkspace = [OIWorkspace sharedWorkspace];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
+    [sharedWorkspace setInspectorGroupIdentifiers:identifiers];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
+
+    [sharedWorkspace save];
 }
 
 
@@ -535,7 +538,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
 - (void)restoreInspectorGroupsWithInspectors:(NSArray <OIInspectorController *> *)inspectorList;
 {
     @autoreleasepool {
-        NSArray *groups = [[OIWorkspace.sharedWorkspace objectForKey:@"_groups"] copy];
+        NSArray *groups = [[[OIWorkspace sharedWorkspace] inspectorGroupIdentifiers] copy];
         NSMutableDictionary *inspectorById = [NSMutableDictionary dictionary];
         
         // Obsolete name of a method, make sure nobody's trying to override it
@@ -825,7 +828,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     NSSound *sound = [[NSSound alloc] initWithContentsOfFile:path byReference:YES];
     [sound play];
     [self _saveConfigurations];
-    [OIWorkspace.sharedWorkspace saveAs:name];
+    [[OIWorkspace sharedWorkspace] saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self _buildWorkspacesInMenu];
@@ -861,7 +864,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     }
 
     [self _saveConfigurations];
-    [OIWorkspace.sharedWorkspace saveAs:name];
+    [[OIWorkspace sharedWorkspace] saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self _buildWorkspacesInMenu];
@@ -914,7 +917,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     NSIndexSet *selectedRows = [_editWorkspaceTable selectedRowIndexes];
     if ([selectedRows count] == 1) {
-	NSString *workspaceName = [OIWorkspace.sharedWorkspaces objectAtIndex:[selectedRows firstIndex]];
+	NSString *workspaceName = [[OIWorkspace sharedWorkspaces] objectAtIndex:[selectedRows firstIndex]];
 	[deleteAlert setMessageText:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Delete workspace '%@'?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - single selection"), workspaceName]];
     } else {
 	[deleteAlert setMessageText:NSLocalizedStringFromTableInBundle(@"Delete selected workspaces?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - multiple selection")];
@@ -943,9 +946,9 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         return;
     }
     
-    NSString *name = [OIWorkspace.sharedWorkspaces objectAtIndex:row];
+    NSString *name = [[OIWorkspace sharedWorkspaces] objectAtIndex:row];
     [self _saveConfigurations];
-    [OIWorkspace.sharedWorkspace saveAs:name];
+    [[OIWorkspace sharedWorkspace] saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -961,10 +964,10 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
     
-    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
     NSString *name = [sharedWorkspaces objectAtIndex:row];
-    [OIWorkspace.sharedWorkspace loadFrom:name];
-    [OIWorkspace.sharedWorkspace save];
+    [[OIWorkspace sharedWorkspace] loadFrom:name];
+    [[OIWorkspace sharedWorkspace] save];
     
     [self restoreInspectorGroups];
     [self _loadConfigurations];
@@ -976,8 +979,8 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
     
-    [OIWorkspace.sharedWorkspace loadFrom:[sender representedObject]];
-    [OIWorkspace.sharedWorkspace save];
+    [[OIWorkspace sharedWorkspace] loadFrom:[sender representedObject]];
+    [[OIWorkspace sharedWorkspace] save];
     
     [self restoreInspectorGroups];
     [self queueSelectorOnce:@selector(_loadConfigurations)];
@@ -990,10 +993,10 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (void)switchToDefaultWorkspace;
 {
-    [OIWorkspace.sharedWorkspace reset];
+    [[OIWorkspace sharedWorkspace] reset];
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
-    [OIWorkspace.sharedWorkspace save];
+    [[OIWorkspace sharedWorkspace] save];
     [self restoreInspectorGroups];
     [self queueSelectorOnce:@selector(_loadConfigurations)];
 }
@@ -1030,13 +1033,13 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
     return [sharedWorkspaces count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
-    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
     if ([[aTableColumn identifier] isEqualToString:@"Name"]) {
         return [sharedWorkspaces objectAtIndex:rowIndex];
     } else {
@@ -1051,7 +1054,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)newName forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
-    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
     NSString *oldName = [sharedWorkspaces objectAtIndex:rowIndex];
 
     NSUInteger i, count = [sharedWorkspaces count];
@@ -1093,7 +1096,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard;
 {
-    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
     if ([sharedWorkspaces count] <= 1)
         return NO;
     
@@ -1419,7 +1422,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_inspectorConfigurationsChanged:(NSTimer *)theTimer;
 {
     [self _saveConfigurations];
-    [OIWorkspace.sharedWorkspace save];
+    [[OIWorkspace sharedWorkspace] save];
     [[NSProcessInfo processInfo] enableSuddenTermination];
     configurationsChangedTimer = nil;
 }
@@ -1427,7 +1430,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_appWillTerminate:(NSNotification *)notification
 {
     [self _saveConfigurations];
-    [OIWorkspace.sharedWorkspace save];
+    [[OIWorkspace sharedWorkspace] save];
     registryFlags.appIsTerminating = YES;
 }
 
@@ -1443,15 +1446,16 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         if ([[controller inspector] respondsToSelector:@selector(configuration)])
             [config setObject:[[controller inspector] configuration] forKey:controller.inspectorIdentifier];
 
-    [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-        [dictionary setObject:config forKey:@"_Configurations"];
-    }];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
+    [[OIWorkspace sharedWorkspace] setConfiguration:config];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
+
     [self saveExistingGroups];
 }
 
 - (void)_loadConfigurations;
 {
-    NSDictionary *config = [OIWorkspace.sharedWorkspace objectForKey:@"_Configurations"];
+    NSDictionary *config = [[OIWorkspace sharedWorkspace] configuration];
     
     for (OIInspectorController *controller in inspectorControllers)
         if ([[controller inspector] respondsToSelector:@selector(loadConfiguration:)])

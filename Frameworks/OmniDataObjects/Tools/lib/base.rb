@@ -12,9 +12,14 @@ module OmniDataObjects
       fp.m << "NSString * const #{keyName} = @\"#{name}\";\n"
     end
     
+    def emitSwiftDefinition(fp)
+      # Nothing
+    end
+    
     def emit(fp)
       emitDeclaration(fp)
       emitDefinition(fp)
+      emitSwiftDefinition(fp)
     end
     
     def objcBool(v)

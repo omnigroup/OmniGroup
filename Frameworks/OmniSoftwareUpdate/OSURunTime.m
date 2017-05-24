@@ -172,7 +172,6 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     
     OSU_RUNTIME_DEBUG(1, @"Deactivating %@%@", appIdentifier, crashed ? @" for crash" : @" normally");
 
-    OBPRECONDITION(crashed || OSURunTimeHasRunningSession);
     if (!crashed && !OSURunTimeHasRunningSession) {
         OSU_RUNTIME_DEBUG(1, @"   ... no deactivation needed");
         return;

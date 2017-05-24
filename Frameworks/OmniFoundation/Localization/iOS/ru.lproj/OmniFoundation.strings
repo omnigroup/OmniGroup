@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Библиотека bzip2 при записи данных вернула ошибку с кодом %1$d. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Отмена";
 
 /* error recovery option */
@@ -83,20 +83,38 @@
 
 "Could not create directory" = "Не удалось создать каталог";
 
-/* time span formatter span */
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "Не удалось обработать права из встроенного профиля подготовки";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "дн.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "день";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "дней";
 
 /* invalid bundle reason */
 "Duplicate bundle name" = "Дублирующееся имя пакета";
 
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"e" = "e";
+
+/* time span formatter span - needs one trailing space */
+"elapsed " = "elapsed ";
+
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Элемент «%1$@» не разрешен для пути: %2$@";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "Встроенный профиль подготовки не является допустимым архивом PKCS#7";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "Встроенный профиль подготовки не найден";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "Встроенный профиль подготовки не читается";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Сбой создания каталога для блокирования файла по адресу %@.";
@@ -107,13 +125,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Сбой записи заблокированного файла.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "ч";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "час";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "часов";
 
 /* formatter input error */
@@ -122,22 +140,22 @@
 /* local bundle path readable string */
 "local configuration file" = "файл локальной конфигурации";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "мин.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "минута";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "мин.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "мес.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "месяц";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "мес.";
 
 /* error reason */
@@ -146,8 +164,11 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Недопустимый пакет";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Перезаписать блокировку";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое PKCS#7 встроенного профиля подготовки не являются допустимым файлом plist";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";
@@ -155,17 +176,20 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Восстановить для всех внутренних настроек значения по умолчанию";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "с";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "секунда";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "секунд";
 
 /* alert message format when clicking on a configuration value URL */
 "Set \"%@\" to \"%@\"" = "Задать для «%1$@» значение «%2$@»";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "Зашифрованный элемент «%@» отсутствует или не читается.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Возможно, сертификат сервера «%@» недействителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
@@ -209,31 +233,45 @@
 /* error description */
 "Unable to lock document." = "Не удается заблокировать документ.";
 
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "Неожиданный тип содержимого CMS";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Unknown compression algorithm";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "Неизвестный алгоритм открытого ключа";
+
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "Неизвестно";
 
 /* decompression error reason */
 "unrecognized compression format." = "неизвестный формат сжатия.";
 
-/* time span formatter span */
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "Неподдерживаемый алгоритм шифрования";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "нед.";
 
 /* error description */
 "Warning encountered while loading XML." = "При загрузке XML было создано предупреждение.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "неделя";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "недель";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "г.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "год";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "лет";
 
 /* zlib error reason */

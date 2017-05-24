@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniDataObjects/ODOProperty.h>
 
 // types explicitly distinguish between bit sizes to ensure data store independence of the underlying operating system
-typedef enum {
+typedef NS_ENUM(NSInteger, ODOAttributeType) {
     ODOAttributeTypeInvalid = -1,
     ODOAttributeTypeUndefined, // only makes sense for transient attributes
     ODOAttributeTypeInt16,
@@ -22,19 +22,20 @@ typedef enum {
     ODOAttributeTypeBoolean,
     ODOAttributeTypeDate,
     ODOAttributeTypeData,
-    //
-    ODOAttributeTypeCount,
-} ODOAttributeType;
+};
 
-typedef enum {
+enum {
+    ODOAttributeTypeCount = ODOAttributeTypeData + 1
+};
+
+typedef NS_ENUM(NSInteger, ODOAttributeSetterBehavior) {
     ODOAttributeSetterBehaviorCopy,
     ODOAttributeSetterBehaviorRetain,
     ODOAttributeSetterBehaviorDetermineAtRuntime,
-} ODOAttributeSetterBehavior;
+};
 
-@interface ODOAttribute : ODOProperty
-{
-@package
+@interface ODOAttribute : ODOProperty {
+  @package
     ODOAttributeType _type;
     NSObject <NSCopying> *_defaultValue;
     BOOL _isPrimaryKey;
@@ -42,10 +43,10 @@ typedef enum {
     ODOAttributeSetterBehavior _setterBehavior;
 }
 
-@property(readonly) ODOAttributeType type;
-@property(readonly) NSObject <NSCopying> *defaultValue;
-@property(readonly) Class valueClass;
+@property (nonatomic, readonly) ODOAttributeType type;
+@property (nonatomic, readonly) NSObject <NSCopying> *defaultValue;
+@property (nonatomic, readonly) Class valueClass;
 
-@property(readonly) BOOL isPrimaryKey;
+@property (nonatomic, readonly, getter=isPrimaryKey) BOOL primaryKey;
 
 @end

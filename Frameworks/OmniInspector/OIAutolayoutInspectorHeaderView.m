@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,11 +33,6 @@ RCS_ID("$Id$");
 + (CGFloat)separatorTopPadding;
 {
     return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorTopPadding"];
-}
-
-+ (NSColor *)separatorColor;
-{
-    return [[OIAppearance appearance] colorForKeyPath:@"InspectorHeaderSeparatorColor"];
 }
 
 - (void)setDrawsSeparator:(BOOL)drawsSeparator;
@@ -150,7 +145,8 @@ RCS_ID("$Id$");
         },
     };
     
-    [[[self class] separatorColor] setFill];
+    NSColor *separatorColor = [[OIAppearance appearance] inspectorHeaderSeparatorColorForView:self];
+    [separatorColor set];
     NSRectFill(separatorRect);
 }
 

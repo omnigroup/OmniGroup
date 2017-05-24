@@ -1,5 +1,11 @@
+/* button title */
+"Cancel" = "取消";
+
 /* style validation error message for expected {type} */
 "Expected value of type “%@”" = "类型“%@”的期望值";
+
+/* button title */
+"OK" = "好";
 
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "意外的键“%@”值";

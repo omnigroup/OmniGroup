@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1075,6 +1075,10 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     }
 
     startPoint = [self _endPointForSegment:segment];
+    if (segmentCount == 0) {
+        return (struct pointInfo){ startPoint, 0, 0 }; // ack
+    }
+    
     element = [self elementAtIndex:segment+1 associatedPoints:points];
     switch(element) {
         case NSClosePathBezierPathElement:

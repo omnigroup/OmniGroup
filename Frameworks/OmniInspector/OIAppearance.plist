@@ -11,13 +11,6 @@
 	</dict>
 	<key>InspectorSidebarWidth</key>
 	<integer>280</integer>
-	<key>InspectorBackgroundColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.96</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
 	<key>InspectorTabOnStateTintColor</key>
 	<dict>
 		<key>r</key>
@@ -53,7 +46,28 @@
 	<integer>4</integer>
 	<key>InspectorHeaderContentHeight</key>
 	<integer>35</integer>
-	<key>InspectorHeaderSeparatorColor</key>
+	<key>DarkInspectorBackgroundColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.125</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>DarkInspectorHeaderSeparatorColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.2</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>LightInspectorBackgroundColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.96</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>LightInspectorHeaderSeparatorColor</key>
 	<dict>
 		<key>w</key>
 		<real>0.92</real>

@@ -329,24 +329,22 @@ static NSString *_normalizedPath(NSString *path)
 {
     NSMutableArray *linkedBundles = [NSMutableArray array];
 
-    // The frameworks and main bundle are already loaded, so we should register them first.
-    NSEnumerator *frameworkEnumerator = [[NSBundle allFrameworks] objectEnumerator];
-    NSBundle *framework;
-    while ((framework = [frameworkEnumerator nextObject])) {
+    NSSet <NSBundle *>*allFrameworks = [NSSet setWithArray:[NSBundle allFrameworks]];
+    for (NSBundle *framework in allFrameworks) {
         if (framework.bundleIdentifier != nil)
             [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:framework, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
     }
     
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+    
     // Add in any dynamically loaded bundles that are already present.  In particular, unit test bundles might have registration dictionaries for their test cases.
-    NSEnumerator *bundleEnumerator = [[NSBundle allBundles] objectEnumerator];
-    NSBundle *bundle;
-    while ((bundle = [bundleEnumerator nextObject])) {
-        OBASSERT(![[NSBundle allFrameworks] containsObject:bundle]); // should only contain the main bundle and dynamically loaded bundles.
-        if (bundle != [NSBundle mainBundle]) // main bundle done below
-            [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:bundle, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
+    NSArray <NSBundle *>*allBundles = [NSBundle allBundles];
+    for (NSBundle *bundle in allBundles) {
+        // On iOS the app is in both allFrameworks and allBundles. Don't include it twice. Also, main bundle is handled separately
+        if ([allFrameworks containsObject:bundle] || bundle == [NSBundle mainBundle]) {
+            continue;
+        }
+        [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:bundle, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
     }
-#endif
 
     return linkedBundles;
 }
@@ -631,11 +629,12 @@ static NSString *_normalizedPath(NSString *path)
         NSString *bundlePath = _normalizedPath([bundle bundlePath]);
         NSString *bundleName = [bundlePath lastPathComponent];
         NSString *bundleIdentifier = [bundle bundleIdentifier];
-        if ([NSString isEmptyString:bundleIdentifier])
+        if ([NSString isEmptyString:bundleIdentifier]) {
             bundleIdentifier = [bundleName stringByDeletingPathExtension];
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+        }
         NSDictionary *infoDictionary = [bundle infoDictionary];
-
+        
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
         // If the bundle isn't already loaded, decide whether to register it
         if (![[description objectForKey:@"loaded"] isEqualToString:@"YES"]) {
             NSDictionary *requiredVersionsDictionary;
@@ -662,8 +661,6 @@ static NSString *_normalizedPath(NSString *path)
             }
         }
 #else
-        NSString *infoDictionaryPath = [bundle pathForResource:@"Info" ofType:@"plist"];
-        NSDictionary *infoDictionary = [NSDictionary dictionaryWithContentsOfFile:infoDictionaryPath];
         if (!infoDictionary) {
             // On iOS 8 beta 5, at least, some directories in /usr/lib get registered as framework bundles. On the device, these are in the root, but in the simulator they are in the SDK (hence the suffix check).
             OBASSERT([bundlePath hasSuffix:@"/usr/lib"] ||

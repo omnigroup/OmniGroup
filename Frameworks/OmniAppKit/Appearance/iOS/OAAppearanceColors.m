@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,8 @@ RCS_ID("$Id$")
 
 @dynamic omniExplanotextColor;
 
+@dynamic mailBlueColor;
+
 @end
 
 @implementation OAAppearanceDarkColors
@@ -58,5 +60,7 @@ RCS_ID("$Id$")
 @dynamic omniDeleteColor;
 
 @dynamic omniExplanotextColor;
+
+@dynamic mailBlueColor;
 
 @end

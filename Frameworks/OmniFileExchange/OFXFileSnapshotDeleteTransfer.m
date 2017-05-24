@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,7 +67,7 @@ RCS_ID("$Id$")
         }
 
         // Tests of deleting multiple document versions have to manufature situations where we actually *have* multiple versions to delete.
-        NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, _remoteContainerURL, _fileIdentifier, &error);
+        NSArray <ODAVFileInfo *> *fileInfos = OFXFetchDocumentFileInfos(connection, _remoteContainerURL, _fileIdentifier, &error);
         if ([fileInfos count] > 1) {
             fileInfos = [fileInfos sortedArrayUsingComparator:^NSComparisonResult(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) {
                 return OFXCompareFileInfoByVersion(fileInfo1, fileInfo2);

@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @class ODAVConnection, ODAVFileInfo;
 @class OFFileMotionResult;
-@class OFXFileItem, OFXAccountAgent, OFXServerAccount, OFXFileSnapshotTransfer, OFXRegistrationTable, OFXContainerScan, OFXAccountClientParameters;
+@class OFXFileItem, OFXFileMetadata, OFXAccountAgent, OFXServerAccount, OFXFileSnapshotTransfer, OFXRegistrationTable<ValueType>, OFXContainerScan, OFXAccountClientParameters;
 
 @protocol NSFilePresenter;
 
@@ -40,12 +40,12 @@ typedef NS_ENUM(NSUInteger, OFXFileItemTransferKind) {
 + (NSString *)containerAgentIdentifierForPathExtension:(NSString *)pathExtension;
 + (NSString *)containerAgentIdentifierForFileURL:(NSURL *)fileURL;
 
-- initWithAccountAgent:(OFXAccountAgent *)accountAgent identifier:(NSString *)identifier metadataRegistrationTable:(OFXRegistrationTable *)metadataRegistrationTable localContainerDirectory:(NSURL *)localContainerDirectory remoteContainerDirectory:(NSURL *)remoteContainerDirectory remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- initWithAccountAgent:(OFXAccountAgent *)accountAgent identifier:(NSString *)identifier metadataRegistrationTable:(OFXRegistrationTable <OFXFileMetadata *> *)metadataRegistrationTable localContainerDirectory:(NSURL *)localContainerDirectory remoteContainerDirectory:(NSURL *)remoteContainerDirectory remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 
 
 @property(nonatomic,readonly) OFXServerAccount *account;
 @property(nonatomic,readonly) NSString *identifier;
-@property(nonatomic,readonly) OFXRegistrationTable *metadataRegistrationTable;
+@property(nonatomic,readonly) OFXRegistrationTable <OFXFileMetadata *> *metadataRegistrationTable;
 
 @property(nonatomic,readonly) OFXAccountClientParameters *clientParameters;
 
@@ -71,14 +71,14 @@ typedef NS_ENUM(NSUInteger, OFXFileItemTransferKind) {
 - (OFXFileSnapshotTransfer *)prepareDownloadTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
 - (OFXFileSnapshotTransfer *)prepareDeleteTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
 
-- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary <NSString *, NSArray <OFXRecentError *> *> *)recentErrorsByLocalRelativePath;
 - (void)clearRecentErrorsOnAllFileItems;
 
 // Describes the current state of files on the *server* for this container. When this is updated, the container calls -containerPublishedFileVersionsChanged: on its account agent (on the account agent's queue).
-@property(nonatomic,readonly) NSArray *publishedFileVersions;
+@property(nonatomic,readonly) NSArray <NSString *> *publishedFileVersions;
 
 - (OFXFileItem *)fileItemWithURL:(NSURL *)fileURL;
-- (void)addFileItems:(NSMutableArray *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
+- (void)addFileItems:(NSMutableArray <OFXFileItem *> *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
 
 //
 // File lifecycle calls invoked by OFXAccountAgent as it scans the published documents and reacts to user changes

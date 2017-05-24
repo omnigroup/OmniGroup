@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,6 +47,8 @@ OFDeclareDebugLogLevel(ODAVConnectionTaskDebug)
     return; \
 } while(0)
 
+@implementation ODAVOperationResult
+@end
 @implementation ODAVMultipleFileInfoResult
 @end
 @implementation ODAVSingleFileInfoResult
@@ -160,6 +162,8 @@ static NSString *StandardUserAgentString;
 @interface ODAVConnection (Subclass) <ODAVConnectionSubclass>
 @end
 
+static NSDateFormatter *HttpDateFormatter;
+
 @implementation ODAVConnection
 {
     NSArray *_redirects;
@@ -178,6 +182,15 @@ static NSString *StandardUserAgentString;
         OBASSERT([entitlements[@"com.apple.security.network.client"] boolValue]);
     }
 #endif
+
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];   /* rfc 1123 */
+    /* reference: http://developer.apple.com/library/ios/#qa/qa2010/qa1480.html */
+    [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+    
+    HttpDateFormatter = dateFormatter;
 }
 
 - init;
@@ -309,6 +322,7 @@ static NSString *StandardUserAgentString;
                 ODAVURLResult *urlResult = [ODAVURLResult new];
                 urlResult.URL = directoryInfo.originalURL;
                 urlResult.redirects = result.redirects;
+                urlResult.serverDate = result.serverDate;
                 COMPLETE_AND_RETURN(urlResult, nil);
             }
         }
@@ -349,6 +363,7 @@ static NSString *StandardUserAgentString;
                     ODAVURLResult *urlResult = [ODAVURLResult new];
                     urlResult.URL = finalResult.fileInfo.originalURL;
                     urlResult.redirects = finalResult.redirects;
+                    urlResult.serverDate = finalResult.serverDate;
                     COMPLETE_AND_RETURN(urlResult, finalError);
                 }];
             }];
@@ -465,7 +480,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             }
         }
         
-        NSMutableArray *fileInfos = [NSMutableArray array];
+        NSMutableArray <ODAVFileInfo *> *fileInfos = [NSMutableArray array];
         
         // We'll get back a <multistatus> with multiple <response> elements, each having <href> and <propstat>
         OFXMLCursor *cursor = [doc cursor];
@@ -476,19 +491,13 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             COMPLETE_AND_RETURN(nil, error);
         }
         
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];   /* rfc 1123 */
-        /* reference: http://developer.apple.com/library/ios/#qa/qa2010/qa1480.html */
-        [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
-        [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-        
         // Date header
         {
             // We could avoid parsing the Date header unless it is requested, but for now I'd like to get assertion failures when a server doesn't return it.
             NSString *dateHeader = [op valueForResponseHeader:@"Date"];
             OBASSERT(![NSString isEmptyString:dateHeader]);
             
-            result.serverDate = [dateFormatter dateFromString:dateHeader];
+            result.serverDate = [HttpDateFormatter dateFromString:dateHeader];
             OBASSERT(result.serverDate);
         }
         
@@ -533,7 +542,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                             
                             if ( (propElement = [anElement firstChildNamed:@"getlastmodified"]) != nil ) {
                                 NSString *lastModified = OFCharacterDataFromElement(propElement);
-                                dateModified = [dateFormatter dateFromString:lastModified];
+                                dateModified = [HttpDateFormatter dateFromString:lastModified];
                             }
                             
                             if ( (propElement = [anElement firstChildNamed:@"getetag"]) != nil ) {
@@ -679,13 +688,14 @@ static NSString *ODAVDepthName(ODAVDepth depth)
     // NOTE: This method is somewhat misguided. A "collection resource" doesn't have a getetag property (it's a getetag, not a propfindetag), so our conditional read won't necessarily do the right thing. There may be a distinct resource accesible by doing a GET on the collection's URL, and that resource has a getetag, but there is no real reason to believe that changes in the collection membership cause changes in the GET-resource's etag. See RFC2518[8.4].
     
     [self fileInfosAtURL:url ETag:ETag depth:ODAVDepthChildren completionHandler:^(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil) {
+        NSString *notFoundReason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No document exists at \"%@\".", @"OmniDAV", OMNI_BUNDLE, @"error reason - listing contents of a nonexistent directory"), url];
+        NSString *notFoundDescription = NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniDAV", OMNI_BUNDLE, @"error description");
+        
         if (!properties) {
             if ([errorOrNil hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
                 // The resource was legitimately not found.
-                NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No document exists at \"%@\".", @"OmniDAV", OMNI_BUNDLE, @"error reason - listing contents of a nonexistent directory"), url];
-                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read document.", @"OmniDAV", OMNI_BUNDLE, @"error description");
                 __autoreleasing NSError *error = errorOrNil;
-                ODAVError(&error, ODAVNoSuchDirectory, description, reason);
+                ODAVError(&error, ODAVNoSuchDirectory, notFoundDescription, notFoundReason);
                 COMPLETE_AND_RETURN(nil, error);
             }
             COMPLETE_AND_RETURN(nil, errorOrNil);
@@ -700,7 +710,12 @@ static NSString *ODAVDepthName(ODAVDepth depth)
         if ([fileInfos count] == 1) {
             // If we only got info about one resource, and it's not a collection, then we must have done a PROPFIND on a non-collection
             ODAVFileInfo *info = [fileInfos objectAtIndex:0];
-            if (!info.isDirectory) {
+            if (!info.exists) {
+                // nginx's WebDAV module returns a 207 multi-status response even for single items that aren't found. Check the single info we got, and if it doesn't exist, translate this into a not-found error.
+                __autoreleasing NSError *error = errorOrNil;
+                ODAVError(&error, ODAVNoSuchDirectory, notFoundDescription, notFoundReason);
+                COMPLETE_AND_RETURN(nil, error);
+            } else if (!info.isDirectory) {
                 // Is there a better error code for this? Do any of our callers distinguish this case from general failure?
                 NSError *returnError = [NSError errorWithDomain:NSPOSIXErrorDomain code:ENOTDIR userInfo:[NSDictionary dictionaryWithObject:url forKey:ODAVURLErrorFailingURLStringErrorKey]];
                 COMPLETE_AND_RETURN(nil, returnError);
@@ -708,7 +723,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             // Otherwise, it's just that the collection is empty.
         }
         
-        NSMutableArray *contents = [NSMutableArray array];
+        NSMutableArray <ODAVFileInfo *> *contents = [NSMutableArray array];
         
         ODAVFileInfo *containerInfo = nil;
         
@@ -734,7 +749,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             [contents addObject:info];
         }
         
-        NSMutableArray *redirections = [NSMutableArray array];
+        NSMutableArray <ODAVRedirect *> *redirections = [NSMutableArray array];
         
         if (!containerInfo && [contents count]) {
             // Somewhat unexpected: we never found the fileinfo corresponding to the container itself.
@@ -1194,6 +1209,16 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     return resultLocation;
 }
 
+static NSDate *_serverDateForOperation(ODAVOperation *operation)
+{
+    NSString *dateHeader = [operation valueForResponseHeader:@"Date"];
+    
+    if (![NSString isEmptyString:dateHeader])
+        return [HttpDateFormatter dateFromString:dateHeader];
+    else
+        return nil;
+}
+
 - (void)_runRequestExpectingResultData:(NSURLRequest *)request completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 {
     completionHandler = [completionHandler copy];
@@ -1206,6 +1231,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
         result.URL = [self _resultLocationForOperation:operation request:request];
         result.responseData = operation.resultData;
         result.redirects = operation.redirects;
+        result.serverDate = _serverDateForOperation(operation);
         COMPLETE_AND_RETURN(result, nil);
     }];
 }
@@ -1229,6 +1255,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
         ODAVURLResult *result = [ODAVURLResult new];
         result.URL = [self _resultLocationForOperation:operation request:request];
         result.redirects = operation.redirects;
+        result.serverDate = _serverDateForOperation(operation);
         COMPLETE_AND_RETURN(result, nil);
     }];
 }

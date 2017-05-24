@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <OmniDAV/ODAVFeatures.h>
 
 @class NSURLCredential, NSURLAuthenticationChallenge, NSOperation;
-@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult, ODAVURLAndDataResult;
+@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVRedirect, ODAVURLResult, ODAVURLAndDataResult;
 @protocol OFCertificateTrustDisposition, OFCredentialChallengeDisposition;
 
 typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);
@@ -49,7 +49,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @property(nonatomic,readonly) NSURL *originalBaseURL;
 @property(nonatomic,readonly) NSURL *baseURL; // Possibly redirected
 
-- (void)updateBaseURLWithRedirects:(NSArray *)redirects;
+- (void)updateBaseURLWithRedirects:(NSArray <ODAVRedirect *> *)redirects;
 - (NSURL *)suggestRedirectedURLForURL:(NSURL *)url;
 
 // Completely override the user agent string, otherwise the configuration's userAgent will be used.
@@ -99,26 +99,23 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 @end
 
-@interface ODAVMultipleFileInfoResult : NSObject
-@property(nonatomic,copy) NSArray *fileInfos;
-@property(nonatomic,copy) NSArray *redirects;
+@interface ODAVOperationResult : NSObject
+@property(nonatomic,copy) NSArray <ODAVRedirect *> *redirects;
 @property(nonatomic,copy) NSDate *serverDate;
 @end
-@interface ODAVSingleFileInfoResult : NSObject
+
+@interface ODAVMultipleFileInfoResult : ODAVOperationResult
+@property(nonatomic,copy) NSArray <ODAVFileInfo *> *fileInfos;
+@end
+@interface ODAVSingleFileInfoResult : ODAVOperationResult
 @property(nonatomic,copy) ODAVFileInfo *fileInfo;
-@property(nonatomic,copy) NSArray *redirects;
-@property(nonatomic,copy) NSDate *serverDate;
 @end
-
-@interface ODAVURLResult : NSObject
+@interface ODAVURLResult : ODAVOperationResult
 @property(nonatomic,copy) NSURL *URL;
-@property(nonatomic,copy) NSArray *redirects;
 @end
-
-@interface ODAVURLAndDataResult : NSObject
+@interface ODAVURLAndDataResult : ODAVOperationResult
 @property(nonatomic,copy) NSURL *URL;
 @property(nonatomic,copy) NSData *responseData;
-@property(nonatomic,copy) NSArray *redirects;
 @end
 
 // Utilities to help when we want synchronous operations.

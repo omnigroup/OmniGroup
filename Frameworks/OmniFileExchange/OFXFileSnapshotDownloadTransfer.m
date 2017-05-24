@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ RCS_ID("$Id$")
     OFXFileSnapshot *_currentSnapshot;
     
     OFXDownloadFileSnapshot *_downloadingSnapshot;
-    NSMutableDictionary *_readOperationToLocalFileURL;
+    NSMutableDictionary <ODAVOperation *, NSURL *> *_readOperationToLocalFileURL;
     ODAVOperation *_runningOperation;
     NSMutableData *_resultData; // Would need a separate map for op->results if we run more than one at a time.
     

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 The Omni Group. All rights reserved.
+// Copyright 2013-2014,2017 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ static OFDeclareDebugLogLevel(OFXRegistrationTableDebug);
 {
     NSString *_name;
     dispatch_queue_t _queue;
-    NSMutableDictionary *_internalTable; // The current version which is protected by serialization through _queue
+    NSMutableDictionary <NSString *, NSObject *> *_internalTable; // The current version which is protected by serialization through _queue
     BOOL _publicUpdateQueued; // YES if there is a pending update already queued and we should avoid queuing another.
 }
 
@@ -54,7 +54,7 @@ static OFDeclareDebugLogLevel(OFXRegistrationTableDebug);
 {
     OBPRECONDITION(key);
 
-    __block id value;
+    __block NSObject * value;
     dispatch_barrier_sync(_queue, ^{
         value = _internalTable[key];
     });
@@ -95,7 +95,7 @@ static void _unlockedRegister(OFXRegistrationTable *self, NSString *key, id obje
     });
 }
 
-- (void)removeObjectsWithKeys:(NSArray *)removeKeys setObjectsWithDictionary:(NSDictionary *)setObjects;
+- (void)removeObjectsWithKeys:(NSArray <NSString *> *)removeKeys setObjectsWithDictionary:(NSDictionary *)setObjects;
 {
     // Make sure the sets are immutable and that the block will live
     removeKeys = [removeKeys copy];

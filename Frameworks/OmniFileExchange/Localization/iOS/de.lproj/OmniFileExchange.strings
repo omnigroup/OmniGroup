@@ -84,6 +84,9 @@
 /* account validation error suggestion */
 "Please check that the account information you entered is correct." = "Überprüfen Sie, ob die eingegebenen Accountinformationen richtig sind.";
 
+/* error description */
+"Please choose another location for your synced documents." = "Please choose another location for your synced documents.";
+
 /* account validation error suggestion */
 "Please enter an address for the account." = "Geben Sie eine Adresse für den Account ein.";
 
@@ -115,10 +118,19 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Der vorgeschlagene lokale Dokumentordner enthält bereits Dateien. Geben Sie einen leeren Ordner oder einen nicht vorhandenen Ordner an.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Der vorgeschlagene lokale Dokumentordner scheint in einem Dropbox-Ordner zu sein. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.\n";
+"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Der vorgeschlagene lokale Dokumentordner ist nicht auf einem lokalen Volume. Wählen Sie einen Ort, der lokal auf Ihrem Computer ist.";
 
 /* error description */
-"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Der vorgeschlagene lokale Dokumentordner ist nicht auf einem lokalen Volume. Wählen Sie einen Ort, der lokal auf Ihrem Computer ist.";
+"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
 
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Diese App erfordert das OmniPresence-Format %1$@, aber der Cloud-Account verwendet das Format %2$@. Führen Sie für den Cloud-Account ein Upgrade durch.";

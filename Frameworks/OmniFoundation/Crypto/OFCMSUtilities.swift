@@ -382,9 +382,7 @@ class CMSKEKRecipient : CMSRecipient {
         let debugDictionary = NSMutableDictionary();
         
         debugDictionary["type"] = "KEKRI" as NSString;
-        if let keyId = self.keyIdentifier as NSData? {
-            debugDictionary["keyIdentifier"] = keyId;
-        }
+        debugDictionary["keyIdentifier"] = self.keyIdentifier as NSData;
         if let kek_ = self.kek as NSData? {
             debugDictionary["kek"] = kek_;
         }
@@ -870,7 +868,7 @@ class OFCMSUnwrapper {
         let (contentKey, usedRecipient, allRecipients) = try self.recoverContentKey(recipientBlobs: recipientBlobs);
         
         var error : NSError? = nil;
-        guard let plaintext = OFCMSDecryptContent(algorithm! as Data, contentKey, innerContent! as Data, authenticatedAttributes as? [AnyObject], mac as Data?, &error) else {
+        guard let plaintext = OFCMSDecryptContent(algorithm! as Data, contentKey, innerContent! as Data, authenticatedAttributes as [AnyObject]?, mac as Data?, &error) else {
             throw error!;
         }
         let plaintext_ = OFNSDataFromDispatchData(plaintext);  // This is a no-op, but Swift doesn't know that

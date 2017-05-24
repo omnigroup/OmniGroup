@@ -34,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)showAllInspectors;
 - (BOOL)hideAllInspectors;
 - (void)toggleAllInspectors;
-- (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 - (void)invalidate;
@@ -53,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL hasHiddenInspectors;
 
 /// Creates a new OIInspectorController for the given OIInspector. This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry. If the inspector already has a controller registered in this registry, this method will still create a new controller and return it, duplicating the inspector in the registry; it will never return an existing controller.
+- (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 
 /// Finds an existing OIInspectorController for the given OIInspector's identifier. This method will never create a new controller, and returns nil if the identifier is not associated with an existing controller's inspector.
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;

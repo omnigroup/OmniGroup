@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,11 @@
 #import <OmniFileExchange/OFXSyncSchedule.h>
 
 @class OFFileMotionResult;
-@class OFXRegistrationTable;
-@class OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
+@class OFXFileMetadata, OFXRegistrationTable<ValueType>, OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
 
 @interface OFXAccountAgent : NSObject
 
-- initWithAccount:(OFXServerAccount *)account agentMemberIdentifier:(NSString *)agentMemberIdentifier registrationTable:(OFXRegistrationTable *)registrationTable remoteDirectoryName:(NSString *)remoteDirectoryName localAccountDirectory:(NSURL *)localAccountDirectory localPackagePathExtensions:(id <NSFastEnumeration>)localPackagePathExtensions syncPathExtensions:(id <NSFastEnumeration>)syncPathExtensions;
+- initWithAccount:(OFXServerAccount *)account agentMemberIdentifier:(NSString *)agentMemberIdentifier registrationTable:(OFXRegistrationTable <OFXRegistrationTable <OFXFileMetadata *> *> *)registrationTable remoteDirectoryName:(NSString *)remoteDirectoryName localAccountDirectory:(NSURL *)localAccountDirectory localPackagePathExtensions:(id <NSFastEnumeration>)localPackagePathExtensions syncPathExtensions:(id <NSFastEnumeration>)syncPathExtensions;
 
 @property(nonatomic,readonly) OFXServerAccount *account;
 

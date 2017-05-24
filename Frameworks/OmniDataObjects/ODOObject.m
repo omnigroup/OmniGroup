@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,10 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
+
+#import <OmniBase/ObjC.h>
+
+#import <OmniFoundation/NSArray-OFExtensions.h>
 
 #import "ODOEntity-Internal.h"
 #import "ODOObject-Accessors.h"
@@ -166,7 +170,7 @@ RCS_ID("$Id$")
     DEBUG_DYNAMIC_METHODS(@"+[%s %s] %s", class_getName(self), sel_getName(_cmd), sel_getName(sel));
     
     ODOEntity *entity = [ODOModel entityForClass:self];
-    if (!entity) {
+    if (entity == nil) {
         DEBUG_DYNAMIC_METHODS(@"  no entity");
         goto not_handled;
     }
@@ -176,19 +180,22 @@ RCS_ID("$Id$")
         goto not_handled;
     }
     
-    // TODO: Verify that the property in class_copyPropertyList for each prop has the right attributes.  Should be an object, copy and dynamic.
-    ODOProperty *prop;
+    // TODO: Verify that the property in class_copyPropertyList for each prop has the right attributes.  Should be an object, copy and dynamic. See implement of ODOObjectCreateDynamicAccessorsForEntity and factor out validation logic.
+    ODOProperty *prop = nil;
     
-    if ((prop = [entity propertyWithGetter:sel])) {
+    prop = [entity propertyWithGetter:sel];
+    if (prop != nil) {
         IMP imp = (IMP)ODOGetterForProperty(prop);
-        const char *signature = ODOObjectGetterSignature();
+        const char *signature = ODOGetterSignatureForProperty(prop);
         DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(self), NSStringFromSelector(sel), imp, signature);
         class_addMethod(self, sel, imp, signature);
         return YES;
     }
-    if ((prop = [entity propertyWithSetter:sel])) {
+    
+    prop = [entity propertyWithSetter:sel];
+    if (prop != nil) {
         IMP imp = (IMP)ODOSetterForProperty(prop);
-        const char *signature = ODOObjectSetterSignature();
+        const char *signature = ODOSetterSignatureForProperty(prop);
         DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(self), NSStringFromSelector(sel), imp, signature);
         class_addMethod(self, sel, imp, signature);
         return YES;
@@ -350,63 +357,89 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 - (id)valueForKey:(NSString *)key;
 {
     ODOProperty *prop = [[_objectID entity] propertyNamed:key];
-    if (!prop)
+    if (prop == nil) {
         return [super valueForKey:key];
+    }
 
-    ODOPropertyGetter getter = ODOPropertyGetterImpl(prop);
+    IMP getter = ODOPropertyGetterImpl(prop);
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     
-    // Avoid looking up the property again
-    if (getter == ODOGetterForUnknownOffset)
+    // Avoid looking up the property again.
+    if (getter == (IMP)ODOGetterForUnknownOffset) {
         return ODODynamicValueForProperty(self, prop);
+    }
+    
+    if (!flags.relationship && flags.scalarAccessors) {
+        // Make sure we go through the user-defined getter, if appropriate
+        return ODOGetScalarValueForProperty(self, prop);
+    }
 
     SEL sel = ODOPropertyGetterSelector(prop);
-    return getter(self, sel);
+    return OBCallObjectReturnIMP(getter, self, sel);
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key;
 {
     ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
-    if (!prop) {
+    if (prop == nil) {
         [super setValue:value forKey:key];
         return;
     }
 
     // We only prevent write access via the generic KVC method for now.  The issue is that we want to allow a class to redefined a property as writable internally if it wants, so it should be able to use 'self.foo = value' (going through the dynamic or any self-defined method). But subclasses could still -setValue:forKey: and get away with it w/o a warning. This does prevent the class itself from using generic KVC, but hopefully that is rare enough for this to be a good tradeoff.
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    if (flags.calculated)
+    if (flags.calculated) {
         OBRejectInvalidCall(self, _cmd, @"Attempt to -setValue:forKey: on the calculated key '%@'.", key);
+    }
     
-    ODOPropertySetter setter = ODOPropertySetterImpl(prop);
+    IMP setter = ODOPropertySetterImpl(prop);
     SEL sel = ODOPropertySetterSelector(prop);
-    if (!setter) {
+    if (setter == nil) {
         // We have a property but no setter; presumably it is read-only.
         [self doesNotRecognizeSelector:sel];
         OBAnalyzerNotReached(); // <http://llvm.org/bugs/show_bug.cgi?id=9486> -doesNotRecognizeSelector: not flagged as being "no return"
     }
     
     // Avoid looking up the property again
-    if (setter == ODOSetterForUnknownOffset)
+    if (setter == (IMP)ODOSetterForUnknownOffset) {
         ODODynamicSetValueForProperty(self, sel, prop, value);
-    else
-        setter(self, sel, value);
+    } else if (!flags.relationship && flags.scalarAccessors) {
+        // Make sure we go through the user-defined setter, if appropriate
+        ODOSetScalarValueForProperty(self, prop, value);
+    } else {
+        OBCallVoidIMPWithObject(setter, self, sel, value);
+    }
 }
 
 // Subclasses should call this before doing anything in their own implementation, otherwise, this might override any setup they do.
 - (void)setDefaultAttributeValues;
 {
-    ODOEntity *entity = [self entity];
-    for (ODOProperty *prop in entity.snapshotProperties) {
+    ODOEntity *entity = self.entity;
+    NSArray *attributes = [entity.snapshotProperties arrayByPerformingBlock:^(ODOProperty *prop){
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         if (!flags.relationship) {
-            // Model loading code ensures that the primary key attribute doesn't have a default value            
-            ODOAttribute *attr = (ODOAttribute *)prop;
-            NSString *key = [attr name];
-            
-            // Set this even if the default value is nil in case we are re-establishing default values
-            [self willChangeValueForKey:key];
-            ODOObjectSetPrimitiveValueForProperty(self, [attr defaultValue], attr); // Bypass this and set the primitive value to avoid and setter.
-            [self didChangeValueForKey:key];
+            return (ODOAttribute *)prop;
+        } else {
+            return (ODOAttribute *)nil;
         }
+    }];
+
+    // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
+    // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.
+    
+    for (ODOAttribute *attr in attributes) {
+        [self willChangeValueForKey:attr.name];
+    }
+    
+    for (ODOAttribute *attr in attributes) {
+        // Model loading code ensures that the primary key attribute doesn't have a default value
+
+        // Set this even if the default value is nil in case we are re-establishing default values
+        ODOObjectSetPrimitiveValueForProperty(self, attr.defaultValue, attr); // Bypass this and set the primitive value to avoid and setter.
+    }
+
+    for (ODOAttribute *attr in attributes) {
+        [self didChangeValueForKey:attr.name];
     }
 }
 
@@ -1013,7 +1046,7 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
         [set addObject:rel.name];
     
     for (ODOProperty *prop in entity.properties)
-        if (prop.isTransient || prop.isCalculated)
+        if ([prop isTransient] || [prop isCalculated])
             [set addObject:prop.name];
 }
 
@@ -1114,18 +1147,18 @@ BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *out
 }
 
 // Will never set nil.  Considers nil different from zero (i.e., setting zero on something that has nil will set a zero number)
-BOOL ODOSetUInt32PropertyIfChanged(ODOObject *object, NSString *key, uint32_t value, uint32_t *outOldValue)
+BOOL ODOSetInt32PropertyIfChanged(ODOObject *object, NSString *key, int32_t value, int32_t *outOldValue)
 {
     NSNumber *oldNumber = [object valueForKey:key];
     
     if (outOldValue)
-        *outOldValue = [oldNumber unsignedIntValue];
+        *outOldValue = [oldNumber intValue];
     
     // Don't silently leave nil when zero was set.
-    if (oldNumber && ([oldNumber unsignedIntValue] == value))
+    if (oldNumber && ([oldNumber intValue] == value))
         return NO;
     
-    [object setValue:[NSNumber numberWithUnsignedInt:value] forKey:key];
+    [object setValue:[NSNumber numberWithInt:value] forKey:key];
     return YES;
 }
 

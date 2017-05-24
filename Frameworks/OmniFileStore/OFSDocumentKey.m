@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -556,7 +556,7 @@ static void fillSlot(NSMutableData *slotbuffer, uint8_t slottype, const char *sl
             if (keylength <= len && (0 == memcmp(keydata, bytes + (len - keylength), keylength))) {
                 /* Yep. Update the flags accordingly. */
                 if (tp == SlotTypePlaintextMask)
-                    flags |= OFSDocKeyFlagAllowUnencryptedRead | OFSDocKeyFlagAlwaysUnencryptedWrite;
+                    flags |= OFSDocKeyFlagAlwaysUnencryptedRead | OFSDocKeyFlagAlwaysUnencryptedWrite;
                 if (tp == SlotTypeRetiredPlaintextMask)
                     flags |= OFSDocKeyFlagAllowUnencryptedRead;
                 if (outSlotNumber)

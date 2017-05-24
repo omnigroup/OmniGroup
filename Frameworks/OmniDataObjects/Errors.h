@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
+
+#import <Foundation/NSError.h>
+#import <OmniBase/NSError-OBUtilities.h>
 
 extern NSString * const ODODetailedErrorsKey; // if multiple validation errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
 
@@ -26,6 +29,9 @@ enum {
     ODODeletePropagationFailed,
     ODOMultipleDeleteErrorsError,
     
+    ODOUnableToFindObjectWithID,
+    ODOUnableToFindObjectWithIDMultipleErrors,
+
     // Validation
     ODORequiredValueNotPresentValidationError,
     ODOValueOfWrongClassValidationError,
@@ -36,6 +42,7 @@ enum {
 #define ODOError(error, code, description, reason) ODOErrorWithInfo((error), (code), (description), (reason), nil)
 
 extern BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors);
+extern BOOL ODOMultipleUnableToFindObjectWithIDError(NSError **outError, NSArray<NSError *> *errors);
 
 extern NSString * const ODOErrorDomain;
 extern NSString * const ODOSQLiteErrorDomain; // Underlying errors will be formed with this, using the SQLite return code and error message.
@@ -51,3 +58,12 @@ extern NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlit
     if (_outErorr) \
         *_outErorr = _ODOSQLiteError(*_outErorr, code, sqlite); \
 } while(0)
+
+
+#pragma mark -
+
+@interface NSError (ODOExtensions)
+
+- (BOOL)causedByMissingObject;
+
+@end

@@ -1,0 +1,471 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Copy)";
+
+/* bytes */
+"%@ B" = "%@ B";
+
+/* error description */
+"%@ cannot open this type of file." = "%@ cannot open this type of file.";
+
+/* Location label format for external documents */
+"%@ Documents" = "%@ Documents";
+
+/* gigabytes */
+"%@ GB" = "%@ GB";
+
+/* doc picker multiple items accessibility value */
+"%@ items" = "%@개 항목";
+
+/* kilobytes */
+"%@ KB" = "%@ KB";
+
+/* megabytes */
+"%@ MB" = "%@ MB";
+
+/* home screen detail label */
+"%d items" = "%d items";
+
+/* Main toolbar title for a multiple selected documents. */
+"%ld Documents Selected" = "%ld Documents Selected";
+
+/* Main toolbar title for a multiple selected items. */
+"%ld Items Selected" = "%ld Items Selected";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
+
+/* Main toolbar title for a single selected document. */
+"1 Document Selected" = "1 Document Selected";
+
+/* doc picker single item accessibility value */
+"1 item" = "1개 항목";
+
+/* Main toolbar title for a single selected folder. */
+"1 Item Selected" = "1 Item Selected";
+
+/* replace document description */
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "A document with the name “%@” already exists. Do you want to replace it? This cannot be undone.";
+
+/* Omni Sync Server account info button title */
+"Account Info" = "Account Info";
+
+/* Server Account Setup label: account name */
+"Account Name" = "계정 이름";
+
+/* Menu option in the document picker view */
+"Actions" = "작업";
+
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
+
+"Add an Account" = "Add an Account";
+
+/* home screen button label */
+"Add OmniPresence Account" = "Add OmniPresence Account";
+
+/* button title
+   cancel button title
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
+
+
+
+
+
+"Cancel" = "취소";
+
+/* item not fully downloaded error title */
+"Cannot Duplicate Item" = "Cannot Duplicate Item";
+
+/* item not fully downloaded error title */
+"Cannot Export Item" = "Cannot Export Item";
+
+/* email action description */
+"Choose a format for emailing \"%@\":" = "Choose a format for emailing “%@”:";
+
+/* toolbar prompt when choosing a template */
+"Choose a Template" = "Choose a Template";
+
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Choose Account Type";
+
+/* export options title */
+"Choose Format" = "Choose Format";
+
+/* doc picker custom accessibility action name */
+"Clear name field" = "Clear name field";
+
+/* title view clear button accessibility label. */
+"Clear Title" = "Clear Title";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Cloud Storage Providers";
+
+/* Success label when connecting to an OmniPresence or WebDAV server account */
+"Connected" = "Connected";
+
+/* webdav connecting label */
+"Connecting" = "Connecting";
+
+/* Menu option in the document picker view */
+"Copy as Image" = "Copy as Image";
+
+/* gear menu item */
+"Copy from WebDAV" = "Copy from WebDAV";
+
+/* gear menu item */
+"Copy from…" = "Copy from…";
+
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ Customized";
+
+/* sort by date */
+"Date" = "날짜";
+
+/* Delete toolbar item accessibility label. */
+"Delete" = "삭제";
+
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Delete “%@”";
+
+/* delete button title */
+"Delete %ld Documents" = "Delete %ld Documents";
+
+/* Server Account Setup button label */
+"Delete Account" = "Delete Account";
+
+/* delete button title */
+"Delete Document" = "Delete Document";
+
+/* Discard unsynced edits dialog: discard button label */
+"Discard Edits" = "Discard Edits";
+
+/* Lose unsynced changes warning: title */
+"Discard unsynced edits?" = "Discard unsynced edits?";
+
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Document moved.";
+
+/* Title for alert informing user that the document has been reloaded with edits from another device */
+"Document Updated" = "Document Updated";
+
+/* Toolbar button title for returning to list of documents. */
+"Documents <back button>" = "도큐멘트";
+
+/* Duplicate document preview action title.
+   Duplicate toolbar item accessibility label. */
+
+"Duplicate" = "중복";
+
+/* title for alert option confirming duplication of multiple files */
+"Duplicate %ld Documents" = "Duplicate %ld Documents";
+
+/* title for alert option confirming duplication of multiple items */
+"Duplicate %ld Items" = "Duplicate %ld Items";
+
+/* omni sync server setup help */
+"Easily sync Omni documents between devices. Signup is free!" = "Easily sync Omni documents between devices. Signup is free!";
+
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "Edit Credentials";
+
+/* doc picker custom accessibility action name */
+"Edit name" = "Edit name";
+
+/* title view edit button item accessibility hint. */
+"Edits the document's title." = "Edits the document's title.";
+
+/* empty trash button title */
+"Empty Trash" = "Empty Trash";
+
+/* webdav help */
+"Enter the location of your WebDAV space." = "WebDAV 공간 위치를 입력하십시오.";
+
+/* export button title
+   export options title
+   Export toolbar item accessibility label. */
+
+
+"Export" = "내보내기";
+
+/* export to description */
+"Export \"%@\" as:" = "Export “%@” as:";
+
+/* export action description */
+"Export \"%@\" to %@ as:" = "Export “%1$@” to %2$@ as:";
+
+/* Menu option in the document picker view */
+"Export to WebDAV" = "Export to WebDAV";
+
+/* Menu option in the document picker view */
+"Export to…" = "Export to…";
+
+/* Export document preview action title. */
+"Export…" = "내보내기...";
+
+/* finished */
+"Finished" = "Finished";
+
+/* doc picker folder type accessibility value */
+"Folder" = "폴더";
+
+/* import sheet title */
+"Import" = "가져오기";
+
+/* Info item accessibility label */
+"Info" = "정보";
+
+/* error title */
+"Invalid Zip Archive" = "Invalid Zip Archive";
+
+/* doc picker title label editing accessibility value */
+"Is editing" = "Is editing";
+
+/* Notice for the user about the last edit to a document (unknown device) */
+"Last edit: %@" = "Last edit: %@";
+
+/* Notice for the user about the last edit to a document (another device) */
+"Last edit: %@ on another device" = "Last edit: %@ on another device";
+
+/* Notice for the user about the last edit to a document (this device) */
+"Last edit: %@ on this device" = "Last edit: %@ on this device";
+
+/* Link External Document toolbar item accessibility label. */
+"Link External Document" = "Link External Document";
+
+/* Server Account Setup label: location */
+"Location" = "위치";
+
+/* top level doc picker title */
+"Locations" = "Locations";
+
+/* modified date accessibility value */
+"Modified %@" = "Modified %@";
+
+/* Cloud Storage Providers more information button title */
+"More Info…" = "More Info…";
+
+/* Menu option in the document picker view
+   Move toolbar item accessibility label. */
+
+"Move" = "이동";
+
+/* move to trash button title */
+"Move %ld Items to Trash" = "Move %ld Items to Trash";
+
+/* move to trash button title
+   Move to Trash toolbar item accessibility label. */
+
+"Move to Trash" = "휴지통으로 이동";
+
+/* Share menu title */
+"Move to..." = "Move to…";
+
+/* Move document preview action title. */
+"Move…" = "Move…";
+
+/* Base name for newly created documents. This will have an number appended to it to make it unique. */
+"My Document" = "My Document";
+
+/* Base name for newly created templates. This will have an number appended to it to make it unique. */
+"My Template" = "My Template";
+
+/* New Document toolbar item accessibility label.
+   New Template button title */
+
+"New Document" = "새 도큐멘트";
+
+/* Action sheet title for making a new folder from the selected documents */
+"New folder" = "New folder";
+
+/* Server Account Setup label: nickname */
+"Nickname" = "Nickname";
+
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "No accounts are configured for exporting.";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "No accounts are configured for importing.";
+
+/* doc picker no items accessibility value */
+"No items" = "항목 없음";
+
+/* Not downloaded accessibility label. */
+"Not downloaded" = "Not downloaded";
+
+/* Not uploaded accessibility label. */
+"Not uploaded" = "Not uploaded";
+
+/* button title
+   When displaying a sync error, this is the option to ignore the error. */
+
+"OK" = "양호";
+
+/* Omni Presence config email subject format */
+"OmniPresence Configuration: %@" = "OmniPresence Configuration: %@";
+
+/* Omni Presence config email body */
+"Open this file on another device to configure OmniPresence there." = "Open this file on another device to configure OmniPresence there.";
+
+/* Generic name for location of external documents */
+"Other" = "기타";
+
+/* Server Account Setup label: password */
+"Password" = "암호";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Photo Library permission denied.";
+
+/* Menu option in the document picker view */
+"Print" = "프린트";
+
+/* purchase now button title */
+"Purchase Now." = "Purchase Now.";
+
+/* Remove from external container toolbar item accessibility label. */
+"Remove" = "제거";
+
+/* remove button title */
+"Remove %ld Documents" = "Remove %ld Documents";
+
+/* remove button title */
+"Remove Document" = "Remove Document";
+
+/* rename button title */
+"Rename" = "Rename";
+
+/* toolbar prompt while renaming a document */
+"Rename Document" = "Rename Document";
+
+/* toolbar prompt while renaming a folder */
+"Rename Folder" = "Rename Folder";
+
+/* Message format for alert informing user that the document has been renamed on another device */
+"Renamed to %@." = "Renamed to %@.";
+
+/* replace button title */
+"Replace" = "바꾸기";
+
+/* replace document title */
+"Replace document?" = "Replace document?";
+
+/* When displaying a sync error, this is the option to report the error. */
+"Report Error" = "오류 보고";
+
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "Restore Sample Documents";
+
+/* Share menu title */
+"Restore to..." = "Restore to…";
+
+/* When displaying a sync error, this is the option to retry syncing. */
+"Retry Sync" = "Retry Sync";
+
+/* Account setup toolbar button title to save account settings */
+"Save" = "저장";
+
+/* document picker compact title view accessibility hint */
+"Scroll down to show sort and filter controls" = "Scroll down to show sort and filter controls";
+
+/* document picker button label */
+"Search" = "검색";
+
+/* edit button title for doc picker in non-edit mode */
+"Select" = "선택";
+
+/* Main toolbar title for a no selected documents. */
+"Select a Document" = "Select a Document";
+
+/* send to app description */
+"Send \"%@\" to app as:" = "Send “%@” to app as:";
+
+/* Omni Sync Server send settings button title */
+"Send Settings via Email" = "이메일을 통해 설정 전송";
+
+/* Menu option in the document picker view */
+"Send to App" = "Send to App";
+
+/* Menu option in the document picker view */
+"Send to Photos" = "Send to Photos";
+
+/* export options title
+   Menu option in the document picker view */
+
+"Send via Mail" = "Send via Mail";
+
+/* email action description */
+"Server address: %@" = "Server address: %@";
+
+/* Label format when setting up an OmniPresence or WebDAV server account */
+"Setting up \"%@\"" = "Setting up “%@”";
+
+/* Omni Sync Server sign up button title */
+"Sign Up For a New Account" = "Sign Up For a New Account";
+
+/* sort by accessibility label */
+"Sort by %@" = "Sort by %@";
+
+/* Presence toolbar item accessibility label. */
+"Sync Now" = "지금 동기화";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "Tap here to add a document without a template.";
+
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Tap here, or on the + in the toolbar, to add a document.";
+
+/* empty picker text for Other Documents */
+"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app.";
+
+/* file name label for template filte types */
+"Template:" = "Template:";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "The “%1$@” account has %2$ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "The “%@” account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?";
+
+/* Discard unsynced edits dialog: message format */
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "The “%@” account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+
+/* Error description for a document operation failing due to a missing file. */
+"The operation couldn't be completed." = "The operation couldn't be completed.";
+
+/* error description */
+"The zip archive must contain a single document." = "The zip archive must contain a single document.";
+
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "This app does not have access to your Photo Library.";
+
+/* empty picker because of removed account text */
+"This Cloud Account no longer exists." = "This Cloud Account no longer exists.";
+
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again.";
+
+/* item not fully downloaded error message */
+"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again.";
+
+/* item not fully downloaded error message */
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again.";
+
+/* sort by title */
+"Title" = "제목";
+
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation.";
+
+/* error title */
+"Unable to open file." = "Unable to open file.";
+
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Use Cloud Storage Providers";
+
+/* Account validation status string. */
+"Validating account..." = "Validating account…";

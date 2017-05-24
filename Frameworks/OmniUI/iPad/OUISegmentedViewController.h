@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,15 +13,15 @@
 
 - (void)oui_invalidate;
 
-@property (nonatomic, copy) NSArray *viewControllers;
+@property (nonatomic, copy, nullable) NSArray<UIViewController *> *viewControllers;
 
-@property(nonatomic, assign) UIViewController *selectedViewController;
+@property(nonatomic, assign, nullable) UIViewController *selectedViewController;
 @property(nonatomic) NSUInteger selectedIndex;
 
 /*!
  @discussion This is used to set the rightBarButtonItem in the navigationItem. Please do not use the navigation item directly. OUISegmentedViewController owns the titleView and the leftBarButtonItem and will clobber anything you set them to. This is why we provide the rightBarButtonItem property for you to use.
  */
-@property (nonatomic, strong) UIBarButtonItem *leftBarButtonItem;
+@property (nonatomic, strong, nullable) UIBarButtonItem *leftBarButtonItem;
 
 - (CGFloat)topLayoutLength;
 - (void)setShouldShowDismissButton:(BOOL)shouldShow;
@@ -29,9 +29,29 @@
 
 @end
 
+@interface OUISegmentItem : NSObject
+
+@property (nonatomic, copy, readonly, nullable) NSString *title;
+@property (nonatomic, strong, readonly, nullable) UIImage *image;
+
+// You must use either -initWithTitle: or -initWithImage:
+- (_Null_unspecified instancetype)init NS_UNAVAILABLE;
+- (_Nonnull instancetype)initWithTitle:(nonnull NSString *)title NS_DESIGNATED_INITIALIZER;
+- (_Nonnull instancetype)initWithImage:(nonnull UIImage *)image NS_DESIGNATED_INITIALIZER;
+
+@end
+
 @interface UIViewController (OUISegmentedViewControllerExtras)
 
-@property (nonatomic, readonly) OUISegmentedViewController *segmentedViewController;
+@property (nonatomic, readonly, nullable) OUISegmentedViewController *segmentedViewController;
 @property (nonatomic, readonly) BOOL wantsHiddenNavigationBar;
+
+@property (nonatomic, readonly, nullable) OUISegmentItem *segmentItem;
+
+@end
+
+@interface UINavigationController (OUISegmentedViewControllerExtras)
+
+@property (nonatomic, readonly, nullable) OUISegmentItem *segmentItem;
 
 @end

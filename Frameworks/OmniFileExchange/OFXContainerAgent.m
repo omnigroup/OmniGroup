@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,8 +67,8 @@ static NSURL *_createContainerSubdirectory(NSURL *localContainerDirectory, NSStr
     OFXContainerDocumentIndex *_documentIndex;
     
     BOOL _hasScheduledMetadataUpdate;
-    NSMutableSet *_fileItemsNeedingMetadataUpdate;
-    NSMutableSet *_fileItemsNeedingMetadataRemoved;
+    NSMutableSet <OFXFileItem *> *_fileItemsNeedingMetadataUpdate;
+    NSMutableSet <OFXFileItem *> *_fileItemsNeedingMetadataRemoved;
     
     BOOL _hasScheduledDeferredTransferRequestForPreviouslySkippedFiles;
 }
@@ -105,7 +105,7 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     return [self containerAgentIdentifierForPathExtension:[fileURL pathExtension]];
 }
 
-- initWithAccountAgent:(OFXAccountAgent *)accountAgent identifier:(NSString *)identifier metadataRegistrationTable:(OFXRegistrationTable *)metadataRegistrationTable localContainerDirectory:(NSURL *)localContainerDirectory remoteContainerDirectory:(NSURL *)remoteContainerDirectory remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- initWithAccountAgent:(OFXAccountAgent *)accountAgent identifier:(NSString *)identifier metadataRegistrationTable:(OFXRegistrationTable <OFXFileMetadata *> *)metadataRegistrationTable localContainerDirectory:(NSURL *)localContainerDirectory remoteContainerDirectory:(NSURL *)remoteContainerDirectory remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 {
     OBPRECONDITION(accountAgent);
     OBPRECONDITION(![NSString isEmptyString:identifier]);
@@ -201,7 +201,7 @@ tryAgain:
     // Ensure we create the container directory so that other clients will know that this path extension signifies a wrapper file type (rather than waiting for a file of this type to be uploaded).
     // TODO: If we have local snapshots, but the remote directory has been deleted, should we interpret that the same as the individual files being deleted? Or should we treat it as some sort of error/reset and instead upload all our documents? If two clients are out in the world, the second client will treat missing server documents as deletes for local documents. For now, treating removal of the container as removal of all the files w/in it.
     __autoreleasing NSError *fetchError;
-    NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, remoteContainerDirectory, nil/*identifier*/, &fetchError);
+    NSArray <ODAVFileInfo *> *fileInfos = OFXFetchDocumentFileInfos(connection, remoteContainerDirectory, nil/*identifier*/, &fetchError);
     if (!fileInfos) {
         if (outError)
             *outError = fetchError;
@@ -253,7 +253,7 @@ tryAgain:
     __block BOOL tryAgain = NO;
     __block BOOL needsDownload = NO;
     
-    NSMutableArray *staleFileInfoVersions = [[NSMutableArray alloc] init];
+    NSMutableArray <ODAVFileInfo *> *staleFileInfoVersions = [[NSMutableArray alloc] init];
     
     [self _enumerateDocumentFileInfos:fileInfos collectStaleFileInfoVersions:staleFileInfoVersions applier:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
         OFXFileItem *fileItem = [_documentIndex fileItemWithIdentifier:fileIdentifier];
@@ -743,7 +743,7 @@ tryAgain:
     return deleteTransfer;
 }
 
-- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary <NSString *, NSArray <OFXRecentError *> *> *)recentErrorsByLocalRelativePath;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     
@@ -774,7 +774,7 @@ tryAgain:
 }
 
 // Probe used by OFXAccountAgent to determine if a rename is a directory rename.
-- (void)addFileItems:(NSMutableArray *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
+- (void)addFileItems:(NSMutableArray <OFXFileItem *> *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
@@ -860,8 +860,8 @@ tryAgain:
     }
     
     // Now look for edits and creation of new files
-    NSMutableArray *newFileURLs = [NSMutableArray new];
-    NSMutableDictionary *remainingLocalRelativePathToFileItem = [_documentIndex copyLocalRelativePathToFileItem];
+    NSMutableArray <NSURL *> *newFileURLs = [NSMutableArray new];
+    NSMutableDictionary <NSString *, OFXFileItem *> *remainingLocalRelativePathToFileItem = [_documentIndex copyLocalRelativePathToFileItem];
     
     for (NSURL *fileURL in _scan.scannedFileURLs) {
         OBASSERT([[[self class] containerAgentIdentifierForFileURL:fileURL] isEqual:_identifier]);
@@ -1399,17 +1399,17 @@ tryAgain:
     [self _generateAutomaticMovesToAvoidNameConflicts];
     
     // Don't expect reentrant updates, but let's check
-    NSSet *removals = _fileItemsNeedingMetadataRemoved;
+    NSSet <OFXFileItem *> *removals = _fileItemsNeedingMetadataRemoved;
     _fileItemsNeedingMetadataRemoved = nil;
     
-    NSSet *updates = _fileItemsNeedingMetadataUpdate;
+    NSSet <OFXFileItem *> *updates = _fileItemsNeedingMetadataUpdate;
     _fileItemsNeedingMetadataUpdate = nil;
     
     // Do these updates in bulk. Otherwise, we run the risk of publishing two items with the same URL. For example, -[OFXRenameTestCase testRenameOfFileAndCreationOfNewFileAsSamePathWhileNotRunning] would occassionally do so.
-    NSMutableArray *removeIdentifiers = [[NSMutableArray alloc] init];
+    NSMutableArray <NSString *> *removeIdentifiers = [[NSMutableArray alloc] init];
     for (OFXFileItem *fileItem in removals)
         [removeIdentifiers addObject:fileItem.identifier];
-    NSMutableDictionary *addItems = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary <NSString *, OFXFileMetadata *> *addItems = [[NSMutableDictionary alloc] init];
     for (OFXFileItem *fileItem in updates) {
         OFXFileMetadata *metadata = [fileItem _makeMetadata];
         addItems[fileItem.identifier] = metadata;
@@ -1536,7 +1536,7 @@ tryAgain:
     if (!_hasCreatedRemoteContainerDirectory)
         return;
     
-    NSMutableArray *fileVersions = [NSMutableArray new];
+    NSMutableArray <NSString *> *fileVersions = [NSMutableArray new];
     
     // This (intentionally) includes identifiers for locally deleted file items. We don't claim a new state until the *server* is changed.
     [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
@@ -1555,11 +1555,11 @@ tryAgain:
     }
 }
 
-- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos collectStaleFileInfoVersions:(NSMutableArray *)staleFileInfos applier:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo))applier;
+- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos collectStaleFileInfoVersions:(NSMutableArray <ODAVFileInfo *> *)staleFileInfos applier:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo))applier;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
-    NSMutableDictionary *fileIdentifierToLatestFileInfo = [NSMutableDictionary new];
+    NSMutableDictionary <NSString *, ODAVFileInfo *> *fileIdentifierToLatestFileInfo = [NSMutableDictionary new];
     
     for (ODAVFileInfo *fileInfo in fileInfos) {
         if (!fileInfo.isDirectory) {
@@ -1611,7 +1611,7 @@ tryAgain:
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
-    NSDictionary *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
+    NSDictionary <NSString *, NSArray <OFXFileItem *> *> *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
     [intendedLocalRelativePathToFileItems enumerateKeysAndObjectsUsingBlock:^(NSString *relativePath, NSArray *fileItems, BOOL *stop) {
         if ([fileItems count] < 2) {
             // Check if there is a automatic rename that can be undone now that we have a single document intending to be at that location
@@ -1661,12 +1661,12 @@ tryAgain:
 }
 
 // This is called when the user renames an automoved file to have its original name, thus declaring which file is the winner of the conflict. At that point, all the other files that were intending to be at that path have their automoved conflict paths made their intended path (and pushed to the server and other clients).
-- (void)_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:(NSArray *)relativePaths;
+- (void)_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:(NSArray <NSString *> *)relativePaths;
 {
     if ([relativePaths count] == 0)
         return;
     
-    NSDictionary *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
+    NSDictionary <NSString *, NSArray <OFXFileItem *> *> *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
 
     for (NSString *relativePath in relativePaths) {
         for (OFXFileItem *fileItem in intendedLocalRelativePathToFileItems[relativePath]) {

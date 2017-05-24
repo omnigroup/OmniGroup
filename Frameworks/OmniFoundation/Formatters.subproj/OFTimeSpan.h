@@ -1,4 +1,4 @@
-// Copyright 2006-2007, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@
     struct {
         float years, months, weeks, days, hours, minutes, seconds;
     } _components;
+    BOOL elapsed;
 }
 
 - initWithTimeSpanFormatter:(OFTimeSpanFormatter *)aFormatter;
@@ -28,6 +29,7 @@
 - (void)setHours:(float)aValue;
 - (void)setMinutes:(float)aValue;
 - (void)setSeconds:(float)aValue;
+- (void)setElapsed:(BOOL)aBool;
 
 - (float)years;
 - (float)months;
@@ -36,6 +38,7 @@
 - (float)hours;
 - (float)minutes;
 - (float)seconds;
+- (BOOL)elapsed;
 
 - (float)floatValue;
 - (float)floatValueInSeconds;

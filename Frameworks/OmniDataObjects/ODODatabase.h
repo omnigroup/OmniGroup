@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <Foundation/NSNotification.h>
 
 @class NSString, NSURL, NSError, NSDictionary, NSMutableDictionary, NSPredicate;
 @class ODOModel, ODOEntity, ODOAttribute, ODOObjectID, ODOSQLStatement;
@@ -48,6 +49,6 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 
 @end
 
-extern NSString * const ODODatabaseConnectedURLChangedNotification;
+extern NSNotificationName ODODatabaseConnectedURLChangedNotification;
 
 NS_ASSUME_NONNULL_END

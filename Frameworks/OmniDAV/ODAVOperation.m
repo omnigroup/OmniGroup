@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ NSString * const ODAVContentTypeHeader = @"Content-Type";
     BOOL _authChallengeCancelled;
     NSMutableData *_errorData;
     NSError *_error;
-    NSMutableArray *_redirects;
+    NSMutableArray <ODAVRedirect *> *_redirects;
 }
 
 static BOOL _isRead(ODAVOperation *self)
@@ -887,7 +887,7 @@ static BOOL _emptyPath(NSURL *url)
 
 @end
 
-void ODAVAddRedirectEntry(NSMutableArray *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary *responseHeaders)
+void ODAVAddRedirectEntry(NSMutableArray <ODAVRedirect *> *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary *responseHeaders)
 {
     OBPRECONDITION(entries != nil);
     OBPRECONDITION(type != nil);

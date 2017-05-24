@@ -1,4 +1,4 @@
-// Copyright 2012-2014 The Omni Group. All rights reserved.
+// Copyright 2012-2014,2017 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFXAgent, OFXRegistrationTable, OFXServerAccount;
+@class OFXAgent, OFXFileMetadata, OFXRegistrationTable<ValueType>, OFXServerAccount;
  
 @interface OFXAccountActivity : NSObject
 
@@ -18,7 +18,7 @@
 - initWithAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent; // for accounts that failed to start
 
 @property(nonatomic,readonly) OFXServerAccount *account;
-@property(nonatomic,readonly) OFXRegistrationTable *registrationTable;
+@property(nonatomic,readonly) OFXRegistrationTable <OFXFileMetadata *> *registrationTable;
 
 @property(nonatomic,readonly) NSUInteger downloadingFileCount;
 @property(nonatomic,readonly) unsigned long long downloadingSize;

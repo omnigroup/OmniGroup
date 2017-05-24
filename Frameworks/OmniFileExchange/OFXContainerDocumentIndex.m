@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,8 @@ RCS_ID("$Id$")
      
      An important case to test is when we have a published document with local edits and a new document comes in desiring that path from the server. We need the local document with edits to not lose its contents in favor of the new document (unless we generate a new conflict document from them).
      */
-    NSMutableDictionary *_documentIdentifierToFileItem;
-    NSMutableDictionary *_localRelativePathToFileItem;
+    NSMutableDictionary <NSString *, OFXFileItem *> *_documentIdentifierToFileItem;
+    NSMutableDictionary <NSString *, OFXFileItem *> *_localRelativePathToFileItem;
 }
 
 - (id)init;
@@ -50,15 +50,12 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (NSMutableSet *)copyRegisteredFileItemIdentifiers;
+- (NSMutableSet <NSString *> *)copyRegisteredFileItemIdentifiers;
 {
-    NSMutableSet *identifiers = [NSMutableSet new];
-    for (NSString *identifier in _documentIdentifierToFileItem)
-        [identifiers addObject:identifier];
-    return identifiers;
+    return [_documentIdentifierToFileItem mutableCopyKeySet];
 }
 
-- (NSMutableDictionary *)copyLocalRelativePathToFileItem;
+- (NSMutableDictionary <NSString *, OFXFileItem *> *)copyLocalRelativePathToFileItem;
 {
     return [_localRelativePathToFileItem mutableCopy];
 }
@@ -93,9 +90,9 @@ RCS_ID("$Id$")
     }];
 }
 
-- (NSDictionary *)copyIntendedLocalRelativePathToFileItems;
+- (NSDictionary <NSString *, NSArray <OFXFileItem *> *> *)copyIntendedLocalRelativePathToFileItems;
 {
-    NSMutableDictionary *results = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary <NSString *, NSMutableArray <OFXFileItem *> *> *results = [[NSMutableDictionary alloc] init];
     
     // _localRelativePathToFileItem has the actual path, not the desired path.
     // TODO: Make our own cache here? Would have to ensure it is up to date when an incoming name change happens or user initiated (attempted) name change happens.
@@ -105,7 +102,7 @@ RCS_ID("$Id$")
             return; // No local path. Not enumerating _localRelativePathToFileItem since we want the intended path, not the actual current (possibly auto-moved) path.
         
         NSString *path = fileItem.intendedLocalRelativePath;
-        NSMutableArray *fileItems = results[path];
+        NSMutableArray <OFXFileItem *> *fileItems = results[path];
         if (!fileItems) {
             fileItems = [[NSMutableArray alloc] initWithObjects:fileItem, nil];
             results[path] = fileItems;
@@ -175,7 +172,7 @@ static void _registerFileItem(OFXContainerDocumentIndex *self, OFXFileItem *file
 }
 
 // This is to detect folder renames. If we have two items requesting that they by "foo/A.ext", and we rename "foo" to "bar", we want both file items to move along too.
-- (void)addFileItems:(NSMutableArray *)resultFileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
+- (void)addFileItems:(NSMutableArray <OFXFileItem *> *)resultFileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
 {
     OBPRECONDITION([localDirectoryRelativePath hasSuffix:@"/"]);
     
@@ -264,7 +261,7 @@ static void _forgetItemByLocalRelativePath(OFXContainerDocumentIndex *self, OFXF
 }
 
 // Bulk by-user move
-- (void)fileItemsMoved:(NSArray *)moves; // Bulk move; array of OFXContainerDocumentIndexMove instances
+- (void)fileItemsMoved:(NSArray <OFXContainerDocumentIndexMove *> *)moves; // Bulk move; array of OFXContainerDocumentIndexMove instances
 {
     // De-register all the moving items (so we can deal with swapping moves).
     for (OFXContainerDocumentIndexMove *move in moves) {

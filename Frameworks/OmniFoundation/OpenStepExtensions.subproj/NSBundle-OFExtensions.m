@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
@@ -75,3 +76,51 @@ RCS_ID("$Id$");
 #endif
 
 @end
+
+NSBundle * OFControllingBundle(void)
+{
+    static NSBundle *controllingBundle = nil;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        if (NSClassFromString(@"XCTestCase")) {
+            // There should be exactly one test bundle with an extension of either 'xctest'.
+            NSBundle *candidateBundle = nil;
+            for (NSBundle *bundle in [NSBundle allBundles]) {
+                NSString *extension = [[bundle bundlePath] pathExtension];
+                if ([extension isEqualToString:@"xctest"]) {
+                    if (candidateBundle) {
+                        NSLog(@"found extra possible unit test bundle %@", bundle);
+                    } else
+                        candidateBundle = bundle;
+                }
+            }
+            
+            if (candidateBundle)
+                controllingBundle = [candidateBundle retain];
+        }
+        
+        if (!controllingBundle)
+            controllingBundle = [[NSBundle mainBundle] retain];
+        
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.11 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+#ifdef OMNI_ASSERTIONS_ON
+        {
+            NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
+            if (requiredVersionString) {
+                OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
+                OBASSERT(requiredVersion);
+                
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.11"];
+                OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
+                [requiredVersion release];
+                [globalRequiredVersion release];
+            }
+        }
+#endif
+    });
+    
+    OBPOSTCONDITION(controllingBundle);
+    return controllingBundle;
+}
+

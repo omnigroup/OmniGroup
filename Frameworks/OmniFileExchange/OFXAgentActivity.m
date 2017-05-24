@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 
 @interface OFXAgentActivity ()
 @property(nonatomic,readwrite) BOOL isActive;
-@property(nonatomic,readwrite,copy) NSSet *accountUUIDsWithErrors;
+@property(nonatomic,readwrite,copy) NSSet <NSString *> *accountUUIDsWithErrors;
 @property(nonatomic,readwrite) NSDate *lastSyncDate;
 @end
 

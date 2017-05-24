@@ -3221,12 +3221,12 @@ static void _removeEmptyOverlayViewAndConstraints(OUIDocumentPickerViewControlle
 
     _filteredItems = [[NSSet alloc] initWithSet:newItems];
 
-    if (_ignoreDocumentsDirectoryUpdates == 0) {
+    if (_ignoreDocumentsDirectoryUpdates == 0 && self.isViewLoaded) {
         [self _propagateItems:_filteredItems toScrollView:_mainScrollView withCompletionHandler:nil];
         [self _updateToolbarItemsEnabledness];
         [self _updateEmptyViewControlVisibility];
     }
-}
+} 
 
 - (void)_explicitlyRemoveItems:(NSSet *)items;
 {

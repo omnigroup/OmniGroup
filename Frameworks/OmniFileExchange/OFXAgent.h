@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 @class NSOperation;
 @class OFPreference, OFFileMotionResult;
 @class ODAVConnectionConfiguration;
-@class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters, OFXFileMetadata;
+@class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable<ValueType>, OFXAccountClientParameters, OFXFileMetadata;
 
 @interface OFXAgent : OBObject
 
@@ -46,10 +46,10 @@
 @property(nonatomic) OFXSyncSchedule syncSchedule; // Defaults to OFXSyncScheduleAutomatic, but can be adjusted before -applicationLaunched to prevent automatic syncing.
 - (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
 
-@property(readonly,nonatomic) NSSet *runningAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has actually started with that account. Until this point, -metadataItemRegistrationTableForAccount: is not valid.
-@property(readonly,nonatomic) NSSet *failedAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has been attempted and failed to start for some reason. Note that a running account can still have an error; this is for accounts that didn't even start up (missing local directory, etc).
-- (OFXRegistrationTable *)metadataItemRegistrationTableForAccount:(OFXServerAccount *)account; // Returns nil until the account agent is registered
-- (NSSet *)metadataItemsForAccount:(OFXServerAccount *)account; // Convenience wrapper
+@property(readonly,nonatomic) NSSet <OFXServerAccount *> *runningAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has actually started with that account. Until this point, -metadataItemRegistrationTableForAccount: is not valid.
+@property(readonly,nonatomic) NSSet <OFXServerAccount *> *failedAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has been attempted and failed to start for some reason. Note that a running account can still have an error; this is for accounts that didn't even start up (missing local directory, etc).
+- (OFXRegistrationTable <OFXFileMetadata *> *)metadataItemRegistrationTableForAccount:(OFXServerAccount *)account; // Returns nil until the account agent is registered
+- (NSSet <OFXFileMetadata *> *)metadataItemsForAccount:(OFXServerAccount *)account; // Convenience wrapper
 
 - (NSOperation *)afterAsynchronousOperationsFinish:(void (^)(void))block;
 

@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 
 #import <CoreFoundation/CFRunLoop.h>
 #import <OmniDataObjects/ODOFeatures.h>
+
+#import <Foundation/NSNotification.h>
 
 @class NSDate, NSSet, NSUndoManager, NSMutableSet;
 @class ODODatabase, ODOObject, ODOFetchRequest, ODOObjectID;
@@ -81,16 +83,17 @@
 
 - (NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 
-- (id)insertObjectWithEntityName:(NSString *)entityName;
-- (ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError; // Returns NSNull if the object wasn't found, nil on error.
+- (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
+- (__kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
 
 @end
 
-extern NSString * const ODOEditingContextObjectsWillBeDeletedNotification;
+extern NSNotificationName ODOEditingContextObjectsWillBeDeletedNotification;
 
-extern NSString * const ODOEditingContextObjectsDidChangeNotification;    
-extern NSString * const ODOEditingContextWillSaveNotification; // Receivers of the notification should not make any changes to the context
-extern NSString * const ODOEditingContextDidSaveNotification;
+extern NSNotificationName ODOEditingContextObjectsDidChangeNotification;
+extern NSNotificationName ODOEditingContextWillSaveNotification; // Receivers of the notification should not make any changes to the context
+extern NSNotificationName ODOEditingContextDidSaveNotification;
+
 extern NSString * const ODOInsertedObjectsKey;
 extern NSString * const ODOUpdatedObjectsKey; // All the updated objects
 extern NSString * const ODOMateriallyUpdatedObjectsKey; // A subset of the updated objects where each object has -changedNonDerivedChangedValue
@@ -98,5 +101,5 @@ extern NSString * const ODOMateriallyUpdatedObjectPropertiesKey; // An NSMapTabl
 extern NSString * const ODODeletedObjectsKey;
 extern NSString * const ODODeletedObjectPropertySnapshotsKey; // An NSDictionary mapping ODOObjectIDs for deleted objects to NSArray property snapshots, representing the last state those objects were in before deletion
 
-extern NSString * const ODOEditingContextWillResetNotification;
-extern NSString * const ODOEditingContextDidResetNotification;
+extern NSNotificationName ODOEditingContextWillResetNotification;
+extern NSNotificationName ODOEditingContextDidResetNotification;

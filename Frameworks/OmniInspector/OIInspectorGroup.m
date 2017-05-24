@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -544,7 +544,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     if (!_inspectorGroupFlags.hasPositionedWindows) {
         _inspectorGroupFlags.hasPositionedWindows = YES;
         
-        OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
+        OIWorkspace *sharedWorkspace = [OIWorkspace sharedWorkspace];
         for (index = 0; index < count; index++) {
             OIInspectorController *controller = _inspectors[index];
             NSString *identifier = controller.inspectorIdentifier;
@@ -554,9 +554,9 @@ static BOOL useASeparateMenuForWorkspaces = NO;
                 NSWindow *window = [controller window];
                 OBASSERT(window);
                 if (!index) {
-                    NSString *position = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
-                    if (position)
-                        [window setFrameTopLeftPoint:NSPointFromString(position)];
+                    NSPoint position = [sharedWorkspace floatingInspectorPositionForIdentifier:identifier];
+                    if (NSEqualPoints(position, NSZeroPoint) == NO)
+                        [window setFrameTopLeftPoint:position];
                 }
             }
         }
@@ -800,27 +800,25 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         return inspector.inspectorIdentifier;
     }];
 
-    OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
-    [sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
-        [dictionary setObject:identifiers forKey:[NSString stringWithFormat:@"%@-Order", [self identifier]]];
+    OIWorkspace *sharedWorkspace = [OIWorkspace sharedWorkspace];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
+
+    [sharedWorkspace setInspectorGroupOrder:identifiers forIdentifier:[self identifier]];
+
+    // Don't call -topLeftPoint when we don't have a window (i.e., we have never been shown).  Instead, just use whatever is in the plist already.  Otherwise, we'll send -frame to a nil window!
+    if ([self hasFirstFrame])
+        [sharedWorkspace setInspectorGroupPosition:[self topLeftPoint] forIdentifier:[self identifier]];
         
-        // Don't call -topLeftPoint when we don't have a window (i.e., we have never been shown).  Instead, just use whatever is in the plist already.  Otherwise, we'll send -frame to a nil window!
-        if ([self hasFirstFrame])
-            [dictionary setObject:NSStringFromPoint([self topLeftPoint]) forKey:[NSString stringWithFormat:@"%@-Position", [self identifier]]];
-        
-        NSString *visibleKey = [NSString stringWithFormat:@"%@-Visible", [self identifier]];
-        if ([self isVisible])
-            [dictionary setObject:@"YES" forKey:visibleKey];
-        else
-            [dictionary removeObjectForKey:visibleKey];
-    }];
+    [sharedWorkspace setInspectorGroupVisible:[self isVisible] forIdentifier:[self identifier]];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
 }
 
 - (void)restoreFromIdentifier:(NSString *)restoreIdentifier withInspectors:(NSMutableDictionary *)inspectorsById;
 {
-    OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
-    NSArray *identifiers = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Order", restoreIdentifier]];
-    BOOL willBeVisible = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Visible", restoreIdentifier]] != nil;
+    OIWorkspace *sharedWorkspace = [OIWorkspace sharedWorkspace];
+    NSArray *identifiers = [sharedWorkspace inspectorGroupOrderForIdentifier:restoreIdentifier];
+    BOOL willBeVisible = [sharedWorkspace inspectorGroupVisibleForIdentifier: restoreIdentifier];
     
     NSUInteger index, count = [identifiers count];
     for (index = 0; index < count; index++) {
@@ -840,9 +838,9 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         [inspectorsById removeObjectForKey:identifier];
         [self addInspector:controller];
         if (!index) {
-            NSString *position = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
-            if (position)
-                [window setFrameTopLeftPoint:NSPointFromString(position)];
+            NSPoint position = [sharedWorkspace inspectorGroupPositionForIdentifier:identifier];
+            if (CGPointEqualToPoint(position, NSZeroPoint) == NO)
+                [window setFrameTopLeftPoint:position];
         }
     }
     if (![_inspectors count]) {

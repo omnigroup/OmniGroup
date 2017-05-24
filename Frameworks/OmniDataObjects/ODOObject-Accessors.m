@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,42 +20,132 @@
 
 RCS_ID("$Id$")
 
-@interface ODOObject (Accessors)
+NS_ASSUME_NONNULL_BEGIN
+
+#pragma mark -
+
+@interface _ODOObject_Accessors : NSObject
+
+@property (nonatomic, copy) NSObject *_object_property;
+
+@property (nonatomic) BOOL _bool_property;
+@property (nonatomic) int16_t _int16_property;
+@property (nonatomic) int32_t _int32_property;
+@property (nonatomic) int64_t _int64_property;
+@property (nonatomic) float _float32_property;
+@property (nonatomic) double _float64_property;
+
 @end
-@implementation ODOObject (Accessors)
+
+#pragma mark -
+
 // Used for getting type signatures
-- (id)_getter_signature;
+@implementation _ODOObject_Accessors
+
+@dynamic _object_property;
+@dynamic _int16_property;
+@dynamic _int32_property;
+@dynamic _int64_property;
+@dynamic _float32_property;
+@dynamic _float64_property;
+
+- (nullable id)_object_getter_signature;
 {
+    OBASSERT_NOT_REACHED("Unused getter.");
     return nil;
 }
-- (void)_setter_signature:(id)arg;
+
+- (void)_object_setter_signature:(nullable id)arg;
 {
+    OBASSERT_NOT_REACHED("Unused setter.");
 }
+
+- (BOOL)_bool_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return NO;
+}
+
+- (void)_bool_setter_signature:(BOOL)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
+- (int16_t)_int16_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return 0;
+}
+
+- (void)_int16_setter_signature:(int16_t)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
+- (int32_t)_int32_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return 0;
+}
+
+- (void)_int32_setter_signature:(int32_t)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
+- (int64_t)_int64_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return 0;
+}
+
+- (void)_int64_setter_signature:(int64_t)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
+- (float)_float32_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return 0;
+}
+
+- (void)_float32_setter_signature:(float)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
+- (double)_float64_getter_signature;
+{
+    OBASSERT_NOT_REACHED("Unused getter.");
+    return 0;
+}
+
+- (void)_float64_setter_signature:(double)arg;
+{
+    OBASSERT_NOT_REACHED("Unused setter.");
+}
+
 @end
 
-const char *ODOObjectGetterSignature(void)
-{
-    static const char *signature = NULL;
-    if (!signature) {
-        Method method = class_getInstanceMethod([ODOObject class], @selector(_getter_signature));
-        signature = method_getTypeEncoding(method);
-    }
-    return signature;
-}
+#pragma mark -
 
-const char *ODOObjectSetterSignature(void)
+static inline void ODOASSERT_ATTRIBUTE_OF_TYPE(ODOProperty *prop, ODOAttributeType attrType)
 {
-    static const char *signature = NULL;
-    if (!signature) {
-        Method method = class_getInstanceMethod([ODOObject class], @selector(_setter_signature:));
-        signature = method_getTypeEncoding(method);
-    }
-    return signature;
+#ifdef OMNI_ASSERTIONS_ON
+    OBPRECONDITION(prop != nil);
+    OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    OBASSERT(flags.relationship == NO);
+    
+    ODOAttribute *attr = (ODOAttribute *)prop;
+    OBASSERT(![attr isPrimaryKey]);
+    OBASSERT(attr.type == attrType);
+#endif
 }
-
 
 // Pass a key of nil if you don't know or care what the key is and just want to clear the fault.  Right now we short circuit on the primary key attribute name.
-static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key)
+static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key)
 {
 #ifdef OMNI_ASSERTIONS_ON
     // We can always access the primary key. But, other properties we can't access once we are deleted. We let in-progress deletes look up properties here, though, so since -isDeleted returns YES for objects that are in the middle of deletion (so that triggering OFMLiveFetch updates won't return result sets with about-to-be-deleted objects). See r202914 with the fix for <bug:///98546> (Crash updating forecast/inbox badge after sync? -[HomeController _forecastCount])
@@ -66,27 +156,29 @@ static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSSt
     
     if (!self->_flags.invalid && self->_flags.isFault) {
         // Don't clear faults for the primary key
-        if (![key isEqualToString:[[[self->_objectID entity] primaryKeyAttribute] name]])
+        if (![key isEqualToString:[[[self->_objectID entity] primaryKeyAttribute] name]]) {
             ODOFetchObjectFault(self->_editingContext, self);
+        }
     }
     
     // We might be part of a fetch result set that is still getting awoken.  If another object awaking tries to talk to us before we are awake, wake up early.  Note that circular awaking problems are still possible.
-    if (self->_flags.needsAwakeFromFetch)
+    if (self->_flags.needsAwakeFromFetch) {
         ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(self);
+    }
 }
 
-void ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key)
+void ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key)
 {
     __inline_ODOObjectWillAccessValueForKey(self, key);
 }
 
 // Can pass a relationship if you already know it, or nil if you don't.
-static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, NSUInteger snapshotIndex, BOOL toMany, ODORelationship *rel)
+static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, NSUInteger snapshotIndex, BOOL toMany, ODORelationship * _Nullable rel)
 {
-    OBPRECONDITION(!rel || [rel isKindOfClass:[ODORelationship class]]);
-    OBPRECONDITION(!rel || ODOPropertySnapshotIndex(rel) == snapshotIndex);
+    OBPRECONDITION(rel == nil || [rel isKindOfClass:[ODORelationship class]]);
+    OBPRECONDITION(rel == nil || ODOPropertySnapshotIndex(rel) == snapshotIndex);
     
-    if (!rel) {
+    if (rel == nil) {
         // Caller needs us to look it up; not sure if this will be rare or not.
         rel = (ODORelationship *)[[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
         OBASSERT([rel isKindOfClass:[ODORelationship class]]);
@@ -99,10 +191,10 @@ static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, N
 }
 
 // Can pass a relationship if you already know it, or nil if you don't.
-static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship *rel)
+static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship * _Nullable rel)
 {
-    OBPRECONDITION(!rel || [rel isKindOfClass:[ODORelationship class]]);
-    OBASSERT(!rel || [rel isToMany] == NO);
+    OBPRECONDITION(rel == nil || [rel isKindOfClass:[ODORelationship class]]);
+    OBASSERT(rel == nil || [rel isToMany] == NO);
     
     if ([value isKindOfClass:[ODOObject class]]) {
 #ifdef OMNI_ASSERTIONS_ON
@@ -110,7 +202,7 @@ static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id va
         OBASSERT([value isKindOfClass:[[rel destinationEntity] instanceClass]]);
 #endif
         // All good
-    } else if (value) {
+    } else if (value != nil) {
         rel = _ODOLookupRelationshipBySnapshotIndex(self, snapshotIndex, NO/*toMany*/, rel);
         OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
         
@@ -129,7 +221,7 @@ static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id va
     return value;
 }
 
-static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship *rel)
+static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id value, NSUInteger snapshotIndex, ODORelationship * _Nullable rel)
 {
     if (ODOObjectValueIsLazyToManyFault(value)) {
         // When asking for the to-many relationship the first time, we fetch it.  We assume that the caller is going to do something useful with it, otherwise they shouldn't even ask.  If you want to conditionally avoid faulting, we could add a -isFaultForKey: or some such.
@@ -143,7 +235,7 @@ static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id v
 // Generic property getter; logic here and in the specific index cases must match up
 id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
 {
-    OBPRECONDITION(prop);
+    OBPRECONDITION(prop != nil);
     OBPRECONDITION(!self->_flags.isFault || prop == [[self->_objectID entity] primaryKeyAttribute]);
     
     // Could maybe have extra info in this lookup (attr vs. rel, to-one vs. to-many)?
@@ -195,7 +287,85 @@ static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotI
     return _ODOObjectValueAtIndex(self, snapshotIndex);
 }
 
-static id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+static BOOL _ODOObjectBoolAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeBoolean);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value boolValue];
+}
+
+static int16_t _ODOObjectInt16AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt16);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value shortValue];
+}
+
+static int32_t _ODOObjectInt32AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt32);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value intValue];
+}
+
+static int64_t _ODOObjectInt64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt64);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value longLongValue];
+}
+
+static float _ODOObjectFloat32AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat32);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value floatValue];
+}
+
+static double _ODOObjectFloat64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+{
+#ifdef OMNI_ASSERTIONS_ON
+    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat64);
+#endif
+    
+    __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
+    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    OBASSERT(value != nil);
+    return [value doubleValue];
+}
+
+static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
@@ -240,7 +410,7 @@ static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger 
 }
 
 // Generic property setter; for now we aren't doing specific-index setters (we are already a little faster than CoreData here, but we could still add them if it ends up showing up on a profile).
-void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, id value, ODOProperty *prop)
+void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, ODOProperty *prop)
 {
     OBPRECONDITION(prop);
     // OBPRECONDITION(!_flags.isFault); Being a fault is allowed here since this is how faults will get set up.
@@ -404,8 +574,12 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, id value, ODOPropert
     [valueCopy release];
 }
 
+NS_ASSUME_NONNULL_END
+
 // If you copy the OmniDataObjects source into your project, you'll also need a shell script build phase like the "Generate Accessors" one in the OmniDataObjects framework project. This build phase needs to be ordered before the 'Compile Sources' phase.  If you prefer, you could run the script once (see its source to figure out how) and add the result to your project.  In this case you run the risk of a new version of ODO requiring a new format for this file.
 #import "ODOObject-GeneratedAccessors.m"
+
+NS_ASSUME_NONNULL_BEGIN
 
 id ODODynamicValueForProperty(ODOObject *object, ODOProperty *prop)
 {
@@ -442,53 +616,525 @@ void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *pro
     [object didChangeValueForKey:key];
 }
 
+id ODOGetScalarValueForProperty(ODOObject *object, ODOProperty *prop)
+{
+    OBPRECONDITION([prop isKindOfClass:[ODOAttribute class]]);
+    if (![prop isKindOfClass:[ODOAttribute class]]) {
+        return nil;
+    }
+    
+    ODOAttribute *attr = (ODOAttribute *)prop;
+    switch (attr->_type) {
+        case ODOAttributeTypeInvalid: {
+            OBASSERT_NOT_REACHED("Invalid attribute type.");
+            return nil;
+        }
+            
+        case ODOAttributeTypeUndefined:
+        case ODOAttributeTypeString:
+        case ODOAttributeTypeDate:
+        case ODOAttributeTypeData: {
+            typedef id (*ObjectGetter)(ODOObject *object, SEL _cmd);
+            ObjectGetter getter = (ObjectGetter)attr->_imp.get;
+            return getter(object, attr->_sel.get);
+        }
+            
+        case ODOAttributeTypeInt16: {
+            typedef int16_t (*Int16Getter)(ODOObject *object, SEL _cmd);
+            Int16Getter getter = (Int16Getter)attr->_imp.get;
+            int16_t value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithShort:value];
+        }
+            
+        case ODOAttributeTypeInt32: {
+            typedef int32_t (*Int32Getter)(ODOObject *object, SEL _cmd);
+            Int32Getter getter = (Int32Getter)attr->_imp.get;
+            int32_t value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithInt:value];
+        }
+            
+        case ODOAttributeTypeInt64: {
+            typedef int64_t (*Int64Getter)(ODOObject *object, SEL _cmd);
+            Int64Getter getter = (Int64Getter)attr->_imp.get;
+            int64_t value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithLongLong:value];
+        }
+            
+        case ODOAttributeTypeFloat32: {
+            typedef float (*Float32Getter)(ODOObject *object, SEL _cmd);
+            Float32Getter getter = (Float32Getter)attr->_imp.get;
+            float value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithFloat:value];
+        }
+            
+        case ODOAttributeTypeFloat64: {
+            typedef double (*Float64Getter)(ODOObject *object, SEL _cmd);
+            Float64Getter getter = (Float64Getter)attr->_imp.get;
+            double value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithDouble:value];
+        }
+            
+        case ODOAttributeTypeBoolean: {
+            typedef BOOL (*BoolGetter)(ODOObject *object, SEL _cmd);
+            BoolGetter getter = (BoolGetter)attr->_imp.get;
+            BOOL value = getter(object, attr->_sel.get);
+            return [NSNumber numberWithBool:value];
+        }
+    }
+    
+    OBASSERT_NOT_REACHED("Unreachable.");
+    return nil;
+}
+
+void ODOSetScalarValueForProperty(ODOObject *object, ODOProperty *prop, _Nullable id value)
+{
+    OBPRECONDITION([prop isKindOfClass:[ODOAttribute class]]);
+    if (![prop isKindOfClass:[ODOAttribute class]]) {
+        return;
+    }
+
+    ODOAttribute *attr = (ODOAttribute *)prop;
+
+    switch (attr->_type) {
+        case ODOAttributeTypeInvalid: {
+            OBASSERT_NOT_REACHED("Invalid attribute type.");
+            break;
+        }
+            
+        case ODOAttributeTypeUndefined:
+        case ODOAttributeTypeString:
+        case ODOAttributeTypeDate:
+        case ODOAttributeTypeData: {
+            typedef void (*ObjectSetter)(ODOObject *object, SEL _cmd, _Nullable id value);
+            ObjectSetter setter = (ObjectSetter)attr->_imp.set;
+            setter(object, attr->_sel.set, value);
+            break;
+        }
+            
+        case ODOAttributeTypeInt16: {
+            typedef void (*Int16Setter)(ODOObject *object, SEL _cmd, int16_t value);
+            Int16Setter setter = (Int16Setter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number shortValue]);
+            break;
+        }
+            
+        case ODOAttributeTypeInt32: {
+            typedef void (*Int32Setter)(ODOObject *object, SEL _cmd, int32_t value);
+            Int32Setter setter = (Int32Setter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number intValue]);
+            break;
+        }
+            
+        case ODOAttributeTypeInt64: {
+            typedef void (*Int64Setter)(ODOObject *object, SEL _cmd, int64_t value);
+            Int64Setter setter = (Int64Setter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number longLongValue]);
+            break;
+        }
+            
+        case ODOAttributeTypeFloat32: {
+            typedef void (*Float32Setter)(ODOObject *object, SEL _cmd, float value);
+            Float32Setter setter = (Float32Setter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number floatValue]);
+            break;
+        }
+            
+        case ODOAttributeTypeFloat64: {
+            typedef void (*Float64Setter)(ODOObject *object, SEL _cmd, double value);
+            Float64Setter setter = (Float64Setter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number doubleValue]);
+            break;
+        }
+
+        case ODOAttributeTypeBoolean: {
+            typedef void (*BooleanSetter)(ODOObject *object, SEL _cmd, BOOL value);
+            BooleanSetter setter = (BooleanSetter)attr->_imp.set;
+            NSNumber *number = OB_CHECKED_CAST(NSNumber, value);
+            setter(object, attr->_sel.set, [number boolValue]);
+            break;
+        }
+    }
+
+    return;
+}
+
 // These only work for object-valued properties, but that is all we support right now.  We aren't currently verifying that any @dynamic properties _are_ object valued, but we should
 id ODOGetterForUnknownOffset(ODOObject *self, SEL _cmd)
 {
     ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
-    OBASSERT(prop); // should only be installed for actual properties, unlike -valueForKey: which might be called for other keys
+    OBASSERT(prop != nil); // should only be installed for actual properties, unlike -valueForKey: which might be called for other keys
     return ODODynamicValueForProperty(self, prop);
 }
 
-void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value)
+static BOOL ODOBoolGetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeBoolean);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value boolValue];
+}
+
+static int16_t ODOInt16GetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt16);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value shortValue];
+}
+
+static int32_t ODOInt32GetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt32);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value intValue];
+}
+
+static int64_t ODOInt64GetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt64);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value longLongValue];
+}
+
+static float ODOFloat32GetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat32);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value floatValue];
+}
+
+static double ODOFloat64GetterForUnknownOffset(ODOObject *self, SEL _cmd)
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyWithGetter:_cmd];
+    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat64);
+    
+    id value = ODODynamicValueForProperty(self, prop);
+    OBASSERT(value != nil);
+    return [value doubleValue];
+}
+
+void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, _Nullable id value)
 {
     ODOProperty *prop = [[self->_objectID entity] propertyWithSetter:_cmd];
     OBASSERT(prop); // should only be installed for actual properties, unlike -setValue:forKey: which might be called for other keys
+    
     ODODynamicSetValueForProperty(self, _cmd, prop, value);
 }
 
-ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop)
+static void ODOBoolSetterForUnknownOffset(ODOObject *self, SEL _cmd, BOOL value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static void ODOInt16SetterForUnknownOffset(ODOObject *self, SEL _cmd, int16_t value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static void ODOInt32SetterForUnknownOffset(ODOObject *self, SEL _cmd, int32_t value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static void ODOInt64SetterForUnknownOffset(ODOObject *self, SEL _cmd, int64_t value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static void ODOFloat32SetterForUnknownOffset(ODOObject *self, SEL _cmd, float value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static void ODOFloat64SetterForUnknownOffset(ODOObject *self, SEL _cmd, double value)
+{
+    ODOSetterForUnknownOffset(self, _cmd, @(value));
+}
+
+static const char * _SignatureForSelector(SEL sel)
+{
+    Method method = class_getInstanceMethod([_ODOObject_Accessors class], sel);
+    const char *signature = method_getTypeEncoding(method);
+    return signature;
+}
+
+const char * ODOGetterSignatureForProperty(ODOProperty *prop)
+{
+    static const char * GetterSignatures[ODOAttributeTypeCount];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        GetterSignatures[ODOAttributeTypeUndefined] = _SignatureForSelector(@selector(_object_getter_signature));
+        GetterSignatures[ODOAttributeTypeInt16] = _SignatureForSelector(@selector(_int16_getter_signature));
+        GetterSignatures[ODOAttributeTypeInt32] = _SignatureForSelector(@selector(_int32_getter_signature));
+        GetterSignatures[ODOAttributeTypeInt64] = _SignatureForSelector(@selector(_int64_getter_signature));
+        GetterSignatures[ODOAttributeTypeFloat32] = _SignatureForSelector(@selector(_float32_getter_signature));
+        GetterSignatures[ODOAttributeTypeFloat64] = _SignatureForSelector(@selector(_float64_getter_signature));
+        GetterSignatures[ODOAttributeTypeString] = _SignatureForSelector(@selector(_object_getter_signature));
+        GetterSignatures[ODOAttributeTypeBoolean] = _SignatureForSelector(@selector(_bool_getter_signature));
+        GetterSignatures[ODOAttributeTypeDate] = _SignatureForSelector(@selector(_object_getter_signature));
+        GetterSignatures[ODOAttributeTypeData] = _SignatureForSelector(@selector(_object_getter_signature));
+    });
+
+    ODOAttributeType attrType = ODOAttributeTypeUndefined;
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+
+    if (flags.relationship || !flags.scalarAccessors) {
+        attrType = ODOAttributeTypeUndefined; // object style accessor
+    } else {
+        OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+        ODOAttribute *attr = (ODOAttribute *)prop;
+        OBASSERT(attr->_type >= 0 && attr->_type < ODOAttributeTypeCount);
+        if (attr->_type >= 0 && attr->_type < ODOAttributeTypeCount) {
+            attrType = attr->_type;
+        }
+    }
+    
+    return GetterSignatures[attrType];
+}
+
+const char * ODOSetterSignatureForProperty(ODOProperty *prop)
+{
+    static const char * SetterSignatures[ODOAttributeTypeCount];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SetterSignatures[ODOAttributeTypeUndefined] = _SignatureForSelector(@selector(_object_setter_signature:));
+        SetterSignatures[ODOAttributeTypeInt16] = _SignatureForSelector(@selector(_int16_setter_signature:));
+        SetterSignatures[ODOAttributeTypeInt32] = _SignatureForSelector(@selector(_int32_setter_signature:));
+        SetterSignatures[ODOAttributeTypeInt64] = _SignatureForSelector(@selector(_int64_setter_signature:));
+        SetterSignatures[ODOAttributeTypeFloat32] = _SignatureForSelector(@selector(_float32_setter_signature:));
+        SetterSignatures[ODOAttributeTypeFloat64] = _SignatureForSelector(@selector(_float64_setter_signature:));
+        SetterSignatures[ODOAttributeTypeString] = _SignatureForSelector(@selector(_object_setter_signature:));
+        SetterSignatures[ODOAttributeTypeBoolean] = _SignatureForSelector(@selector(_bool_setter_signature:));
+        SetterSignatures[ODOAttributeTypeDate] = _SignatureForSelector(@selector(_object_setter_signature:));
+        SetterSignatures[ODOAttributeTypeData] = _SignatureForSelector(@selector(_object_setter_signature:));
+    });
+    
+    ODOAttributeType attrType = ODOAttributeTypeUndefined;
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    
+    if (flags.relationship || !flags.scalarAccessors) {
+        attrType = ODOAttributeTypeUndefined; // object style accessor
+    } else {
+        OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+        ODOAttribute *attr = (ODOAttribute *)prop;
+        OBASSERT(attr->_type >= 0 && attr->_type < ODOAttributeTypeCount);
+        if (attr->_type >= 0 && attr->_type < ODOAttributeTypeCount) {
+            attrType = attr->_type;
+        }
+    }
+    
+    return SetterSignatures[attrType];
+}
+
+static const char * _AttributesForProperty(SEL sel)
+{
+    const char *name = [NSStringFromSelector(sel) UTF8String];
+    objc_property_t objcProperty = class_getProperty([_ODOObject_Accessors class], name);
+    OBASSERT(objcProperty != NULL);
+    
+    // https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
+    const char *attributes = property_getAttributes(objcProperty);
+    return attributes;
+}
+
+const char * ODOPropertyAttributesForProperty(ODOProperty *prop)
+{
+    static const char * PropertyAttributes[ODOAttributeTypeCount];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        PropertyAttributes[ODOAttributeTypeUndefined] = _AttributesForProperty(@selector(_object_property));
+        PropertyAttributes[ODOAttributeTypeInt16] = _AttributesForProperty(@selector(_int16_property));
+        PropertyAttributes[ODOAttributeTypeInt32] = _AttributesForProperty(@selector(_int32_property));
+        PropertyAttributes[ODOAttributeTypeInt64] = _AttributesForProperty(@selector(_int64_property));
+        PropertyAttributes[ODOAttributeTypeFloat32] = _AttributesForProperty(@selector(_float32_property));
+        PropertyAttributes[ODOAttributeTypeFloat64] = _AttributesForProperty(@selector(_float64_property));
+        PropertyAttributes[ODOAttributeTypeString] = _AttributesForProperty(@selector(_object_property));
+        PropertyAttributes[ODOAttributeTypeBoolean] = _AttributesForProperty(@selector(_bool_property));
+        PropertyAttributes[ODOAttributeTypeDate] = _AttributesForProperty(@selector(_object_property));
+        PropertyAttributes[ODOAttributeTypeData] = _AttributesForProperty(@selector(_object_property));
+    });
+
+    ODOAttributeType attrType = ODOAttributeTypeUndefined;
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    
+    if (flags.relationship || !flags.scalarAccessors) {
+        attrType = ODOAttributeTypeUndefined; // object style accessor
+    } else {
+        OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+        ODOAttribute *attr = (ODOAttribute *)prop;
+        OBASSERT(attr->_type >= 0 && attr->_type < ODOAttributeTypeCount);
+        if (attr->_type >= 0 && attr->_type < ODOAttributeTypeCount) {
+            attrType = attr->_type;
+        }
+    }
+    
+    return PropertyAttributes[attrType];
+}
+
+IMP ODOGetterForProperty(ODOProperty *prop)
 {
     NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
-        return _ODOObjectPrimaryKeyGetter;
+    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
+        return (IMP)_ODOObjectPrimaryKeyGetter;
+    }
     
+    IMP getter = NULL;
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+
     // We have different paths for attributes and relationships to allow for lazy fault creation on the relationship paths.
     if (snapshotIndex < ODOObjectIndexedAccessorCount) {
-        ODOPropertyGetter getter = NULL;
         const ODOAccessors *accessors = &IndexedAccessors[snapshotIndex];
-        struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        if (flags.relationship)
-            getter = flags.toMany ? accessors->to_many.get : accessors->to_one.get;
-        else
-            getter = accessors->attribute.get;
-        OBASSERT(getter);
-        return getter;
+        if (flags.relationship) {
+            getter = (IMP)(flags.toMany ? accessors->to_many.get : accessors->to_one.get);
+        } else if (flags.scalarAccessors) {
+            OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+            ODOAttribute *attr = (ODOAttribute *)prop;
+            
+            switch (attr->_type) {
+                case ODOAttributeTypeInvalid: {
+                    OBASSERT_NOT_REACHED("Invalid attribute type.");
+                    break;
+                }
+                    
+                case ODOAttributeTypeUndefined: {
+                    getter = (IMP)accessors->attribute.get;
+                    break;
+                }
+                    
+                case ODOAttributeTypeInt16: {
+                    getter = (IMP)accessors->attribute.get_int16;
+                    break;
+                }
+
+                case ODOAttributeTypeInt32: {
+                    getter = (IMP)accessors->attribute.get_int32;
+                    break;
+                }
+
+                case ODOAttributeTypeInt64: {
+                    getter = (IMP)accessors->attribute.get_int64;
+                    break;
+                }
+
+                case ODOAttributeTypeFloat32: {
+                    getter = (IMP)accessors->attribute.get_float32;
+                    break;
+                }
+
+                case ODOAttributeTypeFloat64: {
+                    getter = (IMP)accessors->attribute.get_float64;
+                    break;
+                }
+
+                case ODOAttributeTypeString: {
+                    getter = (IMP)accessors->attribute.get;
+                    break;
+                }
+
+                case ODOAttributeTypeBoolean: {
+                    getter = (IMP)accessors->attribute.get_bool;
+                    break;
+                }
+
+                case ODOAttributeTypeDate:
+                case ODOAttributeTypeData: {
+                    getter = (IMP)accessors->attribute.get;
+                    break;
+                }
+            }
+        } else {
+            getter = (IMP)accessors->attribute.get;
+        }
+    } else {
+        #if defined(DEBUG_bungi) || defined(DEBUG_correia)
+            OBASSERT_NOT_REACHED("Need more attribute at-offset getters.");
+        #endif
+
+        if (flags.relationship) {
+            getter = (IMP)ODOGetterForUnknownOffset;
+        } else if (flags.scalarAccessors) {
+            static IMP UnknownOffsetAccessors[ODOAttributeTypeCount];
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                UnknownOffsetAccessors[ODOAttributeTypeUndefined] = (IMP)ODOGetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeInt16] = (IMP)ODOInt16GetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeInt32] = (IMP)ODOInt32GetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeInt64] = (IMP)ODOInt64GetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeFloat32] = (IMP)ODOFloat32GetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeFloat64] = (IMP)ODOFloat64GetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeString] = (IMP)ODOGetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeBoolean] = (IMP)ODOBoolGetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeDate] = (IMP)ODOGetterForUnknownOffset;
+                UnknownOffsetAccessors[ODOAttributeTypeData] = (IMP)ODOGetterForUnknownOffset;
+            });
+
+            OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+            ODOAttribute *attr = (ODOAttribute *)prop;
+
+            OBASSERT(attr->_type >= 0 && attr->_type < ODOAttributeTypeCount);
+            getter = UnknownOffsetAccessors[attr->_type];
+        } else {
+            getter = (IMP)ODOGetterForUnknownOffset;
+        }
     }
-#ifdef DEBUG_bungi
-    NSLog(@"Need more attribute at-offset getters");
-#endif
-    return ODOGetterForUnknownOffset;
+
+    OBASSERT(getter != NULL);
+    return getter;
 }
 
-ODOPropertySetter ODOSetterForProperty(ODOProperty *prop)
+IMP ODOSetterForProperty(ODOProperty *prop)
 {
-    // Generic property setter; for now we aren't doing specific-index setters (we are already a little faster than CoreData here, but we could still add them if it ends up showing up on a profile).
-    return ODOSetterForUnknownOffset;
+    static IMP Setters[ODOAttributeTypeCount];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Setters[ODOAttributeTypeUndefined] = (IMP)ODOSetterForUnknownOffset;
+        Setters[ODOAttributeTypeInt16] = (IMP)ODOInt16SetterForUnknownOffset;
+        Setters[ODOAttributeTypeInt32] = (IMP)ODOInt32SetterForUnknownOffset;
+        Setters[ODOAttributeTypeInt64] = (IMP)ODOInt64SetterForUnknownOffset;
+        Setters[ODOAttributeTypeFloat32] = (IMP)ODOFloat32SetterForUnknownOffset;
+        Setters[ODOAttributeTypeFloat64] = (IMP)ODOFloat64SetterForUnknownOffset;
+        Setters[ODOAttributeTypeString] = (IMP)ODOSetterForUnknownOffset;
+        Setters[ODOAttributeTypeBoolean] = (IMP)ODOBoolSetterForUnknownOffset;
+        Setters[ODOAttributeTypeDate] = (IMP)ODOSetterForUnknownOffset;
+        Setters[ODOAttributeTypeData] = (IMP)ODOSetterForUnknownOffset;
+    });
+    
+    ODOAttributeType attrType = ODOAttributeTypeUndefined;
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    
+    if (flags.relationship || !flags.scalarAccessors) {
+        attrType = ODOAttributeTypeUndefined; // object style accessor
+    } else {
+        OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
+        ODOAttribute *attr = (ODOAttribute *)prop;
+        OBASSERT(attr->_type >= 0 && attr->_type < ODOAttributeTypeCount);
+        if (attr->_type >= 0 && attr->_type < ODOAttributeTypeCount) {
+            attrType = attr->_type;
+        }
+    }
+    
+    return Setters[attrType];
 }
 
-
-void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty *prop)
+void ODOObjectSetInternalValueForProperty(ODOObject *self, _Nullable id value, ODOProperty *prop)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     //OBPRECONDITION(!self->_flags.isFault); // Might be a fault if we are just clearing it.  TODO: Swap the order of filling in the values and clearing the fault flag?
@@ -516,20 +1162,51 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
     
     // Force dynamic property accessors to be registered now. The NSKVO cover class screws this up.
     for (ODOProperty *prop in entity.properties) {
-        SEL sel;
+        SEL sel = NULL;
         
         // All the matching ObjC properties must be @dynamic since ODOObject maintains its own storage for persistent properties.
 #ifdef OMNI_ASSERTIONS_ON
         {
             objc_property_t objcProperty = class_getProperty(instanceClass, [prop->_name UTF8String]);
-            OBASSERT(objcProperty);
+            OBASSERT(objcProperty != NULL);
             
             // https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
             const char *attributes = property_getAttributes(objcProperty);
             DEBUG_DYNAMIC_METHODS(@"  property attributes = %s", attributes);
             
-            // 'T' is first, so ',D' should be there somewhere (typically last). Need to check if @encode for structs can have commas in them, but for now we require that all propertyes are object typed.
-            OBASSERT(strstr(attributes, "T@") == attributes, "Property %@.%@ should be object-typed!", NSStringFromClass(instanceClass), prop->_name);
+            // 'T' is first, so ',D' should be there somewhere (typically last). Need to check if @encode for structs can have commas in them, but for now we require that all properties are object typed.
+            struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+            if (flags.relationship || !flags.scalarAccessors) {
+                OBASSERT(strstr(attributes, "T@") == attributes, "Property %@.%@ should be object-typed!", NSStringFromClass(instanceClass), prop->_name);
+
+                BOOL expectCopyAttribute = NO;
+                if (flags.relationship) {
+                    ODORelationship *rel = OB_CHECKED_CAST(ODORelationship, prop);
+                    expectCopyAttribute = rel.toMany && !flags.calculated;
+                } else {
+                    ODOAttribute *attr = OB_CHECKED_CAST(ODOAttribute, prop);
+                    expectCopyAttribute = attr->_setterBehavior == ODOAttributeSetterBehaviorCopy;
+                }
+                
+                if (expectCopyAttribute && strstr(attributes, ",C") == NULL) {
+                    NSLog(@"Property %@.%@ should be marked copy!", NSStringFromClass(instanceClass), prop->_name);
+                }
+            } else {
+                OBASSERT(strlen(attributes) > 2 && attributes[0] == 'T');
+                char typeEncoding = attributes[1];
+                char typeEncodingString[3] = {'T', typeEncoding, '\0'};
+                if (strstr(attributes, typeEncodingString) != attributes) {
+                    NSLog(@"Property %@.%@ has unexpected type!", NSStringFromClass(instanceClass), prop->_name);
+                }
+            }
+            
+            if (flags.calculated && strstr(attributes, ",R") == NULL) {
+                NSLog(@"Property %@.%@ should be marked readonly!", NSStringFromClass(instanceClass), prop->_name);
+            }
+            
+            if (strstr(attributes, ",N") == NULL) {
+                NSLog(@"Property %@.%@ should be marked nonatomic!", NSStringFromClass(instanceClass), prop->_name);
+            }
 
             if (strstr(attributes, ",D") == NULL) {
                 NSLog(@"Property %@.%@ should be marked @dynamic!", NSStringFromClass(instanceClass), prop->_name);
@@ -538,15 +1215,18 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
         }
 #endif
         
-        if ((sel = prop->_sel.get) && !class_getInstanceMethod(instanceClass, sel)) {
+        sel = prop->_sel.get;
+        if (sel != NULL && class_getInstanceMethod(instanceClass, sel) == NULL) {
             IMP imp = (IMP)ODOGetterForProperty(prop);
-            const char *signature = ODOObjectGetterSignature();
+            const char *signature = ODOGetterSignatureForProperty(prop);
             DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(instanceClass), NSStringFromSelector(sel), imp, signature);
             class_addMethod(instanceClass, sel, imp, signature);
         }
-        if ((sel = prop->_sel.set) && !class_getInstanceMethod(instanceClass, sel)) {
+        
+        sel = prop->_sel.set;
+        if (sel != NULL && class_getInstanceMethod(instanceClass, sel) == NULL) {
             IMP imp = (IMP)ODOSetterForProperty(prop);
-            const char *signature = ODOObjectSetterSignature();
+            const char *signature = ODOSetterSignatureForProperty(prop);
             DEBUG_DYNAMIC_METHODS(@"  Adding -[%@ %@] with %p %s", NSStringFromClass(instanceClass), NSStringFromSelector(sel), imp, signature);
             class_addMethod(instanceClass, sel, imp, signature);
         }
@@ -555,3 +1235,5 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
     OBASSERT(missingDynamicProperty == NO, "Missing @dynamic property definitions");
 }
 #endif
+
+NS_ASSUME_NONNULL_END

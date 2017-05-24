@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,8 @@ extern void OFWithLock(NSLock *lock, void (^block)(void));
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 extern uint32_t OFLocalIPv4Address(void);
 #endif
+
+extern BOOL OFIsRunningUnitTests(void);
 
 // A string which uniquely identifies this computer. Currently, it's the MAC address for the built-in ethernet port, but that or the underlying implementation could change.
 extern NSString *OFUniqueMachineIdentifier(void);

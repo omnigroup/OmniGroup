@@ -13,13 +13,13 @@ model "ODOTestCase" do
 
   entity "AllAttributeTypes" do
     attribute "pk", :string, :primary => true
-    attribute "int16", :int16
-    attribute "int32", :int32
-    attribute "int64", :int64
-    attribute "float32", :float32
-    attribute "float64", :float64
+    attribute "int16", :int16, :default => 0
+    attribute "int32", :int32, :default => 0
+    attribute "int64", :int64, :default => 0
+    attribute "float32", :float32, :default => 0
+    attribute "float64", :float64, :default => 0
     attribute "string", :string
-    attribute "boolean", :boolean
+    attribute "boolean", :boolean, :default => 0, :objc_is_getter => false
     attribute "date", :date
     attribute "data", :data
   end

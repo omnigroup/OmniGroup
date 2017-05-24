@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,27 +11,28 @@
 
 @class ODOEntity;
 
-typedef enum {
+typedef NS_ENUM(NSInteger, ODORelationshipDeleteRule) {
     ODORelationshipDeleteRuleInvalid = -1,
     ODORelationshipDeleteRuleNullify,
     ODORelationshipDeleteRuleCascade,
     ODORelationshipDeleteRuleDeny,
-    //
-    ODORelationshipDeleteRuleCount
-} ODORelationshipDeleteRule;
+};
 
-@interface ODORelationship : ODOProperty
-{
-@private
+enum {
+    ODORelationshipDeleteRuleCount = ODORelationshipDeleteRuleDeny + 1
+};
+
+@interface ODORelationship : ODOProperty {
+  @private
     ODOEntity *_destinationEntity;
     ODORelationshipDeleteRule _deleteRule;
     ODORelationship *_inverseRelationship;
 }
 
-@property(readonly) BOOL isToMany;
-@property(readonly) ODOEntity *destinationEntity;
-@property(readonly) ODORelationship *inverseRelationship;
+@property (nonatomic, readonly, getter=isToMany) BOOL toMany;
+@property (nonatomic, readonly) ODOEntity *destinationEntity;
+@property (nonatomic, readonly) ODORelationship *inverseRelationship;
 
-@property(readonly) ODORelationshipDeleteRule deleteRule;
+@property (nonatomic, readonly) ODORelationshipDeleteRule deleteRule;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Foundation/NSObject.h>
 
 @class OFXContainerAgent, OFXFileItem;
+@class OFXContainerDocumentIndexMove;
 
 @interface OFXContainerDocumentIndex : NSObject
 
@@ -27,13 +28,13 @@
 
 - (void)enumerateFileItems:(void (^)(NSString *identifier, OFXFileItem *fileItem))block;
 
-- (NSDictionary *)copyIntendedLocalRelativePathToFileItems;
+- (NSDictionary <NSString *, NSArray <OFXFileItem *> *> *)copyIntendedLocalRelativePathToFileItems;
 
 - (void)registerScannedLocalFileItem:(OFXFileItem *)fileItem;
 - (void)registerRemotelyAppearingFileItem:(OFXFileItem *)fileItem;
 - (void)registerLocallyAppearingFileItem:(OFXFileItem *)fileItem;
 
-- (void)addFileItems:(NSMutableArray *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
+- (void)addFileItems:(NSMutableArray <OFXFileItem *> *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
 
 - (void)forgetFileItemForRemoteDeletion:(OFXFileItem *)fileItem;
 - (void)beginLocalDeletionOfFileItem:(OFXFileItem *)fileItem;
@@ -43,7 +44,7 @@
 - (void)completeLocalDeletionOfFileItem:(OFXFileItem *)fileItem;
 
 - (void)fileItemMoved:(OFXFileItem *)fileItem fromLocalRelativePath:(NSString *)oldRelativePath toLocalRelativePath:(NSString *)newRelativePath;
-- (void)fileItemsMoved:(NSArray *)moves; // Bulk move; array of OFXContainerDocumentIndexMove instances
+- (void)fileItemsMoved:(NSArray <OFXContainerDocumentIndexMove *> *)moves; // Bulk move; array of OFXContainerDocumentIndexMove instances
 
 @property(nonatomic,readonly) NSString *debugName;
 

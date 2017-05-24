@@ -60,6 +60,14 @@ module OmniDataObjects
       fs.make_if(header_file_name)
     end
     
+    def swift_extension_file_name
+      "#{instance_class}-Properties.swift"
+    end
+
+    def swift_extension_file(fs)
+      fs.make_if(swift_extension_file_name)
+    end
+    
     def emitDeclaration(fp)
       # All our properties are dynamic, which is the default.  Emit declarations for them.
       class_names = Array.new
@@ -89,6 +97,18 @@ module OmniDataObjects
     def emitDefinition(fp)
       return if abstract # Don't want the global for the entity name
       super
+    end
+
+    def emitSwiftDefinition(fp)
+      swift_properties = Array.new
+      properties.each {|p| swift_properties << p if p.needsSwiftInterface? }
+      return if swift_properties.count == 0
+      fp.swift << "import OmniDataObjects\n\n"
+      fp.swift << "public extension #{instance_class} {\n"
+      swift_properties.each {|p|
+        p.emitSwiftInterface(fp.swift)
+      }
+      fp.swift << "}\n"
     end
 
     def emitCreation(f)

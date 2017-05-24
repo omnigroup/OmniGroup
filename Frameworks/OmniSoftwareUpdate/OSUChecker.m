@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1243,9 +1243,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     NSDate *date = [self.dateFormatter dateFromString:dateString];
-    OBASSERT(date);
     if (! date) {
         OSU_DEBUG(1, @"failed to convert: %@ into a RFC822 date", dateString);
+        // bug:///139165 (iOS-OmniGraffle Crasher: assertion fail in OmniSoftwareUpdate -[OSUChecker _convertRFC822DateString:] (OSUChecker.m:1246))
+        OBASSERT_NOT_REACHED("failed to convert: %@ into a RFC822 date", dateString);
     }
     return date;
 }

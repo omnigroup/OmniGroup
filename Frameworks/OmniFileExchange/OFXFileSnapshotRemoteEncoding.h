@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,6 @@ extern NSString *OFXHashFileNameForData(NSData *data) OB_HIDDEN;
 
 extern NSString *OFXFileItemIdentifierFromRemoteSnapshotURL(NSURL *remoteSnapshotURL, NSUInteger *outVersion, NSError **outError) OB_HIDDEN;
 
-extern NSArray *OFXFetchDocumentFileInfos(ODAVConnection *connection, NSURL *containerURL, NSString *identifier, NSError **outError) OB_HIDDEN;
+extern NSArray <ODAVFileInfo *> *OFXFetchDocumentFileInfos(ODAVConnection *connection, NSURL *containerURL, NSString *identifier, NSError **outError) OB_HIDDEN;
 
 extern NSComparisonResult OFXCompareFileInfoByVersion(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) OB_HIDDEN;

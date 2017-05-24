@@ -38,6 +38,9 @@
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
 "Check for Free Upgrade" = "Consultar actualización gratuita";
 
+/* placeholder text - password/passphrase confirmation field in prompt */
+"confirm" = "confirmar";
+
 /* Certificate trust alert button title */
 "Continue" = "Continuar";
 

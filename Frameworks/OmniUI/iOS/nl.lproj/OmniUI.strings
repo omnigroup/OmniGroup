@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 
 "About %@" = "Over %@";
 
@@ -11,11 +12,13 @@
 /* Bold button accessibility label */
 "Bold" = "Vet";
 
-/* 'Buy' button title format. The currency symbol will be provided at run time. */
+/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
 "Buy %@" = "Koop %@";
 
 /* button title
+   button title - password/passphrase prompt
    cancel button title
+   Cancel button title
    toolbar item title */
 
 
@@ -34,6 +37,9 @@
 
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
 "Check for Free Upgrade" = "Controleer op gratis upgrade";
+
+/* placeholder text - password/passphrase confirmation field in prompt */
+"confirm" = "bevestig";
 
 /* Certificate trust alert button title */
 "Continue" = "Ga door";
@@ -106,9 +112,10 @@
 "Note" = "Notitie";
 
 /* button title
+   button title - password/passphrase prompt
+   Dismiss alert
    Dismiss failed purchase alert
    Dismiss failed restore alert
-   OK button label
    Web view error opening URL cancel button. */
 
 
@@ -117,7 +124,7 @@
 
 "OK" = "OK";
 
-/* placeholder text */
+/* placeholder text - password/passphrase field of login/password prompt */
 "password" = "wachtwoord";
 
 /* alert title */
@@ -173,7 +180,7 @@
 /* Undo button title */
 "Undo" = "Herstel";
 
-/* placeholder text */
+/* placeholder text - username field of login/password prompt */
 "username" = "gebruikersnaam";
 
 /* alert message */

@@ -284,16 +284,18 @@ RCS_ID("$Id$");
     NSUInteger itemIndex = (NSUInteger)indexPath.row;
     
     OUIInspectorPane *details = [self makeDetailsPaneForItemAtIndex:itemIndex];
-    
-    OBASSERT(details.parentSlice == nil); // The implementation shouldn't bother to set this up, we just pass it in case the detail needs to get some info from the parent
-    details.parentSlice = self;
-    
-    // Maybe just call -updateItemAtIndex:with: again rather than grunging it back out of the UI...
-    OUIDetailInspectorSliceTableViewCell *selectedCell = (OUIDetailInspectorSliceTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
-    OBASSERT(selectedCell); // just got tapped, so it should be around!
-    details.title = selectedCell.textLabel.text;
-    
-    [self.inspector pushPane:details inspectingObjects:[self inspectedObjectsForItemAtIndex:itemIndex]];
+    if (details != nil) {
+        
+        OBASSERT(details.parentSlice == nil); // The implementation shouldn't bother to set this up, we just pass it in case the detail needs to get some info from the parent
+        details.parentSlice = self;
+        
+        // Maybe just call -updateItemAtIndex:with: again rather than grunging it back out of the UI...
+        OUIDetailInspectorSliceTableViewCell *selectedCell = (OUIDetailInspectorSliceTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
+        OBASSERT(selectedCell); // just got tapped, so it should be around!
+        details.title = selectedCell.textLabel.text;
+        
+        [self.inspector pushPane:details inspectingObjects:[self inspectedObjectsForItemAtIndex:itemIndex]];
+    }
     
     [_tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
@@ -306,5 +308,9 @@ RCS_ID("$Id$");
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
 {
     return 0;
+}
+
+- (BOOL)shouldPushDetailsPaneForItemAtIndex:(NSUInteger)itemIndex {
+    return YES;
 }
 @end

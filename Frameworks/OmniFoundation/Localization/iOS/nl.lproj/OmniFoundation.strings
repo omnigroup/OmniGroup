@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het schrijven van de gegevens. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Annuleer";
 
 /* error recovery option */
@@ -83,20 +83,38 @@
 
 "Could not create directory" = "Map kan niet worden gemaakt";
 
-/* time span formatter span */
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "Kan rechten niet analyseren van ingebed voorzieningenprofiel";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "d";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "dag";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "dagen";
 
 /* invalid bundle reason */
 "Duplicate bundle name" = "Bundelnaam komt meer dan één keer voor";
 
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"e" = "e";
+
+/* time span formatter span - needs one trailing space */
+"elapsed " = "elapsed ";
+
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element '%1$@' niet toegestaan in pad: %2$@";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "Ingebed voorzieningenprofiel is geen geldig PKCS#7-archief";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "Ingebed voorzieningenprofiel niet gevonden";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "Ingebed voorzieningenprofiel niet leesbaar";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Map voor vergrendelingsbestand op '%@' kan niet worden gemaakt.";
@@ -107,13 +125,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Vergrendelingsbestand kan niet worden geschreven.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "u";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "uur";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "uur";
 
 /* formatter input error */
@@ -122,22 +140,22 @@
 /* local bundle path readable string */
 "local configuration file" = "lokaal configuratiebestand";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minuut";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minuten";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "md";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "maand";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "maanden";
 
 /* error reason */
@@ -146,8 +164,11 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Geen geldige bundel";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Hef vergrendeling op";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "PKCS#7-inhoud van ingebed voorzieningenprofiel was geen geldige plist";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "Herstel “%@” naar zijn standaardwaarde";
@@ -155,17 +176,20 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Herstel alle interne configuratie-instellingen naar de standaardwaarden";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "seconde";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "seconden";
 
 /* alert message format when clicking on a configuration value URL */
 "Set \"%@\" to \"%@\"" = "Stel “%1$@” in op “%2$@”";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "Het gecodeerde onderdeel “%@” ontbreekt of is onleesbaar.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” lijkt niet geldig. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
@@ -209,31 +233,45 @@
 /* error description */
 "Unable to lock document." = "Document kan niet worden vergrendeld.";
 
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "Onverwacht CMS-inhoudstype";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Unknown compression algorithm";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "Onbekend algoritme openbare sleutel";
+
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "Onbekend";
 
 /* decompression error reason */
 "unrecognized compression format." = "compressiestructuur niet herkend.";
 
-/* time span formatter span */
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "Niet-ondersteund coderingsalgoritme";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "w";
 
 /* error description */
 "Warning encountered while loading XML." = "Waarschuwing bij laden van XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "week";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "weken";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "j";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "jaar";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "jaren";
 
 /* zlib error reason */

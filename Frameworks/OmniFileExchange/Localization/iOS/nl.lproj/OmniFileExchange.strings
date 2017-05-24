@@ -84,6 +84,9 @@
 /* account validation error suggestion */
 "Please check that the account information you entered is correct." = "Controleer of de accountinformatie die u hebt ingevoerd, juist is.";
 
+/* error description */
+"Please choose another location for your synced documents." = "Please choose another location for your synced documents.";
+
 /* account validation error suggestion */
 "Please enter an address for the account." = "Voer een adres in voor de account.";
 
@@ -115,10 +118,19 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "De voorgestelde map met lokale documenten bevat al bestanden. Geef een lege map op of een map die nog niet bestaat.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "De voorgestelde map voor lokale documenten lijkt in een Dropbox-map te liggen. Het gebruik van twee systemen voor bestandssynchronisatie op dezelfde map kan resulteren in gegevensverlies.";
+"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "De voorgestelde map met lokale documenten bevindt zich niet op een lokaal volume. Kies een locatie die lokaal is voor uw computer.";
 
 /* error description */
-"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "De voorgestelde map met lokale documenten bevindt zich niet op een lokaal volume. Kies een locatie die lokaal is voor uw computer.";
+"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+
+/* error description */
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
 
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Deze app vereist een OmniPresence-opmaak %1$@, maar de cloud-account gebruikt de opmaak %2$@. Voer een upgrade uit van de cloud-account.";

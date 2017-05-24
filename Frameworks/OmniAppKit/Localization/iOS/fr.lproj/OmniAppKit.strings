@@ -1,5 +1,11 @@
+/* button title */
+"Cancel" = "Annuler";
+
 /* style validation error message for expected {type} */
 "Expected value of type “%@”" = "Valeur attendue de type “%@”";
+
+/* button title */
+"OK" = "OK";
 
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "Valeur inattendue pour la clé “%@”";

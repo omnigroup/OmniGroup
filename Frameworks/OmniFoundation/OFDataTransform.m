@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,8 @@ OB_REQUIRE_ARC
     
     [input enumerateByteRangesUsingBlock:^(const void * _Nonnull bytes, NSRange byteRange, BOOL * _Nonnull stop) {
         OBINVARIANT(lastReadPosition == byteRange.location);
+        
+        // Adjust the start location of the range if byteRange starts before the range of interest (inputRange)
         if (byteRange.location < inputRange.location) {
             if (NSMaxRange(byteRange) <= inputRange.location) {
                 lastReadPosition = NSMaxRange(byteRange);
@@ -47,8 +49,11 @@ OB_REQUIRE_ARC
             NSUInteger trimmedLeft = inputRange.location - byteRange.location;
             bytes += trimmedLeft;
             byteRange.location = inputRange.location;
+            lastReadPosition = inputRange.location;
             byteRange.length -= trimmedLeft;
         }
+        
+        // Adjust the end location if byteRange extends past inputRange
         BOOL subblockIsFinal;
         if (NSMaxRange(byteRange) >= NSMaxRange(inputRange)) {
             byteRange.length = NSMaxRange(inputRange) - byteRange.location;
@@ -63,7 +68,7 @@ OB_REQUIRE_ARC
                                   toBuffer:output + amountProducedSoFar size:outputLength - amountProducedSoFar produced:&amountProducedHere];
         
         amountProducedSoFar += amountProducedHere;
-        lastReadPosition += amountConsumedHere;
+        lastReadPosition = byteRange.location + amountConsumedHere;
         
         if (amountConsumedHere != byteRange.length)
             *stop = YES;
@@ -74,10 +79,13 @@ OB_REQUIRE_ARC
         }
     }];
     
+    OBASSERT(lastReadPosition >= inputRange.location);  // This shouldn't be able to fail, unless -enumerateByteRangesUsingBlock: doesn't call us as much as it should
     
-    OBASSERT(lastReadPosition >= inputRange.location);  // This shouldn't be able to happen, unless -enumerateByteRangesUsingBlock: doesn't call us as much as it should
     *inputConsumed = lastReadPosition - inputRange.location;
     *outputProduced = amountProducedSoFar;
+    if (overallReturnValue) {
+        OBPOSTCONDITION(*outputProduced == outputLength || *inputConsumed == inputRange.length);
+    }
     return overallReturnValue;
 }
 
@@ -176,6 +184,7 @@ static dispatch_data_t create_dispatch_data(char *buffer, size_t buffer_filled, 
                 *outError = self.error;
             return nil;
         }
+        OBASSERT(amountTaken == input.length);
         
         return (NSData *)buf;
     } else {

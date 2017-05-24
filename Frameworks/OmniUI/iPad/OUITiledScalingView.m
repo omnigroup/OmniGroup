@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -247,7 +247,9 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
 // Subclasses may choose to use non-regular tilings if they have less canvas-y content.
 - (void)tileVisibleRect;
 {
-    [[self class] tiling](self, _tiles);
+    [UIView performWithoutAnimation:^{
+        [[self class] tiling](self, _tiles);
+    }];
 }
 
 @end

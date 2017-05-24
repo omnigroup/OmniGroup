@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,13 +19,13 @@ RCS_ID("$Id$")
     ODOTestCaseAllAttributeTypes *allAttributeTypes = [[[ODOTestCaseAllAttributeTypes alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseAllAttributeTypesEntityName] primaryKey:nil insertingIntoEditingContext:_editingContext] autorelease];
 
     // TODO: We don't currently define any saturation modes for scalar attributes.  We can either be strict and error out or we could be more flexible like SQLite is (though we'd have to bind all ints via the 64-bit path).
-    allAttributeTypes.int16 = [NSNumber numberWithShort:SHRT_MAX];
-    allAttributeTypes.int32 = [NSNumber numberWithInt:INT_MAX];
-    allAttributeTypes.int64 = [NSNumber numberWithLongLong:LLONG_MAX];
-    allAttributeTypes.float32 = [NSNumber numberWithFloat:FLT_MAX];
-    allAttributeTypes.float64 = [NSNumber numberWithDouble:DBL_MAX];
+    allAttributeTypes.int16 = SHRT_MAX;
+    allAttributeTypes.int32 = INT_MAX;
+    allAttributeTypes.int64 = LLONG_MAX;
+    allAttributeTypes.float32 = FLT_MAX;
+    allAttributeTypes.float64 = DBL_MAX;
     allAttributeTypes.string = @"xyzzy";
-    allAttributeTypes.boolean = [NSNumber numberWithBool:YES];
+    allAttributeTypes.boolean = YES;
     allAttributeTypes.date = [NSDate dateWithTimeIntervalSinceReferenceDate:123.0];
     
     unsigned char bytes[4] = {0xde, 0xad, 0xbe, 0xef};
@@ -42,13 +42,13 @@ RCS_ID("$Id$")
     allAttributeTypes = (ODOTestCaseAllAttributeTypes *)[_editingContext fetchObjectWithObjectID:objectID error:&error];
     OBShouldNotError(allAttributeTypes != nil);
     
-    XCTAssertEqualObjects([NSNumber numberWithShort:SHRT_MAX], allAttributeTypes.int16);
-    XCTAssertEqualObjects([NSNumber numberWithInt:INT_MAX], allAttributeTypes.int32);
-    XCTAssertEqualObjects([NSNumber numberWithLongLong:LLONG_MAX], allAttributeTypes.int64);
-    XCTAssertEqualObjects([NSNumber numberWithFloat:FLT_MAX], allAttributeTypes.float32);
-    XCTAssertEqualObjects([NSNumber numberWithDouble:DBL_MAX], allAttributeTypes.float64);
+    XCTAssertEqual(SHRT_MAX, allAttributeTypes.int16);
+    XCTAssertEqual(INT_MAX, allAttributeTypes.int32);
+    XCTAssertEqual(LLONG_MAX, allAttributeTypes.int64);
+    XCTAssertEqual(FLT_MAX, allAttributeTypes.float32);
+    XCTAssertEqual(DBL_MAX, allAttributeTypes.float64);
     XCTAssertEqualObjects(@"xyzzy", allAttributeTypes.string);
-    XCTAssertEqualObjects([NSNumber numberWithBool:YES], allAttributeTypes.boolean);
+    XCTAssertEqual(YES, allAttributeTypes.boolean);
     XCTAssertEqualObjects([NSDate dateWithTimeIntervalSinceReferenceDate:123.0], allAttributeTypes.date);
 }
 

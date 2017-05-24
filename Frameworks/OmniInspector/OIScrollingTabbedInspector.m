@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,7 @@ RCS_ID("$Id$")
     
     self.tabLabel.textColor = [OIAppearance appearance].InspectorTabOnStateTintColor;
     
-    NSColor *inspectorBackgroundColor = [[OIAppearance appearance] colorForKeyPath:@"InspectorBackgroundColor"];
+    NSColor *inspectorBackgroundColor = [[OIAppearance appearance] inspectorBackgroundColorForView:self.inspectorScrollView];
     self.inspectorScrollView.backgroundColor = inspectorBackgroundColor;
     self.inspectorScrollView.drawsBackground = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];

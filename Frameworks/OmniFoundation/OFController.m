@@ -45,14 +45,13 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
 
 static OFController *sharedController = nil;
 static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
-static BOOL IsRunningUnitTests;
 
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
 {
     @autoreleasepool {
         // Make sure that applications that use OFController actually call its -willTerminate.
-        if (IsRunningUnitTests) {
+        if (OFIsRunningUnitTests()) {
             // We need to skip this check for xctest host apps since +[XCTestProbe runTests:] just calls exit() rather than -terminate:.
         } else {
             OBASSERT(!sharedController || sharedController->_status == OFControllerStatusTerminating || sharedController->_status == OFControllerStatusNotInitialized);
@@ -61,66 +60,15 @@ static void _OFControllerCheckTerminated(void)
 }
 #endif
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-
-    // Grabbing this up front so that OFCrashImmediately() can read it w/o fear of causing another exception.
-    NSString *pathExtension = [[[self controllingBundle] bundlePath] pathExtension];
-    IsRunningUnitTests = [pathExtension isEqual:@"xctest"];
-}
-
 // If we are running a bundled app, this will return the main bundle.  Otherwise, if we are running unit tests, this will return the unit test bundle.
 + (NSBundle *)controllingBundle;
 {
-    static NSBundle *controllingBundle = nil;
-    static dispatch_once_t onceToken;
-
-    dispatch_once(&onceToken, ^{
-        if (NSClassFromString(@"XCTestCase")) {
-            // There should be exactly one test bundle with an extension of either 'xctest'.
-            NSBundle *candidateBundle = nil;
-            for (NSBundle *bundle in [NSBundle allBundles]) {
-                NSString *extension = [[bundle bundlePath] pathExtension];
-                if ([extension isEqualToString:@"xctest"]) {
-                    if (candidateBundle) {
-                        NSLog(@"found extra possible unit test bundle %@", bundle);
-                    } else
-                        candidateBundle = bundle;
-                }
-            }
-            
-            if (candidateBundle)
-                controllingBundle = [candidateBundle retain];
-        }
-
-        if (!controllingBundle)
-            controllingBundle = [[NSBundle mainBundle] retain];
-        
-        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.11 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
-#ifdef OMNI_ASSERTIONS_ON
-        {
-            NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
-            if (requiredVersionString) {
-                OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
-                OBASSERT(requiredVersion);
-                
-                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.11"];
-                OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
-                [requiredVersion release];
-                [globalRequiredVersion release];
-            }
-        }
-#endif
-    });
-    
-    OBPOSTCONDITION(controllingBundle);
-    return controllingBundle;
+    return OFControllingBundle();
 }
 
 + (BOOL)isRunningUnitTests;
 {
-    return IsRunningUnitTests;
+    return OFIsRunningUnitTests();
 }
 
 static NSString *ControllerClassName(NSBundle *bundle)
@@ -512,7 +460,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 
 static void OFCrashImmediately(void)
 {
-    if (IsRunningUnitTests) {
+    if (OFIsRunningUnitTests()) {
         // When running unit tests on our build server, with a loopback ssh connection to allow opening keychains, xctest can hang on a crash of a unit test (it's trying to connect to Xcode it seems).
         exit(1);
     }
