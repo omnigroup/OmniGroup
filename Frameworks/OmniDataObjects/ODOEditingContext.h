@@ -81,7 +81,7 @@
 
 - (NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 
-- insertObjectWithEntityName:(NSString *)entityName;
+- (id)insertObjectWithEntityName:(NSString *)entityName;
 - (ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError; // Returns NSNull if the object wasn't found, nil on error.
 
 @end

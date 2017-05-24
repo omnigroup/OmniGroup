@@ -657,6 +657,8 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         // If the user is just switching to another app quickly and coming right back (maybe to paste something at us), we don't want to end editing.
         // Instead, we should commit any partial edits, but leave the editor up.
         
+        OBASSERT_IF(self.forPreviewGeneration, self.hasUnsavedChanges == NO, "Don't modify a document while generating a preview");
+        
         [self _willSave];
 
         if (!self.forPreviewGeneration && _documentViewController != nil) {
@@ -1511,6 +1513,8 @@ static OFPreference *LastEditsPreference;
 
 - (void)_undoManagerDidOpenGroup:(NSNotification *)note;
 {
+    OBASSERT(self.forPreviewGeneration == NO); // Make sure we don't provoke a save due to just opening a document to make a preview!
+
     DEBUG_UNDO(@"%@ level:%ld", [note name], [self.undoManager groupingLevel]);
     
     // Immediately open a nested group. This will allows NSUndoManager to automatically open groups for us on the first undo operation, but prevents it from closing the whole group.

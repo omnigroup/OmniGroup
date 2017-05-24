@@ -6,7 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/OAPassphrasePrompt.h>
+
 #import <OmniAppKit/OAViewStackConstraints.h>
+#import <OmniAppKit/OAStrings.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 
@@ -232,8 +234,8 @@ OB_REQUIRE_ARC;
     [chain setNextKeyView:self.cancelButton];
     
     // Set the localized titles for our controls
-    [self.cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, @"button title - password prompt dialog")];
-    [self.OKButton setTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", bundle, @"button title - password prompt dialog")];
+    [self.cancelButton setTitle:OACancel()];
+    [self.OKButton setTitle:OAOK()];
 
     [NSLayoutConstraint activateConstraints:constraints];
     [stacker updateViewConstraints];
@@ -453,7 +455,7 @@ OB_REQUIRE_ARC;
     [window setInitialFirstResponder:typeHereFirst];
     
     if (_obscuredPassword) {
-        self.passwordField.stringValue = @"*****"; // Will show as bullets
+        self.passwordField.stringValue = OBUnlocalized(@"*****"); // Will show as bullets
         self.confirmPasswordField.enabled = NO;
         self.confirmPasswordField.stringValue = @"";
     } else {

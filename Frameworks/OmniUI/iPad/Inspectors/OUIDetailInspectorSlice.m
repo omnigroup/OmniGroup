@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -154,11 +154,6 @@ RCS_ID("$Id$");
 {
     [super viewWillAppear:animated];
 
-    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
-
-    // Might be coming back from a detail pane that edited a displayed value
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
     CGFloat currentHeight = _tableView.contentSize.height;
     OBASSERT(currentHeight > 0.0);
     if (self.heightConstraint == nil) {

@@ -19,10 +19,11 @@
 #import "OSUPreferences.h" // Not public in this version
 #endif
 
-#import <WebKit/WebKit.h>
-#import <OmniFoundation/OmniFoundation.h>
 #import <mach-o/arch.h>
-#import <OmniAppKit/OAController.h>
+
+@import OmniAppKit;
+@import OmniFoundation;
+@import WebKit;
 
 #import "OSURunOperation.h"
 
@@ -720,7 +721,7 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
 - (void)awakeFromNib;
 {
     [super awakeFromNib];
-    self.okButton.title = NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"button title");
+    self.okButton.title = OAOK();
 }
 
 #pragma mark - WebPolicyDelegate

@@ -15,6 +15,17 @@
 #import <CoreGraphics/CGBase.h>
 #import <OmniUI/OUINavigationController.h>
 
+@class OUIInspectorPane;
+
+#pragma mark - OUIInspectorPaneContaining
+@protocol OUIInspectorPaneContaining <NSObject>
+
+@property (nonatomic, strong, readonly) NSArray<OUIInspectorPane *> *panes;
+
+- (void)popPaneAnimated:(BOOL)animated;
+
+@end
+
 @class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIBarButtonItem;
 @class UIBarButtonItem, UINavigationController;
 
@@ -23,8 +34,8 @@ extern const NSTimeInterval OUICrossFadeDuration;
 
 extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification;
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
-extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
+#pragma mark - OUIInspector
 @interface OUIInspector : NSObject
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
@@ -51,28 +62,13 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
 @property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
 
-@property(nonatomic, strong, readonly) UINavigationController *navigationController;
+@property(nonatomic, strong, readonly) UIViewController<OUIInspectorPaneContaining> *viewController;
 
-// JCTODO: This implementation expects that the navigation controller is being presented. We won't be presented in the new world. Check to see if this is still needed.
-@property(readonly,nonatomic,getter=isVisible) BOOL visible;
+- (void)setShowDoneButton:(BOOL)shouldShow;
 
-// JCTODO: BEGIN REMOVAL
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//
-//
-//- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//- (void)dismissImmediatelyIfVisible;
-//- (void)dismiss;
-//- (void)dismissAnimated:(BOOL)animated;
-//- (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitCollection;
-// JCTODO: END REMOVAL
-
+// JCTODO: Inspector Refactor: This seems weird. If you want a full screen presentation, just don't use the OUIInspectorOverlayTransitioningDelegate or OUIInspectorPresentationController.
 @property (nonatomic) BOOL useFullScreenOnHorizontalCompact;
 
-// JCTODO: Inspector refactor.
 - (void)updateInspectedObjects;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
@@ -95,20 +91,14 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 - (void)beginChangeGroup;  // start of intermideate event
 - (void)endChangeGroup;    // end of intermediate event
 
-// JCTODO: BEGIN REFACTOR - Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
-@property (copy, nonatomic) void (^presentInspectorCompletion)(void);
-@property (copy, nonatomic) void (^animationsToPerformAlongsidePresentation)(id<UIViewControllerTransitionCoordinatorContext> context);
-@property (copy, nonatomic) void (^dismissInspectorCompletion)(void);
-/// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
-@property (copy, nonatomic) void (^animationsToPerformAlongsideDismissal)(id<UIViewControllerTransitionCoordinatorContext> context);
-// JCTODO: END REFACTOR - Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
-
 @end
 
+#pragma mark - NSObject (OUIInspectable)
 @interface NSObject (OUIInspectable)
 - (BOOL)shouldBeInspectedByInspectorSlice:(OUIInspectorSlice *)inspector protocol:(Protocol *)protocol;
 @end
 
+#pragma mark - OUIColorInspection
 @class OAColor;
 @protocol OUIColorInspection <NSObject>
 - (OAColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
@@ -116,6 +106,7 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 - (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 
+#pragma mark - OUIFontInspection
 @class OAFontDescriptor;
 @protocol OUIFontInspection <NSObject>
 - (OAFontDescriptor *)fontDescriptorForInspectorSlice:(OUIInspectorSlice *)inspector;
@@ -131,16 +122,9 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
 @end
 
+#pragma mark - OUIParagraphInspection
 @class NSParagraphStyle;
 @protocol OUIParagraphInspection <NSObject>
 - (NSParagraphStyle *)paragraphStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setParagraphStyle:(NSParagraphStyle *)paragraphStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
-@end
-
-
-@interface OUIInspectorNavigationController : OUINavigationController
-
-@property (nonatomic, weak) UIView *gesturePassThroughView;
-@property BOOL willDismissInspector;
-
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -272,8 +272,8 @@ static unsigned int _OAVectorViewObservationContext;
     OFPoint *pointValue = [self objectValue];
     
     if ([self isMultiple] || !pointValue) {
-        [xField setStringValue:@"--"];
-        [yField setStringValue:@"--"];
+        [xField setStringValue:OBUnlocalized(@"—")];
+        [yField setStringValue:OBUnlocalized(@"—")];
     } else {
         NSPoint point = [pointValue point];
         [xField setDoubleValue:point.x];

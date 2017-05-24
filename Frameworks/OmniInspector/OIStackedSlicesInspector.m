@@ -51,7 +51,7 @@ RCS_ID("$Id$")
             return nil;
         }
 
-        OIAutoLayoutInspectorController *controller = [[OIAutoLayoutInspectorController alloc] initWithInspector:inspector];
+        OIAutoLayoutInspectorController *controller = [[OIAutoLayoutInspectorController alloc] initWithInspector:inspector inspectorRegistry:inspectorRegistry];
         controller.interfaceType = OIInspectorInterfaceTypeEmbedded;
         
         if (!controller)

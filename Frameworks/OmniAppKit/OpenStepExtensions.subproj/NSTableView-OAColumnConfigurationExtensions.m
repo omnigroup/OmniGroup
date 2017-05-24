@@ -277,7 +277,7 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
         }
     }
         
-    NSMenu *columnsMenu = [[NSMenu alloc] initWithTitle:@"Configure Columns"];
+    NSMenu *columnsMenu = [[NSMenu alloc] initWithTitle:@""];
 
     if ([self _allowsAutoresizing]) {
         NSBundle *bundle = [OAApplication bundle];

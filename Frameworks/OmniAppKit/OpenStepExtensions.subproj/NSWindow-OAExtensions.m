@@ -360,49 +360,49 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *intrinsicContentSizeItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *copyAddressItem;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        constraintsOptions = [[NSMenu alloc] initWithTitle:@"View Debugging"];
+        constraintsOptions = [[NSMenu alloc] initWithTitle:OBUnlocalized(@"View Debugging")];
         [constraintsOptions setAutoenablesItems:NO];
         
-        headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:NULL keyEquivalent:@""];
+        headerItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<PICKED VIEW>") action:NULL keyEquivalent:@""];
         [headerItem setEnabled:NO];
         
-        frameItem = [constraintsOptions addItemWithTitle:@"<FRAME>" action:NULL keyEquivalent:@""];
+        frameItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<FRAME>") action:NULL keyEquivalent:@""];
         [frameItem setEnabled:NO];
         
-        alignmentRectItem = [constraintsOptions addItemWithTitle:@"<ALIGNMENT RECT>" action:NULL keyEquivalent:@""];
+        alignmentRectItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<ALIGNMENT RECT>") action:NULL keyEquivalent:@""];
         [alignmentRectItem setEnabled:NO];
         
-        intrinsicContentSizeItem = [constraintsOptions addItemWithTitle:@"<INTRINSIC CONTENT SIZE>" action:NULL keyEquivalent:@""];
+        intrinsicContentSizeItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<INTRINSIC CONTENT SIZE>") action:NULL keyEquivalent:@""];
         [intrinsicContentSizeItem setEnabled:NO];
         
         [constraintsOptions addItem:[NSMenuItem separatorItem]];
         
-        ambiguousItem = [constraintsOptions addItemWithTitle:@"<AMBIGIOUS CONSTRAINTS>" action:NULL keyEquivalent:@""];
+        ambiguousItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<AMBIGIOUS CONSTRAINTS>") action:NULL keyEquivalent:@""];
         [ambiguousItem setEnabled:NO];
         
-        translatesItem = [constraintsOptions addItemWithTitle:@"<TRANSLATES AUTORESIZING MASK>" action:NULL keyEquivalent:@""];
+        translatesItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<TRANSLATES AUTORESIZING MASK>") action:NULL keyEquivalent:@""];
         [translatesItem setEnabled:NO];
         
-        horizontalItem = [constraintsOptions addItemWithTitle:@"Visualize horizontal constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+        horizontalItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Visualize horizontal constraints") action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
         [horizontalItem setIndentationLevel:1];
         [horizontalItem setTag:NSLayoutConstraintOrientationHorizontal];
         [horizontalItem setEnabled:YES];
         
-        verticalItem = [constraintsOptions addItemWithTitle:@"Visualize vertical constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+        verticalItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Visualize vertical constraints") action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
         [verticalItem setIndentationLevel:1];
         [verticalItem setTag:NSLayoutConstraintOrientationVertical];
         [verticalItem setEnabled:YES];
         
-        [constraintsOptions addItemWithTitle:@"Stop visualizing constraints" action:@selector(_stopVisualizingConstraintsMenuAction:) keyEquivalent:@""];
+        [constraintsOptions addItemWithTitle:OBUnlocalized(@"Stop visualizing constraints") action:@selector(_stopVisualizingConstraintsMenuAction:) keyEquivalent:@""];
         
         [constraintsOptions addItem:[NSMenuItem separatorItem]];
         
-        pickSuperviewItem = [constraintsOptions addItemWithTitle:@"<SUPERVIEW>" action:@selector(_pickSuperviewMenuAction:) keyEquivalent:@""];
+        pickSuperviewItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"<SUPERVIEW>") action:@selector(_pickSuperviewMenuAction:) keyEquivalent:@""];
         
-        logSubtreeItem = [constraintsOptions addItemWithTitle:@"Log subview hierarchy" action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
+        logSubtreeItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Log subview hierarchy") action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
         [logSubtreeItem setEnabled:YES];
         
-        copyAddressItem = [constraintsOptions addItemWithTitle:@"Copy address" action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
+        copyAddressItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Copy address") action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
         [copyAddressItem setEnabled:YES];
     });
     
@@ -410,11 +410,11 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     [frameItem setTitle:[NSString stringWithFormat:@"Frame: %@", NSStringFromRect([pickedView frame])]];
     [alignmentRectItem setTitle:[NSString stringWithFormat:@"Alignment Rect: %@", NSStringFromRect([pickedView alignmentRectForFrame:[pickedView frame]])]];
     [intrinsicContentSizeItem setTitle:[NSString stringWithFormat:@"Intrinsic Content Size: %@", NSStringFromSize([pickedView intrinsicContentSize])]];
-    [ambiguousItem setTitle:[pickedView hasAmbiguousLayout] ? @"Has ambiguous layout" : @"Does not have ambiguous layout"];
-    [translatesItem setTitle:[pickedView translatesAutoresizingMaskIntoConstraints] ? @"Translates autoresizing mask into constraints" : @"Does not translate autoresizing mask into constraints"];
+    [ambiguousItem setTitle:OBUnlocalized([pickedView hasAmbiguousLayout] ? @"Has ambiguous layout" : @"Does not have ambiguous layout")];
+    [translatesItem setTitle:OBUnlocalized([pickedView translatesAutoresizingMaskIntoConstraints] ? @"Translates autoresizing mask into constraints" : @"Does not translate autoresizing mask into constraints")];
     
     NSView *superview = [pickedView superview];
-    [pickSuperviewItem setTitle:(superview != nil) ? [NSString stringWithFormat:@"Superview: %@…", [superview shortDescription]] : @"No superview"];
+    [pickSuperviewItem setTitle:OBUnlocalized((superview != nil) ? [NSString stringWithFormat:@"Superview: %@…", [superview shortDescription]] : @"No superview")];
     [pickSuperviewItem setEnabled:superview != nil];
     
     for (NSMenuItem *item in constraintsOptions.itemArray) {

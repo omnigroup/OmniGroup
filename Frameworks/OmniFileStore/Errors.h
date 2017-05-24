@@ -17,6 +17,7 @@ enum {
     OFSNoFileManagerForScheme,
     OFSBaseURLIsNotAbsolute,
     OFSCannotCreateDirectory,
+    OFSCannotRead,
     OFSCannotWrite,
     OFSCannotMove,
     OFSNoSuchDirectory,

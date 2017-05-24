@@ -74,6 +74,10 @@
 		342F05351B697A9200C7BB34 /* OAAppearanceDefaultColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 342F052F1B697A6100C7BB34 /* OAAppearanceDefaultColors.plist */; };
 		3431F1300B1B7847002B728E /* OADatePickerTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */; };
 		3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */; };
+		3435EF881DEE4CFE002CB3F9 /* OAStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435EF861DEE4CFE002CB3F9 /* OAStrings.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3435EF891DEE4CFE002CB3F9 /* OAStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435EF861DEE4CFE002CB3F9 /* OAStrings.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3435EF8A1DEE4CFE002CB3F9 /* OAStrings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3435EF871DEE4CFE002CB3F9 /* OAStrings.m */; };
+		3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3435EF871DEE4CFE002CB3F9 /* OAStrings.m */; };
 		34471AC109D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */; };
 		34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */; };
 		344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -847,6 +851,8 @@
 		3434792411923B69007D0CE5 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		3435EF861DEE4CFE002CB3F9 /* OAStrings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStrings.h; sourceTree = "<group>"; };
+		3435EF871DEE4CFE002CB3F9 /* OAStrings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStrings.m; sourceTree = "<group>"; };
 		343F2CDC1D3EB32700E7C89D /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
 		343F2CDD1D3EB32700E7C89D /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
 		343F2CDE1D3EB32700E7C89D /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
@@ -2227,6 +2233,8 @@
 				00E51F07FE8AB2E911C9CC38 /* OmniAppKit.h */,
 				4A0277F608959F0400594E5E /* OAUtilities.h */,
 				34D04A38110E0270007399B9 /* OAUtilities.m */,
+				3435EF861DEE4CFE002CB3F9 /* OAStrings.h */,
+				3435EF871DEE4CFE002CB3F9 /* OAStrings.m */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
 				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
@@ -2553,6 +2561,7 @@
 				3484DD93194FFC7700D83731 /* OATextAttributes.h in Headers */,
 				3484DD8D194FFC4400D83731 /* NSLayoutManager-OAExtensions.h in Headers */,
 				3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */,
+				3435EF891DEE4CFE002CB3F9 /* OAStrings.h in Headers */,
 				342F05301B697A6100C7BB34 /* OAAppearanceColors.h in Headers */,
 				3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */,
 				3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */,
@@ -2719,6 +2728,7 @@
 				344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */,
 				3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */,
 				34275D1D13981621003F28F5 /* OAFeatures.h in Headers */,
+				3435EF881DEE4CFE002CB3F9 /* OAStrings.h in Headers */,
 				2730CF3B144E205B007C3A99 /* OADocument.h in Headers */,
 				271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */,
 				346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */,
@@ -3140,6 +3150,7 @@
 				3459EE381B694A8400D4F085 /* OAColor-Archiving.m in Sources */,
 				3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */,
 				4D9E9C7D1C52C1F300BAE4A3 /* OAAppearancePropertyListCoder.m in Sources */,
+				3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */,
 				348293ED1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */,
 				3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */,
 				3484DD9D194FFCCD00D83731 /* OAFontDescriptor.m in Sources */,
@@ -3177,6 +3188,7 @@
 				3459EE371B694A8400D4F085 /* OAColor-Archiving.m in Sources */,
 				4AA1E77A08AA764600E2FF6B /* OAAppKitQueueProcessor.m in Sources */,
 				340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */,
+				3435EF8A1DEE4CFE002CB3F9 /* OAStrings.m in Sources */,
 				4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */,
 				4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */,
 				4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */,

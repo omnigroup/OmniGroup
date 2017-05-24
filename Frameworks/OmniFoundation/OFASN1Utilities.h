@@ -108,6 +108,7 @@ enum OFCMSAttribute {
     OFCMSAttribute_messageDigest,
     OFCMSAttribute_signingTime,
     OFCMSAttribute_contentIdentifier,
+    OFCMSAttribute_binarySigningTime,  // RFC 6019
 };
 
 /* Parsing helper for some Algorithm structures */

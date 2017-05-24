@@ -2554,7 +2554,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     _titleLabelToUseInCompactWidth = [[UILabel alloc] initWithFrame:CGRectZero];
     
     UIFont *titleFont = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-    NSString *title = @"Title";
+    NSString *title = OBUnlocalized(@"Title"); // Configured later -- possibly remove this...
     _titleLabelToUseInCompactWidth.font = titleFont;
     _titleLabelToUseInCompactWidth.textColor = [UIColor darkTextColor];
     _titleLabelToUseInCompactWidth.textAlignment = NSTextAlignmentCenter;

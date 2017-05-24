@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@ static const NSTimeInterval kOUIInteractionLockStaleInterval = 10;
 @interface OUIInteractionLock ()
 @property(nonatomic,readonly) NSTimeInterval creationTimeInterval;
 @property(nonatomic,readonly) NSString *backtrace;
+@property(nonatomic,assign) BOOL didForceUnlock;
 @end
 
 @implementation OUIInteractionLock
@@ -140,7 +141,7 @@ static void _dumpImageInfo(void)
 {
     DEBUG_INTERACTION_LOCK(@"self: %@", self);
     OBPRECONDITION([NSThread isMainThread], "UIKit isn't guaranteed to be thread safe");
-    OBPRECONDITION(_locked);
+    OBASSERT_IF(!self.didForceUnlock, _locked);
     
     if (!_locked)
         return;
@@ -209,6 +210,7 @@ static void _dumpImageInfo(void)
             NSLog(@"Unlocking stale interaction lock %@:\n%@", [lock shortDescription], lock.backtrace);
             _dumpImageInfo();
             [lock unlock];
+            lock.didForceUnlock = YES;
         }
     }
 }

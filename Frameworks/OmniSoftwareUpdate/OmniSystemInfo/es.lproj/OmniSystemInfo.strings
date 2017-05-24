@@ -1,0 +1,8 @@
+/* MAS-only: text of dialog box title informing user before sending system info */
+"%@ has the ability to automatically send anonymous system information to The Omni Group." = "%@ tiene la capacidad de enviar información del sistema anónima a The Omni Group.";
+
+/* MAS-only: label for switch in privacy alert to specify whether to send system info */
+"Send anonymous system information to The Omni Group" = "Enviar información del sistema anónima a The Omni Group";
+
+/* MAS-only: text of dialog box informing user of change in anonymous system info that will be sent */
+"This version of %@ sends additional anonymous system information to The Omni Group." = "Esta versión de %@ envía información del sistema anónima a The Omni Group.";

@@ -1,0 +1,8 @@
+/* MAS-only: text of dialog box title informing user before sending system info */
+"%@ has the ability to automatically send anonymous system information to The Omni Group." = "%@ 可以自动向 The Omni Group 发送匿名系统信息。";
+
+/* MAS-only: label for switch in privacy alert to specify whether to send system info */
+"Send anonymous system information to The Omni Group" = "向 The Omni Group 发送匿名系统信息";
+
+/* MAS-only: text of dialog box informing user of change in anonymous system info that will be sent */
+"This version of %@ sends additional anonymous system information to The Omni Group." = "该 %@ 版本会向 The Omni Group 发送附加的匿名系统信息。";

@@ -284,6 +284,7 @@ x9-62 = 1.2.840.10045
 gnu = 1.3.6.1.4.1.11591
 pgut = 1.3.6.1.4.1.3029
 aes = csor 4 1
+cert-ext = 2.5.29
 
 sha256 = csor 4 2 1
 sha512 = csor 4 2 3
@@ -350,9 +351,11 @@ attr-contentType = pkcs 9 3
 attr-messageDigest = pkcs 9 4
 attr-signingTime = pkcs 9 5
 attr-contentIdentifier = pkcs 9 16 2 7
+attr-binarySigningTime = pkcs 9 16 2 46
 emit attr-*
 lookup attr-* in OFCMSAttribute as *
 
+# From RFC3274
 alg-zlibCompress = pkcs 9 16 3 8
 emit alg-zlibCompress
 
@@ -382,3 +385,12 @@ curve-secp521r1 = certicom 0 35
 # arcs, but it's not clear they are the correct OIDs to use in a CMS context.
 # curve-ed25519 = gnu 15 1
 # curve-cv25519 = pgut 1 5 1
+
+ce-subjectKeyIdentifier = cert-ext 14   # RFC5280 [4.2.1.2]
+ce-subjectAltName = cert-ext 17         # RFC5280 [4.2.1.6]
+emit ce-* as cert-ext-*
+
+ds-attr-commonName = 2.5.4.3
+ds-attr-emailAddress = 1.2.840.113549.1.9.1
+emit ds-attr-*
+

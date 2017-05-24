@@ -57,6 +57,8 @@
 		1E657D1119BFD9EA00D55E8B /* OFByteProviderProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E657D0E19BFD9EA00D55E8B /* OFByteProviderProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E6A669E1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6A669D1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E6A669F1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6A669D1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E71649D1D92FD0B001B2FBB /* OFCryptoTest-AEAD.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */; };
+		1E71649E1D92FD0C001B2FBB /* OFCryptoTest-AEAD.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */; };
 		1E79955C1A3FD44D0047F9ED /* OFSecurityUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3402C56015C3225500AA7DAF /* OFSecurityUtilities.m */; };
 		1E7E362719D0F28C00A3E540 /* OFSecurityUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402C55F15C3225500AA7DAF /* OFSecurityUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E7E362C19D0F29400A3E540 /* OFSecurityUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3402C56015C3225500AA7DAF /* OFSecurityUtilities.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -162,7 +164,7 @@
 		343BA6FF0F740AB100329C2F /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; };
 		343BA7F90F74169D00329C2F /* OFXMLInternedStringTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA7F70F74169D00329C2F /* OFXMLInternedStringTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343BA7FA0F74169D00329C2F /* OFXMLInternedStringTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA7F80F74169D00329C2F /* OFXMLInternedStringTable.m */; };
-		343BAA030F7440C300329C2F /* OFXMLError.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BAA010F7440C300329C2F /* OFXMLError.h */; };
+		343BAA030F7440C300329C2F /* OFXMLError.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BAA010F7440C300329C2F /* OFXMLError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343BAA040F7440C300329C2F /* OFXMLError.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BAA020F7440C300329C2F /* OFXMLError.m */; };
 		343BEAAF1348F00F00F66333 /* OFBacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BEAAD1348F00F00F66333 /* OFBacktrace.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343BEAB11348F00F00F66333 /* OFBacktrace.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BEAAE1348F00F00F66333 /* OFBacktrace.m */; };
@@ -601,7 +603,7 @@
 		34F16C35194F798E00AD9C4D /* OFXMLParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 341F551C0F72F08100632558 /* OFXMLParser.m */; };
 		34F16C36194F799100AD9C4D /* OFXMLReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA6FC0F740AB100329C2F /* OFXMLReader.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA6FD0F740AB100329C2F /* OFXMLReader.m */; };
-		34F16C38194F799600AD9C4D /* OFXMLError.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BAA010F7440C300329C2F /* OFXMLError.h */; };
+		34F16C38194F799600AD9C4D /* OFXMLError.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BAA010F7440C300329C2F /* OFXMLError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BAA020F7440C300329C2F /* OFXMLError.m */; };
 		34F16C3A194F799F00AD9C4D /* OFXMLInternedStringTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BA7F70F74169D00329C2F /* OFXMLInternedStringTable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BA7F80F74169D00329C2F /* OFXMLInternedStringTable.m */; };
@@ -648,6 +650,8 @@
 		3E9EBCB91CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
 		3EAA8C721DAC4A4F00F61578 /* NSBundle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342877B108EC788400D89442 /* NSBundle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; };
+		420E8D011DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
+		420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
 		42DB7D6F1C8F8BC0008100E4 /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; };
 		49C39BFE18109E8A005B4248 /* OFNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 49C39BFC18109E8A005B4248 /* OFNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1455,6 +1459,8 @@
 		1952E656FF2502DFC697A146 /* OFStringDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFStringDecoder.h; sourceTree = "<group>"; };
 		1D3F8FBD03DE7CFA0097A138 /* Language.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Language.strings; sourceTree = "<group>"; };
 		1D3F8FBE03DE7CFA0097A138 /* EnglishToISO.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = EnglishToISO.strings; sourceTree = "<group>"; };
+		1E189AE41DC9774100601271 /* OFDataTransform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDataTransform.h; sourceTree = "<group>"; };
+		1E189AE51DC9774100601271 /* OFDataTransform.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDataTransform.m; sourceTree = "<group>"; };
 		1E1B93A819D232A700693752 /* OFASN1Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFASN1Utilities.h; sourceTree = "<group>"; };
 		1E1B93A919D232A700693752 /* OFASN1Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFASN1Utilities.m; sourceTree = "<group>"; };
 		1E1CF5481A5208040068FA07 /* OFASN1-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "OFASN1-Internal.h"; path = "Crypto/OFASN1-Internal.h"; sourceTree = "<group>"; };
@@ -1472,6 +1478,7 @@
 		1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCryptoTest-AEAD.m"; sourceTree = "<group>"; };
 		1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = OFDocumentEncryption.md; sourceTree = "<group>"; };
 		1E7F99681D875BCD00CD4533 /* Bundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
+		1E84BB961DB582BD00BB0D0A /* OFCryptoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCryptoTest.h; sourceTree = "<group>"; };
 		1E8657021CB365B100139490 /* OFAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFAsynchronousOperation.h; sourceTree = "<group>"; };
 		1E8657091CB365BF00139490 /* OFAsynchronousOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFAsynchronousOperation.m; sourceTree = "<group>"; };
 		1E8A54BE1CC82DC200121A8D /* NSError-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError-OFExtensions.h"; sourceTree = "<group>"; };
@@ -1894,6 +1901,7 @@
 		3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileManagerExtendedAttributesTests.m; sourceTree = "<group>"; };
 		3F41140E036614060297A14E /* OFGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFGeometry.h; sourceTree = "<group>"; };
 		3F41140F036614060297A14E /* OFGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFGeometry.m; sourceTree = "<group>"; };
+		420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSProcessInfo-OFExtensions.swift"; sourceTree = "<group>"; };
 		43F94538FF278A8FC697A12F /* OFSimpleLockTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSimpleLockTest.m; sourceTree = "<group>"; };
 		467ADC25003CE443C697A14B /* NSUndoManager-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUndoManager-OFExtensions.h"; sourceTree = "<group>"; };
 		467ADC26003CE443C697A14B /* NSUndoManager-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUndoManager-OFExtensions.m"; sourceTree = "<group>"; };
@@ -2514,6 +2522,7 @@
 				00E51D25FE8AAEA611C9CC38 /* NSUserDefaults-OFExtensions.m */,
 				344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */,
 				344AD00B172740D2004B30B1 /* NSURL-OFExtensions.m */,
+				420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */,
 			);
 			name = "Foundation Extensions";
 			path = OpenStepExtensions.subproj;
@@ -2731,6 +2740,8 @@
 				E218273B145605170097BBFE /* OFCompletionMatch.m */,
 				00E51C72FE8AAEA611C9CC38 /* OFController.h */,
 				00E51C61FE8AAEA611C9CC38 /* OFController.m */,
+				1E189AE41DC9774100601271 /* OFDataTransform.h */,
+				1E189AE51DC9774100601271 /* OFDataTransform.m */,
 				34EE65431DB7CABB00647BC7 /* OFDiagnostics.swift */,
 				A2091C180E5A149E007B59A7 /* OFFilterProcess.h */,
 				A2091C190E5A149E007B59A7 /* OFFilterProcess.m */,
@@ -3190,6 +3201,7 @@
 				015B6AE000057FECC697A10E /* OFClobberDetectionZoneTest.m */,
 				34C4D93F08C7CBC80072D2D6 /* OFComparisonPredicateExtensions.m */,
 				3433588F06415A4C00EEBA57 /* OFCompressionTest.m */,
+				1E84BB961DB582BD00BB0D0A /* OFCryptoTest.h */,
 				1EB9F9FA1A64627E00222BFD /* OFCryptoTest.m */,
 				1E7164971D92FBD9001B2FBB /* OFCryptoTest-AEAD.m */,
 				1EFB29CB1D495D72005DC7B3 /* OFCMSTest.swift */,
@@ -4189,7 +4201,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -4615,6 +4627,7 @@
 				34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */,
 				34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */,
 				34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */,
+				420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */,
 				34F16B63194F6E7100AD9C4D /* OFBinding.m in Sources */,
 				34F16B69194F6E8900AD9C4D /* OFCharacterScanner.m in Sources */,
 				34F16BC4194F757400AD9C4D /* CFSet-OFExtensions.m in Sources */,
@@ -4672,6 +4685,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34DAC7E2194F874300499116 /* OFRangeExtensionsTests.m in Sources */,
+				1E71649D1D92FD0B001B2FBB /* OFCryptoTest-AEAD.m in Sources */,
 				34DAC7DF194F873000499116 /* OFIndexPathTests.m in Sources */,
 				34DAC7E5194F87DA00499116 /* OFNetStateMock.m in Sources */,
 				34DAC7E4194F876000499116 /* OFCredentialsTests.m in Sources */,
@@ -4775,6 +4789,7 @@
 				4A4E070F08AA72B10098FF0F /* NSFileManager-OFExtensions.m in Sources */,
 				4A4E071108AA72B10098FF0F /* NSInvocation-OFExtensions.m in Sources */,
 				4A4E071208AA72B10098FF0F /* NSMutableArray-OFExtensions.m in Sources */,
+				420E8D011DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */,
 				4A4E071308AA72B10098FF0F /* NSMutableAttributedString-OFExtensions.m in Sources */,
 				4A4E071408AA72B10098FF0F /* NSMutableData-OFExtensions.m in Sources */,
 				4A4E071508AA72B10098FF0F /* NSMutableDictionary-OFExtensions.m in Sources */,
@@ -4976,6 +4991,7 @@
 				4A4E07B808AA72B10098FF0F /* OFXMLCursorTests.m in Sources */,
 				4A4E07B908AA72B10098FF0F /* OFArrayTests.m in Sources */,
 				4A4E07BA08AA72B10098FF0F /* OFSearchingTests.m in Sources */,
+				1E71649E1D92FD0C001B2FBB /* OFCryptoTest-AEAD.m in Sources */,
 				4A4E07BC08AA72B10098FF0F /* OFStringScannerTest.m in Sources */,
 				4A4E07BD08AA72B10098FF0F /* OFAliasTests.m in Sources */,
 				4A4E07BE08AA72B10098FF0F /* OFCompressionTest.m in Sources */,

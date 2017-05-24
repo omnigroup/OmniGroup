@@ -397,7 +397,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)didReceiveMemoryWarning;
 {
     // Make sure to do this only when the whole inspector is hidden. We don't want to kill off a pane that pushed a detail pane.
-    if (self.visibility == OUIViewControllerVisibilityHidden && ![self.inspector isVisible]) {
+    if (self.visibility == OUIViewControllerVisibilityHidden && self.inspector.viewController.visibility == OUIViewControllerVisibilityHidden) {
         // Remove our slices now to avoid getting assertion failures about their views not being subviews of ours when we remove them.
         
         // Ditch our current slices too. When we get reloaded, we'll rebuild and re add them.

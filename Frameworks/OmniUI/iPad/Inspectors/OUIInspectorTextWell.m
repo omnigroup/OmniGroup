@@ -421,8 +421,11 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     if (self.backgroundType == OUIInspectorWellBackgroundTypeButton) {
         self.textColor = [super textColor];
         self.labelColor = [super textColor];
-        OBASSERT([self.rightView isKindOfClass:[UIImageView class]]);
-        [(UIImageView *)self.rightView setHighlighted:highlighted];
+        //The right view should highlight when we highlight
+        OBASSERT([self.rightView respondsToSelector:@selector(setHighlighted:)] || self.rightView == nil);
+        if ([self.rightView respondsToSelector:@selector(setHighlighted:)]) {
+            [(UIControl *)self.rightView setHighlighted:highlighted];
+        }
     }
 }
 

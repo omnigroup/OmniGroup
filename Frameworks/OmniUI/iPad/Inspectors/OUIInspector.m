@@ -15,6 +15,7 @@
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
 
+#import "OUIInspectorNavigationController.h"
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
@@ -30,153 +31,21 @@ OBDEPRECATED_METHOD(-inspectObjects:withViewController:useFullScreenOnHorizontal
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromBarButtonItem:); // --> -inspectObjects:
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromRect:inView:useFullScreenOnHorizontalCompact:permittedArrowDirections:); // --> -inspectObjects:
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromRect:inView:permittedArrowDirections:); // --> -inspectObjects:
-OBDEPRECATED_METHOD(-redisplayInspectorForNewTraitCollection:); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
-OBDEPRECATED_METHOD(-dismissImmediatelyIfVisible); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
-OBDEPRECATED_METHOD(-dismiss); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
-OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation should be redirected to -[OUIInspector navigationController]
+OBDEPRECATED_METHOD(-redisplayInspectorForNewTraitCollection:); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
+OBDEPRECATED_METHOD(-dismissImmediatelyIfVisible); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
+OBDEPRECATED_METHOD(-dismiss); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
+OBDEPRECATED_METHOD(-dismissAnimated:); // Methods dealing with presentation should be redirected to -[OUIInspector viewController]
 
-#pragma mark - OUIInspectorNavigationController
-@implementation OUIInspectorNavigationController
-
-- (UIViewController *)childViewControllerForStatusBarHidden;
-{
-    return nil;
-}
-
-// We really only want to hide the status bar if we're not in a popover, but the system doesn't even ask if we are being presented in a popover. So we can just return YES unconditionally here.
-- (BOOL)prefersStatusBarHidden {
-    return YES;
-}
-
-- (void)viewDidLoad{
-    [super viewDidLoad];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    
-    OUIInspectorPane *firstPane = (OUIInspectorPane *)self.viewControllers.firstObject;
-    OBASSERT([firstPane isKindOfClass:[OUIInspectorPane class]]);
-    
-    OUIInspector *inspector = firstPane.inspector;
-    [inspector updateInspectedObjects];
-}
-
-- (void)viewDidDisappear:(BOOL)animated;
-{
-    [super viewDidDisappear:animated];
-    // Clear the selection from all the panes we've pushed. The objects in question could go away at any time and there is no reason for us to be observing or holding onto them! Clear stuff in reverse order (tearing down the opposite of setup).
-    for (OUIInspectorPane *pane in [self.viewControllers reverseObjectEnumerator]) {
-        if ([pane isKindOfClass:[OUIInspectorPane class]]) { // not all view controllers are panes - the image picker isn't!
-            pane.inspectedObjects = nil;
-            [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDismissed];
-        }
-    }
-}
-
-// JCTODO: May need to update to handle new presentation setup.
-- (void)keyboardWillShow:(NSNotification*)note
-{
-    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
-        // we might be in a partial height presentation and need to get taller
-        OUIInspectorPresentationController *presentationController = (OUIInspectorPresentationController *)self.presentationController;
-        NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
-        NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
-        NSValue *frame = note.userInfo[UIKeyboardFrameEndUserInfoKey];
-        CGFloat height = [frame CGRectValue].size.height;
-        UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
-        __weak OUIInspectorNavigationController *weakSelf = self;
-        if (!self.willDismissInspector){
-            [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:height withAnimationDuration:duration.floatValue options:options completion:^{
-                OUIInspectorNavigationController *strongSelf = weakSelf;
-                if (strongSelf) {
-                    if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-                        [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
-                    }
-                    [strongSelf adjustHeightOfGesturePassThroughView];
-                }
-            }];
-        }
-    } else {
-        if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-            [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
-        }
-    }
-}
-
-- (void)adjustHeightOfGesturePassThroughView
-{
-    CGRect frameOfGesturePassThrough = self.gesturePassThroughView.frame;
-    frameOfGesturePassThrough.size.height = self.view.window.frame.size.height - self.view.frame.size.height;
-    self.gesturePassThroughView.frame = frameOfGesturePassThrough;
-}
-
-- (void)keyboardWillHide:(NSNotification*)note
-{
-    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
-        // we might have been in a partial height presentation and need to get shorter
-        OUIInspectorPresentationController *presentationController = (OUIInspectorPresentationController *)self.presentationController;
-        NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
-        NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
-        UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
-        self.gesturePassThroughView.hidden = NO;
-        __weak OUIInspectorNavigationController *weakSelf = self;
-        [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:0 withAnimationDuration:duration.integerValue options:options completion:^{
-            OUIInspectorNavigationController *strongSelf = weakSelf;
-            if (strongSelf) {
-                if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-                    [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
-                    [strongSelf adjustHeightOfGesturePassThroughView];
-                }
-            }
-        }];
-    } else {
-        if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-            [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
-        }
-    }
-}
-
-- (void)keyboardDidChangeFrame:(NSNotification*)note
-{
-    if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-        [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
-    }
-}
-
-- (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
-{
-    UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
-    BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
-    
-    if (!isCurrentlyPresented) {
-        return NO;
-    }
-    else {
-        // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
-        
-        // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
-        return (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
-    }
-}
-
-@end
-
-#pragma mark - OUIInspector
 @interface OUIInspector (/*Private*/) <UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate>
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
 - (void)_startObserving;
 - (void)_stopObserving;
 - (void)_keyboardDidHide:(NSNotification *)note;
 
-@property(nonatomic, strong, readwrite) UINavigationController *navigationController;
+@property(nonatomic, strong) OUIInspectorNavigationController *navigationController;
 
 @property (readonly,retain) id <UIViewControllerAnimatedTransitioning> transition;
 @property (readonly,retain) NSMutableArray *popTransitions;
-@property (nonatomic,strong) OUIInspectorOverlayTransitioningDelegate *inspectorTransitionDelegate;
 @property (nonatomic,weak) UIBarButtonItem *popoverPresentingItem;
 @property (nonatomic,weak) UIView *popoverSourceView;
 @property (nonatomic,assign) CGRect popoverSourceRect;
@@ -192,7 +61,6 @@ const NSTimeInterval OUICrossFadeDuration = 0.2;
 
 NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification = @"OUIInspectorWillBeginChangingInspectedObjectsNotification";
 NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUIInspectorDidEndChangingInspectedObjectsNotification";
-NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopoverDidDismissNotification";
 
 @implementation OUIInspector
 {
@@ -282,6 +150,10 @@ NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopov
     return self;
 }
 
+- (UIViewController<OUIInspectorPaneContaining> *)viewController {
+    return self.navigationController;
+}
+
 - (void)setGesturePassThroughView:(UIView *)gesturePassThroughView{
     _gesturePassThroughView = gesturePassThroughView;
     _navigationController.gesturePassThroughView = gesturePassThroughView;
@@ -315,35 +187,17 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     return _currentDefaultInspectorContentWidth;
 }
 
-//- (void)_useDefaultInspectorContentWidth;
-//{
-//    UITraitCollection *traitCollection = self.viewController.traitCollection;
-//
-//    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular && traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact) {
-//        [self setDefaultInspectorContentWidth:414.0f];
-//    } else {
-//        [self setDefaultInspectorContentWidth:320.0f];
-//    }
-//}
-
 - (OUIInspectorPane *)mainPane;
 {
     OBPRECONDITION(_mainPane);
     return _mainPane;
 }
 
-- (BOOL)isVisible;
+- (void)setShowDoneButton:(BOOL)shouldShow;
 {
-    return self.navigationController.presentingViewController != nil;
+    [self _setShowDoneButton:shouldShow];
 }
 
-/*
-- (UIStatusBarStyle)preferredStatusBarStyle;
-{
-    return UIStatusBarStyleDefault;
-}*/
-
-// JCTODO: Inspector refactor.
 - (void)updateInspectedObjects {
     NSArray *objects = [self.delegate objectsToInspectForInspector:self];
     self.mainPane.inspectedObjects = objects;
@@ -353,167 +207,11 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     }
 }
 
-
-//- (BOOL)_inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact traitCollection:(UITraitCollection *)traitCollection fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
-//{
-//    OBASSERT(viewController, @"Must provide a valid viewController");
-//    if (!viewController) {
-//        return NO;
-//    }
-//    
-//    self.viewController = viewController;
-//    self.popoverSourceView = nil;
-//    self.popoverPresentingItem = item;
-//    self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
-//    OBASSERT(viewController.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
-//    
-//    self.mainPane.inspectedObjects = objects;
-//    self.shouldShowDoneButton = YES;
-//    
-//    [self updateInspectorWithTraitCollection:traitCollection];
-//    self.navigationController.popoverPresentationController.barButtonItem = item;
-//    self.navigationController.popoverPresentationController.delegate = self;
-//    
-//    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-//        [self.navigationController popToRootViewControllerAnimated:NO];
-//    }
-//    
-//    
-//    [viewController presentViewController:self.navigationController animated:YES completion:^{
-//        self.navigationController.popoverPresentationController.passthroughViews = nil;
-//        if (_presentInspectorCompletion) {
-//            // JCTODO: Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
-//            _presentInspectorCompletion();
-//        }
-//    }];
-//    
-//    // JCTODO: Presentation is moving to the MultiPaneController. Proably need some way for it to handle something like this.
-//    if (_animationsToPerformAlongsidePresentation) {
-//        [self.navigationController.transitionCoordinator animateAlongsideTransition:_animationsToPerformAlongsidePresentation completion:nil];
-//    }
-//    
-//    return YES;
-//}
-
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item;
-//{
-//    return [self _inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:useFullScreenOnHorizontalCompact traitCollection:viewController.traitCollection fromBarButtonItem:item];
-//}
-
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item;
-//{
-//    return [self inspectObjects:objects withViewController:viewController useFullScreenOnHorizontalCompact:NO fromBarButtonItem:item];
-//}
-
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-//{
-//    self.popoverSourceView = view;
-//    self.viewController = viewController;
-//    self.popoverSourceRect = rect;
-//    self.popoverArrowDirections = arrowDirections;
-//    self.useFullScreenOnHorizontalCompact = useFullScreenOnHorizontalCompact;
-//    OBASSERT(view.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassUnspecified);
-//    
-//    self.mainPane.inspectedObjects = objects;
-//    
-//    [self updateInspectorWithTraitCollection:view.traitCollection];
-//    self.navigationController.popoverPresentationController.sourceView = view;
-//    self.navigationController.popoverPresentationController.sourceRect = rect;
-//    
-//    
-//    [viewController presentViewController:self.navigationController animated:YES completion:^{
-//        self.navigationController.popoverPresentationController.passthroughViews = nil;
-//    }];
-//    
-//    return YES;
-//}
-//
-//- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-//{
-//    return [self inspectObjects:objects withViewController:viewController fromRect:rect inView:view useFullScreenOnHorizontalCompact:NO permittedArrowDirections:arrowDirections];
-//}
-//
-//- (void)_dismissInspectorAnimated:(BOOL)animated completion:(void (^)(void))completion;
-//{
-//    _navigationController.willDismissInspector = YES;
-//    if (self.animatingPushOrPop) {
-//        return;  // hack to prevent dismissing when a navigation controller transition animation is in progress because if we do, the _animationsToPerformAlongsideDismissal will be ignored and they are crucial to the app's functioning
-//    }
-//    OBASSERT(self.navigationController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact);
-//    
-//    void (^totalCompletion)(void) = ^(void){
-//        if (_dismissInspectorCompletion)
-//        {
-//            _dismissInspectorCompletion();
-//        }
-//        if (completion) {
-//            completion();
-//        }
-//        _navigationController.willDismissInspector = NO;
-//    };
-//    [self.navigationController dismissViewControllerAnimated:animated completion: totalCompletion];
-//
-//    if (animated && _animationsToPerformAlongsideDismissal) {
-//        id<UIViewControllerTransitionCoordinator> coordinator = self.navigationController.transitionCoordinator;
-//        if (coordinator) {
-//            [coordinator animateAlongsideTransition:_animationsToPerformAlongsideDismissal completion:nil];
-//        }
-//        else {
-//            _animationsToPerformAlongsideDismissal(nil /* we actually have no transitionCoordinator to pass in */);
-//        }
-//    }
-//}
-//
-//- (void)_dismissInspector:(id)sender;
-//{
-//    [self dismissAnimated:YES];
-//}
-//
-//- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitCollection;
-//{
-//    NSArray *inspectedObjects = self.mainPane.inspectedObjects;
-//    [self _dismissInspectorAnimated:NO completion:^{
-//        UIViewController *strong_viewController = self.viewController;
-//        UIView *strong_popoverSourceView = self.popoverSourceView;
-//
-//        if (strong_popoverSourceView && strong_viewController) {
-//            [self inspectObjects:inspectedObjects withViewController:strong_viewController fromRect:self.popoverSourceRect inView:strong_popoverSourceView useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact permittedArrowDirections:self.popoverArrowDirections];
-//        } else if (strong_viewController) {
-//            [self _inspectObjects:inspectedObjects withViewController:strong_viewController useFullScreenOnHorizontalCompact:self.useFullScreenOnHorizontalCompact traitCollection:traitCollection fromBarButtonItem:self.popoverPresentingItem];
-//        } else {
-//            OBASSERT_NOT_REACHED(@"Inspector muast have either a view controller or an optional UIView defined.");
-//        }
-//    }];
-//}
-
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [self.topVisiblePane updateInterfaceFromInspectedObjects:reason];
 }
 
-//- (void)dismissImmediatelyIfVisible;
-//{
-//    if (self.isVisible)
-//        [self dismissAnimated:NO];
-//}
-//
-//- (void)dismiss;
-//{
-//    [self _dismissInspector:nil];
-//}
-//
-//- (void)dismissAnimated:(BOOL)animated;
-//{
-//    if ([self.delegate respondsToSelector:@selector(inspectorWillDismiss:)]) {
-//        [self.delegate inspectorWillDismiss:self];
-//    }
-//    [self _dismissInspectorAnimated:animated completion:^{
-//        if (self.delegate && [self.delegate respondsToSelector:@selector(inspectorDidDismiss:)]) {
-//            [self.delegate inspectorDidDismiss:self];
-//        }
-//    }];
-//}
-//
 - (void)_setShowDoneButton:(BOOL)shouldShow;
 {
     UIViewController *topController = [self.navigationController topViewController];
@@ -543,7 +241,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-// JCTODO: We will no longer be presented. Should be able to remove this code.
+// JCTODO: Inspector Refactor: Make sure we don't still have this issue and then remove this code.
 - (void)createFreshNavigationController {
     // THIS IS A HACK required to get the presentation to switch properly between popover style and half-height inspector in beta iOS 9
     OUIInspector *freshInspector = [[[self class] alloc] init];
@@ -570,30 +268,6 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         return [delegate inspector:self makeAvailableSlicesForStackedSlicesPane:pane];
     return nil;
 }
-
-//static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFloat height, BOOL animated) NS_EXTENSION_UNAVAILABLE_IOS("")
-//{
-//    const CGFloat toolbarHeight = 38;
-//    
-//    BOOL wantsToolbar = self->_alwaysShowToolbar || ([vc.toolbarItems count] > 0);
-//    if (wantsToolbar)
-//        height -= toolbarHeight;
-//    
-//    UIWindow *window = [[OUIAppController controller] window];
-//    if ([[window traitCollection] horizontalSizeClass] == UIUserInterfaceSizeClassCompact) {
-//        [self setDefaultInspectorContentWidth:CGRectGetWidth([window frame])];
-//    } else {
-//        [self _useDefaultInspectorContentWidth];
-//    }
-//    
-//    vc.preferredContentSize = CGSizeMake(self.defaultInspectorContentWidth, height);
-//    [self->_navigationController setToolbarHidden:!wantsToolbar animated:animated];
-//    
-//    // This is necessary to reset the popover size if it is dismissed while the keyboard is up. It doesn't automatically fix this on itself. See <bug:///71703> (Popover doesn't restore size when closed with keyboard up)
-//    // Actually, this makes the popover content controller by 1 border width (~8px) w/o being clipped by the popover. <bug:///71895> (Inspector grows slightly 2nd time opening it and background doesn't fill in the space)
-//    // Instead, we now track keyboard visibility and avoid closing if we are editing text (see the life of the _keyboardShownWhilePopoverVisible ivar).
-//    //[self->_popoverController setPopoverContentSize:self->_navigationController.contentSizeForViewInPopover animated:animated];    
-//}
 
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated;
 {
@@ -681,49 +355,12 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     
 }
 
-//#pragma mark UIPopoverPresentationControllerDelegate
-//- (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController;
-//{
-//    if (popoverPresentationController.presentedViewController != self.navigationController) {
-//        return;
-//    }
-//
-//    self.shouldShowDoneButton = NO;
-//    [self _setShowDoneButton:NO];
-//}
-//
-//- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller;
-//{
-//    if (controller.presentedViewController != self.navigationController) {
-//        return controller.presentedViewController.modalPresentationStyle;
-//    }
-//    
-//    return UIModalPresentationFullScreen;
-//}
-//
-//- (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
-//{
-//    if (controller.presentedViewController != self.navigationController) {
-//        return nil;
-//    }
-//    
-//    // Currently, there is no way to adapt __into__ a popover; A popover is something you adapt out of. So _style_ should never be Popover.
-//    OBASSERT(style != UIModalPresentationPopover);
-//    self.shouldShowDoneButton = YES;
-//    [self _setShowDoneButton:YES];
-//    
-//    return nil;
-//}
-//
-//- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController{
-//    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorPopoverDidDismissNotification object:popoverPresentationController];
-//}
-
 #pragma mark UINavigationControllerDelegate
 - (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
 {
     UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
     BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
+    
     
     if (!isCurrentlyPresented) {
         return NO;
@@ -732,7 +369,19 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
         
         // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
-        return (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+        BOOL shouldShowDoneButton = NO;
+        
+        UIViewController *presentingViewController = mostDistantAncestor.presentingViewController;
+        
+        BOOL isCustomPresentation = (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+        
+        BOOL isHorizontallyCompactPresentation = (presentingViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact);
+        
+        BOOL isVerticallyCompactPresentation = (presentingViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact);
+        
+        shouldShowDoneButton = isCustomPresentation || isHorizontallyCompactPresentation || isVerticallyCompactPresentation;
+        
+        return shouldShowDoneButton;
     }
 }
 
@@ -745,7 +394,9 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     if ([viewController isKindOfClass:[OUIInspectorPane class]])
         [(OUIInspectorPane *)viewController inspectorWillShow:self];
     
-//    _configureContentSize(self, viewController, _height, animated);
+    BOOL wantsToolbar = ([viewController.toolbarItems count] > 0);
+    [navigationController setToolbarHidden:!wantsToolbar animated:animated];
+    
     if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
         [self _setShowDoneButton:YES];
     }

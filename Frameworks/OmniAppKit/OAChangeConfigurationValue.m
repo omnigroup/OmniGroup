@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniAppKit/OAChangeConfigurationValue.h>
 
 #import <OmniAppKit/NSOutlineView-OAExtensions.h>
+#import <OmniAppKit/OAStrings.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniBase/NSError-OBUtilities.h>
 
@@ -20,8 +21,8 @@ BOOL OAHandleChangeConfigurationValueURL(NSURL *url, NSError **outError)
         alert.messageText = title;
         alert.informativeText = message;
         
-        [alert addButtonWithTitle:@"OK"];
-        [alert addButtonWithTitle:@"Cancel"];
+        [alert addButtonWithTitle:OAOK()];
+        [alert addButtonWithTitle:OACancel()];
         
         NSModalResponse response = [alert runModal];
         if (response == NSAlertFirstButtonReturn) {
@@ -115,11 +116,11 @@ BOOL OAHandleChangeConfigurationValueURL(NSURL *url, NSError **outError)
 - (IBAction)restoreDefaultConfiguration:(id)sender;
 {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Restore default configuration?";
-    alert.informativeText = @"All configuration values will be restored to their default values.";
+    alert.messageText = NSLocalizedStringFromTableInBundle(@"Restore default configuration?", @"OmniAppKit", OMNI_BUNDLE, @"Alert title when restoring configuration settings to default state");
+    alert.informativeText = NSLocalizedStringFromTableInBundle(@"All configuration values will be restored to their default values.", @"OmniAppKit", OMNI_BUNDLE, @"Alert message when restoring configuration settings to default state");
     
-    [alert addButtonWithTitle:@"OK"];
-    [alert addButtonWithTitle:@"Cancel"];
+    [alert addButtonWithTitle:OAOK()];
+    [alert addButtonWithTitle:OACancel()];
     
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
         if (returnCode == NSAlertFirstButtonReturn) {

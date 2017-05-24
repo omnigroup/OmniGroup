@@ -1,0 +1,14 @@
+/* Class = "NSButtonCell"; title = "Open Preferences"; ObjectID = "56"; */
+"56.title" = "Open voorkeuren";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "57"; */
+"57.title" = "OK";
+
+/* Class = "NSTextFieldCell"; title = "%@ has the ability to automatically use your Internet connection (when active) to check for new and updated versions of itself."; ObjectID = "59"; */
+"59.title" = "%@ kan automatisch via uw internetverbinding (indien actief) zoeken naar nieuwe of bijgewerkte versies van zichzelf.";
+
+/* Class = "NSTextFieldCell"; title = "If you choose to send us your system information, you encourage better support for your system configuration in our future releases. This is entirely voluntary and anonymous. We promise never to use your information for nefarious purposes. Please click Open Preferences to learn more."; ObjectID = "60"; */
+"60.title" = "Als u ervoor kiest ons uw systeeminformatie te sturen, bevordert u een betere ondersteuning voor uw systeemconfiguratie in onze toekomstige uitgaven. Dit is volledig vrijwillig en anoniem. Wij garanderen u dat wij uw informatie nooit gebruiken voor misdadige doeleinden. Klik op Open voorkeuren voor meer informatie.";
+
+/* Class = "NSButtonCell"; title = "Include system information when checking for updates"; ObjectID = "61"; */
+"61.title" = "Stuur systeeminformatie mee bij zoeken naar nieuwe versies";

@@ -7,16 +7,12 @@
 
 #import <OmniInspector/OIInspectorRegistry.h>
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-#import <OmniAppKit/NSBundle-OAExtensions.h>
-#import <OmniAppKit/NSDocument-OAExtensions.h>
-#import <OmniAppKit/NSWindow-OAExtensions.h>
-#import <OmniAppKit/OAApplication.h>
-#import <OmniAppKit/OAVersion.h>
-#import <OmniAppKit/OAWindowCascade.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniFoundation/OmniFoundation.h>
+@import OmniBase;
+@import OmniFoundation;
+@import OmniAppKit;
+@import Foundation;
+@import AppKit;
+
 #import <OmniInspector/NSWindowController-OIExtensions.h>
 #import <OmniInspector/OIInspectableControllerProtocol.h>
 #import <OmniInspector/OIInspectionSet.h>
@@ -95,9 +91,7 @@ static NSMutableArray *additionalPanels = nil;
 - (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 {
     // This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry
-    OIInspectorController *controller = [[self.defaultInspectorControllerClass alloc] initWithInspector:inspector];
-    controller.inspectorRegistry = self;
-    return controller;
+    return [[self.defaultInspectorControllerClass alloc] initWithInspector:inspector inspectorRegistry:self];
 }
 
 + (void)registerAdditionalPanel:(NSWindowController *)additionalController;
@@ -154,8 +148,11 @@ static NSMutableArray *additionalPanels = nil;
     NSDocumentController *sharedDocumentController = [NSDocumentController sharedDocumentController];
     NSDocument *currentDocument = sharedDocumentController.currentDocument;
 
-    OBFinishPortingLater("How do we narrow this down to exclude the scripting console window controller?");
-    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:currentDocument.frontWindowController.window];
+    NSWindowController *windowController = [currentDocument.orderedWindowControllers first:^BOOL(NSWindowController *wc) {
+        return !wc.isAuxiliary;
+    }];
+
+    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:windowController.window];
 }
 
 static NSMutableArray *hiddenGroups = nil;
@@ -229,6 +226,16 @@ static NSMutableArray *hiddenPanels = nil;
     }
 
     return hiddenAny;
+}
+
+- (BOOL)hasHiddenInspectors
+{
+    for (OIInspectorGroup *group in [self groups]) {
+        if (![group isVisible]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (void)toggleAllInspectors;
@@ -774,7 +781,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     if (!workspaceMenu) {
         NSBundle *bundle = [OIInspectorRegistry bundle];
         
-        workspaceMenu = [[NSMenu alloc] initWithTitle:@"Workspace"];
+        workspaceMenu = [[NSMenu alloc] initWithTitle:@""];
         
         NSMenuItem *item = nil;
         
@@ -899,7 +906,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     NSAlert *deleteAlert = [[NSAlert alloc] init];
     [deleteAlert setAlertStyle:NSWarningAlertStyle];
-    [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace OK")];
+    [deleteAlert addButtonWithTitle:OAOK()];
     [deleteAlert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace Cancel")];
     
     NSIndexSet *selectedRows = [_editWorkspaceTable selectedRowIndexes];
@@ -1254,15 +1261,20 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     OIInspectionSet *inspectionSet = [[OIInspectionSet alloc] init];
 
     // Fill the inspection set across all inspectable controllers in the responder chain, starting from the 'oldest' (probably the app delegate) to 'newest' the first responder.  This allows responders that are 'closer' to the user to override inspection from 'further' responders.
-    NSMutableSet *seenControllers = [NSMutableSet set];
+    NSMutableSet <id <OIInspectableController>> *seenControllers = [NSMutableSet set];
+    NSMutableArray <id <OIInspectableController>> *orderedControllers = [[NSMutableArray alloc] init];
+
     [responder applyToResponderChain: ^ BOOL (id responderChainItem) {
         // Create a block with this behavior so that we can then apply the exact same behavior to both our target and its delegate (if it has a delegate)
         OAResponderChainApplier addInspectedObjects = ^ BOOL (id target) {
             if ([target conformsToProtocol:@protocol(OIInspectableController)]) {
                 // A controller may be accessible along two paths in the responder chain by being the delegate for multiple NSResponders.  Only give each object one chance to add its stuff, otherwise controllers that want to override a particular class via -[OIInspectionSet removeObjectsWithClass:] may itself be overriden by the duplicate delegate!
-                if ([seenControllers member:target] == nil) {
-                    [seenControllers addObject:target];
-                    [(id <OIInspectableController>)target addInspectedObjects:inspectionSet];
+                id <OIInspectableController> controller = (id <OIInspectableController>)target;
+
+                if ([seenControllers member:controller] == nil) {
+                    [orderedControllers addObject:controller];
+                    [seenControllers addObject:controller];
+                    [controller addInspectedObjects:inspectionSet];
                     if ([target respondsToSelector:@selector(inspectionIdentifierForInspectionSet:)] && inspectionSet.inspectionIdentifier == nil) {
                         inspectionSet.inspectionIdentifier = [[target inspectionIdentifierForInspectionSet:inspectionSet] copy];
                     }
@@ -1280,6 +1292,8 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         return YES;
     }];
 
+    inspectionSet.inspectableControllers = orderedControllers;
+    
     return inspectionSet;
 }
 

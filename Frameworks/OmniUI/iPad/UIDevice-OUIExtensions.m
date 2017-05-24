@@ -90,7 +90,7 @@ RCS_ID("$Id$");
     switch (hardwareInfo.family) {
         case UIDeviceHardwareFamily_iPhoneSimulator: {
             // TODO: making a guess based on screen size
-            OBASSERT_NOT_REACHED("WYSIWYG does not work in simulator");
+            OBASSERT_NOT_REACHED("WYSIWYG does not work in simulator. bug:///137376");
 
             ppi = 326;
             break;

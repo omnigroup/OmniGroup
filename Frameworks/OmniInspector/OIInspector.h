@@ -110,4 +110,14 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 @end
 
+
+@class OIInspectionSet;
+@protocol OIInspectedObjectSelectionRelativeNames
+- (nullable NSString *)inspector:(OIInspector *)inspector selectionRelativeNameForObject:(id)object amongObjects:(NSArray *)inspectedObjects inspectionSet:(OIInspectionSet *)inspectionSet;
+@end
+
+@interface OIInspector (OISelectionRelativeNames)
+- (nullable NSString *)selectionRelativeNameForObject:(id)object amongObjects:(NSArray *)inspectedObjects;
+@end
+
 NS_ASSUME_NONNULL_END

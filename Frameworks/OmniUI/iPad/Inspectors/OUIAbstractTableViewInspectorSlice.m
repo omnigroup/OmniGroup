@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,7 +121,8 @@ RCS_ID("$Id$");
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
-    
+    //If we are inspecting a new type of graphic for the first time (like tapping a graphic when we first open the document) the it is possible for the table view to have no content. We then try to resize an empty table view to fit its content size, but the table view has no contents and the resize function expects the table view to have contents. So, make sure we have contents first.
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
     // Might be coming back from a detail pane that edited a displayed value
     [self reloadTableAndResize];
 }

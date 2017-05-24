@@ -146,8 +146,9 @@ static BOOL errorIndicatesPlaintext(NSError *err);
             return encrypted;
         }
         
-        if (outError)
-            *outError = headerError;
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Cannot read file", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+        NSString *suggestion = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to decrypt contents of file “%@”.", @"OmniFileStore", OMNI_BUNDLE, @"error reason - token is filename"), [url lastPathComponent]];
+        OFSErrorWithInfo(outError, OFSCannotRead, description, suggestion, NSUnderlyingErrorKey, headerError, nil);
         return nil;
     }
     

@@ -70,9 +70,11 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     [creditsTextView setSelectable:YES];
     [[creditsTextView enclosingScrollView] setDrawsBackground:NO];
     
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *copyright = [infoDictionary objectForKey:@"NSHumanReadableCopyright"];
-    copyright = copyright ? copyright : @"NSHumanReadableCopyright not set!";
+    NSString *copyright = [[[NSBundle mainBundle] localizedInfoDictionary] objectForKey:@"NSHumanReadableCopyright"];
+    if (!copyright) {
+        OBASSERT_NOT_REACHED("No entry specified for Info.plist NSHumanReadableCopyright key");
+        copyright = OBUnlocalized(@"NSHumanReadableCopyright not set!");
+    }
     [copyrightTextField setStringValue:copyright];
     
     // Re-center the top components.  These aren't in a box so that it's easy to resize applicationNameTextField with -sizeToFit.  We ignore the width of the fullReleaseNameButton at the moment.

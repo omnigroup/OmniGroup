@@ -23,6 +23,12 @@
 @class OAColor;
 #endif
 
+#if 0 && defined(DEBUG_bungi)
+    #define OA_SUPPORT_PATTERN_COLOR 1
+#else
+    #define OA_SUPPORT_PATTERN_COLOR 0
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -109,12 +115,13 @@ extern OAHSV OARGBToHSV(OALinearRGBA c);
 extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
 @interface OAColor : NSObject <NSCopying>
-{
-    OA_PLATFORM_COLOR_CLASS *_platformColor;
-}
 
 + (OAColor *)colorWithCGColor:(CGColorRef)cgColor;
 + (OAColor *)colorWithPlatformColor:(OA_PLATFORM_COLOR_CLASS *)color;
+
+#if OA_SUPPORT_PATTERN_COLOR
++ (OAColor *)colorWithPatternImageData:(NSData *)imageData;
+#endif
 
 + (nullable OAColor *)colorFromRGBAString:(NSString *)rgbaString;
 @property(nonatomic,readonly) NSString *rgbaString;
@@ -144,6 +151,8 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
 @property(class,readonly,nonatomic) OAColor *keyboardFocusIndicatorColor;
 @property(class,readonly,nonatomic) OAColor *selectedTextBackgroundColor;
+
+@property(nonatomic,readonly) OA_PLATFORM_COLOR_CLASS *toColor;
 
 - (void)set;
 
@@ -175,7 +184,8 @@ extern OALinearRGBA OAHSVToRGB(OAHSV c);
 - (BOOL)isEqualToColorInSameColorSpace:(OAColor *)color;
 - (NSUInteger)hash;
 
-@property(readonly,nonatomic) OA_PLATFORM_COLOR_CLASS *toColor;
+- (OA_PLATFORM_COLOR_CLASS *)makePlatformColor; // This is cached in the -platformColor property and should otherwise not be called.
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
 #endif

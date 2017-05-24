@@ -148,7 +148,7 @@ static void replacement_lockFocus(NSView *self, SEL _cmd)
 static void replacement_unlockFocus(NSView *self, SEL _cmd)
 {
     OBPRECONDITION(ViewsBeingDrawn);
-    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION([NSThread isMainThread] || [NSStringFromClass([self class]) isEqual:@"NSProgressIndicator"]);
 
     [ViewsBeingDrawn removeObject:self];
 

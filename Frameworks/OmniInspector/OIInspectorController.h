@@ -27,10 +27,10 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
 // API
 
-- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector;
+- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 
 @property (nonatomic, assign) OIInspectorInterfaceType interfaceType;
-@property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
+@property (nonatomic, readonly, weak) OIInspectorRegistry *inspectorRegistry;
 
 @property(nonatomic,weak) OIInspectorGroup *group;
 

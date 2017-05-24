@@ -46,35 +46,38 @@ static CFMutableDictionaryRef EntityToClass = nil;
     return (ODOEntity *)CFDictionaryGetValue(ClassToEntity, cls);
 }
 
-ODOModel *ODOModelCreate(NSString *modelName, NSArray *entities)
+ODOModel * ODOModelCreate(NSString *modelName, NSArray *entities)
 {
-    ODOModel *model;
+    ODOModel *model = nil;
     
     // Make sure that our poking model classes doesn't cause their +initialize to ask for a shared model that is still in the process of loading...
+    // Typically this is not a concern because clients will use the auto-generated <<Prefix>>Model function, which uses dispatch_once, which intentionally crashes if re-entered.
+    // We still want to prevent per-thread re-entrancy here for the case of creating models by hand, as may be the case for unit tests.
+    
 #ifdef OMNI_ASSERTIONS_ON
-    static BOOL CreatingModel = NO;
-    OBPRECONDITION(CreatingModel == NO);
-    CreatingModel = YES;
-    @try {
+    static __thread BOOL _isCreatingModel = NO;
+    OBPRECONDITION(_isCreatingModel == NO);
+    _isCreatingModel = YES;
 #endif
+
+    @try {
         model = [[ODOModel alloc] init];
-        
         model->_name = [modelName copy];
         
         NSMutableDictionary <NSString *, ODOEntity *> *entitiesByName = [NSMutableDictionary dictionary];
         for (ODOEntity *entity in entities) {
             NSString *entityName = [entity name];
-            
             OBASSERT(![entityName hasPrefix:@"ODO"]); // All entity names beginning with ODO are reserved
             OBASSERT([entitiesByName objectForKey:entityName] == nil);
             [entitiesByName setObject:entity forKey:entityName];
         }
         model->_entitiesByName = [[NSDictionary alloc] initWithDictionary:entitiesByName];
-#ifdef OMNI_ASSERTIONS_ON
     } @finally {
-        CreatingModel = NO;
-    }
+#ifdef OMNI_ASSERTIONS_ON
+        _isCreatingModel = NO;
 #endif
+    }
+
     return model;
 }
 

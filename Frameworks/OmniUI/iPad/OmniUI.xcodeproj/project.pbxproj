@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */; };
+		232F1EF71DF7436500201BEC /* OUIInspectorNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */; };
+		232F1EF81DF7436500201BEC /* OUIInspectorNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
@@ -596,6 +598,8 @@
 		231A234717D94518009E4CA8 /* OUIEmptyOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEmptyOverlayView.h; sourceTree = "<group>"; };
 		231A234817D94518009E4CA8 /* OUIEmptyOverlayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIEmptyOverlayView.m; sourceTree = "<group>"; };
 		231A234917D94518009E4CA8 /* OUIEmptyOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIEmptyOverlayView.xib; sourceTree = "<group>"; };
+		232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorNavigationController.h; sourceTree = "<group>"; };
+		232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorNavigationController.m; sourceTree = "<group>"; };
 		236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIVisualEffectView-OUIExtensions.h"; sourceTree = "<group>"; };
 		236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIVisualEffectView-OUIExtensions.m"; sourceTree = "<group>"; };
 		238730811A5DDF830083C816 /* OUIRotationLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIRotationLock.h; sourceTree = "<group>"; };
@@ -1496,6 +1500,8 @@
 				345D7253130339BE00A9D55F /* OUIEditableTextWellInspectorSlice.m */,
 				346E64BF1523B9AA00C6C3E1 /* OUIEmptyPaddingInspectorSlice.h */,
 				346E64C01523B9AA00C6C3E1 /* OUIEmptyPaddingInspectorSlice.m */,
+				232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */,
+				232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */,
 				346C4A921193273600BE8C49 /* OUIInspector.h */,
 				346C4A931193273600BE8C49 /* OUIInspector.m */,
 				42384A1B19F82D4C00A42BFA /* OUIInspectorPresentationController.h */,
@@ -2081,6 +2087,7 @@
 				348A7A121B584AE90082D55D /* OUIColorPicker.h in Headers */,
 				348A7AD91B584C810082D55D /* OUIScalingView.h in Headers */,
 				348A7AD11B584C720082D55D /* OUITransition.h in Headers */,
+				232F1EF71DF7436500201BEC /* OUIInspectorNavigationController.h in Headers */,
 				348A7A601B584B590082D55D /* OUIMultiSegmentStackedSlicesInspectorPane.h in Headers */,
 				348A7A341B584B3C0082D55D /* OUIFontInspectorPane.h in Headers */,
 				348A7AB31B584C240082D55D /* OUINavigationBar.h in Headers */,
@@ -2511,6 +2518,7 @@
 				348A7AD61B584C720082D55D /* OUIVerticalSplitTransition.m in Sources */,
 				348A79E11B584A950082D55D /* OUIChangePreferenceURLCommand.m in Sources */,
 				348A7A551B584B590082D55D /* OUIInspectorSelectionValue.m in Sources */,
+				232F1EF81DF7436500201BEC /* OUIInspectorNavigationController.m in Sources */,
 				348A7B471B584D130082D55D /* UIFontDescriptor-OUIExtensions.m in Sources */,
 				348A7B3B1B584D130082D55D /* OUIScrollNotifier.m in Sources */,
 				348A7B551B584D130082D55D /* UIViewController-OUIExtensions.m in Sources */,

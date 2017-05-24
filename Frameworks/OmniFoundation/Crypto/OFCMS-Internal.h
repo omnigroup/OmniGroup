@@ -39,11 +39,11 @@ dispatch_data_t OFCMSWrapContent(enum OFCMSContentType ct, NSData *content) DISP
 dispatch_data_t __nullable OFCMSCreateAuthenticatedData(NSData *hmacKey, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 dispatch_data_t __nullable OFCMSCreateEnvelopedData(NSData *CEK, NSArray<NSData *> *recipientInfos, NSData *innerContentType, NSData *content, NSError **outError) DISPATCH_RETURNS_RETAINED /* OB_HIDDEN */;
 dispatch_data_t __nullable OFCMSCreateAuthenticatedEnvelopedData(NSData *CEK, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
+dispatch_data_t OFCMSCreateSignedData(NSData *innerContentType, NSData * __nullable content, NSArray * __nullable certificates, NSArray * __nullable signatures) OB_HIDDEN;
 dispatch_data_t OFCMSCreateMultipart(NSArray<NSData *> *parts) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 dispatch_data_t OFCMSCreateAttributedContent(NSData *oid, NSData *content, NSArray<NSData *> *attributes) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 NSData *OFCMSIdentifierAttribute(NSData *cid) OB_HIDDEN;
 dispatch_data_t OFCMSWrapIdentifiedContent(enum OFCMSContentType ct, NSData *content, NSData *cid) DISPATCH_RETURNS_RETAINED OB_HIDDEN;  // A convenience on top of OFCMSCreateAttributedContent()
-
 
 /* CMS content parsing */
 int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent) OB_HIDDEN;

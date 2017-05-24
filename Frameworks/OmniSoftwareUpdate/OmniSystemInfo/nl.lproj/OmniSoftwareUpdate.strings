@@ -1,0 +1,216 @@
+/* Header for number of crashes row in the run/count table of the info sheet */
+"# of Crashes" = "Aantal crashes";
+
+/* Header for number of launches row in the run/count table of the info sheet */
+"# of Launches" = "Aantal keer gestart";
+
+/* Software update hardware description page intro line one. */
+"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support." = "%@ kan ons optioneel wat basisinformatie over uw systeemconfiguratie sturen. We gebruiken deze informatie om te bepalen welke systemen onze klanten gebruiken, zodat we weten welke systemen het belangrijkst zijn om te ondersteunen.";
+
+/* Explanatory text for the UUID in the info table. */
+"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information." = "Een willekeurige tekenreeks waarmee uw computer anoniem wordt aangeduid. Hiermee kunnen we onze database up-to-date houden als uw systeemconfiguratie verandert. Deze aanduiding is op geen enkele manier gekoppeld aan uw naam of andere persoonlijke gegevens.";
+
+/* Header for all versions section in the run/count table of the info sheet */
+"All Versions" = "Alle versies";
+
+/* Title for application identifier in the info table. */
+"Application ID" = "Programma-ID";
+
+/* details panel string - header for application feature usage table */
+"Application Usage" = "Programmagebruik";
+
+/* Title for application version in the info table. */
+"Application Version" = "Programmaversie";
+
+/* Title for the bus speed row in the info table. */
+"Bus Speed" = "Bussnelheid";
+
+/* News error header */
+"Cannot connect to News" = "Kan geen verbinding maken met Nieuws";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Controle bewerking mislukt.";
+
+/* Title for the computer model row in the info table. */
+"Computer Model" = "Computermodel";
+
+/* Title for the CPU count row in the info table. */
+"CPU Count" = "Aantal processors";
+
+/* Title for the CPU speed row in the info table. */
+"CPU Speed" = "Processorsnelheid";
+
+/* Title for the CPU type row in the info table. */
+"CPU Type" = "Processortype";
+
+/* Header for current version section in the run/count table of the info sheet */
+"Current Version" = "Huidige versie";
+
+/* Title for the display settings row in the info table. */
+"Display Settings" = "Beeldscherminstellingen";
+
+/* details panel string - version of video card driver */
+"Driver Version" = "Versie besturingsbestand";
+
+/* error description */
+"Error fetching software update information." = "Fout bij het ophalen van informatie over de softwareupdate.";
+
+/* error description */
+"Error while checking for updated version." = "Fout bij het controleren op bijgewerkte versie.";
+
+/* error reason */
+"Exception raised: %@" = "Uitzondering opgetreden: %@";
+
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "Extensies";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "Exts";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "Freq.";
+
+/* system preferences hardware description page title */
+"Hardware Description" = "Hardwarebeschrijving";
+
+/* details panel string - name of video card driver */
+"Hardware Driver" = "Hardwarebesturingsbestand";
+
+/* Header for number of hours row in the run/count table of the info sheet */
+"Hours Run" = "Uren gedraaid";
+
+/* Software update hardware description page intro line one. */
+"If you choose in %@ preferences to provide it, the following information is also sent." = "Als u in de voorkeuren van %@ kiest om dit op te geven, wordt ook de volgende informatie verzonden.";
+
+/* Software update hardware description page intro line two. */
+"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane." = "Geen probleem als u uw systeeminfo liever niet doorgeeft. Schakel deze optie gewoon uit in het voorkeurenpaneel.";
+
+/* Title for license type row in the info table. */
+"License Type" = "Licentietype";
+
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes
+   Title for the memory row in the info table. */
+
+
+"Memory" = "Geheugen";
+
+/* News webpage title */
+"News" = "Nieuws";
+
+/* button title */
+"OK" = "OK";
+
+/* framework name when building the full OmniSoftwareUpdate */
+"Omni Software Update" = "Omni Software Update";
+
+/* framework name when building the mini OmniSoftwareInfo framework */
+"Omni System Info" = "Omni-systeeminfo";
+
+/* Software update hardware description page intro line two. Note the <b> HTML tag around 'never'. */
+"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy." = "Omni maakt informatie over computerconfiguraties van afzonderlijke gebruikers <b>nooit</b> openbaar, maar publiceert alleen statistische informatie op basis van alle verzamelde configuraties. Wij respecteren uw privacy.";
+
+/* Title for framework version in info table, when using the full framework. */
+"OmniSoftwareUpdate version" = "OmniSoftwareUpdate-versie";
+
+/* Title for framework version in info table, when using the mini framework. */
+"OmniSystemInfo version" = "OmniSystemInfo-versie";
+
+/* Title for the OpenCL information row in the info table. */
+"OpenCL Information" = "OpenCL-informatie";
+
+/* details panel string - name of the OpenGL driver */
+"OpenGL Driver" = "OpenGL-besturingsbestand";
+
+/* details panel string */
+"OpenGL Extensions" = "OpenGL-extensies";
+
+/* Title for the OpenGL information row in the info table. */
+"OpenGL Information" = "OpenGL-informatie";
+
+/* details panel string */
+"OpenGL Renderer" = "OpenGL-renderer";
+
+/* details panel string */
+"OpenGL Vendor" = "OpenGL-leverancier";
+
+/* details panel string */
+"OpenGL Version" = "OpenGL-versie";
+
+/* Title for the OS version row in the info table. */
+"OS Version" = "OS-versie";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"P3 color space supported" = "P3-kleurruimte ondersteund";
+
+/* details panel string - PCI bus ID of video card */
+"PCI ID" = "PCI-ID";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Probeer het later opnieuw of neem contact op met ons om te laten weten dat dit beschadigd is.";
+
+/* Title for the preferred language row in the info table. */
+"Preferred Language" = "Voorkeurstaal";
+
+/* Section header for the application run/count table in the info table. */
+"Run Count and Times" = "Hoe vaak en hoe lang uitgevoerd";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"sRGB color space supported" = "sRGB-kleurruimte ondersteund";
+
+/* error reason */
+"The background software update service failed." = "De service voor software-updates op de achtergrond is mislukt.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "De gegevens die zijn geretourneerd van “%@” zijn geen geldig XML-document.";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "De update-informatie is niet ondertekend.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Er is een probleem opgetreden bij het controleren van de handtekening.";
+
+/* text of dialog box informing user of change in software update query */
+"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "Deze versie van %@ verzendt extra informatie via uw internetverbinding (indien actief) om te controleren op nieuwe en bijgewerkte versies van zichzelf.";
+
+/* error reason */
+"Timed out waiting for the software update service." = "Er is een time-out opgetreden voor de service voor software-updates.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "Het hulpprogramma heeft geen gegevens geretourneerd";
+
+/* details panel string - column header for OpenCL device type */
+"Type" = "Type";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "Reactie van de server voor software-updates kan niet worden gecontroleerd.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "Informatie over nieuwe softwareversie kan niet worden opgehaald.";
+
+/* error description */
+"Unable to parse response from the software update server." = "Reactie van de software-updateserver kan niet worden ontleed.";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "Eenheden";
+
+/* Title for application current update track in the info table. */
+"Update Track" = "Overzicht nieuwe versies";
+
+/* Title for the video cards row in the info table. */
+"Video Cards" = "Videokaarten";
+
+/* Title for application visible update tracks in the info table. */
+"Visible Update Tracks" = "Zichtbare overzichten nieuwe versies";
+
+/* Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime. */
+"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page." = "De statistische gegevens die we verzamelen maken we wel bekend, zodat andere ontwikkelaars hier ook van kunnen profiteren. U kunt de informatie die we vrijgeven, zien op de pagina LINK_PLACEHOLDER.";
+
+/* Format string for the information sent header when using the full framework. */
+"When you check for updates, the following information about your copy of %@ is always sent." = "Wanneer u controleert op updates, wordt de volgende informatie over uw kopie van %@ altijd verzonden.";
+
+/* Format string for the information sent header when using the mini framework. */
+"When you check for updates, the following information about your copy of %@ is sent." = "Wanneer u controleert op updates, wordt de volgende informatie over uw kopie van %@ verzonden.";
+
+/* Explanatory text for the license type row in the info table. */
+"Your license key itself will never be sent." = "Uw licentiecode wordt nooit verzonden.";

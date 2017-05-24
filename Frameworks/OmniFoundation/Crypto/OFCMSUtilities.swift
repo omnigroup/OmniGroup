@@ -29,6 +29,9 @@ protocol CMSRecipient {
     
     @objc optional
     var certificate : SecCertificate? { get };
+    
+    @objc
+    func debugDictionary() -> NSMutableDictionary;
 }
 
 /** A CMSRecipientIdentifier corresponds to the RecipientIndentifier datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
@@ -70,7 +73,7 @@ enum CMSRecipientIdentifier {
     /** Find matching certificates in the keyring */
     func findCertificates() throws -> [SecCertificate] {
         
-        let found = try self.keyringSearch(secClass: kSecClassCertificate);
+        let found = try self.keyringSearch(secClass: kSecClassCertificate, interactionAllowed: true);
         var results : [SecCertificate] = [];
         var ignored = 0;
         // Protecting against the utter bogosity of SecItemCopyMatching()
@@ -90,8 +93,8 @@ enum CMSRecipientIdentifier {
     }
     
     /** Find matching identities in the keyring */
-    func findIdentities() throws -> [Keypair] {
-        let found = try self.keyringSearch(secClass: kSecClassIdentity);
+    func findIdentities(allowInteraction: Bool = true) throws -> [Keypair] {
+        let found = try self.keyringSearch(secClass: kSecClassIdentity, interactionAllowed: allowInteraction);
         var results : [Keypair] = [];
         var ignored = 0;
         // Protecting against the utter bogosity of SecItemCopyMatching()
@@ -160,7 +163,7 @@ enum CMSRecipientIdentifier {
         // attrs[kSecAttrCertificateType as NSString] = CSSM_CERT_X_509v3;
     }
     
-    private func keyringSearch(secClass: CFString) throws -> [CFTypeRef] {
+    private func keyringSearch(secClass: CFString, interactionAllowed: Bool) throws -> [CFTypeRef] {
         let attrs = NSMutableDictionary();
 
         self.keyringSearchTerms(into: attrs);
@@ -168,7 +171,9 @@ enum CMSRecipientIdentifier {
         attrs[kSecMatchLimit as NSString] = kSecMatchLimitAll;
         attrs[kSecReturnRef as NSString] = kCFBooleanTrue;
         
-        // TODO: Set kSecUseAuthenticationUI = kSecUseAuthenticationUISkip if the authentication delegate's isUserInteractionAllowed returns false.
+        if !interactionAllowed {
+            attrs[kSecUseAuthenticationUI] = kSecUseAuthenticationUISkip;
+        }
         
         var found : AnyObject? = nil;
         let oserr = SecItemCopyMatching(attrs, &found);
@@ -187,6 +192,21 @@ enum CMSRecipientIdentifier {
     static func bestCertificate(_ certs: [SecCertificate]) -> SecCertificate? {
         // TODO: Actually choose best. (Prefer valid, ... what else?)
         return certs.last;
+    }
+    
+    func debugDictionary() -> NSMutableDictionary {
+        let debugDictionary = NSMutableDictionary();
+        
+        switch self {
+        case .issuerSerial(let issuer, let serial):
+            debugDictionary["issuer"] = issuer as NSData;
+            debugDictionary["serial"] = serial as NSData;
+            
+        case .keyIdentifier(let ski):
+            debugDictionary["SKI"] = ski as NSData;
+        }
+
+        return debugDictionary;
     }
 }
 
@@ -268,6 +288,21 @@ class CMSPasswordRecipient : CMSRecipient {
             return false;
         }
     }
+    
+    @objc public
+    func debugDictionary() -> NSMutableDictionary {
+        let debugDictionary = NSMutableDictionary();
+        
+        debugDictionary["type"] = "PWRI" as NSString;
+        if let pw = self.password as NSString? {
+            debugDictionary["password"] = pw;
+        }
+        if let kek_ = self.kek as NSData? {
+            debugDictionary["kek"] = kek_;
+        }
+        
+        return debugDictionary;
+    }
 }
 
 /// A KEK recipient (which we also call a pre-shared-key recipient) just contains an identifier for a key which the receiver of the message already has.
@@ -315,6 +350,21 @@ class CMSKEKRecipient : CMSRecipient {
             return false;
         }
         return true;
+    }
+    
+    @objc public
+    func debugDictionary() -> NSMutableDictionary {
+        let debugDictionary = NSMutableDictionary();
+        
+        debugDictionary["type"] = "KEK" as NSString;
+        if let keyId = self.keyIdentifier as NSData? {
+            debugDictionary["keyIdentifier"] = keyId;
+        }
+        if let kek_ = self.kek as NSData? {
+            debugDictionary["kek"] = kek_;
+        }
+        
+        return debugDictionary;
     }
 }
 
@@ -413,6 +463,16 @@ class CMSPKRecipient : CMSRecipient {
         get {
             return cert;
         }
+    }
+    
+    @objc public
+    func debugDictionary() -> NSMutableDictionary {
+        let debugDictionary = self.rid.debugDictionary();
+        
+        debugDictionary["type"] = "KTRI" as NSString;
+        debugDictionary["cert"] = ( self.cert == nil ? "NO" : "YES" );
+        
+        return debugDictionary;
     }
 }
 
@@ -579,8 +639,14 @@ class OFCMSUnwrapper {
         
         // Try public-key recipients
         if cek == nil {
+            let allowInteraction : Bool;
+            if let ks = keySource {
+                allowInteraction = ks.isUserInteractionAllowed();
+            } else {
+                allowInteraction = true;
+            }
             for (recip, wrappedKey) in allRecipients.pkRecipients {
-                var idents = try recip.rid.findIdentities();
+                var idents = try recip.rid.findIdentities(allowInteraction: allowInteraction);
                 
                 for kp in auxiliaryAsymmetricKeys {
                     if let cert_ = try? kp.certificate(), let cert = cert_ {
@@ -592,6 +658,7 @@ class OFCMSUnwrapper {
                 
                 for ident in idents {
                     do {
+                        // TODO: We need to pass `allowInteraction` into the underlying crypto operation, but the post-10.7 APIs no longer allow us to do that.
                         cek = try recip.unwrap(identity: ident, data: wrappedKey);
                         usedRecipient = recip;
                         break; // Success: unwrapped a key.
@@ -691,8 +758,10 @@ class OFCMSUnwrapper {
                 try discardSignature();
             case OFCMSContentType_contentWithAttributes:
                 try readAttributes();
+            case OFCMSContentType_compressedData:
+                try decompress();
             case OFCMSContentType_Unknown:
-                throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [NSLocalizedDescriptionKey: "Unimplemented content-type" /* TODO: Localize. */]);
+                throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object")]);
             default:
                 return;
             }
@@ -801,11 +870,15 @@ class OFCMSUnwrapper {
         }
         
         for certificate in certificateAccumulator {
-            embeddedCertificates.append(certificate as! Data);
+            let certificate = certificate as! NSData;
+            embeddedCertificates.append(certificate as Data);
         }
         
         if innerContentLocation.length != 0 {
             cms = OFASN1UnwrapOctetString(cms!, innerContentLocation);
+            if cms == nil {
+                throw NSError(domain: OFErrorDomain, code: OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Problem with SignedData.encapsulatedContent" ]);
+            }
             contentRange = NSRange(location: 0, length: cms!.count);
         } else {
             cms = nil;
@@ -834,6 +907,35 @@ class OFCMSUnwrapper {
         }
         
         return results;
+    }
+    
+    func decompress() throws {
+        
+        assert(contentType == OFCMSContentType_compressedData);
+        
+        var cmsVersion : Int32 = -1;
+        var innerType : OFCMSContentType = OFCMSContentType_Unknown;
+        var algorithm : OFASN1Algorithm = OFASN1Algorithm_Unknown;
+        var innerContentLocation = NSRange();
+
+        let rc = OFASN1ParseCMSCompressedData(cms!, contentRange, &cmsVersion, &algorithm, &innerType, &innerContentLocation);
+        if (rc != 0) {
+            throw OFNSErrorFromASN1Error(rc, "CompressedData");
+        }
+
+        // Check version number. See RFC3274 [1.1].
+        try checkVersion(cmsVersion, "CompressedData", min: 0, max: 0);
+
+        var error : NSError? = nil;
+        guard let expanded = OFCMSDecompressContent(cms!, innerContentLocation, algorithm, &error) else {
+            throw error!;
+        }
+        
+        let cms_ = OFNSDataFromDispatchData(expanded);
+        cms = cms_;
+        contentRange = NSRange(location: 0, length: cms_.count);
+        contentType = innerType;
+        fromContentInfo = false;
     }
     
     func readAttributes() throws {

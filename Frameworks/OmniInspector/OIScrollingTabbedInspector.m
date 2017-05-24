@@ -33,6 +33,7 @@ RCS_ID("$Id$")
 @property (strong, nonatomic) IBOutlet NSScrollView *inspectorScrollView;
 @property (strong, nonatomic) IBOutlet NSTextField *tabLabel;
 @property (strong, nonatomic) NSLayoutConstraint *topConstraint, *bottomConstraint, *scrollViewWidthConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *buttonMatrixWidthConstraint;
 @property (strong, nonatomic) NSLayoutConstraint *labelCenterConstraint;
 @property (nonatomic) NSTitlebarAccessoryViewController *titlebarAccessory;
 
@@ -597,7 +598,14 @@ RCS_ID("$Id$")
     [buttonMatrix renewRows:1 columns:tabIndex];
     [buttonMatrix sizeToCells];
     [buttonMatrix deselectAllCells];
-    
+
+    if (!self.buttonMatrixWidthConstraint) {
+        self.buttonMatrixWidthConstraint = [NSLayoutConstraint constraintWithItem:buttonMatrix attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:NSWidth(buttonMatrix.frame)];
+        [NSLayoutConstraint activateConstraints:@[self.buttonMatrixWidthConstraint]];
+    } else {
+        self.buttonMatrixWidthConstraint.constant = NSWidth(buttonMatrix.frame);
+    }
+
     while (tabIndex--) {
         OIInspectorTabController *tab = [_enabledTabControllers objectAtIndex:tabIndex];
         NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];

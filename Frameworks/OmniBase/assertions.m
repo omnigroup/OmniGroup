@@ -36,20 +36,6 @@ void OBLogAssertionFailure(const char *type, const char *expression, const char 
 
 static NSString * const OBEnableExpensiveAssertionsKey = @"OBEnableExpensiveAssertions";
 
-static void OBDefaultAssertionHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, const char *reason)
-{
-    OBLogAssertionFailure(type, expression, file, lineNumber, reason);
-}
-
-static OBAssertionFailureHandler currentAssertionHandler = OBDefaultAssertionHandler;
-void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler)
-{
-    if (handler)
-        currentAssertionHandler = handler;
-    else
-        currentAssertionHandler = OBDefaultAssertionHandler;
-}
-
 void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, NSString *fmt, ...)
 {
     NSString *reason;
@@ -63,14 +49,20 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
     }
     
     OBRecordBacktrace(expression, OBBacktraceBuffer_OBAssertionFailure);
-    currentAssertionHandler(type, expression, file, lineNumber, [reason UTF8String]);
-    OBAssertFailed();
+
+    const char *reasonCString = [reason UTF8String];
+    OBLogAssertionFailure(type, expression, file, lineNumber, reasonCString);
+    OBAssertFailed(reasonCString);
 }
 
-void OBAssertFailed(void)
+// The message is not logged here, but is used to check if there is a bug logged.
+void OBAssertFailed(const char *message)
 {
-    // This function is an intended target for breakpoints. To ensure it doesn't get optimized out (even with __attribute__((noinline))), put an asm statement here.
-    asm("");
+    // If the assertion message contains a bug link, allow continuing past it.
+    // If you can't immediately fix the problem, please log a bug with steps to hit the problem and associate it with your app.
+    if (message == NULL || strstr(message, "bug://") == NULL) {
+        OBTrap();
+    }
 }
 
 void _OBAssertNotImplemented(id self, const char *selName)
@@ -81,7 +73,7 @@ void _OBAssertNotImplemented(id self, const char *selName)
     if ([self respondsToSelector:sel]) {
         Class impClass = OBClassImplementingMethod([self class], sel);
         NSLog(@"%@ has implementation of %@", NSStringFromClass(impClass), NSStringFromSelector(sel));
-        OBAssertFailed();
+        OBAssertFailed("");
     }
 }
 

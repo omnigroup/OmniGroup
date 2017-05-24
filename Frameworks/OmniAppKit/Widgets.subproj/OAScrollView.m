@@ -407,7 +407,7 @@ static NSFont *smallSystemFont;
 	}
 
 	zoomFactor = 1.0f;
-	[scalePopUpButton selectItemWithTitle:@"100%"];
+	[scalePopUpButton selectItemWithTitle:OBUnlocalized(@"100%")];
         [scalePopUpButton setRefusesFirstResponder:YES];
 	[horizontalWidgetsBox addSubview:scalePopUpButton];
     } else {

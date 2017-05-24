@@ -220,7 +220,7 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
         }];
     }
 
-    configurationMenu = [[NSMenu alloc] initWithTitle: @"Configure Columns"];
+    configurationMenu = [[NSMenu alloc] initWithTitle: @""];
         
     // Add items for all the columns.  For columsn that aren't currently displayed, this will be where we store the pointer to the column.
     for (NSTableColumn *column in [self tableColumns])

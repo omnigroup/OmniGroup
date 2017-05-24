@@ -52,7 +52,7 @@ static inline Boolean _OFMightBeLZMACompressedData(const unsigned char *bytes, N
     return (length >= 22 && memcmp(bytes, lzma_magic, 6) == 0 && ((bytes[6] & 0xF0) == 0) && (bytes[7] == 0));
 }
 
-/*" Returns TRUE if the receiver looks like it might be compressed data that -decompressedData can handle.  Note that if this returns TRUE, it merely looks like the receiver is compressed, not that it is.  This is a simply intended to be a quick check to filter out obviously uncompressed data. "*/
+/*" Checks whether the receiver looks like it might be compressed data that -decompressedData can handle.  Note that if this returns non-None, it merely looks like the receiver is compressed, not that it is.  This is simply intended to be a quick check to filter out obviously uncompressed data or to distinguish between different compression container formats. "*/
 extern OFCompressionContainerFormat OFDataGuessCompressionContainer(CFDataRef data)
 {
     unsigned char header_buf[64];
@@ -545,11 +545,11 @@ static Boolean handleRFC1952MemberBody(OFDataBuffer *outputDataBuffer,
     }
     if (withTrailer && !compressing) {
         u_int32_t storedCRC, storedLength;
-        const u_int8_t *trailerStart;
+        u_int8_t trailer[8];
+        CFDataGetBytes(data, (CFRange){ .location = NSMaxRange(sourceRange) - 8, .length = 8 }, trailer);
         
-        trailerStart = CFDataGetBytePtr(data) + sourceRange.location + sourceRange.length - 8;
-        storedCRC = OSReadLittleInt32(trailerStart, 0);
-        storedLength = OSReadLittleInt32(trailerStart, 4);
+        storedCRC = OSReadLittleInt32(trailer, 0);
+        storedLength = OSReadLittleInt32(trailer, 4);
         
         if (dataCRC != storedCRC) {
             OFZlibError(compressing, [NSString stringWithFormat:@"CRC error: stored CRC (%08X) does not match computed CRC (%08lX)", storedCRC, dataCRC], 0, NULL, outError);
@@ -583,30 +583,40 @@ CFDataRef OFDataCreateCompressedGzipData(CFDataRef data, Boolean includeHeader, 
     return result;
 }
 
-CFDataRef OFDataCreateDecompressedGzip2Data(CFAllocatorRef decompressedDataAllocator, CFDataRef data, CFErrorRef *outError)
+CFDataRef OFDataCreateDecompressedGzipData(CFAllocatorRef decompressedDataAllocator, CFDataRef data, Boolean expectHeader, CFErrorRef *outError)
 {
-    FILE *readMe = OFDataCreateReadOnlyStandardIOFile(data, outError);
-    if (!readMe)
-        return NULL;
-
-    Boolean ok = checkRFC1952MemberHeader(readMe, NULL, NULL, NULL);
-    size_t headerLength = ftell(readMe);
-    fclose(readMe);
-    if (!ok) {
-        OFZlibError(FALSE/*compressing*/, NSLocalizedStringFromTableInBundle(@"Unable to decompress gzip data: invalid header", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format"), 0, NULL, outError);
-        return NULL;
-    }
+    size_t headerLength;
     
-    // While it is conceivable that some crazy person would put valid pointers into a data, compress it and then decompress it later, expecting those pointers to be valid, we don't want to acknowledge such insanity.  So, when garbage collection is on, we ensure that the bytes of the data are in a non-scanned zone.
+    if (expectHeader) {
+        FILE *readMe = OFDataCreateReadOnlyStandardIOFile(data, outError);
+        if (!readMe)
+            return NULL;
+        
+        Boolean ok = checkRFC1952MemberHeader(readMe, NULL, NULL, NULL);
+        headerLength = ftell(readMe);
+        fclose(readMe);
+        if (!ok) {
+            OFZlibError(FALSE/*compressing*/, NSLocalizedStringFromTableInBundle(@"Unable to decompress gzip data: invalid header", @"OmniFoundation", OMNI_BUNDLE, @"decompression exception format"), 0, NULL, outError);
+            return NULL;
+        }
+    } else {
+        headerLength = 0;
+    }
     
     OFDataBuffer writeDataBuffer;
     OFDataBufferInit(&writeDataBuffer);
-
+    Boolean ok;
+    
     ok = handleRFC1952MemberBody(&writeDataBuffer, data,
                                  (NSRange){ headerLength, CFDataGetLength(data) - headerLength },
-                                 Z_DEFAULT_COMPRESSION, TRUE, FALSE, outError);
+                                 Z_DEFAULT_COMPRESSION, expectHeader, FALSE, outError);
     
     CFDataRef result = NULL;
     OFDataBufferRelease(&writeDataBuffer, decompressedDataAllocator, ok ? &result : NULL);
     return result;
+}
+
+CFDataRef OFDataCreateDecompressedGzip2Data(CFAllocatorRef decompressedDataAllocator, CFDataRef data, CFErrorRef *outError)
+{
+    return OFDataCreateDecompressedGzipData(decompressedDataAllocator, data, TRUE, outError);
 }

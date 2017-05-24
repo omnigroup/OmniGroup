@@ -214,7 +214,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     NSString *name = [[[_request URL] path] lastPathComponent];
     [self setStatus:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Downloading %@ \\U2026", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - text is filename of update package being downloaded"), name]];
     
-    [self.installViewCautionText setStringValue:@"---"];
+    [self.installViewCautionText setStringValue:OBUnlocalized(@"---")];
     [self _setDisplayedView:self.downloadProgressView];
     [self.window layoutIfNeeded];
     

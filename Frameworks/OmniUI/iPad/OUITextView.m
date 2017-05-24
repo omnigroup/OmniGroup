@@ -895,9 +895,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     [super setSelectedTextRange:selectedTextRange];
     [[NSNotificationCenter defaultCenter] postNotificationName:OUITextViewInsertionPointDidChangeNotification object:self];
     
-    // JCTODO: Inspector Refactor
-    OBFinishPorting;
-//    [_textInspector dismissAnimated:YES];
+    [_textInspector.viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - UIResponder subclass

@@ -1,0 +1,216 @@
+/* Header for number of crashes row in the run/count table of the info sheet */
+"# of Crashes" = "Число сбоев:";
+
+/* Header for number of launches row in the run/count table of the info sheet */
+"# of Launches" = "Число запусков:";
+
+/* Software update hardware description page intro line one. */
+"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support." = "%@ может при необходимости отправлять нам базовые сведения о конфигурации системы. Мы используем эти данные для сбора статистики о том, какие системы используются нашими покупателями и, следовательно, являются приоритетными для поддержки.";
+
+/* Explanatory text for the UUID in the info table. */
+"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information." = "Сгенерированная случайным образом строка, позволяющая анонимно идентифицировать компьютер. Это значение также используется для обновления нашей базы данных при изменении конфигурации вашего компьютера. Это значение никак не связано с вашим именем или другими персональными данными.";
+
+/* Header for all versions section in the run/count table of the info sheet */
+"All Versions" = "Все версии";
+
+/* Title for application identifier in the info table. */
+"Application ID" = "Идентификатор программы";
+
+/* details panel string - header for application feature usage table */
+"Application Usage" = "Использование программы";
+
+/* Title for application version in the info table. */
+"Application Version" = "Версия программы";
+
+/* Title for the bus speed row in the info table. */
+"Bus Speed" = "Частота шины";
+
+/* News error header */
+"Cannot connect to News" = "Не удается подключиться к новостям";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Сбой операции проверки.";
+
+/* Title for the computer model row in the info table. */
+"Computer Model" = "Модель компьютера";
+
+/* Title for the CPU count row in the info table. */
+"CPU Count" = "Число процессоров";
+
+/* Title for the CPU speed row in the info table. */
+"CPU Speed" = "Частота процессора";
+
+/* Title for the CPU type row in the info table. */
+"CPU Type" = "Тип процессора";
+
+/* Header for current version section in the run/count table of the info sheet */
+"Current Version" = "Текущая версия";
+
+/* Title for the display settings row in the info table. */
+"Display Settings" = "Параметры монитора";
+
+/* details panel string - version of video card driver */
+"Driver Version" = "Версия драйвера";
+
+/* error description */
+"Error fetching software update information." = "Ошибка получения данных об обновлении ПО.";
+
+/* error description */
+"Error while checking for updated version." = "Ошибка при проверке наличия обновленной версии.";
+
+/* error reason */
+"Exception raised: %@" = "Произошло исключение: %@";
+
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "Расширения";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "Расширения";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "Частота";
+
+/* system preferences hardware description page title */
+"Hardware Description" = "Описание оборудования";
+
+/* details panel string - name of video card driver */
+"Hardware Driver" = "Драйвер оборудования";
+
+/* Header for number of hours row in the run/count table of the info sheet */
+"Hours Run" = "Часы работы";
+
+/* Software update hardware description page intro line one. */
+"If you choose in %@ preferences to provide it, the following information is also sent." = "Если в настройках %@ выбран вариант отправки данных, также отправляется следующая информация.";
+
+/* Software update hardware description page intro line two. */
+"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane." = "Если вы не хотите отправлять данные о системе, просто снимите этот флажок на панели настроек.";
+
+/* Title for license type row in the info table. */
+"License Type" = "Тип лицензии";
+
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes
+   Title for the memory row in the info table. */
+
+
+"Memory" = "Объем памяти";
+
+/* News webpage title */
+"News" = "Новости";
+
+/* button title */
+"OK" = "OK";
+
+/* framework name when building the full OmniSoftwareUpdate */
+"Omni Software Update" = "Обновление ПО Omni";
+
+/* framework name when building the mini OmniSoftwareInfo framework */
+"Omni System Info" = "Данные Omni о системе";
+
+/* Software update hardware description page intro line two. Note the <b> HTML tag around 'never'. */
+"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy." = "Компания Omni <b>никогда</b> не использует данные о конфигурации отдельных компьютеров. Мы используем только обобщенные статистические данные о всех конфигурациях. Мы с уважением относимся к вашим личным данным.";
+
+/* Title for framework version in info table, when using the full framework. */
+"OmniSoftwareUpdate version" = "Версия компонента OmniSoftwareUpdate";
+
+/* Title for framework version in info table, when using the mini framework. */
+"OmniSystemInfo version" = "Версия OmniSystemInfo";
+
+/* Title for the OpenCL information row in the info table. */
+"OpenCL Information" = "Данные OpenCL";
+
+/* details panel string - name of the OpenGL driver */
+"OpenGL Driver" = "Драйвер OpenGL";
+
+/* details panel string */
+"OpenGL Extensions" = "Расширения OpenGL";
+
+/* Title for the OpenGL information row in the info table. */
+"OpenGL Information" = "Данные OpenGL";
+
+/* details panel string */
+"OpenGL Renderer" = "Рендерер OpenGL";
+
+/* details panel string */
+"OpenGL Vendor" = "Поставщик OpenGL";
+
+/* details panel string */
+"OpenGL Version" = "Версия OpenGL";
+
+/* Title for the OS version row in the info table. */
+"OS Version" = "Версия операционной системы";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"P3 color space supported" = "Поддерживается цветовое пространство P3";
+
+/* details panel string - PCI bus ID of video card */
+"PCI ID" = "PCI ID";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Повторите попытку позже или свяжитесь с нами, чтобы сообщить о проблеме.";
+
+/* Title for the preferred language row in the info table. */
+"Preferred Language" = "Выбранный язык";
+
+/* Section header for the application run/count table in the info table. */
+"Run Count and Times" = "Число запусков и время использования";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"sRGB color space supported" = "Поддерживается цветовое пространство sRGB";
+
+/* error reason */
+"The background software update service failed." = "Сбой службы фонового обновления ПО.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "Полученные из <%@> данные не являются допустимым документом XML.";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "Данные обновления не подписаны.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Возникла проблема при проверке подписи.";
+
+/* text of dialog box informing user of change in software update query */
+"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "Эта версия программы %@ при наличии активного подключения к Интернету может автоматически проверять наличие новых или обновленных версий, отправляя дополнительные данные.";
+
+/* error reason */
+"Timed out waiting for the software update service." = "Истекло время ожидания службы обновления ПО.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "Средство не вернуло данные";
+
+/* details panel string - column header for OpenCL device type */
+"Type" = "Тип";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "Не удается выполнить проверку подлинности запроса от сервера обновления ПО.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "Не удается собрать данные об обновлении ПО.";
+
+/* error description */
+"Unable to parse response from the software update server." = "Не удается проанализировать ответ от сервера обновления ПО.";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "Единицы";
+
+/* Title for application current update track in the info table. */
+"Update Track" = "История обновлений";
+
+/* Title for the video cards row in the info table. */
+"Video Cards" = "Данные о видеокартах";
+
+/* Title for application visible update tracks in the info table. */
+"Visible Update Tracks" = "Видимая история обновлений";
+
+/* Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime. */
+"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page." = "Собранные нами статистические данные общедоступны, чтобы их могли использовать другие разработчики. Раскрываемые нами данные см. на странице LINK_PLACEHOLDER.";
+
+/* Format string for the information sent header when using the full framework. */
+"When you check for updates, the following information about your copy of %@ is always sent." = "При проверке наличия обновлений всегда передаются следующие данные о вашей копии %@.";
+
+/* Format string for the information sent header when using the mini framework. */
+"When you check for updates, the following information about your copy of %@ is sent." = "При проверке наличия обновлений передаются следующие данные о вашей копии %@.";
+
+/* Explanatory text for the license type row in the info table. */
+"Your license key itself will never be sent." = "Сам ключ лицензии никогда не отправляется.";

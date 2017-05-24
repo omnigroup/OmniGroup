@@ -19,6 +19,7 @@
 #import <OmniAppKit/OAFindPattern.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniAppKit/OAParagraphStyle.h>
+#import <OmniAppKit/OAStrings.h>
 #import <OmniAppKit/OATextAttachment.h>
 #import <OmniAppKit/OATextAttachmentCell.h>
 #import <OmniAppKit/OATextAttributes.h>

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,10 +79,8 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
 
 #if defined(OMNI_ASSERTIONS_ON)
     
-    extern void OBSetAssertionFailureHandler(OBAssertionFailureHandler handler);
-
     extern void OBInvokeAssertionFailureHandler(const char *type, const char *expression, const char *file, unsigned int lineNumber, NSString *fmt, ...) NS_FORMAT_FUNCTION(5,6) CLANG_ANALYZER_NORETURN;
-    extern void OBAssertFailed(void) __attribute__((noinline)); // This is a convenience breakpoint for in the debugger.
+    extern void OBAssertFailed(const char *message);
     
     extern BOOL OBEnableExpensiveAssertions;
     

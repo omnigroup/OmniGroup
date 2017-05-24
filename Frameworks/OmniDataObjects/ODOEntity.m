@@ -254,16 +254,13 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     // primaryKey == nil means that the object should make a new primary key
     
     ODOEntity *entity = [self entityForName:entityName inEditingContext:context];
-    if (!entity) {
+    if (entity == nil) {
         OBASSERT_NOT_REACHED("Bad entity name passed in?");
         return nil;
     }
     
-    ODOObject *object = [[[entity instanceClass] alloc] initWithEditingContext:context entity:entity primaryKey:primaryKey];
-    [context insertObject:object]; // retains it
-    [object release];
-    
-    return object;
+    ODOObject *object = [[[entity instanceClass] alloc] initWithEntity:entity primaryKey:primaryKey insertingIntoEditingContext:context];
+    return [object autorelease];
 }
 
 + (id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;

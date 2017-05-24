@@ -1,0 +1,216 @@
+/* Header for number of crashes row in the run/count table of the info sheet */
+"# of Crashes" = "崩溃数";
+
+/* Header for number of launches row in the run/count table of the info sheet */
+"# of Launches" = "开启数";
+
+/* Software update hardware description page intro line one. */
+"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support." = "可以选择让 %@ 向我们发送一些关于您的系统配置的基本信息。我们可以通过此数据来确定客户所使用的系统，并因此确定最重要的是支持哪些系统。";
+
+/* Explanatory text for the UUID in the info table. */
+"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information." = "一种通过匿名方式标识您电脑的随机字符串。这样，当您的系统配置更改时，我们可以对数据库进行更新。这与您的姓名或其他任何个人信息无关。";
+
+/* Header for all versions section in the run/count table of the info sheet */
+"All Versions" = "所有版本";
+
+/* Title for application identifier in the info table. */
+"Application ID" = "应用程序 ID";
+
+/* details panel string - header for application feature usage table */
+"Application Usage" = "应用程序使用情况";
+
+/* Title for application version in the info table. */
+"Application Version" = "应用程序版本";
+
+/* Title for the bus speed row in the info table. */
+"Bus Speed" = "总线速度";
+
+/* News error header */
+"Cannot connect to News" = "无法连接到新闻";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "检查操作失败。";
+
+/* Title for the computer model row in the info table. */
+"Computer Model" = "电脑型号";
+
+/* Title for the CPU count row in the info table. */
+"CPU Count" = "CPU 计数";
+
+/* Title for the CPU speed row in the info table. */
+"CPU Speed" = "CPU 速度";
+
+/* Title for the CPU type row in the info table. */
+"CPU Type" = "CPU 类型";
+
+/* Header for current version section in the run/count table of the info sheet */
+"Current Version" = "当前版本";
+
+/* Title for the display settings row in the info table. */
+"Display Settings" = "显示器设置";
+
+/* details panel string - version of video card driver */
+"Driver Version" = "驱动程序版本";
+
+/* error description */
+"Error fetching software update information." = "获取软件更新信息时出错。";
+
+/* error description */
+"Error while checking for updated version." = "检查更新版本时出错。";
+
+/* error reason */
+"Exception raised: %@" = "出现异常 : %@";
+
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "扩展名";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "扩展名";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "频率";
+
+/* system preferences hardware description page title */
+"Hardware Description" = "硬件描述";
+
+/* details panel string - name of video card driver */
+"Hardware Driver" = "硬件驱动程序";
+
+/* Header for number of hours row in the run/count table of the info sheet */
+"Hours Run" = "运行的小时数";
+
+/* Software update hardware description page intro line one. */
+"If you choose in %@ preferences to provide it, the following information is also sent." = "如果在 %@ 首选项设置中选择提供它，则还会发送以下信息。";
+
+/* Software update hardware description page intro line two. */
+"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane." = "如果不想提交系统信息也没有问题，只需在首选项窗格中禁用该选项即可。";
+
+/* Title for license type row in the info table. */
+"License Type" = "许可证类型";
+
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes
+   Title for the memory row in the info table. */
+
+
+"Memory" = "内存";
+
+/* News webpage title */
+"News" = "新闻";
+
+/* button title */
+"OK" = "确定";
+
+/* framework name when building the full OmniSoftwareUpdate */
+"Omni Software Update" = "Omni 软件更新";
+
+/* framework name when building the mini OmniSoftwareInfo framework */
+"Omni System Info" = "Omni 系统信息";
+
+/* Software update hardware description page intro line two. Note the <b> HTML tag around 'never'. */
+"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy." = "Omni <b>从不</b>发布有关个人电脑配置的信息，而只发布关于所有已收集配置的统计信息。我们真诚地尊重您的隐私权。";
+
+/* Title for framework version in info table, when using the full framework. */
+"OmniSoftwareUpdate version" = "OmniSoftwareUpdate 版本";
+
+/* Title for framework version in info table, when using the mini framework. */
+"OmniSystemInfo version" = "OmniSystemInfo 版本";
+
+/* Title for the OpenCL information row in the info table. */
+"OpenCL Information" = "OpenCL 信息";
+
+/* details panel string - name of the OpenGL driver */
+"OpenGL Driver" = "OpenGL 驱动程序";
+
+/* details panel string */
+"OpenGL Extensions" = "OpenGL 功能扩展";
+
+/* Title for the OpenGL information row in the info table. */
+"OpenGL Information" = "OpenGL 信息";
+
+/* details panel string */
+"OpenGL Renderer" = "OpenGL 渲染器";
+
+/* details panel string */
+"OpenGL Vendor" = "OpenGL 供应商";
+
+/* details panel string */
+"OpenGL Version" = "OpenGL 版本";
+
+/* Title for the OS version row in the info table. */
+"OS Version" = "OS 版本";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"P3 color space supported" = "支持 P3 色彩空间";
+
+/* details panel string - PCI bus ID of video card */
+"PCI ID" = "PCI ID";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "请稍后重试，或联系我们，告知此已损坏。";
+
+/* Title for the preferred language row in the info table. */
+"Preferred Language" = "首选语言";
+
+/* Section header for the application run/count table in the info table. */
+"Run Count and Times" = "运行计数和时间";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"sRGB color space supported" = "支持 sRGB 色彩空间";
+
+/* error reason */
+"The background software update service failed." = "后台软件更新服务失败。";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "“%@”返回的数据不是有效的 XML 文稿。";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "更新信息未得到签名。";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "检查签名时出现问题。";
+
+/* text of dialog box informing user of change in software update query */
+"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "此版本 %@ 可通过 Internet 连接（活动状态下）发送其他信息以自动检查其新版本和更新版本。";
+
+/* error reason */
+"Timed out waiting for the software update service." = "等待软件更新服务超时。";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "工具没有返回任何数据";
+
+/* details panel string - column header for OpenCL device type */
+"Type" = "类型";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "无法鉴定软件更新服务器发出的响应。";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "无法取回软件更新信息。";
+
+/* error description */
+"Unable to parse response from the software update server." = "无法解析软件更新服务器的响应。";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "单元";
+
+/* Title for application current update track in the info table. */
+"Update Track" = "更新记录";
+
+/* Title for the video cards row in the info table. */
+"Video Cards" = "显卡";
+
+/* Title for application visible update tracks in the info table. */
+"Visible Update Tracks" = "可见更新记录";
+
+/* Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime. */
+"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page." = "我们根据所收集的公共信息做出统计，以便其他开发商也可以从这些知识受益。您可以在 LINK_PLACEHOLDER 页面上看到我们发布的信息。";
+
+/* Format string for the information sent header when using the full framework. */
+"When you check for updates, the following information about your copy of %@ is always sent." = "当您检查更新时，始终会发送关于您的 %@ 副本的下列信息。";
+
+/* Format string for the information sent header when using the mini framework. */
+"When you check for updates, the following information about your copy of %@ is sent." = "当您检查更新时，会发送关于您的 %@ 副本的下列信息。";
+
+/* Explanatory text for the license type row in the info table. */
+"Your license key itself will never be sent." = "绝对不会发送您的许可证密钥本身。";

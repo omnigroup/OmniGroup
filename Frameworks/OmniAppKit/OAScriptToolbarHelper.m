@@ -17,6 +17,7 @@
 #import <OmniAppKit/NSFileManager-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
 #import <OmniAppKit/OAToolbarItem.h>
+#import <OmniAppKit/OAStrings.h>
 
 RCS_ID("$Id$")
 
@@ -363,12 +364,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     
     NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The Automator Workflow \"%@\" could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow loading error"), scriptName];
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Automator reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow error message"), errorText];
-    NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
-    
+
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
-    [alert addButtonWithTitle:OKButtonTitle];
+    [alert addButtonWithTitle:OAOK()];
     [alert beginSheetModalForWindow:[windowController window] completionHandler:nil];
 }
 
@@ -379,7 +379,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     
     NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The Automator Workflow \"%@\" could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow execute error"), scriptName];
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Automator reported the following error:\n\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow execute error message"), errorText];
-    NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
+    NSString *OKButtonTitle = OAOK();
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Workflow", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automatork workflow error panel button");
     
     NSAlert *alert = [[NSAlert alloc] init];
@@ -402,12 +402,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
     NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script file \"%@\" could not be opened.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error"), scriptName];
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), errorText];
-    NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
-    
+
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
-    [alert addButtonWithTitle:OKButtonTitle];
+    [alert addButtonWithTitle:OAOK()];
     [alert beginSheetModalForWindow:[windowController window] completionHandler:nil];
 }
 
@@ -418,13 +417,12 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
     NSString *messageText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The script \"%@\" could not complete.", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error"), scriptName];
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script execute error message"), errorText];
-    NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
-    [alert addButtonWithTitle:OKButtonTitle];
+    [alert addButtonWithTitle:OAOK()];
     [alert addButtonWithTitle:editButtonTitle];
 
     [alert beginSheetModalForWindow:[windowController window] completionHandler:^(NSModalResponse returnCode) {

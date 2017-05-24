@@ -120,7 +120,7 @@ NSData *OFDeriveKEKForCMSPWRI(NSData *password, NSData *encodedAlgInfo, NSError 
     asn1err = OFASN1ParsePBKDF2Parameters(encodedAlgInfo, derivationParameters, &salt, &iterations, &keyLength, &prf);
     if (asn1err) {
         if (outError) {
-            *outError = OFNSErrorFromASN1Error(asn1err, @"parameters");
+            *outError = OFNSErrorFromASN1Error(asn1err, @"PBKDF2 parameters");
         }
         return nil;
     }

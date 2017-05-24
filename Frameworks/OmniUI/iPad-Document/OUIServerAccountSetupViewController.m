@@ -410,7 +410,7 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
         case ServerAccountAddressSection:
             contents.label = localizedLocationLabelString;
             contents.value = self.location;
-            contents.valueField.placeholder = @"https://example.com/account/";
+            contents.valueField.placeholder = OBUnlocalized(@"https://example.com/account/");
             contents.valueField.keyboardType = UIKeyboardTypeURL;
             contents.valueField.secureTextEntry = NO;
             contents.minimumLabelWidth = minWidth;

@@ -15,6 +15,8 @@
 #import <OmniFoundation/OFAEADCryptor.h>
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFASN1-Internal.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
+#import <OmniFoundation/CFData-OFCompression.h>
 #import "OFCMS-Internal.h"
 #import "GeneratedOIDs.h"
 #include <zlib.h>
@@ -32,11 +34,14 @@ static dispatch_data_t cmsDecryptContentGCM(NSData *cek, NSData *nonce, int tagS
 static enum OFASN1ErrorCodes parseSequenceTagExactly(NSData *buf, NSRange range, BOOL requireDER, struct parsedTag *into);
 static enum OFASN1ErrorCodes parseCMSContentInfo(NSData *buf, NSUInteger berEnd, struct parsedTag tag, enum OFCMSContentType *innerContentType, NSRange *innerContentRange);
 static enum OFASN1ErrorCodes parseCMSEncryptedContentInfo(NSData *buf, const struct parsedTag *v, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent);
+static enum OFASN1ErrorCodes parseSignerInfo(NSData *signerInfo, int *cmsVersion, NSData **outSid, NSData **outDigestAlg, NSData **outSignature);
 static enum OFASN1ErrorCodes extractMembersAsDER(NSData *buf, struct parsedTag obj, NSMutableArray *into);
-static enum OFASN1ErrorCodes enumerateMembersAsBERRanges(NSData *, struct parsedTag, enum OFASN1ErrorCodes (^cb)(NSData *, struct parsedTag, NSRange));
 static NSData *OFCMSCreateMAC(NSData *hmacKey, NSData *content, NSData *contentType, NSArray<NSData *> *authenticatedAttributes, NSData **outAttrElement);
 static BOOL typeRequiresOctetStringWrapper(enum OFCMSContentType ct);
 static const uint8_t *rawCMSOIDFromContentType(enum OFCMSContentType ct);
+static dispatch_data_t dispatch_of_NSData(NSData *buf) __attribute__((unused));
+
+#define SUBDATA_OF_TAGS(der, tags, startIndex, count) [(der) subdataWithRange:(NSRange){ .location = tags[startIndex].startPosition, .length = NSMaxRange(tags[(startIndex)+(count)-1].i.content) - tags[startIndex].startPosition }]
 
 #pragma mark EnvelopedData
 
@@ -537,6 +542,110 @@ int OFASN1ParseCMSSignedData(NSData *pkcs7, NSRange range, int *cmsVersion, NSMu
     return OFASN1Success;
 }
 
+dispatch_data_t OFCMSCreateSignedData(NSData *innerContentType, NSData *content, NSArray *certificates, NSArray *signatures)
+{
+    unsigned cmsVersion = 1;
+    
+    /* Content types other than id-data require version 3 (or higher) */
+    if (innerContentType.length != der_ct_data_len ||
+        ![innerContentType isEqualToData:[NSData dataWithBytesNoCopy:(void *)der_ct_data length:der_ct_data_len freeWhenDone:NO]])
+        cmsVersion = 3;
+
+    NSMutableArray *digestIdentifiers = [NSMutableArray array];
+
+    // Run through the signatures; MAX our version with theirs. (RFC5652 5.1)
+    // At the same time, populate the digestIdentifiers hint field.
+    for (NSData *signerInfo in signatures) {
+        int signerInfoSyntaxVersion = 0;
+        NSData *digestAlg = 0;
+        if (parseSignerInfo(signerInfo, &signerInfoSyntaxVersion, NULL, &digestAlg, NULL) == 0) {
+            if (signerInfoSyntaxVersion > 0 && (unsigned)signerInfoSyntaxVersion > cmsVersion)
+                cmsVersion = signerInfoSyntaxVersion;
+            [digestIdentifiers addObjectIfAbsent:digestAlg];
+        }
+    }
+    
+    NSMutableData *digestAlgSet = [NSMutableData data];
+    OFASN1AppendSet(digestAlgSet, FLAG_CONSTRUCTED | BER_TAG_SET, digestIdentifiers);
+    
+    NSMutableData *suffix = [NSMutableData data];
+    if (certificates.count) {
+        OFASN1AppendSet(suffix, FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC | 0, certificates);
+    }
+    OFASN1AppendSet(suffix, FLAG_CONSTRUCTED | BER_TAG_SET, signatures);
+
+    /* We're creating this sequence (see RFC5652 [5.1] and [5.2]):
+     
+     SignedData ::= SEQUENCE {
+         version CMSVersion,
+         digestAlgorithms DigestAlgorithmIdentifiers,
+         encapContentInfo EncapsulatedContentInfo = SEQUENCE {
+             eContentType ContentType,
+             eContent [0] EXPLICIT OCTET STRING OPTIONAL
+         }
+         certificates [0] IMPLICIT CertificateSet OPTIONAL,
+         -- Omitted: crls [1] IMPLICIT RevocationInfoChoices OPTIONAL,
+         signerInfos SignerInfos
+     }
+     
+     "suffix" already contains both the certificates and signerInfos fields.
+    */
+    
+    dispatch_data_t result;
+    if (content) {
+        result = OFASN1MakeStructure("(ud(d!([d]))d)", cmsVersion, digestAlgSet, innerContentType, CLASS_CONTEXT_SPECIFIC | FLAG_CONSTRUCTED | 0, content, suffix);
+    } else {
+        result = OFASN1MakeStructure("(ud(d)d)", cmsVersion, digestAlgSet, innerContentType, suffix);
+    }
+
+    return result;
+}
+
+static enum OFASN1ErrorCodes parseSignerInfo(NSData *signerInfo, int *cmsVersion, NSData **outSid, NSData **outDigestAlg, NSData **outSignature)
+{
+    /* Per RFC5652 [5.3] (SignedData struct) */
+    static const struct scanItem signatureItems[7] = {
+        { FLAG_PRIMITIVE, BER_TAG_INTEGER },         /* version CMSVersion */
+        { FLAG_CONSTRUCTED | FLAG_ANY_OBJECT, 0 },   /* sid SignerIdentifier := CHOICE { ... } */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE },      /* DigestAlgorithmIdentifier SEQUENCE */
+        { FLAG_OPTIONAL | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC, 0 }, /* signedAttrs [0] IMPLICIT SignedAttributes OPTIONAL */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE },      /* signatureAlgorithm SEQUENCE */
+        { FLAG_CONSTRUCTED, BER_TAG_OCTET_STRING },  /* signature SignatureValue */
+        { FLAG_OPTIONAL | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC, 1 }, /* unsignedAttrs [1] IMPLICIT UnsignedAttributes OPTIONAL */
+    };
+    struct parsedItem signatureValues[7];
+    
+    enum OFASN1ErrorCodes rc;
+    struct parsedTag outerTag;
+    rc = parseSequenceTagExactly(signerInfo, (NSRange){0, signerInfo.length}, NO, &outerTag);
+    if (rc)
+        return rc;
+    
+    rc = OFASN1ParseItemsInObject(signerInfo, outerTag, NO, signatureItems, signatureValues);
+    if (rc)
+        return rc;
+    
+    if (cmsVersion) {
+        rc = OFASN1UnDERSmallInteger(signerInfo, &(signatureValues[0].i), cmsVersion);
+        if (rc)
+            return rc;
+    }
+    
+    if (outSid) {
+        *outSid = SUBDATA_OF_TAGS(signerInfo, signatureValues, 1, 1);
+    }
+    
+    if (outDigestAlg) {
+        *outDigestAlg = SUBDATA_OF_TAGS(signerInfo, signatureValues, 2, 1);
+    }
+    
+    if (outSignature) {
+        *outSignature = SUBDATA_OF_TAGS(signerInfo, signatureValues, 3, 4);
+    }
+    
+    return OFASN1Success;
+}
+
 #pragma mark Multipart Data
 
 int OFASN1ParseCMSMultipartData(NSData *pkcs7, NSRange range, int (^cb)(enum OFCMSContentType innerContentType, NSRange innerContentRange))
@@ -552,7 +661,7 @@ int OFASN1ParseCMSMultipartData(NSData *pkcs7, NSRange range, int (^cb)(enum OFC
         outerTag.tag != BER_TAG_SEQUENCE)
         return OFASN1UnexpectedType;
     
-    rc0 = enumerateMembersAsBERRanges(pkcs7, outerTag, ^(NSData *buf, struct parsedTag item, NSRange berRange) {
+    rc0 = OFASN1EnumerateMembersAsBERRanges(pkcs7, outerTag, ^(NSData *buf, struct parsedTag item, NSRange berRange) {
         /* Each embedded ContentInfo is, likewise, a SEQUENCE (see OFASN1ParseCMSContent() for what we're doing here) */
         if (item.classAndConstructed != (FLAG_CONSTRUCTED|CLASS_UNIVERSAL) ||
             item.tag != BER_TAG_SEQUENCE)
@@ -654,6 +763,101 @@ dispatch_data_t OFCMSWrapIdentifiedContent(enum OFCMSContentType ct, NSData *con
                                der_attr_contentIdentifier, cid);
 }
 
+#pragma mark Compressed Data
+
+dispatch_data_t OFCMSCreateCompressedData(NSData *ctype, NSData *content, NSError **outError)
+{
+    NSData *buf;
+#if HAVE_OF_DATA_TRANSFORM
+    dispatch_data_t __block buf = dispatch_data_empty;
+    OFDataTransform *xform = [[OFLibSystemCompressionTransform alloc] initWithAlgorithm:COMPRESSION_ZLIB operation:COMPRESSION_STREAM_ENCODE];
+    buf = [xform transformData:content options:OFDataTransformOptionChunked error:outError];
+    if (!buf)
+        return nil;
+#else
+    CFErrorRef cfError = NULL;
+    buf = (__bridge_transfer NSData *)OFDataCreateCompressedGzipData((__bridge CFDataRef)content, FALSE, 9, &cfError);
+    if (!buf) {
+        OB_CFERROR_TO_NS(outError, cfError);
+        return nil;
+    }
+#endif
+    
+    /* See RFC3274 [1.1] and RFC5652 [5.2] */
+    return OFASN1MakeStructure("(u(+)(d!([d])))",
+                               0u, /* CMSVersion */
+                               der_alg_zlibCompress,
+                               ctype,
+                               0 /* EXPLICIT TAG */ | CLASS_CONTEXT_SPECIFIC | FLAG_CONSTRUCTED,
+                               buf);
+}
+
+int OFASN1ParseCMSCompressedData(NSData *pkcs7, NSRange range, int *outSyntaxVersion, enum OFASN1Algorithm *outCompressionAlgorithm, enum OFCMSContentType *outContentType, NSRange *outContentRange)
+{
+    enum OFASN1ErrorCodes rc;
+    struct parsedTag outerTag;
+    
+    /* Per RFC3274 (CompressedData struct) */
+    static const struct scanItem cdItems[3] = {
+        { CLASS_UNIVERSAL|FLAG_PRIMITIVE,   BER_TAG_INTEGER  }, /* version CMSVersion */
+        { CLASS_UNIVERSAL|FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* compressionAlgorithm */
+        { CLASS_UNIVERSAL|FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* encapContentInfo EncapsulatedContentInfo */
+    };
+    struct parsedItem cdValues[3];
+    
+    rc = parseSequenceTagExactly(pkcs7, range, NO, &outerTag);
+    if (rc)
+        return rc;
+    
+    rc = OFASN1ParseItemsInObject(pkcs7, outerTag, NO, cdItems, cdValues);
+    if (rc)
+        return rc;
+    
+    rc = OFASN1UnDERSmallInteger(pkcs7, &cdValues[0].i, outSyntaxVersion);
+    if (rc)
+        return rc;
+
+    rc = OFASN1ParseAlgorithmIdentifier(SUBDATA_OF_TAGS(pkcs7, cdValues, 1, 1), NO, outCompressionAlgorithm, NULL);
+    if (rc)
+        return rc;
+    
+    return parseCMSContentInfo(pkcs7, NSMaxRange(outerTag.content), cdValues[2].i, outContentType, outContentRange);
+}
+
+dispatch_data_t OFCMSDecompressContent(NSData *pkcs7, NSRange contentRange, enum OFASN1Algorithm compressionAlgorithm, NSError **outError)
+{
+    if (compressionAlgorithm != OFASN1Algorithm_zlibCompress) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFErrorDomain
+                                            code:OFUnsupportedCMSFeature
+                                        userInfo:@{
+                                                   NSLocalizedDescriptionKey: NSLocalizedStringFromTableInBundle(@"Unknown compression algorithm", @"OmniFoundation", OMNI_BUNDLE, @"error message - CMS object has an unknown algorithm identifier for compression of its content") }];
+
+        return NULL;
+    }
+    
+    NSData *zlibData = OFASN1UnwrapOctetString(pkcs7, contentRange);
+    if (!zlibData) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(OFASN1UnexpectedType, @"CompressedData.Content");
+        return NULL;
+    }
+    
+#if HAVE_OF_DATA_TRANSFORM
+    return [[[OFLibSystemCompressionTransform alloc] initWithAlgorithm:COMPRESSION_ZLIB operation:COMPRESSION_STREAM_DECODE]
+            transformData:zlibData options:OFDataTransformOptionChunked error:outError];
+#else
+    CFErrorRef cfError = NULL;
+    CFDataRef cfbuf = OFDataCreateDecompressedGzipData(kCFAllocatorDefault, (__bridge CFDataRef)zlibData, FALSE, &cfError);
+    if (!cfbuf) {
+        OB_CFERROR_TO_NS(outError, cfError);
+        return nil;
+    }
+    
+    return dispatch_of_NSData((__bridge_transfer NSData *)cfbuf);
+#endif
+}
+
 #pragma mark Top-Level CMS Data
 
 dispatch_data_t OFCMSWrapContent(enum OFCMSContentType ctype, NSData *content)
@@ -694,7 +898,7 @@ dispatch_data_t OFCMSDecryptContent(NSData *contentEncryptionAlgorithm, NSData *
     int asn1err = OFASN1ParseAlgorithmIdentifier(contentEncryptionAlgorithm, NO, &algId, &algParams);
     if (asn1err) {
         if (outError) {
-            *outError = OFNSErrorFromASN1Error(asn1err, nil);
+            *outError = OFNSErrorFromASN1Error(asn1err, @"encrypted content algorithm");
         }
         return nil;
     }
@@ -760,7 +964,7 @@ dispatch_data_t OFCMSDecryptContent(NSData *contentEncryptionAlgorithm, NSData *
             asn1err = OFASN1ParseSymmetricEncryptionParameters(contentEncryptionAlgorithm, algId, algParams, &nonce, &tagSize);
             if (asn1err) {
                 if (outError) {
-                    *outError = OFNSErrorFromASN1Error(asn1err, nil);
+                    *outError = OFNSErrorFromASN1Error(asn1err, @"symmetric parameters");
                 }
                 return nil;
             }
@@ -924,24 +1128,6 @@ static dispatch_data_t cryptorProcessData(CCCryptorRef cryptor, NSData *input, N
 
 #pragma mark CMS Parsing Helpers
 
-static inline BOOL isSentinelObject(const struct parsedTag *v)
-{
-    return (v->tag == 0 && v->classAndConstructed == 0 && !v->indefinite);
-}
-
-static BOOL isSentinelAt(NSData *buf, NSUInteger position)
-{
-    _Static_assert(BER_SENTINEL_LENGTH == 2, "");
-    
-    /* The sentinel must be { 0, 0 } */
-    uint8_t sentinel[BER_SENTINEL_LENGTH];
-    [buf getBytes:sentinel range:(NSRange){ .location = position, .length = BER_SENTINEL_LENGTH }];
-    if (sentinel[0] != 0 || sentinel[1] != 0)
-        return NO;
-    else
-        return YES;
-}
-
 /** Parse a SEQUENCE tag which is expected to exactly fill a specified range.
  */
 static enum OFASN1ErrorCodes parseSequenceTagExactly(NSData *buf, NSRange range, BOOL requireDER, struct parsedTag *into)
@@ -964,7 +1150,7 @@ static enum OFASN1ErrorCodes parseSequenceTagExactly(NSData *buf, NSRange range,
         NSUInteger tagContentStarts = into->content.location;
         if (tagContentStarts + BER_SENTINEL_LENGTH > rangeEnds)
             return OFASN1Truncated;
-        if (!isSentinelAt(buf, rangeEnds - BER_SENTINEL_LENGTH))
+        if (!OFASN1IsSentinelAt(buf, rangeEnds - BER_SENTINEL_LENGTH))
             return OFASN1InconsistentEncoding;
         into->content.length = rangeEnds - BER_SENTINEL_LENGTH - tagContentStarts;
     } else {
@@ -980,95 +1166,15 @@ static enum OFASN1ErrorCodes parseSequenceTagExactly(NSData *buf, NSRange range,
 }
 
 /** Return the contained items of a composite type (SEQUENCE, SET, etc.) as an array of NSDatas.
- The individual items must be definite-length, but the container need not be.
- 
- TODO: Test against indefinite-length containers.
  */
 static enum OFASN1ErrorCodes extractMembersAsDER(NSData *buf, struct parsedTag obj, NSMutableArray *into)
 {
-    NSUInteger position = obj.content.location;
-    NSUInteger maxIndex = ( (obj.indefinite && !obj.content.length) ? [buf length] : NSMaxRange(obj.content) );
-    
-    for(;;) {
-        struct parsedTag member;
-        enum OFASN1ErrorCodes rc;
-        if (position == maxIndex) {
-            if (obj.indefinite)
-                return OFASN1Truncated;
-            else
-                break;
-        }
-        rc = OFASN1ParseTagAndLength(buf, position, maxIndex, YES, &member);
-        if (rc)
-            return rc;
-        
-        if (isSentinelObject(&member)) {
-            if (obj.indefinite)
-                break;
-            else
-                return OFASN1UnexpectedType;
-        }
-        
+    return OFASN1EnumerateMembersAsBERRanges(buf, obj, ^enum OFASN1ErrorCodes(NSData *samebuf, struct parsedTag item, NSRange berRange) {
         if (into) {
-            [into addObject:[buf subdataWithRange:(NSRange){ position, NSMaxRange(member.content) - position }]];
+            [into addObject:[samebuf subdataWithRange:berRange]];
         }
-        
-        position = NSMaxRange(member.content);
-    }
-    
-    return OFASN1Success;
-}
-
-/** Return the contained items of a composite type (SEQUENCE, SET, etc.) by invoking a callback with their parsed tags.
- The contained items may be of indefinite length.
- 
- -parameter cb: Callback invoked for each contained object. Return OFASN1Success to continue enumerating, other values to quit early.
- 
- TODO: Test against indefinite-length containers.
- TODO: Test against indefinite-length contained objects.
- */
-static enum OFASN1ErrorCodes enumerateMembersAsBERRanges(NSData *buf, struct parsedTag obj, enum OFASN1ErrorCodes (^cb)(NSData *samebuf, struct parsedTag item, NSRange berRange))
-{
-    NSUInteger position = obj.content.location;
-    NSUInteger maxIndex = ( (obj.indefinite && !obj.content.length) ? [buf length] : NSMaxRange(obj.content) );
-    
-    for(;;) {
-        struct parsedTag member;
-        enum OFASN1ErrorCodes rc;
-        if (position == maxIndex) {
-            if (obj.indefinite)
-                return OFASN1Truncated;
-            else
-                break;
-        }
-        rc = OFASN1ParseTagAndLength(buf, position, maxIndex, NO, &member);
-        if (rc)
-            return rc;
-        
-        if (isSentinelObject(&member)) {
-            if (obj.indefinite)
-                break;
-            else
-                return OFASN1UnexpectedType;
-        }
-        
-        NSUInteger endPosition;
-        if (member.indefinite) {
-            rc = OFASN1IndefiniteObjectExtent(buf, member.content.location, maxIndex, &endPosition);
-            if (rc)
-                return rc;
-        } else {
-            endPosition = NSMaxRange(member.content);
-        }
-        
-        rc = cb(buf, member, (NSRange){ .location = position, .length = endPosition - position });
-        if (rc)
-            return rc;
-        
-        position = endPosition;
-    }
-    
-    return OFASN1Success;
+        return OFASN1Success;
+    });
 }
 
 static enum OFASN1ErrorCodes parseCMSEncryptedContentInfo(NSData *buf, const struct parsedTag *v, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent)
@@ -1087,7 +1193,7 @@ static enum OFASN1ErrorCodes parseCMSEncryptedContentInfo(NSData *buf, const str
     
     NSData *contentTypeOID = [buf subdataWithRange:ciDataValues[0].i.content];
     *innerContentType = OFASN1LookUpOID(OFCMSContentType, contentTypeOID.bytes, contentTypeOID.length);
-    *algorithm = [buf subdataWithRange:(NSRange){ ciDataValues[1].startPosition, NSMaxRange(ciDataValues[1].i.content) - ciDataValues[1].startPosition }];
+    *algorithm = SUBDATA_OF_TAGS(buf, ciDataValues, 1, 1);
     if (!(ciDataValues[2].i.classAndConstructed & FLAG_OPTIONAL)) {
         rc = OFASN1ExtractStringContents(buf, ciDataValues[2].i, innerContent);
         if (rc)
@@ -1107,6 +1213,15 @@ static enum OFASN1ErrorCodes parseCMSContentInfo(NSData *buf, NSUInteger berEnd,
          contentType ContentType,
          content [0] EXPLICIT ANY DEFINED BY contentType
      }
+     
+     We also use this to parse the very similar EncapsulatedContentInfo type from [5.2]:
+     
+     EncapsulatedContentInfo ::= SEQUENCE {
+         eContentType ContentType,
+         eContent [0] EXPLICIT OCTET STRING OPTIONAL
+     }
+     
+     in which case the returned object is always an OCTET STRING.
      */
     
     enum OFASN1ErrorCodes rc;
@@ -1115,13 +1230,13 @@ static enum OFASN1ErrorCodes parseCMSContentInfo(NSData *buf, NSUInteger berEnd,
         tag.tag != BER_TAG_SEQUENCE)
         return OFASN1UnexpectedType;
     
-    /* Compute the end of `tag`'s content: if it's indefinite, subtract the size of the sentinel object; otherwise, the tag gives us the info directly */
+    /* Compute the end of `tag`'s content: if it's indefinite (and its length hasn't already been computed by our caller), assume it continues to the end of the buffer and subtract the size of the sentinel object; otherwise, the tag gives us the info directly */
     NSUInteger containedStuffEndIndex;
-    if (tag.indefinite) {
+    if (tag.indefinite && (tag.content.length == 0)) {
         if (berEnd < (BER_SENTINEL_LENGTH + tag.content.location))
             return OFASN1Truncated;
         
-        if (!isSentinelAt(buf, berEnd - BER_SENTINEL_LENGTH))
+        if (!OFASN1IsSentinelAt(buf, berEnd - BER_SENTINEL_LENGTH))
             return OFASN1InconsistentEncoding;
         
         containedStuffEndIndex = berEnd - BER_SENTINEL_LENGTH;
@@ -1144,8 +1259,10 @@ static enum OFASN1ErrorCodes parseCMSContentInfo(NSData *buf, NSUInteger berEnd,
     }
     
     /* The content, if any (it's not optional for us, but we are reused by the SignedData parser) will be wrapped in an explicit context tag 0 */
+    /* Check whether the content-type OID was at the end of its container */
     NSUInteger afterOID = NSMaxRange(oid.content);
     if (afterOID < containedStuffEndIndex) {
+        /* Parse the [0] CONT EXPLICIT tag */
         struct parsedTag explicit;
         rc = OFASN1ParseTagAndLength(buf, afterOID, containedStuffEndIndex, NO, &explicit);
         if (rc)
@@ -1158,7 +1275,7 @@ static enum OFASN1ErrorCodes parseCMSContentInfo(NSData *buf, NSUInteger berEnd,
             if (containedStuffEndIndex < (BER_SENTINEL_LENGTH + explicit.content.location))
                 return OFASN1Truncated;
             
-            if (!isSentinelAt(buf, containedStuffEndIndex - BER_SENTINEL_LENGTH))
+            if (!OFASN1IsSentinelAt(buf, containedStuffEndIndex - BER_SENTINEL_LENGTH))
                 return OFASN1InconsistentEncoding;
             
             if (innerContentRange) {
@@ -1324,5 +1441,15 @@ NSError *OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned
 NSData *OFCMSIdentifierAttribute(NSData *cid)
 {
     return OFASN1AppendStructure(nil, "(+{[d]})", der_attr_contentIdentifier, cid);
+}
+
+static dispatch_data_t dispatch_of_NSData(NSData *buf)
+{
+    if ([buf conformsToProtocol:@protocol(OS_dispatch_data)]) {
+        return (dispatch_data_t)buf;
+    } else {
+        CFDataRef retainedBuf = CFBridgingRetain([buf copy]);
+        return dispatch_data_create(CFDataGetBytePtr(retainedBuf), CFDataGetLength(retainedBuf), NULL, ^{ CFRelease(retainedBuf); });
+    }
 }
 

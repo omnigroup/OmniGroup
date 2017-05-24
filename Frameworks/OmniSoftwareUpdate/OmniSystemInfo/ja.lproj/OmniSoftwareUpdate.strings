@@ -1,0 +1,216 @@
+/* Header for number of crashes row in the run/count table of the info sheet */
+"# of Crashes" = "クラッシュ回数";
+
+/* Header for number of launches row in the run/count table of the info sheet */
+"# of Launches" = "起動回数";
+
+/* Software update hardware description page intro line one. */
+"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support." = "オプションとして、%@ はご使用のシステム構成に関するいくつかの基本情報を弊社に送信することができます。弊社ではこのデータを使用して、皆様がどのようなシステムを使用しているか、また、サポートの対象としてどのようなシステムが最も重要であるかを判断いたします。";
+
+/* Explanatory text for the UUID in the info table. */
+"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information." = "お使いのコンピュータを匿名で識別するランダム文字列。これにより、お客様のシステム構成が変わったときでも、弊社のデータベースを最新の状態に保つことができます。これは、お客様のお名前や他のどのような個人情報にも関連付けられていません。";
+
+/* Header for all versions section in the run/count table of the info sheet */
+"All Versions" = "すべてのバージョン";
+
+/* Title for application identifier in the info table. */
+"Application ID" = "アプリケーション ID";
+
+/* details panel string - header for application feature usage table */
+"Application Usage" = "アプリケーションの使用";
+
+/* Title for application version in the info table. */
+"Application Version" = "アプリケーションのバージョン";
+
+/* Title for the bus speed row in the info table. */
+"Bus Speed" = "バス速度";
+
+/* News error header */
+"Cannot connect to News" = "ニュースに接続できません";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "確認操作に失敗しました。";
+
+/* Title for the computer model row in the info table. */
+"Computer Model" = "コンピュータの機種";
+
+/* Title for the CPU count row in the info table. */
+"CPU Count" = "CPU 数";
+
+/* Title for the CPU speed row in the info table. */
+"CPU Speed" = "CPU 速度";
+
+/* Title for the CPU type row in the info table. */
+"CPU Type" = "CPU タイプ";
+
+/* Header for current version section in the run/count table of the info sheet */
+"Current Version" = "現在のバージョン";
+
+/* Title for the display settings row in the info table. */
+"Display Settings" = "ディスプレイ設定";
+
+/* details panel string - version of video card driver */
+"Driver Version" = "ドライバのバージョン";
+
+/* error description */
+"Error fetching software update information." = "ソフトウェアアップデート情報を取得するときにエラー発生。";
+
+/* error description */
+"Error while checking for updated version." = "新しいバージョンを確認中にエラーが発生しました。";
+
+/* error reason */
+"Exception raised: %@" = "例外処理：%@";
+
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "拡張子";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "Ext";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "周波数";
+
+/* system preferences hardware description page title */
+"Hardware Description" = "ハードウェアの説明";
+
+/* details panel string - name of video card driver */
+"Hardware Driver" = "ハードウェアドライバ";
+
+/* Header for number of hours row in the run/count table of the info sheet */
+"Hours Run" = "累計起動時間";
+
+/* Software update hardware description page intro line one. */
+"If you choose in %@ preferences to provide it, the following information is also sent." = "%@の環境設定でこれを提供するように指定した場合は、次の情報も送信されます。";
+
+/* Software update hardware description page intro line two. */
+"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane." = "システム情報を送信したくない場合は、環境設定パネルでこのオプションを無効にしてください。";
+
+/* Title for license type row in the info table. */
+"License Type" = "ライセンスタイプ";
+
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes
+   Title for the memory row in the info table. */
+
+
+"Memory" = "メモリ";
+
+/* News webpage title */
+"News" = "ニュース";
+
+/* button title */
+"OK" = "OK";
+
+/* framework name when building the full OmniSoftwareUpdate */
+"Omni Software Update" = "Omni Software Update";
+
+/* framework name when building the mini OmniSoftwareInfo framework */
+"Omni System Info" = "Omni システム情報";
+
+/* Software update hardware description page intro line two. Note the <b> HTML tag around 'never'. */
+"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy." = "Omni が公開するのは収集した設定情報全体に関する統計情報のみであり、個人のコンピュータ設定に関する情報を公開することは<b>絶対にありません</b>。弊社はお客様のプライバシーを重視しております。";
+
+/* Title for framework version in info table, when using the full framework. */
+"OmniSoftwareUpdate version" = "OmniSoftwareUpdate バージョン";
+
+/* Title for framework version in info table, when using the mini framework. */
+"OmniSystemInfo version" = "OmniSystemInfo バージョン";
+
+/* Title for the OpenCL information row in the info table. */
+"OpenCL Information" = "OpenCL 情報";
+
+/* details panel string - name of the OpenGL driver */
+"OpenGL Driver" = "OpenGL ドライバ";
+
+/* details panel string */
+"OpenGL Extensions" = "OpenGL 機能拡張";
+
+/* Title for the OpenGL information row in the info table. */
+"OpenGL Information" = "OpenGL 情報";
+
+/* details panel string */
+"OpenGL Renderer" = "OpenGL レンダラ";
+
+/* details panel string */
+"OpenGL Vendor" = "OpenGL 製造元";
+
+/* details panel string */
+"OpenGL Version" = "OpenGL バージョン";
+
+/* Title for the OS version row in the info table. */
+"OS Version" = "OS バージョン";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"P3 color space supported" = "P3 色空間がサポートされています";
+
+/* details panel string - PCI bus ID of video card */
+"PCI ID" = "PCI ID";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "しばらくしてからやり直すか、またはサポートまでご連絡ください。";
+
+/* Title for the preferred language row in the info table. */
+"Preferred Language" = "優先言語";
+
+/* Section header for the application run/count table in the info table. */
+"Run Count and Times" = "実行のカウントと時間";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"sRGB color space supported" = "sRGB 色空間がサポートされています";
+
+/* error reason */
+"The background software update service failed." = "バックグラウンドのソフトウェアアップデートサービスに失敗しました。";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "<%@> から返されたデータは有効な XML 書類ではありませんでした。";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "アップデート情報に署名がありません。";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "署名の確認中に問題がありました。";
+
+/* text of dialog box informing user of change in software update query */
+"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "%@ は、インターネット接続を利用（利用可能な場合）して追加の情報を送信し、新たに更新されたバージョンがあるかどうかを確認します。";
+
+/* error reason */
+"Timed out waiting for the software update service." = "ソフトウェアアップデートサービスの待機中にタイムアウトしました。";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "ツールからデータが返されませんでした";
+
+/* details panel string - column header for OpenCL device type */
+"Type" = "タイプ";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "ソフトウェアアップデートサーバからの応答を認証できません。";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "ソフトウェアアップデート情報を取得できません。";
+
+/* error description */
+"Unable to parse response from the software update server." = "ソフトウェアアップデートサーバからの応答を解析できません。";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "単位";
+
+/* Title for application current update track in the info table. */
+"Update Track" = "アップデート追跡";
+
+/* Title for the video cards row in the info table. */
+"Video Cards" = "ビデオカード";
+
+/* Title for application visible update tracks in the info table. */
+"Visible Update Tracks" = "可視状態のアップデート追跡";
+
+/* Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime. */
+"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page." = "弊社では、他の開発者の役に立つように、弊社で収集した情報を公開しています。これらの情報については LINK_PLACEHOLDER ページをご覧ください。";
+
+/* Format string for the information sent header when using the full framework. */
+"When you check for updates, the following information about your copy of %@ is always sent." = "アップデートの有無を確認する際には、お使いの %@ に関する次の情報が常に送信されます。";
+
+/* Format string for the information sent header when using the mini framework. */
+"When you check for updates, the following information about your copy of %@ is sent." = "アップデートの有無を確認する際には、お使いの %@ に関する次の情報が送信されます。";
+
+/* Explanatory text for the license type row in the info table. */
+"Your license key itself will never be sent." = "お持ちのライセンスキーが送信されることはありません。";

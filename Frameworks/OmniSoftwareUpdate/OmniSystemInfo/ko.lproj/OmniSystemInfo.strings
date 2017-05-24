@@ -1,0 +1,8 @@
+/* MAS-only: text of dialog box title informing user before sending system info */
+"%@ has the ability to automatically send anonymous system information to The Omni Group." = "%@에는 익명 시스템 정보를 The Omni Group에 자동으로 전송하는 기능이 포함되어 있습니다.";
+
+/* MAS-only: label for switch in privacy alert to specify whether to send system info */
+"Send anonymous system information to The Omni Group" = "The Omni Group에 익명 시스템 정보 전송";
+
+/* MAS-only: text of dialog box informing user of change in anonymous system info that will be sent */
+"This version of %@ sends additional anonymous system information to The Omni Group." = "이 %@ 버전은 추가적인 익명 시스템 정보를 The Omni Group에 전송합니다.";

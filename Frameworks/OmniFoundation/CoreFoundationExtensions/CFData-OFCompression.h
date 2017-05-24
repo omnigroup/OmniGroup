@@ -34,4 +34,5 @@ extern CFDataRef OFDataCreateDecompressedBzip2Data(CFAllocatorRef decompressedDa
 #endif
 
 extern CFDataRef OFDataCreateCompressedGzipData(CFDataRef data, Boolean includeHeader, int level, CFErrorRef *outError) CF_RETURNS_RETAINED;
+extern CFDataRef OFDataCreateDecompressedGzipData(CFAllocatorRef decompressedDataAllocator, CFDataRef data, Boolean expectHeader, CFErrorRef *outError) CF_RETURNS_RETAINED;
 extern CFDataRef OFDataCreateDecompressedGzip2Data(CFAllocatorRef decompressedDataAllocator, CFDataRef data, CFErrorRef *outError) CF_RETURNS_RETAINED;

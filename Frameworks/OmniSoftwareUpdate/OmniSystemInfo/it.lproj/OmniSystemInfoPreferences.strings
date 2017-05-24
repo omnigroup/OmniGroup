@@ -1,0 +1,8 @@
+/* Class = "NSTextFieldCell"; title = "If you choose to share this information, you'll be helping keep us informed of which hardware and OS versions our software should support.\n\nThis information is kept entirely anonymous."; ObjectID = "158"; */
+"158.title" = "Se accetti di inviarci queste informazioni, ci aiuterai a conoscere quali versioni di hardware e sistemi operativi dobbiamo supportare.\n\nTi garantiamo che le informazioni verranno mantenute totalmente anonime.";
+
+/* Class = "NSButtonCell"; title = "Send anonymous system information to the Omni Group"; ObjectID = "159"; */
+"159.title" = "Includi le informazioni di sistema";
+
+/* Class = "NSButtonCell"; title = "Learn more about what kind of information is sent"; ObjectID = "160"; */
+"160.title" = "Ulteriori informazioni...";

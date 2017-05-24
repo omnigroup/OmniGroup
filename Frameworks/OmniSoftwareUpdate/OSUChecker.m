@@ -22,6 +22,7 @@
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OmniFoundation-Swift.h> // for NSProcessInfo-OFExtensions
 #import <OmniBase/OmniBase.h>
 
 #import "OSUFeatures.h"
@@ -215,7 +216,10 @@ static void OSUAtExitHandler(void)
 {
     @autoreleasepool {
         // All we do is check that there is no error in the termination handling logic.  It might not be safe to use NSUserDefaults/CFPreferences at this point and it isn't the end of the world if this doesn't record perfect stats.
-        OBASSERT(OSURunTimeHasHandledApplicationTermination() == YES);
+        // Ignore if we are in a test environment
+        if (![[NSProcessInfo processInfo] isRunningUnitTests]) {
+            OBASSERT(OSURunTimeHasHandledApplicationTermination() == YES);
+        }
     }
 }
 #endif

@@ -45,6 +45,7 @@ BOOL OBPatchCode(void *address, size_t size, const void *newvalue)
     if (current_prot & VM_PROT_WRITE) {
         /* hey, no problem! */
         memcpy(address, newvalue, size);
+        sys_icache_invalidate(address, size);
         return YES;
     }
     

@@ -3,6 +3,7 @@ framework module OmniFoundation {
     
     // Exclude headers that import other non-module headers
     exclude header "OFXMLSignature.h"
+    exclude header "OFXMLError.h"
     
     // Nearly deprecated headers
     exclude header "OFSimpleLock.h"

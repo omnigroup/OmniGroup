@@ -376,7 +376,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
 - (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
 {
     // Collecting the names asynchronously from filesystem edits will yield out of date results. We still have race conditions with cloud services adding/removing files since coordinated reads of whole Documents directories does nothing to block writers.
-    OBPRECONDITION([self isRunningOnActionQueue]);
+    OBPRECONDITION([self isRunningOnActionQueue], "bug:///137297");
     
     if (!folderURL)
         folderURL = _directoryURL;

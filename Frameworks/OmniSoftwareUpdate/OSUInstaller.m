@@ -7,10 +7,11 @@
 
 #import "OSUInstaller.h"
 
-#import <AppKit/AppKit.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniBase/system.h>
-#import <OmniFoundation/OmniFoundation.h>
+@import OmniBase;
+@import OmniFoundation;
+@import OmniAppKit;
+@import AppKit;
+@import Darwin;
 
 #import <OmniSoftwareUpdate/OSUChecker.h>
 #import "OSUErrors.h"
@@ -250,7 +251,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                     // We cannot run modal session during application termination; use CFUserNotification instead
                     NSString *format = NSLocalizedStringFromTableInBundle(@"Unable to Install %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error format string");
                     NSString *title = [NSString stringWithFormat:format, [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey]];
-                    NSString *defaultButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"button title");
+                    NSString *defaultButton = OAOK();
                     NSString *otherButton = [OSUSendFeedbackErrorRecovery defaultLocalizedRecoveryOption];
                     CFOptionFlags responseFlags = 0;
                     
@@ -812,7 +813,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         // We cannot run modal session during application termination; use CFUserNotification instead
         NSString *format = NSLocalizedStringFromTableInBundle(@"Unable to Reopen %@", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"relaunch error format string");
         NSString *title = [NSString stringWithFormat:format, [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey]];
-        NSString *defaultButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"button title");
+        NSString *defaultButton = OAOK();
 
         NSLog(@"Error communicating with the OSUInstaller XPC service: %@", error);
         _reportError(error, title, defaultButton, nil, nil, NULL);

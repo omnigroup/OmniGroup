@@ -441,9 +441,9 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     
     if (outError) {
         if (checkForeignHeaderMagic(ciphertext, ciphertextLength)) {
-            *outError = badMagic("invalid encryption header");
+            *outError = badMagic("Invalid encryption header.");
         } else {
-            *outError = headerError("invalid encryption header");
+            *outError = headerError("Invalid encryption header.");
         }
     }
     
@@ -457,7 +457,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
 + (BOOL)parseHeader:(NSData *)ciphertext truncated:(BOOL)mayBeTruncated wrappedInfo:(NSRange *)outBlobLocation dataOffset:(size_t *)outHeaderLength error:(NSError * __autoreleasing *)outError;
 {
     if (!ciphertext) {
-        if (outError) *outError = headerError("missing ciphertext");
+        if (outError) *outError = headerError("Missing ciphertext.");
         return NO;
     }
     size_t ciphertextLength = [ciphertext length];
@@ -471,7 +471,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     size_t paddedLength = ((NSMaxRange(wrappedKeyBlobRange) + 15) / 16) * 16;
     
     if (!mayBeTruncated && ciphertextLength < (paddedLength + SEGMENTED_FILE_MAC_LEN)) {
-        if (outError) *outError = headerError("file too short");
+        if (outError) *outError = headerError("File too short.");
         return NO;
     }
     
@@ -482,7 +482,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
         [ciphertext getBytes:buf range:(NSRange){NSMaxRange(wrappedKeyBlobRange), paddingLength}];
         for(size_t i = 0; i < paddingLength; i++) {
             if (buf[i] != 0) {
-                if (outError) *outError = headerError("invalid encryption header");
+                if (outError) *outError = headerError("Invalid encryption header.");
                 return NO;
             }
         }
@@ -508,7 +508,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     if (resultSize < 0)
         return nil;
     if (resultSize != SEGMENTED_INNER_LENGTH_PADDED) {
-        if (outError) *outError = headerError("invalid encryption header");
+        if (outError) *outError = headerError("Invalid encryption header.");
         return nil;
     }
     
@@ -530,7 +530,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     if (totalCiphertextLength <= (segmentsBegin + SEGMENTED_FILE_MAC_LEN)) {
         // Impossible file length
         // we must have at least one segment, even if it's empty it will contain the segment MAC
-        if (outError) *outError = headerError("file too short");
+        if (outError) *outError = headerError("File too short.");
         return nil;
     }
     
@@ -542,7 +542,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     if (lastSegmentLength < SEGMENT_HEADER_LEN) {
         // Impossible file length
         // (some ciphertext lengths do not correspond to any plaintext length)
-        if (outError) *outError = headerError("file too short");
+        if (outError) *outError = headerError("File too short.");
         return nil;
     }
     
@@ -578,7 +578,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     });
     
     if (errorBits != 0) {
-        if (outError) *outError = headerError("encrypted file is corrupt");
+        if (outError) *outError = headerError("Encrypted file is corrupt.");
         return nil;
     }
     
@@ -594,7 +594,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     uint8_t foundFileMAC[SEGMENTED_FILE_MAC_LEN];
     [ciphertext getBytes:foundFileMAC range:(NSRange){ segmentsBegin + segmentsLength, SEGMENTED_FILE_MAC_LEN}];
     if (finishAndVerifyHMAC256(&fileMACContext, foundFileMAC, SEGMENTED_FILE_MAC_LEN) != 0) {
-        if (outError) *outError = headerError("encrypted file is corrupt");
+        if (outError) *outError = headerError("Encrypted file is corrupt.");
         return nil;
     }
     

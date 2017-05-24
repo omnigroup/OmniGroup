@@ -46,6 +46,7 @@
 - (void)forceInspectorsVisible:(NSSet *)preferred;
 
 @property(readonly) Class defaultInspectorControllerClass;
+@property (readonly) BOOL hasHiddenInspectors;
 
 /// Creates a new OIInspectorController for the given OIInspector. This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry. If the inspector already has a controller registered in this registry, this method will still create a new controller and return it, duplicating the inspector in the registry; it will never return an existing controller.
 

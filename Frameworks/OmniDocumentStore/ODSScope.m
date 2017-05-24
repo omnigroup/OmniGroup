@@ -350,7 +350,7 @@ static void _addItemAndNotifyHandler(ODSScope *self, OFFileMotionResult *motionR
 
 - (NSURL *)urlForNewDocumentInFolderAtURL:(NSURL *)folderURL baseName:(NSString *)baseName fileType:(NSString *)documentUTI;
 {
-    OBPRECONDITION([NSOperationQueue currentQueue] == _actionOperationQueue);
+    OBPRECONDITION([NSOperationQueue currentQueue] == _actionOperationQueue, "bug:///137297");
     
     OBPRECONDITION(documentUTI);
     

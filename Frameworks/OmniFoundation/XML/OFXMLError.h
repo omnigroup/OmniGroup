@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,11 @@
 //
 // $Id$
 
+
+/*
+ Note: This header is public, but excluded from the module so that we don't pull in libxml.
+ */
+
 #import <libxml/parser.h>
 #import <libxml/xmlerror.h>
 #import <OmniBase/objc.h>
@@ -14,4 +19,4 @@
 @class NSError;
 
 // Returns nil if the error should be ignored.
-NSError *OFXMLCreateError(xmlErrorPtr error) NS_RETURNS_RETAINED OB_HIDDEN;
+NSError *OFXMLCreateError(xmlErrorPtr error) NS_RETURNS_RETAINED;

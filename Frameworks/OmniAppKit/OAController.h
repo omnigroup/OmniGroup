@@ -14,27 +14,26 @@
 #import <AppKit/NSApplication.h> // For NSApplicationDelegate
 #import <AppKit/NSNibDeclarations.h> // For IBAction and IBOutlet
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OAController : OFController <NSApplicationDelegate>
-{
-@private
-    OAAboutPanelController *aboutPanelController;
-}
 
 + (BOOL)handleChangePreferenceURL:(NSURL *)url error:(NSError **)outError;
 
 - (OAAboutPanelController *)aboutPanelController;
 
-- (IBAction)showAboutPanel:(id)sender;
-- (IBAction)hideAboutPanel:(id)sender;
-- (IBAction)sendFeedback:(id)sender;
-- (IBAction)showMessageOfTheDay:(id)sender;
-- (IBAction)openApplicationScriptsFolder:(id)sender;
+- (IBAction)showAboutPanel:(nullable id)sender;
+- (IBAction)hideAboutPanel:(nullable id)sender;
+- (IBAction)sendFeedback:(nullable id)sender;
+- (IBAction)showMessageOfTheDay:(nullable id)sender;
+- (IBAction)openApplicationScriptsFolder:(nullable id)sender;
 
 /// returns the the display name of the application without file extension.
 - (NSString *)appName;
-- (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
-- (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
-- (void)sendFeedbackEmailWithBody:(NSString *)body;
+- (NSString *)fullReleaseString;
+- (void)getFeedbackAddress:(NSString * _Nullable * _Nonnull)feedbackAddress andSubject:(NSString * _Nullable * _Nonnull)subjectLine;
+- (void)sendFeedbackEmailTo:(nullable NSString *)feedbackAddress subject:(nullable NSString *)subjectLine body:(nullable NSString *)body;
+- (void)sendFeedbackEmailWithBody:(nullable NSString *)body;
 
 - (BOOL)openURL:(NSURL *)url; // Passes this off to -[NSWorkspace openURL:] if the local app doesn't intercept the URL
 
@@ -49,3 +48,5 @@
 - (void)applicationWillTerminate:(NSNotification *)notification NS_REQUIRES_SUPER;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -21,16 +21,28 @@ extern OBLogger *OFSFileManagerLogger;
 
 @protocol OFSFileManagerDelegate;
 
+typedef NS_ENUM(NSUInteger, OFSFileManagerIntent) {
+    OFSFileManagerIntentUnknown = 0,
+    OFSFileManagerIntentGeneral, // for multipurpose use (e.g. both reading & writing)
+    
+    OFSFileManagerIntentRead, // mostly for reading
+    OFSFileManagerIntentWrite, // mostly for writing
+    OFSFileManagerIntentAuthenticate, // mostly for checking access, with little actual data read/write. callers might special-case authentication code in this case.
+};
+
 @interface OFSFileManager : NSObject
 
 + (Class)fileManagerClassForURLScheme:(NSString *)scheme;
 
 - initWithBaseURL:(NSURL *)baseURL delegate:(id <OFSFileManagerDelegate>)delegate error:(NSError **)outError;
 
-@property(nonatomic,readonly) NSURL *baseURL;
-@property(nonatomic,weak,readonly) id <OFSFileManagerDelegate> delegate;
-@property(nonatomic,readonly) NSString *locationDescription;
-@property(nonatomic,copy) NSString *operationReason;
+@property (nonatomic, readonly) NSURL *baseURL;
+@property (nonatomic, weak, readonly) id <OFSFileManagerDelegate> delegate;
+@property (nonatomic, readonly) NSString *locationDescription;
+@property (nonatomic, copy) NSString *operationReason;
+
+/// The purpose for which this file manager exists. The default value is OFSFileManagerIntentUnknown. Assigning a particular intent does not preclude the receiver from performing any other kind of operations (e.g. a file manager with intent=.read may still write), but gives a hint about why the file manager might be doing what it's doing.
+@property (nonatomic, assign) OFSFileManagerIntent intent;
 
 - (void)invalidate;
 

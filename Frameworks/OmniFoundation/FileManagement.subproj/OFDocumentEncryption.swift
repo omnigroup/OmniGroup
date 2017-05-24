@@ -62,12 +62,24 @@ class OFDocumentEncryptionSettings : NSObject {
         let helper = OFCMSFileWrapper();
         helper.passwordHint = self.passwordHint;
         
+        // Make sure that anyone who can read the file has the recipients' certificates.
+        var certificates = [Data]();
+        var mustEmbed = false;
         for recipient in recipients {
             if let pkrecipient = recipient as? CMSPKRecipient,
                let cert = pkrecipient.cert {
-                helper.embeddedCertificates.append(SecCertificateCopyData(cert) as Data);
+                if !certificates.isEmpty {
+                    mustEmbed = true;
+                }
+                certificates.append(SecCertificateCopyData(cert) as Data);
+            } else {
+                mustEmbed = true;
             }
         }
+        if mustEmbed {
+            helper.embeddedCertificates.append(contentsOf: certificates);
+        }
+        
         return try helper.wrap(input: wrapper, previous:nil, schema: schema, recipients: self.recipients, options: self.cmsOptions);
     }
     
@@ -155,6 +167,22 @@ class OFDocumentEncryptionSettings : NSObject {
         }
     }
     
+    @objc public override
+    func debugDictionary() -> NSMutableDictionary! {
+        let debugDictionary : NSMutableDictionary = super.debugDictionary()!;
+        
+        debugDictionary.setUnsignedIntegerValue(self.cmsOptions.rawValue, forKey: "cmsOptions");
+        if let docId = self.documentIdentifier as NSData? {
+            debugDictionary.setObject(docId, forKey: "documentIdentifier" as NSString);
+        }
+        if let pwHint = self.passwordHint as NSString? {
+            debugDictionary.setObject(pwHint, forKey: "passwordHint" as NSString);
+        }
+        debugDictionary.setUnsignedIntegerValue(self.unreadableRecipientCount, forKey: "unreadableRecipientCount");
+        debugDictionary.setObject(self.recipients.map({ $0.debugDictionary() }), forKey: "recipients" as NSString);
+        
+        return debugDictionary;
+    }
 };
 
 internal
@@ -215,7 +243,7 @@ class OFCMSFileWrapper {
         
         if input.isRegularFile {
             /* For flat files, we can simply encrypt the flat file and write it out. */
-            let wrapped = FileWrapper(regularFileWithContents: try self.wrap(data: input.regularFileContents!, recipients: recipients, options: options, outerIdentifier: docID));
+            let wrapped = FileWrapper(regularFileWithContents: try self.wrap(data: input.regularFileContents!, recipients: recipients, embeddedCertificates: embeddedCertificates, options: options, outerIdentifier: docID));
             if let fname = input.preferredFilename {
                 wrapped.preferredFilename = fname;
             }
@@ -303,6 +331,11 @@ class OFCMSFileWrapper {
             (packageIndex.files, packageIndex.directories) = wrapWrapperHierarchy(input, settings: schema);
             
             try insideFiles.insert( (nil, dataSrc.data(packageIndex.serialize()), OFCMSContentType_XML, options), at: 0);
+            if !embeddedCertificates.isEmpty {
+                let certBundle = OFCMSCreateSignedData(OFCMSContentType_data.asDER(), nil, embeddedCertificates, [Data]());
+                insideFiles.insert( (nil, dataSrc.data(OFNSDataFromDispatchData(certBundle)), OFCMSContentType_signedData, [OFCMSOptions.storeInMain, OFCMSOptions.compress] ),
+                                    at: 1);
+            }
             
             let wrappedIndex = try self.wrap(parts: insideFiles,
                                              recipients: recipients,
@@ -512,10 +545,29 @@ class OFCMSFileWrapper {
     }
     
     private func compressPart(data input: Data, contentType: OFCMSContentType) throws -> (Data, OFCMSContentType) {
+        #if true
         return (input, contentType);  // TODO
+        #else
+        if input.count < 200 {
+            return (input, contentType);
+        }
+        
+        var error : NSError? = nil;
+        guard let compressed = OFCMSCreateCompressedData(contentType.asDER(), input, &error) else {
+            throw error!;
+        }
+        let compressed_ = (compressed as AnyObject) as! Data;
+        
+        // Unless we save at least 2% of our size, don't bother storing it compressed.
+        if (compressed_.count + (compressed_.count / 50)) < input.count {
+            return (compressed_, OFCMSContentType_compressedData);
+        } else {
+            return (input, contentType);
+        }
+        #endif
     }
     
-    private func wrap(data input_: Data, type type_: OFCMSContentType = OFCMSContentType_Unknown, recipients: [CMSRecipient], options: OFCMSOptions, outerIdentifier: Data? = nil) throws -> Data {
+    private func wrap(data input_: Data, type type_: OFCMSContentType = OFCMSContentType_Unknown, recipients: [CMSRecipient], embeddedCertificates certs: [Data]? = nil, options: OFCMSOptions, outerIdentifier: Data? = nil) throws -> Data {
         
         var input = input_;
         var contentType = type_;
@@ -526,6 +578,11 @@ class OFCMSFileWrapper {
         
         if options.contains(.compress) {
             (input, contentType) = try compressPart(data: input, contentType: contentType);
+        }
+        
+        if let certs = certs, !certs.isEmpty {
+            input = OFNSDataFromDispatchData(OFCMSCreateSignedData(contentType.asDER(), input, certs, [Data]()));
+            contentType = OFCMSContentType_signedData;
         }
         
         let cek = NSData.cryptographicRandomData(ofLength: 32);
@@ -626,6 +683,9 @@ class OFCMSFileWrapper {
         let usedRecipient: CMSRecipient?;
     }
 
+    /// Unwrap a component, returning its decrypted and assorted contents.
+    ///
+    /// See the comments on `ExpandedContent` for details.
     private func unwrap(data input_: Data, auxiliaryKeys: [Data: Data] = [:]) throws -> ExpandedContent {
         
         let decr = try OFCMSUnwrapper(data: input_, keySource: delegate);
@@ -657,11 +717,10 @@ class OFCMSFileWrapper {
                     break;
                 }
                 
-                let outermostType = part.contentType;
                 try part.peelMeLikeAnOnion();
                 result.embeddedCertificates += part.embeddedCertificates;
-                if part.hasNullContent && outermostType == OFCMSContentType_signedData {
-                    // It's OK for this to have null content --- it's how PKCS#7 objects contain certificate lists.
+                if part.hasNullContent /* && ! part.embeddedCertificates.isEmpty */ {
+                    // It's OK for a signedData to have null content --- it's how CMS/PKCS#7/PKCS#12 objects contain certificate lists.
                     continue;
                 }
                 
@@ -696,6 +755,7 @@ class OFCMSFileWrapper {
         return result;
     }
     
+    /// Convenience for generating an error when we don't recognize or expect a given content-type.
     private func unexpectedContentTypeError(_ ct: OFCMSContentType) -> NSError {
         return NSError(domain: OFErrorDomain,
                        code: OFUnsupportedCMSFeature,

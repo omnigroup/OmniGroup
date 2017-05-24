@@ -1304,12 +1304,11 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     return ctx.results;
 }
 
-- insertObjectWithEntityName:(NSString *)entityName;
+- (id)insertObjectWithEntityName:(NSString *)entityName;
 {
     ODOEntity *entity = [self.database.model entityNamed:entityName];
-    ODOObject *object = [[[[entity instanceClass] alloc] initWithEditingContext:self entity:entity primaryKey:nil] autorelease];
-    [self insertObject:object];
-    return object;
+    ODOObject *object = [[[entity instanceClass] alloc] initWithEntity:entity primaryKey:nil insertingIntoEditingContext:self];
+    return [object autorelease];
 }
 
 - (ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError; // Returns NSNull if the object wasn't found, nil on error.

@@ -472,6 +472,10 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
     if (!buffer)
         buffer = [NSMutableData dataWithCapacity:sizes.totalLength - sizes.totalPlaceholderLength];
     
+#ifdef OMNI_ASSERTIONS_ON
+    size_t previousBufferLength = buffer.length;
+#endif
+    
     for (int pieceIndex = 0; pieceIndex < sizes.pieceCount; pieceIndex ++) {
         const struct piece *piece = &sizes.pieces[pieceIndex];
         if (piece->placeholder) {
@@ -499,7 +503,7 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
 
     free(sizes.pieces);
     
-    OBASSERT(buffer.length + sizes.totalPlaceholderLength == sizes.totalLength);
+    OBASSERT(buffer.length + sizes.totalPlaceholderLength == previousBufferLength + sizes.totalLength);
     
     return buffer;
 }

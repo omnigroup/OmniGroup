@@ -50,6 +50,14 @@ static const CFStringRef asn1ErrorCodeStrings[] = {
 #undef E
 };
 
+/** Workhorse tag parsing function.
+ 
+ We may want to see if we can replace this with something from BoringSSL or wherever.
+ 
+ Parses the BER tag at `where`, in a situation where the tag (including its value) must end before `maxIndex`. The parsed tag-length information is placed in `outTL`.
+ 
+ Indefinite-length encodings are allowed only if `requireDER` is false. In that case, `outTL->content.length` is set to 0, as well as `outTL->indefinite` being set to YES.
+*/
 enum OFASN1ErrorCodes OFASN1ParseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
 {
     unsigned char buf[16];
@@ -225,6 +233,10 @@ static BOOL isSentinelObject(const struct parsedTag *v)
     return (v->tag == 0 && v->classAndConstructed == 0 && !v->indefinite);
 }
 
+/** Recursively parses an indefinite-length object to determine its length.
+ 
+ The end position is returned in `outEndPos`. It includes the sentinel/EOC bytes.
+ */
 enum OFASN1ErrorCodes OFASN1IndefiniteObjectExtent(NSData *buf, NSUInteger position, NSUInteger maxIndex, NSUInteger *outEndPos)
 {
     enum OFASN1ErrorCodes rc;
@@ -360,6 +372,16 @@ static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *c
 
 #pragma mark Generic SEQUENCE scanner
 
+/** Parses a sequence of items, some of which may be optional.
+ 
+ Parses the items in `items`, leaving their information in the corresponding elements of `found`.
+ 
+ `endPosition` must be the end of the contained items. If it is 0, the items are assumed to be in an indefinite-length container and OFASN1ParseBERSequence will parse until the EOC sentinel object (and will fail if it doesn't find a sentinel). If the container is indefinite but we have already calculated its length, `endPosition` must not include the sentinel.
+ 
+ Items can be flagged with FLAG_OPTIONAL to indicate that they can be skipped, in which case the skipped item in `found` will have FLAG_OPTIONAL set in its classAndConstructed field; or FLAG_ANY_OBJECT to indicate that the tag and class should be ignored and any object is acceptable there. The startPosition of a missing optional item will be set to the position where it would have been found, but the other fields are meaningless (zero).
+ 
+ `requireDER`, if true, forbids indefinite-length objects (and possibly in the future other non-DER encodings). If indefinite-length objects *are* parsed, their length is discovered, and their `content` field contains their length not including the trailing sentinel/EOC bytes.
+*/
 enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, NSUInteger endPosition, BOOL requireDER, const struct scanItem *items, struct parsedItem *found, unsigned count)
 {
     BOOL containerIsIndefinite;
@@ -406,8 +428,10 @@ enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, N
         
         // Find the length of the object and the offset of the next object. This can be complex if the object is of indefinite length.
         NSUInteger nextPosition;
+        uint8_t constructed_if_indefinite;
         if (!tagBuf.indefinite) {
             nextPosition = NSMaxRange(tagBuf.content);
+            constructed_if_indefinite = 0;
         } else {
             // Need to traverse the object to find its length. This is less efficient than using an asnWalkerState because anyone using this object will end up having to traverse it again. But for most of our situations the structure can't be too deep.
             NSUInteger endPos = 0;
@@ -416,6 +440,7 @@ enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, N
                 return rc;
             tagBuf.content.length = (endPos - BER_SENTINEL_LENGTH) - tagBuf.content.location;
             nextPosition = endPos;
+            constructed_if_indefinite = FLAG_CONSTRUCTED;   // Indefinite objects are always constructed, so take this into account when matching tags, below.
         }
         
         /* Check whether the item we found matches the next item in the caller's list, skipping over optionals as needed. */
@@ -426,7 +451,7 @@ enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, N
             }
             
             if ((items[itemIndex].flags & FLAG_ANY_OBJECT) ||
-                (tagBuf.classAndConstructed == (items[itemIndex].flags & FLAG_BER_MASK) &&
+                (tagBuf.classAndConstructed == ((items[itemIndex].flags & FLAG_BER_MASK) | constructed_if_indefinite) &&
                  tagBuf.tag == items[itemIndex].tag)) {
                 // The scanned item matches what we expect.
                 found[itemIndex].startPosition = position;
@@ -681,8 +706,14 @@ BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (^callback)(NSData *a, NSDat
     if (rc)
         return NO;
     
-    if (!IS_TYPE(nameSt, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
-        return NO;
+    if ((nameSt.v.classAndConstructed & CLASS_MASK) == CLASS_UNIVERSAL) {
+        if (!IS_TYPE(nameSt, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
+            return NO;
+    } else {
+        // We must be looking at an implicitly-tagged Name object. Just verify that it's a composite type.
+        if (!(nameSt.v.classAndConstructed & FLAG_CONSTRUCTED))
+            return NO;
+    }
     
     /* Enter the outermost SEQUENCE */
     rc = enterObject(rdnseq, &nameSt, &rdnSt);
@@ -1211,25 +1242,43 @@ enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag 
     }
     
     NSUInteger position = s.content.location;
-    NSUInteger maxIndex = ( s.content.length ? NSMaxRange(s.content) : [buf length] );
+    NSUInteger maxIndex;
+    BOOL expectSentinel;
+    if (s.content.length) {
+        // A caller has already determined the length of our indefinite-length content. We know the exact length and don't expect it to include the sentinel.
+        maxIndex = NSMaxRange(s.content);
+        expectSentinel = NO;
+    } else {
+        // We don't know how long our contents are.
+        maxIndex = [buf length]; // But they're not longer than our buffer.
+        expectSentinel = YES;
+    }
+    
     NSMutableData *mbuffer = [NSMutableData data];
 
     for(;;) {
+        if (position > maxIndex) {
+            // Shouldn't be possible to get here --- parseTagAndLength() checks whether the tag's length field extends past maxIndex --- but let's check anyway.
+            return OFASN1Truncated;
+        }
+        if (position == maxIndex) {
+            if (expectSentinel)
+                return OFASN1Truncated; // Whoops! We were expecting a sentinel before we ran out of data.
+            else
+                break; // Success
+        }
+        
         struct parsedTag fragment;
         enum OFASN1ErrorCodes rc;
         rc = parseTagAndLength(buf, position, maxIndex, YES, &fragment);
-        if (rc) {
-            if (rc == OFASN1EndOfObject)
-                return OFASN1Truncated;
-            else
-                return rc;
-        }
+        if (rc)
+            return rc;
         
         if (isSentinelObject(&fragment)) {
-            if (s.content.length != 0 && NSMaxRange(fragment.content) != NSMaxRange(s.content)) {
+            if (expectSentinel)
+                break; // Success
+            else
                 return OFASN1TrailingData; // Unexpected early sentinel?
-            }
-            break;
         }
         
         if (fragment.indefinite) {
@@ -1238,6 +1287,7 @@ enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag 
         }
         
         if ((s.classAndConstructed & CLASS_MASK) == CLASS_UNIVERSAL && s.tag != fragment.tag) {
+            // Contained items must be the type we expect.
             return OFASN1InconsistentEncoding;
         }
         
@@ -1253,6 +1303,58 @@ enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag 
     }
     
     *outData = [[mbuffer copy] autorelease];
+    return OFASN1Success;
+}
+
+/** Return the contained items of a composite type (SEQUENCE, SET, etc.) by invoking a callback with their parsed tags.
+ The contained items may be of indefinite length.
+ If so, the item.content range does not include the sentinel/EOC bytes, but the berRange range includes both the tag+length bytes and the trailing sentinel if any.
+ 
+ -parameter cb: Callback invoked for each contained object. Return OFASN1Success to continue enumerating, other values to quit early.
+ 
+ */
+enum OFASN1ErrorCodes OFASN1EnumerateMembersAsBERRanges(NSData *buf, struct parsedTag obj, enum OFASN1ErrorCodes (NS_NOESCAPE ^cb)(NSData *samebuf, struct parsedTag item, NSRange berRange))
+{
+    NSUInteger position = obj.content.location;
+    NSUInteger maxIndex = ( (obj.indefinite && !obj.content.length) ? [buf length] : NSMaxRange(obj.content) );
+    
+    for(;;) {
+        struct parsedTag member;
+        enum OFASN1ErrorCodes rc;
+        if (position == maxIndex) {
+            if (obj.indefinite)
+                return OFASN1Truncated;
+            else
+                break;
+        }
+        rc = OFASN1ParseTagAndLength(buf, position, maxIndex, NO, &member);
+        if (rc)
+            return rc;
+        
+        if (isSentinelObject(&member)) {
+            if (obj.indefinite)
+                break;
+            else
+                return OFASN1UnexpectedType;
+        }
+        
+        NSUInteger endPosition;
+        if (member.indefinite) {
+            rc = OFASN1IndefiniteObjectExtent(buf, member.content.location, maxIndex, &endPosition);
+            if (rc)
+                return rc;
+            member.content.length = ( endPosition - BER_SENTINEL_LENGTH ) - member.content.location;
+        } else {
+            endPosition = NSMaxRange(member.content);
+        }
+        
+        rc = cb(buf, member, (NSRange){ .location = position, .length = endPosition - position });
+        if (rc)
+            return rc;
+        
+        position = endPosition;
+    }
+    
     return OFASN1Success;
 }
 
@@ -1497,14 +1599,19 @@ enum OFASN1ErrorCodes OFASN1UnDERSmallInteger(NSData *buf, const struct parsedTa
 NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
 {
     struct parsedTag tagged;
-    if (parseTagAndLength(buf, r.location, NSMaxRange(r), YES, &tagged) != OFASN1Success)
+    if (parseTagAndLength(buf, r.location, NSMaxRange(r), NO, &tagged) != OFASN1Success)
         return nil;
     if (tagged.tag != BER_TAG_OCTET_STRING ||
         (tagged.classAndConstructed & CLASS_MASK) != CLASS_UNIVERSAL)
         return nil;
     
     if (tagged.indefinite) {
-        tagged.content.length = NSMaxRange(r) - tagged.content.location;
+        // Make sure the sentinel is at the end of the buffer, as expected
+        if ( (tagged.content.location + BER_SENTINEL_LENGTH) > NSMaxRange(r) )
+            return nil; // Truncated
+        if (!OFASN1IsSentinelAt(buf, NSMaxRange(r) - BER_SENTINEL_LENGTH))
+            return nil; // Invalid encoding
+        tagged.content.length = NSMaxRange(r) - BER_SENTINEL_LENGTH - tagged.content.location;
     } else {
         if (NSMaxRange(tagged.content) != NSMaxRange(r))
             return nil;
@@ -1595,6 +1702,19 @@ NSData *OFASN1OIDFromString(NSString *s)
     [result appendBytes:encoded length:encodedLen];
     free(encoded);
     return result;
+}
+
+BOOL OFASN1IsSentinelAt(NSData *buf, NSUInteger position)
+{
+    _Static_assert(BER_SENTINEL_LENGTH == 2, "");
+    
+    /* The sentinel must be { 0, 0 } */
+    uint8_t sentinel[BER_SENTINEL_LENGTH];
+    [buf getBytes:sentinel range:(NSRange){ .location = position, .length = BER_SENTINEL_LENGTH }];
+    if (sentinel[0] != 0 || sentinel[1] != 0)
+        return NO;
+    else
+        return YES;
 }
 
 static unsigned bitSizeOfInteger(NSData *buffer, const struct parsedTag *st)
@@ -1789,7 +1909,7 @@ NSError *OFNSErrorFromASN1Error(int errCode_, NSString *extra)
     }
     
     if (extra) {
-        detail = [detail stringByAppendingFormat:@" (%@)", extra];
+        detail = [detail stringByAppendingFormat:@" (in %@)", extra];
     }
     
     return [NSError errorWithDomain:OFErrorDomain code:OFASN1Error userInfo: detail ? @{NSLocalizedDescriptionKey: detail} : nil];

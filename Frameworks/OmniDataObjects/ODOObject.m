@@ -29,15 +29,35 @@ RCS_ID("$Id$")
     return NO;
 }
 
-- (id)initWithEditingContext:(ODOEditingContext *)context entity:(ODOEntity *)entity primaryKey:(id)primaryKey;
++ (ODOEntity *)entity;
 {
-    OBPRECONDITION(context);
-    OBPRECONDITION(entity);
+    ODOEntity *entity = [ODOModel entityForClass:self];
+    OBASSERT(entity != nil);
+    if (entity == nil) {
+        NSDictionary *userInfo = @{
+            @"class": self,
+        };
+        NSString *reason = [NSString stringWithFormat:@"Couldn't find the entity represented by the implementation class \"%@\"", NSStringFromClass(self)];
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:reason userInfo:userInfo];
+    }
+    return entity;
+}
+
++ (NSString *)entityName;
+{
+    return [self entity].name;
+}
+
+- (instancetype)initWithEntity:(ODOEntity *)entity primaryKey:(nullable id)primaryKey insertingIntoEditingContext:(ODOEditingContext *)context;
+{
+    OBPRECONDITION(entity != nil);
+    OBPRECONDITION(context != nil);
     OBPRECONDITION([entity instanceClass] == [self class]);
-    OBPRECONDITION(!primaryKey || [primaryKey isKindOfClass:[[entity primaryKeyAttribute] valueClass]]);
+    OBPRECONDITION(primaryKey == nil || [primaryKey isKindOfClass:[[entity primaryKeyAttribute] valueClass]]);
     
-    if (!primaryKey)
-        primaryKey = [[context database] _generatePrimaryKeyForEntity:entity];
+    if (primaryKey == nil) {
+        primaryKey = [context.database _generatePrimaryKeyForEntity:entity];
+    }
     
     ODOObjectID *objectID = [[ODOObjectID alloc] initWithEntity:entity primaryKey:primaryKey];
     self = [self initWithEditingContext:context objectID:objectID isFault:NO];
@@ -46,7 +66,25 @@ RCS_ID("$Id$")
     // Record whether this should be undeletable. This only gets called
     self->_flags.undeletable = [[self class] objectIDShouldBeUndeletable:objectID];
     
+    [context insertObject:self];
+    
     return self;
+}
+
+- (instancetype)initWithContext:(ODOEditingContext *)context;
+{
+    return [self initWithContext:context primaryKey:nil];
+}
+
+- (instancetype)initWithContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey;
+{
+    ODOEntity *entity = [context.database.model entityForClass:[self class]];
+    OBASSERT(entity != nil);
+    if (entity == nil) {
+        return nil;
+    }
+    
+    return [self initWithEntity:entity primaryKey:primaryKey insertingIntoEditingContext:context];
 }
 
 - (void)dealloc;

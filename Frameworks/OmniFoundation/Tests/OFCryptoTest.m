@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OFTestCase.h"
+#import "OFCryptoTest.h"
 
 #import <OmniBase/macros.h>
 #import <OmniBase/rcsid.h>
@@ -22,9 +22,6 @@
 RCS_ID("$Id$");
 
 #define DAT(x) [NSData dataWithBytesNoCopy:(x) length:sizeof(x) freeWhenDone:NO]
-
-@interface OFCryptoTests : OFTestCase
-@end
 
 @implementation OFCryptoTests
 

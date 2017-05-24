@@ -22,6 +22,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		151FB8721DEF9955003E84F5 /* OmniSoftwareUpdate.strings in Resources */ = {isa = PBXBuildFile; fileRef = 151FB8701DEF9955003E84F5 /* OmniSoftwareUpdate.strings */; };
+		151FB87C1DEF9979003E84F5 /* OmniSystemInfo.strings in Resources */ = {isa = PBXBuildFile; fileRef = 151FB87A1DEF9979003E84F5 /* OmniSystemInfo.strings */; };
 		3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -494,6 +496,56 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		151FB8601DEF8ABE003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8611DEF8AD3003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8621DEF8AE1003E84F5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8631DEF8AEA003E84F5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8641DEF8AF4003E84F5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8651DEF8AFD003E84F5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8661DEF8B07003E84F5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Preferences.strings; sourceTree = "<group>"; };
+		151FB8671DEF8B12003E84F5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Preferences.strings"; sourceTree = "<group>"; };
+		151FB8681DEF98E2003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB8691DEF98E6003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86A1DEF98EA003E84F5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86B1DEF98ED003E84F5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86C1DEF98F0003E84F5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86D1DEF98F3003E84F5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86E1DEF98F9003E84F5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		151FB86F1DEF98FC003E84F5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OmniSystemInfoPreferences.strings"; sourceTree = "<group>"; };
+		151FB8711DEF9955003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8731DEF995D003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8741DEF9961003E84F5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8751DEF9963003E84F5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8761DEF9966003E84F5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8771DEF9969003E84F5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8781DEF996B003E84F5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		151FB8791DEF996F003E84F5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OmniSoftwareUpdate.strings"; sourceTree = "<group>"; };
+		151FB87B1DEF9979003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB87D1DEF9980003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB87E1DEF9982003E84F5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB87F1DEF9985003E84F5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB8801DEF9988003E84F5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB8811DEF998B003E84F5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB8821DEF998E003E84F5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		151FB8831DEF9992003E84F5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OmniSystemInfo.strings"; sourceTree = "<group>"; };
+		151FB8851DEF9A02003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB8871DEF9A2B003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB8891DEF9A2D003E84F5 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB88B1DEF9A2F003E84F5 /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB88D1DEF9A31003E84F5 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB88F1DEF9A34003E84F5 /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB8911DEF9A36003E84F5 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		151FB8931DEF9A38003E84F5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OSUPrivacyAlert.strings"; sourceTree = "<group>"; };
+		1545E8361DF221E000E358F4 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Preferences.strings; sourceTree = "<group>"; };
+		1545E8411DF221F900E358F4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Preferences.strings"; sourceTree = "<group>"; };
+		1545E8421DF2221200E358F4 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/OmniSystemInfoPreferences.strings; sourceTree = "<group>"; };
+		1545E8431DF2221500E358F4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OmniSystemInfoPreferences.strings"; sourceTree = "<group>"; };
+		1545E8441DF2225300E358F4 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/OmniSystemInfo.strings; sourceTree = "<group>"; };
+		1545E8451DF2225500E358F4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OmniSystemInfo.strings"; sourceTree = "<group>"; };
+		1545E8461DF2226400E358F4 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/OmniSoftwareUpdate.strings; sourceTree = "<group>"; };
+		1545E8471DF2226600E358F4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OmniSoftwareUpdate.strings"; sourceTree = "<group>"; };
+		1545E8481DF2227B00E358F4 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/OSUPrivacyAlert.strings; sourceTree = "<group>"; };
+		1545E8491DF2227E00E358F4 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OSUPrivacyAlert.strings"; sourceTree = "<group>"; };
 		15AFEB0418A06A1500AC19A2 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = iOS/de.lproj; sourceTree = "<group>"; };
 		15AFEB0518A06A1500AC19A2 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = iOS/es.lproj; sourceTree = "<group>"; };
 		15AFEB0618A06A1500AC19A2 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = iOS/fr.lproj; sourceTree = "<group>"; };
@@ -1094,6 +1146,8 @@
 		34A5F50C184E474C00E8BA9A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				151FB8701DEF9955003E84F5 /* OmniSoftwareUpdate.strings */,
+				151FB87A1DEF9979003E84F5 /* OmniSystemInfo.strings */,
 				42943FD31CBC2AC1005E9862 /* OSUDevices.json */,
 				34A5F50D184E474C00E8BA9A /* OmniSystemInfo-Info.plist */,
 				34A5F511184E474C00E8BA9A /* OmniSystemInfo-Prefix.pch */,
@@ -1105,12 +1159,12 @@
 		34A5F564184E670F00E8BA9A /* Preferences */ = {
 			isa = PBXGroup;
 			children = (
+				34A5F50E184E474C00E8BA9A /* Preferences.strings */,
 				34A5F565184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h */,
 				34A5F566184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m */,
 				34A5F55D184E64EE00E8BA9A /* OmniSystemInfo.png */,
 				34A5F55E184E64EE00E8BA9A /* OmniSystemInfo@2x.png */,
 				34A5F561184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib */,
-				34A5F50E184E474C00E8BA9A /* Preferences.strings */,
 			);
 			name = Preferences;
 			sourceTree = "<group>";
@@ -1628,6 +1682,16 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				fr,
+				it,
+				ja,
+				nl,
+				ru,
+				"zh-Hans",
+				ko,
+				"pt-BR",
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniSoftwareUpdate */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -1770,6 +1834,7 @@
 			files = (
 				3446927A1862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */,
 				34CF60AE184E769000C09946 /* OmniSoftwareUpdate.defaults in Resources */,
+				151FB87C1DEF9979003E84F5 /* OmniSystemInfo.strings in Resources */,
 				425DBA281CC56183003CF4EF /* nonews.html in Resources */,
 				34A5F563184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib in Resources */,
 				34A5F560184E64EE00E8BA9A /* OmniSystemInfo@2x.png in Resources */,
@@ -1777,6 +1842,7 @@
 				34A5F510184E474C00E8BA9A /* Preferences.strings in Resources */,
 				34A5F55F184E64EE00E8BA9A /* OmniSystemInfo.png in Resources */,
 				348CDD5A1A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html in Resources */,
+				151FB8721DEF9955003E84F5 /* OmniSoftwareUpdate.strings in Resources */,
 				497805291B82956200CA03F3 /* OSUSystemConfiguration.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2140,10 +2206,54 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		151FB8701DEF9955003E84F5 /* OmniSoftwareUpdate.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				151FB8711DEF9955003E84F5 /* de */,
+				151FB8731DEF995D003E84F5 /* es */,
+				151FB8741DEF9961003E84F5 /* fr */,
+				151FB8751DEF9963003E84F5 /* it */,
+				151FB8761DEF9966003E84F5 /* ja */,
+				151FB8771DEF9969003E84F5 /* nl */,
+				151FB8781DEF996B003E84F5 /* ru */,
+				151FB8791DEF996F003E84F5 /* zh-Hans */,
+				1545E8461DF2226400E358F4 /* ko */,
+				1545E8471DF2226600E358F4 /* pt-BR */,
+			);
+			name = OmniSoftwareUpdate.strings;
+			sourceTree = "<group>";
+		};
+		151FB87A1DEF9979003E84F5 /* OmniSystemInfo.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				151FB87B1DEF9979003E84F5 /* de */,
+				151FB87D1DEF9980003E84F5 /* es */,
+				151FB87E1DEF9982003E84F5 /* fr */,
+				151FB87F1DEF9985003E84F5 /* it */,
+				151FB8801DEF9988003E84F5 /* ja */,
+				151FB8811DEF998B003E84F5 /* nl */,
+				151FB8821DEF998E003E84F5 /* ru */,
+				151FB8831DEF9992003E84F5 /* zh-Hans */,
+				1545E8441DF2225300E358F4 /* ko */,
+				1545E8451DF2225500E358F4 /* pt-BR */,
+			);
+			name = OmniSystemInfo.strings;
+			sourceTree = "<group>";
+		};
 		344692771862855400FBDD73 /* OSUPrivacyAlert.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				4909C8951B7ECE5800D58546 /* Base */,
+				151FB8851DEF9A02003E84F5 /* de */,
+				151FB8871DEF9A2B003E84F5 /* es */,
+				151FB8891DEF9A2D003E84F5 /* fr */,
+				151FB88B1DEF9A2F003E84F5 /* it */,
+				151FB88D1DEF9A31003E84F5 /* ja */,
+				151FB88F1DEF9A34003E84F5 /* nl */,
+				151FB8911DEF9A36003E84F5 /* ru */,
+				151FB8931DEF9A38003E84F5 /* zh-Hans */,
+				1545E8481DF2227B00E358F4 /* ko */,
+				1545E8491DF2227E00E358F4 /* pt-BR */,
 			);
 			name = OSUPrivacyAlert.xib;
 			sourceTree = "<group>";
@@ -2152,6 +2262,16 @@
 			isa = PBXVariantGroup;
 			children = (
 				34A5F50F184E474C00E8BA9A /* en */,
+				151FB8601DEF8ABE003E84F5 /* de */,
+				151FB8611DEF8AD3003E84F5 /* es */,
+				151FB8621DEF8AE1003E84F5 /* fr */,
+				151FB8631DEF8AEA003E84F5 /* it */,
+				151FB8641DEF8AF4003E84F5 /* ja */,
+				151FB8651DEF8AFD003E84F5 /* nl */,
+				151FB8661DEF8B07003E84F5 /* ru */,
+				151FB8671DEF8B12003E84F5 /* zh-Hans */,
+				1545E8361DF221E000E358F4 /* ko */,
+				1545E8411DF221F900E358F4 /* pt-BR */,
 			);
 			name = Preferences.strings;
 			sourceTree = "<group>";
@@ -2160,6 +2280,16 @@
 			isa = PBXVariantGroup;
 			children = (
 				5F9568571C0E4D7100DBA34D /* Base */,
+				151FB8681DEF98E2003E84F5 /* de */,
+				151FB8691DEF98E6003E84F5 /* es */,
+				151FB86A1DEF98EA003E84F5 /* fr */,
+				151FB86B1DEF98ED003E84F5 /* it */,
+				151FB86C1DEF98F0003E84F5 /* ja */,
+				151FB86D1DEF98F3003E84F5 /* nl */,
+				151FB86E1DEF98F9003E84F5 /* ru */,
+				151FB86F1DEF98FC003E84F5 /* zh-Hans */,
+				1545E8421DF2221200E358F4 /* ko */,
+				1545E8431DF2221500E358F4 /* pt-BR */,
 			);
 			name = OmniSystemInfoPreferences.xib;
 			sourceTree = "<group>";

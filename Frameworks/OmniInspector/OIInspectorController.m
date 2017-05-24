@@ -63,7 +63,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 // Init and dealloc
 
-- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector;
+- (id)initWithInspector:(OIInspector <OIConcreteInspector> *)anInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 {
     OBPRECONDITION([anInspector conformsToProtocol:@protocol(OIConcreteInspector)]);
 
@@ -71,6 +71,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         return nil;
 
     inspector = anInspector;
+    _weak_inspectorRegistry = inspectorRegistry;
+    
     _isExpanded = !anInspector.isCollapsible;
     self.interfaceType = anInspector.preferredInterfaceType;
     
@@ -96,6 +98,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     return inspector;
 }
+
+@synthesize inspectorRegistry = _weak_inspectorRegistry;
 
 - (NSWindow *)window;
 {

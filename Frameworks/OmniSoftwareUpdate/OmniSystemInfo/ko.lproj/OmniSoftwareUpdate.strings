@@ -1,0 +1,213 @@
+/* Header for number of crashes row in the run/count table of the info sheet */
+"# of Crashes" = "충돌 수";
+
+/* Header for number of launches row in the run/count table of the info sheet */
+"# of Launches" = "실행 수";
+
+/* Software update hardware description page intro line one. */
+"%@ can optionally send us some basic information about your system configuration. We use this data to determine what systems our customers are using and therefore what systems are most important to support." = "%@은(는) 시스템 구성에 대해 일부 기본 정보를 선택적으로 전송할 수 있습니다. 이 데이터는 고객이 사용 중인 시스템을 확인하고 어떤 시스템을 가장 중요하게 지원해야 하는지 확인하기 위한 용도로 사용됩니다.";
+
+/* Explanatory text for the UUID in the info table. */
+"A random string that anonymously identifies your computer. This allows us to keep our database up to date when your system configuration changes. This is not associated with your name or any other personal information." = "사용자의 컴퓨터를 익명으로 식별하는 무작위 문자열입니다. 이 정보를 통해 사용자의 시스템 구성이 변경될 때 데이터베이스를 최신 상태로 유지할 수 있습니다. 이 정보는 사용자의 이름 또는 기타 개인적 정보와 연결되지 않습니다.";
+
+/* Header for all versions section in the run/count table of the info sheet */
+"All Versions" = "모든 버전";
+
+/* Title for application identifier in the info table. */
+"Application ID" = "응용 프로그램 ID";
+
+/* details panel string - header for application feature usage table */
+"Application Usage" = "응용 프로그램 사용";
+
+/* Title for application version in the info table. */
+"Application Version" = "응용 프로그램 버전";
+
+/* Title for the bus speed row in the info table. */
+"Bus Speed" = "버스 속도";
+
+/* News error header */
+"Cannot connect to News" = "뉴스에 연결할 수 없음";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "확인 작업을 실패했습니다.";
+
+/* Title for the computer model row in the info table. */
+"Computer Model" = "컴퓨터 모델";
+
+/* Title for the CPU count row in the info table. */
+"CPU Count" = "CPU 수";
+
+/* Title for the CPU speed row in the info table. */
+"CPU Speed" = "CPU 속도";
+
+/* Title for the CPU type row in the info table. */
+"CPU Type" = "CPU 유형";
+
+/* Header for current version section in the run/count table of the info sheet */
+"Current Version" = "현재 버전";
+
+/* Title for the display settings row in the info table. */
+"Display Settings" = "표시 설정";
+
+/* details panel string - version of video card driver */
+"Driver Version" = "드라이버 버전";
+
+/* error description */
+"Error fetching software update information." = "소프트웨어 업데이트 정보를 인출하는 중 오류가 발생했습니다.";
+
+/* error description */
+"Error while checking for updated version." = "업데이트된 버전을 검사하는 중 오류가 발생했습니다.";
+
+/* error reason */
+"Exception raised: %@" = "예외 사항 발생: %@";
+
+/* details panel string - list of OpenCL platform extensions */
+"Extensions" = "확장파일";
+
+/* details panel string - column header for OpenCL device extensions */
+"Exts" = "확장";
+
+/* details panel string - column header for OpenCL device core frequency */
+"Freq." = "주파수";
+
+/* system preferences hardware description page title */
+"Hardware Description" = "하드웨어 설명";
+
+/* details panel string - name of video card driver */
+"Hardware Driver" = "하드웨어 드라이버";
+
+/* Header for number of hours row in the run/count table of the info sheet */
+"Hours Run" = "실행 시간";
+
+/* Software update hardware description page intro line one. */
+"If you choose in %@ preferences to provide it, the following information is also sent." = "%@ 환경설정에서 이를 제공하도록 선택한 경우 다음 정보도 전송됩니다.";
+
+/* Software update hardware description page intro line two. */
+"If you prefer not to submit your system info, no problem — simply disable this option in the preference pane." = "시스템 정보를 제출하지 않으려는 경우에는 단순히 환경설정 창에서 이 옵션을 비활성화하면 됩니다.";
+
+/* Title for license type row in the info table. */
+"License Type" = "라이센스 유형";
+
+/* details panel string - amount of video memory installed
+   details panel string - column header for OpenCL device memory sizes
+   Title for the memory row in the info table. */
+
+
+"Memory" = "메모리";
+
+/* News webpage title */
+"News" = "뉴스";
+
+/* framework name when building the full OmniSoftwareUpdate */
+"Omni Software Update" = "Omni 소프트웨어 업데이트";
+
+/* framework name when building the mini OmniSoftwareInfo framework */
+"Omni System Info" = "Omni 시스템 정보";
+
+/* Software update hardware description page intro line two. Note the <b> HTML tag around 'never'. */
+"Omni will <b>never</b> release information about an individual’s computer configuration — only statistical information about all collected configurations. We honestly respect your privacy." = "Omni는 개별 사용자 컴퓨터 구성에 대한 정보를 <b>공개하지 않습니다</b>. 수집된 모든 구성에 대한 통계 정보만 사용됩니다. Omni는 사용자의 개인 정보 보호를 준수합니다.";
+
+/* Title for framework version in info table, when using the full framework. */
+"OmniSoftwareUpdate version" = "OmniSoftwareUpdate 버전";
+
+/* Title for framework version in info table, when using the mini framework. */
+"OmniSystemInfo version" = "OmniSystemInfo 버전";
+
+/* Title for the OpenCL information row in the info table. */
+"OpenCL Information" = "OpenCL 정보";
+
+/* details panel string - name of the OpenGL driver */
+"OpenGL Driver" = "OpenGL 드라이버";
+
+/* details panel string */
+"OpenGL Extensions" = "OpenGL 확장";
+
+/* Title for the OpenGL information row in the info table. */
+"OpenGL Information" = "OpenGL 정보";
+
+/* details panel string */
+"OpenGL Renderer" = "OpenGL 렌더러";
+
+/* details panel string */
+"OpenGL Vendor" = "OpenGL 공급업체";
+
+/* details panel string */
+"OpenGL Version" = "OpenGL 버전";
+
+/* Title for the OS version row in the info table. */
+"OS Version" = "OS 버전";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"P3 color space supported" = "P3 색상 공간 지원";
+
+/* details panel string - PCI bus ID of video card */
+"PCI ID" = "PCI ID";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "나중에 다시 시도하거나 저희에게 연락하여 고장 상태를 알려주십시오.";
+
+/* Title for the preferred language row in the info table. */
+"Preferred Language" = "선호 언어";
+
+/* Section header for the application run/count table in the info table. */
+"Run Count and Times" = "실행 횟수 및 시간";
+
+/* details panel value - shown if the sRGB colorspace is supported on the deepest display */
+"sRGB color space supported" = "sRGB 색상 공간 지원";
+
+/* error reason */
+"The background software update service failed." = "백그라운드 소프트웨어 업데이트 서비스를 실패했습니다.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "<%@>에서 반환된 데이터가 유효한 XML 도큐멘트가 아닙니다.";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "업데이트 정보가 서명되지 않았습니다.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "서명을 검사하는 중 문제가 발생했습니다.";
+
+/* text of dialog box informing user of change in software update query */
+"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself." = "이 %@ 버전은 신규 및 업데이트된 버전을 자체적으로 확인하기 위해 사용자의 인터넷 연결(활성화된 경우)를 사용해서 추가 정보를 전송합니다.";
+
+/* error reason */
+"Timed out waiting for the software update service." = "소프트웨어 업데이트 서비스를 기다리는 중 시간이 초과되었습니다.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "도구가 데이터를 반환하지 않음";
+
+/* details panel string - column header for OpenCL device type */
+"Type" = "유형";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "소프트웨어 업데이트 서버에서 응답을 인증할 수 없습니다.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "소프트웨어 업데이트 정보를 인출할 수 없습니다.";
+
+/* error description */
+"Unable to parse response from the software update server." = "소프트웨어 업데이트 서버에서 응답을 구문 분석할 수 없습니다.";
+
+/* details panel string - column header for OpenCL device processing-unit count */
+"Units" = "단위";
+
+/* Title for application current update track in the info table. */
+"Update Track" = "업데이트 추적";
+
+/* Title for the video cards row in the info table. */
+"Video Cards" = "비디오 카드";
+
+/* Title for application visible update tracks in the info table. */
+"Visible Update Tracks" = "표시 가능한 업데이트 추적";
+
+/* Software update hardware description page intro line four. Do not localized LINK_PLACEHOLDER; it will be replaced at runtime. */
+"We do make the statistics we gather public so that other developers can also benefit from this knowledge. You can see the information we release at the LINK_PLACEHOLDER page." = "다른 개발자도 이 정보를 통해 혜택을 얻을 수 있도록 수집한 통계 정보를 공개합니다. 이 정보는 LINK_PLACEHOLDER 페이지에서 확인할 수 있습니다.";
+
+/* Format string for the information sent header when using the full framework. */
+"When you check for updates, the following information about your copy of %@ is always sent." = "업데이트를 확인할 때는 사용자의 %@ 사본에 대한 다음 정보가 항상 전송됩니다.";
+
+/* Format string for the information sent header when using the mini framework. */
+"When you check for updates, the following information about your copy of %@ is sent." = "업데이트를 확인할 때는 사용자의 %@ 사본에 대한 다음 정보가 전송됩니다.";
+
+/* Explanatory text for the license type row in the info table. */
+"Your license key itself will never be sent." = "라이센스 키 자체는 전송되지 않습니다.";

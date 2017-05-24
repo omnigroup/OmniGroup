@@ -642,7 +642,7 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 	[description release];
 	[symbolicTrace release];
 #if defined(OMNI_ASSERTIONS_ON)
-        OBAssertFailed(); // In case there is a breakpoint in the debugger for assertion failures.
+        OBAssertFailed([description UTF8String]); // In case there is a breakpoint in the debugger for assertion failures.
 #endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
@@ -715,7 +715,7 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 	[description release];
 	[symbolicTrace release];
 #if defined(OMNI_ASSERTIONS_ON)
-        OBAssertFailed(); // In case there is a breakpoint in the debugger for assertion failures.
+        OBAssertFailed([description UTF8String]); // In case there is a breakpoint in the debugger for assertion failures.
 #endif
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];

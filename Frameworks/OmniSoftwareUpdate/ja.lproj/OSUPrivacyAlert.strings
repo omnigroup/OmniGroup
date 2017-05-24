@@ -1,0 +1,14 @@
+/* Class = "NSButtonCell"; title = "Open Preferences"; ObjectID = "56"; */
+"56.title" = "環境設定を開く";
+
+/* Class = "NSButtonCell"; title = "OK"; ObjectID = "57"; */
+"57.title" = "OK";
+
+/* Class = "NSTextFieldCell"; title = "%@ has the ability to automatically use your Internet connection (when active) to check for new and updated versions of itself."; ObjectID = "59"; */
+"59.title" = "%@ には、インターネット接続を利用して（利用可能な場合）、新しく更新されたバージョンがあるかどうかを自動的に確認する機能があります。";
+
+/* Class = "NSTextFieldCell"; title = "If you choose to send us your system information, you encourage better support for your system configuration in our future releases. This is entirely voluntary and anonymous. We promise never to use your information for nefarious purposes. Please click Open Preferences to learn more."; ObjectID = "60"; */
+"60.title" = "お使いのシステムに関する情報を送信していただくことにより、弊社では、将来のリリースにおいて、そのシステム構成のサポートに優先的に取り組むことができます。これは完全に匿名かつ有志の行為です。弊社は、お客様からいただいた情報を不正な目的に使用しないことを固くお約束いたします。詳しくは、「環境設定を開く」をクリックしてください。";
+
+/* Class = "NSButtonCell"; title = "Include system information when checking for updates"; ObjectID = "61"; */
+"61.title" = "アップデートの確認時にシステム情報を送信する";

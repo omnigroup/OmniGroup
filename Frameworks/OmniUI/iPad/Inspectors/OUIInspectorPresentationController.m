@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import <OmniUI/OUIInspectorPresentationController.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniAppKit/OAAppearance.h>
+
+#import "OUIInspectorNavigationController.h"
 
 RCS_ID("$Id$")
 
@@ -165,6 +167,8 @@ RCS_ID("$Id$")
 
 - (void)presentationTransitionWillBegin
 {
+    [self.presentedViewController.transitionCoordinator animateAlongsideTransition:self.animationsToPerformAlongsidePresentation completion:self.presentInspectorCompletion];
+    
     UIWindow *window = self.containerView.window;
     _originalTintAdjustmentMode = window.tintAdjustmentMode;
     [self _setTintAdjustmentMode:UIViewTintAdjustmentModeDimmed forView:window];
@@ -177,6 +181,8 @@ RCS_ID("$Id$")
 
 - (void)dismissalTransitionWillBegin
 {
+    [self.presentedViewController.transitionCoordinator animateAlongsideTransition:self.animationsToPerformAlongsideDismissal completion:self.dismissInspectorCompletion];
+    
     [self _setTintAdjustmentMode:_originalTintAdjustmentMode forView:self.containerView.window];
     
     [super dismissalTransitionWillBegin];
@@ -193,6 +199,11 @@ RCS_ID("$Id$")
     } else {
         [self _setTintAdjustmentMode:UIViewTintAdjustmentModeDimmed forView:self.containerView.window];
     }
+    
+    self.animationsToPerformAlongsidePresentation = nil;
+    self.presentInspectorCompletion = nil;
+    self.animationsToPerformAlongsideDismissal = nil;
+    self.dismissInspectorCompletion = nil;
 }
 
 - (UIModalPresentationStyle)adaptivePresentationStyle

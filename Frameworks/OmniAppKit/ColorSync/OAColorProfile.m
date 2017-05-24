@@ -724,7 +724,6 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
 
 - initDefaultProofProfile;
 {
-	//TODO: update for new ColorSync APIs!
 #if OA_USE_COLOR_MANAGER
     if (!(self = [super init]))
         return nil;
@@ -757,7 +756,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     isMutable = YES;
     return self;
 #else
-    OBFinishPorting;
+    OBFinishPortingWithNote("update for new ColorSync APIs");
 #endif
 }
 

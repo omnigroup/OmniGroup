@@ -614,12 +614,12 @@ static OALinearRGBA interpRGBA(OALinearRGBA c0, OALinearRGBA c1, CGFloat t)
 }
 
 #if USE_UIKIT
-- (UIColor *)toColor;
+- (UIColor *)makePlatformColor;
 {
     return [UIColor colorWithRed:_rgba.r green:_rgba.g blue:_rgba.b alpha:_rgba.a];
 }
 #else
-- (NSColor *)toColor;
+- (NSColor *)makePlatformColor;
 {
     return [NSColor colorWithRed:_rgba.r green:_rgba.g blue:_rgba.b alpha:_rgba.a];
 }
@@ -770,14 +770,14 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
 }
 
 #if USE_UIKIT
-- (UIColor *)toColor;
+- (UIColor *)makePlatformColor;
 {
     // There is a HSV initializer on UIColor, but it'll convert to RGBA too. Let's be consistent about how we do that.
     OALinearRGBA rgba = OAHSVToRGB(_hsva);
     return [UIColor colorWithRed:rgba.r green:rgba.g blue:rgba.b alpha:rgba.a];
 }
 #else
-- (NSColor *)toColor;
+- (NSColor *)makePlatformColor;
 {
     OALinearRGBA rgba = OAHSVToRGB(_hsva);
     return [NSColor colorWithRed:rgba.r green:rgba.g blue:rgba.b alpha:rgba.a];
@@ -925,12 +925,12 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 }
 
 #if USE_UIKIT
-- (UIColor *)toColor;
+- (UIColor *)makePlatformColor;
 {
     return [UIColor colorWithWhite:_white alpha:_alpha];
 }
 #else
-- (NSColor *)toColor;
+- (NSColor *)makePlatformColor;
 {
     return [NSColor colorWithWhite:_white alpha:_alpha];
 }
@@ -950,8 +950,110 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 @end
 
+#if OA_SUPPORT_PATTERN_COLOR
+@interface OAPatternColor : OAColor <OAColor>
+{
+    NSData *_imageData;
+}
+
+@end
+
+@implementation OAPatternColor
+
+static OAColor *OAPatternColorCreate(NSData *imageData)
+{
+    OAPatternColor *color = [[OAPatternColor alloc] init];
+    color->_imageData = [imageData copy];
+    OAColorInitPlatformColor(color);
+    return color;
+}
+
+- (OAColorSpace)colorSpace;
+{
+    return OAColorSpacePattern;
+}
+
+- (CGFloat)whiteComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)redComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)greenComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)blueComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (OALinearRGBA)toRGBA;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)hueComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)saturationComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)brightnessComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+- (CGFloat)alphaComponent;
+{
+    OBRejectInvalidCall(self, _cmd, @"Pattern colors don't have components.");
+}
+
+#if USE_UIKIT
+- (UIColor *)makePlatformColor;
+{
+    UIImage *image = [[UIImage alloc] initWithData:_imageData];
+    CGSize imageSize = image.size;
+    if (image == nil || CGSizeEqualToSize(imageSize, CGSizeZero)) {
+        NSLog(@"Warning, could not rebuild pattern color from image %@, data %@", image, _imageData);
+        return [UIColor blackColor];
+    } else {
+        return [UIColor colorWithPatternImage:image];
+    }
+}
+#else
+- (NSColor *)makePlatformColor;
+{
+    NSBitmapImageRep *bitmapImageRep = (id)[NSBitmapImageRep imageRepWithData:_imageData];
+    CGSize imageSize = [bitmapImageRep size];
+    if (bitmapImageRep == nil || CGSizeEqualToSize(imageSize, CGSizeZero)) {
+        NSLog(@"Warning, could not rebuild pattern color from image rep %@, data %@", bitmapImageRep, _imageData);
+        return [NSColor blackColor];
+    } else {
+        NSImage *patternImage = [[NSImage alloc] initWithSize:imageSize];
+        [patternImage addRepresentation:bitmapImageRep];
+        return [NSColor colorWithPatternImage:patternImage];
+    }
+}
+#endif
+
+@end
+#endif
+
 
 @implementation OAColor
+{
+    OA_PLATFORM_COLOR_CLASS *_platformColor;
+}
 
 static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
 {
@@ -971,9 +1073,10 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
             OBASSERT(CGColorGetNumberOfComponents(cgColor) == 4);
             return [OAColor colorWithRed:components[0] green:components[1] blue:components[2] alpha:components[3]];
         case kCGColorSpaceModelPattern:
-            // Graffle uses color patterns that are generated in MacOS documents
+            OBASSERT_NOT_REACHED("Graffle uses color patterns that are generated in MacOS documents");
             return [OAColor purpleColor];
         default:
+            OBASSERT_NOT_REACHED("Graffle uses color patterns that are generated in MacOS documents");
             NSLog(@"color = %@", cgColor);
             NSLog(@"colorSpace %@", colorSpace);
             return [OAColor redColor];
@@ -1035,16 +1138,12 @@ static NSColorSpace *_grayscaleColorSpace(void)
 }
 #endif
 
+#if OA_SUPPORT_PATTERN_COLOR
 + (OAColor *)colorWithPatternImageData:(NSData *)imageData
 {
-#if USE_UIKIT
-    UIImage *image = [UIImage imageWithData:imageData];
-    return [OAColor colorWithPlatformColor:[UIColor colorWithPatternImage:image]];
-#else
-    NSImage *image = [[NSImage alloc] initWithData:imageData];
-    return [OAColor colorWithPlatformColor:[NSColor colorWithPatternImage:image]];
-#endif
+    return OAPatternColorCreate(imageData);
 }
+#endif
 
 // Always returns RGBA. This code is adapted from OmniAppKit so that the preferences are compatible.
 static BOOL parseRGBAString(NSString *value, OALinearRGBA *rgba)
@@ -1073,7 +1172,7 @@ static NSString *rgbaStringFromRGBAColor(OALinearRGBA rgba)
 static void OAColorInitPlatformColor(OAColor *self)
 {
     OBPRECONDITION(self->_platformColor == nil);
-    self->_platformColor = self.toColor; // UIColor isn't copyable. -retain is good enough since all colors are immutable anyway.
+    self->_platformColor = [self makePlatformColor]; // UIColor isn't copyable. -retain is good enough since all colors are immutable anyway.
     OBPOSTCONDITION(self->_platformColor != nil);
 }
 
@@ -1274,6 +1373,12 @@ static void OAColorInitPlatformColor(OAColor *self)
     // TODO: We immediately flatten to a concrete color, while named system colors are dynamic.  Matters?
     return [self colorWithPlatformColor:[NSColor selectedTextBackgroundColor]];
 #endif
+}
+
+- (OA_PLATFORM_COLOR_CLASS *)toColor;
+{
+    OBPRECONDITION(_platformColor);
+    return _platformColor;
 }
 
 - (void)set;

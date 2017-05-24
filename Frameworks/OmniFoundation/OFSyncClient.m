@@ -304,6 +304,9 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     _hostIdentifierDomain = [hostIdentifierDomain copy];
     _currentFrameworkVersion = [currentFrameworkVersion copy];
     
+    // Make sure this gets cached (ideally on the main queue).
+    [self defaultClientIdentifier];
+    
     return self;
 }
 

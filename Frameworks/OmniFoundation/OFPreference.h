@@ -153,6 +153,7 @@ static void _InitializeConfigurationValue ## counter(void) { \
 #define _OFDeclareConfigurationValue(kind, name, counter, defaultValue, minimumValue, maximumValue) _OFDeclareConfigurationValue_(kind, name, counter, defaultValue, minimumValue, maximumValue)
 
 // If you want your log level/time interval variable to be static, you can insert 'static' before using these macros.
+// Declare the debug log level for <name> in your project scheme to enable logging.
 #define OFDeclareDebugLogLevel(name) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, 0, 0, 10)
 #define OFDeclareTimeInterval(name, default_value, min_value, max_value) _OFDeclareConfigurationValue(TimeInterval, name, __COUNTER__, (default_value), (min_value), (max_value))
 

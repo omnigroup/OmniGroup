@@ -14,16 +14,9 @@
 #import "OSUFlippedView.h"
 #import "OSUThinBorderView.h"
 
-#import <OmniFoundation/OmniFoundation.h>
-#import <OmniAppKit/NSPopUpButton-OAExtensions.h>
-#import <OmniAppKit/NSStackView-OAExtensions.h>
-#import <OmniAppKit/NSTextField-OAExtensions.h>
-#import <OmniAppKit/NSView-OAExtensions.h>
-#import <OmniAppKit/OAConstraintBasedStackView.h>
-#import <OmniAppKit/OAPreferenceController.h>
-#import <OmniAppKit/OAPreferenceClientRecord.h>
-#import <OmniAppKit/OAVersion.h>
-#import <OmniBase/OmniBase.h>
+@import OmniBase;
+@import OmniFoundation;
+@import OmniAppKit;
 
 #import <AppKit/AppKit.h>
 #import <WebKit/WebDataSource.h>
@@ -351,7 +344,7 @@ RCS_ID("$Id$");
     if (self.checkInProgress) {
         return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
     }
-    return NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, "button title");
+    return OAOK();
 }
 
 - (void)setAvailableItems:(NSArray *)items;

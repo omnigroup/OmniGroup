@@ -27,8 +27,8 @@
 // Thus, you either need to implement this or the manually give slices to the stacked slice panes. If you make slices this way, you must return all the possible slices and have the slices themselves decide whether they are appropriate for the inspected object set.
 - (NSArray *)inspector:(OUIInspector *)inspector makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
+// JCTODO: Inspector refactor. OUIInspector is no longer involved with presentation and cannot possibly know when to notificy its delegate about dismissal. This functionality needs to be moved.
 - (void)inspectorWillDismiss:(OUIInspector *)inspector;
-// Delegates should normally implement this method to restore the first responder.
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 
 // gives the delegate an opportunity to configure the inspectors on reopen. Return NO to let OUIInspector pop to root view controller.

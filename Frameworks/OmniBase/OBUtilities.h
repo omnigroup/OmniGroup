@@ -79,7 +79,6 @@ extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsaf
 // ARC doesn't allow casting between 'void **' and '__unsafe_unretained id *' for some reason.
 extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer);
 
-#import <OmniBase/OBBundle.h>
     
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
@@ -92,30 +91,51 @@ extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned i
 
 // A common pattern when refactoring or updating code is to #if 0 out portions that haven't been updated and leave a marker there.  This function serves as the 'to do' marker and allows you to demand-port the remaining code after working out the general structure.
 // NOTE: The formatting of the "header" argument is formulated so you can run 'strings' on your binary and find a list of all the file:line locations of these.
-extern void _OBFinishPorting(const char *header, const char *function) NORETURN;
-#define _OBFinishPorting_(file, line, function) _OBFinishPorting("OBFinishPorting at " file ":" #line, function)
-#define _OBFinishPorting__(file, line, function) _OBFinishPorting_(file, line, function)
-#define OBFinishPorting _OBFinishPorting__(__FILE__, __LINE__, __PRETTY_FUNCTION__)
+
+extern void _OBFinishPorting(const char *text) NORETURN;
+#define _OBFinishPorting_(file, line, message) do { \
+    static const char *text = "OBFinishPorting at " file ":" #line " -- " message; \
+    _OBFinishPorting(text); \
+} while(0)
+
+#ifdef DEBUG
+#define _OBFinishPorting__(file, line, message) _OBFinishPorting_(file, line, message)
+#else
+#define _OBFinishPorting__(file, line, message) _OBFinishPorting_(file, line, "")
+#endif
+
+#define OBFinishPortingWithNote(msg) _OBFinishPorting__(__FILE__, __LINE__, msg)
+
+#define OBFinishPorting OBFinishPortingWithNote("")
+
 
 // Something that needs porting, but not immediately
-extern void _OBFinishPortingLater(const char *header, const char *function, const char *message);
-#define _OBFinishPortingLater_(file, line, function, message) _OBFinishPortingLater("OBFinishPortingLater at " file ":" #line, function, (message))
-#define _OBFinishPortingLater__(file, line, function, message) _OBFinishPortingLater_(file, line, function, (message))
+extern void _OBFinishPortingLater(const char *text);
+#define _OBFinishPortingLater_(file, line, message)  do { \
+    static const char *text = "OBFinishPortingLater at " file ":" #line " -- " message; \
+    _OBFinishPortingLater(text); \
+} while(0)
+
+#ifdef DEBUG
+#define _OBFinishPortingLater__(file, line, message) _OBFinishPortingLater_(file, line, message)
+#else
+#define _OBFinishPortingLater__(file, line, message) _OBFinishPortingLater_(file, line, "")
+#endif
+
 #define OBFinishPortingLater(msg) do { \
     static BOOL warned = NO; \
     if (!warned) { \
         warned = YES; \
-        _OBFinishPortingLater__(__FILE__, __LINE__, __PRETTY_FUNCTION__, (msg)); \
+        _OBFinishPortingLater__(__FILE__, __LINE__, msg); \
     } \
 } while(0)
 
 extern BOOL OBIsBeingDebugged(void);
-    
-#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
+extern void OBTrap(void) NORETURN;
+
 extern void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message);
 #define OBStopInDebugger(message) _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, (message))
 #define OBStepThroughAndVerify() _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, "Step through and verify.")
-#endif
     
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;

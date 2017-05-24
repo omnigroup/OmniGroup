@@ -1,0 +1,8 @@
+/* MAS-only: text of dialog box title informing user before sending system info */
+"%@ has the ability to automatically send anonymous system information to The Omni Group." = "%@ には、The Omni Group に匿名で情報を自動送信する機能があります。";
+
+/* MAS-only: label for switch in privacy alert to specify whether to send system info */
+"Send anonymous system information to The Omni Group" = "The Omni Group に匿名のシステム情報を送信";
+
+/* MAS-only: text of dialog box informing user of change in anonymous system info that will be sent */
+"This version of %@ sends additional anonymous system information to The Omni Group." = "このバージョンの %@ では、さらに多くの匿名のシステム情報が The Omni Group に送信されます。";

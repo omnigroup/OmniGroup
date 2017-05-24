@@ -629,6 +629,12 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     NSBeep();
 }
 
+- (NSString *)helpIndexFilename;
+{
+    return @"index";
+}
+
+
 - (NSURL *)builtInHelpURLForHelpURLString:(NSString *)helpURLString;
 {
     NSBundle *mainBundle = [NSBundle mainBundle];
@@ -636,7 +642,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     NSString *helpFolder = [infoDict objectForKey:@"OAHelpFolder"];
 
     if (helpFolder != nil) {
-        NSURL *indexPageURL = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html" subdirectory:helpFolder];
+        NSURL *indexPageURL = [[NSBundle mainBundle] URLForResource:[self helpIndexFilename] withExtension:@"html" subdirectory:helpFolder];
         NSURL *targetURL = [NSURL URLWithString:helpURLString relativeToURL:indexPageURL];
 
         if (OFISEQUAL([targetURL scheme], @"anchor")) {

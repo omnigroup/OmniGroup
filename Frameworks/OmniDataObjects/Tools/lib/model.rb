@@ -117,6 +117,7 @@ module OmniDataObjects
         efp.h << "\n\nNS_ASSUME_NONNULL_END\n"
       }
       
+      create_func = "#{name}CreateModel"
       func = "#{name}Model"
       fp.br
 
@@ -134,10 +135,9 @@ module OmniDataObjects
       fp.m << "#pragma clang diagnostic push\n"
       fp.m << "#pragma clang diagnostic ignored \"-Wundeclared-selector\"\n\n"
       
-      fp.m << "ODOModel * #{func}(void)\n{\n"
+      fp.m << "static ODOModel * #{create_func}(void)\n{\n"
       fp.m << "    DisableAnalysis();\n\n"
-      fp.m << "    static ODOModel *model = nil;\n"
-      fp.m << "    if (model) return model;\n\n"
+      fp.m << "    ODOModel *model = nil;\n\n"
       
       begin
         entities.each {|e|
@@ -165,6 +165,15 @@ module OmniDataObjects
       fp.m << "}\n\n"
 
       fp.m << "#pragma clang diagnostic pop\n\n"
+      
+      fp.m << "ODOModel * #{func}(void)\n{\n"
+      fp.m << "    static ODOModel *model = nil;\n"
+      fp.m << "    static dispatch_once_t onceToken;\n"
+      fp.m << "    dispatch_once(&onceToken, ^{\n"
+      fp.m << "        model = #{create_func}();\n"
+      fp.m << "    });\n"
+      fp.m << "    return model;\n"
+      fp.m << "}\n\n"
       
       fs.write
     end

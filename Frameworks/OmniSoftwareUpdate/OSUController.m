@@ -123,9 +123,9 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
             
             if (!info || ![info boolForKey:@"isKnown"]) {
                 NSAlert *alert = [[NSAlert alloc] init];
-                alert.messageText = @"Unknown software update track";
+                alert.messageText = OBUnlocalized(@"Unknown software update track");
                 alert.informativeText = [NSString stringWithFormat:@"Specified the track \"%@\" but that isn't a track we know about.  Typo?", runningTrack];
-                [alert addButtonWithTitle:@"OK"];
+                [alert addButtonWithTitle:OAOK()];
                 [alert runModal];
             }
         }

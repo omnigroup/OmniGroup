@@ -187,18 +187,13 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     if (!patternData)
         patternData = getters.data(container, @"tiff");
     if ([patternData isKindOfClass:[NSData class]]) {
-        // <bug://bugs/60462> (Deal with pattern color archive/unarchive in OAColor on iPad)
-        OBFinishPortingLater("Warning: unable to unarchive pattern colors on iOS, falling back to white");
-#if 0
-        NSBitmapImageRep *bitmapImageRep = (id)[NSBitmapImageRep imageRepWithData:patternData];
-        NSSize imageSize = [bitmapImageRep size];
-        if (bitmapImageRep == nil || NSEqualSizes(imageSize, NSZeroSize)) {
-            NSLog(@"Warning, could not rebuild pattern color from image rep %@, data %@", bitmapImageRep, patternData);
-        } else {
-            NSImage *patternImage = [[NSImage alloc] initWithSize:imageSize];
-            [patternImage addRepresentation:bitmapImageRep];
-            return [NSColor colorWithPatternImage:[patternImage autorelease]];
+#if OA_SUPPORT_PATTERN_COLOR
+        OAColor *color = [OAColor colorWithPatternImageData:patternData];
+        if (color) {
+            return color;
         }
+#else
+        OBFinishPortingLater("bug:///85174 (iOS-OmniGraffle Discussion: Feature: Pattern color fills in the Color Picker)");
 #endif
         
         // fall through

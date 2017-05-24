@@ -54,7 +54,7 @@ static unsigned MethodSignatureConflictCount = 0;
 static unsigned SuppressedConflictCount = 0;
 static unsigned MethodMultipleImplementationCount = 0;
 
-static char *_copyNormalizeMethodSignature(const char *sig)
+static char *_copyNormalizeMethodSignature(SEL sel, const char *sig)
 {
     // Radar 6328901: No #defines for ObjC runtime method type encodings 'V' and 'O'
     if (sig[0] == 'V' && sig[1] == 'v') {
@@ -115,6 +115,12 @@ static char *_copyNormalizeMethodSignature(const char *sig)
         memmove(opaqueTagStart + 2, tail, length);
     }
 
+    // When subclassing NSObject in Swift, if you override -hash, you must type the result as Int instead of UInt or you'll get a compiler error. The sign of the result doesn't matter to any collection that is calling, so map this to unsigned to be compatible with the signature for -[NSObject hash].
+    if (sel_isEqual(sel, @selector(hash)) && copy[0] == _C_LNG_LNG) {
+        copy[0] = _C_ULNG_LNG;
+    }
+
+
     //if (strcmp(sig, copy)) NSLog(@"Normalized '%s' to '%s'", sig, copy);
     
     return copy;
@@ -135,8 +141,8 @@ static BOOL _methodSignaturesCompatible(Class cls, SEL sel, const char *sig1, co
     if (strcmp(sig1, sig2) == 0)
         return YES;
     
-    char *norm1 = _copyNormalizeMethodSignature(sig1);
-    char *norm2 = _copyNormalizeMethodSignature(sig2);
+    char *norm1 = _copyNormalizeMethodSignature(sel, sig1);
+    char *norm2 = _copyNormalizeMethodSignature(sel, sig2);
     
     BOOL compatible = (strcmp(norm1, norm2) == 0);
     
@@ -291,7 +297,7 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
                 const char * const badPrefix = "automaticallyNotifiesObserversFor";
                 if (strncmp(selName, badPrefix, strlen(badPrefix)) == 0) {
                     NSLog(@"Class %s implements +%s, but this is likely a typo where \"For\" should be replaced by \"Of\".", class_getName(metaClass), selName);
-                    OBAssertFailed(); // stop in the debugger if we have a breakpoint
+                    OBAssertFailed("");
                 }
             }
             
@@ -341,7 +347,7 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
                                     /* No luck */
                                     namebuf[3] = tolower(namebuf[3]);
                                     NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
-                                    OBAssertFailed(); // stop in the debugger if we have a breakpoint
+                                    OBAssertFailed("");
                                 }
                             }
                         }
@@ -391,8 +397,8 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
                 NSString *methodInfo = describeMethod(method, &nonSystem);
                 NSString *superMethodInfo = describeMethod(superMethod, &nonSystem);
                 if (nonSystem || OBReportWarningsInSystemLibraries) {
-                    char *normalizedSig = _copyNormalizeMethodSignature(types);
-                    char *normalizedSigSuper = _copyNormalizeMethodSignature(superTypes);
+                    char *normalizedSig = _copyNormalizeMethodSignature(sel, types);
+                    char *normalizedSigSuper = _copyNormalizeMethodSignature(sel, superTypes);
                     NSLog(@"Method %s has conflicting type signatures between class and its superclass:\n\tsignature %s for class %s has %@\n\tsignature %s for class %s has %@",
                           sel_getName(sel),
                           normalizedSig, class_getName(cls), methodInfo,
@@ -438,8 +444,8 @@ static void _checkMethodInClassVsMethodInProtocol(Class cls, Protocol *protocol,
         NSString *methodInfo = describeMethod(m, &nonSystem);
         
         if (nonSystem || OBReportWarningsInSystemLibraries) {
-            char *normalizedSig = _copyNormalizeMethodSignature(types);
-            char *normalizedSigProtocol = _copyNormalizeMethodSignature(desc.types);
+            char *normalizedSig = _copyNormalizeMethodSignature(sel, types);
+            char *normalizedSigProtocol = _copyNormalizeMethodSignature(sel, desc.types);
             
             NSLog(@"Method %s has conflicting type signatures between class and its adopted protocol:\n\tsignature %s for class %s has %@\n\tsignature %s for protocol %s",
                   sel_getName(sel),
