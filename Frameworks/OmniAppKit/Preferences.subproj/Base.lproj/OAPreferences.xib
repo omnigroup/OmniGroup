@@ -1,15 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9532" systemVersion="15E65" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <development version="5000" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9532"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OAPreferenceController">
             <connections>
+                <outlet property="containerView" destination="cwq-8x-BaD" id="Zcg-GI-zlL"/>
                 <outlet property="globalControlsView" destination="172" id="177"/>
                 <outlet property="helpButton" destination="175" id="178"/>
-                <outlet property="preferenceBox" destination="171" id="179"/>
                 <outlet property="returnToOriginalValuesButton" destination="173" id="180"/>
                 <outlet property="window" destination="169" id="181"/>
             </connections>
@@ -26,22 +27,15 @@
                 <rect key="frame" x="0.0" y="0.0" width="595" height="327"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <box title="Box" boxType="oldStyle" borderType="none" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="171">
+                    <customView translatesAutoresizingMaskIntoConstraints="NO" id="cwq-8x-BaD" customClass="OAFlippedView">
                         <rect key="frame" x="0.0" y="0.0" width="595" height="327"/>
-                        <view key="contentView">
-                            <rect key="frame" x="0.0" y="0.0" width="595" height="327"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        </view>
-                        <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                        <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                        <font key="titleFont" metaFont="system"/>
-                    </box>
+                    </customView>
                 </subviews>
                 <constraints>
-                    <constraint firstAttribute="bottom" secondItem="171" secondAttribute="bottom" id="S83-8u-v6z"/>
-                    <constraint firstItem="171" firstAttribute="top" secondItem="170" secondAttribute="top" id="TlQ-cQ-TJ9"/>
-                    <constraint firstItem="171" firstAttribute="leading" secondItem="170" secondAttribute="leading" id="aCl-D8-DYH"/>
-                    <constraint firstAttribute="trailing" secondItem="171" secondAttribute="trailing" id="drs-fZ-j7o"/>
+                    <constraint firstItem="cwq-8x-BaD" firstAttribute="top" secondItem="170" secondAttribute="top" id="ZDF-jO-Qtk"/>
+                    <constraint firstAttribute="bottom" secondItem="cwq-8x-BaD" secondAttribute="bottom" id="fdV-Ru-fdb"/>
+                    <constraint firstItem="cwq-8x-BaD" firstAttribute="leading" secondItem="170" secondAttribute="leading" id="toM-Nf-Fwz"/>
+                    <constraint firstAttribute="trailing" secondItem="cwq-8x-BaD" secondAttribute="trailing" id="vxq-7n-lAx"/>
                 </constraints>
             </view>
             <connections>
@@ -79,6 +73,7 @@
                 <constraint firstItem="173" firstAttribute="top" secondItem="172" secondAttribute="top" constant="20" symbolic="YES" id="4n1-Ce-Ag3"/>
                 <constraint firstItem="175" firstAttribute="top" secondItem="173" secondAttribute="top" id="8Lh-oL-mbN"/>
                 <constraint firstAttribute="trailing" secondItem="175" secondAttribute="trailing" constant="20" symbolic="YES" id="8nm-ta-837"/>
+                <constraint firstAttribute="bottom" secondItem="173" secondAttribute="bottom" constant="20" symbolic="YES" id="Yfq-Rj-5VZ"/>
                 <constraint firstItem="173" firstAttribute="leading" secondItem="172" secondAttribute="leading" constant="20" symbolic="YES" id="nDM-an-1Ru"/>
             </constraints>
             <point key="canvasLocation" x="772" y="738.5"/>

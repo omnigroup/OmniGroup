@@ -37,13 +37,13 @@
 				<string>Basic</string>
 				<key>defaultsArray</key>
 				<array>
+					<string>OSUCheckEnabled</string>
 					<string>OSUCheckInterval</string>
 					<string>OSUIncludeHardwareDetails</string>
 					<string>OSUSendSystemInfoEnabled</string>
-					<string>AutomaticSoftwareUpdateCheckEnabled</string>
 					<string>OSUUnreadNews</string>
 					<string>OSUCurrentNewsURL</string>
-                                        <string>OSUNewsPublishDate</string>
+					<string>OSUNewsPublishDate</string>
 				</array>
 				<key>helpURL</key>
 				<string>anchor:updatepreferences</string>

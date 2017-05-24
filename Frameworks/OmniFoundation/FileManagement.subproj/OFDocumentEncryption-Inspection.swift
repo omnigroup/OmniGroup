@@ -19,7 +19,7 @@ extension OFDocumentEncryptionSettings {
                 return NSLocalizedString("<Encryption: A password is set>", tableName: "OmniFoundation", bundle: OFBundle, value: "Password Set", comment: "summary text - document is encrypted using a password");
             } else {
                 let formatted = NSString(format:NSLocalizedString("<Encryption: using %u key(s)>", tableName: "OmniFoundation", bundle: OFBundle, value: "%u Keys", comment: "summary text - document is encrypted using one or more public keys") as NSString,
-                            settings.countOfRecipients() as UInt);
+                            settings.countOfRecipients());
                 return formatted as String;
             }
         } else {
@@ -84,7 +84,7 @@ extension OFDocumentEncryptionSettings {
     /// Returns the total number of recipients.
     @objc public
     func countOfRecipients() -> UInt {
-        return recipients.count as! UInt;
+        return UInt(recipients.count);
     }
     
     /// Returns YES if the receiver allows decryption using a password.

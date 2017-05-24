@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,11 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 {
     if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask)
         [self queueSelector:@selector(checkNow:) withObject:nil];
+}
+
+- (BOOL)wantsAutosizing;
+{
+    return YES;
 }
 
 - (void)updateUI;

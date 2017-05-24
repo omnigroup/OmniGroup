@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,9 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
 // These properties are available for configuring the panel
 @property (nonatomic, strong, readonly) NSTextField *titleField;
 @property (nonatomic, strong, readonly, nullable) NSImageView *iconView;
-@property (nonatomic, strong, readonly) NSTextField *userLabelField; // In case you want to change it to "Account Name:" or something
+@property (nonatomic, strong, readonly, nullable) NSTextField *userLabelField; // In case you want to change it to "Account Name:" or something
+@property (nonatomic, strong, readonly) NSTextField *passwordLabelField;
+@property (nonatomic, strong, readonly, nullable) NSTextField *confirmPasswordLabelField;
 
 // By default, the panel shows only OK and Cancel.
 // Callers can customize the title, key equivalent, and tag of these buttons (the tag becomes the modal response return code: by default NSModalResponseOK and NSModalResponseCancel).

@@ -11,6 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSIndexSet-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFSymmetricKeywrap.h>
@@ -743,6 +744,11 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
     return result;
 }
 
+- (NSString *)description;
+{
+    return [NSString stringWithFormat:@"<%@:%p active:%@ retired:%@>", NSStringFromClass([self class]), self, [self.keySlots rangeString], [self.retiredKeySlots rangeString]];
+}
+
 - (NSDictionary *)descriptionDictionary;   // For the UI. See keys below.
 {
     NSMutableDictionary *description = [NSMutableDictionary dictionary];
@@ -940,9 +946,9 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
     
     /* There's no reasonable situation in which CCSymmetricKeyWrap() fails here--- it should only happen if we have some serious bug elsewhere in OFSDocumentKey. So treat it as a fatal error. */
     if (cerr) {
-        [NSException exceptionWithName:NSGenericException
-                                reason:[NSString stringWithFormat:@"CCSymmetricKeyWrap returned %d", cerr]
-                              userInfo:@{ @"klen": @(wk.len), @"twl": @(toWrapLength) }];
+        [[NSException exceptionWithName:NSGenericException
+                                 reason:[NSString stringWithFormat:@"CCSymmetricKeyWrap returned %d", cerr]
+                               userInfo:@{ @"klen": @(wk.len), @"twl": @(toWrapLength) }] raise];
     }
     
     return wrappedKey;

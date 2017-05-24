@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,12 +23,11 @@ RCS_ID("$Id$");
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) == nil) {
-        return nil;
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        self.automaticallyAdjustsScrollViewInsets = NO;
+        self.title = NSLocalizedStringFromTableInBundle(@"Color", @"OUIInspectors", OMNI_BUNDLE, @"color inspector title");
     }
-    
-    self.automaticallyAdjustsScrollViewInsets = NO;
-    
     return self;
 }
 
@@ -169,10 +168,6 @@ RCS_ID("$Id$");
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
-    
-    // Let callers assign their own title
-    if ([NSString isEmptyString:self.title])
-        self.title = NSLocalizedStringFromTableInBundle(@"Color", @"OUIInspectors", OMNI_BUNDLE, @"color inspector title");
     
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     OBASSERT(slice);

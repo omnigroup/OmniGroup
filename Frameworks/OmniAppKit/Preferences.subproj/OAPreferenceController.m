@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import <OmniFoundation/OmniFoundation.h>
 
 #import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/OAFlippedView.h>
+#import <OmniAppKit/NSAnimationContext-OAExtensions.h>
 #import <OmniAppKit/NSBundle-OAExtensions.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSToolbar-OAExtensions.h>
@@ -41,11 +43,11 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 
 // Outlets
 
-@property (nonatomic, retain) IBOutlet NSWindow *window;
-@property (nonatomic, assign) IBOutlet NSBox *preferenceBox;
-@property (nonatomic, retain) IBOutlet NSView *globalControlsView;;
-@property (nonatomic, assign) IBOutlet NSButton *helpButton;
-@property (nonatomic, assign) IBOutlet NSButton *returnToOriginalValuesButton;
+@property (nonatomic, strong) IBOutlet OAPreferencesWindow *window;
+@property (nonatomic, strong) IBOutlet OAFlippedView *containerView;
+@property (nonatomic, strong) IBOutlet NSView *globalControlsView;;
+@property (nonatomic, strong) IBOutlet NSButton *helpButton;
+@property (nonatomic, strong) IBOutlet NSButton *returnToOriginalValuesButton;
 
 // Private
 
@@ -76,10 +78,7 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 @implementation OAPreferenceController
 {
     NSArray *_topLevelObjects;
-    
-    OAPreferencesWindow *_window;
-    NSView *_globalControlsView;
-    
+        
     NSView *showAllIconsView; // not to be confused with the "Show All" button
     OAPreferencesIconView *multipleIconView;
     
@@ -95,8 +94,10 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
     NSArray *defaultToolbarItems;
     NSArray *allowedToolbarItems;
     
-    OAPreferenceClientRecord *nonretained_currentClientRecord;
-    OAPreferenceClient *nonretained_currentClient;
+    OAPreferenceClientRecord *_currentClientRecord;
+    OAPreferenceClient *_currentClient;
+
+    CGFloat globalControlsHeight;
     CGFloat idealWidth;
 }
 
@@ -246,6 +247,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         [_window performClose:nil];
 }
 
+@synthesize window = _window;
 - (NSWindow *)window;  // in case you want to do something nefarious to it like change its level, as OmniGraffle does
 {
     [self _loadInterface];
@@ -293,119 +295,147 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord completion:(OAPreferenceClientChangeCompletion)completion;
 {    
-    if (nonretained_currentClientRecord == clientRecord) {
+    if (_currentClientRecord == clientRecord) {
         if (completion != nil) {
-            completion(nonretained_currentClient);
+            completion(_currentClient);
         }
         return;
     }
-    
+    completion = [completion copy];
+
     // Save changes in any editing text fields
     [_window setInitialFirstResponder:nil];
-    [_window makeFirstResponder:nil];
-    
+    [_window makeFirstResponder:_window];
+
+    [_window.contentView setKeyboardFocusRingNeedsDisplayInRect:_window.contentView.bounds];
+
     // Only do this when we are on screen to avoid sending become/resign twice.  If we are off screen, the client got resigned when it went off and the new one will get a become when it goes on screen.
     if ([_window isVisible])
-        [nonretained_currentClient resignCurrentPreferenceClient];
-    
-    nonretained_currentClientRecord = clientRecord;
-    nonretained_currentClient = [self _clientForRecord:clientRecord];
+        [_currentClient resignCurrentPreferenceClient];
+
+    NSView *oldView = _currentClient.controlBox;
+
+    _currentClientRecord = clientRecord;
+    _currentClient = [self _clientForRecord:clientRecord];
     
     [self _resetWindowTitle];
-    
-    // Remove old client box
-    NSView *contentView = [self.preferenceBox contentView];
-    NSView *oldView = [[contentView subviews] lastObject];
-    [oldView removeFromSuperview];
-    
+
+    // Get the new control box and start it out transparent (outside of the animation)
+    NSView *controlBox = [_currentClient controlBox];
+    assert(controlBox);
+
     // Only do this when we are on screen to avoid sending become/resign twice.  If we are off screen, the client got resigned when it went off and the new one will get a become when it goes on screen.
 
     // As above, don't do this unless we are onscreen to avoid double become/resigns.
     if ([_window isVisible])
-        [nonretained_currentClient willBecomeCurrentPreferenceClient];
+        [_currentClient willBecomeCurrentPreferenceClient];
 
-    // Resize window for the new client box, after letting the client know that it's about to become current
-    NSView *controlBox = [nonretained_currentClient controlBox];
-    
-    // It's an error for controlBox to be nil, but it's pretty unfriendly to resize our window to be infinitely high when that happens.
-    NSSize controlBoxSize = (controlBox != nil ? [self _autosizeControlBox] : NSZeroSize);
-    
+    // Allow for clients to adjust the size of their view.
+    [_currentClient updateUI];
+
+    // Add the new view, but start it transparent
+    NSView *contentView = self.containerView;
+    [contentView addSubview:controlBox];
+    controlBox.alphaValue = 0;
+
+    // Fade out the old client box, and remove the view when the animation finishes.
+    NSSize controlBoxSize = [self _autosizeControlBox];
+
     // Resize the window
     // We don't just tell the window to resize, because that tends to move the upper left corner (which will confuse the user)
     NSRect windowFrame = [NSWindow contentRectForFrameRect:[_window frame] styleMask:[_window styleMask]];
-    CGFloat newWindowHeight = controlBoxSize.height + NSHeight([_globalControlsView frame]);
+    CGFloat newWindowHeight = controlBoxSize.height + globalControlsHeight;
     if ([self.toolbar isVisible])
         newWindowHeight += NSHeight([[self.toolbar _toolbarView] frame]); 
     
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, controlBoxSize.width), newWindowHeight) styleMask:[_window styleMask]];
-    BOOL animate = [_window isVisible];
+    BOOL animate = oldView != nil && [_window isVisible];
+
     NSTimeInterval animationDuration = animate ? [_window animationResizeTime:newWindowFrame] : 0;
-    [_window setFrame:newWindowFrame display:YES animate:animate];
-    
-    [_nonretained_helpButton setHidden:[clientRecord helpURL] == nil];
 
-    // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
-    if ([_window isVisible])
-        [self validateRestoreDefaultsButton];
+    // Using the non-block variant of this to be sure that our non-animated changes happen right now and can be interleaved with animating stuff as we calculate sizes/rects.
+    [NSAnimationContext beginGrouping];
+    NSAnimationContext *animation = [NSAnimationContext currentContext];
+    {
+        OAPreferenceClient *targetClient = _currentClient;
 
-    [nonretained_currentClient updateUI];
-    
-    // set up the global controls view
-    if (self.helpButton)
-        [self.helpButton setEnabled:([nonretained_currentClientRecord helpURL] != nil)];
-    NSRect controlsRect = _globalControlsView.frame;
-    controlsRect.size.width = contentView.frame.size.width;
-    [_globalControlsView setFrame:controlsRect];
-    
-    [contentView addSubview:_globalControlsView];
-    
-    // Add the new client box to the view hierarchy
-    if (controlBox) {
-        [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - controlBoxSize.width) / 2.0), NSHeight([_globalControlsView frame]))];
-        [contentView addSubview:controlBox];
-    } else {
-        OBASSERT_NOT_REACHED("Preference client %@ has no controlBox set", nonretained_currentClient);
+        animation.duration = animationDuration;
+
+        // This MUST be set before any animations are queued, instead of after they all are, or it is fired immediately.
+        animation.completionHandler = ^{
+            // Don't remove the view if we've switched away from a pane and back quickly (switching back will enqueue an animation with its own completion handler to remove the temporarily added view).
+            // Attempt to only call the completion block if the client is still current at the time of dispatch
+            if (targetClient == _currentClient) {
+                [oldView removeFromSuperview];
+
+                if (completion) {
+                    completion(targetClient);
+                }
+
+                // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
+                [_window setInitialFirstResponder:[_currentClient initialFirstResponder]];
+                NSView *initialKeyView = [_currentClient initialFirstResponder];
+                if (initialKeyView != nil && ![initialKeyView canBecomeKeyView])
+                    initialKeyView = [initialKeyView nextValidKeyView];
+                [_window makeFirstResponder:initialKeyView];
+            }
+        };
+
+        oldView.animator.alphaValue = 0;
+
+        controlBox.animator.alphaValue = 1;
+
+        [_window.animator setFrame:newWindowFrame display:YES];
+
+        NSRect controlsRect = _globalControlsView.frame;
+        NSRect contentBounds = contentView.bounds;
+
+        controlsRect.origin.x = contentBounds.origin.x;
+        controlsRect.origin.y = NSMinY(contentBounds) + controlBoxSize.height;
+        controlsRect.size.width = contentView.frame.size.width;
+
+        [_globalControlsView.animator setFrame:controlsRect];
+
+        [_helpButton.animator setHidden:[clientRecord helpURL] == nil];
+
+        // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
+        if ([_window isVisible])
+            [self validateRestoreDefaultsButton];
+
+        // set up the global controls view
+        [self.helpButton setEnabled:([_currentClientRecord helpURL] != nil)];
+
+        // Add the new client box to the view hierarchy
+        [controlBox setFrameOrigin:NSMakePoint((CGFloat)floor((NSWidth([contentView frame]) - controlBoxSize.width) / 2.0), 0.0)];
+
     }
-    
-    // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
-    [_window setInitialFirstResponder:[nonretained_currentClient initialFirstResponder]];
-    NSView *initialKeyView = [nonretained_currentClient initialFirstResponder];
-    if (initialKeyView != nil && ![initialKeyView canBecomeKeyView])
-        initialKeyView = [initialKeyView nextValidKeyView];
-    [_window makeFirstResponder:initialKeyView];
-    
+    [NSAnimationContext endGrouping];
+
+
+    [contentView addSubview:_globalControlsView];
+
     // Hook up the pane's keyView loop to ours.  returnToOriginalValuesButton is always present, but the help button might get removed if there is no help URL for this pane.
-    [[nonretained_currentClient lastKeyView] setNextKeyView:self.returnToOriginalValuesButton];
+    [[_currentClient lastKeyView] setNextKeyView:self.returnToOriginalValuesButton];
     if (self.helpButton) {
 	OBASSERT([self.returnToOriginalValuesButton nextKeyView] == self.helpButton); // set in nib
-	[self.helpButton setNextKeyView:[nonretained_currentClient initialFirstResponder]];
+	[self.helpButton setNextKeyView:[_currentClient initialFirstResponder]];
     }
     
     // As above, don't do this unless we are onscreen to avoid double become/resigns.
     if ([_window isVisible]) {
-        [nonretained_currentClient didBecomeCurrentPreferenceClient];
-    }
-    
-    if (completion != nil) {
-        // Attempt to only call the completion block if the client is still current at the time of dispatch
-        OAPreferenceClient *client = nonretained_currentClient;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(animationDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (client == nonretained_currentClient) {
-                completion(client);
-            }
-        });
+        [_currentClient didBecomeCurrentPreferenceClient];
     }
 }
 
 - (void)reloadCurrentClient;
 {
-    OBPRECONDITION(nonretained_currentClientRecord != nil);
-    if (nonretained_currentClientRecord == nil) {
+    OBPRECONDITION(_currentClientRecord != nil);
+    if (_currentClientRecord == nil) {
         return;
     }
 
-    OAPreferenceClientRecord *currentClientRecord = nonretained_currentClientRecord;
-    nonretained_currentClientRecord = nil; // nil to avoid early out in setter
+    OAPreferenceClientRecord *currentClientRecord = _currentClientRecord;
+    _currentClientRecord = nil; // nil to avoid early out in setter
     [self setCurrentClientRecord:currentClientRecord];
 }
 
@@ -439,11 +469,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     return [self _clientForRecord:[self clientRecordWithIdentifier: identifier]];
 }
 
-- (OAPreferenceClient *)currentClient;
-{
-    return nonretained_currentClient;
-}
-
 - (void)iconView:(OAPreferencesIconView *)iconView buttonHitAtIndex:(NSUInteger)index;
 {
     [self setCurrentClientRecord:[[iconView preferenceClientRecords] objectAtIndex:index]];
@@ -451,15 +476,8 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)validateRestoreDefaultsButton;
 {
-    [self.returnToOriginalValuesButton setEnabled:[nonretained_currentClient haveAnyDefaultsChanged]];
+    [self.returnToOriginalValuesButton setEnabled:[_currentClient haveAnyDefaultsChanged]];
 }
-
-// Outlets
-
-@synthesize preferenceBox = _nonretained_preferenceBox;
-@synthesize globalControlsView = _globalControlsView;
-@synthesize helpButton = _nonretained_helpButton;
-@synthesize returnToOriginalValuesButton = _nonretained_returnToOriginalValuesButton;
 
 // Actions
 
@@ -475,15 +493,15 @@ static NSString *windowFrameSaveName = @"Preferences";
 	[self _resetWindowTitle];
 	
 	// Let the current client know that it is about to be displayed.
-	[nonretained_currentClient willBecomeCurrentPreferenceClient];
+	[_currentClient willBecomeCurrentPreferenceClient];
     }
     
     [self validateRestoreDefaultsButton];
-    [nonretained_currentClient updateUI];
+    [_currentClient updateUI];
     [_window makeKeyAndOrderFront:sender];
     
     if (!wasVisible) {
-	[nonretained_currentClient didBecomeCurrentPreferenceClient];
+	[_currentClient didBecomeCurrentPreferenceClient];
     }
 }
 
@@ -502,7 +520,7 @@ static NSString *windowFrameSaveName = @"Preferences";
                 return;
             [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
             [[NSUserDefaults standardUserDefaults] synchronize];
-            [nonretained_currentClient valuesHaveChanged];
+            [_currentClient valuesHaveChanged];
         }];
     } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) {
         // warn & wipe all prefs shown in the panel
@@ -523,11 +541,11 @@ static NSString *windowFrameSaveName = @"Preferences";
                 for (NSString *aKey in preferenceKeys)
                     [[OFPreference preferenceForKey:aKey] restoreDefaultValue];
             }
-            [nonretained_currentClient valuesHaveChanged];
+            [_currentClient valuesHaveChanged];
         }];
     } else {
         // OAPreferenceClient will handle warning & reverting
-        [nonretained_currentClient restoreDefaults:sender];
+        [_currentClient restoreDefaults:sender];
     }
 }
 
@@ -535,7 +553,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSArray *sortedClientRecords = [self _sortedClientRecords];
     
-    NSUInteger currentIndex = [sortedClientRecords indexOfObject:nonretained_currentClientRecord];
+    NSUInteger currentIndex = [sortedClientRecords indexOfObject:_currentClientRecord];
     if (currentIndex != NSNotFound && currentIndex+1 < [sortedClientRecords count])
         [self setCurrentClientRecord:[sortedClientRecords objectAtIndex:currentIndex+1]];
     else
@@ -546,7 +564,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSArray *sortedClientRecords = [self _sortedClientRecords];
 
-    NSUInteger currentIndex = [sortedClientRecords indexOfObject:nonretained_currentClientRecord];
+    NSUInteger currentIndex = [sortedClientRecords indexOfObject:_currentClientRecord];
     if (currentIndex != NSNotFound && currentIndex > 0)
         [self setCurrentClientRecord:[sortedClientRecords objectAtIndex:currentIndex-1]];
     else
@@ -560,7 +578,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (IBAction)showHelpForClient:(id)sender;
 {
-    NSString *helpURL = [nonretained_currentClientRecord helpURL];
+    NSString *helpURL = [_currentClientRecord helpURL];
     
     if (helpURL)
         [[OAApplication sharedApplication] showHelpURL:helpURL];
@@ -571,7 +589,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 - (void)windowWillClose:(NSNotification *)notification;
 {
     [[notification object] makeFirstResponder:nil];
-    [nonretained_currentClient resignCurrentPreferenceClient];
+    [_currentClient resignCurrentPreferenceClient];
 
     // Save settings immediately when closing the window
     [[OFPreferenceWrapper sharedPreferenceWrapper] synchronize];
@@ -584,8 +602,8 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)client;
 {
-    if ([nonretained_currentClient respondsToSelector:_cmd])
-        return [nonretained_currentClient performSelector:@selector(windowWillReturnFieldEditor:toObject:) withObject:sender withObject:client];
+    if ([_currentClient respondsToSelector:_cmd])
+        return [_currentClient performSelector:@selector(windowWillReturnFieldEditor:toObject:) withObject:sender withObject:client];
     return nil;
 }
 
@@ -644,7 +662,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSString *itemIdentifier = [theItem itemIdentifier];
     if ([itemIdentifier isEqualToString:@"OAPreferencesPrevious"] || [itemIdentifier isEqualToString:@"OAPreferencesNext"])
-        return (nonretained_currentClientRecord != nil);
+        return (_currentClientRecord != nil);
     
     return YES;
 }
@@ -676,15 +694,16 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     _topLevelObjects = objects;
 
-    // These don't seem to get set by the nib.  We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
-    [self.preferenceBox setAutoresizesSubviews:YES];
-    [(NSView *)[self.preferenceBox contentView] setAutoresizingMask:[self.preferenceBox autoresizingMask]];
-    [[self.preferenceBox contentView] setAutoresizesSubviews:YES];
-    
-    idealWidth = NSWidth([_globalControlsView frame]);
+    // We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
+    [self.containerView setAutoresizesSubviews:YES];
+
+    globalControlsHeight = NSHeight(_globalControlsView.frame);
+    idealWidth = NSWidth(_globalControlsView.frame);
+
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];
     [_window setFrameUsingName:windowFrameSaveName force:YES];
+
     [self resetInterface];
 }
 
@@ -701,8 +720,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     }
 
     // The previous call to -setCurrentClientRecord: won't have set up the UI since the UI wasn't loaded.  Also, since the UI wasn't loaded before, the client won't have received a -becomeCurrentPreferenceClient, so we don't need to worry about calling -resignCurrentPreferenceClient before setting this to nil to avoid a duplicate -becomeCurrentPreferenceClient.
-    NSString *initialClientRecordIdentifier = nonretained_currentClientRecord.identifier;
-    nonretained_currentClientRecord = nil;
+    NSString *initialClientRecordIdentifier = _currentClientRecord.identifier;
+    _currentClientRecord = nil;
     if ([_hiddenPreferenceIdentifiers containsObject:initialClientRecordIdentifier])
         initialClientRecordIdentifier = nil;
 
@@ -741,7 +760,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         NSArray *categoryClientRecords = [categoryNamesToClientRecordsArrays objectForKey:categoryName];
 
         // category preferences view
-        OAPreferencesIconView *preferencesIconView = [[OAPreferencesIconView alloc] initWithFrame:[self.preferenceBox bounds]];
+        OAPreferencesIconView *preferencesIconView = [[OAPreferencesIconView alloc] initWithFrame:[self.containerView bounds]];
         [preferencesIconView setPreferenceController:self];
         [preferencesIconView setPreferenceClientRecords:categoryClientRecords];
 
@@ -763,13 +782,13 @@ static NSString *windowFrameSaveName = @"Preferences";
         [categoryHeaderTextField setStringValue:[[self class] _localizedCategoryNameForCategoryName:categoryName]];
         [categoryHeaderTextField sizeToFit];
         [showAllIconsView addSubview:categoryHeaderTextField];
-        [categoryHeaderTextField setFrame:NSMakeRect(sideMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.preferenceBox bounds]) - sideMargin, NSHeight([categoryHeaderTextField frame]))];
+        [categoryHeaderTextField setFrame:NSMakeRect(sideMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.containerView bounds]) - sideMargin, NSHeight([categoryHeaderTextField frame]))];
 
         boxHeight += NSHeight([categoryHeaderTextField frame]) + verticalSpaceAboveTextField;
 
         if (categoryIndex != 0) {
             const unsigned int separatorMargin = 15;
-            NSBox *separator = [[NSBox alloc] initWithFrame:NSMakeRect(separatorMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.preferenceBox bounds]) - separatorMargin - separatorMargin, 1)];
+            NSBox *separator = [[NSBox alloc] initWithFrame:NSMakeRect(separatorMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.containerView bounds]) - separatorMargin - separatorMargin, 1)];
             [separator setBoxType:NSBoxSeparator];
             [showAllIconsView addSubview:separator];
             
@@ -778,7 +797,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         boxHeight += verticalSpaceBelowTextField + 1;
     }
 
-    [showAllIconsView setFrameSize:NSMakeSize(NSWidth([self.preferenceBox bounds]), boxHeight)];
+    [showAllIconsView setFrameSize:NSMakeSize(NSWidth([self.containerView bounds]), boxHeight)];
 }
 
 - (NSArray <NSString *> *)_visibleClientRecordIdentifiers;
@@ -831,10 +850,10 @@ static NSString *windowFrameSaveName = @"Preferences";
     NSString *name = nil;
     
     if (viewStyle != OAPreferencesViewSingle) {
-        name = [nonretained_currentClientRecord title];
+        name = [_currentClientRecord title];
         if ([self.toolbar respondsToSelector:@selector(setSelectedItemIdentifier:)]) {
-            if (nonretained_currentClientRecord != nil)
-                [self.toolbar setSelectedItemIdentifier:[nonretained_currentClientRecord identifier]];
+            if (_currentClientRecord != nil)
+                [self.toolbar setSelectedItemIdentifier:[_currentClientRecord identifier]];
             else
                 [self.toolbar setSelectedItemIdentifier:@"OAPreferencesShowAll"];
         }
@@ -862,17 +881,18 @@ static NSString *windowFrameSaveName = @"Preferences";
 - (void)_showAllIcons:(id)sender;
 {
     // Are we already showing?
-    if ([[[self.preferenceBox contentView] subviews] lastObject] == showAllIconsView)
+    if (showAllIconsView.superview == self.containerView) {
         return;
+    }
 
     // Save changes in any editing text fields
     [_window setInitialFirstResponder:nil];
     [_window makeFirstResponder:nil];
 
     // Clear out current preference and reset window title
-    nonretained_currentClientRecord = nil;
-    nonretained_currentClient = nil;
-    [[[self.preferenceBox contentView] subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    _currentClientRecord = nil;
+    _currentClient = nil;
+    [[self.containerView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [self _resetWindowTitle];
         
     // Resize window
@@ -884,22 +904,22 @@ static NSString *windowFrameSaveName = @"Preferences";
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
 
     // Add new icons view
-    [self.preferenceBox addSubview:showAllIconsView];
+    [self.containerView addSubview:showAllIconsView];
 }
 
 static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceController.idealWidthConstraint";
 
 - (NSSize)_autosizeControlBox
 {
-    NSView *controlBox = [nonretained_currentClient controlBox];
+    NSView *controlBox = [_currentClient controlBox];
     
-    if (!nonretained_currentClient.wantsAutosizing) {
+    if (!_currentClient.wantsAutosizing) {
 #ifdef OMNI_ASSERTIONS_ON
         static NSMutableSet *IdentifiersOfClientsComplainedAbout = nil;
         if (IdentifiersOfClientsComplainedAbout == nil) {
             IdentifiersOfClientsComplainedAbout = [NSMutableSet new];
         }
-        NSString *clientIdentifier = nonretained_currentClientRecord.identifier;
+        NSString *clientIdentifier = _currentClientRecord.identifier;
         if (![IdentifiersOfClientsComplainedAbout containsObject:clientIdentifier]) {
             [IdentifiersOfClientsComplainedAbout addObject:clientIdentifier];
             BOOL likelyUsingAutoLayout = NO;
@@ -909,7 +929,7 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
                     break;
                 }
             }
-            OBASSERT(!likelyUsingAutoLayout, @"OAPreferenceClient subclass %@ appears to use autolayout but does not override %@ to adopt autosizing of its controlBox. It probably should eventually. Maybe soon?", nonretained_currentClientRecord.className, NSStringFromSelector(@selector(wantsAutosizing)));
+            OBASSERT(!likelyUsingAutoLayout, @"OAPreferenceClient subclass %@ appears to use autolayout but does not override %@ to adopt autosizing of its controlBox. It probably should eventually. Maybe soon?", _currentClientRecord.className, NSStringFromSelector(@selector(wantsAutosizing)));
         }
 #endif
         return controlBox.frame.size;
@@ -928,7 +948,7 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
     } else {
         idealWidthConstraint.constant = idealWidth;
     }
-    
+
     NSSize fittingSize = controlBox.fittingSize;
     NSRect frame = controlBox.frame;
     frame.size = fittingSize;
@@ -954,7 +974,7 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
         [returnToOriginalValuesButton setTitle:NSLocalizedStringFromTableInBundle(@"Reset All", @"OmniAppKit", [OAPreferenceController bundle], "reset-to-defaults button title")];
         [returnToOriginalValuesButton setToolTip:NSLocalizedStringFromTableInBundle(@"Return all settings to default values", @"OmniAppKit", [OAPreferenceController bundle], "reset-to-defaults button tooltip")];
     } else {
-        [returnToOriginalValuesButton setEnabled:[nonretained_currentClient haveAnyDefaultsChanged]];
+        [returnToOriginalValuesButton setEnabled:[_currentClient haveAnyDefaultsChanged]];
         [returnToOriginalValuesButton setTitle:NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", [OAPreferenceController bundle], "reset-to-defaults button title")];
         [returnToOriginalValuesButton setToolTip:NSLocalizedStringFromTableInBundle(@"Return settings in this pane to default values", @"OmniAppKit", [OAPreferenceController bundle], "reset-to-defaults button tooltip")];
     }

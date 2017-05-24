@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,9 @@ OB_REQUIRE_ARC;
 
 @property (nonatomic) NSTextField *userLabelField;
 @property (nonatomic) NSTextField *userNameField;
+@property (nonatomic) NSTextField *passwordLabelField;
 @property (nonatomic) NSSecureTextField *passwordField;
+@property (nonatomic) NSTextField *confirmPasswordLabelField;
 @property (nonatomic) NSSecureTextField *confirmPasswordField;
 @property (nonatomic) NSButton *rememberInKeychainCheckbox;
 @property (nonatomic) IBOutlet NSButton *revealHintButton;
@@ -158,8 +160,8 @@ OB_REQUIRE_ARC;
 
         [field setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
         
-        [self addLabel:NSLocalizedStringFromTableInBundle(@"Password:", @"OmniAppKit", bundle, @"field label - password prompt dialog - password/passphrase field")
-               toField:field constraints:constraints];
+        self.passwordLabelField = [self addLabel:NSLocalizedStringFromTableInBundle(@"Password:", @"OmniAppKit", bundle, @"field label - password prompt dialog - password/passphrase field")
+                                         toField:field constraints:constraints];
         
         [chain setNextKeyView:field];
         chain = field;
@@ -173,8 +175,8 @@ OB_REQUIRE_ARC;
         [self _stackField:field stack:stack left:YES right:YES];
         
         [field setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
-        [self addLabel:NSLocalizedStringFromTableInBundle(@"Confirm:", @"OmniAppKit", bundle, @"field label - password prompt dialog - confirmation of entered password/passphrase")
-               toField:field constraints:constraints];
+        self.confirmPasswordLabelField = [self addLabel:NSLocalizedStringFromTableInBundle(@"Confirm:", @"OmniAppKit", bundle, @"field label - password prompt dialog - confirmation of entered password/passphrase")
+                                                toField:field constraints:constraints];
 
         [chain setNextKeyView:field];
         chain = field;
@@ -266,7 +268,19 @@ OB_REQUIRE_ARC;
 
 - (NSString *)windowNibName;
 {
-    return NSStringFromClass([self class]);
+    return NSStringFromClass([OAPassphrasePrompt class]);
+}
+
+- (NSString *)windowNibPath;
+{
+    // "Subclasses can override this behavior to augment the search behavior, but probably ought to call super first."
+    NSString *path = [super windowNibPath];
+    if (path != nil) {
+        return path;
+    }
+    
+    path = [[NSBundle bundleForClass:[OAPassphrasePrompt class]] pathForResource:[self windowNibName] ofType:@"nib"];
+    return path;
 }
 
 - (NSModalResponse)runModal;
