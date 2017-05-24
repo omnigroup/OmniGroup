@@ -25,6 +25,11 @@ RCS_ID("$Id$");
 
 @implementation OmniSystemInfoPreferenceClient
 
+- (BOOL)wantsAutosizing;
+{
+    return YES;
+}
+
 - (void)updateUI;
 {
     BOOL enabled = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];

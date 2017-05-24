@@ -32,6 +32,8 @@ enum {
     ODOUnableToFindObjectWithID,
     ODOUnableToFindObjectWithIDMultipleErrors,
 
+    ODORequestedObjectIsScheduledForDeletion,
+    
     // Validation
     ODORequiredValueNotPresentValidationError,
     ODOValueOfWrongClassValidationError,

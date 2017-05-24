@@ -91,6 +91,9 @@ NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sql
         return YES;
     }
 
+    if ([self hasUnderlyingErrorDomain:ODOErrorDomain code:ODORequestedObjectIsScheduledForDeletion]) {
+        return YES;
+    }
     return NO;
 }
 

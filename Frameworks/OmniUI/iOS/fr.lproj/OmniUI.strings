@@ -39,7 +39,7 @@
 "Check for Free Upgrade" = "Vérifier s’il y a une mise à niveau gratuite";
 
 /* placeholder text - password/passphrase confirmation field in prompt */
-"confirm" = "confirm";
+"confirm" = "confirmer";
 
 /* Certificate trust alert button title */
 "Continue" = "Continuer";

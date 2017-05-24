@@ -58,6 +58,8 @@
 		34800E5C1B1925760008DC9E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34800E5B1B1925760008DC9E /* UIKit.framework */; };
 		34E104081BD8098D00022255 /* OmniUnzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E104071BD8098D00022255 /* OmniUnzip.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E104091BD8098D00022255 /* OmniUnzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E104071BD8098D00022255 /* OmniUnzip.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3EEFC9781E5F513900725BDA /* OUZipRawFileMemberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EEFC9771E5F513900725BDA /* OUZipRawFileMemberTests.m */; };
+		3EEFC97B1E5F537A00725BDA /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EEFC97A1E5F537A00725BDA /* OBTestCase.m */; };
 		4241822E0F44B55E0029B4DA /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4241822D0F44B55E0029B4DA /* libz.dylib */; };
 		424182530F44B7930029B4DA /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 424182440F44B7930029B4DA /* ioapi.c */; };
 		4241825C0F44B7930029B4DA /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824D0F44B7930029B4DA /* unzip.c */; };
@@ -148,6 +150,9 @@
 		34E20FC0119314BE00ECA875 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		3EEFC9771E5F513900725BDA /* OUZipRawFileMemberTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUZipRawFileMemberTests.m; sourceTree = "<group>"; };
+		3EEFC9791E5F537A00725BDA /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
+		3EEFC97A1E5F537A00725BDA /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
 		4241822D0F44B55E0029B4DA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		424182420F44B7930029B4DA /* ChangeLogUnzip */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLogUnzip; sourceTree = "<group>"; };
 		424182430F44B7930029B4DA /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
@@ -459,7 +464,10 @@
 		5FA154C01D89D1140053543C /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				3EEFC9791E5F537A00725BDA /* OBTestCase.h */,
+				3EEFC97A1E5F537A00725BDA /* OBTestCase.m */,
 				5FA154CD1D89D58E0053543C /* OUUnzipArchiveTests.m */,
+				3EEFC9771E5F513900725BDA /* OUZipRawFileMemberTests.m */,
 				5FA154C31D89D1140053543C /* OUUnitTests-Info.plist */,
 			);
 			path = Tests;
@@ -705,7 +713,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3EEFC9781E5F513900725BDA /* OUZipRawFileMemberTests.m in Sources */,
 				5FA154CE1D89D58E0053543C /* OUUnzipArchiveTests.m in Sources */,
+				3EEFC97B1E5F537A00725BDA /* OBTestCase.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

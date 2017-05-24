@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1022C03D1E66615900A0FBCA /* OUIReceiptRefreshRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 1022C03B1E66615900A0FBCA /* OUIReceiptRefreshRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1022C03E1E66615900A0FBCA /* OUIReceiptRefreshRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1022C03C1E66615900A0FBCA /* OUIReceiptRefreshRequest.m */; };
 		15632E5A1E527F25003EB174 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E581E527F25003EB174 /* ko.lproj */; };
 		15632E5B1E527F25003EB174 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E591E527F25003EB174 /* pt-BR.lproj */; };
 		18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */; };
@@ -591,6 +593,8 @@
 		00AA54A411FE743500A23064 /* OUILongPressGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILongPressGestureRecognizer.h; sourceTree = "<group>"; };
 		00AA54A511FE743500A23064 /* OUILongPressGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILongPressGestureRecognizer.m; sourceTree = "<group>"; };
 		0AD6C5CE121D7EDB000577FE /* OUIOverlayBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIOverlayBackground.png; path = Images/OUIOverlayBackground.png; sourceTree = SOURCE_ROOT; };
+		1022C03B1E66615900A0FBCA /* OUIReceiptRefreshRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIReceiptRefreshRequest.h; sourceTree = "<group>"; };
+		1022C03C1E66615900A0FBCA /* OUIReceiptRefreshRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIReceiptRefreshRequest.m; sourceTree = "<group>"; };
 		154E96BE1863DE080097E5B3 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = ../iOS/de.lproj; sourceTree = "<group>"; };
 		154E96BF1863DE080097E5B3 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = ../iOS/es.lproj; sourceTree = "<group>"; };
 		154E96C01863DE080097E5B3 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = ../iOS/fr.lproj; sourceTree = "<group>"; };
@@ -1308,6 +1312,8 @@
 				27636F0E1799E2BB00C9F4FE /* OUIInAppStoreViewController.h */,
 				27636F0F1799E2BB00C9F4FE /* OUIInAppStoreViewController.m */,
 				4261A0EA19CB801D007FDDD7 /* OUIInAppStoreViewController.xib */,
+				1022C03B1E66615900A0FBCA /* OUIReceiptRefreshRequest.h */,
+				1022C03C1E66615900A0FBCA /* OUIReceiptRefreshRequest.m */,
 			);
 			name = "In-App Purchase";
 			sourceTree = "<group>";
@@ -2066,6 +2072,7 @@
 				348A7A6A1B584B590082D55D /* OUIStackedSlicesInspectorPane.h in Headers */,
 				348A7AA21B584BF60082D55D /* OUIInAppStoreViewControllerAppearance.h in Headers */,
 				348A7A8C1B584BAE0082D55D /* OUISegmentedControl.h in Headers */,
+				1022C03D1E66615900A0FBCA /* OUIReceiptRefreshRequest.h in Headers */,
 				348A7A081B584AE10082D55D /* OUIColorInspectorPane.h in Headers */,
 				348A7A301B584AFC0082D55D /* OUITextColorAttributeInspectorSlice.h in Headers */,
 				348A7AE01B584C810082D55D /* OUITiledScalingView.h in Headers */,
@@ -2626,6 +2633,7 @@
 				348A7A851B584BAE0082D55D /* OUIInspectorLabel.m in Sources */,
 				348A79F91B584AE10082D55D /* OUIAbstractColorInspectorSlice.m in Sources */,
 				348A7B5D1B584D130082D55D /* UIDevice-OUIExtensions.m in Sources */,
+				1022C03E1E66615900A0FBCA /* OUIReceiptRefreshRequest.m in Sources */,
 				348A7A961B584BAE0082D55D /* OUIInspectorTextWell.m in Sources */,
 				348A7B1B1B584CF10082D55D /* OUIFauxHighlightToolbarButton.m in Sources */,
 				348A7ADC1B584C810082D55D /* OUIScalingViewController.m in Sources */,

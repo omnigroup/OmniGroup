@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic,readonly) OFXMLElement *topElement;
 - (void) appendString: (NSString *) string;
-- (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (NSString *) newlineReplacment;
+- (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (nullable NSString *) newlineReplacment;
 - (void) setAttribute: (NSString *) name string: (nullable NSString *) value;
 - (void) setAttribute: (NSString *) name value: (nullable id) value;
 - (void) setAttribute: (NSString *) name integer: (int) value;

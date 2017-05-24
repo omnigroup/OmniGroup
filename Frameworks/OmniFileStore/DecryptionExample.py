@@ -3,18 +3,22 @@
 is intended more as an unambiguous, executable summary of the
 specification than as production code.
 
-Requires Python 3.4 (mostly for the plistlib module) and
-the cryptography module ("pip install cryptography").
+Requires Python 2.7 or 3.4, and the cryptography module ("pip install cryptography").
 
 '''
 
-import argparse, collections, getpass, os.path, plistlib, posix, struct, sys
+from __future__ import print_function
+import argparse, collections, getpass, os.path, plistlib, posix, random, struct, sys
 import cryptography.hazmat.primitives.hashes
 import cryptography.hazmat.primitives.keywrap
 import cryptography.hazmat.primitives.kdf.pbkdf2
 from cryptography.hazmat import primitives
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
+
+# Key type name constants
+ActiveAES_CTR_HMAC  = 'ActiveAES_CTR_HMAC'  # Currently-active CTR+HMAC key
+RetiredAES_CTR_HMAC = 'RetiredAES_CTR_HMAC' # Old key used after rollover
 
 # The kinds of information found in the encrypted document metadata.
 Slot = collections.namedtuple('Slot', ('tp', 'id', 'contents'))
@@ -29,6 +33,11 @@ SlotType = {
     }
 SlotTypeName = dict( (v, k) for (k, v) in SlotType.items() )
 
+RetireMap = [
+    ( 'ActiveAES_CTR_HMAC', 'RetiredAES_CTR_HMAC' ),
+    ( 'ActiveAESWRAP',      'RetiredAESWRAP' )
+]
+
 # The name of the filename containing the encryption metadata.
 metadata_filename = 'encrypted'
 
@@ -37,12 +46,41 @@ file_magic = b"OmniFileEncryption\x00\x00"
 
 backend = cryptography.hazmat.backends.default_backend()
 
-def hexify(b):
-    return ':'.join(('%02X' % (v,)) for v in b)
-def trim_0padding(b):
-    while len(b) > 0 and b[-1] == 0:
-        b = b[:-1]
-    return b
+# Py2 / Py3 compatibility shims.
+if sys.version_info.major < 3:
+    def index_u8(b, ix):
+        return ord(b[ix])
+    def hexify(b):
+        return ':'.join(('%02X' % (ord(v),)) for v in b)
+    def trim_0padding(b):
+        while len(b) > 0 and b[-1] == b'\x00':
+            b = b[:-1]
+        return b
+    from cStringIO import StringIO as BytesIO
+else:
+    def index_u8(b, ix):
+        return b[ix]
+    def hexify(b):
+        return ':'.join(('%02X' % (v,)) for v in b)
+    def trim_0padding(b):
+        while len(b) > 0 and b[-1] == 0:
+            b = b[:-1]
+        return b
+    from io import BytesIO
+
+def print_slot(slot):
+    print("  Slot: %2d Type: %2d" % (slot.id, slot.tp), end='')
+    if slot.tp in SlotTypeName:
+        sys.stdout.write(" (" + SlotTypeName[slot.tp] + ")")
+    sys.stdout.write(" (%d bytes of data)\n" % (len(slot.contents),))
+    if slot.tp in ( SlotType['ActiveAESWRAP'], SlotType['RetiredAESWRAP'] ):
+        print("\tAESWRAP key:", hexify(slot.contents))
+    elif slot.tp in ( SlotType['ActiveAES_CTR_HMAC'], SlotType['RetiredAES_CTR_HMAC'] ):
+        print("\t   AES key:", hexify(slot.contents[ : len(slot.contents)//2 ]))
+        print("\t  HMAC key:", hexify(slot.contents[ len(slot.contents)//2 : ]))
+    elif slot.tp in ( SlotType['PlaintextMask'], SlotType['RetiredPlaintextMask'] ):
+        print("\t    Suffix:", repr(trim_0padding(slot.contents).decode('utf8')))
+Slot.print = print_slot
 
 class DocumentKey (object):
     '''Holds the key information for an OmniFocus database.
@@ -57,29 +95,43 @@ and how to create a decryptor for a file using the unwrapped document keys.
         'sha512': primitives.hashes.SHA512
     }
 
-    def __init__(self, metadata_blob):
-        metadata = plistlib.loads(metadata_blob)
+    @classmethod
+    def parse_metadata(cls, metadata_blob_or_fp):
+        if hasattr(metadata_blob_or_fp, 'read'):
+            if hasattr(plistlib, 'load'):
+                metadata = plistlib.load(metadata_blob_or_fp, use_builtin_types=False)
+            else:
+                metadata = plistlib.readPlist(metadata_blob_or_fp)
+        else:
+            if hasattr(plistlib, 'loads'):
+                metadata = plistlib.loads(metadata_blob_or_fp, use_builtin_types=False)
+            else:
+                metadata = plistlib.readPlistFromString(metadata_blob_or_fp)
+        
         # The current version has a 1-element array at toplevel.
         # Future versions will have a dictionary at toplevel.
         if isinstance(metadata, list) and len(metadata) == 1:
             metadata = metadata[0]
         assert isinstance(metadata, dict)
-        self.metadata = metadata
-        self.secrets = None
-
-    def use_password(self, passphrase):
-        '''Use a password to unwrap the file keys, and store those in self.secrets.'''
+        return metadata
+        
+    @classmethod
+    def use_passphrase(self, metadata, passphrase):
+        '''Use a passphrase to derive the key which unwraps the blob of file keys.'''
         # Assert the set of parameters currently used. Other methods
         # (e.g. key agreement rather than passwords) or algorithms
         # (e.g. other KDFs or wrapping algs) may exist in the future.
-        assert self.metadata.get('method') == 'password'
-        assert self.metadata.get('algorithm') == 'PBKDF2; aes128-wrap'
+        assert metadata.get('method') == 'password'
+        assert metadata.get('algorithm') == 'PBKDF2; aes128-wrap'
+
+        # Ideally, we should also normalize (NFC) and stringprep the passphrase before converting it to utf-8
+        passphrase_bytes = passphrase.encode('utf8')
 
         # Use PBKDF2 to derive the wrapping key from the password
         print('Deriving wrapping key...')
-        rounds = self.metadata.get('rounds')
-        salt = self.metadata.get('salt')
-        prf = self.metadata.get('prf', 'sha1')
+        rounds = metadata.get('rounds')
+        salt = metadata.get('salt').data
+        prf = metadata.get('prf', 'sha1')
         deriver = primitives.kdf.pbkdf2.PBKDF2HMAC(
             algorithm  = self.prfs[prf](),
             length     = 16, # 16 bytes = 128 bits = AES128-wrap
@@ -87,40 +139,55 @@ and how to create a decryptor for a file using the unwrapped document keys.
             iterations = rounds,
             backend    = backend
         )
-        derived_key = deriver.derive(passphrase)
+        return deriver.derive(passphrase_bytes)
+        
+    def __init__(self, secrets=None, unwrapping_key=None):
+        self.secrets = None
+        if secrets:
+            if unwrapping_key is None:
+                unwrapped = secrets
+            else:
+                unwrapped = primitives.keywrap.aes_key_unwrap(unwrapping_key,
+                                                              secrets,
+                                                              backend)
+            self.parse_secrets(unwrapped)
 
-        # Decrypt the secrets using the wrapping key
-        print('Unwrapping file secrets...')
-        unwrapped = primitives.keywrap.aes_key_unwrap(derived_key,
-                                                      self.metadata.get('key'),
-                                                      backend)
-
-        # Parse out the list of secrets for easier manipulation later
-        print('Parsing file secrets...')
+    def parse_secrets(self, unwrapped, verbose=True):
+        '''Parse out the secrets from an unwrapped blob and store them in self.secrets'''
         secrets = list()
         idx = 0
         while idx != len(unwrapped):
-            slottype = unwrapped[idx]
+            slottype = index_u8(unwrapped, idx)
             if slottype == 0:
                 break  # End-of-data padding pseudo-slot
-            slotlength = 4 * unwrapped[idx+1]
+            slotlength = 4 * index_u8(unwrapped, idx+1)
             (slotid,) = struct.unpack('>H', unwrapped[idx+2 : idx+4])
             slotdata = unwrapped[idx+4 : idx+4+slotlength]
             secrets.append( Slot( slottype, slotid, slotdata ) )
-            print("  Slot: %2d Type: %2d" % (slotid, slottype), end='')
-            if slottype in SlotTypeName:
-                sys.stdout.write(" (" + SlotTypeName[slottype] + ")")
-            sys.stdout.write(" (%d bytes of data)\n" % (len(slotdata),))
-            if slottype in ( SlotType['ActiveAESWRAP'], SlotType['RetiredAESWRAP'] ):
-                print("\tAESWRAP key:", hexify(slotdata))
-            elif slottype in ( SlotType['ActiveAES_CTR_HMAC'], SlotType['RetiredAES_CTR_HMAC'] ):
-                print("\t   AES key:", hexify(slotdata[ : len(slotdata)//2 ]))
-                print("\t  HMAC key:", hexify(slotdata[ len(slotdata)//2 : ]))
-            elif slottype in ( SlotType['PlaintextMask'], SlotType['RetiredPlaintextMask'] ):
-                print("\t    Suffix:", repr(trim_0padding(slotdata).decode('utf8')))
             idx = idx + 4 + slotlength
         self.secrets = secrets
 
+    def wrapped_secrets(self, wrapping_key):
+        '''Marshal the secrets into their stored format, optionally wrapping them with the supplied key.'''
+        buf = BytesIO()
+        for secret in self.secrets:
+            slotdata = secret.contents
+            assert (len(slotdata) % 4) == 0
+            buf.write(struct.pack('>BBH', secret.tp, len(slotdata)//4, secret.id))
+            buf.write(slotdata)
+        # Apply padding as necessary for AESWRAP
+        fragment = buf.tell() % 8
+        if fragment > 0:
+            buf.write( b'\x00' * (8 - fragment) )
+        marshalled = buf.getvalue()
+            
+        if wrapping_key is None:
+            return marshalled
+        else:
+            return primitives.keywrap.aes_key_wrap(wrapping_key,
+                                                   marshalled,
+                                                   backend)
+    
     def get_decryptor(self, info):
         '''Return an object which decrypts a file, given that file's key information. Used by decrypt_file().'''
         # The beginning of the key information is the key identifier.
@@ -133,15 +200,54 @@ and how to create a decryptor for a file using the unwrapped document keys.
               (keyid, slot.tp, len(slot.contents), len(info) - 2))
         if slot.tp in ( SlotType['ActiveAES_CTR_HMAC'], SlotType['RetiredAES_CTR_HMAC'] ):
             assert len(info) == 2 # No per-file info for these key types
-            return CTRDecryptor(slot.contents)
+            return EncryptedFileHelper(slot.contents)
         elif slot.tp in ( SlotType['ActiveAESWRAP'], SlotType['RetiredAESWRAP'] ):
             wrappedkey = info[2:]
             assert len(wrappedkey) % 8 == 0 # AESWRAPped info
             unwrapped = primitives.keywrap.aes_key_unwrap(slot.contents, wrappedkey, backend)
-            return CTRDecryptor(unwrapped)
+            return EncryptedFileHelper(unwrapped)
         else:
             raise ValueError('Unknown keyslot type: %r' % (slot.tp,))
 
+    def _available_slot(self):
+        used_slots = set( int(s.id) for s in self.secrets )
+        while True:
+            slotnum = random.randint(0, 2 + (2 * len(used_slots)))
+            if slotnum not in used_slots:
+                return slotnum
+        
+    def get_key_of_type(self, keytype, create=False):
+        tp = SlotType[keytype]
+        for slot in self.secrets:
+            if slot.tp == tp:
+                return slot
+        if create:
+            if keytype == ActiveAES_CTR_HMAC:
+                content = os.urandom(32)
+                newkey = Slot(id=self._available_slot(),
+                              tp=tp,
+                              contents=content)
+                self.secrets.append(newkey)
+                return newkey
+            else:
+                raise ValueError('Do not know how to create a key of type %r' % (keytype,))
+        return None
+
+    def with_retired_keys(self, predicate=None):
+        retirable_types = dict( (SlotType[a], SlotType[b]) for (a,b) in RetireMap )
+        new_secrets = list()
+        for slot in self.secrets:
+            if slot.tp in retirable_types and (predicate is None or predicate(slot)):
+                newslot = Slot(id = slot.id,
+                               tp = retirable_types[slot.tp],
+                               contents = slot.contents)
+                new_secrets.append(newslot)
+            else:
+                new_secrets.append(slot)
+        newDocKey = DocumentKey()
+        newDocKey.secrets = new_secrets
+        return newDocKey
+        
     def applicable_policy_slots(self, filename):
         '''Return any filename-based-policy slots which apply to this filename.'''
         fnbytes = filename.encode('utf8')
@@ -186,7 +292,8 @@ and how to create a decryptor for a file using the unwrapped document keys.
 
         # The rest of the file is the encrypted segments followed by the file HMAC.
         seg_0_start = infp.tell()
-        seg_N_end = infp.seek(-( decryptor.FileMACLen ), 2) # Last 32 bytes are file HMAC
+        infp.seek(-( decryptor.FileMACLen ), 2) # Last 32 bytes are file HMAC
+        seg_N_end = infp.tell()
         fileHMAC = infp.read(decryptor.FileMACLen)
 
         # Check the MACs
@@ -197,9 +304,35 @@ and how to create a decryptor for a file using the unwrapped document keys.
             print('    Decrypting')
             decryptor.decrypt(infp, outfp, seg_0_start, seg_N_end)
 
-class CTRDecryptor (object):
+    def encrypt_file(self, filename, infp, outfp):
+        '''Read a plaintext file from infp and write it to outfp, encrypted depending on policy mask.'''
+
+        # Check whether this file should be encrypted at all
+        writePlaintext = False
+        for slot in self.applicable_policy_slots(filename):
+            if slot.tp == SlotType['PlaintextMask']:
+                writePlaintext = True
+        if writePlaintext:
+            outfp.write(infp.read())
+            return
+
+        # Find an active CTR-HMAC key
+        aesKeyType = 'ActiveAES_CTR_HMAC'
+        encryption_key = self.get_key_of_type(aesKeyType)
+        if encryption_key is None:
+            raise ValueError('No keys of type %r' % (aesKeyType,))
+        file_header = file_magic + struct.pack('>HH', 2, encryption_key.id)
+        outfp.write(file_header)
+        padding_length = (16 - (len(file_header)%16)) % 16
+        outfp.write( b'\0' * padding_length )
+
+        encryptor = EncryptedFileHelper(encryption_key.contents)
+        encryptor.encrypt(infp, outfp)
+
+class EncryptedFileHelper (object):
     '''A helper class used by DocumentKey.'''
 
+    # File format constants.
     AESKeySize = 16    # AES128
     HMACKeySize = 16   # Arbitrary, but fixed
     SegIVLen = 12      # Four bytes less than blocksize (see CTR mode for why)
@@ -275,14 +408,63 @@ class CTRDecryptor (object):
             if trailing:
                 outfp.write(trailing)
 
+    def encrypt(self, fp, outfp):
+        '''Encrypt the file, write it to outfp. Outfp should already be positioned after the file header, info field, and any padding.'''
+        aes = algorithms.AES(self.aeskey)
+        filehash = HMAC(self.hmackey, primitives.hashes.SHA256(), backend)
+        filehash.update(self.FileMACPrefix)
+
+        # Encrypt each segment
+        lastSegmentWasPartial = False
+        segmentIndex = 0
+        while True:
+            segment_plaintext = fp.read(self.SegPageSize)
+            if not segment_plaintext and segmentIndex > 0:
+                break
+            assert not lastSegmentWasPartial
+            lastSegmentWasPartial = len(segment_plaintext) < self.SegPageSize
+
+            # Set up this segment's IV, cryptor, and per-segment HMAC context
+            segmentIV = os.urandom(self.SegIVLen)
+            mode = modes.CTR(segmentIV + b'\x00\x00\x00\x00')
+            encryptor = Cipher(aes, mode, backend=backend).encryptor()
+            seghash = HMAC(self.hmackey, primitives.hashes.SHA256(), backend)
+            
+            seghash.update(segmentIV)
+            outfp.write(segmentIV)
+
+            seghash.update(struct.pack('>I', segmentIndex))
+
+            # Encrypt the segment's data
+            encryptedData = encryptor.update(segment_plaintext)
+            encryptedData += encryptor.finalize()
+            assert len(encryptedData) == len(segment_plaintext)
+
+            # Per-segment and whole-file hash updates
+            seghash.update(encryptedData)
+            segmentMAC = seghash.finalize()[:self.SegMACLen]
+            outfp.write(segmentMAC)
+            filehash.update(segmentMAC)
+            
+            outfp.write(encryptedData)
+
+            segmentIndex += 1
+
+        outfp.write(filehash.finalize()[:self.FileMACLen])
+                
+
 def decrypt_directory(indir, outdir):
     '''Decrypt the OmniFocus data in indir, writing the result to outdir. Prompts for a passphrase.'''
     files = posix.listdir(indir)
     if metadata_filename not in files:
         raise EnvironmentError('Expected to find %r in %r' %
                                ( metadata_filename, indir))
-    docKey = DocumentKey( open(os.path.join(indir, metadata_filename), 'rb').read() )
-    docKey.use_password(bytes(getpass.getpass(prompt="Passphrase: "), encoding="latin1"))
+    encryptionMetadata = DocumentKey.parse_metadata( open(os.path.join(indir, metadata_filename), 'rb').read() )
+    metadataKey = DocumentKey.use_passphrase( encryptionMetadata,
+                                              getpass.getpass(prompt="Passphrase: ") )
+    docKey = DocumentKey( encryptionMetadata.get('key').data, unwrapping_key=metadataKey )
+    for secret in docKey.secrets:
+        secret.print()
     if outdir is not None:
         posix.mkdir(outdir)
     for datafile in files:
@@ -298,6 +480,28 @@ def decrypt_directory(indir, outdir):
             with open(os.path.join(indir, datafile), "rb") as infp:
                 docKey.decrypt_file(datafile, infp, None)
 
+def encrypt_directory(metadata, docKey, indir, outdir):
+    '''Encrypt all individual files in indir, writing them to outdir.'''
+    files = posix.listdir(indir)
+    assert metadata_filename not in files  # A non-encrypted directory must not have an encryption metadata file
+
+    posix.mkdir(outdir)
+    print('Writing encryption metadata')
+    if isinstance(metadata, dict):
+        metadata = [ metadata ]  # Current OmniFileStore expects a 1-element list of dictionaries.
+    with open(os.path.join(outdir, metadata_filename), "wb") as outfp:
+        if hasattr(plistlib, 'dump'):
+            plistlib.dump(metadata, outfp)
+        else:
+            plistlib.writePlist(metadata, outfp)
+    
+    for datafile in files:
+        print('Encrypting %r' % (datafile,))
+        with open(os.path.join(indir, datafile), "rb") as infp, \
+             open(os.path.join(outdir, datafile), "wb") as outfp:
+                docKey.encrypt_file(datafile, infp, outfp)
+    
+                
 if __name__ == '__main__':
     optp = argparse.ArgumentParser()
     optp.add_argument('input', metavar='input.ofocus',
@@ -306,3 +510,4 @@ if __name__ == '__main__':
                       help='Write decrypted contents to this directory')
     args = optp.parse_args()
     decrypt_directory(args.input, args.output)
+

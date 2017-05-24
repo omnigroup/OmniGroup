@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,6 +32,7 @@
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniAppKit/NSAlert-OAExtensions.h>
 #import <OmniAppKit/NSAnimationContext-OAExtensions.h>
+#import <OmniAppKit/NSAppearance-OAExtensions.h>
 #import <OmniAppKit/NSAppleEventDescriptor-OAExtensions.h>
 #import <OmniAppKit/NSAppleScript-OAExtensions.h>
 #import <OmniAppKit/NSApplication-OAExtensions.h>

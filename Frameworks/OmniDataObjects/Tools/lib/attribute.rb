@@ -72,7 +72,11 @@ module OmniDataObjects
     def scalarGetterName
       if type == :boolean && objc_is_getter
         case name
-        when /^_?(is|has|use|uses|allows|contains|wants|should)[A-Z]/
+        # prefixes
+        when /^_?(allows|are|contains|has|is|should|use|uses|wants)[A-Z]/
+          return nil
+        # mid-property name  
+        when /[a-z](Allows|Are|Contains|Has|Is|Should|Use|Uses|Wants)[A-Z]/
           return nil
         else
           if name.start_with?("_")
@@ -220,6 +224,8 @@ module OmniDataObjects
         attributes += " NS_REFINED_FOR_SWIFT"
       end
 
+      attributes += deprecatedAttribute
+
       if scalarValueType?
           additional_attributes = ""
 
@@ -277,6 +283,8 @@ module OmniDataObjects
         }
     }
 EOS
+      attribute = swiftAvailableAttribute
+      f << "    #{attribute}\n" if !attribute.empty?
       f << accessors
     end
     

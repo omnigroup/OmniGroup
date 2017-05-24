@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -145,7 +145,7 @@ class OFCMSTest : XCTestCase {
             XCTAssert(false, "SecCertificateCreateWithData");
             return;
         }
-        XCTAssertTrue(rid.matchesCertificate(cert));
+        XCTAssertTrue(rid.matches(certificate: cert));
         
         let cek = try CMSPKRecipient(rid: rid).unwrap(identity: bobpair, data: what! as Data);
         // This is the 3DES key we expect
@@ -162,11 +162,11 @@ class OFCMSTest : XCTestCase {
             return;
         }
 
-        XCTAssertTrue(pkrecip.rid.matchesCertificate(bobcert));
+        XCTAssertTrue(pkrecip.rid.matches(certificate: bobcert));
         
-        XCTAssertFalse(CMSRecipientIdentifier.keyIdentifier(ski: Data(bytes: [0x01, 0x02, 0x03])).matchesCertificate(bobcert));
-        XCTAssertTrue(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: bobcert_serial).matchesCertificate(bobcert));
-        XCTAssertFalse(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: Data(bytes: [0x01, 0x02, 0x03])).matchesCertificate(bobcert));
+        XCTAssertFalse(CMSRecipientIdentifier.keyIdentifier(ski: Data(bytes: [0x01, 0x02, 0x03])).matches(certificate: bobcert));
+        XCTAssertTrue(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: bobcert_serial).matches(certificate: bobcert));
+        XCTAssertFalse(CMSRecipientIdentifier.issuerSerial(issuer: bobcert_issuer, serial: Data(bytes: [0x01, 0x02, 0x03])).matches(certificate: bobcert));
     }
     
     func testKeyTransportRSA() throws {
@@ -374,8 +374,8 @@ class OFCMSTest : XCTestCase {
         XCTAssertEqual(wr2.recipientsFoo.count, 2);
         XCTAssertTrue(wr2.usedRecipient is CMSPKRecipient);
         let pkrecip = wr2.usedRecipient as! CMSPKRecipient;
-        XCTAssertTrue(pkrecip.rid.matchesCertificate(try keypair.certificate()!));
-        // XCTAssertFalse(pkrecip.rid.matchesCertificate(...));
+        XCTAssertTrue(pkrecip.rid.matches(certificate: try keypair.certificate()!));
+        // XCTAssertFalse(pkrecip.rid.matches(certificate: ...));
         
         XCTAssertEqual(initialData, unwrappedMembers)
     }
@@ -459,21 +459,6 @@ class OFCMSTest : XCTestCase {
 
         debugPrintWrapper(unwrapped);
 
-        func compareToPrototype(input: FileWrapper, proto: wrapperPrototype) {
-            switch proto {
-            case .file(let txt):
-                XCTAssertTrue(input.isRegularFile);
-                XCTAssertEqual(input.regularFileContents, txt.data(using: String.Encoding.utf8));
-            case .dir(let kkvv):
-                XCTAssertTrue(input.isDirectory);
-                let entries = input.fileWrappers!;
-                XCTAssertEqual(Set(kkvv.keys), Set(entries.keys));
-                for (akey, avalue) in kkvv {
-                    compareToPrototype(input: entries[akey]!, proto: avalue);
-                };
-            }
-        }
-        
         XCTAssert(input.matchesWrapper(unwrapped));
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFAsynchronousOperation.h>
 
 #import <OmniBase/OmniBase.h>
+#import <stdatomic.h>
 
 RCS_ID("$Id$");
 
@@ -16,11 +17,13 @@ OB_REQUIRE_ARC
 @implementation OFAsynchronousOperation
 {
 @protected
-    enum operationState : sig_atomic_t {
+    enum operationState : uint_fast8_t {
         operationState_unstarted = 0, // Must be 0 so that object initialization automatically gives us the correct initial state
         operationState_running,
         operationState_finished
-    } _state;
+    };
+    
+    _Atomic(enum operationState) _state;
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)theKey
@@ -49,26 +52,28 @@ OB_REQUIRE_ARC
 
 - (void)start;
 {
-    switch(_state) {
-        case operationState_unstarted:
-            [self willChangeValueForKey:@"isExecuting"];
-            _state = operationState_running;
-            [self didChangeValueForKey:@"isExecuting"];
-            break;
-        default:
-            OBRejectInvalidCall(self, _cmd, @"Operation already started");
+    [self willChangeValueForKey:@"isExecuting"];
+    enum operationState st = operationState_unstarted;
+    bool did_start_ok = atomic_compare_exchange_strong(&_state, &st, operationState_running);
+    [self didChangeValueForKey:@"isExecuting"];
+    
+    if (!did_start_ok) {
+        OBRejectInvalidCall(self, _cmd, @"Operation already started");
     }
 }
 
 - (void)finish;
 {
-    if (_state != operationState_running)
-        OBRejectInvalidCall(self, _cmd, @"Operation not currently running");
     [self willChangeValueForKey:@"isExecuting"];
     [self willChangeValueForKey:@"isFinished"];
-    _state = operationState_finished;
+    enum operationState st = operationState_running;
+    bool did_finish_ok = atomic_compare_exchange_strong(&_state, &st, operationState_finished);
     [self didChangeValueForKey:@"isFinished"];
     [self didChangeValueForKey:@"isExecuting"];
+    
+    if (!did_finish_ok) {
+        OBRejectInvalidCall(self, _cmd, @"Operation not currently running");
+    }
 }
 
 #if 0 /* Not implemented yet */

@@ -37,13 +37,35 @@ static OIWorkspace *sharedWorkspace = nil;
 
 @implementation OIWorkspace
 
-+ (OIWorkspace *)sharedWorkspace;
+static NSString *WorkspaceClassName(NSBundle *bundle)
+{
+    return [[bundle infoDictionary] objectForKey:@"OIWorkspaceClass"];
+}
+
++ (instancetype)sharedWorkspace;
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedWorkspace = [[OIWorkspace alloc] initWithName:nil];
-        
-//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_appWillTerminate:) name:NSApplicationWillTerminateNotification object:nil];
+        // When running unit tests, the main bundle won't be the test bundle.
+        NSString *workspaceClassName = WorkspaceClassName([NSBundle mainBundle]);
+
+        Class workspaceClass;
+        if ([NSString isEmptyString:workspaceClassName])
+            workspaceClass = self;
+        else {
+            workspaceClass = NSClassFromString(workspaceClassName);
+            if (workspaceClass == Nil) {
+                NSLog(@"OIWorkspace: no such class \"%@\"", workspaceClassName);
+                workspaceClass = self;
+            }
+        }
+
+        OIWorkspace *allocatedWorkspace = [workspaceClass alloc]; // Special case; make sure assignment happens before call to -init so that it will actually initialize this instance
+        if (sharedWorkspace == nil) {
+            sharedWorkspace = allocatedWorkspace;
+            OIWorkspace *initializedWorkspace = [allocatedWorkspace initWithName:nil];
+            assert(sharedWorkspace == initializedWorkspace);
+        }
     });
     
     return sharedWorkspace;
@@ -193,6 +215,13 @@ static OIWorkspace *sharedWorkspace = nil;
 {
     [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
 
+    [self performLoadWithDefaultKey:defaultsKey];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
+}
+
+- (void)performLoadWithDefaultKey:(NSString *)defaultsKey;
+{
     // this is mutable because we need to remove key/value pairs as we match them with their ivars. This is to filter the values whose keys are just the name of the inspector identifier (the disclosure state of any particular inspector), from the rest of the workspace information. Ugh.
     NSMutableDictionary *workspaceDictionary;
     if (defaultsKey) {
@@ -313,14 +342,20 @@ static OIWorkspace *sharedWorkspace = nil;
     [workspaceDictionary removeObjectsForKeys:[toolPrototypeKeys allObjects]];
 
     self.inspectorDisclosureDictionary = [workspaceDictionary mutableCopy];
+}
+
+- (void)reset;
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
+
+    [self performReset];
+    [self save];
 
     [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
 }
 
-- (void)reset
+- (void)performReset;
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];
-
     self.sidebarInspectorConfiguration = nil;
     self.floatingInspectorConfiguration = nil;
     self.inspectorGroupIdentifiers = nil;
@@ -341,10 +376,6 @@ static OIWorkspace *sharedWorkspace = nil;
     self.toolPrototypeDictionary = [NSMutableDictionary dictionary];
 
     self.workspaceName = nil;
-
-    [self save];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceDidChangeNotification object:self];
 }
 
 // Save is kind of a lousy name. If self has has been loaded this writes it to defaults. If not, or has been reset, this loads the default workspace from user defaults.
@@ -374,6 +405,11 @@ static OIWorkspace *sharedWorkspace = nil;
 
 - (void)_saveToDefaultsKey:(NSString *)defaultsName;
 {
+    [[NSUserDefaults standardUserDefaults] setObject:[self workspaceDictionaryToSave] forKey:defaultsName];
+}
+
+- (NSMutableDictionary *)workspaceDictionaryToSave;
+{
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
 
     [dict setObject:self.sidebarInspectorConfiguration forKey:@"_InfoConfiguration"];
@@ -398,7 +434,7 @@ static OIWorkspace *sharedWorkspace = nil;
     [dict addEntriesFromDictionary:self.inspectorDisclosureDictionary];
     [dict addEntriesFromDictionary:self.toolPrototypeDictionary];
 
-    [[NSUserDefaults standardUserDefaults] setObject:dict forKey:defaultsName];
+    return dict;
 }
 
 - (NSPoint)floatingInspectorPositionForIdentifier:(NSString *)identifier;

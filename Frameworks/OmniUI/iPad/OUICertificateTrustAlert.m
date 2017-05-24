@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,7 +126,7 @@ extern NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
     }
     // NSLog(@"When finishing: %@", OFSummarizeTrustResult(self.serverTrust));
     if (_trustBlock != NULL) {
-        _trustBlock(OFCertificateTrustDurationSession);
+        _trustBlock(trustDuration);
         _trustBlock = NULL;
     }
     _cancelBlock = NULL;

@@ -85,7 +85,7 @@
 "Please check that the account information you entered is correct." = "请检查您输入的帐户信息是否正确。";
 
 /* error description */
-"Please choose another location for your synced documents." = "Please choose another location for your synced documents.";
+"Please choose another location for your synced documents." = "请为您的同步文稿选择其他位置。";
 
 /* account validation error suggestion */
 "Please enter an address for the account." = "请输入帐户地址。";
@@ -121,16 +121,16 @@
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "建议的本地文稿文件夹未位于本地卷中。 请选择您的电脑的本地位置。";
 
 /* error description */
-"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "选择的本地文件夹似乎在 %@ 文件夹中。针对相同文件夹使用两个文件同步系统可能导致数据丢失。";
 
 /* error description */
-"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "选择的本地文件夹在您的 %@ 文件夹中，可以通过 Sierra 上的 iCloud Drive 同步。针对相同文件夹使用两个文件同步系统可能导致数据丢失。";
 
 /* error description */
-"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss.";
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "选择的本地文件夹在您的 %@ 文件夹中。针对相同文件夹使用两个文件同步系统可能导致数据丢失。";
 
 /* error description */
-"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss.";
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "选择的本地文件夹在您的桌面上，可以通过 Sierra 上的 iCloud Drive 同步。针对相同文件夹使用两个文件同步系统可能导致数据丢失。";
 
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "此应用程序要求 OmniPresence 格式 %1$@，但云帐户正在使用格式 %2$@。 请升级云帐户。";

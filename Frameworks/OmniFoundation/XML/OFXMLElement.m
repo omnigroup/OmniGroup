@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -812,7 +812,8 @@ static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
 
         if (value) {
             OFXMLBufferAppendUTF8CString(xml, "=\"");
-            NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
+            // OPML includes user text in attributes, which may contain newlines, which should be converted to &#10;.
+            NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask | OFXMLNewlineEntityMask, @"&#10;", encoding);
             OFXMLBufferAppendString(xml, (__bridge CFStringRef)quotedString);
             [quotedString release];
             OFXMLBufferAppendUTF8CString(xml, "\"");

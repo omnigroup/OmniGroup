@@ -5,7 +5,7 @@ module OmniDataObjects
     end
     
     def emitDeclaration(fp)
-      fp.h << "extern NSString * const #{keyName};\n"
+      fp.h << "extern NSString * const #{keyName}#{deprecatedAttribute};\n"
     end
     
     def emitDefinition(fp)
@@ -24,6 +24,10 @@ module OmniDataObjects
     
     def objcBool(v)
       v ? "YES" : "NO"
+    end
+    
+    def deprecatedAttribute
+      return ""
     end
   end
 end

@@ -101,8 +101,11 @@
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "e" = "e";
 
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "Les clés publiques EC ne sont pas utilisables dans cette version d’iOS";
+
 /* time span formatter span - needs one trailing space */
-"elapsed " = "elapsed ";
+"elapsed " = "écoulé ";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "L’élément “%1$@” n’est pas autorisé dans le chemin : %2$@";
@@ -141,7 +144,7 @@
 "local configuration file" = "fichier de configuration locale";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
-"m" = "min";
+"m" = "m";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minute";
@@ -236,10 +239,10 @@
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
 
-"Unexpected CMS content-type" = "Unexpected CMS content-type";
+"Unexpected CMS content-type" = "Type de contenu CMS inattendu";
 
 /* error message - CMS object has an unknown algorithm identifier for compression of its content */
-"Unknown compression algorithm" = "Unknown compression algorithm";
+"Unknown compression algorithm" = "Algorithme de compression inconnu";
 
 /* Error message when a CMS KeyTransport algorithm is not recognized */
 "Unknown public key algorithm" = "Algorithme de clé publique inconnu";

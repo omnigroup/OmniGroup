@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,7 +102,12 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 + (NSString *)nibName;
 {
     // OUIAllocateViewController means we might get 'MyCustomFooInspectorSlice' for 'OUIFooInspectorSlice'. View controller's should be created so often that this would be too slow. One question is whether UINib is uniqued, though, since otherwise we perform extra I/O.
-    return OUICustomClassOriginalClassName(self);
+    // Swift classes prepend their module name to the value returned from NSStringFromClass(), which is in turn passed back from OUICustomClassOriginalClassName(). The compiled nib is extremely unlikely to have a module-scoped filename. Strip the leading module and dot before handing back the nib name.
+    NSString *className = OUICustomClassOriginalClassName(self);
+    NSRange dotRange  = [className rangeOfString:@"."];
+    if (dotRange.location != NSNotFound)
+        className = [className substringFromIndex:(dotRange.location + dotRange.length)];
+    return className;
 }
 
 + (NSBundle *)nibBundle;

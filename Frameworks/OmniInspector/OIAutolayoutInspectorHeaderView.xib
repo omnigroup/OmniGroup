@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1004" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16D32" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11201"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OIAutoLayoutInspectorController"/>
@@ -12,12 +13,18 @@
             <rect key="frame" x="0.0" y="0.0" width="324" height="35"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HXT-Ox-RWt">
+                <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HXT-Ox-RWt" customClass="OIDisclosureButton">
                     <rect key="frame" x="10" y="11" width="13" height="13"/>
-                    <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="above" alignment="left" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="KrV-PV-DN0">
+                    <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="above" alignment="left" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="KrV-PV-DN0" customClass="OIDisclosureButtonCell">
                         <behavior key="behavior" pushIn="YES" changeBackground="YES" changeGray="YES" lightByContents="YES"/>
                         <font key="font" metaFont="smallSystem"/>
                     </buttonCell>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="string" keyPath="tintColorDarkThemeKey" value="DarkInspectorDisclosureTintColor"/>
+                        <userDefinedRuntimeAttribute type="string" keyPath="tintColorLightThemeKey" value="LightInspectorDisclosureTintColor"/>
+                        <userDefinedRuntimeAttribute type="image" keyPath="collapsedImage" value="OIDisclosureButtonCollapsed"/>
+                        <userDefinedRuntimeAttribute type="image" keyPath="expandedImage" value="OIDisclosureButtonExpanded"/>
+                    </userDefinedRuntimeAttributes>
                     <connections>
                         <action selector="disclosureTriangleClicked:" target="-2" id="Z4T-hA-wQR"/>
                     </connections>
@@ -45,4 +52,8 @@
             </connections>
         </customView>
     </objects>
+    <resources>
+        <image name="OIDisclosureButtonCollapsed" width="24" height="24"/>
+        <image name="OIDisclosureButtonExpanded" width="24" height="24"/>
+    </resources>
 </document>

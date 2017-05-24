@@ -56,6 +56,14 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     return view;
 }
 
+- (void)setBounds:(CGRect)bounds {
+    CGRect oldBounds = self.bounds;
+    [super setBounds:bounds];
+    if (!CGSizeEqualToSize(oldBounds.size, self.bounds.size) && [self.delegate respondsToSelector:@selector(scrollViewDidChangeFrame)]) {
+        [self.delegate scrollViewDidChangeFrame];
+    }
+}
+
 - (CGFloat)fullScreenScaleForUnscaledContentSize:(CGSize)unscaledContentSize;
 {
     if (unscaledContentSize.width == 0 || unscaledContentSize.height == 0) {
@@ -150,7 +158,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 {
     CGSize viewportBufferSize = CGSizeZero;
     
-    NSObject<GPVisibleBoundsDelegate> *boundsDelegate = _scalingView(self).visibleBoundsDelegate;
+    NSObject<OUIVisibleBoundsDelegate> *boundsDelegate = _scalingView(self).visibleBoundsDelegate;
     if (boundsDelegate != nil) {
         viewportBufferSize = [boundsDelegate sizeOfViewport];
     } else {

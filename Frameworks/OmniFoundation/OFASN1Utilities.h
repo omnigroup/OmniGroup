@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ NSData *OFASN1EnDERInteger(uint64_t i);
 NSData *OFASN1UnwrapOctetString(NSData *derValue, NSRange r);
 
 /* This determines the algorithm and key size from an X.509 public key info structure */
-extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize);
+extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize, NSData **outAlgorithmIdentifier);
 
 /* Used for constructing DER-encoded objects */
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount);
@@ -79,7 +79,13 @@ enum OFASN1Algorithm {
     OFASN1Algorithm_DSA,
     OFASN1Algorithm_ecPublicKey,
     OFASN1Algorithm_ecDH,
-    
+    OFASN1Algorithm_ECDH_standard_sha1kdf,
+    OFASN1Algorithm_ECDH_standard_sha256kdf,
+    OFASN1Algorithm_ECDH_standard_sha512kdf,
+    OFASN1Algorithm_ECDH_cofactor_sha1kdf,
+    OFASN1Algorithm_ECDH_cofactor_sha256kdf,
+    OFASN1Algorithm_ECDH_cofactor_sha512kdf,
+
     /* The AlgorithmIdentifier structure is also used for a bunch of algorithms other than symmetric crypto; for convenience we parse them with the same function. */
     OFASN1Algorithm_zlibCompress,
     OFASN1Algorithm_PBKDF2,

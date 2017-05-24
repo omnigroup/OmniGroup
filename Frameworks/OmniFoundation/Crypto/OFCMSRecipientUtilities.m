@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,21 +13,37 @@
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFASN1-Internal.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/OFCMS.h>
+#import <OmniFoundation/OFSymmetricKeywrap.h>
 #import "OFCMS-Internal.h"
 #import "GeneratedOIDs.h"
 #import "OFRFC3211Wrap.h"
 #import <Foundation/NSData.h>
 #import <CommonCrypto/CommonCrypto.h>
 #import <CommonCrypto/CommonRandom.h>
+#import <Security/Security.h>
 
 RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
+#if HAVE_APPLE_ECDH_SUPPORT
+#if (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && (__IPHONE_OS_VERSION_MIN_REQUIRED < 100000)) || (defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED < 101200))
+// This symbol was added as of MacOSX 10.12+ and iOS 10.10+, but the later SDKs don't properly declare it weak when building with a lower minimum target (see RADAR 29541215).
+extern const CFStringRef kSecAttrKeyTypeECSECPrimeRandom __attribute__((weak_import));
+#define CAN_USE_APPLE_ECDH_SUPPORT (&kSecAttrKeyTypeECSECPrimeRandom != NULL && &SecKeyCopyKeyExchangeResult != NULL)
+#endif
+#endif
+
+static unsigned kekLengthOfWrapAlgorithm(enum OFASN1Algorithm wrapAlg, NSData *buf, NSRange parameterRange) __attribute__((unused));
 static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **outError);
 static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **outError);
 static NSError *unsupportedCMSFeature(NSString *fmt, ...) __attribute__((cold));
+static NSError *cmsFormatError(NSString *detail);
+#if HAVE_APPLE_ECDH_SUPPORT
+static NSData *cmsECCSharedInfo(NSData *wrapAlg, NSData *ukm, uint32_t kekSizeBytes);
+#endif
 
 /* Algorithm identifiers. */
 
@@ -275,7 +291,7 @@ static NSData *unwrapWithAlgId_PWRI(NSData *kekParameters, NSData *wrappedKey, N
     
     if ([KEK length] != expectedKeyLength) {
         if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCMSFormatError userInfo:@{ NSLocalizedFailureReasonErrorKey: @"Key-encryption-key length mismatch" }];
+            *outError = cmsFormatError(@"Key-encryption-key length mismatch");
         return nil;
     }
     
@@ -343,26 +359,48 @@ static NSData *unwrapWithAlgId(NSData *encrypted, NSData *KEK, NSError **outErro
     
     if ([KEK length] != expectedKeyLength) {
         if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCMSFormatError userInfo:@{ NSLocalizedFailureReasonErrorKey: @"Key-encryption-key length mismatch" }];
+            *outError = cmsFormatError(@"Key-encryption-key length mismatch");
         return nil;
     }
     
-    size_t wrappedKeyLength = wrappedKey.length;
-    size_t unwrappedKeyLength = CCSymmetricUnwrappedSize(kCCWRAPAES, wrappedKeyLength);
-    
-    void *buffer = malloc(unwrappedKeyLength);
-    size_t unwrappedLenTmp = unwrappedKeyLength; /* RADAR 18206798 aka 15949620 */
-    int unwrapError = CCSymmetricKeyUnwrap(kCCWRAPAES, CCrfc3394_iv, CCrfc3394_ivLen, [KEK bytes], [KEK length], wrappedKey.bytes, wrappedKeyLength, buffer, &unwrappedLenTmp);
-    if (unwrapError) {
-        free(buffer);
-        // Note that CCSymmetricKeyUnwrap() is documented to return various kCCFoo error codes, but it actually only ever returns -1. (RADAR 27463510)
-        // Other than programming errors, the only error we should see here is if the AESWRAP IV didn't verify, which is an indication that the user entered the wrong password.
-        if (outError)
-            *outError = [NSError errorWithDomain:OFErrorDomain code:OFKeyNotApplicable userInfo:@{ @"function" : @"CCSymmetricKeyUnwrap" }];
-        return nil;
+    NSData *result = OFSymmetricKeyUnwrapDataRFC3394(KEK, wrappedKey, outError);
+    if (!result && outError) {
+        NSError *underlying = *outError;
+        if (underlying.code == kCCDecodeError) {
+            *outError = [NSError errorWithDomain:OFErrorDomain code:OFKeyNotApplicable userInfo:@{ NSUnderlyingErrorKey: underlying }];
+        }
     }
-    
-    return [NSData dataWithBytesNoCopy:buffer length:unwrappedKeyLength freeWhenDone:YES];
+    return result;
+}
+
+/* This takes an algorithm identifier for a key-wrapping algorithm and returns the length (in bytes) of the KEK required by that algorithm. For algorithms with parameters, they are read from "parameterRange" of "buf". Returns zero on failure (parse failure or unknown algorithm). */
+static unsigned kekLengthOfWrapAlgorithm(enum OFASN1Algorithm wrapAlg, NSData *buf, NSRange parameterRange)
+{
+    switch (wrapAlg) {
+        case OFASN1Algorithm_aes128_wrap: return kCCKeySizeAES128;
+        case OFASN1Algorithm_aes192_wrap: return kCCKeySizeAES192;
+        case OFASN1Algorithm_aes256_wrap: return kCCKeySizeAES256;
+        case OFASN1Algorithm_PWRI_KEK:
+        {
+            enum OFASN1Algorithm innerAlgorithm = OFASN1Algorithm_Unknown;
+            NSRange innerAlgorithmParams;
+            
+            enum OFASN1ErrorCodes rc = OFASN1ParseAlgorithmIdentifier([buf subdataWithRange:parameterRange], NO, &innerAlgorithm, &innerAlgorithmParams);
+            if (rc)
+                return 0;
+
+            switch (innerAlgorithm) {
+                case OFASN1Algorithm_aes128_cbc:  return kCCKeySizeAES128;
+                case OFASN1Algorithm_aes192_cbc:  return kCCKeySizeAES192;
+                case OFASN1Algorithm_aes256_cbc:  return kCCKeySizeAES256;
+                case OFASN1Algorithm_des_ede_cbc: return kCCKeySize3DES;
+                default:
+                    return 0;
+            }
+        }
+        default:
+            return 0;
+    }
 }
 
 NSData *OFProduceRIForCMSPWRI(NSData *KEK, NSData *CEK, NSData *algInfo, OFCMSOptions options)
@@ -623,6 +661,115 @@ static NSError *parseKeyTransportRecipient(NSData *rid, const struct parsedTag *
     return nil;
 }
 
+static NSError *parseKeyAgreementRecipient(NSData *rid, const struct parsedTag *recip, NSData **outRecipientIdKeyPairs, NSData **outOriginatorFragment)
+{
+    /*
+     KeyAgreeRecipientInfo ::= SEQUENCE {
+         version CMSVersion,  -- always set to 3
+         originator [0] EXPLICIT OriginatorIdentifierOrKey,
+         ukm [1] EXPLICIT UserKeyingMaterial OPTIONAL,
+         keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+         recipientEncryptedKeys RecipientEncryptedKeys ::= SEQUENCE {
+             SEQUENCE {
+                 rid KeyAgreeRecipientIdentifier,
+                 encryptedKey EncryptedKey
+             }
+         }
+     }
+     */
+    
+    static const struct scanItem kariDataItems[5] = {
+        { FLAG_PRIMITIVE, BER_TAG_INTEGER }, /* version */
+        { FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC, 0 }, /* OriginatorIdentifierOrKey */
+        { FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC|FLAG_OPTIONAL, 1 }, /* UserKeyingMaterial */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* wrapping algorithm */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE } /* wrapped keys (multiple) */
+    };
+    struct parsedItem kariDataValues[5];
+    
+    enum OFASN1ErrorCodes rc = OFASN1ParseItemsInObject(rid, *recip, YES, kariDataItems, kariDataValues);
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient");
+    
+    int syntaxVersion = -1;
+    rc = OFASN1UnDERSmallInteger(rid, &kariDataValues[0].i, &syntaxVersion);
+    if (rc != OFASN1Success || syntaxVersion < 0 || syntaxVersion > 3) {
+        // Don't try to parse something whose version field is out of the range we know about.
+        // (Technically we should only accept syntax version 3 and later, since this structure didn't exist earlier.)
+        return unsupportedCMSFeature(@"KeyAgreementRecipient.version=%d", syntaxVersion);
+    }
+    
+    /* The only kind of key agreement originator we support is the OriginatorKey option. (This also seems to be the only one that most PKIX standards use.)
+     OriginatorIdentifierOrKey = CHOICE {
+         originatorKey [1] IMPLICIT OriginatorPublicKey = SEQUENCE {
+           algorithm AlgorithmIdentifier,
+           publicKey BIT STRING
+       }
+     } */
+    struct parsedTag oiokTag;
+    NSUInteger oiokEnd = NSMaxRange(kariDataValues[1].i.content);
+    rc = OFASN1ParseTagAndLength(rid, kariDataValues[1].i.content.location, oiokEnd, YES, &oiokTag);
+    if (!rc) {
+        if (NSMaxRange(oiokTag.content) != oiokEnd)
+            rc = OFASN1TrailingData;
+        else if (oiokTag.classAndConstructed != (CLASS_CONTEXT_SPECIFIC | FLAG_CONSTRUCTED) || oiokTag.tag != 1)
+            rc = OFASN1UnexpectedType;
+    }
+    if (rc)
+        return OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient.originator");
+    
+    // We can't really split the data in the same way that the other recipient information parsers do, since we represent several recipients with some shared information. The caller will have to further rearrange the data we return by calling _OFASN1UnzipKeyAgreementRecipients().
+    // We put the common information in *outRecipientIdentifier: algId + bitstring of the ephemeral key, the optional UKM, and the common wrapping algorithm.
+    // (The following subrange-ing only works because the various tags and sequences containing the algId + bitstring don't append any bytes to the end of the content they wrap; we can snip off the headers and get just the content, contiguous with the next few fields.)
+    *outOriginatorFragment = [rid subdataWithRange:(NSRange){ oiokTag.content.location, NSMaxRange(kariDataValues[3].i.content) - oiokTag.content.location }];
+    
+    // And all the actual recipient identifiers and wrapped keys go into *outWrapped
+    *outRecipientIdKeyPairs = [rid subdataWithRange:kariDataValues[4].i.content];
+    
+    return nil;
+}
+
+// A KeyAgreementRecipientInfo contains one common set of key-agreement parameters (ephemeral key, algorithm identifiers, etc) followed by possibly several RID+wrappedKey pairs. This function rearranges them into a structure as if we had multiple KARI structures each with only one RID (and possibly duplicated parameters).
+// If we were going to decrypt multiple recipients, this would be inefficient, but we don't generally do that. So the overhead of re-parsing the originator fragment for each recipient should be minimal.
+NSArray *_OFASN1UnzipKeyAgreementRecipients(NSData *originatorFragment, NSData *seq, NSError **outError) {
+    NSMutableArray *rids = [NSMutableArray array];
+    NSMutableArray *wrappedKeys = [NSMutableArray array];
+    enum OFASN1ErrorCodes rc0;
+    rc0 = OFASN1EnumerateMembersAsBERRanges(seq,
+                                            (struct parsedTag){
+                                                .tag = BER_TAG_SEQUENCE,
+                                                .classAndConstructed = CLASS_UNIVERSAL | FLAG_CONSTRUCTED,
+                                                .indefinite = NO,
+                                                .content = (NSRange){ 0, seq.length }
+                                            },
+                                            ^enum OFASN1ErrorCodes(NSData *samebuf, struct parsedTag item, NSRange berRange)
+    {
+        if (item.tag != BER_TAG_SEQUENCE || item.classAndConstructed != (CLASS_UNIVERSAL|FLAG_CONSTRUCTED) || item.indefinite != NO)
+            return OFASN1UnexpectedType;
+        
+        struct parsedTag ridTag;
+        NSRange ridDERRange, wrappedKeyRange;
+        enum OFASN1ErrorCodes rc = OFASN1ParseTagAndLength(samebuf, item.content.location, NSMaxRange(item.content), YES, &ridTag);
+        if (rc)
+            return rc;
+        ridDERRange = (NSRange){ .location = item.content.location, .length = NSMaxRange(ridTag.content) - item.content.location };
+        wrappedKeyRange = (NSRange){ .location = NSMaxRange(ridDERRange), .length = NSMaxRange(item.content) - NSMaxRange(ridDERRange) };
+        
+        [rids addObject:[samebuf subdataWithRange:ridDERRange]];
+        [wrappedKeys addObject:[originatorFragment dataByAppendingData:[samebuf subdataWithRange:wrappedKeyRange]]];
+        
+        return OFASN1Success;
+    });
+    
+    if (rc0) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(rc0, @"KeyAgreementRecipient.RecipientEncryptedKeys");
+        return nil;
+    }
+    
+    return @[ rids, wrappedKeys ];
+}
+
 NSData *OFUnwrapRIForCMSKeyTransport(SecKeyRef secretKey, NSData *encrypted, NSError **outError)
 {
     enum OFASN1Algorithm alg = OFASN1Algorithm_Unknown;
@@ -650,6 +797,396 @@ NSData *OFUnwrapRIForCMSKeyTransport(SecKeyRef secretKey, NSData *encrypted, NSE
             return nil;
     }
 }
+
+#if HAVE_APPLE_ECDH_SUPPORT
+
+NSData *OFUnwrapRIForCMSKeyAgreement(SecKeyRef secretKey, NSData *originatorFragmentAndEncryptedKey, NSError **outError)
+{
+#ifdef CAN_USE_APPLE_ECDH_SUPPORT
+    if (!CAN_USE_APPLE_ECDH_SUPPORT) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFErrorDomain code:OFUnsupportedCMSFeature userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedStringFromTableInBundle(@"EC public keys are not usable on this OS version", @"OmniFoundation", OMNI_BUNDLE, @"Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them")}];
+        return nil;
+    }
+#endif
+
+    /* originatorFragment is put together by parseKeyAgreementRecipient(); it contains the part of the KeyAgreeRecipientInfo that is common to all the recipients of this KARI. It is then prepended to each wrappedKey by _OFASN1UnzipKeyAgreementRecipients() to produce this structure:
+
+     algorithm AlgorithmIdentifier,
+     publicKey BIT STRING
+     ukm [1] EXPLICIT UserKeyingMaterial OPTIONAL,
+     keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+     encryptedKey OCTET STRING
+     
+     */
+    
+    static const struct scanItem originatorFragmentDataItems[5] = {
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* OriginatorKey algorithm identifier */
+        { FLAG_PRIMITIVE, BER_TAG_BIT_STRING }, /* OriginatorKey public key */
+        { FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC|FLAG_OPTIONAL, 1 }, /* UserKeyingMaterial */
+        { FLAG_CONSTRUCTED, BER_TAG_SEQUENCE }, /* wrapping algorithm */
+        { FLAG_PRIMITIVE, BER_TAG_OCTET_STRING }, /* wrapped key */
+    };
+    struct parsedItem originatorFragmentDataValues[5];
+    
+    enum OFASN1ErrorCodes rc = OFASN1ParseBERSequence(originatorFragmentAndEncryptedKey, 0, originatorFragmentAndEncryptedKey.length, YES, originatorFragmentDataItems, originatorFragmentDataValues, 5);
+    if (rc) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient");
+        return nil;
+    }
+    
+    /* Parse the originator key information */
+    enum OFASN1Algorithm keyType = OFASN1Algorithm_Unknown;
+    NSRange kaParameterRange = { 0, 0 };
+    rc = OFASN1ParseAlgorithmIdentifier([originatorFragmentAndEncryptedKey subdataWithRange:(NSRange){ 0, NSMaxRange(originatorFragmentDataValues[0].i.content) }], NO, &keyType, &kaParameterRange);
+    if (rc) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient.originatorKey.algorithm");
+        return nil;
+    }
+    if (keyType != OFASN1Algorithm_ecPublicKey) {
+        /* RFC5753 [3.1.1]: "The originatorKey algorithm field MUST contain the id-ecPublicKey object identifier" */
+        /* If it doesn't, the originator is trying to do something other than elliptic-curve-key-agreement. */
+        if (outError)
+            *outError = unsupportedCMSFeature(@"Unknown key type in key agreement recipient");
+        return nil;
+    }
+    /* We're required to accept absent/NULL parameters. TODO: If the sender included parameters, verify that they specify the NamedCurve we expect them to (see RFC5753 [7.1.2]. */
+    
+    /* Next parse the key-agreement algorithm and convert it to Apple's algorithm identifier */
+    NSData *keyAgreementAlgorithm = [originatorFragmentAndEncryptedKey subdataWithRange:(NSRange){ originatorFragmentDataValues[3].startPosition, NSMaxRange(originatorFragmentDataValues[3].i.content) - originatorFragmentDataValues[3].startPosition }];
+    enum OFASN1Algorithm keyAgreementAlg = OFASN1Algorithm_Unknown;
+    CFStringRef keyAgreementAlgApple;
+    kaParameterRange = (NSRange){ 0, 0 };
+    rc = OFASN1ParseAlgorithmIdentifier(keyAgreementAlgorithm, NO, &keyAgreementAlg, &kaParameterRange);
+    if (rc) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient.keyEncryptionAlgorithm");
+        return nil;
+    }
+    switch (keyAgreementAlg) {
+        // We never generate objects with the SHA1-based KDF, but Apple's encoder does, so we might as well support them.
+        case OFASN1Algorithm_ECDH_standard_sha1kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA1;
+            break;
+        case OFASN1Algorithm_ECDH_standard_sha256kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA256;
+            break;
+        case OFASN1Algorithm_ECDH_standard_sha512kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA512;
+            break;
+        case OFASN1Algorithm_ECDH_cofactor_sha1kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA1;
+            break;
+        case OFASN1Algorithm_ECDH_cofactor_sha256kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA256;
+            break;
+        case OFASN1Algorithm_ECDH_cofactor_sha512kdf:
+            keyAgreementAlgApple = kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA512;
+            break;
+        default:
+            if (outError)
+                *outError = unsupportedCMSFeature(@"Unknown key agreement algorithm");
+            return nil;
+    }
+    
+    /* Next parse the key-wrapping algorithm, which is stored as the algorithm parameter of the key-agreement algorithm. This will be something like AESWRAP, taking the result of the ECDH KDF as a key-encryption-key to unwrap the key in encryptedKey and produce the CEK. */
+    enum OFASN1Algorithm keyWrappingAlg = OFASN1Algorithm_Unknown;
+    NSData *keyWrappingAlgIdentifier = [keyAgreementAlgorithm subdataWithRange:kaParameterRange];
+    NSRange keyWrappingAlgParameterRange = { 0, 0 };
+    rc = OFASN1ParseAlgorithmIdentifier(keyWrappingAlgIdentifier, NO, &keyWrappingAlg, &keyWrappingAlgParameterRange);
+    if (rc) {
+        if (outError)
+            *outError = OFNSErrorFromASN1Error(rc, @"KeyAgreementRecipient.keyEncryptionAlgorithm");
+        return nil;
+    }
+    
+    /* Look at the wrapping algorithm and *its* parameter (if any) to see how many bytes of output we need to ask the KDF for. */
+    unsigned kekLength = kekLengthOfWrapAlgorithm(keyWrappingAlg, keyWrappingAlgIdentifier, keyWrappingAlgParameterRange);
+    if (!kekLength) {
+        if (outError)
+            *outError = unsupportedCMSFeature(@"Unknown key wrap algorithm for key agreement");
+        return nil;
+    }
+    
+    /* Did the originator include the optional UKM field? */
+    NSData *ukmOctets;
+    if (!(originatorFragmentDataValues[2].i.classAndConstructed & FLAG_OPTIONAL)) {
+        // UKM, if present
+        ukmOctets = OFASN1UnwrapOctetString(originatorFragmentAndEncryptedKey, originatorFragmentDataValues[2].i.content);
+        if (!ukmOctets) {
+            if (outError)
+                *outError = cmsFormatError(@"ECDH KA UKM material invalid");
+            return nil;
+        }
+    } else {
+        ukmOctets = nil;
+    }
+
+    /* Construct the parameter dictionary for SecKeyCopyKeyExchangeResult(). */
+    NSMutableDictionary *keyExchangeParameters = [NSMutableDictionary dictionary];
+    [keyExchangeParameters setUnsignedIntValue:kekLength forKey:(__bridge NSString *)kSecKeyKeyExchangeParameterRequestedSize];
+    [keyExchangeParameters setObject:cmsECCSharedInfo(keyWrappingAlgIdentifier, ukmOctets, kekLength) forKey:(__bridge NSString *)kSecKeyKeyExchangeParameterSharedInfo];
+
+    /* Reconstitute the originator's ephemeral key. */
+    /* The first byte of a BIT STRING's content is the unused bits count. The ECDH keys we support are all encoded using SECG's point format which produces an octet string, so this first byte will be 0 for any valid ECPoint. */
+    NSRange ecPointRange = originatorFragmentDataValues[1].i.content;
+    if (ecPointRange.length < 2) {
+        if (outError) *outError = cmsFormatError(@"ephemeral ECDH key");
+        return nil;
+    }
+    uint8_t fb[0];
+    [originatorFragmentAndEncryptedKey getBytes:fb range:(NSRange){ .location = ecPointRange.location, .length = 1 }];
+    if (fb[0] != 0) {
+        if (outError) *outError = cmsFormatError(@"ephemeral ECDH key");
+        return nil;
+    }
+    ecPointRange.location += 1; ecPointRange.length -= 1;  // Strip off the "unused bits" byte, but not the point-format byte
+    CFErrorRef cfError = NULL;
+    SecKeyRef ephemeralKey = SecKeyCreateWithData((__bridge CFDataRef)[originatorFragmentAndEncryptedKey subdataWithRange:ecPointRange],
+                                                  (__bridge CFDictionaryRef)@{ (__bridge NSString *)kSecAttrKeyType: (__bridge NSString *)kSecAttrKeyTypeECSECPrimeRandom,
+                                                                               (__bridge NSString *)kSecAttrKeyClass: (__bridge NSString *)kSecAttrKeyClassPublic },
+                                                  &cfError);
+    if (!ephemeralKey) {
+        NSError *err = [NSError errorWithDomain:OFErrorDomain code:OFCMSFormatError userInfo:@{ NSUnderlyingErrorKey: (__bridge_transfer NSError *)cfError }];
+        if (outError)
+            *outError = err;
+        return nil;
+    }
+
+    /* Now perform the actual Diffie-Hellman operation (and integrated key-derivation/stretching step) to derive the KEK. */
+    cfError = NULL;
+    CFDataRef ephemeralSharedSecret = SecKeyCopyKeyExchangeResult(secretKey, keyAgreementAlgApple, ephemeralKey, (__bridge CFDictionaryRef)keyExchangeParameters, &cfError);
+    NSLog(@"Key agreement (%@) -> %@", keyAgreementAlgApple, [(__bridge NSData *)ephemeralSharedSecret description]);
+    if (!ephemeralSharedSecret) {
+        NSError *err = [NSError errorWithDomain:OFErrorDomain
+                                           code:OFCMSFormatError
+                                       userInfo:@{
+                                                  NSUnderlyingErrorKey: (__bridge_transfer NSError *)cfError,
+                                                  @"ephemeral": (__bridge_transfer NSObject *)ephemeralKey
+                                                  }];
+        if (outError)
+            *outError = err;
+        return nil;
+    }
+    {
+        NSData *unstretchedKey = (__bridge_transfer NSData *)SecKeyCopyKeyExchangeResult(secretKey, kSecKeyAlgorithmECDHKeyExchangeStandard, ephemeralKey, (__bridge CFDictionaryRef)@{ }, NULL);
+        NSLog(@"   Bare key agreement (%@) -> %@", kSecKeyAlgorithmECDHKeyExchangeStandard, [unstretchedKey description]);
+    }
+
+    CFRelease(ephemeralKey);
+    
+    /* And, finally, unwrap the CEK using the derived KEK. */
+    NSData *encryptedKey = [originatorFragmentAndEncryptedKey subdataWithRange:(NSRange){ .location = originatorFragmentDataValues[4].startPosition, .length = NSMaxRange(originatorFragmentDataValues[4].i.content) - originatorFragmentDataValues[4].startPosition }];
+    return unwrapWithAlgId([keyWrappingAlgIdentifier dataByAppendingData:encryptedKey], (__bridge_transfer NSData *)ephemeralSharedSecret, outError);
+}
+
+NSData *OFProduceRIForCMSECDHKeyAgreement(NSArray *recipientKeys, NSArray <NSData *> *recipientIdentifiers, NSData *keyAlgorithm, BOOL cofactor, NSData *CEK, NSError **outError)
+{
+    // Based on RFC5753. (Including IETF erratum 4777 which alters the format of the public half of the ephemeral key.)
+    // See also: NIST Special Publication 800-56A, "Recommendation for Pair-Wise Key Establishment Schemes Using Discrete Logarithm Cryptography"
+    
+#ifdef CAN_USE_APPLE_ECDH_SUPPORT
+    if (!CAN_USE_APPLE_ECDH_SUPPORT) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFErrorDomain code:OFUnsupportedCMSFeature userInfo:nil];
+        return nil;
+    }
+#endif
+    
+    int kekSize;
+    const uint8_t *keyWrapAlgOID;
+    int curveSize;
+    SecKeyAlgorithm agreementAlgIDApple;
+    const uint8_t *agreementAlgIDCMS;
+    size_t cekLength = CEK.length;
+    enum OFASN1NamedCurve curve;
+    
+    /* CCSymmetricKeyWrap() does RFC3394 key-wrap, not RFC5649 key-wrap, which means we can only wrap things which are multiples of half the block size. */
+    OBASSERT((cekLength % (kCCBlockSizeAES128/2)) == 0);
+    
+    {
+        enum OFASN1ErrorCodes errc;
+        enum OFASN1Algorithm keyAlgorithmOID = OFASN1Algorithm_Unknown;
+        NSRange algorithmParameterRange = {0,0};
+        
+        errc = OFASN1ParseAlgorithmIdentifier(keyAlgorithm, NO, &keyAlgorithmOID, &algorithmParameterRange);
+        if (errc) {
+            if (outError) *outError = OFNSErrorFromASN1Error(errc, @"OFASN1ParseAlgorithmIdentifier");
+            return nil;
+        }
+        if (keyAlgorithmOID != OFASN1Algorithm_ecPublicKey && keyAlgorithmOID != OFASN1Algorithm_ecDH) {
+            if (outError) *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:errSecParam userInfo:@{ @"key-algorithm" : keyAlgorithm }];
+            return nil;
+        }
+        errc = OFASN1ParseAlgorithmIdentifier([keyAlgorithm subdataWithRange:algorithmParameterRange], NO, &keyAlgorithmOID, NULL);
+        if (errc) {
+            if (outError) *outError = OFNSErrorFromASN1Error(errc, @"OFASN1ParseAlgorithmIdentifier");
+            return nil;
+        }
+        curve = (enum OFASN1NamedCurve)keyAlgorithmOID;
+    }
+
+    // Apple forces us to guess the key's curve based on its size. This seems fragile but we don't have a better option. (RADAR 19357823)
+    // Apple provides nice constants for the sizes of the curves it supports ... but only on OSX, not iOS. Nice going, guys.
+    switch (curve) {
+        case OFASN1NamedCurve_secp256r1:
+            curveSize = 256;
+            break;
+        case OFASN1NamedCurve_secp384r1:
+            curveSize = 384;
+            break;
+        case OFASN1NamedCurve_secp521r1:
+            curveSize = 521;
+            break;
+        default:
+            if (outError)
+                *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:errSecParam userInfo:@{ @"curve" : @((int)curve) }];
+            return nil;
+    }
+    
+    // Decide on the key-wrapping parameters
+    if (cekLength <= kCCKeySizeAES128 || curveSize <= 256) {
+        kekSize = kCCKeySizeAES128;
+        keyWrapAlgOID = der_alg_aes128_wrap;
+    } else {
+        kekSize = kCCKeySizeAES256;
+        keyWrapAlgOID = der_alg_aes256_wrap;
+    }
+    
+    // Decide on the key exchange and KDF algorithm. Since we're doing simple encryption, the SHA256-based KDFs are enough for all our key wrapping needs.
+    if (cofactor) {
+        agreementAlgIDApple = kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA256;
+        agreementAlgIDCMS = der_alg_ECDH_cofactor_sha256kdf;
+    } else {
+        agreementAlgIDApple = kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA256;
+        agreementAlgIDCMS = der_alg_ECDH_standard_sha256kdf;
+    }
+
+    // Generate an ephemeral ECDH keypair.
+    NSMutableDictionary *generationAttributes = [NSMutableDictionary dictionaryWithObjectsAndKeys: (__bridge id)kSecAttrKeyTypeECSECPrimeRandom, kSecAttrKeyType, kCFBooleanFalse, kSecAttrIsPermanent, nil];
+    [generationAttributes setIntValue:curveSize forKey:(__bridge NSString *)kSecAttrKeySizeInBits];
+    SecKeyRef pubEphemeral = NULL, privEphemeral = NULL;
+    OSStatus oserr = SecKeyGeneratePair((__bridge CFDictionaryRef)generationAttributes, &pubEphemeral, &privEphemeral);
+    if (oserr != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:oserr userInfo: @{ @"function": @"SecKeyGeneratePair", @"parameters" : generationAttributes }];
+        return nil;
+    }
+    OBASSERT(pubEphemeral != NULL);
+    OBASSERT(privEphemeral != NULL);
+    
+    // Extract the ephemeral key's public point.
+    // Apple's documentation only vaguely describes the result of this function as being in "SEC1 format". What they appear to mean is the result of the "Point-to-Octet-String Conversion" from SEC1. This is a non-BER format, and is usually wrapped in an OCTET STRING to get the ASN.1 ECPoint type.
+    CFErrorRef cfError = NULL;
+    NSData *publicEphemeralKey = (__bridge_transfer NSData *)SecKeyCopyExternalRepresentation(pubEphemeral, &cfError);
+    CFRelease(pubEphemeral);
+    pubEphemeral = NULL;
+    if (!publicEphemeralKey) {
+        CFRelease(privEphemeral);
+        OB_CFERROR_TO_NS(outError, cfError);
+        return nil;
+    }
+    
+    // Generate the UKM, which is essentially an extra salt. Not absolutely needed since we're using an ephemeral key, but whatever. Maybe we'll want to do static-static someday.
+    NSData *ukm = [NSData cryptographicRandomDataOfLength:16];
+
+    
+    // Next, generate the shared keys for each recipient, and use them to encrypt the CEK. Accumulate those in a buffer. Each recipient gets a structure like this:
+    // RecipientEncryptedKey ::= SEQUENCE {
+    //     rid KeyAgreeRecipientIdentifier,
+    //     encryptedKey EncryptedKey ::= OCTET STRING
+    // }
+
+    CFNumberRef kekSizeNumber = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &kekSize);
+    NSDictionary *agreementParameters = @{ (__bridge NSString *)kSecKeyKeyExchangeParameterRequestedSize: (__bridge NSObject *)kekSizeNumber,
+                                           (__bridge NSString *)kSecKeyKeyExchangeParameterSharedInfo: cmsECCSharedInfo(OFASN1AppendStructure(nil, "(+)", keyWrapAlgOID), ukm, kekSize) };
+    CFRelease(kekSizeNumber);
+    NSMutableData *recipientEncryptedKeys = [NSMutableData data];
+    size_t wrappedKeyLength = CCSymmetricWrappedSize(kCCWRAPAES, cekLength);
+    for (NSUInteger recipientIndex = 0; recipientIndex < recipientKeys.count; recipientIndex ++) {
+        
+        // Perform the key exchange, generating a shared secret of `kekSize` bytes
+        SecKeyRef recipientPublicKey = (__bridge SecKeyRef)[recipientKeys objectAtIndex:recipientIndex];
+        CFDataRef ephemeralSharedSecret = SecKeyCopyKeyExchangeResult(privEphemeral, agreementAlgIDApple, recipientPublicKey, (__bridge CFDictionaryRef)agreementParameters, &cfError);
+        if (!ephemeralSharedSecret) {
+            CFRelease(privEphemeral);
+            OB_CFERROR_TO_NS(outError, cfError);
+            return nil;
+        }
+        
+        // We asked the KDF to produce a certain number of bytes, make sure it actually did.
+        OBASSERT(CFDataGetLength(ephemeralSharedSecret) == kekSize);
+        
+        // Use that shared secret to encrypt the content-encryption key
+        NSMutableData *wrappedKey = [NSMutableData dataWithLength:wrappedKeyLength];
+        size_t wrappedLenTmp = wrappedKeyLength; /* RADAR 18206798 aka 15949620 */
+        int wrapOK = CCSymmetricKeyWrap(kCCWRAPAES,
+                                        CCrfc3394_iv, CCrfc3394_ivLen,
+                                        CFDataGetBytePtr(ephemeralSharedSecret), CFDataGetLength(ephemeralSharedSecret),
+                                        [CEK bytes], [CEK length],
+                                        [wrappedKey mutableBytes], &wrappedLenTmp);
+        CFRelease(ephemeralSharedSecret);
+        if (wrapOK != kCCSuccess) {
+            // This shouldn't ever happen, unless Apple screws up CCSymmetricKeyWrap again somehow.
+            [NSException raise:NSInternalInconsistencyException format:@"CCSymmetricKeyWrap() returned %d", (int)wrapOK];
+        }
+
+        // DER-format the result
+        OFASN1AppendStructure(recipientEncryptedKeys, "(d[d])", [recipientIdentifiers objectAtIndex:recipientIndex], wrappedKey);
+    }
+    
+    CFRelease(privEphemeral);
+    privEphemeral = NULL;
+    
+    /* Finally, produce the entire KeyAgreeRecipientInfo structure.
+     KeyAgreeRecipientInfo ::= SEQUENCE {
+         version CMSVersion,  -- always set to 3
+         originator [0] EXPLICIT CHOICE {
+             [1] IMPLICIT SEQUENCE {
+                  algorithm AlgorithmIdentifier,
+                  publicKey BIT STRING
+             }
+         },
+         ukm [1] EXPLICIT OCTET STRING,
+         keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
+         recipientEncryptedKeys SEQUENCE OF RecipientEncryptedKey
+     }
+     */
+    return OFASN1AppendStructure(nil, "(u!(!(d<d>))!([d])(+(+))(d))",
+                                 3, // Version is always 3 per RFC5753 [3.1.1]
+                                 0 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC,
+                                 1 /* IMPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC,
+                                 keyAlgorithm, publicEphemeralKey,
+                                 1 /* EXPLICIT TAG */ | FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC,
+                                 ukm,
+                                 agreementAlgIDCMS, keyWrapAlgOID,
+                                 recipientEncryptedKeys);
+}
+
+static NSData *cmsECCSharedInfo(NSData *wrapAlg, NSData *ukm, uint32_t kekSizeBytes)
+{
+    // The "SharedInfo" bit string (always a byte string for us) is the auxiliary input to the X9.63 KDF, used to derive the actual key-wrapping-key from the result of the Diffie-Hellman operation. For CMS use, it's the DER encoding of this structure (which doesn't appear literally in the KARI):
+    // ECC-CMS-SharedInfo ::= SEQUENCE {
+    //     keyInfo         AlgorithmIdentifier,
+    //     entityUInfo [0] EXPLICIT OCTET STRING OPTIONAL,
+    //     suppPubInfo [2] EXPLICIT OCTET STRING
+    // }
+    // Oddly, suppPubInfo is kekSize (in bits) encoded as a big-endian int32, instead of as a DER INTEGER. Mysterious are the ways of standards.
+    
+    uint8_t suppPub[4];
+    OSWriteBigInt32(suppPub, 0, kekSizeBytes * 8);
+    
+    // RFC 5753 [7.2]
+    if (ukm) {
+        return OFASN1AppendStructure(nil, "(d!([d])!([*]))", wrapAlg, 0 /* EXPLICIT TAG */, ukm, 2 /* EXPLICIT TAG */, (size_t)sizeof(suppPub), (void *)suppPub);
+    } else {
+        return OFASN1AppendStructure(nil, "(d!([*]))", wrapAlg, 2 /* EXPLICIT TAG */, (size_t)sizeof(suppPub), (void *)suppPub);
+    }
+}
+
+#endif /* HAVE_APPLE_ECDH_SUPPORT */
 
 #if TARGET_OS_MAC && !TARGET_OS_IPHONE
 
@@ -799,15 +1336,20 @@ NSError *_OFASN1ParseCMSRecipient(NSData *rinfo, enum OFCMSRecipientType *outTyp
     if (inputLength != NSMaxRange(recip.content))
         return OFNSErrorFromASN1Error(OFASN1TrailingData, @"RecipientInfo");
     
-    if (recip.classAndConstructed == FLAG_CONSTRUCTED && recip.tag == BER_TAG_SEQUENCE) {
+    /* The four kinds of recipient defined in RFC 5652 [6.2]. We currently use all of them except KARI. */
+    
+    if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_UNIVERSAL) && recip.tag == BER_TAG_SEQUENCE) {
         *outType = OFCMSRKeyTransport;
         return parseKeyTransportRecipient(rinfo, &recip, outWho, outEncryptedKey);
-    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 3) {
-        *outType = OFCMSRPassword;
-        return parsePasswordDerivationRecipient(rinfo, &recip, outWho, outEncryptedKey);
+    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 1) {
+        *outType = OFCMSRKeyAgreement;
+        return parseKeyAgreementRecipient(rinfo, &recip, outWho, outEncryptedKey);
     } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 2) {
         *outType = OFCMSRPreSharedKey;
         return parsePreSharedKeyRecipient(rinfo, &recip, outWho, outEncryptedKey);
+    } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC) && recip.tag == 3) {
+        *outType = OFCMSRPassword;
+        return parsePasswordDerivationRecipient(rinfo, &recip, outWho, outEncryptedKey);
     } else if (recip.classAndConstructed == (FLAG_CONSTRUCTED|CLASS_CONTEXT_SPECIFIC)) {
         *outType = OFCMSRUnknown;
         return nil;
@@ -909,5 +1451,9 @@ static NSError *unsupportedCMSFeature(NSString *fmt, ...)
     return result;
 }
 
+static NSError *cmsFormatError(NSString *detail)
+{
+    return [NSError errorWithDomain:OFErrorDomain code:OFCMSFormatError userInfo: @{ NSLocalizedFailureReasonErrorKey: detail } ];
+}
 
 

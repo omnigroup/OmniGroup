@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -142,7 +142,7 @@ static const char *thing3 = "Thing three\n";
     size_t prefixLen;
     
     {
-        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
+        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker:NULL];
         
         XCTAssertNotNil(cryptWorker.wrappedKey);
         
@@ -188,7 +188,7 @@ static const char *thing3 = "Thing three\n";
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
-        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
+        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker:NULL];
         NSData *blob = cryptWorker.wrappedKey;
         XCTAssertNotNil(blob);
         
@@ -298,7 +298,7 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
-        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
+        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker:NULL];
         NSData *blob = cryptWorker.wrappedKey;
         
         prefixLen = [blob length];
@@ -377,7 +377,7 @@ static void wrXY(char *into, int x, int y)
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDWR|O_CREAT, 0666);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
-        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker];
+        OFSSegmentEncryptWorker *cryptWorker = [docKey encryptionWorker:NULL];
         NSData *blob = cryptWorker.wrappedKey;
         
         prefixLen = [blob length];
@@ -472,7 +472,7 @@ static void wrXY(char *into, int x, int y)
                 break;
         }
         
-        OBShouldNotError(ciphertext = [docKey.encryptionWorker encryptData:plaintext error:&error]);
+        OBShouldNotError(ciphertext = [[docKey encryptionWorker:&error] encryptData:plaintext error:&error]);
         
         // Assert that encryption grew the ciphertext by a reasonable amount. We have two 128-bit session keys, a 96-bit IV, a 160-bit segment MAC, and a 256-bit file MAC: 96 bytes. There's also the magic number, key diversification, and padding overhead.
         NSUInteger keyInfoBlobSizeMinimum;
@@ -557,7 +557,7 @@ static void wrXY(char *into, int x, int y)
             NSData *plaintext = OFRandomCreateDataOfLength(plaintextLength);
             NSData *ciphertext, *decrypted;
 
-            OBShouldNotError(ciphertext = [docKey.encryptionWorker encryptData:plaintext error:&error]);
+            OBShouldNotError(ciphertext = [[docKey encryptionWorker:&error] encryptData:plaintext error:&error]);
             XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 96);
             
             if (previousCiphertextLength != 0) {
@@ -612,7 +612,9 @@ static void wrXY(char *into, int x, int y)
                 OBShouldNotError(kb = [docKey wrapFileKey:(void *)sekrit length:16 error:&error]);
             } else if (slotType == SlotTypeActiveAES_CTR_HMAC) {
                 // For CTR+HMAC slots, we don't actually have any wrapped material.
-                kb = docKey.encryptionWorker.wrappedKey;
+                OFSSegmentEncryptWorker *worker;
+                OBShouldNotError(worker = [docKey encryptionWorker:&error]);
+                kb = worker.wrappedKey;
             } else {
                 XCTFail(@"Unexpected slot type here.");
                 return;

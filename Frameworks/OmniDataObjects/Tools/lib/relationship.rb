@@ -62,6 +62,7 @@ module OmniDataObjects
       if !swift_name.nil?
         attributes += " NS_SWIFT_NAME(#{swift_name})"
       end
+      attributes += deprecatedAttribute
       if @many
         # Don't emit this relationship if we've already emitted an inherited concrete property for it.
         # Otherwise we want to emit a covariant override at each level of the hierarchy

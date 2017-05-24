@@ -6,9 +6,5 @@ module OmniDataObjects
       @m = m
       @swift = swift
     end
-    def br
-      h.br
-      m.br
-    end
   end
 end

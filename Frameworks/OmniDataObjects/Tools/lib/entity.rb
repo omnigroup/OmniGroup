@@ -86,8 +86,7 @@ module OmniDataObjects
       fp.h.br
       
       if properties.length > 0
-        fp.h << "#define #{instance_class}_DynamicProperties @dynamic #{(properties.map {|p| p.name}).join(", ")}"
-        fp.h.br
+        fp.h << "#define #{instance_class}_DynamicProperties @dynamic #{(properties.map {|p| p.name}).join(", ")}\n\n"
       end
       
       return if abstract # Don't want the global for the entity name
@@ -105,8 +104,9 @@ module OmniDataObjects
       return if swift_properties.count == 0
       fp.swift << "import OmniDataObjects\n\n"
       fp.swift << "public extension #{instance_class} {\n"
-      swift_properties.each {|p|
+      swift_properties.each_with_index {|p, index|
         p.emitSwiftInterface(fp.swift)
+        fp.swift << "\n" unless index == swift_properties.count - 1
       }
       fp.swift << "}\n"
     end

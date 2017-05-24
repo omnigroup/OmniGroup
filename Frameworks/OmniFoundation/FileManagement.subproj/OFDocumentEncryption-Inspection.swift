@@ -16,14 +16,14 @@ extension OFDocumentEncryptionSettings {
     public static func describe(encryptionSettings settings: OFDocumentEncryptionSettings?) -> String {
         if let settings = settings {
             if (settings.hasPassword()) {
-                return NSLocalizedString("<Encryption: A password is set>", tableName: "OmniFoundation", bundle: OFBundle, value: "Password Set", comment: "summary text - document is encrypted using a password");
+                return NSLocalizedString("<Encryption: A password is set>", tableName: "OmniFoundation", bundle: OFBundle, value: "Password", comment: "summary text - document is encrypted using a password");
             } else {
                 let formatted = NSString(format:NSLocalizedString("<Encryption: using %u key(s)>", tableName: "OmniFoundation", bundle: OFBundle, value: "%u Keys", comment: "summary text - document is encrypted using one or more public keys") as NSString,
                             settings.countOfRecipients());
                 return formatted as String;
             }
         } else {
-            return NSLocalizedString("<Encryption: None>", tableName: "OmniFoundation", bundle: OFBundle, value: "Not Encrypted", comment: "summary text - document is not encrypted");
+            return NSLocalizedString("<Encryption: None>", tableName: "OmniFoundation", bundle: OFBundle, value: "None", comment: "summary text - document is not encrypted");
         }
     }
     
@@ -132,17 +132,24 @@ extension OFDocumentEncryptionSettings {
         return recipients.contains(where: { $0 is CMSPKRecipient });
     }
     
+    /// Returns all public-key recipients.
     @objc public
     func publicKeyRecipients() -> [CMSRecipient] {
         return recipients.flatMap({ $0 as? CMSPKRecipient });
     }
     
-    /// Adds a PK recipient for the supplied certificate. Returns the new recipient, or an existing recipient if there already is one for this certificate.
+    /// Adds a PK recipient for the supplied certificate.
+    ///
+    /// - returns: the new recipient, or an existing recipient if there already is one for this certificate. Nil if the certificate was not usable for some reason.
     @objc public
     func addRecipient(certificate: SecCertificate) -> CMSRecipient? {
+        let certIdents : CertificateIdentifiers;
+        
+        do { certIdents = try CertificateIdentifiers(certificate) } catch { return nil; };
+        
         for v in recipients {
             if let pk = v as? CMSPKRecipient {
-                if pk.rid.matchesCertificate(certificate) && pk.resolve(certificate: certificate) {
+                if pk.rid.matches(identifiers: certIdents) && pk.resolve(certificate: certificate) {
                     return v;
                 }
             }

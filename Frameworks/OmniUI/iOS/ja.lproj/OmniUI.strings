@@ -39,7 +39,7 @@
 "Check for Free Upgrade" = "無料アップグレードを確認";
 
 /* placeholder text - password/passphrase confirmation field in prompt */
-"confirm" = "confirm";
+"confirm" = "確認";
 
 /* Certificate trust alert button title */
 "Continue" = "続ける";

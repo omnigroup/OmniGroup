@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development. Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,3 +20,9 @@ int OFSymmetricKeyUnwrap( CCWrappingAlgorithm algorithm,
                          const uint8_t *kek, size_t kekLen,
                          const uint8_t *wrappedKey, size_t wrappedKeyLen,
                          uint8_t *rawKey, size_t *rawKeyLen);
+
+/*!
+ A specialized version of OFSymmetricKeyUnwrap for the case where all the key material is in NSDatas. Note that the only algorithm that CCSymmetricKeyWrap supports is RFC3394-AESWRAP, so we just hardcode that.
+*/
+NSData *OFSymmetricKeyUnwrapDataRFC3394(NSData *kek, NSData *wrappedKey, NSError **outError);
+

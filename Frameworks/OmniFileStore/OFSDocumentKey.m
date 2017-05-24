@@ -134,7 +134,15 @@ static const char *nameOfSlotType(enum OFSDocumentKeySlotType tp)
 {
     /* Return an NSData blob with the information we'll need to recover the document key in the future. The caller will presumably store this blob in the underlying file manager or somewhere related, and hand it back to us via -initWithData:error:. */
     NSArray *docInfo = [NSArray arrayWithObject:passwordDerivation];
-    return [NSPropertyListSerialization dataWithPropertyList:docInfo format:NSPropertyListXMLFormat_v1_0 options:0 error:NULL];
+    NSError * __autoreleasing serializationError = nil;
+    NSData *serialized = [NSPropertyListSerialization dataWithPropertyList:docInfo format:NSPropertyListXMLFormat_v1_0 options:0 error:&serializationError];
+    if (!serialized) {
+        /* This really shouldn't ever happen, since we generate the plist ourselves. Throw an exception instead of propagating the error. */
+        [NSException exceptionWithName:NSInternalInconsistencyException reason:@"OFSDocumentKey: unable to serialize" userInfo:@{ @"error": serializationError }];
+    }
+    
+    /* clang-sa doesn't recognize the throw above, so cast this as non-null to avoid an analyzer false positive */
+    return (NSData * _Nonnull)serialized;
 }
 
 - (id)copyWithZone:(nullable NSZone *)zone
@@ -346,12 +354,15 @@ NSData *unwrapData(const uint8_t *wrappingKey, size_t wrappingKeyLength, NSData 
 }
 
 /* Return an encryption worker for an active key slot. Encryption workers can be used from multiple threads, so we can safely cache one and return it here. */
-- (nullable OFSSegmentEncryptWorker *)encryptionWorker;
+- (nullable OFSSegmentEncryptWorker *)encryptionWorker:(NSError **)outError;
 {
     @synchronized(self) {
         
-        if (!self.valid)
+        if (!self.valid) {
+            if (outError)
+                *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:nil];
             return nil;
+        }
         
         if (!reusableEncryptionWorker) {
             
@@ -381,7 +392,15 @@ NSData *unwrapData(const uint8_t *wrappingKey, size_t wrappingKeyLength, NSData 
             }
             
         }
-        return reusableEncryptionWorker;
+        
+        if (reusableEncryptionWorker) {
+            return reusableEncryptionWorker;
+        } else {
+            if (outError)
+                *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedNewSubkey userInfo:@{ NSLocalizedDescriptionKey: @"No active key slot", OFSEncryptionNeedNewSubkeyTypeKey: @(SlotTypeActiveAES_CTR_HMAC) }];
+
+            return nil;
+        }
     }
 }
 
@@ -635,7 +654,7 @@ static void fillSlot(NSMutableData *slotbuffer, uint8_t slottype, const char *sl
     })) {
         /* No slot was acceptable to our callback. I don't expect this to happen in normal use. */
         if (outError)
-            *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSLocalizedDescriptionKey: @"No active key slot" }];
+            *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedNewSubkey userInfo:@{ NSLocalizedDescriptionKey: @"No active key slot", OFSEncryptionNeedNewSubkeyTypeKey: @(SlotTypeActiveAESWRAP) }];
         return nil;
     }
     

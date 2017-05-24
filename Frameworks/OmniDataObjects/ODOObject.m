@@ -26,6 +26,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation ODOObject
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
@@ -210,7 +212,7 @@ not_handled:
 #endif
 
 // Primarily for the benefit of subclasses.  Like CoreData, ODOObject won't guarantee this is called on every key access, but only if the object is a fault.
-- (void)willAccessValueForKey:(NSString *)key;
+- (void)willAccessValueForKey:(nullable NSString *)key;
 {
     ODOObjectWillAccessValueForKey(self, key);
 }
@@ -219,7 +221,7 @@ not_handled:
 {
 #ifdef OMNI_ASSERTIONS_ON
     // See commentary in __inline_ODOObjectWillAccessValueForKey()
-    if ([key isEqualToString:_objectID.entity.primaryKeyAttribute.name] == NO) {
+    if (key != nil && ![key isEqualToString:_objectID.entity.primaryKeyAttribute.name]) {
         OBPRECONDITION(![self isDeleted] || [_editingContext _isBeingDeleted:self]);
     }
 #endif
@@ -289,7 +291,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     ODOProperty *prop = [[self entity] propertyNamed:key];
 
     // These get called as we update inverse to-many relationships due to edits to to-one relationships.  ODO doesn't snapshot to-many relationships in -changedValues, so we track this here.  This adds one more reason that undo/redo needs to provide correct KVO notifiactions.
-    if (prop && !_flags.hasChangedModifyingToManyRelationshipSinceLastSave) {
+    if (prop != nil && !_flags.hasChangedModifyingToManyRelationshipSinceLastSave) {
         
         // Only to-many relationship keys should go through here.
         OBASSERT([prop isKindOfClass:[ODORelationship class]]);
@@ -303,7 +305,9 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
         }
     }
 
-    ODOObjectWillChangeValueForProperty(self, prop, key);
+    if (prop != nil) {
+        ODOObjectWillChangeValueForProperty(self, prop, key);
+    }
     
     [super willChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
 }
@@ -320,32 +324,32 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 #endif    
 
 
-- (void)setObservationInfo:(void *)inObservationInfo; 
+- (void)setObservationInfo:(nullable void *)inObservationInfo;
 {
     _observationInfo = inObservationInfo;
 }
 
-- (void *)observationInfo;    
+- (nullable void *)observationInfo;
 {
     return _observationInfo;
 }
 
 #ifdef OMNI_ASSERTIONS_ON
-- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context;
+- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;
 {
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Adding an observer when changeProcessingDisabled. willChangeValueForKey:/didChangeValueForKey: may not fire.");
     [super addObserver:observer forKeyPath:keyPath options:options context:context];
 }
 #endif
 
-- (void)setPrimitiveValue:(id)value forKey:(NSString *)key;
+- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key;
 {
     ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
     OBASSERT(prop); // shouldn't ask for non-model properties via this interface
     ODOObjectSetPrimitiveValueForProperty(self, value, prop);
 }
 
-- (id)primitiveValueForKey:(NSString *)key;
+- (nullable id)primitiveValueForKey:(NSString *)key;
 {
     ODOEntity *entity = [self entity]; // TODO: Disallow subclassing -entity via setup check.  Then inline it here.
     ODOProperty *prop = [entity propertyNamed:key];
@@ -354,7 +358,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     return ODOObjectPrimitiveValueForProperty(self, prop);
 }
 
-- (id)valueForKey:(NSString *)key;
+- (nullable id)valueForKey:(NSString *)key;
 {
     ODOProperty *prop = [[_objectID entity] propertyNamed:key];
     if (prop == nil) {
@@ -378,7 +382,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     return OBCallObjectReturnIMP(getter, self, sel);
 }
 
-- (void)setValue:(id)value forKey:(NSString *)key;
+- (void)setValue:(nullable id)value forKey:(NSString *)key;
 {
     ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
     if (prop == nil) {
@@ -427,20 +431,20 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
     // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.
     
-    for (ODOAttribute *attr in attributes) {
+    [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
         [self willChangeValueForKey:attr.name];
-    }
-    
-    for (ODOAttribute *attr in attributes) {
-        // Model loading code ensures that the primary key attribute doesn't have a default value
+    }];
 
+    [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
+        // Model loading code ensures that the primary key attribute doesn't have a default value
+        
         // Set this even if the default value is nil in case we are re-establishing default values
         ODOObjectSetPrimitiveValueForProperty(self, attr.defaultValue, attr); // Bypass this and set the primitive value to avoid and setter.
-    }
+    }];
 
-    for (ODOAttribute *attr in attributes) {
+    [attributes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
         [self didChangeValueForKey:attr.name];
-    }
+    }];
 }
 
 - (BOOL)isAwakingFromInsert;
@@ -828,7 +832,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
  We can emulate the non-transient changes for now, but we _are_ snapshotting them for undo so there is no reason not to return them.
  
  */
-- (NSDictionary *)changedValues;
+- (nullable NSDictionary *)changedValues;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
@@ -904,7 +908,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return changes;
 }
 
-- (NSDictionary *)changedNonDerivedValues;
+- (nullable NSDictionary *)changedNonDerivedValues;
 {
     NSDictionary *changedValues = [self changedValues];
     if ([changedValues count] == 0) {
@@ -922,7 +926,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return result;
 }
 
-- (id)committedValueForKey:(NSString *)key;
+- (nullable id)committedValueForKey:(NSString *)key;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
@@ -930,7 +934,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return ODOObjectSnapshotValueForKey(self, _editingContext, [_editingContext _committedPropertySnapshotForObjectID:_objectID], key, NULL);
 }
 
-id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
+_Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
 {
     ODOProperty *prop = [[self.objectID entity] propertyNamed:key];
     if (!prop) {
@@ -1132,7 +1136,7 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
     return dict;
 }
 
-BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue)
+BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue)
 {
     id oldValue = [object valueForKey:key];
     
@@ -1147,7 +1151,7 @@ BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, id value, id *out
 }
 
 // Will never set nil.  Considers nil different from zero (i.e., setting zero on something that has nil will set a zero number)
-BOOL ODOSetInt32PropertyIfChanged(ODOObject *object, NSString *key, int32_t value, int32_t *outOldValue)
+BOOL ODOSetInt32PropertyIfChanged(ODOObject *object, NSString *key, int32_t value, int32_t * _Nullable outOldValue)
 {
     NSNumber *oldNumber = [object valueForKey:key];
     
@@ -1177,7 +1181,7 @@ id ODOGetPrimitiveProperty(ODOObject *object, NSString *key)
 }
 
 
-BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value, id *outOldValue)
+BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue)
 {
     ODOProperty *prop = [[object entity] propertyNamed:key];
     id oldValue = _ODOGetPrimitiveProperty(object, prop, key);
@@ -1195,3 +1199,5 @@ BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, id value
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

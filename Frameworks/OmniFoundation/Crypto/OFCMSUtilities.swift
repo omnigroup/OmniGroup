@@ -79,7 +79,7 @@ enum CMSRecipientIdentifier {
         var ignored = 0;
         // Protecting against the utter bogosity of SecItemCopyMatching()
         for cert in found {
-            if CFGetTypeID(cert) == SecCertificateGetTypeID() && self.matchesCertificate(cert as! SecCertificate) {
+            if CFGetTypeID(cert) == SecCertificateGetTypeID() && self.matches(certificate: cert as! SecCertificate) {
                 results.append(cert as! SecCertificate);
             } else {
                 ignored += 1;
@@ -105,7 +105,7 @@ enum CMSRecipientIdentifier {
                 let ident = ident as! SecIdentity;
                 var cert : SecCertificate? = nil;
                 if SecIdentityCopyCertificate(ident, &cert) == noErr {
-                    if self.matchesCertificate(cert!) {
+                    if self.matches(certificate: cert!) {
                         results.append(Keypair.secIdentity(ident: ident));
                         matched = true;
                     }
@@ -125,25 +125,29 @@ enum CMSRecipientIdentifier {
     }
     
     /** Checks whether the receiver is an identifier for a given certificate. */
-    func matchesCertificate(_ cert : SecCertificate) -> Bool {
-        var cissuer, cserial, cski: NSData?;
-        
-        if OFSecCertificateGetIdentifiers(cert, &cissuer, &cserial, &cski) {
-            switch self {
-            case .issuerSerial(cissuer! as Data as Data, cserial! as Data as Data):
-                return true;
+    func matches(certificate cert : SecCertificate) -> Bool {
+        do {
+            let certinfo = try CertificateIdentifiers(cert);
+            return self.matches(identifiers: certinfo);
+        } catch {
+            return false;
+        }
+    }
+    
+    /** Checks whether the receiver is an identifier for a certificate with the given fields. */
+    func matches(identifiers cert : CertificateIdentifiers) -> Bool {
+        switch self {
+        case .issuerSerial(cert.issuer, cert.serial):
+            return true;
                 
-            case .keyIdentifier(let myski):
-                if let certski = cski {
-                    return myski == certski as Data;
-                } else {
-                    return false;
-                }
-                
-            default:
+        case .keyIdentifier(let myski):
+            if let certski = cert.ski {
+                return myski == certski;
+            } else {
                 return false;
             }
-        } else {
+            
+        default:
             return false;
         }
     }
@@ -208,6 +212,41 @@ enum CMSRecipientIdentifier {
         }
 
         return debugDictionary;
+    }
+}
+
+internal
+struct CertificateIdentifiers {
+    let issuer: Data;  // Issuer RDN
+    let serial: Data;  // Issuer-assiged serial number
+    let ski: Data?;    // Subject key identifier; optional (but very common)
+    
+    init(_ certificate: SecCertificate) throws {
+        var cissuer, cserial, cski: NSData?;
+        
+        if OFSecCertificateGetIdentifiers(certificate, &cissuer, &cserial, &cski),
+           let issuer = cissuer,
+           let serial = cserial {
+            
+            self.issuer = issuer as Data
+            self.serial = serial as Data
+            if let ski = cski {
+                self.ski = ski as Data
+            } else {
+                self.ski = nil
+            }
+        } else {
+            throw NSError(domain: OFErrorDomain, code: OFASN1Error, userInfo: ["function": "OFSecCertificateGetIdentifiers"])
+        }
+    }
+    
+    func recipientIdentifier()  -> CMSRecipientIdentifier {
+        if let ski = self.ski {
+            return CMSRecipientIdentifier.keyIdentifier(ski: ski);
+        } else {
+            return CMSRecipientIdentifier.issuerSerial(issuer: self.issuer, serial: self.serial);
+        }
+
     }
 }
 
@@ -468,7 +507,7 @@ class CMSPKRecipient : CMSRecipient {
     }
     
     func resolve(certificate: SecCertificate) -> Bool {
-        if cert == nil && rid.matchesCertificate(certificate) {
+        if cert == nil && rid.matches(certificate: certificate) {
             cert = certificate;
         }
         return cert != nil;
@@ -680,7 +719,7 @@ class OFCMSUnwrapper {
                 
                 for kp in auxiliaryAsymmetricKeys {
                     if let cert_ = try? kp.certificate(), let cert = cert_ {
-                        if recip.rid.matchesCertificate(cert) {
+                        if recip.rid.matches(certificate: cert) {
                             idents.insert(kp, at: 0);
                         }
                     }

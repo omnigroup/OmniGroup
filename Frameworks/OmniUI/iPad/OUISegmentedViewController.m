@@ -199,6 +199,17 @@ RCS_ID("$Id$")
     self.selectedViewController = viewControllerToSelect;
 }
 
+- (void)setLeftBarButtonItem:(UIBarButtonItem *)leftBarButtonItem {
+    if (_leftBarButtonItem == leftBarButtonItem) {
+        return;
+    }
+    
+    _leftBarButtonItem = leftBarButtonItem;
+    
+    
+    self.navigationItem.leftBarButtonItem = _leftBarButtonItem;
+}
+
 #pragma mark Private API
 
 - (void)_setupSegmentedControl;

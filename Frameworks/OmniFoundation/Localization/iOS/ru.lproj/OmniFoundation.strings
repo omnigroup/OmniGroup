@@ -101,8 +101,11 @@
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "e" = "e";
 
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "Открытые ключи EC не используются в этой версии OS";
+
 /* time span formatter span - needs one trailing space */
-"elapsed " = "elapsed ";
+"elapsed " = "истекшее ";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Элемент «%1$@» не разрешен для пути: %2$@";
@@ -239,7 +242,7 @@
 "Unexpected CMS content-type" = "Неожиданный тип содержимого CMS";
 
 /* error message - CMS object has an unknown algorithm identifier for compression of its content */
-"Unknown compression algorithm" = "Unknown compression algorithm";
+"Unknown compression algorithm" = "Неизвестный алгоритм сжатия";
 
 /* Error message when a CMS KeyTransport algorithm is not recognized */
 "Unknown public key algorithm" = "Неизвестный алгоритм открытого ключа";

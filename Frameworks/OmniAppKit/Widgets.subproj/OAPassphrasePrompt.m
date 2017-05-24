@@ -28,7 +28,6 @@ OB_REQUIRE_ARC;
 @property (nonatomic) NSTextField *confirmPasswordLabelField;
 @property (nonatomic) NSSecureTextField *confirmPasswordField;
 @property (nonatomic) NSButton *rememberInKeychainCheckbox;
-@property (nonatomic) IBOutlet NSButton *revealHintButton;
 @property (nonatomic) IBOutlet NSButton *hintHintField;
 @property (nonatomic) IBOutlet NSBox *hintTextBox;
 @property (nonatomic) IBOutlet NSTextField *hintTextField;
@@ -123,7 +122,7 @@ OB_REQUIRE_ARC;
     constraint.priority = NSLayoutPriorityRequired;
     [constraints addObject:constraint];
     
-    NSBundle *bundle = [OAPassphrasePrompt bundle];
+    NSBundle *bundle = OMNI_BUNDLE;
     NSView *chain = contentView;
     NSMutableArray *stack = [NSMutableArray array];
     
@@ -185,14 +184,12 @@ OB_REQUIRE_ARC;
         self.confirmPasswordField = field;
     }
     
-    NSButton *reveal = self.revealHintButton;
+    NSButton *reveal = self.hintHintField;
     if (options & OAPassphrasePromptOfferHintText) {
-        NSString *showHint = NSLocalizedStringFromTableInBundle(@"Password Hint", @"OmniAppKit", [OAPassphrasePrompt bundle], @"label by hint-field disclosure button - password/passphrase prompt dialog");
-        
         NSButton *showLabel = self.hintHintField;
         [self _stackField:showLabel stack:stack left:NO right:YES];
         showLabel.showsBorderOnlyWhileMouseInside = YES;
-        [showLabel setTitle:showHint];
+        [self _updateHintLabelForHidden:YES];
 
         NSBox *hintBox = self.hintTextBox;
         [self _stackField:hintBox stack:stack left:NO right:YES];
@@ -206,15 +203,12 @@ OB_REQUIRE_ARC;
         field.maximumNumberOfLines = 7;
         field.hidden = YES;
         
-        reveal.state = NSOffState;
         reveal.translatesAutoresizingMaskIntoConstraints = NO;
         [constraints addObject:[reveal.leadingAnchor constraintEqualToAnchor:fieldsBox.leadingAnchor constant:-2.0]];
         
         [chain setNextKeyView:reveal];
         chain = reveal;
     } else {
-        [reveal removeFromSuperview];
-        self.revealHintButton = nil;
         [self.hintHintField removeFromSuperview];
         self.hintHintField = nil;
         [self.hintTextField removeFromSuperview];
@@ -376,7 +370,7 @@ OB_REQUIRE_ARC;
 
 - (IBAction)hideShow:(id)sender;
 {
-    if (self.revealHintButton.state == NSOffState) {
+    if (!self.hintTextBox.hidden) {
         [self.hintTextField setStringValue: @"" ];
         self.hintTextBox.hidden = YES;
         self.hintTextField.hidden = YES;
@@ -384,8 +378,8 @@ OB_REQUIRE_ARC;
         [self.hintTextField setStringValue: self.hint ?: @"" ];
         self.hintTextBox.hidden = NO;
         self.hintTextField.hidden = NO;
-        
     }
+    [self _updateHintLabelForHidden:self.hintTextField.hidden];
     [self.hintTextField invalidateIntrinsicContentSize];
     [self.hintTextField setNeedsUpdateConstraints:YES];
 
@@ -397,8 +391,8 @@ OB_REQUIRE_ARC;
 {
     NSModalResponse rc = [sender tag];
     
-    if (_acceptDelegate) {
-        if (!_acceptDelegate(self, &rc))
+    if (_acceptActionBlock != nil) {
+        if (!_acceptActionBlock(self, rc))
             return;
     }
     
@@ -472,7 +466,7 @@ OB_REQUIRE_ARC;
 
 - (void)controlTextDidChange:(NSNotification *)notification;
 {
-    self.OKButton.enabled = [self isValid];
+    [self _validateActionButtons];
 }
 
 #pragma mark Lifecycle
@@ -499,7 +493,7 @@ OB_REQUIRE_ARC;
         self.confirmPasswordField.enabled = YES;
     }
     
-    self.OKButton.enabled = [self isValid];
+    [self _validateActionButtons];
 }
 
 - (BOOL)isValid;
@@ -534,6 +528,26 @@ OB_REQUIRE_ARC;
         [[NSApplication sharedApplication] stopModalWithCode:returnCode];
         [window orderOut:nil];
     }
+}
+
+- (void)_validateActionButtons;
+{
+    if (_validationBlock != nil) {
+        for (NSButton *button in [NSArray arrayWithObjects:self.OKButton, self.auxiliaryButton, nil]) { // Note: self.auxiliaryButton can be nil
+            button.enabled = _validationBlock(self, button.tag);
+        }
+    } else {
+        self.OKButton.enabled = self.isValid;
+    }
+}
+
+- (void)_updateHintLabelForHidden:(BOOL)isCurrentlyHidden;
+{
+    NSString *hintLabel = isCurrentlyHidden ? NSLocalizedStringFromTableInBundle(@"Show hint…", @"OmniAppKit", OMNI_BUNDLE, @"Show hint label - password/passphrase prompt dialog") : NSLocalizedStringFromTableInBundle(@"Hide hint…", @"OmniAppKit", OMNI_BUNDLE, @"Hide hint label - password/passphrase prompt dialog");
+    self.hintHintField.attributedTitle = [[NSAttributedString alloc] initWithString:hintLabel attributes:@{
+        NSFontAttributeName: [NSFont labelFontOfSize:[NSFont labelFontSize]],
+        NSForegroundColorAttributeName: [NSColor selectedMenuItemColor],
+    }];
 }
 
 @end

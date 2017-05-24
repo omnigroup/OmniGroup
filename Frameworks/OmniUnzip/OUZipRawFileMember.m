@@ -84,9 +84,14 @@ NS_ASSUME_NONNULL_BEGIN
         } else {
             OBASSERT([rawData length] == [_entry compressedSize]);
             
+            NSString *name = [self name];
+            if (![NSString isEmptyString:fileNamePrefix]) {
+                name = [NSString stringWithFormat:@"%@/%@", fileNamePrefix, [self name]];
+            }
+            
             // TODO: propagate the data from the source zip file
             error = nil;
-            result = [zip appendEntryNamed:[self name] fileType:[_entry fileType] contents:rawData raw:YES compressionMethod:[_entry compressionMethod] uncompressedSize:[_entry uncompressedSize] crc:[_entry crc] date:[_entry date] error:&error];
+            result = [zip appendEntryNamed:name fileType:[_entry fileType] contents:rawData raw:YES compressionMethod:[_entry compressionMethod] uncompressedSize:[_entry uncompressedSize] crc:[_entry crc] date:[_entry date] error:&error];
             if (!result) {
                 resultError = error; // strong-ify the error
             }

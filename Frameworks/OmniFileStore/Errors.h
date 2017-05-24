@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,7 @@ enum {
     OFSEncryptionNeedAuth,        // Incorrect passphrase given, no passphrase given, key not available, biometric authentication needed, etc.
     OFSEncryptionConflict,        // Simultaneous modification of encryption info.
     OFSEncryptionStorageError,    // Failure reading or writing key information to the Keychain
+    OFSEncryptionNeedNewSubkey,   // Can't encrypt a file because we have no active keyslots of the right type (uinfo: OFSEncryptionNeedNewSubkeyTypeKey)
     
     OFSEncryptionMinimumErrorCode = 100,
     OFSEncryptionMaximumErrorCode = 199,
@@ -48,6 +49,7 @@ extern BOOL OFSShouldOfferToReportError(NSError *error);
 #define OFSResponseLocationErrorKey (@"Location")
 
 #define OFSEncryptionBadFormatNotEncryptedKey @"no-magic"
+#define OFSEncryptionNeedNewSubkeyTypeKey @"type"
 
 extern NSString * const OFSURLErrorFailingURLErrorKey;          // > 4.0 use NSURLErrorFailingURLErrorKey
 extern NSString * const OFSURLErrorFailingURLStringErrorKey;    // > 4.0 use NSURLErrorFailingURLStringErrorKey

@@ -278,9 +278,11 @@ __DATA__
 rsadsi = 1.2.840.113549
 pkcs = rsadsi 1
 csor = 2.16.840.1.101.3
+thawte = 1.3.101
 certicom = 1.3.132
 x9-57 = 1.2.840.10040
 x9-62 = 1.2.840.10045
+x9-63 = 1.3.133.16.840.63
 gnu = 1.3.6.1.4.1.11591
 pgut = 1.3.6.1.4.1.3029
 aes = csor 4 1
@@ -373,6 +375,15 @@ alg-mgf-1 = pkcs 1 8
 oaep-pSpecified = pkcs 1 9
 emit alg-rsaEncryption_OAEP, alg-mgf-1, oaep-pSpecified
 
+# Combined ECDH key agreement + derivation algorithms from RFC5753
+alg-ECDH-standard-sha1kdf   = x9-63 0 2
+alg-ECDH-standard-sha256kdf = certicom 1 11 1
+alg-ECDH-standard-sha512kdf = certicom 1 11 3
+alg-ECDH-cofactor-sha1kdf   = x9-63 0 3
+alg-ECDH-cofactor-sha256kdf = certicom 1 14 1
+alg-ECDH-cofactor-sha512kdf = certicom 1 14 3
+emit alg-ECDH-*
+
 lookup alg-* in OFASN1Algorithm as *
 
 curve-secp192r1 = x9-62 3 1 1
@@ -385,6 +396,7 @@ curve-secp521r1 = certicom 0 35
 # arcs, but it's not clear they are the correct OIDs to use in a CMS context.
 # curve-ed25519 = gnu 15 1
 # curve-cv25519 = pgut 1 5 1
+# curve-x25519 = thawte 110
 
 ce-subjectKeyIdentifier = cert-ext 14   # RFC5280 [4.2.1.2]
 ce-subjectAltName = cert-ext 17         # RFC5280 [4.2.1.6]

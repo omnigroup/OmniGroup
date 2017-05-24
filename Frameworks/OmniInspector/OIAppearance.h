@@ -11,6 +11,8 @@
 
 @interface OIAppearance : OAAppearance
 
++ (NSColor *)dynamicColorForView:(NSView *)view darkColor:(NSColor *)darkColor lightColor:(NSColor *)lightColor;
+
 // Inspector
 @property (readonly) CGFloat InspectorSidebarWidth;
 @property (readonly) CGFloat InspectorHeaderContentHeight;

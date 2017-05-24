@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,12 +72,14 @@ RCS_ID("$Id$");
 
 - (BOOL)includesInspectorSliceGroupSpacerOnTop;
 {
-    return YES;
+    CGFloat topInset = [self class].sliceAlignmentInsets.top;
+    return (topInset > 0);
 }
 
 - (BOOL)includesInspectorSliceGroupSpacerOnBottom;
 {
-    return YES;
+    CGFloat bottomInset = [self class].sliceAlignmentInsets.bottom;
+    return (bottomInset > 0);
 }
 
 #pragma mark - UIViewController subclass

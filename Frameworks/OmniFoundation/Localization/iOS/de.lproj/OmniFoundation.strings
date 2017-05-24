@@ -84,10 +84,10 @@
 "Could not create directory" = "Verzeichnis konnte nicht erstellt werden";
 
 /* Provisioning profile parsing error general description */
-"Could not parse entitlements from embedded provisioning profile" = "Berechtigungen vom eingebetteten Bereitstellungsprofil konnten nicht analysiert werden";
+"Could not parse entitlements from embedded provisioning profile" = "Berechtigungen aus dem eingebetteten Bereitstellungsprofil konnten nicht analysiert werden";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"d" = "T.";
+"d" = "T";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "Tag";
@@ -101,8 +101,11 @@
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "e" = "e";
 
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "Öffentliche EC-Schlüssel können in dieser OS-Version nicht verwendet werden";
+
 /* time span formatter span - needs one trailing space */
-"elapsed " = "elapsed ";
+"elapsed " = "verstrichen ";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element „%1$@“ nicht zulässig in Pfad: %2$@";
@@ -111,7 +114,7 @@
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "Eingebettetes Bereitstellungsprofil ist kein gültiges PKCS#7-Archiv";
 
 /* Provisioning profile parsing error reason – no embedded.mobileprovision file */
-"Embedded provisioning profile not found" = "Eingebettetes Bereitstellungsprofil nicht gefunden";
+"Embedded provisioning profile not found" = "Eingebettetes Bereitstellungsprofil wurde nicht gefunden";
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "Eingebettetes Bereitstellungsprofil nicht lesbar";
@@ -141,7 +144,7 @@
 "local configuration file" = "Lokale Konfigurationsdatei";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
-"m" = "M.";
+"m" = "min";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "Minute";
@@ -168,7 +171,7 @@
 "Override Lock" = "Sperre außer Kraft setzen";
 
 /* Provisioning profile parsing error reason – invalid plist */
-"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "PKCS#7-Inhalt vom eingebetteten Bereitstellungsprofil war keine gültige plist-Datei";
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "PKCS#7-Inhalt des eingebetteten Bereitstellungsprofils war keine gültige plist-Datei";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "„%@“ auf den dazugehörigen Standardwert zurücksetzen";
@@ -239,10 +242,10 @@
 "Unexpected CMS content-type" = "Unerwarteter CMS-Inhaltstyp";
 
 /* error message - CMS object has an unknown algorithm identifier for compression of its content */
-"Unknown compression algorithm" = "Unknown compression algorithm";
+"Unknown compression algorithm" = "Unbekannter Komprimierungsalgorithmus";
 
 /* Error message when a CMS KeyTransport algorithm is not recognized */
-"Unknown public key algorithm" = "Unbekannter öffentlicher Schlüssel-Algorithmus";
+"Unknown public key algorithm" = "Unbekannter Algorithmus eines öffentlichen Schlüssels";
 
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
 "Unknown(cryptographic algorithm)" = "Unbekannt";
@@ -251,10 +254,10 @@
 "unrecognized compression format." = "Das Komprimierungsformat wurde nicht erkannt.";
 
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
-"Unsupported encryption algorithm" = "Nicht unterstützter Verschlüsselungs-Algorithmus";
+"Unsupported encryption algorithm" = "Nicht unterstützter Verschlüsselungsalgorithmus";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"w" = "W.";
+"w" = "W";
 
 /* error description */
 "Warning encountered while loading XML." = "Beim Laden von XML wurde eine Warnmeldung ausgegeben.";
@@ -266,7 +269,7 @@
 "weeks" = "Wochen";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"y" = "J.";
+"y" = "J";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "Jahr";

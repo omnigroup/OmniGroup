@@ -253,9 +253,14 @@ static NSMutableArray *hiddenPanels = nil;
     NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, sender);
     NSString *identifier = [menuItem representedObject];
     for (OIInspectorController *controller in self.controllers) {
-        OBASSERT([[controller inspector] isKindOfClass:[OITabbedInspector class]]);
-        OITabbedInspector *inspector = OB_CHECKED_CAST(OITabbedInspector, [controller inspector]);
-        [inspector switchToInspectorWithIdentifier:identifier];
+        OIInspector *inspector = OB_CHECKED_CAST(OIInspector, controller.inspector);
+        if ([inspector respondsToSelector:@selector(switchToInspectorWithIdentifier:)]) {
+            // OIScrollingTabbedInspector or OITabbedInspector; could maybe make a protocol for inspectors that contain other inspectors.
+            [(id)inspector switchToInspectorWithIdentifier:identifier];
+        } else {
+            OBASSERT_NOT_REACHED("Don't know how to reveal inspector");
+        }
+
         NSObject *appDelegate = (NSObject *)[[NSApplication sharedApplication] delegate];
         NSWindow *window = [appDelegate windowForInspectorRegistry:self];
         if ([window.delegate respondsToSelector:@selector(inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:)]) {

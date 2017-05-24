@@ -87,7 +87,7 @@
 "Could not parse entitlements from embedded provisioning profile" = "无法从嵌入式配置文件解析权限";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"d" = "d";
+"d" = "天";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "天";
@@ -101,8 +101,11 @@
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "e" = "e";
 
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "EC 公共密钥在该操作系统版本上不能使用";
+
 /* time span formatter span - needs one trailing space */
-"elapsed " = "elapsed ";
+"elapsed " = "已用时间 ";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
@@ -126,7 +129,7 @@
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"h" = "h";
+"h" = "小时";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "小时";
@@ -141,7 +144,7 @@
 "local configuration file" = "本地配置文件";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
-"m" = "m";
+"m" = "分钟";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分钟";
@@ -150,7 +153,7 @@
 "minutes" = "分钟";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (month) */
-"mo" = "mo";
+"mo" = "月";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "月";
@@ -177,7 +180,7 @@
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"s" = "s";
+"s" = "秒";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "秒";
@@ -239,7 +242,7 @@
 "Unexpected CMS content-type" = "未预期的 CMS 内容类型";
 
 /* error message - CMS object has an unknown algorithm identifier for compression of its content */
-"Unknown compression algorithm" = "Unknown compression algorithm";
+"Unknown compression algorithm" = "未知压缩算法";
 
 /* Error message when a CMS KeyTransport algorithm is not recognized */
 "Unknown public key algorithm" = "未知的公开密钥算法";
@@ -254,7 +257,7 @@
 "Unsupported encryption algorithm" = "不支持的加密算法";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"w" = "w";
+"w" = "周";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
@@ -266,7 +269,7 @@
 "weeks" = "周";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"y" = "y";
+"y" = "年";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "年";

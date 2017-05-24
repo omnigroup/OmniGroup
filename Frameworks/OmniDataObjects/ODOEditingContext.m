@@ -42,14 +42,7 @@
 
 RCS_ID("$Id$")
 
-@interface ODOEditingContext (/*Private*/)
-- (void)_databaseConnectionDidChange:(NSNotification *)note;
-- (BOOL)_sendWillSave:(NSError **)outError;
-- (BOOL)_validateInsertsAndUpdates:(NSError **)outError;
-- (BOOL)_writeProcessedEdits:(NSError **)outError;
-- (void)_registerUndoForRecentChanges;
-- (void)_undoWithObjectIDsAndSnapshotsToInsert:(NSArray *)objectIDsAndSnapshotsToInsert updates:(NSArray *)updates objectIDsToDelete:(NSArray *)objectIDsToDelete;
-@end
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOEditingContext
 
@@ -61,7 +54,7 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
         [self processPendingChanges];
 }
 
-- initWithDatabase:(ODODatabase *)database;
+- (instancetype)initWithDatabase:(ODODatabase *)database;
 {
     OBPRECONDITION(database);
     
@@ -133,17 +126,18 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     return _database;
 }
 
-- (NSUndoManager *)undoManager;
+- (nullable NSUndoManager *)undoManager;
 {
     return _undoManager;
 }
-- (void)setUndoManager:(NSUndoManager *)undoManager;
+- (void)setUndoManager:(nullable NSUndoManager *)undoManager;
 {
-    if (_undoManager) {
+    if (_undoManager != nil) {
         [_undoManager removeAllActionsWithTarget:self];
         [_undoManager release];
         _undoManager = nil;
     }
+    
     _undoManager = [undoManager retain];
 }
 
@@ -306,7 +300,7 @@ static void _addDenyNote(ODOObject *object, ODORelationship *rel, ODOObject *des
 typedef struct {
     ODOEditingContext *self;
     BOOL fail;
-    NSError *error;
+    NSError * _Nullable error;
     NSMutableSet *toDelete;
     NSMutableDictionary *relationshipsToNullifyByObjectID;
     NSMutableDictionary *denyObjectIDToReferer;
@@ -963,17 +957,17 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     return registered != nil;
 }
 
+- (BOOL)shouldSetSaveDates;
+{
+    return !_avoidSettingSaveDates;
+}
+
 - (void)setShouldSetSaveDates:(BOOL)shouldSetSaveDates;
 {
     OBPRECONDITION(_saveDate == nil); // Don't set this in the middle of -save:
     
     // Store the inverse so that the default BOOL of NO preserves the right behavior
     _avoidSettingSaveDates = !shouldSetSaveDates;
-}
-
-- (BOOL)shouldSetSaveDates;
-{
-    return !_avoidSettingSaveDates;
 }
 
 - (BOOL)saveWithDate:(NSDate *)saveDate error:(NSError **)outError;
@@ -1135,7 +1129,7 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
     return NO;
 }
 
-- (ODOObject *)objectRegisteredForID:(ODOObjectID *)objectID;
+- (nullable ODOObject *)objectRegisteredForID:(ODOObjectID *)objectID;
 {
     return [_registeredObjectByID objectForKey:objectID];
 }
@@ -1199,7 +1193,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     return YES;
 }
 
-- (NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
+- (nullable NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 {
     OBINVARIANT([self _checkInvariants]);
 
@@ -1243,10 +1237,8 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
         }
         
         ODOSQLStatement *query = [[ODOSQLStatement alloc] initSelectProperties:ctx.schemaProperties fromEntity:rootEntity database:_database predicate:predicate error:outError];
-        if (!query) {
-#ifdef DEBUG
-            NSLog(@"Failed to build query: %@", outError ? (id)[*outError toPropertyList] : (id)@"Missing error");
-#endif
+        if (query == nil) {
+            OBASSERT_NOT_REACHED("Failed to build query: %@", outError != NULL ? (id)[*outError toPropertyList] : (id)@"Missing error");
             OBINVARIANT([self _checkInvariants]);
             return nil;
         }
@@ -1316,15 +1308,23 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     return [object autorelease];
 }
 
-- (__kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
+- (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
 {
     OBPRECONDITION(objectID);
     
-    ODOObject * (^errorReturn)(void) = ^{
+    ODOObject * (^missingObjectErrorReturn)(void) = ^{
         NSString *format = NSLocalizedStringFromTableInBundle(@"No object with id %@ exists.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
         NSString *reason = [NSString stringWithFormat:format, objectID];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to find object.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToFindObjectWithID, description, reason);
+        return (ODOObject *)nil;
+    };
+
+    ODOObject * (^objectScheduledForDeletionErrorReturn)(void) = ^{
+        NSString *format = NSLocalizedStringFromTableInBundle(@"The object with id %@ is scheduled for deletion.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+        NSString *reason = [NSString stringWithFormat:format, objectID];
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Object is scheduled for deletion.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+        ODOError(outError, ODORequestedObjectIsScheduledForDeletion, description, reason);
         return (ODOObject *)nil;
     };
 
@@ -1339,7 +1339,12 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
         if ([object isInvalid]) {
             OBASSERT_NOT_REACHED("Maybe should have been purged from the registered objects?");
             // ... but maybe it is in the undo stack or otherwise not deallocated.  At any rate, this is happening, so let's be defensive.  See <bug://45150> (Clicking URL to recently deleted task can crash)
-            return errorReturn();
+            return missingObjectErrorReturn();
+        }
+        
+        if ([object isDeleted]) {
+            // Object is scheudled for deletion
+            return objectScheduledForDeletionErrorReturn();
         }
         
         OBASSERT([[object objectID] isEqual:objectID]);
@@ -1347,7 +1352,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     }
     
     if ([_database isFreshlyCreated]) {
-        return errorReturn();
+        return missingObjectErrorReturn();
     }
 
     ODOFetchRequest *fetch = [[[ODOFetchRequest alloc] init] autorelease];
@@ -1361,7 +1366,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     }
     
     if (objects.count == 0) {
-        return errorReturn();
+        return missingObjectErrorReturn();
     }
     
     OBASSERT([objects count] == 1);
@@ -1591,10 +1596,11 @@ static void _appendObjectID(const void *value, void *context)
     CFArrayAppendValue(objectIDs, [object objectID]);
 }
 
-static NSArray *_copyCollectObjectIDs(NSSet *objects)
+static NSArray * _Nullable _copyCollectObjectIDs(NSSet *objects)
 {
-    if (!objects)
+    if (objects == nil) {
         return nil;
+    }
     
     // Fixed length array for small savings
     CFIndex count = CFSetGetCount((CFSetRef)objects);
@@ -1769,7 +1775,7 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
     }
 }
 
-- (void)_undoWithObjectIDsAndSnapshotsToInsert:(NSArray *)objectIDsAndSnapshotsToInsert updates:(NSArray *)updates objectIDsToDelete:(NSArray *)objectIDsToDelete;
+- (void)_undoWithObjectIDsAndSnapshotsToInsert:(nullable NSArray *)objectIDsAndSnapshotsToInsert updates:(nullable NSArray *)updates objectIDsToDelete:(nullable NSArray *)objectIDsToDelete;
 {
     DEBUG_UNDO(@"Performing %@ operation:", [_undoManager isUndoing] ? @"undo" : ([_undoManager isRedoing] ? @"redo" : @"WTF?"));
     if (objectIDsAndSnapshotsToInsert) {
@@ -1875,3 +1881,4 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
 
 @end
 
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,7 @@
 #import <OmniFileStore/Errors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <dispatch/dispatch.h>
+#import <stdatomic.h>
 #import <libkern/OSAtomic.h>
 
 RCS_ID("$Id$");
@@ -179,8 +180,8 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 
 @implementation OFSSegmentEncryptWorker
 {
-    int32_t      _nonceCounter;
-    uint8_t      _iv[ SEGMENTED_IV_LEN-4 ];
+    atomic_int_fast32_t      _nonceCounter;
+    uint8_t                 _iv[ SEGMENTED_IV_LEN-4 ];
 }
 
 - (instancetype)initWithBytes:(const uint8_t *)bytes length:(NSUInteger)length;
@@ -207,7 +208,7 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
 {
     CCCryptorRef cryptor;
     uint8_t segmentIV[ kCCBlockSizeAES128 ];
-    int32_t nonceCounter;
+    atomic_int_fast32_t nonceCounter;
     dispatch_semaphore_t hashSem;
     CCHmacContext ctxt;
     const size_t strideLength = 4096;
@@ -216,7 +217,7 @@ static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((c
     @synchronized(self) {
         cryptor = _cachedCryptor;
         _cachedCryptor = nil;
-        nonceCounter = OSAtomicIncrement32(&_nonceCounter);
+        nonceCounter = atomic_fetch_add(&_nonceCounter, 1);
     }
     
     /* Construct the initial CTR state for this segment: our random IV, our counter, and four bytes of zeroes for the block counter */
@@ -549,7 +550,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     NSMutableData *plaintext = [NSMutableData dataWithLength:plaintextLength];
 
     char *plaintextBuffer = [plaintext mutableBytes];
-    __block uint32_t errorBits = 0;
+    __block atomic_uint_fast32_t errorBits = 0;
     
     /* Check all the segment MACs, and decrypt */
     dispatch_apply(segmentCount, dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, 0), ^(size_t segmentIndex){
@@ -564,7 +565,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
         const uint8_t *segmentBegins = [subrange bytes];
 
         if (![self verifySegment:segmentIndex data:subrange]) {
-            OSAtomicOr32(0x01, &errorBits);
+            atomic_fetch_or(&errorBits, 0x01);
             return;
         }
         
@@ -572,7 +573,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
                             into:(uint8_t *)plaintextBuffer + (segmentIndex * SEGMENTED_PAGE_SIZE)
                           header:segmentBegins
                            error:NULL]) {
-            OSAtomicOr32(0x02, &errorBits);
+            atomic_fetch_or(&errorBits, 0x02);
             return;
         }
     });

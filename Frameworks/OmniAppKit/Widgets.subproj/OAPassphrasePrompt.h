@@ -26,7 +26,8 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
 
 @class OAPassphrasePrompt;
 
-typedef BOOL (^OAPassphrasePromptAcceptActionBlock)(OAPassphrasePrompt *prompt, NSModalResponse *action);
+typedef BOOL (^OAPassphrasePromptAcceptActionBlock)(OAPassphrasePrompt *prompt, NSModalResponse action);
+typedef BOOL (^OAPassphrasePromptValidationBlock)(OAPassphrasePrompt *prompt, NSModalResponse proposedAction);
 
 @interface OAPassphrasePrompt : NSWindowController
 
@@ -62,7 +63,8 @@ typedef BOOL (^OAPassphrasePromptAcceptActionBlock)(OAPassphrasePrompt *prompt, 
 /// The state of the remember-in-keychain checkbox (or NO if the ShowKeychain option wasn't given).
 @property (nonatomic) BOOL rememberInKeychain;
 
-@property (nonatomic, copy, readwrite) OAPassphrasePromptAcceptActionBlock acceptDelegate;
+@property (nonatomic, copy, readwrite) OAPassphrasePromptAcceptActionBlock acceptActionBlock;
+@property (nonatomic, copy, readwrite) OAPassphrasePromptValidationBlock validationBlock;
 
 /// An error message to display, or nil to hide the error-text field.
 - (void)setErrorMessage:(NSString * __nullable )errorMessage;

@@ -14,47 +14,18 @@
 
 #import <Foundation/NSNotification.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSDate, NSSet, NSUndoManager, NSMutableSet;
 @class ODODatabase, ODOObject, ODOFetchRequest, ODOObjectID;
 
-@interface ODOEditingContext : OFObject
-{
-@private
-    ODODatabase *_database;
-    NSUndoManager *_undoManager;
-    
-    NSMutableDictionary *_registeredObjectByID;
-    
-    CFRunLoopObserverRef _runLoopObserver;
-    
-    // Two sets of changes.  One for processed changes (notifications have been sent) and one for recent changes.
-    NSMutableSet *_processedInsertedObjects;
-    NSMutableSet *_processedUpdatedObjects;
-    NSMutableSet *_processedDeletedObjects;
-    
-    NSMutableSet *_recentlyInsertedObjects;
-    ODOObject *_nonretainedLastRecentlyInsertedObject;
-    NSMutableSet *_recentlyUpdatedObjects;
-    NSMutableSet *_recentlyDeletedObjects;
-    
-    NSMutableDictionary *_objectIDToCommittedPropertySnapshot; // ODOObjectID -> NSArray of property values for only those objects that have been edited.  The values in the dictionary are the database committed values.
-    NSMutableDictionary *_objectIDToLastProcessedSnapshot; // Like the committed value snapshot, but this has the differences from the last time -processPendingChanges completed.  In particular, this can contain pre-update snapshots for inserted objects, where _objectIDToCommittedPropertySnapshot will never contain snapshots for inserted objects.
-    
-    BOOL _isSendingWillSave;
-    BOOL _isValidatingAndWritingChanges;
-    BOOL _inProcessPendingChanges;
-    BOOL _isResetting;
-    
-    BOOL _avoidSettingSaveDates;
-    NSDate *_saveDate;
-}
+@interface ODOEditingContext : NSObject
 
-- initWithDatabase:(ODODatabase *)database;
+- (instancetype)initWithDatabase:(ODODatabase *)database;
 
-- (ODODatabase *)database;
+@property (nonatomic, readonly) ODODatabase *database;
 
-- (NSUndoManager *)undoManager;
-- (void)setUndoManager:(NSUndoManager *)undoManager;
+@property (nonatomic, nullable, strong) NSUndoManager *undoManager;
 
 - (void)reset;
 - (void)insertObject:(ODOObject *)object;
@@ -71,20 +42,20 @@
 - (BOOL)isDeleted:(ODOObject *)object;
 - (BOOL)isRegistered:(ODOObject *)object;
 
-- (void)setShouldSetSaveDates:(BOOL)shouldSetSaveDates;
-- (BOOL)shouldSetSaveDates;
+@property (nonatomic) BOOL shouldSetSaveDates;
 
 - (BOOL)saveWithDate:(NSDate *)saveDate error:(NSError **)outError;
-- (NSDate *)saveDate;
+@property (nonatomic, readonly) NSDate *saveDate; // Should only be accessed inside of -saveWithDate:error:
 
-- (BOOL)hasChanges;
-- (BOOL)hasUnprocessedChanges;
-- (ODOObject *)objectRegisteredForID:(ODOObjectID *)objectID;
+@property (nonatomic, readonly) BOOL hasChanges;
+@property (nonatomic, readonly) BOOL hasUnprocessedChanges;
 
-- (NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
+- (nullable ODOObject *)objectRegisteredForID:(ODOObjectID *)objectID;
+
+- (nullable NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 
 - (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
-- (__kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
+- (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
 
 @end
 
@@ -103,3 +74,5 @@ extern NSString * const ODODeletedObjectPropertySnapshotsKey; // An NSDictionary
 
 extern NSNotificationName ODOEditingContextWillResetNotification;
 extern NSNotificationName ODOEditingContextDidResetNotification;
+
+NS_ASSUME_NONNULL_END

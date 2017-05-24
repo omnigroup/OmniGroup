@@ -67,6 +67,14 @@
 		4281FCBB1B5EC02700FD888F /* OITallTitlebarInactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 4281FCB71B5EC02700FD888F /* OITallTitlebarInactive.png */; };
 		4281FCBC1B5EC02700FD888F /* OITallTitlebarInactivePressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 4281FCB81B5EC02700FD888F /* OITallTitlebarInactivePressed.png */; };
 		4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4914964C0C9B39DF006E9EAB /* OITabLock.pdf */; };
+		4A4BAAF11E60CBBE0007DCE3 /* OIDisclosureButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4BAAF01E60CBBE0007DCE3 /* OIDisclosureButtonCell.m */; };
+		4A4BAAF31E60CC030007DCE3 /* OIDisclosureButtonCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4BAAF21E60CC030007DCE3 /* OIDisclosureButtonCell.h */; };
+		4A4BAAF51E60CC520007DCE3 /* OIDisclosureButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4BAAF41E60CC520007DCE3 /* OIDisclosureButton.h */; };
+		4A4BAAF71E60CC5F0007DCE3 /* OIDisclosureButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4BAAF61E60CC5F0007DCE3 /* OIDisclosureButton.m */; };
+		4A4BAB1F1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A4BAB1B1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed.png */; };
+		4A4BAB201E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A4BAB1C1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed@2x.png */; };
+		4A4BAB211E60D9BA0007DCE3 /* OIDisclosureButtonExpanded.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A4BAB1D1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded.png */; };
+		4A4BAB221E60D9BA0007DCE3 /* OIDisclosureButtonExpanded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A4BAB1E1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded@2x.png */; };
 		6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC2908DA46430055F81A /* OITabbedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC2A08DA46430055F81A /* OITabbedInspector.m */; };
 		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -191,6 +199,14 @@
 		4281FCB71B5EC02700FD888F /* OITallTitlebarInactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITallTitlebarInactive.png; sourceTree = "<group>"; };
 		4281FCB81B5EC02700FD888F /* OITallTitlebarInactivePressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITallTitlebarInactivePressed.png; sourceTree = "<group>"; };
 		4914964C0C9B39DF006E9EAB /* OITabLock.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OITabLock.pdf; sourceTree = "<group>"; };
+		4A4BAAF01E60CBBE0007DCE3 /* OIDisclosureButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIDisclosureButtonCell.m; sourceTree = "<group>"; };
+		4A4BAAF21E60CC030007DCE3 /* OIDisclosureButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIDisclosureButtonCell.h; sourceTree = "<group>"; };
+		4A4BAAF41E60CC520007DCE3 /* OIDisclosureButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIDisclosureButton.h; sourceTree = "<group>"; };
+		4A4BAAF61E60CC5F0007DCE3 /* OIDisclosureButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIDisclosureButton.m; sourceTree = "<group>"; };
+		4A4BAB1B1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIDisclosureButtonCollapsed.png; sourceTree = "<group>"; };
+		4A4BAB1C1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIDisclosureButtonCollapsed@2x.png"; sourceTree = "<group>"; };
+		4A4BAB1D1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIDisclosureButtonExpanded.png; sourceTree = "<group>"; };
+		4A4BAB1E1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIDisclosureButtonExpanded@2x.png"; sourceTree = "<group>"; };
 		6C34FC2908DA46430055F81A /* OITabbedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabbedInspector.h; sourceTree = "<group>"; };
 		6C34FC2A08DA46430055F81A /* OITabbedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabbedInspector.m; sourceTree = "<group>"; };
 		6C34FC3A08DA47590055F81A /* OITabMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabMatrix.h; sourceTree = "<group>"; };
@@ -336,6 +352,10 @@
 				E2BFE04C1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h */,
 				E2BFE04D1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.m */,
 				E2BFE04E1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib */,
+				4A4BAAF41E60CC520007DCE3 /* OIDisclosureButton.h */,
+				4A4BAAF61E60CC5F0007DCE3 /* OIDisclosureButton.m */,
+				4A4BAAF21E60CC030007DCE3 /* OIDisclosureButtonCell.h */,
+				4A4BAAF01E60CBBE0007DCE3 /* OIDisclosureButtonCell.m */,
 				E28BFED71B0E9F60005EF8A0 /* OIStackedSlicesInspector.h */,
 				E253D2831B430A0800E38E39 /* OIStackedSlicesInspector.xib */,
 				E28BFED81B0E9F60005EF8A0 /* OIStackedSlicesInspector.m */,
@@ -409,6 +429,10 @@
 		34D2B76008D0E06D00C74260 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				4A4BAB1B1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed.png */,
+				4A4BAB1C1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed@2x.png */,
+				4A4BAB1D1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded.png */,
+				4A4BAB1E1E60D9BA0007DCE3 /* OIDisclosureButtonExpanded@2x.png */,
 				AB85468419CB9300007B666A /* OIWorkspaceRestore@2x.png */,
 				AB85468519CB9300007B666A /* OIWorkspaceStore@2x.png */,
 				34D2B76508D0E09C00C74260 /* OICollapsed.png */,
@@ -496,8 +520,10 @@
 				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
 				E2EFA7371B911D4200E2CA86 /* OIAppearance.h in Headers */,
 				6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */,
+				4A4BAAF31E60CC030007DCE3 /* OIDisclosureButtonCell.h in Headers */,
 				34E221EE0932A28400087E32 /* OIInspector.h in Headers */,
 				E2BFE04F1AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.h in Headers */,
+				4A4BAAF51E60CC520007DCE3 /* OIDisclosureButton.h in Headers */,
 				E23999DA1B066E6C001E1229 /* OIAutoLayoutInspectorController.h in Headers */,
 				346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */,
 				34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */,
@@ -570,12 +596,16 @@
 				4281FCBC1B5EC02700FD888F /* OITallTitlebarInactivePressed.png in Resources */,
 				34D2B77C08D0E09C00C74260 /* OIExpanded.png in Resources */,
 				E253D2841B430A0800E38E39 /* OIStackedSlicesInspector.xib in Resources */,
+				4A4BAB221E60D9BA0007DCE3 /* OIDisclosureButtonExpanded@2x.png in Resources */,
 				AB85468719CB9300007B666A /* OIWorkspaceStore@2x.png in Resources */,
+				4A4BAB1F1E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed.png in Resources */,
+				4A4BAB211E60D9BA0007DCE3 /* OIDisclosureButtonExpanded.png in Resources */,
 				AB85468619CB9300007B666A /* OIWorkspaceRestore@2x.png in Resources */,
 				34D2B78208D0E09C00C74260 /* OITitlebarActive.png in Resources */,
 				4281FCBA1B5EC02700FD888F /* OITallTitlebarActivePressed.png in Resources */,
 				34D2B78308D0E09C00C74260 /* OITitlebarActivePressed.png in Resources */,
 				34D2B78408D0E09C00C74260 /* OITitlebarInactive.png in Resources */,
+				4A4BAB201E60D9BA0007DCE3 /* OIDisclosureButtonCollapsed@2x.png in Resources */,
 				34D2B78508D0E09C00C74260 /* OITitlebarInactivePressed.png in Resources */,
 				E2BFE0511AFD3A8E00F06789 /* OIAutolayoutInspectorHeaderView.xib in Resources */,
 				34D2B78608D0E09C00C74260 /* OIWindowResize.png in Resources */,
@@ -637,6 +667,7 @@
 				E2B394451B31F4660081E009 /* OIWorkspace.m in Sources */,
 				34B2544D08D0DCEE00DD2070 /* OIInspectionSet.m in Sources */,
 				34B2544F08D0DCEE00DD2070 /* OIInspectorController.m in Sources */,
+				4A4BAAF11E60CBBE0007DCE3 /* OIDisclosureButtonCell.m in Sources */,
 				34B2545108D0DCEE00DD2070 /* OIInspectorGroup.m in Sources */,
 				34B2545508D0DCEE00DD2070 /* OIInspectorHeaderView.m in Sources */,
 				E26234101B682D6400C10ECF /* OIAppearance.m in Sources */,
@@ -645,6 +676,7 @@
 				34B2545F08D0DCEE00DD2070 /* OIInspectorWindow.m in Sources */,
 				34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */,
 				E2BD52671DCAAC5400A5C8BE /* OITabbedInspectorView.m in Sources */,
+				4A4BAAF71E60CC5F0007DCE3 /* OIDisclosureButton.m in Sources */,
 				6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */,
 				6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */,
 				6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */,

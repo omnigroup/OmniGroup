@@ -351,7 +351,6 @@
 			baseConfigurationReference = 5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 			};
 			name = Debug;
 		};
@@ -360,7 +359,6 @@
 			baseConfigurationReference = 5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = watchos;
 			};
 			name = Release;
 		};

@@ -446,7 +446,7 @@ NS_ASSUME_NONNULL_BEGIN
     [top appendChild: string];
 }
 
-- (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (NSString *) newlineReplacment;
+- (void) appendString: (NSString *) string quotingMask: (unsigned int) quotingMask newlineReplacment: (nullable NSString *) newlineReplacment;
 {
     OFXMLElement *top = [self topElement];
     OBASSERT([top isKindOfClass: [OFXMLElement class]]);

@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,6 +112,7 @@
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIPasswordAlert.h>
 #import <OmniUI/OUIPurchaseURLCommand.h>
+#import <OmniUI/OUIReceiptRefreshRequest.h>
 #import <OmniUI/OUIRotationGestureRecognizer.h>
 #import <OmniUI/OUIRotationLock.h>
 #import <OmniUI/OUIScalingScrollView.h>

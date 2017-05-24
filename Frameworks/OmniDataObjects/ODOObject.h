@@ -41,15 +41,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
 
-+ (ODOEntity *)entity; // The Entity represented by this subclass. It is only legal to send +entity to leaf subclasses which represents a single entity in the model.
-+ (NSString *)entityName; // The name of the entity represented by this subclass. The restrictions on +entity apply here.
+@property (class, nonatomic, readonly) ODOEntity *entity; // The entity represented by this subclass. It is only legal to query the entity of leaf subclasses which represents a single entity in the model.
+@property (class, nonatomic, readonly) NSString *entityName; // The name of the entity represented by this subclass. The restrictions on the entity property apply here.
 
 - (instancetype)initWithEntity:(ODOEntity *)entity primaryKey:(nullable id)primaryKey insertingIntoEditingContext:(ODOEditingContext *)context;
 
 - (instancetype)initWithContext:(ODOEditingContext *)context; // Convenience insertion initializer which looks up the entity. It is only legal to send to leaf subclases which represents a single entity in the model. Calls through to -initWithEntity:primaryKey:insertingIntoEditingContext:.
 - (instancetype)initWithContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey; // See description for -initWithContext:.
 
-- (void)willAccessValueForKey:(NSString *)key;
+- (void)willAccessValueForKey:(nullable NSString *)key;
 - (void)didAccessValueForKey:(NSString *)key;
 
 - (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key; // do not subclass

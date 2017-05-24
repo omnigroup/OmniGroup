@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,11 +72,11 @@ NS_ASSUME_NONNULL_BEGIN
 /* Returns some flags for a filename, based on whether it matches any rules added by -setDisposition:forSuffix:. */
 - (unsigned)flagsForFilename:(NSString *)filename fromSlot:(int * __nullable)outSlot;
 
-- (NSString *)suffixForSlot:(NSUInteger)slotnum;  // Only used by the unit tests
+- (NSString * __nullable)suffixForSlot:(NSUInteger)slotnum;  // Only used by the unit tests
 - (NSDictionary *)descriptionDictionary;   // For the UI. See keys below.
 
 /* Return an encryption worker for the current active key slot. */
-- (nullable OFSSegmentEncryptWorker *)encryptionWorker;
+- (nullable OFSSegmentEncryptWorker *)encryptionWorker:(NSError **)outError;
 
 // These methods are called by OFSSegmentEncryptWorker
 - (NSData * __nullable)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;

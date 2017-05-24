@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
 #import <sqlite3.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOEditingContext (Internal)
 
@@ -229,7 +231,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     }
 }
 
-- (NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+- (nullable NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 {
     OBPRECONDITION(objectID);
 #ifdef OMNI_ASSERTIONS_ON
@@ -260,7 +262,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     // Nothing
 }
 
-ODOObject *ODOEditingContextLookupObjectOrRegisterFaultForObjectID(ODOEditingContext *self, ODOObjectID *objectID)
+ODOObject * ODOEditingContextLookupObjectOrRegisterFaultForObjectID(ODOEditingContext *self, ODOObjectID *objectID)
 {
     OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
     OBPRECONDITION([objectID isKindOfClass:[ODOObjectID class]]);
@@ -278,7 +280,7 @@ ODOObject *ODOEditingContextLookupObjectOrRegisterFaultForObjectID(ODOEditingCon
     return object;
 }
 
-NSMutableSet *ODOEditingContextCreateRecentSet(ODOEditingContext *self)
+NSMutableSet * ODOEditingContextCreateRecentSet(ODOEditingContext *self)
 {
     OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
     
@@ -325,7 +327,7 @@ static void _addMissingMatchingUpdates(const void *value, void *context)
     }
 }
 
-static void _updateResultSetForChanges(NSMutableArray *results, ODOEntity *entity, NSPredicate *predicate, NSSet *inserted, NSSet *updated, NSSet *deleted)
+static void _updateResultSetForChanges(NSMutableArray *results, ODOEntity *entity, NSPredicate *predicate, NSSet * _Nullable inserted, NSSet * _Nullable updated, NSSet * _Nullable deleted)
 {
     InMemoryFetchContext memCtx;
     memset(&memCtx, 0, sizeof(memCtx));
@@ -611,7 +613,7 @@ static BOOL FetchSetFaultWithContext(ODOEditingContext *self, ODOObject *owner, 
 }
 
 // Fetches the primary keys across the relationship, uniquing previously registered objects.  Updates the results for in progress edits and creates faults for the remainder.
-NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel)
+NSMutableSet * ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel)
 {
     OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
     OBPRECONDITION([owner isKindOfClass:[ODOObject class]]);
@@ -659,3 +661,4 @@ NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORel
 
 @end
 
+NS_ASSUME_NONNULL_END

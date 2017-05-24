@@ -101,8 +101,11 @@
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "e" = "e";
 
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "EC 公開鍵はこの OS バージョンでは使用できません";
+
 /* time span formatter span - needs one trailing space */
-"elapsed " = "elapsed ";
+"elapsed " = "経過 ";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "エレメント '%1$@' は次のパスへアクセスできません: %2$@";
@@ -129,7 +132,7 @@
 "h" = "時間";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"hour" = "時";
+"hour" = "時間";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "時間";
@@ -141,7 +144,7 @@
 "local configuration file" = "ローカル設定ファイル";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
-"m" = "分間";
+"m" = "分";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分";
@@ -150,13 +153,13 @@
 "minutes" = "分間";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (month) */
-"mo" = "月";
+"mo" = "カ月";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"month" = "月";
+"month" = "カ月";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"months" = "ヶ月";
+"months" = "カ月";
 
 /* error reason */
 "No root element was found" = "ルート要素が見つかりませんでした";
@@ -236,10 +239,10 @@
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
 
-"Unexpected CMS content-type" = "Unexpected CMS content-type";
+"Unexpected CMS content-type" = "予期しない CMS コンテンツタイプ";
 
 /* error message - CMS object has an unknown algorithm identifier for compression of its content */
-"Unknown compression algorithm" = "Unknown compression algorithm";
+"Unknown compression algorithm" = "圧縮アルゴリズムが不明です";
 
 /* Error message when a CMS KeyTransport algorithm is not recognized */
 "Unknown public key algorithm" = "不明な公開鍵アルゴリズム";
@@ -254,13 +257,13 @@
 "Unsupported encryption algorithm" = "サポートされていない暗号化アルゴリズム";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"w" = "週";
+"w" = "週間";
 
 /* error description */
 "Warning encountered while loading XML." = "XML 読み込み中に警告に遭遇しました。";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"week" = "週";
+"week" = "週間";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "週間";

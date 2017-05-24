@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -384,7 +384,7 @@ static void fpstr(NSString *s, FILE *fp)
                                     [NSDate dateWithTimeIntervalSince1970:1455476195] ]));
 
     unsigned int keySize = 0;
-    XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL), ka_RSA);
+    XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL, NULL), ka_RSA);
     XCTAssertEqual(keySize, 2048u);
     
     SecCertificateRef cfCert = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)cert);
@@ -433,7 +433,7 @@ static void fpstr(NSString *s, FILE *fp)
                                     [NSDate dateWithTimeIntervalSince1970:1423705914] ]));
     
     keySize = 0;
-    XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL), ka_EC);
+    XCTAssertEqual(OFASN1KeyInfoGetAlgorithm(spki, &keySize, NULL, NULL), ka_EC);
     XCTAssertEqual(keySize, 256u);
     
     cfCert = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)cert);

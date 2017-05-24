@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,8 @@
 #import <Security/SecTrust.h>
 
 RCS_ID("$Id$");
+
+OB_REQUIRE_ARC
 
 #if !TARGET_OS_IPHONE
 static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CSSM(SecKeyRef aKey, SecItemClass *outItemClass, unsigned int *outKeySize, uint32_t *outKeyFlags, NSError **err);
@@ -812,7 +814,7 @@ SecKeyRef OFSecCertificateCopyPublicKey(SecCertificateRef aCert, NSError **outEr
     }
     
     unsigned int keySize = 0;
-    enum OFKeyAlgorithm alg = OFASN1KeyInfoGetAlgorithm(keyData, &keySize, NULL);
+    enum OFKeyAlgorithm alg = OFASN1KeyInfoGetAlgorithm(keyData, &keySize, NULL, NULL);
     CFDictionaryRef parameters;
     const void * keyParameterKeys[3] = { kSecAttrKeyType, kSecAttrKeyClass, kSecAttrKeySizeInBits };
     const void * keyParameterValues[3] = { NULL, NULL, NULL };

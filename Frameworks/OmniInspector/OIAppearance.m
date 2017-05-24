@@ -19,6 +19,11 @@ RCS_ID("$Id$");
 
 @implementation OIAppearance
 
++ (NSColor *)dynamicColorForView:(NSView *)view darkColor:(NSColor *)darkColor lightColor:(NSColor *)lightColor;
+{
+    return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:darkColor lightColor:lightColor];
+}
+
 // Inspector
 @dynamic InspectorSidebarWidth;
 @dynamic InspectorHeaderContentHeight;

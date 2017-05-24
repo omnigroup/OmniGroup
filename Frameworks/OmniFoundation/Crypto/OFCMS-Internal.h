@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,11 +25,16 @@ NSData * __nullable OFUnwrapRIForCMSPWRI(NSData *wrappedKey, NSData *KEK, NSErro
 /* Asymmetric key transport functions callable from Swift */
 NSData * __nullable OFProduceRIForCMSRSAKeyTransport(SecKeyRef publicKey, NSData *recipientIdentifier, NSData *CEK, NSError **error) OB_HIDDEN;
 NSData * __nullable OFUnwrapRIForCMSKeyTransport(SecKeyRef privateKey, NSData *encrypted, NSError **outError) OB_HIDDEN;
+#if HAVE_APPLE_ECDH_SUPPORT
+NSData * __nullable OFProduceRIForCMSECDHKeyAgreement(NSArray *recipientKeys, NSArray <NSData *> *recipientIdentifiers, NSData *keyAlgorithm, BOOL cofactor, NSData *CEK, NSError **outError) OB_HIDDEN;
+NSData * __nullable OFUnwrapRIForCMSKeyAgreement(SecKeyRef secretKey, NSData *originatorFragmentAndEncryptedKey, NSError **outError) OB_HIDDEN;
+#endif
 
 NSData *_OFCMSRIDFromIssuerSerial(NSData *issuer, NSData *serial) OB_HIDDEN;
 NSData *_OFCMSRIDFromSKI(NSData *ski) OB_HIDDEN;
 /* PKCS#7 recipient parsing */
 NSError * __nullable _OFASN1ParseCMSRecipient(NSData *buf, enum OFCMSRecipientType *outType, NSData NANNP outWho, NSData NANNP outEncryptedKey) /* OB_HIDDEN */;
+NSArray <NSArray *> * __nullable _OFASN1UnzipKeyAgreementRecipients(NSData *originatorFragment, NSData *seq, NSError **outError) OB_HIDDEN;
 enum OFCMSRecipientIdentifierType { OFCMSRIDIssuerSerial, OFCMSRIDSubjectKeyIdentifier };
 NSError * __nullable _OFASN1ParseCMSRecipientIdentifier(NSData *buf, enum OFCMSRecipientIdentifierType *outType, NSData NANNP blob1, NSData NANNP blob2) OB_HIDDEN;
 

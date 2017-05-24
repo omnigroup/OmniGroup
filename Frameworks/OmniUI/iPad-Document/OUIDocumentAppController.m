@@ -1689,15 +1689,15 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
             [_syncAgent addObserver:self forKeyPath:OFValidateKeyPath(_syncAgent, runningAccounts) options:0 context:&SyncAgentRunningAccountsContext];
             [self _updateDocumentStoreScopes];
             
-            _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[ODSLocalDirectoryScope userDocumentsDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
+            _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _localDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
             [_documentStore addScope:_localScope];
             _externalScopeManager = [[OUIDocumentExternalScopeManager alloc] initWithDocumentStore:_documentStore];
-            ODSScope *trashScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[ODSLocalDirectoryScope trashDirectoryURL] scopeType:ODSLocalDirectoryScopeTrash documentStore:_documentStore];
+            ODSScope *trashScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _trashDirectoryURL] scopeType:ODSLocalDirectoryScopeTrash documentStore:_documentStore];
             [_documentStore addScope:trashScope];
             
-            NSURL *templateDirectoryURL = [ODSLocalDirectoryScope templateDirectoryURL];
+            NSURL *templateDirectoryURL = [self _templatesDirectoryURL];
             if (templateDirectoryURL) {
-                ODSScope *templateScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[ODSLocalDirectoryScope templateDirectoryURL] scopeType:ODSLocalDirectoryScopeTemplate documentStore:_documentStore];
+                ODSScope *templateScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:templateDirectoryURL scopeType:ODSLocalDirectoryScopeTemplate documentStore:_documentStore];
                 [_documentStore addScope:templateScope];
             }
 
@@ -2763,6 +2763,21 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
         [_documentStore addAfterInitialDocumentScanAction:afterScanAction];
     };
     [self addLaunchAction:launchAction];
+}
+
+- (NSURL *)_localDirectoryURL
+{
+    return [ODSLocalDirectoryScope userDocumentsDirectoryURL];
+}
+
+- (NSURL *)_templatesDirectoryURL
+{
+    return [ODSLocalDirectoryScope templateDirectoryURL];
+}
+
+- (NSURL *)_trashDirectoryURL
+{
+    return [ODSLocalDirectoryScope trashDirectoryURL];
 }
 
 #pragma mark -Snapshots

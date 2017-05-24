@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1752,7 +1752,7 @@ static unsigned bitSizeOfInteger(NSData *buffer, const struct parsedTag *st)
  If an elliptic curve key has explicit curve parameters or a named curve which we don't recognize, we just return (0, 0). These situations are forbidden by PKIX, though.
 
 */
-enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize)
+enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize, NSData **outAlgorithmIdentifier)
 {
     /*  Like this (expanded):
         subjectPublicKeyInfo  :=    SEQUENCE {
@@ -1777,6 +1777,10 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
     rc = enterObject(publicKeyInformation, &st, &spkiSt);
     if (rc || !IS_TYPE(spkiSt, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
         return ka_Failure;
+    
+    if (outAlgorithmIdentifier) {
+        *outAlgorithmIdentifier = [publicKeyInformation subdataWithRange:(NSRange){ .location = spkiSt.startPosition, .length = NSMaxRange(spkiSt.v.content) - spkiSt.startPosition }];
+    }
     
     {
         struct asnWalkerState algidSt;

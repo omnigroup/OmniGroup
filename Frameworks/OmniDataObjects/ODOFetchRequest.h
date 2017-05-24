@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,14 +11,18 @@
 
 #import <OmniDataObjects/ODOPredicate.h> // For target-specific setup
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSArray;
 @class ODOEntity;
 
 @interface ODOFetchRequest : OFObject
 
-@property(nonatomic,retain) ODOEntity *entity;
-@property(nonatomic,copy) NSPredicate *predicate;
-@property(nonatomic,copy) NSArray *sortDescriptors;
-@property(nonatomic,copy) NSString *reason;
+@property (nonatomic, nullable, strong) ODOEntity *entity;
+@property (nonatomic, nullable, copy) NSPredicate *predicate;
+@property (nonatomic, nullable, copy) NSArray *sortDescriptors;
+@property (nonatomic, nullable, copy) NSString *reason;
 
 @end
+
+NS_ASSUME_NONNULL_END

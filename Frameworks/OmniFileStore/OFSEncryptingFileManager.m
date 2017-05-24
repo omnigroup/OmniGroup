@@ -10,6 +10,7 @@
 #import <Security/Security.h>
 #import <CommonCrypto/CommonCrypto.h>
 #import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -185,7 +186,9 @@ static BOOL errorIndicatesPlaintext(NSError *err);
         return [underlying writeData:data toURL:url atomically:atomically error:outError];
     }
     
-    OFSSegmentEncryptWorker *worker = keyManager.encryptionWorker;
+    OFSSegmentEncryptWorker *worker = [keyManager encryptionWorker:outError];
+    if (!worker)
+        return nil;
     
     NSData *encrypted = [worker encryptData:data error:outError];
     if (!encrypted)

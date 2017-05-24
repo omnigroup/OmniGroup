@@ -60,6 +60,13 @@
 		<key>a</key>
 		<integer>1</integer>
 	</dict>
+	<key>DarkInspectorDisclosureTintColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.45</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
 	<key>LightInspectorBackgroundColor</key>
 	<dict>
 		<key>w</key>
@@ -71,6 +78,13 @@
 	<dict>
 		<key>w</key>
 		<real>0.92</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>LightInspectorDisclosureTintColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.55</real>
 		<key>a</key>
 		<integer>1</integer>
 	</dict>

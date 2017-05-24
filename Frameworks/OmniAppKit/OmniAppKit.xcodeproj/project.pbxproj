@@ -228,6 +228,8 @@
 		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
+		4A4BAB5C1E64C1780007DCE3 /* NSAppearance-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4BAB5A1E64C1780007DCE3 /* NSAppearance-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A4BAB5D1E64C1780007DCE3 /* NSAppearance-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4BAB5B1E64C1780007DCE3 /* NSAppearance-OAExtensions.m */; };
 		4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; };
 		4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */; };
@@ -978,6 +980,8 @@
 		4A0277F608959F0400594E5E /* OAUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUtilities.h; sourceTree = "<group>"; };
 		4A0AC9D005F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-NSDraggingInfo-OAExtensions.h"; sourceTree = "<group>"; };
 		4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-NSDraggingInfo-OAExtensions.m"; sourceTree = "<group>"; };
+		4A4BAB5A1E64C1780007DCE3 /* NSAppearance-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppearance-OAExtensions.h"; sourceTree = "<group>"; };
+		4A4BAB5B1E64C1780007DCE3 /* NSAppearance-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppearance-OAExtensions.m"; sourceTree = "<group>"; };
 		4A5714CD08B0436100B772DA /* Info-OAUnitTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAUnitTests.plist"; sourceTree = SOURCE_ROOT; };
 		4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewer.h; sourceTree = "<group>"; };
 		4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAWebPageViewer.m; sourceTree = "<group>"; };
@@ -1296,6 +1300,7 @@
 				3FDA4149020973770297A14E /* Foundation */,
 				34A201260FF0454B00B699DB /* NSAlert */,
 				346A989E15903AF100CA3359 /* NSAnimationContext */,
+				4A4BAB5E1E64C3390007DCE3 /* NSAppearance */,
 				66D9C71F029F51A90097A138 /* NSAppleScript */,
 				3FDA4143020972AA0297A14E /* NSApplication */,
 				3F411EA0036D27010297A14E /* NSBezierPath */,
@@ -2189,6 +2194,15 @@
 			name = "NSDragInfo protocol";
 			sourceTree = "<group>";
 		};
+		4A4BAB5E1E64C3390007DCE3 /* NSAppearance */ = {
+			isa = PBXGroup;
+			children = (
+				4A4BAB5A1E64C1780007DCE3 /* NSAppearance-OAExtensions.h */,
+				4A4BAB5B1E64C1780007DCE3 /* NSAppearance-OAExtensions.m */,
+			);
+			name = NSAppearance;
+			sourceTree = "<group>";
+		};
 		4A785F5C0B040C4200B513F3 /* Date Picker */ = {
 			isa = PBXGroup;
 			children = (
@@ -2612,6 +2626,7 @@
 				4AA1E6B008AA764600E2FF6B /* NSFont-OAExtensions.h in Headers */,
 				4DA2ED421C51B70700CCEE3C /* OAAppearancePropertyListCoder.h in Headers */,
 				4AA1E6B108AA764600E2FF6B /* NSFontManager-OAExtensions.h in Headers */,
+				4A4BAB5C1E64C1780007DCE3 /* NSAppearance-OAExtensions.h in Headers */,
 				4AA1E6B208AA764600E2FF6B /* NSImage-OAExtensions.h in Headers */,
 				4AA1E6B308AA764600E2FF6B /* NSMenu-OAExtensions.h in Headers */,
 				4AA1E6B408AA764600E2FF6B /* NSObject-NSDraggingInfo-OAExtensions.h in Headers */,
@@ -3313,6 +3328,7 @@
 				1EFC4ECB1DB5B7CE006C7922 /* OASecCertificateProxy.m in Sources */,
 				34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */,
 				4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */,
+				4A4BAB5D1E64C1780007DCE3 /* NSAppearance-OAExtensions.m in Sources */,
 				349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */,
 				34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */,
 				94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */,

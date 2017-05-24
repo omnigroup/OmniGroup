@@ -369,7 +369,8 @@ static NSString *windowFrameSaveName = @"Preferences";
             // Don't remove the view if we've switched away from a pane and back quickly (switching back will enqueue an animation with its own completion handler to remove the temporarily added view).
             // Attempt to only call the completion block if the client is still current at the time of dispatch
             if (targetClient == _currentClient) {
-                [oldView removeFromSuperview];
+                if (oldView != _currentClient.controlBox)
+                    [oldView removeFromSuperview];
                 [showAllIconsView removeFromSuperview];
 
                 if (completion) {

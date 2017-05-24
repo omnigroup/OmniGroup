@@ -18,6 +18,10 @@
 - (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
 - (CGFloat)scrollBufferAsPercentOfViewportSize;
 - (CGSize)unscaledContentSize;
+
+@optional
+- (void)scrollViewDidChangeFrame;
+
 @end
 
 @interface OUIScalingScrollView : UIScrollView

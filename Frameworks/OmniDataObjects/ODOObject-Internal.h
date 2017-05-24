@@ -16,6 +16,8 @@
 
 #import "ODOEntity-Internal.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ODOObject () // Internal initializers
 - (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot NS_DESIGNATED_INITIALIZER;
@@ -166,10 +168,12 @@ void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object) OB_HIDDEN;
 void ODOObjectAwakeObjectsFromFetch(NSArray *objects) OB_HIDDEN;
 
 BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
-NSMutableSet *ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
+NSMutableSet * _Nullable ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
 
 void ODOObjectSetChangeProcessingEnabled(ODOObject *self, BOOL enabled) OB_HIDDEN;
 BOOL ODOObjectChangeProcessingEnabled(ODOObject *self) OB_HIDDEN;
 
-CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
+_Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
 void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff) OB_HIDDEN;
+
+NS_ASSUME_NONNULL_END
