@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class OUUnzipEntry;
 @protocol OFByteProvider;
 
+extern NSString * const OUUnzipArchiveFilePathErrorKey;
+
 @interface OUUnzipArchive : NSObject
 
 /// Create an OUUnzipArchive from a file on disk. The file opened for reading (not mapped into memory) each time an operation is performed.

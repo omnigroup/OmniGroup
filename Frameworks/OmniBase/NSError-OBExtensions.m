@@ -18,6 +18,7 @@
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Security/Authorization.h> // for errAuthorizationCanceled
 #endif
+#import <Security/SecBase.h> // for errSecUserCanceled
 
 RCS_ID("$Id$");
 
@@ -124,6 +125,9 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     if ([self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:userCanceledErr])
         return YES;
 #endif
+    
+    if ([self hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:errSecUserCanceled])
+        return YES;
     
     return NO;
 }

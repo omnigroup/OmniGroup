@@ -243,11 +243,20 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 #pragma mark UIScrollViewDelegate
 #pragma mark OUIScrollNotifier
 
+// OUIScalingScrollViewDelegate
 - (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
 {
     return scalingScrollView.bounds;
 }
 
+// By default, assume that a view's scaled size should be simply its unscaledContentSize * scale.
+// However, a subclass may instead indicate that its scaled size should be unscaledContentSize * scale + some fraction of a viewport's (unscaled) size, to allow for scrolling the content just barely off screen or similar.
+- (CGFloat)scrollBufferAsPercentOfViewportSize
+{
+    return 0;
+}
+
+// UIScrollViewDelegate
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
 {
     OUIPostScrollingWillBeginNotification(scrollView);

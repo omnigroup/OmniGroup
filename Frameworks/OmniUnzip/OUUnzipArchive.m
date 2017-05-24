@@ -32,6 +32,8 @@ RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
+NSString * const OUUnzipArchiveFilePathErrorKey = @"OUUnzipArchiveFilePath";
+
 @implementation OUUnzipArchive
 {
     NSString *_path;
@@ -90,7 +92,15 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
     if (!unzip) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open zip archive.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), displayName];
-        OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : description,
+                                    NSLocalizedRecoverySuggestionErrorKey : reason, };
+        if (path != nil) {
+            userInfo = [userInfo dictionaryWithObject:path forKey:OUUnzipArchiveFilePathErrorKey];
+        }
+        
+        if (outError != NULL) {
+            *outError = [NSError errorWithDomain:OmniUnzipErrorDomain code:OmniUnzipUnableToOpenZipFile userInfo:userInfo];
+        }
         return nil;
     }
     

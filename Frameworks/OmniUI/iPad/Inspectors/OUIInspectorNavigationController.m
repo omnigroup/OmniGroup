@@ -24,9 +24,9 @@ RCS_ID("$Id$")
 
 - (void)viewDidLoad{
     [super viewDidLoad];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -51,89 +51,23 @@ RCS_ID("$Id$")
     }
 }
 
-// JCTODO: May need to update to handle new presentation setup.
-- (void)keyboardWillShow:(NSNotification*)note
-{
-    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
-        // we might be in a partial height presentation and need to get taller
-        OUIInspectorPresentationController *presentationController = (OUIInspectorPresentationController *)self.presentationController;
-        NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
-        NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
-        NSValue *frame = note.userInfo[UIKeyboardFrameEndUserInfoKey];
-        CGFloat height = [frame CGRectValue].size.height;
-        UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
-        __weak OUIInspectorNavigationController *weakSelf = self;
-        if (!self.willDismissInspector){
-            [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:height withAnimationDuration:duration.floatValue options:options completion:^{
-                OUIInspectorNavigationController *strongSelf = weakSelf;
-                if (strongSelf) {
-                    if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-                        [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
-                    }
-                    [strongSelf adjustHeightOfGesturePassThroughView];
-                }
-            }];
-        }
-    } else {
-        if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-            [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
-        }
+- (void)_keyboardWillShow:(NSNotification*)note {
+    if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
+        [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
     }
 }
 
-- (void)adjustHeightOfGesturePassThroughView
-{
-    CGRect frameOfGesturePassThrough = self.gesturePassThroughView.frame;
-    frameOfGesturePassThrough.size.height = self.view.window.frame.size.height - self.view.frame.size.height;
-    self.gesturePassThroughView.frame = frameOfGesturePassThrough;
-}
-
-- (void)keyboardWillHide:(NSNotification*)note
-{
-    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
-        // we might have been in a partial height presentation and need to get shorter
-        OUIInspectorPresentationController *presentationController = (OUIInspectorPresentationController *)self.presentationController;
-        NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
-        NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
-        UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
-        self.gesturePassThroughView.hidden = NO;
-        __weak OUIInspectorNavigationController *weakSelf = self;
-        [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:0 withAnimationDuration:duration.integerValue options:options completion:^{
-            OUIInspectorNavigationController *strongSelf = weakSelf;
-            if (strongSelf) {
-                if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-                    [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
-                    [strongSelf adjustHeightOfGesturePassThroughView];
-                }
-            }
-        }];
-    } else {
-        if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
-            [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
-        }
-    }
-}
-
-- (void)keyboardDidChangeFrame:(NSNotification*)note
+- (void)_keyboardWillHide:(NSNotification*)note
 {
     if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
         [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
     }
 }
 
-- (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
+- (void)_keyboardDidChangeFrame:(NSNotification*)note
 {
-    UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
-    BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
-    
-    if (!isCurrentlyPresented) {
-        return NO;
-    }
-    else {
-        // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
-        
-        // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
-        return (mostDistantAncestor.modalPresentationStyle == UIModalPresentationCustom && [mostDistantAncestor.presentationController isKindOfClass:[OUIInspectorPresentationController class]]);
+    if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
+        [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
     }
 }
 

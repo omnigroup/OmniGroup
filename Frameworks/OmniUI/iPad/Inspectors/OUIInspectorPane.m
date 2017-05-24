@@ -74,7 +74,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     // For subclasses
 }
 
-// JCTODO: Inspector refactor.
 - (void)setInspectedObjects:(NSArray *)inspectedObjects {
     if ([_inspectedObjects isEqualToArray:inspectedObjects]) {
         return;

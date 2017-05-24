@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,9 +70,7 @@ static inline id _insertTestObject(ODOEditingContext *ctx, Class cls, NSString *
     OBPRECONDITION(ctx);
     OBPRECONDITION(cls);
     OBPRECONDITION(entityName);
-    ODOObject *object = [[cls alloc] initWithEditingContext:ctx entity:[ODOTestCaseModel() entityNamed:entityName] primaryKey:pk];
-    [ctx insertObject:object];
-    [object release];
+    ODOObject *object = [[[cls alloc] initWithEntity:[ODOTestCaseModel() entityNamed:entityName] primaryKey:pk insertingIntoEditingContext:ctx] autorelease];
     return object;
 }
 #define INSERT_TEST_OBJECT(cls, name) cls *name = _insertTestObject(_editingContext, [cls class], cls ## EntityName, (NSString *)CFSTR(#name)); OB_UNUSED_VALUE(name)
@@ -80,9 +78,7 @@ static inline id _insertTestObject(ODOEditingContext *ctx, Class cls, NSString *
 
 static inline ODOTestCaseDetail *_insertDetail(ODOEditingContext *ctx, NSString *pk, ODOTestCaseMaster *master)
 {
-    ODOTestCaseDetail *detail = [[ODOTestCaseDetail alloc] initWithEditingContext:ctx entity:[ODOTestCaseModel() entityNamed:ODOTestCaseDetailEntityName] primaryKey:pk];
-    [ctx insertObject:detail];
-    [detail release];
+    ODOTestCaseDetail *detail = [[[ODOTestCaseDetail alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseDetailEntityName] primaryKey:pk insertingIntoEditingContext:ctx] autorelease];
     
     if (master)
         detail.master = master;

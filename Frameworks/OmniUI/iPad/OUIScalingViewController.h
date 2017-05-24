@@ -35,6 +35,9 @@
 - (void)adjustContentInset;
 - (void)sizeInitialViewSizeFromUnscaledContentSize;
 
+// OUIScalingScrollViewDelegate
+- (CGFloat)scrollBufferAsPercentOfViewportSize;
+
 // Added so that OUIScalingScrollView can tell if it is in the middle of a zoom (Used by Graffle to get rid of stutter when zooming way out on a canvas)
 - (BOOL)isZooming;
 

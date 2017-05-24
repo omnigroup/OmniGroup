@@ -15,11 +15,14 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUIKeyCommands
 
 static NSMutableDictionary *CategoriesToKeyCommands = nil;
+static NSMutableDictionary *CategoriesToSelectorNames = nil;
 
-static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tableName)
+static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tableName, NSArray **outKeyCommands, NSSet **outSelectorNames)
 {
     /*
      We use a similar syntax as /System/Library/Frameworks/AppKit.framework/Resources/StandardKeyBinding.dict on the Mac
@@ -55,9 +58,10 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
     
     NSCharacterSet *nonModifierCharacterSet = [[NSCharacterSet characterSetWithCharactersInString:@"^$@~"] invertedSet];
 
-    NSMutableArray *result = [NSMutableArray new];
+    NSMutableArray *keyCommands = [NSMutableArray array];
+    NSMutableSet *selectorNames = [NSMutableSet set];
+
     for (NSArray *commandComponents in commands) {
-        
         NSUInteger componentCount = [commandComponents count];
         OBASSERT(componentCount >= 2 && componentCount <= 3);
         if (componentCount < 2 || componentCount > 3) {
@@ -75,11 +79,11 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
             selectorName = [commandComponents objectAtIndex:1];
             NSString *discoverabilityTitleIdentifer = [commandComponents lastObject];
             OBASSERT(![NSString isEmptyString:discoverabilityTitleIdentifer]);
-
             discoverabilityTitle = [bundle localizedStringForKey:discoverabilityTitleIdentifer value:@"" table:tableName];
         } else {
             selectorName = [commandComponents lastObject];
         }
+
         OBASSERT([selectorName rangeOfString:@":"].location == [selectorName length] - 1, "Selector \"%@\" should have one \":\" at the end.", selectorName);
         
         __block UIKeyModifierFlags flags = 0;
@@ -90,23 +94,25 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
             NSRange allowedModifierRange = NSMakeRange(0, [shortcut length] - 1);
             
             NSRange nonModifierRange = [shortcut rangeOfCharacterFromSet:nonModifierCharacterSet options:0 range:allowedModifierRange];
-            if (nonModifierRange.location == NSNotFound)
+            if (nonModifierRange.location == NSNotFound) {
                 inputStart = NSMaxRange(allowedModifierRange); // All the characters up front are modifiers
-            else
+            } else {
                 inputStart = nonModifierRange.location;
+            }
         }
         
         [[shortcut substringToIndex:inputStart] enumerateSubstringsInRange:NSMakeRange(0, inputStart) options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-            if ([substring isEqualToString:@"$"])
+            if ([substring isEqualToString:@"$"]) {
                 flags |= UIKeyModifierShift;
-            else if ([substring isEqualToString:@"^"])
+            } else if ([substring isEqualToString:@"^"]) {
                 flags |= UIKeyModifierControl;
-            else if ([substring isEqualToString:@"~"])
+            } else if ([substring isEqualToString:@"~"]) {
                 flags |= UIKeyModifierAlternate;
-            else if ([substring isEqualToString:@"@"])
+            } else if ([substring isEqualToString:@"@"]) {
                 flags |= UIKeyModifierCommand;
-            else
+            } else {
                 NSLog(@"Unknown key command modifier flag \"%@\".", substring);
+            }
         }];
         
         NSString *inputString = [shortcut substringFromIndex:inputStart];
@@ -119,46 +125,57 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
                 [dynamicInputIndexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
                     NSString *input = [[NSNumber numberWithUnsignedInteger:idx] stringValue];
                     UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:input modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
-                    [result addObject:command];
+                    
+                    OBASSERT(command != nil);
+                    if (command != nil) {
+                        [keyCommands addObject:command];
+                        [selectorNames addObject:selectorName];
+                    }
                 }];
-                
-                
             } else {
                 OBASSERT_NOT_REACHED("What kind of dynamic key command is this? Unrecognized syntax.");
             }
         } else {
-            if ([inputString isEqualToString:@"up"])
+            if ([inputString isEqualToString:@"up"]) {
                 inputString = UIKeyInputUpArrow;
-            else if ([inputString isEqualToString:@"down"])
+            } else if ([inputString isEqualToString:@"down"]) {
                 inputString = UIKeyInputDownArrow;
-            else if ([inputString isEqualToString:@"left"])
+            } else if ([inputString isEqualToString:@"left"]) {
                 inputString = UIKeyInputLeftArrow;
-            else if ([inputString isEqualToString:@"right"])
+            } else if ([inputString isEqualToString:@"right"]) {
                 inputString = UIKeyInputRightArrow;
-            else if ([inputString isEqualToString:@"escape"])
+            } else if ([inputString isEqualToString:@"escape"]) {
                 inputString = UIKeyInputEscape;
-            else
+            } else {
                 OBASSERT([inputString length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
+            }
             
             UIKeyCommand *command = nil;
             
-            if (discoverabilityTitle != nil && discoverabilityTitle.length > 0)
+            if (discoverabilityTitle != nil && discoverabilityTitle.length > 0) {
                 command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
-            else
+            } else {
                 command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName)];
+            }
             
-             [result addObject:command];
+            OBASSERT(command != nil);
+            if (command != nil) {
+                [keyCommands addObject:command];
+                [selectorNames addObject:selectorName];
+            }
         }
     }
 
-    return result;
+    *outKeyCommands = [keyCommands copy];
+    *outSelectorNames = [selectorNames copy];
 }
 
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    CategoriesToKeyCommands = [NSMutableDictionary new];
+    CategoriesToKeyCommands = [NSMutableDictionary dictionary];
+    CategoriesToSelectorNames = [NSMutableDictionary dictionary];
     
     // Each file should have the structure { category = ( list of commands ); }
     NSMutableArray *bundles = [[NSBundle allFrameworks] mutableCopy]; // On iOS 8 and iOS 9, +allFrameworks includes +mainBundle.
@@ -171,44 +188,60 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
             __autoreleasing NSError *error = nil;
             
             NSData *keyCommandData = [[NSData alloc] initWithContentsOfURL:keyCommandFileURL options:NSDataReadingMappedIfSafe error:&error];
-            if (!keyCommandData) {
+            if (keyCommandData == nil) {
                 [error log:@"Error reading data from %@", keyCommandFileURL];
                 continue;
             }
             
             error = nil;
             NSDictionary *keyCommandsPlist = [NSPropertyListSerialization propertyListWithData:keyCommandData options:0 format:NULL error:&error];
-            if (!keyCommandsPlist) {
+            if (keyCommandsPlist == nil) {
                 [error log:@"Error deserializing data from %@", keyCommandFileURL];
                 continue;
             }
             
             [keyCommandsPlist enumerateKeysAndObjectsUsingBlock:^(NSString *categoryName, NSArray *keyCommandDescriptions, BOOL *stop) {
                 NSString *tableName = [[keyCommandFileURL lastPathComponent] stringByDeletingPathExtension];
-                NSArray *keyCommands = _parseKeyCommands(keyCommandDescriptions, bundle, tableName);
+                __autoreleasing NSArray *keyCommands = nil;
+                __autoreleasing NSSet *selectorNames = nil;
+
+                _parseKeyCommands(keyCommandDescriptions, bundle, tableName, &keyCommands, &selectorNames);
                 
                 // TODO: At this point we could eliminate duplicates within a given category, but not cross-category de-duping.
                 NSArray *previousCommands = CategoriesToKeyCommands[categoryName];
-                if (previousCommands)
+                if (previousCommands != nil) {
                     keyCommands = [previousCommands arrayByAddingObjectsFromArray:keyCommands];
+                }
+                
+                NSSet *previousSelectorNames = CategoriesToSelectorNames[categoryName];
+                if (previousSelectorNames != nil) {
+                    selectorNames = [previousSelectorNames setByAddingObjectsFromSet:previousSelectorNames];
+                }
+                
                 CategoriesToKeyCommands[categoryName] = keyCommands;
+                CategoriesToSelectorNames[categoryName] = selectorNames;
             }];
         }
     }
 }
 
-+ (NSArray *)keyCommandsWithCategories:(NSString *)categories;
++ (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSString *)categories;
 {
+    if (categories == nil) {
+        return nil;
+    }
+    
     // TODO: At this point it would be okay to do cross-category de-duping based on the ordered, comma-separated categories string. When done here, if category foo and bar share keycommand, sending "foo", "bar", "foo,bar", "bar,foo" should always result in one version of keycommand.
     NSArray *commands = CategoriesToKeyCommands[categories];
-    if (commands)
+    if (commands != nil) {
         return commands;
+    }
     
-    NSMutableArray *mergedCommands = [NSMutableArray new];
+    NSMutableArray *mergedCommands = [NSMutableArray array];
     NSArray *categoryNames = [categories componentsSeparatedByString:@","];
     for (NSString *categoryName in categoryNames) {
         commands = CategoriesToKeyCommands[categoryName];
-        if (!commands) {
+        if (commands == nil) {
             NSLog(@"No key command category named \"%@\".", categoryName);
             continue;
         }
@@ -217,17 +250,75 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
     }
     
     commands = [mergedCommands copy];
-    
     CategoriesToKeyCommands[categories] = commands;
+
     return commands;
+}
+
++ (nullable NSArray<UIKeyCommand *> *)keyCommandsWithCategories:(nullable NSString *)categories;
+{
+    return [self keyCommandsForCategories:categories];
+}
+
++ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSString *)categories;
+{
+    if (categories == nil) {
+        return nil;
+    }
+    
+    NSSet *selectorNames = CategoriesToSelectorNames[categories];
+    if (selectorNames != nil) {
+        return selectorNames;
+    }
+    
+    NSMutableSet *mergedSelectorNames = [NSMutableSet set];
+    NSArray *categoryNames = [categories componentsSeparatedByString:@","];
+    for (NSString *categoryName in categoryNames) {
+        selectorNames = CategoriesToSelectorNames[categoryName];
+        if (selectorNames == nil) {
+            NSLog(@"No key command category named \"%@\".", categoryName);
+            continue;
+        }
+        
+        [mergedSelectorNames unionSet:selectorNames];
+    }
+    
+    selectorNames = [mergedSelectorNames copy];
+    CategoriesToSelectorNames[categories] = selectorNames;
+    
+    return selectorNames;
 }
 
 // Awful approximation for a string that's too long and will break multi-column layout. Useful for discoverability titles that display user configured strings.
 // TODO: Consider adding support for string measuring.
 static NSUInteger DesiredDiscoverabilityTitleLength = 25;
+
 + (NSString *)truncatedDiscoverabilityTitle:(NSString *)title;
 {
     return [title stringByTruncatingToMaximumLength:DesiredDiscoverabilityTitleLength atSpaceAfterMinimumLength:0];
 }
 
 @end
+
+#pragma mark -
+
+@implementation UIResponder (OUIKeyCommandProvider)
+
+- (BOOL)hasKeyCommandWithAction:(SEL)action;
+{
+    if ([self conformsToProtocol:@protocol(OUIKeyCommandProvider)] || [self respondsToSelector:@selector(keyCommandCategories)]) {
+        id responder = self;
+        NSString *categories = [responder keyCommandCategories];
+        if (categories != nil) {
+            NSSet *selectorNames = [OUIKeyCommands keyCommandSelectorNamesForCategories:categories];
+            return [selectorNames containsObject:NSStringFromSelector(action)];
+        }
+    }
+    
+    return NO;
+}
+
+@end
+
+
+NS_ASSUME_NONNULL_END

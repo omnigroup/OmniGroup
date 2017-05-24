@@ -33,6 +33,7 @@ OB_REQUIRE_ARC;
 
 @property (nonatomic) IBOutlet NSButton *OKButton;
 @property (nonatomic) IBOutlet NSButton *cancelButton;
+@property (nonatomic) IBOutlet NSButton *auxiliaryButton;
 
 - (IBAction)done:(id)sender;
 
@@ -73,17 +74,34 @@ OB_REQUIRE_ARC;
     self.cancelButton.accessibilitySubrole = NSAccessibilityCloseButtonSubrole;
     [window setAccessibilityDefaultButton:self.OKButton];
     
-    self.iconView.accessibilityElement = NO;
+    self.OKButton.tag = NSModalResponseOK;
+    self.cancelButton.tag = NSModalResponseCancel;
     
+    NSView *contentView = window.contentView;
     NSMutableArray *constraints = [NSMutableArray array];
 
+    if (options & OAPassphrasePromptWithoutIcon) {
+        // The view's constraints are set up so that removing the icon view from the view hierarchy will only require one horizontal strut to be added to keep things laid out correctly.
+        [self.iconView removeFromSuperview];
+        self.iconView = nil;
+        
+        [constraints addObject:[contentView.leadingAnchor constraintEqualToAnchor:self.titleField.leadingAnchor constant:-20]];
+    } else {
+        self.iconView.accessibilityElement = NO;
+        self.iconView.translatesAutoresizingMaskIntoConstraints = NO;
+    }
+    
+    if (!(options & OAPassphrasePromptWithAuxiliaryButton)) {
+        [self.auxiliaryButton removeFromSuperview];
+        self.auxiliaryButton = nil;
+    }
+    
     labelBox = [[NSLayoutGuide alloc] init];
     [window.contentView addLayoutGuide:labelBox];
     fieldsBox = [[NSLayoutGuide alloc] init];
     [window.contentView addLayoutGuide:fieldsBox];
     
     self.titleField.translatesAutoresizingMaskIntoConstraints = NO;
-    self.iconView.translatesAutoresizingMaskIntoConstraints = NO;
     
     NSLayoutConstraint *constraint;
     // Horizontal
@@ -104,7 +122,6 @@ OB_REQUIRE_ARC;
     [constraints addObject:constraint];
     
     NSBundle *bundle = [OAPassphrasePrompt bundle];
-    NSView *contentView = window.contentView;
     NSView *chain = contentView;
     NSMutableArray *stack = [NSMutableArray array];
     
@@ -364,7 +381,7 @@ OB_REQUIRE_ARC;
 
 - (IBAction)done:(id)sender;
 {
-    NSModalResponse rc = ( [sender tag] == 0 ) ? NSModalResponseCancel : NSModalResponseOK;
+    NSModalResponse rc = [sender tag];
     [self endModal:rc];
 }
 

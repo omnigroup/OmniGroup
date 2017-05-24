@@ -88,7 +88,15 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     view.transform = CGAffineTransformIdentity;
     
     // Build the new frame based on an integral scaling of the canvas size and make the bounds match. Thus the view is 1-1 pixel resolution.
-    CGRect scaledContentSize = CGRectIntegral(CGRectMake(0, 0, effectiveScale * unscaledContentSize.width, effectiveScale * unscaledContentSize.height));
+    
+    CGSize viewportBufferSize = UIEdgeInsetsInsetRect(self.bounds, self.contentInset).size;
+    CGFloat percentage = self.delegate.scrollBufferAsPercentOfViewportSize;
+    viewportBufferSize.width *= percentage;
+    viewportBufferSize.height *= percentage;
+    // Buffer needs to be added to each edge, so * 2
+    CGSize fullSize = CGSizeMake(effectiveScale * unscaledContentSize.width + 2 * viewportBufferSize.width,
+                                 effectiveScale * unscaledContentSize.height + 2 * viewportBufferSize.height);
+    CGRect scaledContentSize = CGRectIntegral(CGRectMake(0, 0, fullSize.width, fullSize.height));
     view.frame = scaledContentSize;
     view.bounds = scaledContentSize;
     
@@ -150,6 +158,10 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     UIEdgeInsets totalInsets = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);  // natural insets to center the canvas
     totalInsets.left = fmax(totalInsets.left, self.minimumInsets.left);
     totalInsets.right = fmax(totalInsets.right, self.minimumInsets.right);
+#if 0 && defined(DEBUG_lizard)
+    totalInsets.left = 0;
+    totalInsets.right = 0;
+#endif
     
     if (ySpace > self.minimumInsets.top + self.minimumInsets.bottom) {
         // need more top or bottom insets

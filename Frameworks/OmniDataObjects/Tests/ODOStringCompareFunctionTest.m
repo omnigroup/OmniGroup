@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,7 @@ RCS_ID("$Id$")
     while (stringIndex--) {
         NSString *string = [strings objectAtIndex:stringIndex];
 
-        ODOTestCaseMaster *master = [[[ODOTestCaseMaster alloc] initWithEditingContext:_editingContext entity:entity primaryKey:string] autorelease];
-        [_editingContext insertObject:master];
+        ODOTestCaseMaster *master = [[[ODOTestCaseMaster alloc] initWithEntity:entity primaryKey:string insertingIntoEditingContext:_editingContext] autorelease];
         [_editingContext processPendingChanges];
         master.name = string;
     }

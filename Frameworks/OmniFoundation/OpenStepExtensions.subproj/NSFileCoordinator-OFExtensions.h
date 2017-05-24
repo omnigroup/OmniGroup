@@ -32,8 +32,8 @@ typedef BOOL (^OFFileAccessor)(NSURL *newURL, NSError **outError);
        writeItemAtURL:(NSURL *)writeURL withChanges:(BOOL)writeWithChanges
                 error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL1, NSURL *newURL2, NSError **outError))accessor;
 
-- (BOOL)prepareToReadItemsAtURLs:(NSArray *)readingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
-- (BOOL)prepareToWriteItemsAtURLs:(NSArray *)writingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
+- (BOOL)prepareToReadItemsAtURLs:(NSArray<NSURL *> *)readingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
+- (BOOL)prepareToWriteItemsAtURLs:(NSArray<NSURL *> *)writingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
 
 @end
 

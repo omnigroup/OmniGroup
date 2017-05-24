@@ -10,19 +10,27 @@
 #import <UIKit/UIPresentationController.h>
 
 #pragma mark - OUIInspectorPresentationController
+typedef void (^OUIInspectorPresentationControllerAlongsidePresentationBlock)(CGFloat inspectorHeight);
+typedef void (^OUIInspectorPresentationControllerTransitionBlock)(void);
+
 @interface OUIInspectorPresentationController : UIPresentationController
 
-- (void)presentedViewNowNeedsToGrowForKeyboardHeight:(CGFloat)keyboardHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion;
-- (void)updateForPresentingViewTransitionToSize:(CGSize)newSize;
-@property (nonatomic, weak) UIView *gesturePassThroughView;
+/**
+ Clear view that covers the area where the presentingView is visable. One use-case might be to add a geture recignizer to this view to know when the presentingView is tapped.
+ 
+ @note Presentations are model and taps are not normally passed through to the presentingView. This is a workaround to give a clean way of forwarding views back to the presentingView. 
+ */
+@property (nonatomic, readonly) UIView *seeThroughView;
 
-/// These all get set to nil during -[UIPresentationController dismissalTransitionDidEnd:]
-@property (copy, nonatomic) void (^presentInspectorCompletion)(id<UIViewControllerTransitionCoordinatorContext> context);
-@property (copy, nonatomic) void (^animationsToPerformAlongsidePresentation)(id<UIViewControllerTransitionCoordinatorContext> context);
-@property (copy, nonatomic) void (^dismissInspectorCompletion)(id<UIViewControllerTransitionCoordinatorContext> context);
+/// These all get set to nil at the end of -[UIPresentationController dismissalTransitionDidEnd:]
+/**
+ @param inspectorHeight Distance from bottom of screen that the inspector's view will cover. Useful to add bottom content inset to scroll views.
+ */
+@property (nonatomic, copy) OUIInspectorPresentationControllerAlongsidePresentationBlock animationsToPerformAlongsidePresentation;
+@property (nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock presentInspectorCompletion;
 /// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
-@property (copy, nonatomic) void (^animationsToPerformAlongsideDismissal)(id<UIViewControllerTransitionCoordinatorContext> context);
-
+@property (nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock animationsToPerformAlongsideDismissal;
+@property (nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock dismissInspectorCompletion;
 
 @end
 

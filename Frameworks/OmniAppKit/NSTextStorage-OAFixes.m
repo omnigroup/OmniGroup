@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,10 +37,12 @@ static void replacement_removeLayoutManager(NSTextStorage *self, SEL _cmd, NSLay
 static void OAInstallTextStorageAssertions(void) __attribute__((constructor));
 static void OAInstallTextStorageAssertions(void)
 {
-    Class cls = [NSTextStorage class];
-    
-    original_addLayoutManager = (typeof(original_addLayoutManager))OBReplaceMethodImplementation(cls, @selector(addLayoutManager:), (IMP)replacement_addLayoutManager);
-    original_removeLayoutManager = (typeof(original_removeLayoutManager))OBReplaceMethodImplementation(cls, @selector(removeLayoutManager:), (IMP)replacement_removeLayoutManager);
+    @autoreleasepool {
+        Class cls = [NSTextStorage class];
+        
+        original_addLayoutManager = (typeof(original_addLayoutManager))OBReplaceMethodImplementation(cls, @selector(addLayoutManager:), (IMP)replacement_addLayoutManager);
+        original_removeLayoutManager = (typeof(original_removeLayoutManager))OBReplaceMethodImplementation(cls, @selector(removeLayoutManager:), (IMP)replacement_removeLayoutManager);
+    }
 }
 
 #endif

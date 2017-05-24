@@ -10,6 +10,22 @@
 import Foundation
 
 extension OFDocumentEncryptionSettings {
+
+    /// Returns a short, localized description of a document's encryption state.
+    @objc(describeEncryptionSettings:)
+    public static func describe(encryptionSettings settings: OFDocumentEncryptionSettings?) -> String {
+        if let settings = settings {
+            if (settings.hasPassword()) {
+                return NSLocalizedString("<Encryption: A password is set>", tableName: "OmniFoundation", bundle: OFBundle, value: "Password Set", comment: "summary text - document is encrypted using a password");
+            } else {
+                let formatted = NSString(format:NSLocalizedString("<Encryption: using %u key(s)>", tableName: "OmniFoundation", bundle: OFBundle, value: "%u Keys", comment: "summary text - document is encrypted using one or more public keys") as NSString,
+                            settings.countOfRecipients() as UInt);
+                return formatted as String;
+            }
+        } else {
+            return NSLocalizedString("<Encryption: None>", tableName: "OmniFoundation", bundle: OFBundle, value: "Not Encrypted", comment: "summary text - document is not encrypted");
+        }
+    }
     
     #if true
     // Work in progress: allow spotlight to index the envelope of an encrypted document (recipients and document-key-UUID)
@@ -65,9 +81,10 @@ extension OFDocumentEncryptionSettings {
     }
     #endif
     
+    /// Returns the total number of recipients.
     @objc public
-    func countOfRecipients() -> Int {
-        return recipients.count;
+    func countOfRecipients() -> UInt {
+        return recipients.count as! UInt;
     }
     
     /// Returns YES if the receiver allows decryption using a password.
@@ -77,7 +94,7 @@ extension OFDocumentEncryptionSettings {
     }
     
     /// Removes any existing password recipients, and adds one given a plaintext passphrase.
-    // - parameter: The password to set. Pass nil to remove the passphrase.
+    /// - parameter: The password to set. Pass nil to remove the passphrase.
     @objc public
     func setPassword(_ password: String?) {
         recipients = recipients.filter({ (recip: CMSRecipient) -> Bool in !(recip is CMSPasswordRecipient) });
@@ -86,6 +103,7 @@ extension OFDocumentEncryptionSettings {
         }
     }
     
+    /// Returns YES if the receiver allows decryption using asymmetric cryptography.
     @objc public
     func hasPublicKeyRecipients() -> Bool {
         return recipients.contains(where: { $0 is CMSPKRecipient });
@@ -96,6 +114,7 @@ extension OFDocumentEncryptionSettings {
         return recipients.flatMap({ $0 as? CMSPKRecipient });
     }
     
+    /// Adds a PK recipient for the supplied certificate. Returns the new recipient, or an existing recipient if there already is one for this certificate.
     @objc public
     func addRecipient(certificate: SecCertificate) -> CMSRecipient? {
         for v in recipients {
@@ -108,9 +127,7 @@ extension OFDocumentEncryptionSettings {
 
         do {
             let recip = try CMSPKRecipient(certificate: certificate);
-            let nextIndex = recipients.count;
             recipients.append(recip);
-            assert((recipients[nextIndex] as AnyObject) === (recip as AnyObject));
             return recip;
         } catch {
             debugPrint("Cannot create a recipient for ", certificate);
@@ -118,14 +135,15 @@ extension OFDocumentEncryptionSettings {
         }
     }
     
+    /// Removes a recipient, returning true if the recipient was found and removed.
     @objc public
-    func removeRecipient(_ recip: CMSRecipient) -> Int {
-        var result : Int = -1;
+    func removeRecipient(_ recip: CMSRecipient) -> Bool {
+        var result : Bool = false;
         var ix = recipients.count;
         while ix > 0 {
             ix -= 1;
             if recipients[ix] === recip {
-                result = ix;
+                result = true;
                 recipients.remove(at: ix);
             }
         }

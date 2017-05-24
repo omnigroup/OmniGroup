@@ -16,6 +16,7 @@
 
 @required
 - (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
+- (CGFloat)scrollBufferAsPercentOfViewportSize;
 
 @end
 

@@ -57,7 +57,6 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @property(readonly,nonatomic) OUIInspectorPane *mainPane;
 @property(readonly,nonatomic) CGFloat height;
 @property(assign,nonatomic) BOOL alwaysShowToolbar;
-@property(nonatomic, weak) UIView *gesturePassThroughView;
 @property(nonatomic) BOOL animatingPushOrPop;
 
 @property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
@@ -66,7 +65,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 - (void)setShowDoneButton:(BOOL)shouldShow;
 
-// JCTODO: Inspector Refactor: This seems weird. If you want a full screen presentation, just don't use the OUIInspectorOverlayTransitioningDelegate or OUIInspectorPresentationController.
+// <bug:///137466> (iOS-OmniGraffle Unassigned: Review uses of -[OUIInspector useFullScreenOnHorizontalCompact])
 @property (nonatomic) BOOL useFullScreenOnHorizontalCompact;
 
 - (void)updateInspectedObjects;

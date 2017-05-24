@@ -639,11 +639,11 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 	
 	NSLog(@"Assertion Failed:\n---------------------------\nObject: %@\nSelector: %@\nFile: %@\nLine: %d\nDescription: %@\nStack Trace:\n%@\n---------------------------",
 	      OBShortObjectDescription(object), NSStringFromSelector(selector), fileName, line, description, symbolicTrace);
-	[description release];
-	[symbolicTrace release];
 #if defined(OMNI_ASSERTIONS_ON)
         OBAssertFailed([description UTF8String]); // In case there is a breakpoint in the debugger for assertion failures.
 #endif
+	[description release];
+	[symbolicTrace release];
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
         NSString *report = [NSString stringWithFormat:@"Assertion Failed:\n---------------------------\nObject: %@\nSelector: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",
@@ -712,11 +712,11 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 	
 	NSLog(@"Assertion Failed:\n---------------------------\nFunction: %@\nFile: %@\nLine: %d\nDescription: %@\nStack Trace:\n%@\n---------------------------",
 	      functionName, fileName, line, description, symbolicTrace);
-	[description release];
-	[symbolicTrace release];
 #if defined(OMNI_ASSERTIONS_ON)
         OBAssertFailed([description UTF8String]); // In case there is a breakpoint in the debugger for assertion failures.
 #endif
+	[description release];
+	[symbolicTrace release];
     } else {
         NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
         NSString *report = [NSString stringWithFormat:@"Assertion Failed:\n---------------------------\nFunction: %@\nFile: %@\nLine: %d\nDescription: %@\n---------------------------",

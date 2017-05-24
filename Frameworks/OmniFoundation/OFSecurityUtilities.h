@@ -12,6 +12,8 @@
 #import <TargetConditionals.h>
 #import <OmniBase/macros.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /* The utilities in this file have two purposes: to make some common operations a little easier, and to paper over some of the gratuitous differences between the crypto APIs on MacOSX vs. iOS. */
 
 /* It's often more convenient to represent these as a few integers than as CFTypeRefs. (We have the advantage here that we don't worry much about binary compatibility in OmniFoundation, so we can rearrange this enum if we feel like it.) We could use the convenient CSSM_ALGID_RSA etc. constants directly, but I worry that Apple will decide to deprecate those. For now, rename the ones we use. This enum also makes it clear that we're collapsing related algorithms into one, since all we want to represent is the kind of key, not a specific algorithm. */
@@ -117,36 +119,37 @@ extern NSString *OFSummarizeTrustResult(SecTrustRef evaluationContext);
  *outKeyFlags  -> Flags describing a key's abilities/permissions.
  
  */
-extern enum OFKeyAlgorithm OFSecKeyGetAlgorithm(SecKeyRef item, OFSecItemClass *outItemClass, unsigned int *outKeySize, uint32_t *outKeyFlags, NSError **err);
+extern enum OFKeyAlgorithm OFSecKeyGetAlgorithm(SecKeyRef item, OFSecItemClass * __nullable outItemClass, unsigned int * __nullable outKeySize, uint32_t * __nullable outKeyFlags, NSError **err);
 
 #if !TARGET_OS_IPHONE
 /* For the special case of a reference to a key that's in a keychain, you can call this. (If you don't know if it's a keychain key, go ahead and call OFSecKeyGetAlgorithm(); it will use OFSecKeychainItemGetAlgorithm() if it has to. */
-extern enum OFKeyAlgorithm OFSecKeychainItemGetAlgorithm(SecKeychainItemRef item, OFSecItemClass *outItemClass, unsigned int *outKeySize, uint32_t *outKeyFlags, NSError **err);
+extern enum OFKeyAlgorithm OFSecKeychainItemGetAlgorithm(SecKeychainItemRef item, OFSecItemClass * __nullable outItemClass, unsigned int * __nullable outKeySize, uint32_t * __nullable outKeyFlags, NSError **err);
 #endif
 
 /* Simple textual description of a key, e.g. "RSA-1024". Okay for presentation in user interfaces. */
 extern NSString *OFSecKeyAlgorithmDescription(enum OFKeyAlgorithm alg, unsigned int keySizeBits);
 
 /* A description of a keychain item in -[NSObject shortDescription] format, e.g. "<SecKeyRef 0x123456: Public RSA-1024>" */
-extern NSString *OFSecItemDescription(CFTypeRef item);
+extern NSString *OFSecItemDescription(CFTypeRef __nullable item);
 
 #if TARGET_OS_IPHONE
 /* This function makes up for the lack of key export functionality on iOS. On OSX, you can use SecItemExport(kSecFormatOpenSSL,...) instead. The addToKeychain flag controls whether the private key ref is in the keychain on exit--- the public key is not stored in the keychain, just returned as data. */
-BOOL OFSecKeyGeneratePairAndInfo(enum OFKeyAlgorithm keyType, int keyBits, BOOL addToKeychain, NSString *label, NSData * __autoreleasing *outSubjectPublicKeyInfo, SecKeyRef *outPrivateKey, NSError * __autoreleasing * outError);
+BOOL OFSecKeyGeneratePairAndInfo(enum OFKeyAlgorithm keyType, int keyBits, BOOL addToKeychain, NSString * __nullable label, NSData * __autoreleasing __nullable *  __nonnull outSubjectPublicKeyInfo, SecKeyRef __nullable * __nonnull outPrivateKey, NSError * __autoreleasing __nullable * outError);
 #endif
 
 /* A low-level routine for generating a certificate signing request per PKCS#10 / RFC2314 / RFC2986. The caller is responsible for producing a correctly DER-formatted name, list of request attributes (see PKCS#9 / RFC2985 for values), and SubjectPublicKeyInfo structure (the pub key info can be generated using SecItemExport with format kSecFormatOpenSSL on OSX, or by OFSecKeyGeneratePairAndInfo() on iOS). The returned data is a DER-encoded CertificationRequest structure suitable for use in an application/pkcs10 message per RFC5967. */
-NSData *OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, SecKeyRef privateKey, NSArray<NSData *> *derAttributes, NSMutableString *log, NSError **outError);
+NSData * __nullable OFGenerateCertificateRequest(NSData *derName, NSData *publicKeyInfo, SecKeyRef privateKey, NSArray<NSData *> *derAttributes, NSMutableString * __nullable log, NSError **outError);
 
 /* Returns the certificate's issuer (as a DER-encoded name), serial number (as the contents of a DER-encoded integer, without the tag), and subject key identifier (as a NSData, but only if the cert has the relevant extension). */
 BOOL OFSecCertificateGetIdentifiers(SecCertificateRef aCert,
-                                    NSData **outIssuer, NSData **outSerial, NSData **outSKI);
+                                    NSData * __autoreleasing __nullable *  __nullable outIssuer, NSData * __autoreleasing __nullable * __nullable outSerial, NSData * __autoreleasing __nullable *  __nullable outSKI);
 
-SecKeyRef OFSecCopyPrivateKeyFromPKCS1Data(NSData *bytes) CF_RETURNS_RETAINED;
+/* Given an RSA private key in PKCS#1 format, returns a SecKeyRef containing it. Currently only available in debug builds. */
+SecKeyRef __nullable OFSecCopyPrivateKeyFromPKCS1Data(NSData *bytes) CF_RETURNS_RETAINED;
 
 #if TARGET_OS_IPHONE
 /* Bizarrely, SecCertificateCopyPublicKey() doesn't exist on iOS. */
-SecKeyRef OFSecCertificateCopyPublicKey(SecCertificateRef aCert, NSError **outError) CF_RETURNS_RETAINED;
+SecKeyRef __nullable OFSecCertificateCopyPublicKey(SecCertificateRef aCert, NSError **outError) CF_RETURNS_RETAINED;
 #endif
 
 /* This is internal to OmniFoundation */
@@ -159,3 +162,5 @@ struct OFNamedCurveInfo {
 };
 extern const struct OFNamedCurveInfo _OFEllipticCurveInfoTable[] OB_HIDDEN;
 
+
+NS_ASSUME_NONNULL_END

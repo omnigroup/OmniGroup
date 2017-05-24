@@ -7,26 +7,16 @@
 //
 // $Id$
 
+@import Foundation;
 #import <OmniInspector/OIInspector.h>
 
-@class NSAttributedString, NSMutableArray; // Foundation
 @class OIInspectorTabController;
 @class OITabMatrix;
 
 @interface OIScrollingTabbedInspector : OIInspector <OIConcreteInspector>
-{
-    IBOutlet NSView *contentView;
-    IBOutlet OITabMatrix *buttonMatrix;
-    NSArray *_enabledTabControllers;
-    NSMutableArray *_trackingRectTags;
-    BOOL _singleSelection;
-    BOOL _shouldInspectNothing;
-    BOOL _autoSelection;
-    NSString *_currentInspectionIdentifier;
-}
 
 @property (nonatomic, readonly) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
-@property (nonatomic,readonly) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist
+@property (nonatomic, readonly) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist
 @property (nonatomic, readonly) OITabMatrix *buttonMatrix;
 
 // API

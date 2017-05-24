@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,9 +95,7 @@ RCS_ID("$Id$")
     MASTER(master1);
     XCTAssertFalse([master1 isUndeletable], @"should not get set");
 
-    ODOTestCaseMaster *master2 = [[ODOTestCaseMaster alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName] primaryKey:@"master2"];
-    [_editingContext insertObject:master2];
-    [master2 release];
+    ODOTestCaseMaster *master2 = [[[ODOTestCaseMaster alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName] primaryKey:@"master2" insertingIntoEditingContext:_editingContext] autorelease];
     XCTAssertFalse([master2 isUndeletable], @"should not get set");
 }
 

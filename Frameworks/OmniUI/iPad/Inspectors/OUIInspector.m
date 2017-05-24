@@ -26,7 +26,6 @@ OBDEPRECATED_METHOD(-inspectorSlices:); // --> inspector:makeAvailableSlicesForS
 OBDEPRECATED_METHOD(-inspector:slicesForStackedSlicesPane:); // -> -inspector:makeAvailableSlicesForStackedSlicesPane:
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
-// JCTODO: Inspector refactor — Some of these _might_ come back if we end up needing them.
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:useFullScreenOnHorizontalCompact:useFullScreenOnHorizontalCompact fromBarButtonItem:); // --> -inspectObjects:
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromBarButtonItem:); // --> -inspectObjects:
 OBDEPRECATED_METHOD(-inspectObjects:withViewController:fromRect:inView:useFullScreenOnHorizontalCompact:permittedArrowDirections:); // --> -inspectObjects:
@@ -154,11 +153,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     return self.navigationController;
 }
 
-- (void)setGesturePassThroughView:(UIView *)gesturePassThroughView{
-    _gesturePassThroughView = gesturePassThroughView;
-    _navigationController.gesturePassThroughView = gesturePassThroughView;
-}
-
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -239,25 +233,6 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 
 - (void)_doneButtonTapped:(id)sender {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-}
-
-// JCTODO: Inspector Refactor: Make sure we don't still have this issue and then remove this code.
-- (void)createFreshNavigationController {
-    // THIS IS A HACK required to get the presentation to switch properly between popover style and half-height inspector in beta iOS 9
-    OUIInspector *freshInspector = [[[self class] alloc] init];
-    NSArray *existingNavStack = [self.navigationController.viewControllers copy];
-    self.navigationController.viewControllers = @[];
-    for (OUIInspectorPane *pane in existingNavStack) {
-        pane.inspector = self;
-    }
-    freshInspector.navigationController.delegate = self;
-    freshInspector.gesturePassThroughView = self.gesturePassThroughView;
-    if ([freshInspector.navigationController isKindOfClass:[OUIInspectorNavigationController class]]) {
-        ((OUIInspectorNavigationController*)freshInspector.navigationController).gesturePassThroughView = self.gesturePassThroughView;
-    }
-    self.navigationController = freshInspector.navigationController;
-    freshInspector.navigationController = nil;
-    self.navigationController.viewControllers = existingNavStack;
 }
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;

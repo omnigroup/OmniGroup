@@ -11,7 +11,6 @@
 
 @interface OUIInspectorNavigationController : OUINavigationController <OUIInspectorPaneContaining>
 
-@property (nonatomic, weak) UIView *gesturePassThroughView;
 @property BOOL willDismissInspector;
 
 @end

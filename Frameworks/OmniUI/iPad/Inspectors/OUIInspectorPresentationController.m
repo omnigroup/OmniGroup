@@ -13,21 +13,62 @@
 
 RCS_ID("$Id$")
 
+#pragma mark - _OUIOverlayInspectorContainerView
+
+typedef NS_ENUM(NSUInteger, _OUIOverlayInspectorLayout) {
+    _OUIOverlayInspectorLayoutHalfHeight,
+    _OUIOverlayInspectorLayoutFullSize
+};
+
 @interface _OUIOverlayInspectorContainerView : UIView
-@property UIView *inspectorView;
+
+@property (nonatomic, strong) UIView *seeThroughView;
+@property (nonatomic, strong) UIView *topLineView;
+@property (nonatomic, strong) UIView *inspectorView;
+
+@property (nonatomic, assign) _OUIOverlayInspectorLayout inspectorLayout;
+
+- (CGRect)inspectorFrameWithLayout:(_OUIOverlayInspectorLayout)inspectorLayout rect:(CGRect)layoutRect;
+
 @end
 
 @implementation _OUIOverlayInspectorContainerView
-{
-    UIView *_topLine;
+
+- (void)_commonInit {
+    self.inspectorLayout = _OUIOverlayInspectorLayoutHalfHeight;
+    
+    self.topLineView = [[UIView alloc] init];
+    self.topLineView.backgroundColor = [[OAAppearance appearance] overlayInspectorTopSeparatorColor];
+    [self addSubview:self.topLineView];
+    
+    self.seeThroughView = [[UIView alloc] init];
+    [self addSubview:self.seeThroughView];
+    
+#if IPAD_PRIVATE_TEST || IPAD_PUBLIC_TEST
+    if ([OFPreference preferenceForKey:@"SooperSekritVisibleGestureView"].boolValue){ // <omnigraffle:///change-preference?SooperSekritVisibleGestureView=true>
+        self.seeThroughView.backgroundColor = [[UIColor greenColor] colorWithAlphaComponent:0.3];
+    }
+#endif
 }
 
-@synthesize inspectorView = _inspectorView;
-
-- (UIView *)inspectorView;
-{
-    return _inspectorView;
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self _commonInit];
+    }
+    
+    return self;
 }
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+        [self _commonInit];
+    }
+    
+    return self;
+}
+
 
 - (void)setInspectorView:(UIView *)inspectorView;
 {
@@ -38,136 +79,109 @@ RCS_ID("$Id$")
     [self setNeedsLayout];
 }
 
+- (CGRect)inspectorFrameWithLayout:(_OUIOverlayInspectorLayout)inspectorLayout rect:(CGRect)layoutRect {
+    CGRect inspectorAndLineFrame = CGRectZero;
+    switch (inspectorLayout) {
+        case _OUIOverlayInspectorLayoutHalfHeight:
+        {
+            CGRect containerBounds = layoutRect;
+            CGRectDivide(containerBounds, &inspectorAndLineFrame, &(CGRect){/*don't care*/}, fmin(containerBounds.size.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction], [[OAAppearance appearance] overlayInspectorWindowMaxHeight]), CGRectMaxYEdge);
+            
+        }
+            break;
+        case _OUIOverlayInspectorLayoutFullSize:
+            inspectorAndLineFrame = layoutRect;
+            break;
+    }
+    return inspectorAndLineFrame;
+}
+
 - (void)layoutSubviews;
 {
-    CGRect topLineFrame, inspectorViewFrame;
+    // Layout inspectorView
+    CGRect inspectorAndLineFrame = [self inspectorFrameWithLayout:self.inspectorLayout rect:self.bounds];
+    self.inspectorView.frame = inspectorAndLineFrame;
     
+    
+    // Layout topLineView
     OBASSERT_IF(self.window != nil, self.window.screen != nil, "We're in a window that doesn't have a screen!");
     UIScreen *screen = self.window.screen;
     CGFloat screenScale = screen ? screen.scale : 1.0f;
     CGFloat hairlineBreadth = 1.0f / screenScale;
     
-    CGRectDivide(self.bounds, &topLineFrame, &inspectorViewFrame, hairlineBreadth, CGRectMinYEdge);
+    CGRect topLineViewFrame = CGRectMake(0, inspectorAndLineFrame.origin.y-hairlineBreadth, self.bounds.size.width, hairlineBreadth);
+    self.topLineView.frame = topLineViewFrame;
+    
+    // Layout seeThroughView
+    CGRect seeThroughViewFrame = CGRectMake(0, 0, self.bounds.size.width, CGRectGetMinY(topLineViewFrame));
+    self.seeThroughView.frame = seeThroughViewFrame;
 
-    if (_topLine) {
-        _topLine.frame = topLineFrame;
-    } else {
-        _topLine = [[UIView alloc] initWithFrame:topLineFrame];
-        _topLine.backgroundColor = [[OAAppearance appearance] overlayInspectorTopSeparatorColor];
-        [self addSubview:_topLine];
-    }
-    
-    _inspectorView.frame = inspectorViewFrame;
-    
     [super layoutSubviews];
 }
 
 @end
 
+#pragma mark - OUIInspectorPresentationController
+@interface OUIInspectorPresentationController ()
+
+@property (nonatomic, strong) _OUIOverlayInspectorContainerView *viewToPresent;
+
+@property (nonatomic, assign) UIViewTintAdjustmentMode originalTintAdjustmentMode;
+@property (nonatomic, assign) CGRect initialDisplayRect;
+
+@end
+
 @implementation OUIInspectorPresentationController
-{
-    UIViewTintAdjustmentMode _originalTintAdjustmentMode;
-    _OUIOverlayInspectorContainerView *_inspectorAndLineContainerView;
-    CGRect _initialDisplayRect;
-}
 
-- (instancetype)init{
-    if(self = [super init]){
-        [self commonInit];
+- (instancetype)initWithPresentedViewController:(UIViewController *)presentedViewController presentingViewController:(nullable UIViewController *)presentingViewController {
+    self = [super initWithPresentedViewController:presentedViewController presentingViewController:presentingViewController];
+    if (self) {
+        _viewToPresent = [[_OUIOverlayInspectorContainerView alloc] initWithFrame:self.frameOfPresentedViewInContainerView];
+        _viewToPresent.inspectorView = presentedViewController.view;
     }
+    
     return self;
 }
 
-- (instancetype)initWithPresentedViewController:(UIViewController *)presentedViewController presentingViewController:(UIViewController *)presentingViewController{
-    if(self = [super initWithPresentedViewController:presentedViewController presentingViewController:presentingViewController]){
-        [self commonInit];
-    }
-    return self;
+
+- (UIView *)seeThroughView {
+    return self.viewToPresent.seeThroughView;
 }
 
-- (void)commonInit{
-    if ([self.presentedViewController isKindOfClass:[OUIInspectorNavigationController class]]) {
-        self.gesturePassThroughView = ((OUIInspectorNavigationController*)self.presentedViewController).gesturePassThroughView;
-    }
-    _initialDisplayRect = CGRectZero;
-}
-
-- (void)presentedViewNowNeedsToGrowForKeyboardHeight:(CGFloat)keyboardHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion
+- (UIView *)presentedView;
 {
-    if (CGRectEqualToRect(_initialDisplayRect, CGRectZero)) {
-        _initialDisplayRect = [self frameOfPresentedViewInContainerView];
-    }
-    if (keyboardHeight > 0) {
-        [UIView animateWithDuration:duration
-                              delay:0.0
-                            options:options
-                         animations:^{
-                             CGRect bigFrame = [self presentedView].window.frame;
-                             CGFloat minimumNeededHeight = _initialDisplayRect.size.height + keyboardHeight;
-                             CGFloat diff = bigFrame.size.height - minimumNeededHeight;
-                             if (diff > 300) {
-                                 // if there's enough space left to be meaningful, we don't have to go full screen
-                                 bigFrame.size.height = minimumNeededHeight;
-                                 bigFrame.origin.y += diff;
-                             }
-                             [self presentedView].frame = bigFrame;
-                         }
-                         completion:^(BOOL finished) {
-                             if (completion) {
-                                 completion();
-                             }
-                         }];
-    } else {
-        [UIView animateWithDuration:duration
-                              delay:0.0
-                            options:options
-                         animations:^{
-                             [self presentedView].frame = _initialDisplayRect;
-                         }
-                         completion:^(BOOL finished) {
-                             if (completion) {
-                                 completion();
-                             }
-                         }];
-    }
-}
-
-- (void)updateForPresentingViewTransitionToSize:(CGSize)newSize{
-    // the inspector needs a new frame and the gesture pass through gets the remaining space
-    
-    CGRect newFrame = CGRectMake(0, 0, newSize.width, newSize.height);
-    CGFloat newInspectorHeight = fmin(self.presentedView.frame.size.height, newSize.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction]);
-    
-   newInspectorHeight = fmin(newInspectorHeight, [[OAAppearance appearance] overlayInspectorWindowMaxHeight]);
-    
-    CGRect newInspectorFrame = CGRectZero;
-    CGRect newGesturePassthroughFrame = CGRectZero;
-    CGRectDivide(newFrame, &newInspectorFrame, &newGesturePassthroughFrame, newInspectorHeight, CGRectMaxYEdge);
-    
-    
-    [self presentedView].frame = newInspectorFrame;
-    self.gesturePassThroughView.frame = newGesturePassthroughFrame;
-
-    // and we have to remember this new rect in case of keyboard stuff later
-    _initialDisplayRect = newInspectorFrame;
-}
-
-- (void)_setTintAdjustmentMode:(UIViewTintAdjustmentMode)mode forView:(UIView *)view;
-{
-    void (^setTintAdjustmentMode)(id<UIViewControllerTransitionCoordinatorContext>) = ^(id<UIViewControllerTransitionCoordinatorContext> unused){
-        view.tintAdjustmentMode = mode;
-    };
-    
-    id<UIViewControllerTransitionCoordinator> transitionCoordinator = [[self presentedViewController] transitionCoordinator];
-    if (transitionCoordinator)
-        [transitionCoordinator animateAlongsideTransition:setTintAdjustmentMode completion:nil];
-    else
-        setTintAdjustmentMode(nil);
+    return _viewToPresent;
 }
 
 - (void)presentationTransitionWillBegin
 {
-    [self.presentedViewController.transitionCoordinator animateAlongsideTransition:self.animationsToPerformAlongsidePresentation completion:self.presentInspectorCompletion];
+    // Grabbing stack variables to the blocks that are about to be captured by the block below so that we don't capture `self`. We don't need to call `copy` on these because they are declared `copy` via the property.
+    OUIInspectorPresentationControllerAlongsidePresentationBlock alongsidePresentation = self.animationsToPerformAlongsidePresentation;
+    OUIInspectorPresentationControllerTransitionBlock presentationComplete = self.presentInspectorCompletion;
+    
+    CGRect inspectorFrame = [self.viewToPresent inspectorFrameWithLayout:_OUIOverlayInspectorLayoutHalfHeight rect:self.frameOfPresentedViewInContainerView];
+    
+    // Make sure the blocks are called even if we don't have a transitionCoordinator
+    id<UIViewControllerTransitionCoordinator> transitionCoordinator = self.presentedViewController.transitionCoordinator;
+    if (transitionCoordinator) {
+        [transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            if (alongsidePresentation) {
+                alongsidePresentation(inspectorFrame.size.height);
+            }
+        } completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            if (presentationComplete) {
+                presentationComplete();
+            }
+        }];
+    }
+    else {
+        if (alongsidePresentation) {
+            alongsidePresentation(inspectorFrame.size.height);
+        }
+        if (presentationComplete) {
+            presentationComplete();
+        }
+    }
     
     UIWindow *window = self.containerView.window;
     _originalTintAdjustmentMode = window.tintAdjustmentMode;
@@ -179,9 +193,43 @@ RCS_ID("$Id$")
     [super presentationTransitionWillBegin];
 }
 
+- (void)presentationTransitionDidEnd:(BOOL)completed {
+    [super presentationTransitionDidEnd:completed];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
 - (void)dismissalTransitionWillBegin
 {
-    [self.presentedViewController.transitionCoordinator animateAlongsideTransition:self.animationsToPerformAlongsideDismissal completion:self.dismissInspectorCompletion];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    
+    // Grabbing stack variables to the blocks that are about to be captured by the block below so that we don't capture `self`. We don't need to call `copy` on these because they are declared `copy` via the property.
+    OUIInspectorPresentationControllerTransitionBlock alongsideDismissal = self.animationsToPerformAlongsideDismissal;
+    OUIInspectorPresentationControllerTransitionBlock dismissalComplete = self.dismissInspectorCompletion;
+    
+    // Make sure the blocks are called even if we don't have a transitionCoordinator
+    id<UIViewControllerTransitionCoordinator> transitionCoordinator = self.presentedViewController.transitionCoordinator;
+    if (transitionCoordinator) {
+        [transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            if (alongsideDismissal) {
+                alongsideDismissal();
+            }
+        } completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            if (dismissalComplete) {
+                dismissalComplete();
+            }
+        }];
+    }
+    else {
+        if (alongsideDismissal) {
+            alongsideDismissal();
+        }
+        if (dismissalComplete) {
+            dismissalComplete();
+        }
+    }
     
     [self _setTintAdjustmentMode:_originalTintAdjustmentMode forView:self.containerView.window];
     
@@ -190,12 +238,12 @@ RCS_ID("$Id$")
 
 - (void)dismissalTransitionDidEnd:(BOOL)completed;
 {
-    // Calling super before nilling out our _inspectorAndLineContainerView in case super's impl calls into -presentedView.
+    // Calling super before nilling out our _viewToPresent in case super's impl calls into -presentedView.
     [super dismissalTransitionDidEnd:completed];
     
     if (completed) {
         [self _setTintAdjustmentMode:UIViewTintAdjustmentModeAutomatic forView:self.presentedViewController.view];
-        _inspectorAndLineContainerView = nil;
+        _viewToPresent = nil;
     } else {
         [self _setTintAdjustmentMode:UIViewTintAdjustmentModeDimmed forView:self.containerView.window];
     }
@@ -211,31 +259,60 @@ RCS_ID("$Id$")
     return UIModalPresentationOverFullScreen;
 }
 
-- (BOOL)shouldPresentInFullscreen
+#pragma mark Private Helpers
+- (void)_setTintAdjustmentMode:(UIViewTintAdjustmentMode)mode forView:(UIView *)view;
 {
-    return NO;
-}
-
-- (UIView *)presentedView;
-{
-    if (!_inspectorAndLineContainerView) {
-        _inspectorAndLineContainerView = [[_OUIOverlayInspectorContainerView alloc] initWithFrame:self.frameOfPresentedViewInContainerView];
-        _inspectorAndLineContainerView.inspectorView = self.presentedViewController.view;
-    }
+    void (^setTintAdjustmentMode)(id<UIViewControllerTransitionCoordinatorContext>) = ^(id<UIViewControllerTransitionCoordinatorContext> unused){
+        view.tintAdjustmentMode = mode;
+    };
     
-    return _inspectorAndLineContainerView;
+    id<UIViewControllerTransitionCoordinator> transitionCoordinator = [[self presentedViewController] transitionCoordinator];
+    if (transitionCoordinator)
+        [transitionCoordinator animateAlongsideTransition:setTintAdjustmentMode completion:nil];
+    else
+        setTintAdjustmentMode(nil);
 }
 
-- (CGRect)frameOfPresentedViewInContainerView
+#pragma mark Keyboard Handlers
+- (void)_keyboardWillShow:(NSNotification*)note
 {
-    CGRect containerBounds = self.containerView.bounds;
-    CGRect inspectorAndLineFrame;
-    CGRectDivide(containerBounds, &inspectorAndLineFrame, &(CGRect){/*don't care*/}, fmin(containerBounds.size.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction], [[OAAppearance appearance] overlayInspectorWindowMaxHeight]), CGRectMaxYEdge);
-    return inspectorAndLineFrame;
+    NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
+    UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
+    
+    if (!self.presentedViewController.isBeingDismissed) {
+        [UIView animateWithDuration:duration.floatValue
+                              delay:0.0
+                            options:options
+                         animations:^{
+                             self.viewToPresent.inspectorLayout = _OUIOverlayInspectorLayoutFullSize;
+                             [self.viewToPresent setNeedsLayout];
+                             [self.viewToPresent layoutIfNeeded];
+                         }
+                         completion:nil];
+        
+    }
+}
+
+- (void)_keyboardWillHide:(NSNotification*)note
+{
+    NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
+    UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
+    [UIView animateWithDuration:duration.floatValue
+                          delay:0.0
+                        options:options
+                     animations:^{
+                         self.viewToPresent.inspectorLayout = _OUIOverlayInspectorLayoutHalfHeight;
+                         [self.viewToPresent setNeedsLayout];
+                         [self.viewToPresent layoutIfNeeded];
+                     }
+                     completion:nil];
 }
 
 @end
 
+#pragma mark - OUIInspectorOverlayTransitioningDelegate
 @implementation OUIInspectorOverlayTransitioningDelegate
 
 - (UIPresentationController *)presentationControllerForPresentedViewController:(UIViewController *)presented presentingViewController:(UIViewController *)presenting sourceViewController:(UIViewController *)source

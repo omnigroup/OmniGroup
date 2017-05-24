@@ -10,6 +10,7 @@
 #import <UIKit/UITextView.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIKeyCommands.h>
 
 @class OUITextView, OUITextSelectionSpan;
 
@@ -40,7 +41,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @end
 
-@interface OUITextView : UITextView <OUIInspectorDelegate>
+@interface OUITextView : UITextView <OUIInspectorDelegate, OUIKeyCommandProvider>
 
 + (OUITextView *)activeFirstResponderTextView;
 

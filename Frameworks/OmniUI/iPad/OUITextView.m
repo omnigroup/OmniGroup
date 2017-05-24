@@ -10,7 +10,6 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
-#import <OmniUI/OUIKeyCommands.h>
 #import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
@@ -429,11 +428,11 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
 
 - (void)dismissInspectorImmediatelyIfVisible;
 {
-    // JCTODO: Inspector Refactor
+    // <bug:///137426> (iOS-OmniGraffle Unassigned: Fix Text Inspector)
 //    [_textInspector dismissImmediatelyIfVisible];
 }
 
-// JCTODO: Make sure text inspection still works.
+// <bug:///137426> (iOS-OmniGraffle Unassigned: Fix Text Inspector)
 - (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
 {
 //    NSArray *runs = [self _configureInspector];
@@ -900,9 +899,14 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 #pragma mark - UIResponder subclass
 
+- (NSString *)keyCommandCategories;
+{
+    return @"text";
+}
+
 - (NSArray *)keyCommands;
 {
-    return [OUIKeyCommands keyCommandsWithCategories:@"text"];
+    return [OUIKeyCommands keyCommandsForCategories:self.keyCommandCategories];
 }
 
 - (BOOL)becomeFirstResponder;

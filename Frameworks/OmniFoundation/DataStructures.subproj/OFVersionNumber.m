@@ -96,6 +96,38 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return isEarlier;
 }
 
++ (BOOL)isOperatingSystemiOS100OrLater;
+{
+    static BOOL isEarlier;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isEarlier = isOperatingSystemAtLeastVersionString(@"10.0");
+    });
+    
+    return isEarlier;
+}
+
++ (BOOL)isOperatingSystemiOS101OrLater;
+{
+    static BOOL isEarlier;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isEarlier = isOperatingSystemAtLeastVersionString(@"10.1");
+    });
+    
+    return isEarlier;
+}
++ (BOOL)isOperatingSystemiOS102OrLater;
+{
+    static BOOL isEarlier;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isEarlier = isOperatingSystemAtLeastVersionString(@"10.2");
+    });
+    
+    return isEarlier;
+}
+
 #else
 
 + (BOOL)isOperatingSystemElCapitanOrLater; // 10.11

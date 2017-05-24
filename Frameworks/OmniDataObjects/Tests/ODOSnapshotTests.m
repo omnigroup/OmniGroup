@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,11 +19,8 @@ RCS_ID("$Id$")
     // Get two objects hooked up, pointing at each other via their one-to-one relationship
     ODOObject *peerA, *peerB;
     {
-        peerA = [[[ODOTestCasePeerA alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"PeerA"] primaryKey:@"pk1"] autorelease];
-        [_editingContext insertObject:peerA];
-        
-        peerB = [[[ODOTestCasePeerB alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:@"PeerB"] primaryKey:@"pk2"] autorelease];
-        [_editingContext insertObject:peerB];
+        peerA = [[[ODOTestCasePeerA alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"PeerA"] primaryKey:@"pk1" insertingIntoEditingContext:_editingContext] autorelease];
+        peerB = [[[ODOTestCasePeerB alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"PeerB"] primaryKey:@"pk2" insertingIntoEditingContext:_editingContext] autorelease];
         
         [peerA setValue:peerB forKey:@"peerB"];
         XCTAssertEqualObjects(peerA, [peerB valueForKey:@"peerA"], @"Inverse to-one relationship should have been hooked up");

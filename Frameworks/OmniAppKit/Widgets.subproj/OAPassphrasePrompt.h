@@ -20,6 +20,8 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
     OAPassphrasePromptConfirmPassword         = 1 << 2,
     OAPassphrasePromptShowKeychainOption      = 1 << 3,
     OAPassphrasePromptOfferHintText           = 1 << 4,
+    OAPassphrasePromptWithoutIcon             = 1 << 5,
+    OAPassphrasePromptWithAuxiliaryButton     = 1 << 6,
 };
 
 
@@ -29,8 +31,14 @@ typedef NS_OPTIONS(NSUInteger, OAPassphrasePromptOptions) {
 
 // These properties are available for configuring the panel
 @property (nonatomic, strong, readonly) NSTextField *titleField;
-@property (nonatomic, strong, readonly) NSImageView *iconView;
+@property (nonatomic, strong, readonly, nullable) NSImageView *iconView;
 @property (nonatomic, strong, readonly) NSTextField *userLabelField; // In case you want to change it to "Account Name:" or something
+
+// By default, the panel shows only OK and Cancel.
+// Callers can customize the title, key equivalent, and tag of these buttons (the tag becomes the modal response return code: by default NSModalResponseOK and NSModalResponseCancel).
+@property (nonatomic, strong, readonly) NSButton *OKButton;
+@property (nonatomic, strong, readonly) NSButton *cancelButton;
+@property (nonatomic, strong, readonly, nullable) NSButton *auxiliaryButton;  // Only if OAPassphrasePromptWithAuxiliaryButton is set
 
 /// The username or account name entered by the user. Read-write.
 @property (nonatomic, copy, nullable) NSString *user;

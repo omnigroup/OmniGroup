@@ -571,6 +571,8 @@ static BOOL _uncached_isSystemClass(Class cls)
     // Running in the iOS simulator
     if (strstr(libraryPath, "/iPhoneSimulator.platform/"))
         return YES;
+    if (HAS_PREFIX(libraryPath, "/Library/Developer/CoreSimulator/Profiles/Runtimes"))
+        return YES;
 
     // Personal build output
     if (strstr(libraryPath, "/Library/Developer/Xcode/DerivedData/"))

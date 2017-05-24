@@ -582,12 +582,14 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     [self _autoresolveConflicts];
 
+    __weak OUIDocument *welf = self;
     [super openWithCompletionHandler:^(BOOL success){
+        OUIDocument *strelf = welf;
         DEBUG_DOCUMENT(@"%@ %@ success %d", [self shortDescription], NSStringFromSelector(_cmd), success);
         
 #if 0
         // Silly hack to help in testing whether we properly write blank previews and avoid re-opening previously open documents. You can test the re-opening case by making a good document, opening it, renaming it to the bad name and then backgrounding the app (so that we record the last open document).
-        if ([[[[self.fileURL path] lastPathComponent] stringByDeletingPathExtension] localizedCaseInsensitiveCompare:@"Opening this file will crash"] == NSOrderedSame) {
+        if ([[[[strelf.fileURL path] lastPathComponent] stringByDeletingPathExtension] localizedCaseInsensitiveCompare:@"Opening this file will crash"] == NSOrderedSame) {
             NSLog(@"Why yes, it will.");
             abort();
         }
@@ -602,22 +604,22 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 _documentViewController = [self makeViewController];
                 OBASSERT([_documentViewController conformsToProtocol:@protocol(OUIDocumentViewController)]);
                 OBASSERT(_documentViewController.document == nil); // we'll set it; -makeViewController shouldn't bother
-                _documentViewController.document = self;
+                _documentViewController.document = strelf;
                 
                 // Don't provoke loading of views before they are configured for preview generation (also our view controller will never be presented).
-                if (!self.forPreviewGeneration) {
-                    [self updateViewControllerToPresent];
+                if (!strelf.forPreviewGeneration) {
+                    [strelf updateViewControllerToPresent];
                     
-                    NSString *lastEditedMessage = [self _lastEditedMessage];
-                    [self _queueUpdateMessage:lastEditedMessage];
+                    NSString *lastEditedMessage = [strelf _lastEditedMessage];
+                    [strelf _queueUpdateMessage:lastEditedMessage];
                 }
             }
 
             // clear out any undo actions created during init
-            [self.undoManager removeAllActions];
+            [strelf.undoManager removeAllActions];
             
             // this implicitly kills any groups; make sure our flag gets cleared too.
-            OBASSERT([self.undoManager groupingLevel] == 0);
+            OBASSERT([strelf.undoManager groupingLevel] == 0);
             _hasUndoGroupOpen = NO;
         }
         
@@ -625,7 +627,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         completionHandler(reallyReportSuccess);  // if we're just going to close immediately because we were already asked to close before we even finished opening (see <bug:///125526> (Bug: ~10 second freeze after deleting 'Complex' stencil)), then pass NO as the success flag to the open completion handler to avoid doing useless work.
         
         if (goingToCloseImmediatelyAnyway) {
-            [self closeWithCompletionHandler:_savedCloseCompletionBlock];
+            [strelf closeWithCompletionHandler:_savedCloseCompletionBlock];
             _savedCloseCompletionBlock = nil;
         }
     }];

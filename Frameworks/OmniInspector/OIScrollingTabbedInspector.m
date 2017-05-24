@@ -5,18 +5,16 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+@import Cocoa;
+@import OmniAppKit;
+@import OmniBase;
+@import OmniFoundation;
 #import <OmniInspector/OIScrollingTabbedInspector.h>
-
-#import <AppKit/AppKit.h>
-#import <OmniAppKit/OmniAppKit.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniFoundation/OmniFoundation.h>
 
 #import <OmniInspector/OIAppearance.h>
 #import <OmniInspector/OIButtonMatrixBackgroundView.h>
 #import <OmniInspector/OIInspectionSet.h>
 #import <OmniInspector/OIInspectorHeaderView.h>
-#import <OmniInspector/OIInspectorRegistry.h>
 #import <OmniInspector/OITabMatrix.h>
 #import <OmniInspector/OIInspectorController.h>
 #import <OmniInspector/OIInspectorTabController.h>
@@ -25,25 +23,31 @@
 RCS_ID("$Id$")
 
 @interface OIScrollingTabbedInspector ()
-{
-    NSArray *_tabControllers;
-    NSMutableDictionary *_preferredTabIdentifierForInspectionIdentifier;
-}
 
-@property (strong, nonatomic) IBOutlet NSScrollView *inspectorScrollView;
-@property (strong, nonatomic) IBOutlet NSTextField *tabLabel;
-@property (strong, nonatomic) NSLayoutConstraint *topConstraint, *bottomConstraint, *scrollViewWidthConstraint;
+@property (nonatomic, strong) IBOutlet NSView *contentView;
+@property (nonatomic, strong) IBOutlet OITabMatrix *buttonMatrix;
+@property (nonatomic, strong) IBOutlet NSScrollView *inspectorScrollView;
+@property (nonatomic, strong) IBOutlet NSTextField *tabLabel;
+@property (nonatomic, strong) NSLayoutConstraint *topConstraint, *bottomConstraint, *scrollViewWidthConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *buttonMatrixWidthConstraint;
-@property (strong, nonatomic) NSLayoutConstraint *labelCenterConstraint;
-@property (nonatomic) NSTitlebarAccessoryViewController *titlebarAccessory;
+@property (nonatomic, strong) NSLayoutConstraint *labelCenterConstraint;
+@property (nonatomic, strong) NSTitlebarAccessoryViewController *titlebarAccessory;
+@property (nonatomic) BOOL singleSelection;
+@property (nonatomic) BOOL autoSelection;
+@property (nonatomic) BOOL shouldInspectNothing;
+@property (nonatomic, strong) NSString *currentInspectionIdentifier;
+@property (nonatomic, strong) NSMutableDictionary *preferredTabIdentifierForInspectionIdentifier;
+@property (nonatomic, strong) NSArray *tabControllers;
+@property (nonatomic, strong) NSArray *enabledTabControllers;
+@property (nonatomic, strong) NSMutableArray *trackingRectTags;
+@property (nonatomic) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist
+@property (nonatomic) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
 
 @end
 
 #pragma mark -
 
 @implementation OIScrollingTabbedInspector
-
-@synthesize buttonMatrix = buttonMatrix;
 
 - (void)dealloc;
 {
@@ -53,7 +57,7 @@ RCS_ID("$Id$")
 - (void)awakeFromNib;
 {
     [super awakeFromNib];
-    
+
     NSView *inspectorView = self.view;
     NSArray *subviews = [inspectorView subviews];
     for(NSView *aView in subviews) {
@@ -64,15 +68,15 @@ RCS_ID("$Id$")
     }
     
     if (_singleSelection) {
-        [buttonMatrix setMode:NSRadioModeMatrix];
-        [buttonMatrix setAllowsEmptySelection:NO];
+        [self.buttonMatrix setMode:NSRadioModeMatrix];
+        [self.buttonMatrix setAllowsEmptySelection:NO];
     } else {
         // list mode set in nib
-        [buttonMatrix setAllowsEmptySelection:YES];
+        [self.buttonMatrix setAllowsEmptySelection:YES];
     }
     [self.buttonMatrix setTabMatrixHighlightStyle:OITabMatrixYosemiteHighlightStyle];
     
-    OIButtonMatrixBackgroundView *buttonMatrixBackground = (id)[buttonMatrix superview];
+    OIButtonMatrixBackgroundView *buttonMatrixBackground = (id)[self.buttonMatrix superview];
     OBASSERT([buttonMatrixBackground isKindOfClass:[OIButtonMatrixBackgroundView class]]);
     [buttonMatrixBackground setBackgroundColor:nil];
     
@@ -87,7 +91,7 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
     
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [contentView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    [self.contentView setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
 
 #pragma mark -
@@ -95,7 +99,7 @@ RCS_ID("$Id$")
 
 - (NSAttributedString *)windowTitle;
 {
-    NSArray *cells = [buttonMatrix cells];
+    NSArray *cells = [self.buttonMatrix cells];
     BOOL addedColon = NO;
     BOOL duringMouseDown = NO;
     
@@ -128,11 +132,11 @@ RCS_ID("$Id$")
         }
     }
     
-    if (!duringMouseDown && [buttonMatrix window]) {
-        NSPoint point = [[buttonMatrix window] mouseLocationOutsideOfEventStream];
-        point = [buttonMatrix convertPoint:point fromView:nil];
+    if (!duringMouseDown && [self.buttonMatrix window]) {
+        NSPoint point = [[self.buttonMatrix window] mouseLocationOutsideOfEventStream];
+        point = [self.buttonMatrix convertPoint:point fromView:nil];
         NSInteger row, column;
-        if ([buttonMatrix getRow:&row column:&column forPoint:point]) {
+        if ([self.buttonMatrix getRow:&row column:&column forPoint:point]) {
             OIInspectorTabController *tab = [_enabledTabControllers objectAtIndex:column];
             
             windowTitle = prefix;
@@ -240,7 +244,7 @@ RCS_ID("$Id$")
             if (![tab isVisible]) {
                 NSWindow *inspectorPanel = [self.view window];
                 NSResponder *firstResponder = [inspectorPanel firstResponder];
-                if ([firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:contentView]) {
+                if ([firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:self.contentView]) {
                     BOOL result __attribute__((unused));
                     result = [inspectorPanel makeFirstResponder:inspectorPanel];   // make sure that switching to a new tab causes any edits to commit
                     OBASSERT(result);
@@ -317,8 +321,8 @@ RCS_ID("$Id$")
     CGFloat height = [super defaultHeaderHeight];
     
     if (self.placesButtonsInHeaderView) {
-        if (buttonMatrix) {
-            height += NSHeight(buttonMatrix.frame);
+        if (self.buttonMatrix) {
+            height += NSHeight(self.buttonMatrix.frame);
         } else {
             height += 31.0f;
         }
@@ -436,7 +440,7 @@ RCS_ID("$Id$")
     _tabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     _enabledTabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     
-    if (buttonMatrix) {
+    if (self.buttonMatrix) {
         [self _createButtonCellForAllTabs];
     }
 }
@@ -591,43 +595,43 @@ RCS_ID("$Id$")
 
 - (void)_createButtonCellForAllTabs;
 {
-    OBPRECONDITION(buttonMatrix);
+    OBPRECONDITION(self.buttonMatrix);
     
     NSUInteger tabIndex = [_enabledTabControllers count];
     
-    [buttonMatrix renewRows:1 columns:tabIndex];
-    [buttonMatrix sizeToCells];
-    [buttonMatrix deselectAllCells];
+    [self.buttonMatrix renewRows:1 columns:tabIndex];
+    [self.buttonMatrix sizeToCells];
+    [self.buttonMatrix deselectAllCells];
 
     if (!self.buttonMatrixWidthConstraint) {
-        self.buttonMatrixWidthConstraint = [NSLayoutConstraint constraintWithItem:buttonMatrix attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:NSWidth(buttonMatrix.frame)];
+        self.buttonMatrixWidthConstraint = [NSLayoutConstraint constraintWithItem:self.buttonMatrix attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:1.0 constant:NSWidth(self.buttonMatrix.frame)];
         [NSLayoutConstraint activateConstraints:@[self.buttonMatrixWidthConstraint]];
     } else {
-        self.buttonMatrixWidthConstraint.constant = NSWidth(buttonMatrix.frame);
+        self.buttonMatrixWidthConstraint.constant = NSWidth(self.buttonMatrix.frame);
     }
 
     while (tabIndex--) {
         OIInspectorTabController *tab = [_enabledTabControllers objectAtIndex:tabIndex];
-        NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
+        NSButtonCell *cell = [self.buttonMatrix cellAtRow:0 column:tabIndex];
         [cell setImage:[tab image]];
         [cell setRepresentedObject:tab.inspectorIdentifier];
         
         if ([tab isVisible])
-            [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
+            [self.buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
     }
 }
 
 - (void)_updateTrackingRects;
 {
     for (NSNumber *rectTag in _trackingRectTags)
-        [buttonMatrix removeTrackingRect:[rectTag integerValue]];
+        [self.buttonMatrix removeTrackingRect:[rectTag integerValue]];
     
     [_trackingRectTags removeAllObjects];
     
     NSUInteger i, count = [_enabledTabControllers count];
     for (i=0;i<count;i++) {
-        NSRect rect = [buttonMatrix cellFrameAtRow:0 column:i];
-        NSInteger tag = [buttonMatrix addTrackingRect:rect owner:self userData:nil assumeInside:NO];
+        NSRect rect = [self.buttonMatrix cellFrameAtRow:0 column:i];
+        NSInteger tag = [self.buttonMatrix addTrackingRect:rect owner:self userData:nil assumeInside:NO];
         [_trackingRectTags addObject:[NSNumber numberWithInteger:tag]];
     }
 }
@@ -635,7 +639,7 @@ RCS_ID("$Id$")
 - (void)_tabTitleDidChange:(NSNotification *)notification;
 {
     OIInspectorController *inspectorController = self.inspectorController;
-    for (OITabCell *cell in [buttonMatrix cells]) {
+    for (OITabCell *cell in [self.buttonMatrix cells]) {
         if (cell == [notification object]) {
             [inspectorController updateTitle];
             break;
@@ -646,12 +650,12 @@ RCS_ID("$Id$")
 - (void)_layoutSelectedTabs;
 {
     OBPRECONDITION([_enabledTabControllers count] > 0);
-    OBPRECONDITION([contentView isFlipped]); // We use an OITabbedInspectorContentView in the nib to make layout easier.
+    OBPRECONDITION([self.contentView isFlipped]); // We use an OITabbedInspectorContentView in the nib to make layout easier.
     
     // Have to do this before calling -updateTitle since it reads the button state (needs to for things like mouse down on the buttons)
     [self _updateButtonsToMatchSelection];
     
-    [contentView setNeedsDisplay:YES];
+    [self.contentView setNeedsDisplay:YES];
     
     OIInspectorController *inspectorController = self.inspectorController;
     [inspectorController updateTitle];
@@ -685,7 +689,7 @@ RCS_ID("$Id$")
         
         if (selectedTabCount > 0) {
             NSView *divider = [tab dividerView];
-            [contentView addSubview:divider];
+            [self.contentView addSubview:divider];
             // TODO - constrain it.
         } else {
             [[tab dividerView] removeFromSuperview];
@@ -695,11 +699,11 @@ RCS_ID("$Id$")
         
 //        [tab.inspectorView setTranslatesAutoresizingMaskIntoConstraints:NO];
         
-        [contentView addSubview:tab.inspectorView];
-        [constraints addObject:[contentView.widthAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.widthAnchor constant:0]];
-        [constraints addObject:[contentView.leftAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.leftAnchor constant:0]];
+        [self.contentView addSubview:tab.inspectorView];
+        [constraints addObject:[self.contentView.widthAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.widthAnchor constant:0]];
+        [constraints addObject:[self.contentView.leftAnchor constraintGreaterThanOrEqualToAnchor:tab.inspectorView.leftAnchor constant:0]];
 
-        NSLayoutConstraint *compressionConstraint = [contentView.widthAnchor constraintEqualToConstant:0];
+        NSLayoutConstraint *compressionConstraint = [self.contentView.widthAnchor constraintEqualToConstant:0];
         compressionConstraint.priority = NSLayoutPriorityDefaultHigh;
         compressionConstraint.active = YES;
         [constraints addObject:compressionConstraint];
@@ -709,23 +713,23 @@ RCS_ID("$Id$")
     NSView *lastInspectorView = lastTab.inspectorView;
     if (self.topConstraint.secondItem != firstInspectorView) {
         if (self.topConstraint)
-            [contentView removeConstraint:self.topConstraint];
+            [self.contentView removeConstraint:self.topConstraint];
         
-        self.topConstraint = [contentView.topAnchor constraintEqualToAnchor:firstInspectorView.topAnchor];
+        self.topConstraint = [self.contentView.topAnchor constraintEqualToAnchor:firstInspectorView.topAnchor];
         [constraints addObject:self.topConstraint];
     }
     
     if (self.bottomConstraint.secondItem != lastInspectorView) {
         if (self.bottomConstraint)
-            [contentView removeConstraint:self.bottomConstraint];
+            [self.contentView removeConstraint:self.bottomConstraint];
         
-        self.bottomConstraint = [contentView.bottomAnchor constraintEqualToAnchor:lastInspectorView.bottomAnchor];
+        self.bottomConstraint = [self.contentView.bottomAnchor constraintEqualToAnchor:lastInspectorView.bottomAnchor];
         self.bottomConstraint.priority = NSLayoutPriorityDefaultLow;
         [constraints addObject:self.bottomConstraint];
     }
     
     if (!self.scrollViewWidthConstraint) {
-        self.scrollViewWidthConstraint = [self.inspectorScrollView.widthAnchor constraintEqualToAnchor:contentView.widthAnchor];
+        self.scrollViewWidthConstraint = [self.inspectorScrollView.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor];
         [constraints addObject:self.scrollViewWidthConstraint];
     }
     [self _adjustScrollViewWidthConstraintForScrollWidth];
@@ -758,17 +762,17 @@ RCS_ID("$Id$")
 
 - (void)_updateButtonsToMatchSelection;
 {
-    [buttonMatrix deselectAllCells];
+    [self.buttonMatrix deselectAllCells];
     
-    NSArray *matrixCells = [buttonMatrix cells];
+    NSArray *matrixCells = [self.buttonMatrix cells];
     NSUInteger tabIndex, tabCount = [_enabledTabControllers count];
     for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
         OIInspectorTabController *tabController = [_enabledTabControllers objectAtIndex:tabIndex];
         if ([tabController isVisible])
-            [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
+            [self.buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
         [[matrixCells objectAtIndex:tabIndex] setIsPinned:[tabController isPinned]];
     }
-    [buttonMatrix setNeedsDisplay:YES];
+    [self.buttonMatrix setNeedsDisplay:YES];
 }
 
 - (OIInspectorTabController *)_tabControllerForInspectorView:(NSView *)view;
@@ -798,16 +802,16 @@ RCS_ID("$Id$")
         self.titlebarAccessory = [[NSTitlebarAccessoryViewController alloc] init];
         self.titlebarAccessory.view = accessory;
         [window addTitlebarAccessoryViewController:self.titlebarAccessory];
-        [self.titlebarAccessory.view addSubview:buttonMatrix.superview];
-        NSRect rButtonMatrixBackground = buttonMatrix.superview.frame;
+        [self.titlebarAccessory.view addSubview:self.buttonMatrix.superview];
+        NSRect rButtonMatrixBackground = self.buttonMatrix.superview.frame;
         rButtonMatrixBackground.origin = NSZeroPoint;
-        buttonMatrix.superview.frame = rButtonMatrixBackground;
+        self.buttonMatrix.superview.frame = rButtonMatrixBackground;
     } else if (window && self.placesButtonsInHeaderView && !inspectorController.headingButton.accessoryView) {
         OIInspectorHeaderView *headerView = inspectorController.headingButton;
-        headerView.accessoryView = buttonMatrix.superview;
-        NSRect rButtonMatrixBackground = buttonMatrix.superview.frame;
+        headerView.accessoryView = self.buttonMatrix.superview;
+        NSRect rButtonMatrixBackground = self.buttonMatrix.superview.frame;
         rButtonMatrixBackground.origin = CGPointMake(0.0f, headerView.titleContentHeight);
-        buttonMatrix.superview.frame = rButtonMatrixBackground;
+        self.buttonMatrix.superview.frame = rButtonMatrixBackground;
     }
 }
 

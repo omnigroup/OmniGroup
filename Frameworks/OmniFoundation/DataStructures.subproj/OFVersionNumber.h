@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We require iOS 9.0 now.
 + (BOOL)isOperatingSystemiOS93OrLater;
++ (BOOL)isOperatingSystemiOS100OrLater;
++ (BOOL)isOperatingSystemiOS101OrLater;
++ (BOOL)isOperatingSystemiOS102OrLater;
 #else
 + (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
