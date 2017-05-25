@@ -4,3 +4,5 @@
 
 // Common settings for Application targets
 #include "Omni-Application-Common.xcconfig"
+
+REMOVE_HEADERS_FROM_EMBEDDED_BUNDLES = NO

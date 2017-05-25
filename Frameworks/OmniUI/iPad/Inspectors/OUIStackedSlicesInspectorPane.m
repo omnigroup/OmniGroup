@@ -228,6 +228,10 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     return [self appropriateSlices:_availableSlices forInspectedObjects:inspectedObjects];
 }
 
+- (BOOL)containsAppropriateSlicesForInspectedObjects {
+    return ([[self appropriateSlicesForInspectedObjects] count] > 0);
+}
+
 static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesInspectorPaneContentView *view, OUIInspectorSlice *slice)
 {
     [slice willMoveToParentViewController:nil];

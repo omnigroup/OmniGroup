@@ -958,6 +958,11 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     }];
 }
 
+- (BOOL)shouldEnabledCopyFromWebDAV; // default YES
+{
+    return YES;
+}
+
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
 {
     NSMutableArray *options = [NSMutableArray arrayWithArray:[super additionalAppMenuOptionsAtPosition:position]];
@@ -981,29 +986,31 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
                 // Import from WebDAV
-                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^(UIViewController *presentingViewController){
-                    OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
-                    accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
-                    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
-                    accountList.finished = ^(OFXServerAccount *account) {
-                        if (!account) {
-                            [navigationController dismissViewControllerAnimated:YES completion:nil];
-                        } else {
-                            __autoreleasing NSError *error;
-                            OUIWebDAVSyncListController *webDavList = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
-                            if (!webDavList)
-                                OUI_PRESENT_ERROR_FROM(error, navigationController);
-                            else {
-                                [navigationController pushViewController:webDavList animated:YES];
+                if ([self shouldEnabledCopyFromWebDAV]) {
+                    OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^(UIViewController *presentingViewController){
+                        OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
+                        accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
+                        UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
+                        accountList.finished = ^(OFXServerAccount *account) {
+                            if (!account) {
+                                [navigationController dismissViewControllerAnimated:YES completion:nil];
+                            } else {
+                                __autoreleasing NSError *error;
+                                OUIWebDAVSyncListController *webDavList = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
+                                if (!webDavList)
+                                    OUI_PRESENT_ERROR_FROM(error, navigationController);
+                                else {
+                                    [navigationController pushViewController:webDavList animated:YES];
+                                }
                             }
-                        }
-                    };
-                    
-                    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-                    [presentingViewController presentViewController:navigationController animated:YES completion:nil];
-                }];
-                [options addObject:importOption];
-
+                        };
+                        
+                        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+                        [presentingViewController presentViewController:navigationController animated:YES completion:nil];
+                    }];
+                    [options addObject:importOption];
+                }
+                
                 if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue] == YES) {
                     // Import from external container via document picker
                     [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(importFromExternalContainer:) title:NSLocalizedStringFromTableInBundle(@"Copy from…", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage]];
@@ -1995,6 +2002,8 @@ static NSDictionary *RoleByFileType()
                                     if (selection.count == 1 && selection.anyObject == newFileItem) {
                                         [_documentPicker.selectedScopeViewController setEditing:NO animated:NO];
                                         [self openDocument:newFileItem];
+                                    } else {
+                                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:selection];
                                     }
                                 });
                             });

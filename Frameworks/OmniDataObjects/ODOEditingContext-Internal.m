@@ -164,12 +164,15 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
         return; // Already been marked updated this round.
     }
 
-    if ([_recentlyInsertedObjects member:object])
-        // Ignore updates from recently inserted objects; once they are processed, then we can notify them as updated.        
+    if ([_recentlyInsertedObjects member:object]) {
+        // Ignore updates from recently inserted objects; once they are processed, then we can notify them as updated.
         return;
+    }
     
-    if (!_recentlyUpdatedObjects)
+    if (!_recentlyUpdatedObjects) {
         _recentlyUpdatedObjects = ODOEditingContextCreateRecentSet(self);
+    }
+    
     [_recentlyUpdatedObjects addObject:object];
     
     // Register a snapshot of committed if we haven't already.  Processed inserts won't have committed snapshots, only things that have been fetched and then modified.  Still, they might have in-memory snapshots.

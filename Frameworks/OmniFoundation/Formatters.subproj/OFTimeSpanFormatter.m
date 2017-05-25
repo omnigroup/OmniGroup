@@ -757,6 +757,11 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     return [self _stringForObjectValue:object withRounding:YES];
 }
 
+- (NSString *)placeholderString
+{
+    return [self _stringForObjectValue:@0 withRounding:NO];
+}
+
 - (NSNumber *)_scanNumberFromScanner:(NSScanner *)scanner;
 {
     __autoreleasing NSNumber *number = nil;

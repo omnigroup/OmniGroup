@@ -8,7 +8,7 @@ Requires Python 2.7 or 3.4, and the cryptography module ("pip install cryptograp
 '''
 
 from __future__ import print_function
-import argparse, collections, getpass, os.path, plistlib, posix, random, struct, sys
+import argparse, collections, getpass, os.path, plistlib, posix, random, struct, sys, tempfile
 import cryptography.hazmat.primitives.hashes
 import cryptography.hazmat.primitives.keywrap
 from cryptography.hazmat.primitives.keywrap import InvalidUnwrap
@@ -111,16 +111,16 @@ and how to create a decryptor for a file using the unwrapped document keys.
     @classmethod
     def parse_metadata(cls, metadata_blob_or_fp):
         if hasattr(metadata_blob_or_fp, 'read'):
-            if hasattr(plistlib, 'load'):
+            if hasattr(plistlib, 'load'): # Py3
                 metadata = plistlib.load(metadata_blob_or_fp, use_builtin_types=False)
             else:
                 metadata = plistlib.readPlist(metadata_blob_or_fp)
         else:
-            if hasattr(plistlib, 'loads'):
+            if hasattr(plistlib, 'loads'): # Py3
                 metadata = plistlib.loads(metadata_blob_or_fp, use_builtin_types=False)
             else:
                 metadata = plistlib.readPlistFromString(metadata_blob_or_fp)
-        
+
         # The current version has a 1-element array at toplevel.
         # Future versions will have a dictionary at toplevel.
         if isinstance(metadata, list) and len(metadata) == 1:
@@ -330,10 +330,9 @@ and how to create a decryptor for a file using the unwrapped document keys.
             return
 
         # Find an active CTR-HMAC key
-        aesKeyType = 'ActiveAES_CTR_HMAC'
-        encryption_key = self.get_key_of_type(aesKeyType)
+        encryption_key = self.get_key_of_type(ActiveAES_CTR_HMAC)
         if encryption_key is None:
-            raise ValueError('No keys of type %r' % (aesKeyType,))
+            raise ValueError('No keys of type %r' % (ActiveAES_CTR_HMAC,))
         file_header = file_magic + struct.pack('>HH', 2, encryption_key.id)
         outfp.write(file_header)
         padding_length = (16 - (len(file_header)%16)) % 16
@@ -466,52 +465,89 @@ class EncryptedFileHelper (object):
         outfp.write(filehash.finalize()[:self.FileMACLen])
                 
 
-def decrypt_directory(indir, outdir):
+def decrypt_directory(indir, outdir, re_encrypt=False):
     '''Decrypt the OmniFocus data in indir, writing the result to outdir. Prompts for a passphrase.'''
     files = posix.listdir(indir)
     if metadata_filename not in files:
         raise EnvironmentError('Expected to find %r in %r' %
                                ( metadata_filename, indir))
-    encryptionMetadata = DocumentKey.parse_metadata( open(os.path.join(indir, metadata_filename), 'rb').read() )
+    encryptionMetadata = DocumentKey.parse_metadata( open(os.path.join(indir, metadata_filename), 'rb') )
     metadataKey = DocumentKey.use_passphrase( encryptionMetadata,
                                               getpass.getpass(prompt="Passphrase: ") )
     docKey = DocumentKey( encryptionMetadata.get('key').data, unwrapping_key=metadataKey )
     for secret in docKey.secrets:
         secret.print()
+    
+    workdir = outdir
     if outdir is not None:
         posix.mkdir(outdir)
-    for datafile in files:
-        if datafile == metadata_filename:
-            continue
-        if outdir is not None:
-            print('Decrypting %r' % (datafile,))
-            with open(os.path.join(indir, datafile), "rb") as infp, \
-                 open(os.path.join(outdir, datafile), "wb") as outfp:
-                docKey.decrypt_file(datafile, infp, outfp)
-        else:
-            print('Reading %r' % (datafile,))
-            with open(os.path.join(indir, datafile), "rb") as infp:
-                docKey.decrypt_file(datafile, infp, None)
+    if re_encrypt:
+        workdir = tempfile.mkdtemp()
+
+    basename = os.path.basename(indir)
+    for dirpath, dirnames, filenames in os.walk(indir):
+        for datafile in filenames:
+            inpath = os.path.join(dirpath, datafile)
+            if workdir is not None:
+                outpath = inpath.replace(indir, workdir)
+            if datafile == metadata_filename:
+                continue
+            display = "%s/%s" % (os.path.basename(dirpath), datafile) if os.path.basename(dirpath) != basename else datafile
+            if outdir is not None:
+                print('Decrypting %r' % (display,))
+                if not os.path.exists(os.path.split(outpath)[0]):
+                    os.makedirs(os.path.split(outpath)[0])
+                with open(os.path.join(indir, inpath), "rb") as infp, \
+                     open(os.path.join(workdir, outpath), "wb") as outfp:
+                    docKey.decrypt_file(datafile, infp, outfp)
+            else:
+                print('Reading %r' % (display,))
+                with open(os.path.join(indir, inpath), "rb") as infp:
+                    docKey.decrypt_file(datafile, infp, None)
+
+    if re_encrypt and outdir is not None:
+        print()
+        print("Re-Encrypt the database\n")
+        newKey = docKey.get_key_of_type(ActiveAES_CTR_HMAC, True)
+        encryptionMetadata['key'] = plistlib.Data(docKey.wrapped_secrets(metadataKey))
+        encrypt_directory(encryptionMetadata, docKey, workdir, outdir)
+        
+        # We've created a tempdirectory lets clean it up
+        import shutil
+        shutil.rmtree(workdir)
 
 def encrypt_directory(metadata, docKey, indir, outdir):
     '''Encrypt all individual files in indir, writing them to outdir.'''
     files = posix.listdir(indir)
     assert metadata_filename not in files  # A non-encrypted directory must not have an encryption metadata file
 
-    posix.mkdir(outdir)
+    if not os.path.exists(outdir):
+        posix.mkdir(outdir)
+
     print('Writing encryption metadata')
     if isinstance(metadata, dict):
+
         metadata = [ metadata ]  # Current OmniFileStore expects a 1-element list of dictionaries.
     with open(os.path.join(outdir, metadata_filename), "wb") as outfp:
         if hasattr(plistlib, 'dump'):
             plistlib.dump(metadata, outfp)
         else:
             plistlib.writePlist(metadata, outfp)
-    
-    for datafile in files:
-        print('Encrypting %r' % (datafile,))
-        with open(os.path.join(indir, datafile), "rb") as infp, \
-             open(os.path.join(outdir, datafile), "wb") as outfp:
+
+    basename = os.path.basename(indir)
+    for dirpath, dirnames, filenames in os.walk(indir):
+        for datafile in filenames:
+            inpath = os.path.join(dirpath, datafile)
+            outpath = inpath.replace(indir, outdir)
+            display = "%s/%s" % (os.path.basename(dirpath), datafile) if os.path.basename(dirpath) != basename else datafile
+            print('Encrypting %r' % (display,))
+
+            if not os.path.exists(os.path.split(outpath)[0]):
+                os.makedirs(os.path.split(outpath)[0])
+
+            with open(os.path.join(indir, inpath), "rb") as infp, \
+                 open(outpath, "wb") as outfp:
+
                 docKey.encrypt_file(datafile, infp, outfp)
     
                 
@@ -521,6 +557,8 @@ if __name__ == '__main__':
                       help='The encryted OmniFocus database to read')
     optp.add_argument('-o', '--output',
                       help='Write decrypted contents to this directory')
+    optp.add_argument('-e', '--encrypt', action='store_true',
+                      help='Also re-encrypt the resulting directory')    
     args = optp.parse_args()
-    decrypt_directory(args.input, args.output)
+    decrypt_directory(args.input, args.output, args.encrypt)
 

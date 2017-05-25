@@ -14,7 +14,7 @@
 
 RCS_ID("$Id$");
 
-#if 1 && defined(DEBUG)
+#if 0 && defined(DEBUG)
 #define DEBUG_KEYBOARD(format, ...) NSLog(@"KEYBOARD: " format, ## __VA_ARGS__)
 #else
 #define DEBUG_KEYBOARD(format, ...)

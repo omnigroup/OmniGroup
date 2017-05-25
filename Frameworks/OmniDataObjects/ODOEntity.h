@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,67 +16,33 @@ NS_ASSUME_NONNULL_BEGIN
 @class ODOObject, ODOEditingContext, ODOModel, ODOAttribute, ODOProperty, ODOSQLStatement;
 
 @interface ODOEntity : OFObject
-{
-@private
-    ODOModel *_nonretained_model; // We are retained by the model.
-    NSString *_name;
-    
-    NSString *_instanceClassName;
-    Class _instanceClass;
-    
-    // These four arrays must be exactly parallel
-    NSArray *_properties;
-    CFArrayRef _propertyNames;
-    CFArrayRef _propertyGetSelectors;
-    CFArrayRef _propertySetSelectors;
-    
-    NSDictionary *_propertiesByName;
-    NSDictionary *_relationshipsByName;
-    NSArray *_relationships;
-    NSArray *_toOneRelationships;
-    NSArray *_toManyRelationships;
 
-    NSArray *_attributes;
-    NSDictionary *_attributesByName;
-    ODOAttribute *_primaryKeyAttribute;
+@property (nonatomic, readonly) ODOModel *model;
+@property (nonatomic, readonly) NSString *name;
 
-    NSArray *_snapshotProperties;
-    
-    NSArray *_schemaProperties;
-    NSString *_insertStatementKey;
-    NSString *_updateStatementKey;
-    NSString *_deleteStatementKey;
-    NSString *_queryByPrimaryKeyStatementKey;
-    
-    NSSet *_derivedPropertyNameSet;
-    NSSet *_nonDateModifyingPropertyNameSet;
-}
+@property (nonatomic, readonly) NSString *instanceClassName;
+@property (nonatomic, readonly) Class instanceClass;
 
-@property(readonly) ODOModel *model;
-@property(readonly) NSString *name;
-
-@property(readonly) NSString *instanceClassName;
-@property(readonly) Class instanceClass;
-
-@property(readonly) NSArray *properties;
-@property(readonly) NSDictionary *propertiesByName;
+@property (nonatomic, readonly) NSArray *properties;
+@property (nonatomic, readonly) NSDictionary *propertiesByName;
 
 - (nullable ODOProperty *)propertyNamed:(NSString *)name;
 - (nullable ODOProperty *)propertyWithGetter:(SEL)getter;
 - (nullable ODOProperty *)propertyWithSetter:(SEL)setter;
 
-@property(readonly) NSDictionary *relationshipsByName;
-@property(readonly) NSArray *relationships;
-@property(readonly) NSArray *toOneRelationships;
-@property(readonly) NSArray *toManyRelationships;
+@property (nonatomic, readonly) NSDictionary *relationshipsByName;
+@property (nonatomic, readonly) NSArray *relationships;
+@property (nonatomic, readonly) NSArray *toOneRelationships;
+@property (nonatomic, readonly) NSArray *toManyRelationships;
 
-@property(readonly) NSArray *attributes;
-@property(readonly) NSDictionary *attributesByName;
+@property (nonatomic, readonly) NSArray *attributes;
+@property (nonatomic, readonly) NSDictionary *attributesByName;
 
-@property(readonly) ODOAttribute *primaryKeyAttribute;
+@property (nonatomic, readonly) ODOAttribute *primaryKeyAttribute;
 
-@property(readonly) NSSet *derivedPropertyNameSet;
-@property(readonly) NSSet *nonDateModifyingPropertyNameSet;
+@property (nonatomic, readonly) NSSet *derivedPropertyNameSet;
+@property (nonatomic, readonly) NSSet *nonDateModifyingPropertyNameSet;
+@property (nonatomic, readonly) NSSet *calculatedTransientPropertyNameSet;
 
 + (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey;
 + (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;

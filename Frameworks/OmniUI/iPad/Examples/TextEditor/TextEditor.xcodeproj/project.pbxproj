@@ -170,13 +170,6 @@
 			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F;
 			remoteInfo = OFClobberDetectionZoneTest;
 		};
-		3427217C119480A700B39788 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F;
-			remoteInfo = OFMainThreadLockTest;
-		};
 		3427217E119480A700B39788 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
@@ -737,7 +730,6 @@
 				34272177119480A700B39788 /* OFSimpleLockTest */,
 				34272179119480A700B39788 /* OFDedicatedThreadSchedulerTest */,
 				3427217B119480A700B39788 /* OFClobberDetectionTest */,
-				3427217D119480A700B39788 /* OFMainThreadLockTest */,
 				3427217F119480A700B39788 /* OFCrashOnExceptionTest */,
 				34272181119480A700B39788 /* OFRandomRepeatTest */,
 				340E551F1676B0EE0085CF55 /* OFXMLParsingTest */,
@@ -854,6 +846,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0810;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1024,13 +1021,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OFClobberDetectionTest;
 			remoteRef = 3427217A119480A700B39788 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3427217D119480A700B39788 /* OFMainThreadLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFMainThreadLockTest;
-			remoteRef = 3427217C119480A700B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		3427217F119480A700B39788 /* OFCrashOnExceptionTest */ = {
@@ -1318,6 +1308,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
+				DEVELOPMENT_TEAM = 34YW5XSRB7;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
@@ -1340,6 +1331,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_ENTITLEMENTS = TextEditor.entitlements;
+				DEVELOPMENT_TEAM = 34YW5XSRB7;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",

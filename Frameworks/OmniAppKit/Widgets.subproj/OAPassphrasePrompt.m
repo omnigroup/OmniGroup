@@ -77,6 +77,7 @@ OB_REQUIRE_ARC;
     
     self.OKButton.tag = NSModalResponseOK;
     self.cancelButton.tag = NSModalResponseCancel;
+    self.auxiliaryButton.tag = NSAlertThirdButtonReturn;
     
     NSView *contentView = window.contentView;
     NSMutableArray *constraints = [NSMutableArray array];

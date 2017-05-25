@@ -147,10 +147,10 @@ RCS_ID("$Id$")
 
 - (void)invalidate;
 {
-    OBPRECONDITION(_statement);
-    
-    if (!_statement)
+    // N.B. We no longer have a precondition that _statement != NULL. Since we lazy evaluate the statement in -prepareIfNeededWithSQLite:error:, we can have a fully formed object which failed to ever create a statement. -invalidate should be a no-op in that case.
+    if (_statement == NULL) {
         return;
+    }
     
     // We can't leave an ivar reference in the block below – in the case that we're called on the -dealloc path, referencing an ivar in the block would attempt to retain self, which is an error.
     // Instead, copy the ivar to a local, then clear it right away. The finalization path is still synchronous, so everything will be accurate as of the end of this method.

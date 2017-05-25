@@ -18,13 +18,13 @@
 - (NSError *)underlyingErrorWithDomain:(NSString *)domain code:(NSInteger)code;
 - (BOOL)hasUnderlyingErrorDomain:(NSString *)domain code:(NSInteger)code;
 
-- (BOOL)causedByUserCancelling;
-- (BOOL)causedByMissingFile;
-- (BOOL)causedByExistingFile;
-- (BOOL)causedByUnreachableHost;
+@property(nonatomic,readonly) BOOL causedByUserCancelling;
+@property(nonatomic,readonly) BOOL causedByMissingFile;
+@property(nonatomic,readonly) BOOL causedByExistingFile;
+@property(nonatomic,readonly) BOOL causedByUnreachableHost;
 
 #if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
-- (BOOL)causedByNetworkConnectionLost;
+@property(nonatomic,readonly) BOOL causedByNetworkConnectionLost;
 #endif
 
 - initWithPropertyList:(NSDictionary *)propertyList;

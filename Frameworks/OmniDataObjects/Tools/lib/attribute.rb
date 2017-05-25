@@ -200,7 +200,8 @@ module OmniDataObjects
     end
     
     def add_class_names(names)
-      names << objcValueClass
+        # Strip lightweight generics or protocol conformance from the objcValueClass
+      names << objcValueClass.sub(/<.*>/, '')
     end
     
     def copy?

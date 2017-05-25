@@ -7,6 +7,8 @@
 
 #import "OUIInspectorNavigationController.h"
 
+#import <OmniUI/OmniUI-Swift.h>
+
 RCS_ID("$Id$")
 
 
@@ -50,7 +52,12 @@ RCS_ID("$Id$")
 }
 
 - (void)_multiPaneControllerDidHidePane:(NSNotification *)notification {
-    [self _cleanupInspectedObjects];
+    NSNumber *paneLocationNumber = (NSNumber *)notification.userInfo[OUIMultiPaneControllerPaneLocationUserInfoKey];
+    OUIMultiPaneLocation paneLocation = (OUIMultiPaneLocation)paneLocationNumber.integerValue;
+    
+    if (paneLocation == OUIMultiPaneLocationRight) {
+        [self _cleanupInspectedObjects];
+    }
 }
 
 - (void)_cleanupInspectedObjects {
@@ -60,6 +67,27 @@ RCS_ID("$Id$")
             pane.inspectedObjects = nil;
             [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
         }
+    }
+}
+
+- (void)popToAppropriatePane {
+    UIViewController *appropriateViewController = nil;
+    
+    for (UIViewController *viewController in self.viewControllers) {
+        OUIInspectorPane *pane = OB_CHECKED_CAST(OUIInspectorPane, viewController);
+        BOOL isPaneAppropriate = [pane containsAppropriateSlicesForInspectedObjects];
+        
+        if (isPaneAppropriate) {
+            appropriateViewController = pane;
+        } else {
+            break;
+        }
+    }
+        
+    if (appropriateViewController != nil) {
+        [self popToViewController:appropriateViewController animated:NO];
+    } else {
+        [self popToRootViewControllerAnimated:NO];
     }
 }
 

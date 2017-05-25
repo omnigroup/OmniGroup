@@ -279,11 +279,15 @@ NSString * _Nullable OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **o
     if (![fileURL isFileURL])
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Argument to OFUTIForFileURL must be a file URL, not %@", [fileURL absoluteString]] userInfo:nil];
     
-    __autoreleasing NSNumber *isDirectory = nil;
-    if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:outError])
+    BOOL isDirectory = NO;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:fileURL.path isDirectory:&isDirectory]) {
+        if (outError != NULL) {
+            *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSNotFound userInfo:nil];
+        }
         return nil;
+    }
 
-    return OFUTIForFileExtensionPreferringNative([fileURL pathExtension], isDirectory);
+    return OFUTIForFileExtensionPreferringNative([fileURL pathExtension], [NSNumber numberWithBool:isDirectory]);
 }
 
 NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber * _Nullable isDirectory)

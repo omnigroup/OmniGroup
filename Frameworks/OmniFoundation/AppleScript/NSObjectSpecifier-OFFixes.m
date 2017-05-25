@@ -156,7 +156,7 @@ OBPerformPosing(^{
 static id (*original_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property)(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key) = NULL;
 static id replacement_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key)
 {
-    OBPRECONDITION(container || [classDesc.className isEqual:@"application"]);
+    OBPRECONDITION(container || classDesc.appleEventCode == 'capp');
     OBPRECONDITION(key);
     OBPRECONDITION([classDesc classDescriptionForKey:key]/*element*/ || [classDesc typeForKey:key]/*property*/, "No class description or type registered for the key \"%@\" of class description \"%@\"", key, classDesc);
     
@@ -168,7 +168,7 @@ static id (*original_NSUniqueIDSpecifier_initWithContainerClassDescription_conta
 static id replacement_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID(NSUniqueIDSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key, id uniqueID)
 {
     OBPRECONDITION(classDesc);
-    OBPRECONDITION(container || [classDesc.className isEqual:@"application"]);
+    OBPRECONDITION(container || classDesc.appleEventCode == 'capp');
     OBPRECONDITION(key);
     OBPRECONDITION([classDesc classDescriptionForKey:key]);
     OBPRECONDITION(uniqueID);

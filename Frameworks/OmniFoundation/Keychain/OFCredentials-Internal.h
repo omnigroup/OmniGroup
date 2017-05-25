@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
     #define DEBUG_CREDENTIALS_DEFINED 0
 #endif
 
-void _OFSecError(const char *caller, const char *function, OSStatus code, NSError **outError) OB_HIDDEN;
+void _OFSecError(const char *caller, const char *function, OSStatus code, NSError * __autoreleasing *outError) OB_HIDDEN;
 #define OFSecError(function, code, outError) _OFSecError(__PRETTY_FUNCTION__, function, code, outError)
 
 NSURLCredential *_OFCredentialFromUserAndPassword(NSString *user, NSString *password) OB_HIDDEN;

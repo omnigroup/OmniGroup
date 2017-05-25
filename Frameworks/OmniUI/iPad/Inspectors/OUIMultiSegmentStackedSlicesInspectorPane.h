@@ -26,6 +26,8 @@
 @property(nonatomic,strong) NSArray *segments;
 @property(nonatomic,strong) OUIInspectorSegment *selectedSegment;
 
-- (NSArray *)makeAvailableSegments; // For subclasses
+// For subclasses
+@property (nonatomic,readonly) BOOL wantsEmbeddedTitleTabBar; // return NO if you want a segmented control in the navigation items instead of tabs in the content.
+- (NSArray *)makeAvailableSegments;
 
 @end

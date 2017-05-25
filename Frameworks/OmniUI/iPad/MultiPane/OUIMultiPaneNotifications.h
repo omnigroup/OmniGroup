@@ -17,3 +17,5 @@ extern NSNotificationName const OUIMultiPaneControllerDidShowPaneNotification;
 // I would love for the will/did hide/show notifications above to cover willPresent also, but they currently do not. Perhaps in the future we can colapse this, but that would require uses of these to not care about the difference between the view controller being a child view controller or a presentation. I can't guarantee that right now.
 
 extern NSNotificationName const OUIMultiPaneControllerWillPresentPaneNotification;
+
+extern NSString * const OUIMultiPaneControllerPaneLocationUserInfoKey;

@@ -38,7 +38,7 @@ public struct UTI {
         if let rawFileType = OFUTIForFileURLPreferringNative(fileURL, &error) {
             return UTI(rawFileType)
         }
-        throw error!
+        throw error ?? NSError(domain: "UTI", code: 0) // some unknown error
     }
 
     public static func fileType(forPathExtension pathExtension:String, isDirectory:Bool?, preferringNative:Bool = true) throws -> UTI {

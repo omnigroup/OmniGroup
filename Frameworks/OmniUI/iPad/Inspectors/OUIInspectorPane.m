@@ -87,6 +87,10 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     }
 }
 
+- (BOOL)containsAppropriateSlicesForInspectedObjects {
+    return NO;
+}
+
 #pragma mark -
 #pragma mark UIViewController
 

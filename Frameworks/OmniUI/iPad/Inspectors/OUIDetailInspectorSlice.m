@@ -15,8 +15,6 @@
 
 RCS_ID("$Id$");
 
-#define DetailArrowWidth 28
-
 @implementation OUIDetailInspectorSliceItem
 @end
 
@@ -59,7 +57,7 @@ RCS_ID("$Id$");
     CGRect detailFrame = self.detailTextLabel.frame;
     detailFrame.size = self.detailTextLabel.intrinsicContentSize;
     // The detail label should start where it will fit the whole label in front of the arrow
-    detailFrame.origin.x = self.frame.size.width - detailFrame.size.width - DetailArrowWidth;
+    detailFrame.origin.x = CGRectGetMaxX(self.contentView.frame) - detailFrame.size.width;
     self.detailTextLabel.frame = detailFrame;
     CGRect textFrame = self.textLabel.frame;
     CGSize contentSize = self.textLabel.intrinsicContentSize;

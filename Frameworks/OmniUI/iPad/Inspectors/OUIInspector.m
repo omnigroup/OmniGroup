@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIInspector.h>
 
+#import <OmniUI/OmniUI-Swift.h>
+
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIInspectorPresentationController.h>
@@ -157,10 +159,20 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 }
 
 - (void)_multiPaneControllerWillShowPane:(NSNotification *)notification {
-    [self forceUpdateInspectedObjects];
+    NSNumber *paneLocationNumber = (NSNumber *)notification.userInfo[OUIMultiPaneControllerPaneLocationUserInfoKey];
+    OUIMultiPaneLocation paneLocation = (OUIMultiPaneLocation)paneLocationNumber.integerValue;
+
+    if (paneLocation == OUIMultiPaneLocationRight) {
+        [self forceUpdateInspectedObjects];
+    }
 }
 - (void)_multiPaneControllerWillPresentPane:(NSNotification *)notification {
-    [self forceUpdateInspectedObjects];
+    NSNumber *paneLocationNumber = (NSNumber *)notification.userInfo[OUIMultiPaneControllerPaneLocationUserInfoKey];
+    OUIMultiPaneLocation paneLocation = (OUIMultiPaneLocation)paneLocationNumber.integerValue;
+    
+    if (paneLocation == OUIMultiPaneLocationRight) {
+        [self forceUpdateInspectedObjects];
+    }
 }
 
 - (UIViewController<OUIInspectorPaneContaining> *)viewController {
@@ -233,7 +245,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         self.mainPane.inspectedObjects = objects;
         
         if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-            [self.navigationController popToRootViewControllerAnimated:NO];
+            [self.navigationController popToAppropriatePane];
         }
     }
 }

@@ -17,7 +17,6 @@
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
-#import <OmniUI/OUIAboutThisAppViewController.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
@@ -643,7 +642,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self sendFeedbackWithSubject:[self _defaultFeedbackSubject] body:nil];
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("")
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated navigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil)
@@ -653,19 +652,29 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webController.delegate = self;
     webController.title = title;
     webController.URL = url;
-    UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
-    webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
-    
-    webNavigationController.modalPresentationStyle = presentationStyle;
-    webNavigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-    
-    [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
+
+    if (navigationController != nil) {
+        [navigationController pushViewController:webController animated:YES];
+    } else {
+        UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
+        webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
+
+        webNavigationController.modalPresentationStyle = presentationStyle;
+        webNavigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+
+        [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
+    }
     return webController;
+}
+
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("")
+{
+    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle animated:animated navigationController:nil];
 }
 
 - (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title;
 {
-    return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen animated:YES];
+    return [self showWebViewWithURL:url title:title modalPresentationStyle:UIModalPresentationFullScreen animated:YES navigationController:nil];
 }
 
 - (void)_showLatestNewsMessage NS_EXTENSION_UNAVAILABLE_IOS("")
@@ -743,24 +752,24 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return foundIt;
 }
 
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController;
+- (NSString *)_aboutPanelJSONBindingsString;
 {
-    OUIAboutThisAppViewController *aboutController = [[OUIAboutThisAppViewController alloc] init];
-    [aboutController loadAboutPanelWithTitle:[self aboutScreenTitle] URL:[self aboutScreenURL] javascriptBindingsDictionary:[self aboutScreenBindingsDictionary]];
+    __autoreleasing NSError *jsonError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:[self aboutScreenBindingsDictionary] options:0 error:&jsonError];
+    assert(jsonData != nil);
 
-    if (navigationController) {
-        [navigationController pushViewController:aboutController animated:YES];
-    } else {
-        navigationController = [[UINavigationController alloc] initWithRootViewController:aboutController];
-        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-        navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-
-        UIViewController *viewController = self.window.rootViewController;
-        [viewController presentViewController:navigationController animated:YES completion:nil];
-    }
+    NSString *jsonValue = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSString *jsonBindingsString = [NSString stringWithFormat:@"aboutBindings=%@;", jsonValue];
+    return jsonBindingsString;
 }
 
-- (void)_showAboutScreen:(id)sender;
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
+{
+    OUIWebViewController *webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet animated:YES navigationController:navigationController];
+    [webViewController invokeJavaScriptBeforeLoad:[self _aboutPanelJSONBindingsString]];
+}
+
+- (void)_showAboutScreen:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self showAboutScreenInNavigationController:nil];
 }

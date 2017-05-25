@@ -63,9 +63,16 @@ RCS_ID("$Id$")
 
 #pragma mark - OUIAppController
 
+#if 0
 - (NSString *)aboutMenuTitle;
 {
     return nil; // Hides the 'About' item in the gear menu
+}
+#endif
+
+- (NSURL *)aboutScreenURL;
+{
+    return [NSURL URLWithString:@"data:"];
 }
 
 #pragma mark - OUIAppController (InAppStore)

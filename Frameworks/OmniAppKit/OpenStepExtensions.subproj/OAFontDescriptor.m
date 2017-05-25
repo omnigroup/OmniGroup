@@ -64,8 +64,12 @@ typedef void(^OAAttributeMutator)(NSMutableDictionary *attributes, NSMutableDict
     OAFontDescriptorPlatformFont _font;
     BOOL _isUniquedInstance;
 
-    // This is only set once _isUniquedInstance is set.
+    // These are cached when making a uniqued instance (and are only valid once _isUniquedInstance is set).
     CTFontSymbolicTraits _symbolicTraits;
+    CGFloat _size;
+    BOOL _hasExplicitWeight;
+    NSInteger _weight;
+    NSString *_family;
 }
 
 + (void)initialize;
@@ -239,6 +243,10 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     } else {
         // This looks at the cache we are trying to fill if _isUniquedInstance is set, so do this first.
         _symbolicTraits = _lookupSymbolicTraits(self);
+        _hasExplicitWeight = self.hasExplicitWeight;
+        _weight = self.weight;
+        _family = [self.family copy];
+        _size = self.size;
 
         _isUniquedInstance = YES; // Track that we need to remove ourselves from the table in -dealloc
         return self;
@@ -434,6 +442,8 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     [_font release];
 #endif
     [_attributes release];
+    [_family release];
+
     [super dealloc];
 }
 
@@ -447,7 +457,11 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 //
 
 - (NSString *)family;
-{    
+{
+    if (_isUniquedInstance) {
+        return _family;
+    }
+
     NSString *family = [_attributes objectForKey:(id)kCTFontFamilyNameAttribute];
     if (family)
         return family;
@@ -497,6 +511,10 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 
 - (CGFloat)size;
 {
+    if (_isUniquedInstance) {
+        return _size;
+    }
+
     NSNumber *fontSize = [_attributes objectForKey:(id)kCTFontSizeAttribute];
     if (fontSize)
         return [fontSize cgFloatValue];
@@ -515,6 +533,10 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 
 - (BOOL)hasExplicitWeight;
 {
+    if (_isUniquedInstance) {
+        return _hasExplicitWeight;
+    }
+
     // Implementation here should match that of -weight in that we return YES if and only if we would take one of the explicit early-outs from that method.
     return [self _coreTextFontWeight] != nil || self.bold;
 }
@@ -522,6 +544,10 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 // We return the NSFontManager-style weight here.
 - (NSInteger)weight;
 {
+    if (_isUniquedInstance) {
+        return _weight;
+    }
+
     NSNumber *weightNumber = [self _coreTextFontWeight];
         
     if (weightNumber) {

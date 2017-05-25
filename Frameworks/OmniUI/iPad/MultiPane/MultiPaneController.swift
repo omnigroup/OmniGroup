@@ -734,14 +734,16 @@ extension MultiPaneController: MultiPanePresenterDelegate {
             break
         case .expand:
             layoutDelegate?.willShowPane?(at: pane.location, multiPaneController: self)
-            NotificationCenter.default.post(name: .OUIMultiPaneControllerWillShowPane, object: self)
+            NotificationCenter.default.post(name: .OUIMultiPaneControllerWillShowPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
+            
+            
             if pane.location == .left || pane.location == .right {
                 pane.apply(decorations: [ShowDivider()])
             }
             break
         case .collapse:
             layoutDelegate?.willHidePane?(at: pane.location, multiPaneController: self)
-            NotificationCenter.default.post(name: .OUIMultiPaneControllerWillHidePane, object: self)
+            NotificationCenter.default.post(name: .OUIMultiPaneControllerWillHidePane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
             break
             
         default:
@@ -766,11 +768,11 @@ extension MultiPaneController: MultiPanePresenterDelegate {
                pane.apply(decorations: [HideDivider()])
             }
             layoutDelegate?.didHidePane?(at: pane.location, multiPaneController: self)
-            NotificationCenter.default.post(name: .OUIMultiPaneControllerDidHidePane, object: self)
+            NotificationCenter.default.post(name: .OUIMultiPaneControllerDidHidePane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
             break
         case .expand:
             layoutDelegate?.didShowPane?(at: pane.location, multiPaneController: self)
-            NotificationCenter.default.post(name: .OUIMultiPaneControllerDidShowPane, object: self)
+            NotificationCenter.default.post(name: .OUIMultiPaneControllerDidShowPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
         default:
             break
         }
@@ -778,7 +780,9 @@ extension MultiPaneController: MultiPanePresenterDelegate {
     
     func willPresent(viewController: UIViewController) {
         navigationDelegate?.willPresent?(viewController: viewController)
-        NotificationCenter.default.post(name: .OUIMultiPaneControllerWillPresentPane, object: self)
+        guard let pane = pane(forViewController: viewController) else { return }
+        
+        NotificationCenter.default.post(name: .OUIMultiPaneControllerWillPresentPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
     }
     
     func navigationAnimationController(for operation: UINavigationControllerOperation, animatingTo toVC: UIViewController, from fromVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {

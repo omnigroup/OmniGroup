@@ -9,7 +9,6 @@
 
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
-#import <OmniUI/OUIAboutThisAppViewController.h>
 #import <OmniUI/OUIAbstractColorInspectorSlice.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 #import <OmniUI/OUIActionInspectorSlice.h>

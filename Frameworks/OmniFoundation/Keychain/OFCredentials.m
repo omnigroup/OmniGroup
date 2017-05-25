@@ -22,7 +22,7 @@ NSString * const OFCredentialsSecurityErrorDomain = @"com.omnigroup.OmniFoundati
 
 static NSString *_OFCertificateTrustPromptForErrorCode(NSInteger, NSString *);
 
-void _OFSecError(const char *caller, const char *function, OSStatus code, NSError **outError)
+void _OFSecError(const char *caller, const char *function, OSStatus code, NSError * __autoreleasing *outError)
 {
     NSString *errorMessage;
     

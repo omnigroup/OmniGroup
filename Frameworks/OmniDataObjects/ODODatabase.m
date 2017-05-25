@@ -129,9 +129,8 @@ static BOOL ODOVacuumOnDisconnect = NO;
 
 @end
 
-@implementation ODODatabase
-{
-@private
+@implementation ODODatabase {
+  @private
     ODOModel *_model;
     
     ODOSQLStatement *_metadataInsertStatement;
@@ -154,7 +153,7 @@ static BOOL ODOVacuumOnDisconnect = NO;
     ODOVacuumOnDisconnect = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOVacuumOnDisconnect"];
 }
 
-- (id)initWithModel:(ODOModel *)model;
+- (instancetype)initWithModel:(ODOModel *)model;
 {
     OBPRECONDITION(model);
     

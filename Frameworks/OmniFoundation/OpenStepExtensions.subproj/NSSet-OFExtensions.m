@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,11 @@ RCS_ID("$Id$");
 
 - (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
 {
-    NSMutableArray *into = [NSMutableArray arrayWithCapacity:[self count]];
+    NSUInteger cardinality = [self count];
+    if (cardinality < 2)
+        return [self allObjects];
+    
+    NSMutableArray *into = [NSMutableArray arrayWithCapacity:cardinality];
     for (id object in self) {
         [into insertObject:object inArraySortedUsingSelector:comparator];
     }
@@ -69,7 +73,11 @@ RCS_ID("$Id$");
 
 - (NSArray *)sortedArrayUsingComparator:(OFSetObjectComparator)comparator;
 {
-    NSMutableArray *into = [NSMutableArray arrayWithCapacity:[self count]];
+    NSUInteger cardinality = [self count];
+    if (cardinality < 2)
+        return [self allObjects];
+    
+    NSMutableArray *into = [NSMutableArray arrayWithCapacity:cardinality];
     for (id object in self) {
         [into insertObject:object inArraySortedUsingComparator:comparator];
     }

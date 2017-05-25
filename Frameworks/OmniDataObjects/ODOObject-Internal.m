@@ -88,6 +88,8 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _ODOObjectReleaseValues(self);
 
     _flags.isFault = YES;
+    
+    [self didTurnIntoFault];
 }
 
 - (void)_invalidate;
@@ -108,6 +110,28 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _editingContext = nil;
     
     // We leave _objectID; notification observers need to be able to get the entity/pk of deleted objects.
+}
+
+- (BOOL)_isCalculatingValueForKey:(NSString *)key;
+{
+    return [_keysForPropertiesBeingCalculated containsObject:key];
+}
+
+- (void)_setIsCalculatingValueForKey:(NSString *)key;
+{
+    if (_keysForPropertiesBeingCalculated == nil) {
+        _keysForPropertiesBeingCalculated = [[NSMutableSet alloc] init];
+        [_keysForPropertiesBeingCalculated addObject:key];
+    }
+}
+
+- (void)_clearIsCalculatingValueForKey:(NSString *)key;
+{
+    [_keysForPropertiesBeingCalculated removeObject:key];
+    if (_keysForPropertiesBeingCalculated.count == 0) {
+        [_keysForPropertiesBeingCalculated release];
+        _keysForPropertiesBeingCalculated = nil;
+    }
 }
 
 NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)

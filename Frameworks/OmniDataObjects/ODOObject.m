@@ -153,11 +153,13 @@ NS_ASSUME_NONNULL_BEGIN
     OBPRECONDITION(!_ODOObjectHasValues(self));
 
     OBPRECONDITION(_objectID != nil); // This doesn't get cleared when the object is invalidated.  Notification listeners need to know the entity/pk of deleted objects.
+    OBPRECONDITION(_keysForPropertiesBeingCalculated == nil);
 
     _ODOObjectReleaseValuesIfPresent(self); // Just in case
 
     [_editingContext release];
     [_objectID release];
+    [_keysForPropertiesBeingCalculated release];
     
     [super dealloc];
 }
@@ -334,19 +336,23 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     return _observationInfo;
 }
 
-#ifdef OMNI_ASSERTIONS_ON
 - (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;
 {
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Adding an observer when changeProcessingDisabled. willChangeValueForKey:/didChangeValueForKey: may not fire.");
-    [super addObserver:observer forKeyPath:keyPath options:options context:context];
-}
-#endif
 
-- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key;
-{
-    ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
-    OBASSERT(prop); // shouldn't ask for non-model properties via this interface
-    ODOObjectSetPrimitiveValueForProperty(self, value, prop);
+    // If this is a leaf key path associated with a transient + calculated property, calculate it now if needed.
+    
+    ODOEntity *entity = self.entity; // TODO: Disallow subclassing -entity via setup check.  Then inline it here.
+    if ([entity.calculatedTransientPropertyNameSet containsObject:keyPath]) {
+        ODOProperty *prop = [entity propertyNamed:keyPath];
+        id value = ODOObjectPrimitiveValueForProperty(self, prop);
+        if (value == nil) {
+            value = [self calculateValueForKey:keyPath];
+            ODOObjectSetPrimitiveValueForProperty(self, value, prop);
+        }
+    }
+
+    [super addObserver:observer forKeyPath:keyPath options:options context:context];
 }
 
 - (nullable id)primitiveValueForKey:(NSString *)key;
@@ -356,6 +362,56 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     OBASSERT(prop); // shouldn't ask for non-model properties via this interface
     
     return ODOObjectPrimitiveValueForProperty(self, prop);
+}
+
+- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key;
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
+    OBASSERT(prop); // shouldn't ask for non-model properties via this interface
+    ODOObjectSetPrimitiveValueForProperty(self, value, prop);
+}
+
+- (nullable id)calculateValueForKey:(NSString *)key;
+{
+    OBPRECONDITION(key.length > 0);
+    
+    NSString *selectorString = [NSString stringWithFormat:@"calculateValueFor%@%@", [key substringToIndex:1].capitalizedString, [key substringFromIndex:1]];
+    SEL selector = NSSelectorFromString(selectorString);
+
+    if ([self respondsToSelector:selector]) {
+        return OBSendObjectReturnMessage(self, selector);
+    }
+    
+    OBASSERT_NOT_REACHED("Unhandled value for key: %@ and/or missing implementation of -%@.", key, selectorString);
+    return nil;
+}
+
+- (void)invalidateCalculatedValueForKey:(NSString *)key;
+{
+    // REVIEW: Do we want to batch these up and perform the work coalesced at -processPendingChanges time?
+    
+    OBPRECONDITION(![self isDeleted]);
+    if ([self isDeleted]) {
+        return;
+    }
+    
+    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
+
+#ifdef OMNI_ASSERTIONS_ON
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+    OBASSERT(!flags.relationship && flags.transient && flags.calculated);
+#endif
+    
+    id value = [self calculateValueForKey:key];
+    if (value != nil) {
+        [self _setIsCalculatingValueForKey:key];
+
+        [self willChangeValueForKey:key];
+        ODOObjectSetPrimitiveValueForProperty(self, value, prop);
+        [self didChangeValueForKey:key];
+        
+        [self _clearIsCalculatingValueForKey:key];
+    }
 }
 
 - (nullable id)valueForKey:(NSString *)key;
@@ -437,9 +493,20 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 
     [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
         // Model loading code ensures that the primary key attribute doesn't have a default value
-        
         // Set this even if the default value is nil in case we are re-establishing default values
+
+        BOOL isTransientCalculated = [attr isTransient] && [attr isCalculated];
+        
+        if (isTransientCalculated) {
+            // When setting the default value, avoid calculating the value when ODOObjectSetPrimitiveValueForProperty queries the previous value.
+            [self _setIsCalculatingValueForKey:attr.name];
+        }
+
         ODOObjectSetPrimitiveValueForProperty(self, attr.defaultValue, attr); // Bypass this and set the primitive value to avoid and setter.
+
+        if (isTransientCalculated) {
+            [self _clearIsCalculatingValueForKey:attr.name];
+        }
     }];
 
     [attributes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
@@ -686,6 +753,11 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 }
 
 - (void)willTurnIntoFault;
+{
+    // Nothing; for subclasses
+}
+
+- (void)didTurnIntoFault;
 {
     // Nothing; for subclasses
 }
@@ -1149,12 +1221,15 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
         for (ODOProperty *prop in props) {
             NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
             id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-            if (!value)
+            if (value == nil) {
                 value = [NSNull null];
-            else if ([value isKindOfClass:[NSSet class]])
+            } else if ([value isKindOfClass:[NSSet class]]) {
                 value = [value valueForKey:@"shortDescription"];
-            else if ([value isKindOfClass:[ODOObject class]])
+            } else if ([value isKindOfClass:[NSArray class]]) {
+                value = [value valueForKey:@"shortDescription"];
+            } else if ([value isKindOfClass:[ODOObject class]]) {
                 value = [value shortDescription];
+            }
             
             [valueDict setObject:value forKey:[prop name]];
         }

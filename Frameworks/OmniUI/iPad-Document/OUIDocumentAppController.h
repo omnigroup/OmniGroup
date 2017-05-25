@@ -109,6 +109,8 @@
 /// Default is _window.tintColor.
 - (UIColor *)launchActivityIndicatorColor;
 
+- (BOOL)shouldEnabledCopyFromWebDAV; // default YES
+
 // Helpful dialogs
 - (void)presentSyncError:(NSError *)syncError forAccount:(OFXServerAccount *)account inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;
 - (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;

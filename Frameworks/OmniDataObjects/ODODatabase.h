@@ -18,15 +18,17 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 
 @interface ODODatabase : OFObject
 
-- (id)initWithModel:(ODOModel *)model;
-@property(readonly) ODOModel *model;
+- (instancetype)initWithModel:(ODOModel *)model;
 
 @property (nullable, readonly) ODOSQLConnection *connection;
 @property (nullable, readonly) NSURL *connectedURL; // convenience for connection.URL
+@property (nonatomic, readonly) ODOModel *model;
+
 - (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
 - (BOOL)disconnect:(NSError **)outError;
 
-@property(readonly) BOOL isFreshlyCreated;
+@property(nonatomic, readonly, getter=isFreshlyCreated) BOOL freshlyCreated;
+
 - (void)didSave;
 
 // Values can be any plist type.  Setting a NSNull or nil will cause the metadata value to be removed.  Metadata changes are saved with the next normal save.

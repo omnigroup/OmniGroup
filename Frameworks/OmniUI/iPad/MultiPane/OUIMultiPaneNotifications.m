@@ -17,3 +17,5 @@ NSNotificationName const OUIMultiPaneControllerDidHidePaneNotification = @"OUIMu
 NSNotificationName const OUIMultiPaneControllerDidShowPaneNotification = @"OUIMultiPaneControllerDidShowPaneNotification";
 
 NSNotificationName const OUIMultiPaneControllerWillPresentPaneNotification = @"OUIMultiPaneControllerWillPresentPaneNotification";
+
+NSString * const OUIMultiPaneControllerPaneLocationUserInfoKey = @"OUIMultiPaneControllerPaneLocationUserInfoKey"; // NSNumber representing rawValue of the OUIMultiPaneLocation

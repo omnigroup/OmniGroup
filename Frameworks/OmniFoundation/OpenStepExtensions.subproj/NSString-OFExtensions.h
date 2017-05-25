@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -104,6 +104,12 @@ enum {
 - (NSString *)substringStartingAfterString:(NSString *)startString;
 - (NSArray *)componentsSeparatedByString:(NSString *)separator maximum:(NSUInteger)atMost;
 - (NSArray *)componentsSeparatedByCharactersFromSet:(NSCharacterSet *)delimiterSet;
+
+typedef NS_OPTIONS(NSUInteger, OFComponentsSeparatedByStringOptions) {
+    OFComponentsSeparatedByStringOptionsConsumeWhitespaceSurroundingDelimiter = 0x01,
+};
+- (NSArray *)componentsSeparatedByString:(NSString *)separator options:(OFComponentsSeparatedByStringOptions)options;
+- (NSArray *)componentsSeparatedByRegularExpression:(NSRegularExpression *)expression;
 
 - (NSString *)stringByIndenting:(NSInteger)spaces;
 - (NSString *)stringByWordWrapping:(NSInteger)columns;

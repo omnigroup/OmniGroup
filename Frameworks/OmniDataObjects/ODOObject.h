@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     OB_STRONG id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
     
+    NSMutableSet<NSString *> *_keysForPropertiesBeingCalculated;
+    
     struct {
         unsigned int isFault : 1;
         unsigned int changeProcessingDisabled : 1;
@@ -53,8 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)willAccessValueForKey:(nullable NSString *)key;
 - (void)didAccessValueForKey:(NSString *)key;
 
-- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key; // do not subclass
 - (nullable id)primitiveValueForKey:(NSString *)key; // do not subclass
+- (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key; // do not subclass
+
+- (nullable id)calculateValueForKey:(NSString *)key NS_REQUIRES_SUPER;
+- (void)invalidateCalculatedValueForKey:(NSString *)key;
 
 - (void)setDefaultAttributeValues;
 
@@ -68,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=isAwakingFromUnarchive) BOOL awakingFromUnarchive;
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 
-- (BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
+@property (nonatomic, readonly, getter=isAwakingFromReinsertionAfterUndoneDeletion) BOOL awakingFromReinsertionAfterUndoneDeletion;
 - (void)awakeFromReinsertionAfterUndoneDeletion;
 
 @property (nonnull, nonatomic, readonly) ODOEntity *entity; // do not subclass
@@ -91,6 +96,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=isFault) BOOL fault;
 
 - (void)willTurnIntoFault;
+- (void)didTurnIntoFault;
+
 - (void)turnIntoFault;
 
 - (BOOL)hasFaultForRelationship:(ODORelationship *)rel;

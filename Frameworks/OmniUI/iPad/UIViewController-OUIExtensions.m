@@ -94,6 +94,9 @@ RCS_ID("$Id$");
 
 - (BOOL)shouldBeDismissedTransitioningToTraitCollection:(UITraitCollection *)traitCollection;
 {
+    if ([self isKindOfClass:[UIAlertController class]]) {
+        return NO;
+    }
     return YES;
 }
 

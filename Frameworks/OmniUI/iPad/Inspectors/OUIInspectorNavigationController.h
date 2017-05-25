@@ -11,6 +11,7 @@
 
 @interface OUIInspectorNavigationController : OUINavigationController <OUIInspectorPaneContaining>
 
-@property BOOL willDismissInspector;
+/// Pops the nav stack to the top most OUIInspectorPane that is appropriate for the inspectedObjects, ensuring that all OUIInspectorPane's under it are also appropriate.
+- (void)popToAppropriatePane;
 
 @end

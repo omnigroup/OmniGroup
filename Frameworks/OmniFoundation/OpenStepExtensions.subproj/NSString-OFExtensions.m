@@ -654,6 +654,82 @@ OBDidLoad(^{
     return result;
 }
 
+- (NSArray *)componentsSeparatedByString:(NSString *)separator options:(OFComponentsSeparatedByStringOptions)options;
+{
+    if (options == 0) {
+        return [self componentsSeparatedByString:separator];
+    }
+    
+    // Only one option is currently supported.
+    OBASSERT(options == OFComponentsSeparatedByStringOptionsConsumeWhitespaceSurroundingDelimiter);
+    separator = [separator stringByRemovingSurroundingWhitespace];
+    
+    static NSCache *patternCache = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        patternCache = [[NSCache alloc] init];
+    });
+    
+    NSRegularExpression *expression = [patternCache objectForKey:separator];
+
+    if (expression == nil) {
+        NSError *error = nil;
+        NSString *patternString = [NSString stringWithFormat:@"\\s*%@\\s*", [NSRegularExpression escapedPatternForString:separator]];
+        
+        expression = [NSRegularExpression regularExpressionWithPattern:patternString options:0 error:&error];
+        OBASSERT(expression != nil, @"Compiling regular expression failed: %@", error);
+        if (expression == nil) {
+            NSString *immutableCopy = [[self copy] autorelease];
+            return @[immutableCopy];
+        }
+        
+        [patternCache setObject:expression forKey:separator];
+    }
+    
+    NSString *trimmedInputString = [self stringByRemovingSurroundingWhitespace];
+    return [trimmedInputString componentsSeparatedByRegularExpression:expression];
+}
+
+- (NSArray *)componentsSeparatedByRegularExpression:(NSRegularExpression *)expression;
+{
+    NSArray *result = nil;
+    NSRange tailRange = NSMakeRange(0, self.length);
+    NSMutableArray *components = [[NSMutableArray alloc] init];
+    
+    for(;;) {
+        if (tailRange.length == 0) {
+            break;
+        }
+        
+        NSRange separatorRange = [expression rangeOfFirstMatchInString:self options:0 range:tailRange];
+        if (separatorRange.location == NSNotFound) {
+            break;
+        }
+        
+        NSRange componentRange;
+        componentRange.location = tailRange.location;
+        componentRange.length = (separatorRange.location - tailRange.location);
+        [components addObject:[self substringWithRange:componentRange]];
+        
+        tailRange = NSMakeRange(NSMaxRange(separatorRange), NSMaxRange(tailRange) - NSMaxRange(separatorRange));
+    }
+    
+    if ([components count] == 0) {
+        NSString *immutableCopy = nil;
+        
+        // Short-circuit.
+        [components release];
+        immutableCopy = [self copy];
+        result = @[immutableCopy];
+        [immutableCopy release];
+    } else {
+        [components addObject:[self substringWithRange:tailRange]];
+        result = [components autorelease];
+    }
+    
+    return result;
+}
+
 - (NSString *)stringByIndenting:(NSInteger)spaces;
 {
     return [self stringByIndenting:spaces andWordWrapping:NSIntegerMax withFirstLineIndent:spaces];

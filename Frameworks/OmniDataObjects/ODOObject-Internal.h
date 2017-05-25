@@ -24,12 +24,17 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ODOObject (Internal)
+
 - (BOOL)_isAwakingFromInsert;
 - (void)_setIsAwakingFromInsert:(BOOL)isAwakingFromInsert;
 - (void)_setIsAwakingFromReinsertionAfterUndoneDeletion:(BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
 - (void)_setIsFault:(BOOL)isFault;
 - (void)_turnIntoFault:(BOOL)deleting;
 - (void)_invalidate;
+
+- (BOOL)_isCalculatingValueForKey:(NSString *)key;
+- (void)_setIsCalculatingValueForKey:(NSString *)key;
+- (void)_clearIsCalculatingValueForKey:(NSString *)key;
 
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_odo_checkInvariants;

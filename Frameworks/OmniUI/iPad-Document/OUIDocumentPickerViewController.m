@@ -2362,7 +2362,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 if ([delegate respondsToSelector:@selector(documentPickerMainToolbarSelectionFormatForFileItems:)])
                     format = [delegate documentPickerMainToolbarSelectionFormatForFileItems:selectedItems];
                 
-                if ([NSString isEmptyString:format]) {
+                if (OFIsEmptyString(format)) {
                     if (selectedItemCount == 0)
                         format = NSLocalizedStringFromTableInBundle(@"Select a Document", @"OmniUIDocument", OMNI_BUNDLE, @"Main toolbar title for a no selected documents.");
                     else if (selectedItemCount == 1)

@@ -209,12 +209,48 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     
     // TODO: Verify that the object being inserted isn't some old dead invalidated object (previously deleted and a save happened since then).
     
-    if (!self->_recentlyInsertedObjects)
+    if (self->_recentlyInsertedObjects == nil) {
         self->_recentlyInsertedObjects = ODOEditingContextCreateRecentSet(self);
+    }
     
     [self->_recentlyInsertedObjects addObject:object];
     self->_nonretainedLastRecentlyInsertedObject = object;
     [self _registerObject:object];
+}
+
+static void ODOEditingContextInternalPromoteInsertToUpdate(ODOEditingContext *self, ODOObject *object)
+{
+    OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
+    OBPRECONDITION([object isKindOfClass:[ODOObject class]]);
+    OBPRECONDITION([object editingContext] == self);
+    
+    OBPRECONDITION(!self->_isValidatingAndWritingChanges); // Can't make edits in the validation methods
+    OBPRECONDITION([self->_recentlyInsertedObjects containsObject:object] || [self->_processedInsertedObjects containsObject:object]);
+    
+    if ([self->_recentlyInsertedObjects containsObject:object]) {
+        if (self->_recentlyUpdatedObjects == nil) {
+            self->_recentlyUpdatedObjects = ODOEditingContextCreateRecentSet(self);
+        }
+        
+        [self->_recentlyUpdatedObjects addObject:object];
+        [self->_recentlyInsertedObjects removeObject:object];
+        
+        id snapshot = [self->_objectIDToCommittedPropertySnapshot objectForKey:object.objectID];
+        if (self->_objectIDToLastProcessedSnapshot == nil) {
+            self->_objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
+        }
+
+        [self->_objectIDToLastProcessedSnapshot setObject:snapshot forKey:object.objectID];
+    } else if ([self->_processedInsertedObjects containsObject:object]) {
+        OBStopInDebugger("Step through and verify.");
+
+        if (self->_processedUpdatedObjects == nil) {
+            self->_processedUpdatedObjects = [[NSMutableSet alloc] init];
+        }
+
+        [self->_processedUpdatedObjects addObject:object];
+        [self->_processedInsertedObjects removeObject:object];
+    }
 }
 
 // This is the global first-time insertion hook.  This should only be called with *new* objects.  That is, the undo of a delete should *not* go through here since that would re-call the -awakeFromInsert method.
@@ -234,6 +270,20 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     }
     
     @try {
+        BOOL shouldPromoteInsertToUpdate = NO;
+        
+        ODOObject *previouslyRegisteredObject = [_registeredObjectByID objectForKey:[object objectID]];
+        if (previouslyRegisteredObject != nil) {
+            // Assert that the object we are trying to "replace" has been deleted
+            OBASSERT([_recentlyDeletedObjects containsObject:_recentlyDeletedObjects] || [_processedDeletedObjects containsObject:previouslyRegisteredObject]);
+            [_recentlyDeletedObjects removeObject:previouslyRegisteredObject];
+            [_processedDeletedObjects removeObject:previouslyRegisteredObject];
+            ODOEditingContextDidDeleteObjects(self, [NSSet setWithObject:previouslyRegisteredObject]);
+
+            // Fall through and insert the new object as normal for now; after insertion we'll promote it to an update
+            shouldPromoteInsertToUpdate = YES;
+        }
+        
         ODOEditingContextInternalInsertObject(self, object);
         
         OBASSERT(![object _isAwakingFromInsert]);
@@ -246,8 +296,14 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
         
         // If this was to be undeletable, make sure it gets processed while undo is off
         if (undeletable) {
-            while (_recentlyInsertedObjects || _recentlyUpdatedObjects || _recentlyDeletedObjects)
+            while (_recentlyInsertedObjects || _recentlyUpdatedObjects || _recentlyDeletedObjects) {
                 [self processPendingChanges];
+            }
+        }
+        
+        if (shouldPromoteInsertToUpdate) {
+            // promote to object to the updated objects set, since it isn't really an insert
+            ODOEditingContextInternalPromoteInsertToUpdate(self, object);
         }
         
     } @finally {
@@ -1765,7 +1821,7 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
             [dest didChangeValueForKey:invKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
         } else {
             OBASSERT(action == ODOEditingContextUndoRelationshipsForDeletion);
-            OBASSERT([toManySet member:object] != nil); // the relationship should be fully formed before we act
+            OBASSERT(!toManySet || [toManySet member:object] != nil); // the relationship should be fully formed before we act, or have never been faulted in
             
             // Need to clear the forward to-ones too, to ensure that on undo/redo, any multi-stage keyPaths get their KVO on sub-paths deregistered. Then, when the outside objects remove observers, our to-one getters can return nil and they can clean up w/o trouble.
             OBASSERT(dest); // checked above
@@ -1774,7 +1830,7 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
             ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
             [object didChangeValueForKey:forwardKey];
 
-            OBASSERT([toManySet member:object] == nil); // ODOObjectSetPrimitiveValueForProperty should have cleaned up and sent KVO for the inverse to-many too.
+            OBASSERT(!toManySet || [toManySet member:object] == nil); // ODOObjectSetPrimitiveValueForProperty should have cleaned up and sent KVO for the inverse to-many too.
         }
     }
 }

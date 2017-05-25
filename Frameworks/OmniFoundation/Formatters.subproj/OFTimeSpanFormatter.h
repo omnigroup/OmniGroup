@@ -60,6 +60,8 @@ typedef NS_ENUM(NSUInteger, OFTimeSpanFormatterUnit) {
 - (OFTimeSpan *)timeSpanValueForNumberValue:(NSNumber *)aNumber;
 - (OFTimeSpan *)timeSpanValueForString:(NSString *)string errorDescription:(out NSString **)error;
 
+- (NSString *)placeholderString;  // 0 of the lowest enabled unit, localized, unrounded, obeying the above flags but will not displayUnmodifiedTimeSpan even if the receiver does
+
 @property (nonatomic, assign) float hoursPerDay;
 @property (nonatomic, assign) float hoursPerWeek;
 @property (nonatomic, assign) float hoursPerMonth;

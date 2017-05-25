@@ -115,6 +115,17 @@ RCS_ID("$Id$")
     [self.webView loadData:data MIMEType:mimeType characterEncodingName:@"utf-8" baseURL:baseURL];
 }
 
+- (void)invokeJavaScriptBeforeLoad:(NSString *)javaScript;
+{
+    OBPRECONDITION(javaScript != nil);
+    if (javaScript == nil) {
+        return;
+    }
+    
+    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:javaScript injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+    [self.webView.configuration.userContentController addUserScript:userScript];
+}
+
 - (void)invokeJavaScriptAfterLoad:(NSString *)javaScript completionHandler:(void (^)(id, NSError *))completionHandler;
 {
     OBPRECONDITION(javaScript != nil);
@@ -243,6 +254,13 @@ RCS_ID("$Id$")
 
     // we have removed the back button so if you get here, hopefully you are our initial launch page and nothing else.
     decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(null_unspecified WKNavigation *)navigation;
+{
+    if (_commitLoadBlock != NULL) {
+        _commitLoadBlock(self, webView.URL);
+    }
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;

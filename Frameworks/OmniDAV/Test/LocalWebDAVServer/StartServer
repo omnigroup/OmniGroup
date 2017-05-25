@@ -12,7 +12,12 @@ set -x
 
 : ${ROOT:=/Users/Shared/$USER/LocalWebDAVServer}
 : ${REALM="My Test Realm"}
-: ${HTTPD=`which httpd`}
+
+if [ -x /usr/local/apache2/bin/httpd ]; then
+	HTTPD=/usr/local/apache2/bin/httpd
+else
+	: ${HTTPD=`which httpd`}
+fi
 
 RUN_DIR="$ROOT/Run"
 DOC_DIR="$ROOT/Documents"

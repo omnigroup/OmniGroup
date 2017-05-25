@@ -21,14 +21,18 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 
 @property (nonatomic, weak) id <OUIWebViewControllerDelegate> delegate;
 @property (nonatomic, copy) void (^closeBlock)(OUIWebViewController *webViewController);
+@property (nonatomic, copy) void (^commitLoadBlock)(OUIWebViewController *webViewController, NSURL *url);
 @property (nonatomic, copy) void (^reloadBlock)(OUIWebViewController *webViewController, NSURL *url);
 @property (nonatomic, copy) void (^callbackBlock)(OUIWebViewController *webViewController, NSString *callback);
 
 @property (nonatomic, copy) NSURL *URL; // loads URL as a side effect of setting it
 @property (nonatomic, readonly, strong) WKWebView *webView;
 
+- (void)_updateBarButtonItems;
+
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
 
+- (void)invokeJavaScriptBeforeLoad:(NSString *)javaScript;
 - (void)invokeJavaScriptAfterLoad:(NSString *)javaScript completionHandler:(void (^)(id, NSError *))completionHandler;
 - (void)callJavaScript:(NSString *)javaScript completionHandler:(void (^)(id, NSError *error))completionHandler;
 - (void)callJavaScriptFunction:(NSString *)function withJSONParameters:(id)parameters completionHandler:(void (^)(id, NSError *error))completionHandler;

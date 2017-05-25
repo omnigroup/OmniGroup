@@ -20,7 +20,7 @@
 @property (nonatomic) BOOL drawsBorder;
 
 /// If set, called to get various appearance properties. If nil, default values are used
-@property (nonatomic, weak) id <OUINoteTextViewAppearanceDelegate> appearanceDelegate;
+@property (nonatomic, weak) IBOutlet id <OUINoteTextViewAppearanceDelegate> appearanceDelegate;
 
 - (void)appearanceDidChange;
 

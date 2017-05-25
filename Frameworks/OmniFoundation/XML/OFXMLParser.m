@@ -443,6 +443,8 @@ static BOOL _checkForUnparsedElement(OFXMLParserState *state, OFXMLQName *elemen
             state->unparsedBlockStart = p - base + state->ctxt->input->consumed;
             state->unparsedBlockElementNesting = 0;
 
+            // REVIEW: If the behavior is OFXMLParserElementBehaviorSkip we don't need to accumulate the a copy of the unparsed data.
+            // See bug:///144021 (Frameworks-Mac Performance: Optimize unparsed data for skip behavior)
             OBASSERT(state->unparsedElementData == nil);
             state->unparsedElementData = [[NSMutableData alloc] init];
             //fprintf(stderr, "unparsed element '%s' starts at offset %qd\n", localname, state->unparsedBlockStart);
@@ -602,14 +604,14 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
                 
                 [unparsedElementData release];
                 unparsedElementData = nil;
-
-                [state->unparsedElementData release];
-                state->unparsedElementData = nil;
-                
-                [state->unparsedElementID release];
-                state->unparsedElementID = nil;
             }
+
+            [state->unparsedElementData release];
+            state->unparsedElementData = nil;
             
+            [state->unparsedElementID release];
+            state->unparsedElementID = nil;
+
             state->unparsedBlockStart = -1; // end of the unparsed block
             return;
         } else {

@@ -50,6 +50,7 @@ RCS_ID("$Id$")
 
     [_derivedPropertyNameSet release];
     [_nonDateModifyingPropertyNameSet release];
+    [_calculatedTransientPropertyNameSet release];
     
     [super dealloc];
 }
@@ -230,6 +231,12 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
 {
     OBPRECONDITION(_nonDateModifyingPropertyNameSet);
     return _nonDateModifyingPropertyNameSet;
+}
+
+- (NSSet *)calculatedTransientPropertyNameSet;
+{
+    OBPRECONDITION(_calculatedTransientPropertyNameSet);
+    return _calculatedTransientPropertyNameSet;
 }
 
 #ifdef DEBUG
@@ -477,12 +484,22 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
         }
     }
 
-    for (ODORelationship *rel in _toManyRelationships)
+    for (ODORelationship *rel in _toManyRelationships) {
         OBASSERT([derivedPropertyNameSet member:rel.name]);
+    }
 #endif
+    
+    NSMutableSet *calculatedTransientPropertyNameSet = [NSMutableSet set];
+    for (ODOProperty *property in _properties) {
+        struct _ODOPropertyFlags flags = ODOPropertyFlags(property);
+        if (!flags.relationship && flags.transient && flags.calculated) {
+            [calculatedTransientPropertyNameSet addObject:property.name];
+        }
+    }
     
     _derivedPropertyNameSet = [derivedPropertyNameSet copy];
     _nonDateModifyingPropertyNameSet = [nonDateModifyingPropertyNameSet copy];
+    _calculatedTransientPropertyNameSet = [calculatedTransientPropertyNameSet copy];
 
     // Old API that our instance class shouldn't try to implement any more since we aren't going to use it!
     OBASSERT(OBClassImplementingMethod(_instanceClass, @selector(derivedPropertyNameSet)) == Nil);

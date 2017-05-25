@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, OFRunLoopRunType) {
 };
 
 typedef BOOL (^OFRunLoopRunPredicate)(void);
-extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate _Nullable predicate);
+extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate NS_NOESCAPE _Nullable predicate);
 
 extern NSString * _Nullable OFInstanceMethodReturnTypeEncoding(Class cls, SEL sel);
 

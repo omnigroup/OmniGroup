@@ -215,7 +215,7 @@ void OFMainThreadPerformBlockSynchronously(void (^block)(void))
 
 // Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.
 
-BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate _Nullable predicate)
+BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, OFRunLoopRunPredicate NS_NOESCAPE _Nullable predicate)
 {
     __block BOOL done = NO;
     

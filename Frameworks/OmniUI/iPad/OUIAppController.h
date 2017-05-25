@@ -58,7 +58,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController;
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("");
 - (void)showOnlineHelp:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 
 // UIApplicationDelegate methods that we implement
@@ -117,6 +117,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 
 /// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated navigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 - (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 - (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 

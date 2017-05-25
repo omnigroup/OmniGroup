@@ -140,6 +140,12 @@ module OmniDataObjects
       fp.m << "#pragma clang diagnostic push\n"
       fp.m << "#pragma clang diagnostic ignored \"-Wundeclared-selector\"\n\n"
       
+      entities.each {|e|
+        fp.m << "@class #{name}#{e.name};\n"
+      }
+      
+      fp.m << "\n"
+
       fp.m << "static ODOModel * #{create_func}(void)\n{\n"
       fp.m << "    DisableAnalysis();\n\n"
       fp.m << "    ODOModel *model = nil;\n\n"

@@ -47,14 +47,16 @@ RCS_ID("$Id$")
     _configuration.HTTPShouldUsePipelining = configuration.HTTPShouldUsePipelining;
 
     // configuration.identifier -- set this for background operations
-    
-    // The request we are given will already have values -- would these override, or are these just for the convenience methods that make requests?
-    //configuration.requestCachePolicy = NSURLRequestUseProtocolCachePolicy;
+
+    // Default to not caching any DAV operations (as we did in ODAVConnection_URLConnection). Individual requests can override.
+    _configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+
     //configuration.timeoutIntervalForRequest = 300;
     
     //configuration = ...
     //configuration.URLCredentialStorage = ...
-    //configuration.URLCache = ...
+    
+    _configuration.URLCache = nil;
     
     /*
      We create a private serial queue for the NSURLSession delegate callbacks. ODAVOperations will receive their internal updates on that queue and then when they fire *their* callbacks, they do it on the queue the initial operation was requested on, or on an explicit queue if -startWithCallbackQueue: was used.

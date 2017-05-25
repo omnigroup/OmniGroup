@@ -44,6 +44,8 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
 
 static OFController *sharedController = nil;
 static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
+static int CrashShouldExitWithCode = 0; // If this is set, OFCrashImmediately will exit with this code.
+
 
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
@@ -124,7 +126,6 @@ static NSString *ControllerClassName(NSBundle *bundle)
     return sharedController;
 }
 
-
 - (id)init;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -152,7 +153,8 @@ static NSString *ControllerClassName(NSBundle *bundle)
 
     // We can't depend on the default being registered here since we are early in startup. Default to on, but then cache the actual value in -didInitialize, once things get registered.
     CrashOnAssertionOrUnhandledException = YES;
-    
+    CrashShouldExitWithCode = [[[NSProcessInfo processInfo] environment][@"OFCrashShouldExitWithCode"] intValue];
+
     NSExceptionHandler *handler = [NSExceptionHandler defaultExceptionHandler];
     [handler setDelegate:self];
     [handler setExceptionHandlingMask:[self exceptionHandlingMask]];
@@ -462,6 +464,9 @@ static void OFCrashImmediately(void)
     if (OFIsRunningUnitTests()) {
         // When running unit tests on our build server, with a loopback ssh connection to allow opening keychains, xctest can hang on a crash of a unit test (it's trying to connect to Xcode it seems).
         exit(1);
+    }
+    if (CrashShouldExitWithCode != 0) {
+        exit(CrashShouldExitWithCode);
     }
 
     unsigned int *bad = (unsigned int *)sizeof(unsigned int);

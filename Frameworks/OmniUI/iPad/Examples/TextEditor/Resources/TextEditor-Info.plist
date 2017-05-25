@@ -117,6 +117,8 @@
         <string>txt</string>
         <string>text</string>
     </array>
+    <key>OUIFeedbackAddress</key>
+    <string>nobody@omnigroup.com</string>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>

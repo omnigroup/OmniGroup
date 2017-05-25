@@ -240,8 +240,9 @@ id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
     
     // Could maybe have extra info in this lookup (attr vs. rel, to-one vs. to-many)?
     NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
-        return [[self objectID] primaryKey];
+    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
+        return self.objectID.primaryKey;
+    }
     
     id value = _ODOObjectValueAtIndex(self, snapshotIndex);
     
@@ -255,6 +256,15 @@ id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
         } else {
             // TODO: Use something like __builtin_expect to tell the inline that rel != nil?  This is the slow path, so I'm not sure it matters...
             value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, snapshotIndex, rel);
+        }
+    } else if (value == nil && flags.transient && flags.calculated && ![self _isCalculatingValueForKey:prop.name]) {
+        value = [self calculateValueForKey:prop.name];
+        if (value != nil) {
+            if ([value conformsToProtocol:@protocol(NSCopying)]) {
+                value = [[value copy] autorelease];
+            }
+
+            _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
         }
     }
     
@@ -1006,6 +1016,8 @@ IMP ODOGetterForProperty(ODOProperty *prop)
         const ODOAccessors *accessors = &IndexedAccessors[snapshotIndex];
         if (flags.relationship) {
             getter = (IMP)(flags.toMany ? accessors->to_many.get : accessors->to_one.get);
+        } else if (flags.transient && flags.calculated) {
+            getter = (IMP)ODOGetterForUnknownOffset;
         } else if (flags.scalarAccessors) {
             OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
             ODOAttribute *attr = (ODOAttribute *)prop;
@@ -1071,6 +1083,8 @@ IMP ODOGetterForProperty(ODOProperty *prop)
         #endif
 
         if (flags.relationship) {
+            getter = (IMP)ODOGetterForUnknownOffset;
+        } else if (flags.transient && flags.calculated) {
             getter = (IMP)ODOGetterForUnknownOffset;
         } else if (flags.scalarAccessors) {
             static IMP UnknownOffsetAccessors[ODOAttributeTypeCount];

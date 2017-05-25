@@ -46,9 +46,9 @@ struct _ODOPropertyFlags {
 @property (nonatomic, readonly) ODOEntity *entity;
 @property (nonatomic, readonly) NSString *name;
 
-@property (nonatomic, readonly, getter=isOptional) BOOL isOptional;
-@property (nonatomic, readonly, getter=isTransient) BOOL isTransient;
-@property (nonatomic, readonly, getter=isCalculated) BOOL isCalculated;
+@property (nonatomic, readonly, getter=isOptional) BOOL optional;
+@property (nonatomic, readonly, getter=isTransient) BOOL transient;
+@property (nonatomic, readonly, getter=isCalculated) BOOL calculated;
 
 - (NSComparisonResult)compareByName:(ODOProperty *)prop;
 
