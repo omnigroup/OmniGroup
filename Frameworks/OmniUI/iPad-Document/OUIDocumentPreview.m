@@ -1078,7 +1078,7 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
 - (void)startLoadingPreview;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION([[OUIDocumentAppController controller] document] == nil, "Don't load previews while we have an open document.");
+    OBPRECONDITION([[OUIDocumentAppController controller] document] == nil, "Don't load previews while we have an open document.  bug:///137636 (iOS-OmniGraffle Crasher: assertion fails sometimes saving document preview on close)"); 
 
     if (_image)
         return; // Already loaded!

@@ -357,7 +357,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 - (OFControllerTerminateReply)requestTermination;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_status == OFControllerStatusRunning);
+    OBPRECONDITION(_status <= OFControllerStatusRunning);
     
     self.status = OFControllerStatusRequestingTerminate;
     
@@ -617,6 +617,9 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         IGNORE_CRASH(@"NSVBSavePanel", @selector(_attachSandboxExtension:toURL:)) // saving a stencil? <bug:///135373>
 
         IGNORE_CRASH(@"NSRemoteView", @selector(_evaluateKeyness:forWindow:))
+
+        // bug:///139696 (Mac-OmniOutliner Crasher: Crash typing multibyte characters into save panel name field on touch bar MBP)
+        IGNORE_CRASH(@"NSRemoteView", @selector(_showTouchBarPopover:fromItem:wthOverlayIdentifier:withCloseButton:withControlStrip:));
 
         IGNORE_CRASH(@"NSLayerCentricRemoteView", @selector(maintainFirstResponder:inDirection:)) // unknown, <bug:///135373>
 

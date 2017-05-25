@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		154070B81E7B52F900939905 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070B61E7B52F900939905 /* ko.lproj */; };
+		154070B91E7B52F900939905 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070B71E7B52F900939905 /* pt-BR.lproj */; };
 		1E07D6C91C20E95C00208D55 /* ODAVStaleFiles.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E558DD519E3774C0074C8EE /* ODAVStaleFiles.m */; };
 		1E2C4DBA1C0E2D1D00E2E090 /* ODAVStaleFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E558DD619E3774C0074C8EE /* ODAVStaleFiles.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E558DD419E3774C0074C8EE /* ODAVStaleFiles.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -145,6 +147,8 @@
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		154070B61E7B52F900939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
+		154070B71E7B52F900939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		15711356186375E5002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		15F7CBE0185F980800EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15F7CBE1185F980800EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
@@ -400,12 +404,14 @@
 		15F7CBE7185F980E00EFB846 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				15711356186375E5002F6107 /* ja.lproj */,
 				15F7CBE0185F980800EFB846 /* de.lproj */,
 				15F7CBE1185F980800EFB846 /* es.lproj */,
 				15F7CBE2185F980800EFB846 /* fr.lproj */,
 				15F7CBE3185F980800EFB846 /* it.lproj */,
+				15711356186375E5002F6107 /* ja.lproj */,
+				154070B61E7B52F900939905 /* ko.lproj */,
 				15F7CBE4185F980800EFB846 /* nl.lproj */,
+				154070B71E7B52F900939905 /* pt-BR.lproj */,
 				15F7CBE5185F980900EFB846 /* ru.lproj */,
 				15F7CBE6185F980900EFB846 /* zh-Hans.lproj */,
 			);
@@ -752,12 +758,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				34D621DD1B38812900DCE250 /* OmniDAV.registrations in Resources */,
+				154070B91E7B52F900939905 /* pt-BR.lproj in Resources */,
 				34D6221F1B3882A500DCE250 /* fr.lproj in Resources */,
 				34D6221C1B38829D00DCE250 /* ja.lproj in Resources */,
 				34D622231B3882A500DCE250 /* zh-Hans.lproj in Resources */,
 				34D622201B3882A500DCE250 /* it.lproj in Resources */,
 				34D6221D1B3882A100DCE250 /* de.lproj in Resources */,
 				34D6221E1B3882A500DCE250 /* es.lproj in Resources */,
+				154070B81E7B52F900939905 /* ko.lproj in Resources */,
 				34D621DE1B38813900DCE250 /* InfoPlist.strings in Resources */,
 				34D622221B3882A500DCE250 /* ru.lproj in Resources */,
 				34D622211B3882A500DCE250 /* nl.lproj in Resources */,

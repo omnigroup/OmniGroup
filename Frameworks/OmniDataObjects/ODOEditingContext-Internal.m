@@ -257,6 +257,17 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
 }
 #endif
 
+// This is used by our accessors and is necessarily a different test than above.
+// -_isBeingDeleted: returns YES for all objects that are scheduled for deleting, since the last -processPendingChanges:.
+// -_isSendingObjectsWillBeDeletedNotificationForObject: only returns YES during the window that ODOEditingContextObjectsWillBeDeletedNotification is being sent.
+//
+// It is only during that second window that it is valid to ask for the objects current value. Outside of that window, access to stored values is illegal, and should return nil for relationships so that we can properly tear down KVO across key paths.
+
+- (BOOL)_isSendingObjectsWillBeDeletedNotificationForObject:(ODOObject *)object;
+{
+    return [_objectsForObjectsWillBeDeletedNotification containsObject:object];
+}
+
 - (void)_undoGroupStarterHack;
 {
     // Nothing

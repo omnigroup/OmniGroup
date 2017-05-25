@@ -24,12 +24,16 @@ OB_REQUIRE_ARC
     };
     
     _Atomic(enum operationState) _state;
+    
+    BOOL observingCancellation;
 }
+
+
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)theKey
 {
     /* It doesn't seem like we should be called with these values, since the property is named w/o the "is"... but we are. Apparently NSOperationQueue observes the key "isExecuting", not "executing". */
-    if ([theKey isEqualToString:@"isExecuting"] || [theKey isEqualToString:@"isFinished"])
+    if ([theKey isEqualToString:OFOperationIsExecutingKey] || [theKey isEqualToString:OFOperationIsFinishedKey])
         return NO;
     
     return [super automaticallyNotifiesObserversForKey:theKey];
@@ -52,10 +56,10 @@ OB_REQUIRE_ARC
 
 - (void)start;
 {
-    [self willChangeValueForKey:@"isExecuting"];
+    [self willChangeValueForKey:OFOperationIsExecutingKey];
     enum operationState st = operationState_unstarted;
     bool did_start_ok = atomic_compare_exchange_strong(&_state, &st, operationState_running);
-    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:OFOperationIsExecutingKey];
     
     if (!did_start_ok) {
         OBRejectInvalidCall(self, _cmd, @"Operation already started");
@@ -64,26 +68,54 @@ OB_REQUIRE_ARC
 
 - (void)finish;
 {
-    [self willChangeValueForKey:@"isExecuting"];
-    [self willChangeValueForKey:@"isFinished"];
+    [self observeCancellation:NO];
+    
+    [self willChangeValueForKey:OFOperationIsExecutingKey];
+    [self willChangeValueForKey:OFOperationIsFinishedKey];
     enum operationState st = operationState_running;
     bool did_finish_ok = atomic_compare_exchange_strong(&_state, &st, operationState_finished);
-    [self didChangeValueForKey:@"isFinished"];
-    [self didChangeValueForKey:@"isExecuting"];
+    [self didChangeValueForKey:OFOperationIsFinishedKey];
+    [self didChangeValueForKey:OFOperationIsExecutingKey];
     
     if (!did_finish_ok) {
         OBRejectInvalidCall(self, _cmd, @"Operation not currently running");
     }
 }
 
-#if 0 /* Not implemented yet */
 /* Cancel handling help */
+
+static char observationCookie;
+
+- (void)observeCancellation:(BOOL)yn;
+{
+    @synchronized (self) {
+        if (yn && !observingCancellation) {
+            [self addObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:&observationCookie];
+        } else if (!yn && observingCancellation) {
+            [self removeObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey context:&observationCookie];
+        }
+    }
+}
+
++ (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
+{
+    if (context != &observationCookie) {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+    
+    OBASSERT([keyPath isEqualToString:OFOperationIsCancelledKey]);
+    NSNumber *value = [change objectForKey:NSKeyValueChangeNewKey];
+    OBASSERT(value != nil);
+    
+    if ([value boolValue]) {
+        [(OFAsynchronousOperation *)object handleCancellation];
+    }
+}
 
 - (void)handleCancellation;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
-#endif
 
 @end
 

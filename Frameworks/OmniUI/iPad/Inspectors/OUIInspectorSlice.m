@@ -155,6 +155,21 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     return inspector;
 }
 
+- (UIView *)contentView {
+    if (_contentView == nil) {
+        _contentView = [[UIView alloc] init];
+        _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.view addSubview:_contentView];
+        
+        [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor];
+        [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor];
+        [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
+        [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor];
+    }
+    
+    return _contentView;
+}
+
 - (void)setAlignmentInsets:(UIEdgeInsets)newValue;
 {
     if (UIEdgeInsetsEqualToEdgeInsets(_alignmentInsets, newValue)) {

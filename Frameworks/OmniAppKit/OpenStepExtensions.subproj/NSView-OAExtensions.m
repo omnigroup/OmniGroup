@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,9 +91,9 @@ static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
 
 #endif
 
-#if 1 && defined(DEBUG_bungi) && defined(OMNI_ASSERTIONS_ON)
-
 // Log attempts to modify the view hierarchy while drawing, possibly related to <bug:///116473> (Crasher: Crash on launch +[NSGraphicsContext restoreGraphicsState] (in AppKit))
+// Too many false positives (AppKit adds/removes views while an ancestor is locked) to have this enabled generally.
+#if 0 && defined(DEBUG_bungi) && defined(OMNI_ASSERTIONS_ON)
 
 static NSCountedSet *ViewsBeingDrawn = nil;
 

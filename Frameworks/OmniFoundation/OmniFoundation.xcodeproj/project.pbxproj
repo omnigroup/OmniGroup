@@ -24,6 +24,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		154070EB1E7B539000939905 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070E91E7B539000939905 /* ko.lproj */; };
+		154070EC1E7B539000939905 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070EA1E7B539000939905 /* pt-BR.lproj */; };
 		1E1B93AA19D232A700693752 /* OFASN1Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B93A819D232A700693752 /* OFASN1Utilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E1B93AB19D232A700693752 /* OFASN1Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B93A819D232A700693752 /* OFASN1Utilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E1B93AC19D232A700693752 /* OFASN1Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B93A919D232A700693752 /* OFASN1Utilities.m */; };
@@ -1444,6 +1446,8 @@
 		06DB16D5FF5DC915C697A12F /* CFString-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CFString-OFExtensions.h"; sourceTree = "<group>"; };
 		06DB16D6FF5DC915C697A12F /* CFString-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CFString-OFExtensions.m"; sourceTree = "<group>"; };
 		06DB16D9FF5DCC3BC697A12F /* OFLowerCaseTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFLowerCaseTest.m; sourceTree = "<group>"; };
+		154070E91E7B539000939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
+		154070EA1E7B539000939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		1571135A1863766C002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		15F7CBFE185F9A3900EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15F7CBFF185F9A3900EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
@@ -3366,7 +3370,9 @@
 				15F7CC00185F9A3900EFB846 /* fr.lproj */,
 				15F7CC01185F9A3900EFB846 /* it.lproj */,
 				1571135A1863766C002F6107 /* ja.lproj */,
+				154070E91E7B539000939905 /* ko.lproj */,
 				15F7CC02185F9A3900EFB846 /* nl.lproj */,
+				154070EA1E7B539000939905 /* pt-BR.lproj */,
 				15F7CC03185F9A3900EFB846 /* ru.lproj */,
 				15F7CC04185F9A3900EFB846 /* zh-Hans.lproj */,
 			);
@@ -4329,7 +4335,9 @@
 				34DAC7CB194F7CC900499116 /* ja.lproj in Resources */,
 				34DAC7CC194F7CC900499116 /* nl.lproj in Resources */,
 				34DAC7CD194F7CC900499116 /* ru.lproj in Resources */,
+				154070EB1E7B539000939905 /* ko.lproj in Resources */,
 				34DAC7CE194F7CC900499116 /* zh-Hans.lproj in Resources */,
+				154070EC1E7B539000939905 /* pt-BR.lproj in Resources */,
 				34F16B81194F6EF000AD9C4D /* Language.strings in Resources */,
 				34F16B80194F6EED00AD9C4D /* EnglishToISO.strings in Resources */,
 				34F16B4B194F6E0500AD9C4D /* OmniFoundation.defaults in Resources */,

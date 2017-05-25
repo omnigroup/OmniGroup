@@ -30,6 +30,7 @@ extern NSString * const OIWorkspaceDidChangeNotification;
 + (void)moveWorkspacesWithNames:(NSArray *)workspaceNames toIndex:(NSInteger)row;
 + (NSString *)userDefaultsKeyWithName:(NSString *)name;
 
+- (instancetype)initWithName:(NSString *)name;
 - (void)loadFrom:(NSString *)name;
 - (void)reset;
 

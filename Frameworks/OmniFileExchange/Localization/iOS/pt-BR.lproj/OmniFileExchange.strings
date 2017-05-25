@@ -1,0 +1,172 @@
+/* Conflict file format */
+"%@ (conflict %lu from %@)" = "%1$@ (conflito %2$lu de %3$@)";
+
+/* Conflict file format */
+"%@ (conflict from %@)" = "%1$@ (conflito de %2$@)";
+
+/* Conflict last edit file format */
+"%@ on %@" = "%1$@ sobre %2$@";
+
+/* Conflict file regular expression */
+"^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(conflito( [0-9+])? de .*\\)$";
+
+/* account credentials missing suggestion */
+"Account is missing login credentials." = "Faltam na conta as credenciais de início de sessão.";
+
+/* account validation error description */
+"Account not configured" = "Conta não configurada";
+
+/* Add server account title */
+"Add Omni Sync Server Account" = "Adicionar Conta do Omni Sync Server";
+
+/* Add server account type */
+"Add WebDAV Server" = "Adicionar Servidor WebDAV";
+
+/* error description */
+"Another account is syncing to this folder already." = "Outra conta já está sincronizando-se com esta pasta.";
+
+/* error reason */
+"Cannot locate synchronized documents folder." = "Não foi possível localizar a pasta de documentos sincronizados.";
+
+/* Error description */
+"Cannot move document." = "Não foi possível mover o documento.";
+
+/* Error description */
+"Cannot start account agent." = "Não foi possível iniciar o agente de conta.";
+
+/* Error description */
+"Cannot start syncing." = "Não foi possível iniciar a sincronização.";
+
+/* error description */
+"Cannot sync with account." = "Não foi possível sincronizar com a conta.";
+
+/* Account validation step description */
+"Checking Credentials" = "Verificando Credenciais";
+
+/* iTunes import title */
+"Copy from iTunes" = "Copiar da iTunes";
+
+/* error reason */
+"Could not access synchronized documents folder." = "Não foi possível acessar a pasta de documentos sincronizados.";
+
+/* error reason */
+"Could not resolve archived bookmark for synchronized documents folder." = "Não foi possível resolver os favoritos arquivados da pasta de documentos sincronizados.";
+
+/* iTunes import/export account detail string */
+"Documents" = "Documentos";
+
+/* Add server account description */
+"Easily sync Omni documents. Signup is free!" = "Sincronize facilmente os docs. do Omni. Registro gratuito!";
+
+/* Server account export title format */
+"Export to \"%@\"" = "Exportar para “%@”";
+
+/* iTunes export title */
+"Export to iTunes" = "Exportar para iTunes";
+
+/* Server account type */
+"iTunes" = "iTunes";
+
+/* Error reason */
+"Local account documents folder is missing." = "Está faltando a pasta de documentos da conta local.";
+
+/* error description */
+"Local documents folder cannot be used." = "Não é possível usar a pasta de documentos local.";
+
+/* error reason */
+"No documents folder has been picked." = "Nenhuma pasta de documentos foi selecionada.";
+
+/* Server account type
+   Set up server account title */
+
+"Omni Sync Server" = "Omni Sync Server";
+
+/* account validation error suggestion */
+"Please check that the account information you entered is correct." = "Certifique-se de que as informações da conta que você inseriu estão corretas.";
+
+/* error description */
+"Please choose another location for your synced documents." = "Escolha outra localização para seus documentos sincronizados.";
+
+/* account validation error suggestion */
+"Please enter an address for the account." = "Insira um endereço para a conta.";
+
+/* account validation error suggestion */
+"Please enter an username for the account." = "Insira um nome de usuário para a conta.";
+
+/* account validation error description */
+"Server location not found" = "Localização do servidor não encontrada";
+
+/* error description */
+"Sync failed: cloud account needs to be upgraded." = "Sincronização falhou: a conta da nuvem precisa ser atualizada.";
+
+/* error description */
+"Sync failed: OmniPresence upgrade required." = "Sincronização falhou: é necessária a atualização do OmniPresence.";
+
+/* error description */
+"Sync failed: unable to update device registration." = "Sincronização falhou: não foi possível atualizar o registro do dispositivo.";
+
+/* Account validation step description */
+"Testing Server for Compatibility" = "Testando Compatibilidade do Servidor";
+
+/* error reason */
+"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "A conta da nuvem requer o formato do OmniPresence %1$@, mas este dispositivo está usando o formato %2$@. Atualize esta cópia do OmniPresence.";
+
+/* Error description */
+"The document \"%@\" is not fully downloaded." = "O documento “%@” não foi totalmente transferido.";
+
+/* error description */
+"The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "A pasta de documentos local proposta já contém arquivos. Especifique uma pasta vazia ou uma que ainda não existe.";
+
+/* error description */
+"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "A pasta de documentos local proposta não está em um volume local. Selecione uma localização que esteja em seu computador.";
+
+/* error description */
+"The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "A pasta local selecionada parece estar dentro de uma pasta do %@. O uso de dois sistemas de sincronização na mesma pasta pode resultar em perda de dados.";
+
+/* error description */
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "A pasta local selecionada está em sua pasta do %@, que pode ser sincronizada pelo iCloud Drive no Sierra. O uso de dois sistemas de sincronização na mesma pasta pode resultar em perda de dados.";
+
+/* error description */
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "A pasta local selecionada está em sua pasta do %@. O uso de dois sistemas de sincronização na mesma pasta pode resultar em perda de dados.";
+
+/* error description */
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "A pasta local selecionada está em sua Mesa, que pode ser sincronizada pelo iCloud Drive no Sierra. O uso de dois sistemas de sincronização na mesma pasta pode resultar em perda de dados.";
+
+/* error reason */
+"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Este app requer o formato do OmniPresence %1$@, mas a conta da nuvem está usando o formato %2$@. Atualize a conta da nuvem.";
+
+/* Error reason */
+"This OmniPresence folder contains another OmniPresence synced folder." = "Esta pasta do OmniPresence contém outra pasta sincronizada do OmniPresence.";
+
+/* Error description when syncing will be disabled due to too many recent errors */
+"Too many file transfers encountered errors recently." = "Excessivas transferências de arquivo apresentaram erros recentemente.";
+
+/* error description */
+"Unable to create temporary items in the proposed location." = "Não foi possível criar itens temporários no local proposto.";
+
+/* error description */
+"Unable to determine the filesystem properties of the proposed documents folder." = "Não foi possível determinar as propriedades do sistema de arquivo da pasta de documentos proposta.";
+
+/* Error reason */
+"Unable to find synchronized folder for account." = "Não foi possível localizar a pasta sincronizada da conta.";
+
+/* Error description */
+"Unable to open documents folder." = "Não foi possível abrir a pasta de documentos.";
+
+/* error reason */
+"Unable to update device registration on the cloud server." = "Não foi possível atualizar o registro do dispositivo no servidor da nuvem.";
+
+/* account validation error suggestion */
+"Unable to verify login credentials at this time." = "Não foi possível verificar as credenciais de início de sessão no momento.";
+
+/* Add server account description */
+"Use your own WebDAV space." = "Use seu próprio espaço do WebDAV.";
+
+/* Account validation step description */
+"Validating Account..." = "Validando Conta…";
+
+/* Server account type */
+"WebDAV" = "WebDAV";
+
+/* Set up server account title */
+"WebDAV Server" = "Servidor WebDAV";

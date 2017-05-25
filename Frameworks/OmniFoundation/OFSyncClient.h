@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <Foundation/NSDate.h> // NSTimeInterval
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSString, NSURL;
 @class OFPreference, OFSyncClientParameters, OFVersionNumber;
@@ -28,7 +30,7 @@ extern NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameter
 // Allows multiple clients per app (particularly for tests)
 @interface OFSyncClientParameters : NSObject
 
-- initWithDefaultClientIdentifierPreferenceKey:(NSString *)defaultClientIdentifierPreferenceKey hostIdentifierDomain:(NSString *)hostIdentifierDomain currentFrameworkVersion:(OFVersionNumber *)currentFrameworkVersion;
+- (id)initWithDefaultClientIdentifierPreferenceKey:(NSString *)defaultClientIdentifierPreferenceKey hostIdentifierDomain:(NSString *)hostIdentifierDomain currentFrameworkVersion:(OFVersionNumber *)currentFrameworkVersion;
 
 @property(nonatomic,readonly) NSString *defaultClientIdentifierPreferenceKey;
 @property(nonatomic,readonly) NSString *hostIdentifierDomain;
@@ -44,12 +46,12 @@ extern NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameter
 @interface OFSyncClient : NSObject
 
 // Adds plist-safe entries to a dictionary with helpful information about this client. Can be extended by subclasses (though we don't have good namespacing of the keys in the dictionary for backwards compatibility...). Only pass nil for a newly registered client.
-+ (NSMutableDictionary *)makeClientStateWithPreviousState:(NSDictionary *)oldClientState parameters:(OFSyncClientParameters *)parameters onlyIncludeRequiredKeys:(BOOL)onlyRequiredKeys;
++ (NSMutableDictionary *)makeClientStateWithPreviousState:(nullable NSDictionary *)oldClientState parameters:(OFSyncClientParameters *)parameters onlyIncludeRequiredKeys:(BOOL)onlyRequiredKeys;
 
 + (NSString *)computerName;
 
-- initWithURL:(NSURL *)clientURL previousClient:(OFSyncClient *)previousClient parameters:(OFSyncClientParameters *)parameters error:(NSError **)outError;
-- initWithURL:(NSURL *)clientURL propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
+- (nullable id)initWithURL:(NSURL *)clientURL previousClient:(nullable OFSyncClient *)previousClient parameters:(OFSyncClientParameters *)parameters error:(NSError **)outError;
+- (nullable id)initWithURL:(NSURL *)clientURL propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
 
 @property(nonatomic,readonly) NSURL *clientURL;
 @property(nonatomic,readonly) NSDictionary *propertyList;
@@ -66,4 +68,8 @@ extern NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameter
 // The version number of the sync framework this client is using. Other clients should not upgrade the remote sync repository to a newer version than this. Older clients should not touch the sync repository if their version is older than its current version.
 @property(nonatomic,readonly) OFVersionNumber *currentFrameworkVersion;
 
+@property(nonatomic,readonly,nullable) OFVersionNumber *applicationMarketingVersion;
+
 @end
+
+NS_ASSUME_NONNULL_END

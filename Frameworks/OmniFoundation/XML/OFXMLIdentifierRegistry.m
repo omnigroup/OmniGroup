@@ -65,7 +65,12 @@ NSString *OFXMLIDFromString(NSString *str)
 {
     OBINVARIANT([self checkInvariants]);
 
-    [self _clear];
+    if (_idToObject && _objectToID) {
+        [self _clear];
+    } else {
+        // Can happen if we are deallocated w/o init being called. For example, if our OFXMLDocument subclass encounters an error in an init method and returns nil.
+    }
+    
     [super dealloc];
 }
 
@@ -186,6 +191,7 @@ NSString *OFXMLIDFromString(NSString *str)
 - (NSUInteger)registrationCount;
 {
     OBPRECONDITION(CFDictionaryGetCount(_idToObject) == CFDictionaryGetCount(_objectToID));
+    
     return CFDictionaryGetCount(_idToObject);
 }
 

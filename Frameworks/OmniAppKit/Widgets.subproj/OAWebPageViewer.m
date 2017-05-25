@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,8 +111,6 @@ static NSMutableDictionary *sharedViewerCache = nil;
 
 - (void)loadRequest:(NSURLRequest *)request onCompletion:(void (^)(BOOL success, NSURL *url, NSError *error))completionBlock;
 {
-    OBPRECONDITION(completionBlock != nil);
-    
     self.loadCompletion = completionBlock;
     [self loadRequest:request];
 }
@@ -186,12 +184,17 @@ static NSMutableDictionary *sharedViewerCache = nil;
     _webView.preferences.usesPageCache = NO;
     _webView.preferences.cacheModel = WebCacheModelDocumentBrowser;
     _webView.preferences.suppressesIncrementalRendering = YES;
+    _webView.preferences.loadsImagesAutomatically = YES;
+    _webView.preferences.allowsAnimatedImages = YES;
     [_webView setMaintainsBackForwardList:NO];
 }
 
 - (void)windowWillClose:(NSNotification *)notification;
 {
     @autoreleasepool {
+        if ([_delegate respondsToSelector:@selector(viewer:windowWillClose:)]) {
+            [_delegate viewer:self windowWillClose:notification];
+        }
         [self invalidate];
     }
 }
@@ -225,6 +228,12 @@ static NSMutableDictionary *sharedViewerCache = nil;
     NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
     if (OFISEQUAL(url.scheme, @"help")) {
         [[OAApplication sharedApplication] showHelpURL:[url resourceSpecifier]];
+        [listener ignore];
+        return;
+    }
+
+    if ([url.scheme hasPrefix:@"omni"]) {
+        [[OAController sharedController] openURL:url];
         [listener ignore];
         return;
     }
@@ -403,6 +412,10 @@ static NSMutableDictionary *sharedViewerCache = nil;
         self.loadCompletion(success, url, error);
         // nil out the completion handler so subsequent load attempts to incorrectly call.
         self.loadCompletion = nil;
+    }
+
+    if (success && [_delegate respondsToSelector:@selector(viewer:didLoadURL:)]) {
+        [_delegate viewer:self didLoadURL:url];
     }
 }
 @end

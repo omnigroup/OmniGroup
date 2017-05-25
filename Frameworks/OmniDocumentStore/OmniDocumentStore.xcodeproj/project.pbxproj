@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		154070C61E7B533100939905 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070C41E7B533100939905 /* ko.lproj */; };
+		154070C71E7B533100939905 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154070C51E7B533100939905 /* pt-BR.lproj */; };
 		344F78C71B56FA94003BB98D /* ODSItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969C8179D9C90007978EC /* ODSItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344F78C81B56FA9A003BB98D /* ODSItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969C9179D9C90007978EC /* ODSItem.m */; };
 		344F78C91B56FA9E003BB98D /* ODSFileItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969C1179D9C90007978EC /* ODSFileItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -44,6 +46,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		154070C41E7B533100939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
+		154070C51E7B533100939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		15AFEAE718A0673900AC19A2 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15AFEAE818A0673900AC19A2 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
 		15AFEAE918A0673900AC19A2 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
@@ -154,7 +158,9 @@
 				15AFEAE918A0673900AC19A2 /* fr.lproj */,
 				15AFEAEA18A0673900AC19A2 /* it.lproj */,
 				15AFEAF618A068DD00AC19A2 /* ja.lproj */,
+				154070C41E7B533100939905 /* ko.lproj */,
 				15AFEAEB18A0673900AC19A2 /* nl.lproj */,
+				154070C51E7B533100939905 /* pt-BR.lproj */,
 				15AFEAEC18A0673900AC19A2 /* ru.lproj */,
 				15AFEAED18A0673900AC19A2 /* zh-Hans.lproj */,
 			);
@@ -409,6 +415,8 @@
 				344F78E11B56FB76003BB98D /* it.lproj in Resources */,
 				344F78E41B56FB76003BB98D /* ru.lproj in Resources */,
 				344F78E21B56FB76003BB98D /* ja.lproj in Resources */,
+				154070C71E7B533100939905 /* pt-BR.lproj in Resources */,
+				154070C61E7B533100939905 /* ko.lproj in Resources */,
 				344F78DF1B56FB76003BB98D /* es.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

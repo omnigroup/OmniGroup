@@ -1,53 +1,53 @@
 /* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = " (Copy)";
+" (Copy)" = " (복사)";
 
 /* bytes */
-"%@ B" = "%@ B";
+"%@ B" = "%@B";
 
 /* error description */
-"%@ cannot open this type of file." = "%@ cannot open this type of file.";
+"%@ cannot open this type of file." = "%@은(는) 이 유형의 파일을 열 수 없습니다.";
 
 /* Location label format for external documents */
-"%@ Documents" = "%@ Documents";
+"%@ Documents" = "%@ 도큐멘트";
 
 /* gigabytes */
-"%@ GB" = "%@ GB";
+"%@ GB" = "%@GB";
 
 /* doc picker multiple items accessibility value */
-"%@ items" = "%@개 항목";
+"%@ items" = "%@개의 항목";
 
 /* kilobytes */
-"%@ KB" = "%@ KB";
+"%@ KB" = "%@KB";
 
 /* megabytes */
-"%@ MB" = "%@ MB";
+"%@ MB" = "%@MB";
 
 /* home screen detail label */
-"%d items" = "%d items";
+"%d items" = "%d개 항목";
 
 /* Main toolbar title for a multiple selected documents. */
-"%ld Documents Selected" = "%ld Documents Selected";
+"%ld Documents Selected" = "%ld개 도큐멘트가 선택됨";
 
 /* Main toolbar title for a multiple selected items. */
-"%ld Items Selected" = "%ld Items Selected";
+"%ld Items Selected" = "%ld개 항목 선택됨";
 
 /* home screen detail format -- count and item description */
 "%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
-"1 Document Selected" = "1 Document Selected";
+"1 Document Selected" = "1개 도큐멘트 선택됨";
 
 /* doc picker single item accessibility value */
 "1 item" = "1개 항목";
 
 /* Main toolbar title for a single selected folder. */
-"1 Item Selected" = "1 Item Selected";
+"1 Item Selected" = "1개 항목 선택됨";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "A document with the name “%@” already exists. Do you want to replace it? This cannot be undone.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "“%@”(이)라는 이름의 도큐멘트가 이미 존재합니다. 바꾸시겠습니까? 이 작업은 실행 취소할 수 없습니다.";
 
 /* Omni Sync Server account info button title */
-"Account Info" = "Account Info";
+"Account Info" = "계정 정보";
 
 /* Server Account Setup label: account name */
 "Account Name" = "계정 이름";
@@ -58,10 +58,10 @@
 /* Cloud Setup button title to add a new account
    Cloud Setup button title to convert an existing account */
 
-"Add an Account" = "Add an Account";
+"Add an Account" = "계정 추가";
 
 /* home screen button label */
-"Add OmniPresence Account" = "Add OmniPresence Account";
+"Add OmniPresence Account" = "OmniPresence  계정 추가";
 
 /* button title
    cancel button title
@@ -77,49 +77,49 @@
 "Cancel" = "취소";
 
 /* item not fully downloaded error title */
-"Cannot Duplicate Item" = "Cannot Duplicate Item";
+"Cannot Duplicate Item" = "항목을 복제할 수 없음";
 
 /* item not fully downloaded error title */
-"Cannot Export Item" = "Cannot Export Item";
+"Cannot Export Item" = "항목을 내보낼 수 없음";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Choose a format for emailing “%@”:";
+"Choose a format for emailing \"%@\":" = "“%@” 전자 메일 전송 형식을 선택하십시오.";
 
 /* toolbar prompt when choosing a template */
-"Choose a Template" = "Choose a Template";
+"Choose a Template" = "템플릿 선택";
 
 /* Cloud setup modal sheet title */
-"Choose Account Type" = "Choose Account Type";
+"Choose Account Type" = "계정 유형 선택";
 
 /* export options title */
-"Choose Format" = "Choose Format";
+"Choose Format" = "형식 선택";
 
 /* doc picker custom accessibility action name */
-"Clear name field" = "Clear name field";
+"Clear name field" = "이름 필드 지우기";
 
 /* title view clear button accessibility label. */
-"Clear Title" = "Clear Title";
+"Clear Title" = "제목 지우기";
 
 /* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "Cloud Storage Providers";
+"Cloud Storage Providers" = "클라우드 저장소 공급자";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
-"Connected" = "Connected";
+"Connected" = "연결됨";
 
 /* webdav connecting label */
-"Connecting" = "Connecting";
+"Connecting" = "연결 중";
 
 /* Menu option in the document picker view */
-"Copy as Image" = "Copy as Image";
+"Copy as Image" = "이미지로 복사";
 
 /* gear menu item */
-"Copy from WebDAV" = "Copy from WebDAV";
+"Copy from WebDAV" = "WebDAV에서 복사";
 
 /* gear menu item */
-"Copy from…" = "Copy from…";
+"Copy from…" = "복사 위치...";
 
 /* moved aside custom sample document name */
-"CustomizedSampleDocumentName" = "%@ Customized";
+"CustomizedSampleDocumentName" = "%@ 사용자 정의";
 
 /* sort by date */
 "Date" = "날짜";
@@ -128,28 +128,28 @@
 "Delete" = "삭제";
 
 /* Server account setup confirmation action label format */
-"Delete \"%@\"" = "Delete “%@”";
+"Delete \"%@\"" = "“%@” 삭제";
 
 /* delete button title */
-"Delete %ld Documents" = "Delete %ld Documents";
+"Delete %ld Documents" = "%ld 도큐멘트 삭제";
 
 /* Server Account Setup button label */
-"Delete Account" = "Delete Account";
+"Delete Account" = "계정 삭제";
 
 /* delete button title */
-"Delete Document" = "Delete Document";
+"Delete Document" = "도큐멘트 삭제";
 
 /* Discard unsynced edits dialog: discard button label */
-"Discard Edits" = "Discard Edits";
+"Discard Edits" = "편집 항목 무시";
 
 /* Lose unsynced changes warning: title */
-"Discard unsynced edits?" = "Discard unsynced edits?";
+"Discard unsynced edits?" = "동기화되지 않은 편집 항목을 무시하시겠습니까?";
 
 /* Message letting the user know that their document was moved from one folder to another. */
-"Document moved." = "Document moved.";
+"Document moved." = "도큐멘트가 이동되었습니다.";
 
 /* Title for alert informing user that the document has been reloaded with edits from another device */
-"Document Updated" = "Document Updated";
+"Document Updated" = "도큐멘트 업데이트";
 
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "도큐멘트";
@@ -157,28 +157,28 @@
 /* Duplicate document preview action title.
    Duplicate toolbar item accessibility label. */
 
-"Duplicate" = "중복";
+"Duplicate" = "복제";
 
 /* title for alert option confirming duplication of multiple files */
-"Duplicate %ld Documents" = "Duplicate %ld Documents";
+"Duplicate %ld Documents" = "%ld 도큐멘트 복제";
 
 /* title for alert option confirming duplication of multiple items */
-"Duplicate %ld Items" = "Duplicate %ld Items";
+"Duplicate %ld Items" = "%ld 항목 복제";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Easily sync Omni documents between devices. Signup is free!";
+"Easily sync Omni documents between devices. Signup is free!" = "장치 간에 Omni 도큐멘트를 쉽게 동기화할 수 있습니다. 무료로 등록하십시오!";
 
 /* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "Edit Credentials";
+"Edit Credentials" = "자격 증명 편집";
 
 /* doc picker custom accessibility action name */
-"Edit name" = "Edit name";
+"Edit name" = "이름 편집";
 
 /* title view edit button item accessibility hint. */
-"Edits the document's title." = "Edits the document's title.";
+"Edits the document's title." = "도큐멘트 제목을 편집합니다.";
 
 /* empty trash button title */
-"Empty Trash" = "Empty Trash";
+"Empty Trash" = "휴지통 비우기";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "WebDAV 공간 위치를 입력하십시오.";
@@ -191,22 +191,22 @@
 "Export" = "내보내기";
 
 /* export to description */
-"Export \"%@\" as:" = "Export “%@” as:";
+"Export \"%@\" as:" = "“%@”을(를) 다음으로 내보내기:";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "Export “%1$@” to %2$@ as:";
+"Export \"%@\" to %@ as:" = "“%1$@”을(를) %2$@(으)로 다음으로 내보내기:";
 
 /* Menu option in the document picker view */
-"Export to WebDAV" = "Export to WebDAV";
+"Export to WebDAV" = "WebDAV로 내보내기";
 
 /* Menu option in the document picker view */
-"Export to…" = "Export to…";
+"Export to…" = "다음으로 내보내기...";
 
 /* Export document preview action title. */
 "Export…" = "내보내기...";
 
 /* finished */
-"Finished" = "Finished";
+"Finished" = "완료됨";
 
 /* doc picker folder type accessibility value */
 "Folder" = "폴더";
@@ -218,34 +218,34 @@
 "Info" = "정보";
 
 /* error title */
-"Invalid Zip Archive" = "Invalid Zip Archive";
+"Invalid Zip Archive" = "유효하지 않은 Zip 아카이브";
 
 /* doc picker title label editing accessibility value */
-"Is editing" = "Is editing";
+"Is editing" = "편집 중";
 
 /* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Last edit: %@";
+"Last edit: %@" = "마지막 편집: %@";
 
 /* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Last edit: %@ on another device";
+"Last edit: %@ on another device" = "마지막 편집: 다른 장치의 %@";
 
 /* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Last edit: %@ on this device";
+"Last edit: %@ on this device" = "마지막 편집: 이 장치의 %@";
 
 /* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Link External Document";
+"Link External Document" = "외부 도큐멘트 연결";
 
 /* Server Account Setup label: location */
 "Location" = "위치";
 
 /* top level doc picker title */
-"Locations" = "Locations";
+"Locations" = "위치";
 
 /* modified date accessibility value */
-"Modified %@" = "Modified %@";
+"Modified %@" = "%@ 수정됨";
 
 /* Cloud Storage Providers more information button title */
-"More Info…" = "More Info…";
+"More Info…" = "추가 정보...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -253,7 +253,7 @@
 "Move" = "이동";
 
 /* move to trash button title */
-"Move %ld Items to Trash" = "Move %ld Items to Trash";
+"Move %ld Items to Trash" = "%ld 항목을 휴지통으로 이동";
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
@@ -261,42 +261,42 @@
 "Move to Trash" = "휴지통으로 이동";
 
 /* Share menu title */
-"Move to..." = "Move to…";
+"Move to..." = "이동 대상 선택…";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "이동...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
-"My Document" = "My Document";
+"My Document" = "내 도큐멘트";
 
 /* Base name for newly created templates. This will have an number appended to it to make it unique. */
-"My Template" = "My Template";
+"My Template" = "내 템플릿";
 
 /* New Document toolbar item accessibility label.
    New Template button title */
 
-"New Document" = "새 도큐멘트";
+"New Document" = "새로운 도큐멘트";
 
 /* Action sheet title for making a new folder from the selected documents */
-"New folder" = "New folder";
+"New folder" = "새로운 폴더";
 
 /* Server Account Setup label: nickname */
-"Nickname" = "Nickname";
+"Nickname" = "별명";
 
 /* Export message for empty table view */
-"No accounts are configured for exporting." = "No accounts are configured for exporting.";
+"No accounts are configured for exporting." = "내보내기용으로 구성된 계정이 없습니다.";
 
 /* Import message for empty table view */
-"No accounts are configured for importing." = "No accounts are configured for importing.";
+"No accounts are configured for importing." = "가져오기용으로 구성된 계정이 없습니다.";
 
 /* doc picker no items accessibility value */
 "No items" = "항목 없음";
 
 /* Not downloaded accessibility label. */
-"Not downloaded" = "Not downloaded";
+"Not downloaded" = "다운로드되지 않음";
 
 /* Not uploaded accessibility label. */
-"Not uploaded" = "Not uploaded";
+"Not uploaded" = "업로드되지 않음";
 
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
@@ -304,10 +304,10 @@
 "OK" = "양호";
 
 /* Omni Presence config email subject format */
-"OmniPresence Configuration: %@" = "OmniPresence Configuration: %@";
+"OmniPresence Configuration: %@" = "OmniPresence 구성: %@";
 
 /* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "Open this file on another device to configure OmniPresence there.";
+"Open this file on another device to configure OmniPresence there." = "다른 장치에서 이 파일을 열어서 해당 위치에서 OmniPresence를 구성합니다.";
 
 /* Generic name for location of external documents */
 "Other" = "기타";
@@ -316,58 +316,58 @@
 "Password" = "암호";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Photo Library permission denied.";
+"Photo Library permission denied." = "사진 라이브러리 권한이 거부되었습니다.";
 
 /* Menu option in the document picker view */
 "Print" = "프린트";
 
 /* purchase now button title */
-"Purchase Now." = "Purchase Now.";
+"Purchase Now." = "지금 구입하십시오.";
 
 /* Remove from external container toolbar item accessibility label. */
 "Remove" = "제거";
 
 /* remove button title */
-"Remove %ld Documents" = "Remove %ld Documents";
+"Remove %ld Documents" = "%ld 도큐멘트 제거";
 
 /* remove button title */
-"Remove Document" = "Remove Document";
+"Remove Document" = "도큐멘트 제거";
 
 /* rename button title */
-"Rename" = "Rename";
+"Rename" = "이름 변경";
 
 /* toolbar prompt while renaming a document */
-"Rename Document" = "Rename Document";
+"Rename Document" = "도큐멘트 이름 변경";
 
 /* toolbar prompt while renaming a folder */
-"Rename Folder" = "Rename Folder";
+"Rename Folder" = "폴더 이름 변경";
 
 /* Message format for alert informing user that the document has been renamed on another device */
-"Renamed to %@." = "Renamed to %@.";
+"Renamed to %@." = "%@(으)로 이름이 변경되었습니다.";
 
 /* replace button title */
 "Replace" = "바꾸기";
 
 /* replace document title */
-"Replace document?" = "Replace document?";
+"Replace document?" = "도큐멘트를 바꾸시겠습니까?";
 
 /* When displaying a sync error, this is the option to report the error. */
-"Report Error" = "오류 보고";
+"Report Error" = "보고서 오류";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restore Sample Documents";
+"Restore Sample Documents" = "샘플 도큐멘트 복원";
 
 /* Share menu title */
-"Restore to..." = "Restore to…";
+"Restore to..." = "복원 대상...";
 
 /* When displaying a sync error, this is the option to retry syncing. */
-"Retry Sync" = "Retry Sync";
+"Retry Sync" = "동기화 재시도";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "저장";
 
 /* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "Scroll down to show sort and filter controls";
+"Scroll down to show sort and filter controls" = "아래로 스크롤하여 정렬 및 필터 컨트롤 표시";
 
 /* document picker button label */
 "Search" = "검색";
@@ -376,96 +376,96 @@
 "Select" = "선택";
 
 /* Main toolbar title for a no selected documents. */
-"Select a Document" = "Select a Document";
+"Select a Document" = "도큐멘트 선택";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Send “%@” to app as:";
+"Send \"%@\" to app as:" = "“%@”을(를) 앱에 다음으로 전송:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "이메일을 통해 설정 전송";
 
 /* Menu option in the document picker view */
-"Send to App" = "Send to App";
+"Send to App" = "앱으로 전송";
 
 /* Menu option in the document picker view */
-"Send to Photos" = "Send to Photos";
+"Send to Photos" = "사진으로 전송";
 
 /* export options title
    Menu option in the document picker view */
 
-"Send via Mail" = "Send via Mail";
+"Send via Mail" = "Mail을 통해 전송";
 
 /* email action description */
-"Server address: %@" = "Server address: %@";
+"Server address: %@" = "서버 주소: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Setting up “%@”";
+"Setting up \"%@\"" = "“%@” 설정";
 
 /* Omni Sync Server sign up button title */
-"Sign Up For a New Account" = "Sign Up For a New Account";
+"Sign Up For a New Account" = "새 계정 등록";
 
 /* sort by accessibility label */
-"Sort by %@" = "Sort by %@";
+"Sort by %@" = "%@(으)로 정렬";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "지금 동기화";
 
 /* empty template picker button text */
-"Tap here to add a document without a template." = "Tap here to add a document without a template.";
+"Tap here to add a document without a template." = "템플릿 없이 도큐멘트를 추가하려면 여기를 누르십시오.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Tap here, or on the + in the toolbar, to add a document.";
+"Tap here, or on the + in the toolbar, to add a document." = "여기 또는 도구 모음의 +를 눌러서 도큐멘트를 추가하십시오.";
 
 /* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app.";
+"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "도구 모음의 +를 눌러서 iCloud Drive에 저장되었거나 다른 앱에서 제공된 도큐멘트를 추가합니다.";
 
 /* file name label for template filte types */
-"Template:" = "Template:";
+"Template:" = "템플릿:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "The “%1$@” account has %2$ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” 계정에는 클라우드에 아직 동기화되지 않은 %2$ld개의 편집된 도큐멘트가 있습니다. 이러한 편집 항목을 무시하시겠습니까?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "The “%@” account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@” 계정에는 클라우드에 아직 동기화되지 않은 편집된 도큐멘트가 있습니다. 이러한 편집 항목을 무시하시겠습니까?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "The “%@” account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” 계정에는 클라우드에 아직 동기화되지 않은 편집된 도큐멘트가 있을 수 있습니다. 모든 로컬 편집 항목을 무시하시겠습니까?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "“%@” 도큐멘트를 열려면 암호가 필요합니다.";
 
 /* Error description for a document operation failing due to a missing file. */
-"The operation couldn't be completed." = "The operation couldn't be completed.";
+"The operation couldn't be completed." = "작업을 완료할 수 없습니다.";
 
 /* error description */
-"The zip archive must contain a single document." = "The zip archive must contain a single document.";
+"The zip archive must contain a single document." = "zip 아카이브에는 단일 도큐멘트가 들어 있어야 합니다.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "This app does not have access to your Photo Library.";
+"This app does not have access to your Photo Library." = "이 앱은 사용자의 사진 라이브러리에 액세스할 수 없습니다.";
 
 /* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "This Cloud Account no longer exists.";
+"This Cloud Account no longer exists." = "이 클라우드 계정은 더 이상 존재하지 않습니다.";
 
 /* Error reason for a document operation failing due to a missing file. */
-"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again.";
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "이 도큐멘트에 액세스할 수 없습니다. 파일이 삭제되었거나, 이름이 바뀌었거나 iTunes 또는 외부 도큐멘트 공급자를 통해 이동되었을 수 있습니다. 파일을 제거해보고 다시 추가해보십시오.";
 
 /* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again.";
+"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "이 항목은 완전히 다운로드되지 않았기 때문에 복제할 수 없습니다. 다시 시도하기 전에 항목을 누르고 다운로드될 때까지 기다리십시오.";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again.";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "이 항목은 완전히 내보내지지 않았기 때문에 복제할 수 없습니다. 다시 시도하기 전에 항목을 누르고 다운로드될 때까지 기다리십시오.";
 
 /* sort by title */
 "Title" = "제목";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "클라우드 저장소 공급자를 설정하면 iCloud Drive 또는 Dropbox와 같은 클라우드 서비스에 저장된 도큐멘트에 액세스할 수 있습니다. 클라우드 저장소 공급자에 대한 액세스는 베타 구현으로 제공되었습니다. 이 서비스를 활성화할 때는 주의하십시오. 자세히 알아보려면 설명서에서 \"클라우드 작업\"을 참조하십시오.";
 
 /* error title */
-"Unable to open file." = "Unable to open file.";
+"Unable to open file." = "파일을 열 수 없습니다.";
 
 /* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "Use Cloud Storage Providers";
+"Use Cloud Storage Providers" = "클라우드 저장소 공급자 사용";
 
 /* Account validation status string. */
-"Validating account..." = "Validating account…";
+"Validating account..." = "계정 검증 중...";

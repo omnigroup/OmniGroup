@@ -47,6 +47,7 @@ typedef NS_ENUM(NSUInteger, OFTimeSpanFormatterUnit) {
 + (NSString *)localizedPluralStringForUnits:(OFTimeSpanFormatterUnit)unit;
 + (NSString *)localizedSingularStringForUnits:(OFTimeSpanFormatterUnit)unit;
 + (NSString *)localizedAbbreviationStringForUnits:(OFTimeSpanFormatterUnit)unit;
++ (NSString *)localizedElapsedStringForUnits:(OFTimeSpanFormatterUnit)unit;
 
 - (NSNumberFormatter *)numberFormatter;
 

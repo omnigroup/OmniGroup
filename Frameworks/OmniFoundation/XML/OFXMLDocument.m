@@ -159,25 +159,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 {
-    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior parseComments:NO error:outError];
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior prepareParser:nil error:outError];
 }
 
-- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 {
     // Preserve whitespace by default
-    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve parseComments:parseComments error:outError];
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypePreserve prepareParser:prepareParser error:outError];
 }
 
 
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
-    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:NO error:outError];
+    return [self initWithData:xmlData whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior prepareParser:nil error:outError];
 }
 
-- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior parseComments:(BOOL)parseComments error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 {
+    // NSInputStream crashes on 10.12.x with a nil input.
+    if (!xmlData) {
+        OFError(outError, OFXMLDocumentEmptyInputError, @"Cannot create XML document.", @"Nil data passed to create XML document.");
+        [self release];
+        return nil;
+    }
+    
     NSInputStream *inputStream = [[[NSInputStream alloc] initWithData:xmlData] autorelease];
-    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:parseComments error:outError];
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior prepareParser:prepareParser error:outError];
 }
 
 
@@ -189,10 +196,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 {
-    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior parseComments:NO error:outError];
+    return [self initWithInputStream:inputStream whitespaceBehavior:whitespaceBehavior defaultWhitespaceBehavior:defaultWhitespaceBehavior prepareParser:nil error:outError];
 }
 
-- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 {
     if (!(self = [super init]))
         return nil;
@@ -202,9 +209,8 @@ NS_ASSUME_NONNULL_BEGIN
         whitespaceBehavior = [OFXMLWhitespaceBehavior autoWhitespaceBehavior];
 
     _whitespaceBehavior = [whitespaceBehavior retain];
-    _parseComments = parseComments;
 
-    if (![self _parseInputStream:inputStream defaultWhitespaceBehavior:defaultWhitespaceBehavior error:outError]) {
+    if (![self _parseInputStream:inputStream defaultWhitespaceBehavior:defaultWhitespaceBehavior prepareParser:prepareParser error:outError]) {
         [self release];
         return nil;
     }
@@ -723,11 +729,13 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (BOOL)_parseInputStream:(NSInputStream *)inputStream defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
+- (BOOL)_parseInputStream:(NSInputStream *)inputStream defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 {
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[self whitespaceBehavior] defaultWhitespaceBehavior:defaultWhitespaceBehavior target:self];
 
-    parser.parseComments = self.parseComments;
+    if (prepareParser) {
+        prepareParser(self, parser);
+    }
 
     if (![parser parseInputStream:inputStream error:outError]) {
         [parser release];

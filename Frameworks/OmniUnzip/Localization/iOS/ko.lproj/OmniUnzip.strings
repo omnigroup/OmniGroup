@@ -1,0 +1,36 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip 파일의 항목에 파일 시스템 경로로 변환할 수 없는 이름이 포함되었습니다.";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "zip 멤버 이름 \"%@\"을(를) 복제합니다.";
+
+/* error reason */
+"The unzip library failed to open %@." = "unzip 라이브러리가 %@ 열기를 실패했습니다.";
+
+/* error reason */
+"The zip library function %s returned %d" = "zip 라이브러리 함수 %1$s이(가) %2$d을(를) 반환했습니다.";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "\"%4$@\"에서 \"%3$@\" 항목에 대해 데이터를 읽으려고 시도하는 중 zip 라이브러리 함수 %1$s이(가) %2$d을(를) 반환했습니다.";
+
+/* error reason */
+"Unable to close zip data." = "zip 데이터를 닫을 수 없습니다.";
+
+/* error reason */
+"Unable to close zip file." = "zip 파일을 닫을 수 없습니다.";
+
+/* error reason */
+"Unable to create zip file." = "zip 파일을 생성할 수 없습니다.";
+
+/* error description */
+"Unable to open zip archive." = "zip 아카이브를 열 수 없습니다.";
+
+/* error description
+   error reason */
+"Unable to read zip data." = "zip 데이터를 읽을 수 없습니다.";
+
+/* error description */
+"Unable to read zip file." = "zip 파일을 읽을 수 없습니다.";
+
+/* error description */
+"Unable to write zip file." = "zip 파일을 쓸 수 없습니다.";

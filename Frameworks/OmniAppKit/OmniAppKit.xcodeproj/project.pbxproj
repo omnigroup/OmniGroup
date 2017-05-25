@@ -748,6 +748,8 @@
 		137CBE740118A5EC7F000001 /* OARegExFindPattern.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OARegExFindPattern.m; sourceTree = "<group>"; };
 		13F8BB49FF32715FC697A13D /* OAShrinkingTextDisplayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OAShrinkingTextDisplayer.h; path = Widgets.subproj/OAShrinkingTextDisplayer.h; sourceTree = "<group>"; };
 		13F8BB4AFF32715FC697A13D /* OAShrinkingTextDisplayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OAShrinkingTextDisplayer.m; path = Widgets.subproj/OAShrinkingTextDisplayer.m; sourceTree = "<group>"; };
+		154070921E7B523300939905 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/OmniAppKit.strings; sourceTree = "<group>"; };
+		154070931E7B523A00939905 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/OmniAppKit.strings"; sourceTree = "<group>"; };
 		159F5E411CE503DA003EF102 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OmniAppKit.strings; sourceTree = "<group>"; };
 		159F5E421CE503DA003EF102 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OmniAppKit.strings; sourceTree = "<group>"; };
 		159F5E431CE503DA003EF102 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OmniAppKit.strings; sourceTree = "<group>"; };
@@ -2920,6 +2922,8 @@
 				"zh-Hans",
 				ru,
 				nl,
+				ko,
+				"pt-BR",
 			);
 			mainGroup = 00E51EF2FE8AB2E911C9CC38 /* OmniAppKit */;
 			projectDirPath = "";
@@ -3429,6 +3433,8 @@
 				159F5E461CE503DA003EF102 /* nl */,
 				159F5E471CE503DA003EF102 /* ru */,
 				159F5E481CE503DA003EF102 /* zh-Hans */,
+				154070921E7B523300939905 /* ko */,
+				154070931E7B523A00939905 /* pt-BR */,
 			);
 			name = OmniAppKit.strings;
 			sourceTree = "<group>";

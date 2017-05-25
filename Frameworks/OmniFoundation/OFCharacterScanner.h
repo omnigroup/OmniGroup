@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,6 +73,7 @@
 - (BOOL)scanUpToCharacterNotInOFCharacterSet:(OFCharacterSet *)memberBitmapRep;
 - (BOOL)scanUpToCharacterInSet:(NSCharacterSet *)delimiterCharacterSet;
 - (BOOL)scanUpToString:(NSString *)delimiterString;
+- (BOOL)scanUpToString:(NSString *)delimiterString skip:(BOOL)shouldSkip;
 - (BOOL)scanUpToStringCaseInsensitive:(NSString *)delimiterString;
 
 // NB: Most delimited-token-reading functions will return nil if there is a zero-length token.

@@ -1,0 +1,299 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1fGB";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1fGHz";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1fkB";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1fKHz";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1fMB";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1fMHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1fPB";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1fTB";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1fTHz";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d바이트";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%uHz";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "약 %.1f시간";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "약 %d분";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "약 %d초";
+
+/* approximate time interval: one minute */
+"about a minute" = "약 1분";
+
+/* approximate time interval: one hour */
+"about an hour" = "약 1시간";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "다른 응용 프로그램이 \"%@\"에서 잠금을 재정의했습니다.";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "번들이 오래되었습니다.";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "번들을 사용하려면 추가 소프트웨어가 필요합니다.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "압축을 완료할 때 bzip2 라이브러리가 오류 코드 %1$d을(를) 반환했습니다. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "데이터를 읽을 때 bzip2 라이브러리가 오류 코드 %1$d을(를) 반환했습니다. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "데이터를 기록할 때 bzip2 라이브러리가 오류 코드 %1$d을(를) 반환했습니다. %2$s.";
+
+/* OFLockFile recovery option */
+"Cancel" = "취소";
+
+/* error recovery option */
+"Cancel <error recovery>" = "취소";
+
+/* error description */
+"Cannot create socket." = "소켓을 생성할 수 없습니다.";
+
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "구성을 변경하시겠습니까?";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "디렉토리를 생성할 수 없음";
+
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "포함된 프로비저닝 프로파일에서 권한을 구문 분석할 수 없음";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"d" = "일";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"day" = "일";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"days" = "일";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "중복된 번들 이름";
+
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "EC 공개 키는 이 OS 버전에서 사용할 수 없습니다.";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "경과일";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "경과시간";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "'%1$@' 요소가 경로에 허용되지 않음: %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "경과분";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "포함된 프로비저닝 프로파일이 유효한 PKCS#7 아카이브가 아닙니다.";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "포함된 프로비저닝 프로파일을 찾을 수 없음";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "포함된 프로비저닝 프로파일을 읽을 수 없음";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "경과월";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "경과초";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "경과주";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "경과년";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "\"%@\"에서 잠금 파일에 대한 디렉토리를 생성하지 못했습니다.";
+
+/* error reason */
+"Failed to serialize lock information." = "잠금 정보를 직렬화하지 못했습니다.";
+
+/* error reason */
+"Failed to write lock file.  %@" = "잠금 파일 쓰기를 실패했습니다.  %@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"h" = "시간";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"hour" = "시간";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"hours" = "시간";
+
+/* formatter input error */
+"Invalid time span format" = "부적합한 시간 범위 형식";
+
+/* local bundle path readable string */
+"local configuration file" = "로컬 구성 파일";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
+"m" = "분";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"minute" = "분";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"minutes" = "분";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
+"mo" = "월";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"month" = "월";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"months" = "월";
+
+/* error reason */
+"No root element was found" = "발견된 루트 요소 없음";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "적합한 번들이 아님";
+
+/* OFLockFile recovery option */
+"Override Lock" = "잠금 재정의";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "포함된 프로비저닝 프로파일의 PKCS#7 컨텐츠가 유효한 plist가 아님";
+
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "\"%@\"을(를) 기본값으로 복원";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "모든 내부 구성 설정을 기본값으로 복원";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"s" = "초";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"second" = "초";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"seconds" = "초";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "“%1$@”을(를) “%2$@”(으)로 설정";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "암호화된 항목 “%@”이(가) 누락되었거나 판독할 수 없습니다.";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 적합한 것으로 보이지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "\"%@\"에 대한 인증서에 유효하지 않은 날짜가 있습니다. 만료되었거나 아직 활성 상태가 아닐 수 있습니다. 연결하시겠습니까?";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 어떠한 루트 서버에서도 서명되지 않았습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 아직 유효하지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 신뢰할 수 없는 서버에서 서명되었습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "이 구성 링크는 다음 항목을 변경합니다.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "이 잠금은 %4$@에 %3$@에서 \"%2$@\" 컴퓨터를 사용하여 %1$@이(가) 수행했습니다.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "이 잠금은 %4$@에 %3$@에서 \"%2$@\" 컴퓨터를 사용하여 %1$@이(가) 수행했습니다.\n\n이 잠금을 재정의할 수도 있지만 이렇게 하면 다른 응용 프로그램이 아직 실행 중인 경우 데이터가 손실될 수 있습니다.";
+
+/* compression error description */
+"Unable to compress data." = "데이터를 압축할 수 없습니다.";
+
+/* decompression error description */
+"Unable to decompress data." = "데이터를 압축 해제할 수 없습니다.";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "gzip 데이터를 압축 해제할 수 없음: 유효하지 않은 헤더";
+
+/* compression error description */
+"Unable to initialize compression" = "압축을 초기화할 수 없음";
+
+/* decompression error description */
+"Unable to initialize decompression" = "압축 해제를 초기화할 수 없음";
+
+/* error description */
+"Unable to lock document." = "도큐멘트를 잠글 수 없습니다.";
+
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "예상치 않은 CMS 컨텐츠 유형";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "알 수 없는 압축 알고리즘";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "알 수 없는 공개 키 알고리즘";
+
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "알 수 없음";
+
+/* decompression error reason */
+"unrecognized compression format." = "인식할 수 없는 압축 형식입니다.";
+
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "지원되지 않는 암호화 알고리즘";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"w" = "주";
+
+/* error description */
+"Warning encountered while loading XML." = "XML을 로드하는 중 경고가 발생했습니다.";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"week" = "주";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"weeks" = "주";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"y" = "년";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"year" = "년";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"years" = "년";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib가 오류 코드 %d을(를) 반환했습니다.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib가 오류 코드 %1$d을(를) 반환했습니다. %2$s.";

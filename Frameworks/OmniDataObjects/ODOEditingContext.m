@@ -559,9 +559,16 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     for (ODOObject *object in toDelete) {
         [self _snapshotObjectPropertiesIfNeeded:object];
     }
+    
+    OBASSERT(self->_objectsForObjectsWillBeDeletedNotification == nil);
+    self->_objectsForObjectsWillBeDeletedNotification = toDelete;
 
-    // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
-    [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:[NSDictionary dictionaryWithObject:toDelete forKey:ODODeletedObjectsKey]];
+    @try {
+        // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
+        [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:[NSDictionary dictionaryWithObject:toDelete forKey:ODODeletedObjectsKey]];
+    } @finally {
+        self->_objectsForObjectsWillBeDeletedNotification = nil;
+    }
     
     for (ODOObject *object in toDelete) {
         [self _snapshotAndClearObjectForDeletion:object];
@@ -705,7 +712,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
         NSMapTable *materiallyUpdatedValues = nil;
         for (ODOObject *object in updated) {
             // Might be called for a recent update of a processed insert and -changedNonDerivedChangedValue currently does OBRequestConcreteImplementation() for inserted objects since its meaning is unclear in general.  Here we'll contend that an 'insert' is a material update (even if no recent updates are material).
-            if ([object isInserted] || [object changedNonDerivedChangedValue]) {
+            if ([object isInserted] || [object hasChangedNonDerivedChangedValue]) {
                 if (!materiallyUpdatedValues)
                     materiallyUpdatedValues = [NSMapTable strongToStrongObjectsMapTable];
                 
@@ -1827,6 +1834,14 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
         
         OBASSERT([object isInserted]);
         _updateRelationshipsForUndo(object, [objectID entity], ODOEditingContextUndoRelationshipsForInsertion);
+        
+        [object _setIsAwakingFromReinsertionAfterUndoneDeletion:YES];
+        @try {
+            [object awakeFromReinsertionAfterUndoneDeletion];
+        } @finally {
+            [object _setIsAwakingFromReinsertionAfterUndoneDeletion:NO];
+        }
+        
         DEBUG_UNDO(@"    _recentlyUpdatedObjects now %@", [_recentlyUpdatedObjects setByPerformingSelector:@selector(objectID)]);
     }
 

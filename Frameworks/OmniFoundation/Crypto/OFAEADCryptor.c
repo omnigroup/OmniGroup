@@ -14,6 +14,8 @@
 #include "OF_GHASH_Util.h"
 #endif
 
+#include <sys/param.h> // MIN
+
 #define PARAM_FROM_ST(tp, st) (struct tp *)(((char *)(st)) - offsetof(struct tp, public))
 
 /* x86-32, x86-64, and ARM32 all seem to use 64-byte cache lines. Not sure about ARM64. */

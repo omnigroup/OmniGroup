@@ -1,0 +1,35 @@
+/* Error description when renaming a file to a name that is already in use. */
+"\"%@\" is already taken." = "“%@” já está sendo usado.";
+
+/* Error reason when a file type is not recognized. */
+"%@ does not recognize this kind of file." = "%@ não reconhece este tipo de arquivo.";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Another folder already has the name \"%@\"." = "Outra pasta já tem o nome “%@”.";
+
+/* Document store scope display name */
+"Built-in" = "Integrado";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Cannot rename folder." = "Não foi possível renomear a pasta.";
+
+/* Document store scope display name */
+"Local Documents" = "Documentos Locais";
+
+/* Error suggestion when renaming a file to a name that is already in use. */
+"Please choose a different name." = "Escolha outro nome.";
+
+/* time display format for today */
+"Today, %@ <day name>" = "Hoje, %@";
+
+/* Document store scope display name */
+"Trash" = "Lixeira";
+
+/* Error description when a file type is not recognized. */
+"Unable to add document." = "Não foi possível adicionar o documento.";
+
+/* title for new untitled folders */
+"Untitled Folder" = "Sem título";
+
+/* time display format for yesterday */
+"Yesterday, %@ <day name>" = "Ontem, %@";

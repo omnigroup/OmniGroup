@@ -251,7 +251,7 @@
 		5FAF8F6916F2916100BFFE55 /* OSUInstallerScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */; };
 		5FF0FACB16E7E83D00F87CB7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
 		5FF0FACE16E7E83D00F87CB7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FF0FACD16E7E83D00F87CB7 /* main.m */; };
-		5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 in Copy Privileged Helpers */ = {isa = PBXBuildFile; fileRef = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 in Copy Privileged Helpers */ = {isa = PBXBuildFile; fileRef = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		6A93324E0C6141A0002DC78C /* OSUDownloadController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A93324C0C6141A0002DC78C /* OSUDownloadController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6A93324F0C6141A0002DC78C /* OSUDownloadController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6A93324D0C6141A0002DC78C /* OSUDownloadController.m */; };
 		6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A950E4D0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h */; };
@@ -485,7 +485,7 @@
 			dstPath = Contents/Library/LaunchServices;
 			dstSubfolderSpec = 1;
 			files = (
-				5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 in Copy Privileged Helpers */,
+				5FF0FB1916E80E1D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 in Copy Privileged Helpers */,
 			);
 			name = "Copy Privileged Helpers";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -731,7 +731,7 @@
 		5F9568571C0E4D7100DBA34D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OmniSystemInfoPreferences.xib; sourceTree = "<group>"; };
 		5FAF8F6616F2916100BFFE55 /* OSUInstallerScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSUInstallerScript.h; path = Common/OSUInstallerScript.h; sourceTree = SOURCE_ROOT; };
 		5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OSUInstallerScript.m; path = Common/OSUInstallerScript.m; sourceTree = SOURCE_ROOT; };
-		5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7; sourceTree = BUILT_PRODUCTS_DIR; };
 		5FF0FACD16E7E83D00F87CB7 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		5FF0FADF16E7FC8900F87CB7 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
 		5FF0FAE016E7FE0100F87CB7 /* launchd.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = launchd.plist; sourceTree = "<group>"; };
@@ -885,7 +885,7 @@
 				4912123B09D39ED7003DC19F /* OSUTestApp.app */,
 				5F1C023716DC8D82006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc */,
 				5F049AEC16DE74C5004F398B /* OSULaunchTrampoline */,
-				5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 */,
+				5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */,
 				34A5F504184E474C00E8BA9A /* OmniSystemInfo.framework */,
 				348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */,
 				348A78681B583C390082D55D /* OmniSoftwareUpdate.framework */,
@@ -1653,7 +1653,7 @@
 			);
 			name = OSUInstallerPrivilegedHelper;
 			productName = OSUInstaller;
-			productReference = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 */;
+			productReference = 5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -1897,7 +1897,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = ./OSUInstallerPrivilegedHelper/CheckVersionNumber;
+			shellScript = "./OSUInstallerPrivilegedHelper/CheckVersionNumber || (touch OSUInstallerPrivilegedHelper/Info.plist; exit 1)";
 			showEnvVarsInLog = 0;
 		};
 		348A790C1B5847FE0082D55D /* Build Strings */ = {
@@ -2486,7 +2486,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
-				OSUInstallerPrivilegedHelperVersion = 6;
+				OSUInstallerPrivilegedHelperVersion = 7;
 				OTHER_CFLAGS = (
 					"$(value)",
 					"-DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",
@@ -2502,7 +2502,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				INFOPLIST_OTHER_PREPROCESSOR_FLAGS = "$(value) -DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion) -DOSUInstallerPrivilegedHelperIdentifier=com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$(OSUInstallerPrivilegedHelperVersion)";
-				OSUInstallerPrivilegedHelperVersion = 6;
+				OSUInstallerPrivilegedHelperVersion = 7;
 				OTHER_CFLAGS = (
 					"$(value)",
 					"-DOSUInstallerPrivilegedHelperVersion=$(OSUInstallerPrivilegedHelperVersion)",

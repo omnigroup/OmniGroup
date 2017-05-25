@@ -98,17 +98,20 @@
 /* invalid bundle reason */
 "Duplicate bundle name" = "バンドル名を複製";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
-"e" = "e";
-
 /* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
 "EC public keys are not usable on this OS version" = "EC 公開鍵はこの OS バージョンでは使用できません";
 
-/* time span formatter span - needs one trailing space */
-"elapsed " = "経過 ";
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "経過日";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "経過時間";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "エレメント '%1$@' は次のパスへアクセスできません: %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "経過分";
 
 /* Provisioning profile parsing error reason – invalid PKCS#7 file */
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "埋め込まれているプロビジョニングプロファイルは有効な PKCS#7 アーカイブではありません";
@@ -118,6 +121,18 @@
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "埋め込まれているプロビジョニングプロファイルは読み込み不能です";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "経過月";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "経過秒";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "経過週";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "経過年";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "“%@” でロックされたファイルのディレクトリの作成に失敗しました。";

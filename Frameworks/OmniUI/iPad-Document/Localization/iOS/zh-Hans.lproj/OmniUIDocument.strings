@@ -264,7 +264,7 @@
 "Move to..." = "移至…";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "移动...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
@@ -432,7 +432,7 @@
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@”帐户可能已编辑过未同步至云的文稿。您是否希望放弃所有本地编辑？";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "文稿“%@”需要密码才能打开。";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "此操作无法完成。";

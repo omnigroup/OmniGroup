@@ -98,17 +98,20 @@
 /* invalid bundle reason */
 "Duplicate bundle name" = "复制包的名称";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
-"e" = "e";
-
 /* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
 "EC public keys are not usable on this OS version" = "EC 公共密钥在该操作系统版本上不能使用";
 
-/* time span formatter span - needs one trailing space */
-"elapsed " = "已用时间 ";
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "已用天";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "已用小时";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "已用分钟";
 
 /* Provisioning profile parsing error reason – invalid PKCS#7 file */
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "嵌入式配置文件不是有效的 PKCS＃7 归档文件";
@@ -118,6 +121,18 @@
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "嵌入式配置文件不可读";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "已用月";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "已用秒";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "已用周";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "已用年";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "针对位于“%@”的锁定文件创建目录失败。";

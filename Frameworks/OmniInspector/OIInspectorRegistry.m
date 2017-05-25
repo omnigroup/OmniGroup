@@ -965,28 +965,25 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         NSBeep();
         return;
     }
-    
-    [hiddenGroups removeAllObjects];
-    [self clearAllGroups];
-    
-    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
-    NSString *name = [sharedWorkspaces objectAtIndex:row];
-    [[OIWorkspace sharedWorkspace] loadFrom:name];
-    [[OIWorkspace sharedWorkspace] save];
-    
-    [self restoreInspectorGroups];
-    [self _loadConfigurations];
+
+    [self loadWorkspace:[[OIWorkspace sharedWorkspaces] objectAtIndex:row]];
+
     [[_editWorkspaceTable window] makeKeyWindow];
 }
 
 - (IBAction)switchToWorkspace:(id)sender;
 {
+    [self loadWorkspace:[sender representedObject]];
+}
+
+- (void)loadWorkspace:(NSString *)name;
+{
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
-    
-    [[OIWorkspace sharedWorkspace] loadFrom:[sender representedObject]];
+
+    [[OIWorkspace sharedWorkspace] loadFrom:name];
     [[OIWorkspace sharedWorkspace] save];
-    
+
     [self restoreInspectorGroups];
     [self queueSelectorOnce:@selector(_loadConfigurations)];
 }

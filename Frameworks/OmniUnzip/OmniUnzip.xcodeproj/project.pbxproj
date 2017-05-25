@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		154071121E7B54D100939905 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154071101E7B54D100939905 /* ko.lproj */; };
+		154071131E7B54D100939905 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 154071111E7B54D100939905 /* pt-BR.lproj */; };
 		1E3D90C21D9376F400DB5FF6 /* NSFileWrapper-Extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3D90C01D9376F400DB5FF6 /* NSFileWrapper-Extensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E3D90C31D9376F400DB5FF6 /* NSFileWrapper-Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E3D90C11D9376F400DB5FF6 /* NSFileWrapper-Extensions.m */; };
 		1E3D90C41D93770200DB5FF6 /* NSFileWrapper-Extensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3D90C01D9376F400DB5FF6 /* NSFileWrapper-Extensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -107,6 +109,8 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		154071101E7B54D100939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
+		154071111E7B54D100939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		157113661863778F002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		15F7CC31185F9C7F00EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15F7CC32185F9C7F00EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
@@ -332,6 +336,8 @@
 		15F7CC38185F9C8400EFB846 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				154071101E7B54D100939905 /* ko.lproj */,
+				154071111E7B54D100939905 /* pt-BR.lproj */,
 				157113661863778F002F6107 /* ja.lproj */,
 				15F7CC31185F9C7F00EFB846 /* de.lproj */,
 				15F7CC32185F9C7F00EFB846 /* es.lproj */,
@@ -625,6 +631,8 @@
 				344F383E1B19280E00E75A5F /* es.lproj in Resources */,
 				344F38421B19280F00E75A5F /* ru.lproj in Resources */,
 				344F38401B19280E00E75A5F /* it.lproj in Resources */,
+				154071131E7B54D100939905 /* pt-BR.lproj in Resources */,
+				154071121E7B54D100939905 /* ko.lproj in Resources */,
 				344F383C1B19280E00E75A5F /* ja.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

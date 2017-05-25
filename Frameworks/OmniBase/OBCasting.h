@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,6 +43,11 @@ static inline Class OBCastObjectToClass(id object)
 static inline NSInteger OBIntegerFromHash(CFHashCode code)
 {
     return code;
+}
+
+// Useful in the debugger when trying to `po` some hex address.
+static inline id OBObjectFromInteger(uintptr_t value) {
+    return OBCastPointerToObject((void *)value);
 }
 
 // Does a checked cast for the (rare) cases where you want to do 'obj as? Self' in Swift.

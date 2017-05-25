@@ -10,8 +10,9 @@ set -x
 #   CPP='cc -E' CC=clang ./configure --with-included-apr --prefix=/usr/local/apache2
 #   make; make install
 
-
-ROOT=/Users/Shared/$USER/LocalWebDAVServer
+: ${ROOT:=/Users/Shared/$USER/LocalWebDAVServer}
+: ${REALM="My Test Realm"}
+: ${HTTPD=`which httpd`}
 
 RUN_DIR="$ROOT/Run"
 DOC_DIR="$ROOT/Documents"
@@ -19,7 +20,7 @@ CONFIG_DIR="$ROOT/Configuration"
 LOG_DIR="$ROOT/Logs"
 mkdir -p "$ROOT" "$RUN_DIR" "$DOC_DIR" "$CONFIG_DIR" "$LOG_DIR"
 
-REALM="My Test Realm"
+
 
 KEY_PATH="$CONFIG_DIR/server.key"
 CRT_PATH="$CONFIG_DIR/server.crt"
@@ -50,16 +51,19 @@ function append_user {
     DIGEST=$(echo -n "test$1:$REALM:password" | /usr/bin/openssl dgst -md5)
     echo test$1:$REALM:$DIGEST >> "$CONFIG_DIR/user.passwd"
 }
+
+unsetopt xtrace
 for n in {0..99}; do
     append_user $n
 done
 
 # Also make a non-suffixed user for direct testing
 append_user ""
+setopt xtrace
 
 # Remove all locks when restarting the server
 rm -f "$RUN_DIR"/DavLock.dir
 rm -f "$RUN_DIR"/DavLock.pag
 
 # Run in debug mode (-X) so that this won't detach from the console
-/usr/local/apache2/bin/httpd -X -f "$CONFIG_DIR/httpd.conf"
+$HTTPD -X -f "$CONFIG_DIR/httpd.conf"

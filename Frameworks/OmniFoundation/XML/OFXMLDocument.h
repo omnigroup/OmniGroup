@@ -15,8 +15,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class OFXMLCursor, OFXMLElement, OFXMLWhitespaceBehavior;
+@class OFXMLCursor, OFXMLDocument, OFXMLElement, OFXMLWhitespaceBehavior;
 @class NSArray, NSMutableArray, NSDate, NSData, NSURL, NSError, NSInputStream;
+
+typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFXMLParser *parser);
 
 @interface OFXMLDocument : OFXMLIdentifierRegistry <OFXMLParserTarget>
 
@@ -64,11 +66,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // xmlData marked nullable for testing purposes. This will return a nil document.
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
-- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 - (nullable instancetype)initWithData:(NSData *)xmlData whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
-- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior  parseComments:(BOOL)parseComments error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
 
 @property(nonatomic,readonly) OFXMLWhitespaceBehavior *whitespaceBehavior;
 @property(nonatomic,readonly,nullable) CFURLRef dtdSystemID;
@@ -77,7 +79,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly,nullable) CFURLRef schemaID;
 @property(nonatomic,readonly,nullable) NSString *schemaNamespace;
 
-@property(nonatomic,readonly) BOOL parseComments;
 @property(nonatomic,nullable,readonly) NSArray *loadWarnings;
 
 - (nullable NSData *)xmlData:(NSError **)outError;

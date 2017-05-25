@@ -61,6 +61,11 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     _flags.isAwakingFromInsert = isAwakingFromInsert;
 }
 
+- (void)_setIsAwakingFromReinsertionAfterUndoneDeletion:(BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
+{
+    _flags.isAwakingFromReinsertionAfterUndoneDeletion = isAwakingFromReinsertionAfterUndoneDeletion;
+}
+
 - (void)_setIsFault:(BOOL)isFault;
 {
     _flags.isFault = isFault;
@@ -532,5 +537,56 @@ void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff)
 }
 
 @end
+
+#pragma mark -
+
+static inline void _ODOObjectAwakeSingleObjectFromUnarchive(ODOObject *self, SEL sel, id _Nullable arg, BOOL sendWithArg)
+{
+    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
+    
+    if ([self isDeleted] || [self isInvalid]) {
+        return;
+    }
+    
+    OBASSERT(!self->_flags.isAwakingFromUnarchive);
+    self->_flags.isAwakingFromUnarchive = YES;
+    
+    // Could possibly raise
+    @try {
+        if (sendWithArg) {
+            OBSendVoidMessageWithObject(self, sel, arg);
+        } else {
+            OBSendVoidMessage(self, sel);
+        }
+    } @finally {
+        self->_flags.isAwakingFromUnarchive = NO;
+    }
+}
+
+void ODOObjectAwakeSingleObjectFromUnarchive(ODOObject *object)
+{
+    _ODOObjectAwakeSingleObjectFromUnarchive(object, @selector(awakeFromUnarchive), nil, NO);
+}
+
+void ODOObjectAwakeSingleObjectFromUnarchiveWithMessage(ODOObject *object, SEL sel, id arg)
+{
+    _ODOObjectAwakeSingleObjectFromUnarchive(object, sel, arg, YES);
+}
+
+void ODOObjectAwakeObjectsFromUnarchive(id <NSFastEnumeration> objects)
+{
+    for (ODOObject *object in objects) @autoreleasepool {
+        OBPRECONDITION([object isKindOfClass:[ODOObject class]]);
+        _ODOObjectAwakeSingleObjectFromUnarchive(object, @selector(awakeFromUnarchive), nil, NO);
+    }
+}
+
+void ODOObjectAwakeObjectsFromUnarchiveWithMessage(id <NSFastEnumeration> objects, SEL sel, id arg)
+{
+    for (ODOObject *object in objects) @autoreleasepool {
+        OBPRECONDITION([object isKindOfClass:[ODOObject class]]);
+        _ODOObjectAwakeSingleObjectFromUnarchive(object, sel, arg, YES);
+    }
+}
 
 NS_ASSUME_NONNULL_END

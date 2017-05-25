@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -291,6 +291,15 @@ static inline int unicharDigitValue(unichar c)
     if (useMalloc)
         free(buffer);
 
+    return stringFound;
+}
+
+- (BOOL)scanUpToString:(NSString *)delimiterString skip:(BOOL)shouldSkip;
+{
+    BOOL stringFound = [self scanUpToString:delimiterString];
+    if (stringFound && shouldSkip) {
+        [self skipCharacters:delimiterString.length];
+    }
     return stringFound;
 }
 

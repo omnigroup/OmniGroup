@@ -198,7 +198,7 @@ static NSString *WorkspaceClassName(NSBundle *bundle)
 
     NSString *userDefaultsKey = [[self class] userDefaultsKeyWithName:name];
 
-    if (![NSString isEmptyString:userDefaultsKey]) {
+    if ([NSString isEmptyString:userDefaultsKey] == NO) {
         [self _loadWithDefaultsKey:userDefaultsKey];
     }
 
@@ -385,7 +385,8 @@ static NSString *WorkspaceClassName(NSBundle *bundle)
         [self _saveToDefaultsKey:[OIWorkspace inspectorPreference]];
     } else {
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:[OIWorkspace inspectorPreference]];
-
+        if (self.sidebarInspectorConfiguration != nil) // we have a configuration it's just not a saved workspace
+            [self _saveToDefaultsKey:[OIWorkspace inspectorPreference]];
         [self _loadWithDefaultsKey:nil];
     }
 }

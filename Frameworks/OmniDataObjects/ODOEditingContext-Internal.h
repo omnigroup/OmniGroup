@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableSet *_recentlyUpdatedObjects;
     NSMutableSet *_recentlyDeletedObjects;
     
+    // This value is filled in only for the window of time that we are sending the ODOEditingContextObjectsWillBeDeletedNotification notification.
+    NSSet *_objectsForObjectsWillBeDeletedNotification;
+    
     NSMutableDictionary *_objectIDToCommittedPropertySnapshot; // ODOObjectID -> NSArray of property values for only those objects that have been edited.  The values in the dictionary are the database committed values.
     NSMutableDictionary *_objectIDToLastProcessedSnapshot; // Like the committed value snapshot, but this has the differences from the last time -processPendingChanges completed.  In particular, this can contain pre-update snapshots for inserted objects, where _objectIDToCommittedPropertySnapshot will never contain snapshots for inserted objects.
     
@@ -56,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_isBeingDeleted:(ODOObject *)object;
 #endif
+
+- (BOOL)_isSendingObjectsWillBeDeletedNotificationForObject:(ODOObject *)object;
 
 @end
 

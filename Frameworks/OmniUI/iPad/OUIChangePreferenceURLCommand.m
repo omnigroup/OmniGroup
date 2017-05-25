@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,8 +63,7 @@ RCS_ID("$Id$");
 
          [alertController addAction:[UIAlertAction actionWithTitle:OAOK() style:UIAlertActionStyleDefault handler:NULL]];
 
-         [[[[UIApplication sharedApplication] delegate] window].rootViewController presentViewController:alertController animated:YES completion:NULL];
-
+         [self.viewControllerForPresentation presentViewController:alertController animated:YES completion:NULL];
     }
 }
 

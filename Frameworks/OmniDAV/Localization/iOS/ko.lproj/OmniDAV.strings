@@ -1,0 +1,35 @@
+/* error description */
+"Could not access the WebDAV location <%@>." = "WebDAV 위치 <%@>에 액세스할 수 없습니다.";
+
+/* Text for HTTP error code 507 (insufficient storage) */
+"insufficient storage" = "저장소 부족";
+
+/* error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "“%@”에 도큐멘트가 없습니다.";
+
+/* error reason */
+"No such file \"%@\"." = "“%@” 파일이 없습니다.";
+
+/* error suggestion */
+"Please check that the user name and password you provided are correct." = "제공한 사용자 이름 및 암호가 올바른지 확인하십시오.";
+
+/* error reason */
+"Please make sure that the account information is correct." = "계정 정보가 올바른지 확인하십시오.";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "대상 폴더가 존재하는지 확인하십시오.";
+
+/* error reason */
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "“%4$@ %5$@”에 대한 요청에 대해 %1$@ 서버가 “%2$@”(%3$ld)을(를) 반환했습니다.";
+
+/* error description */
+"Unable to delete file." = "파일을 삭제할 수 없습니다.";
+
+/* error description */
+"Unable to perform WebDAV operation." = "WebDAV 작업을 실행할 수 없습니다.";
+
+/* error description */
+"Unable to read document." = "도큐멘트를 읽을 수 없습니다.";
+
+/* Error description */
+"WebDAV server failed conformance test." = "WebDAV 서버에서 준수 테스트를 실패했습니다.";

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,8 @@
     // - If invoked in an application that has Apple Help content (determined by the presence of the CFBundleHelpBookName key in the app's Info.plist), the URL will display in Help Viewer. helpURL should be a path relative to the help book folder.
     // - Otherwise, we hand the URL off to NSWorkspace. This should generally be avoided.
 
-- (NSString *)helpIndexFilename; // name the file minus the file extension.
+@property (nonatomic, readonly) NSString *helpIndexFilename; // name the file minus the file extension.
+@property (nonatomic, readonly) NSString *anchorsPlistFilename;
 - (NSURL *)builtInHelpURLForHelpURLString:(NSString *)helpURLString;
     // If the application has built-in help content (as determined by the presence of the OAHelpFolder key in the app's Info.plist), returns the URL that should be opened in the built-in help viewer, otherwise returns nil.
     // This is typically only used internally by -showHelpURL:, but may be used by a subclass which has need to override -showHelpURL: to spawn custom viewers for certain help documents.

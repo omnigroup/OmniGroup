@@ -1,0 +1,35 @@
+/* Error description when renaming a file to a name that is already in use. */
+"\"%@\" is already taken." = "“%@”은(는) 이미 사용되었습니다.";
+
+/* Error reason when a file type is not recognized. */
+"%@ does not recognize this kind of file." = "%@에서 이 유형의 파일이 인식되지 않습니다.";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Another folder already has the name \"%@\"." = "다른 폴더에 이미 “%@” 이름이 있습니다.";
+
+/* Document store scope display name */
+"Built-in" = "내장";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Cannot rename folder." = "폴더 이름을 바꿀 수 없습니다.";
+
+/* Document store scope display name */
+"Local Documents" = "로컬 도큐멘트";
+
+/* Error suggestion when renaming a file to a name that is already in use. */
+"Please choose a different name." = "다른 이름을 선택하십시오.";
+
+/* time display format for today */
+"Today, %@ <day name>" = "오늘, %@";
+
+/* Document store scope display name */
+"Trash" = "휴지통";
+
+/* Error description when a file type is not recognized. */
+"Unable to add document." = "도큐멘트를 추가할 수 없습니다.";
+
+/* title for new untitled folders */
+"Untitled Folder" = "제목 없음";
+
+/* time display format for yesterday */
+"Yesterday, %@ <day name>" = "어제, %@";

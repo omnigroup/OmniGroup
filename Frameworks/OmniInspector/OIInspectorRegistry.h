@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)hasVisibleInspector;
 - (void)forceInspectorsVisible:(NSSet *)preferred;
+- (void)loadWorkspace:(NSString *)name;
 
 @property(readonly) Class defaultInspectorControllerClass;
 @property (readonly) BOOL hasHiddenInspectors;

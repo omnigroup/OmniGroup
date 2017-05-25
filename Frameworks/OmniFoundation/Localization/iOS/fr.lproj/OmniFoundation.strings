@@ -98,17 +98,20 @@
 /* invalid bundle reason */
 "Duplicate bundle name" = "Nom de lot en double";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
-"e" = "e";
-
 /* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
 "EC public keys are not usable on this OS version" = "Les clés publiques EC ne sont pas utilisables dans cette version d’iOS";
 
-/* time span formatter span - needs one trailing space */
-"elapsed " = "écoulé ";
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "jé";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "hé";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "L’élément “%1$@” n’est pas autorisé dans le chemin : %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "mé";
 
 /* Provisioning profile parsing error reason – invalid PKCS#7 file */
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "Le profil d’approvisionnement incorporé n’est pas une archive PKCS#7 valide";
@@ -118,6 +121,18 @@
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "Profil d’approvisionnement incorporé illisible";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "moé";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "scé";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "sé";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "aé";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "La création du répertoire du fichier de verrouillage dans “%@” a échoué.";
@@ -180,7 +195,7 @@
 "Restore all internal configuration settings to defaults" = "Rétablir les valeurs par défaut de tous les réglages de configuration interne";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"s" = "s";
+"s" = "sc";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "seconde";

@@ -28,7 +28,7 @@
 <!--
 #else
 -->
-        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group"</string>
+        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group (34YW5XSRB7)"</string>
 <!--
 #endif
 -->

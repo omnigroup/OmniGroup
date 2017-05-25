@@ -334,7 +334,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 }
 
 #pragma mark UINavigationControllerDelegate
-- (BOOL)_isCurrentlyPresentedWithCustomInspectorPresentation;
+- (BOOL)_shouldShowDoneButton;
 {
     UIViewController *mostDistantAncestor = [self.navigationController mostDistantAncestorViewController];
     BOOL isCurrentlyPresented = mostDistantAncestor.presentingViewController != nil;
@@ -357,7 +357,9 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         
         BOOL isVerticallyCompactPresentation = (presentingViewController.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact);
         
-        shouldShowDoneButton = isCustomPresentation || isHorizontallyCompactPresentation || isVerticallyCompactPresentation;
+        
+        shouldShowDoneButton = isCustomPresentation ||
+                            ([mostDistantAncestor.presentationController isKindOfClass:[UIPopoverPresentationController class]] &&(isHorizontallyCompactPresentation || isVerticallyCompactPresentation));
         
         return shouldShowDoneButton;
     }
@@ -375,12 +377,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     BOOL wantsToolbar = ([viewController.toolbarItems count] > 0);
     [navigationController setToolbarHidden:!wantsToolbar animated:animated];
     
-    if ([self _isCurrentlyPresentedWithCustomInspectorPresentation]) {
-        [self _setShowDoneButton:YES];
-    }
-    else {
-        [self _setShowDoneButton:NO];
-    }
+    [self _setShowDoneButton:[self _shouldShowDoneButton]];
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController

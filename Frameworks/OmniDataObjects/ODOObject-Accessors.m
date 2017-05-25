@@ -384,8 +384,10 @@ static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NS
             return nil;
         
         // Ensure that this early-out we are going to use is valid -- deleted objects should be faults.
-        OBASSERT(![self isDeleted] || self->_flags.isFault);
-        if (self->_flags.isFault && [self isDeleted])
+        // It is valid (and desirable) to access properties of objects while handling ODOEditingContextObjectsWillBeDeletedNotification, so allow that.
+        BOOL isHandlingObjectsWillBeDeletedNotificationForSelf = [self->_editingContext _isSendingObjectsWillBeDeletedNotificationForObject:self];
+        OBASSERT(![self isDeleted] || isHandlingObjectsWillBeDeletedNotificationForSelf || self->_flags.isFault);
+        if (self->_flags.isFault && ([self isDeleted] && !isHandlingObjectsWillBeDeletedNotificationForSelf))
             return nil;
     }
     

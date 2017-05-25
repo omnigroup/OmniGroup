@@ -23,6 +23,7 @@
 #import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -884,7 +885,25 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         return;
     }
     
+	// To work around bug:///138525 (iOS-OmniGraffle Bug: Deleting text causes the canvas to move [jump])
+    BOOL willBeEmpty = self.textStorage.length == 1 || self.textStorage.length == selectedRange.length;
+    BOOL scrollEnabled = YES;
+    UIScrollView *containingScrollview = [self.superview containingViewOfClass:[UIScrollView class]];
+    CGPoint offsetToRestore;
+    if (willBeEmpty) {
+        if (containingScrollview) {
+            scrollEnabled = containingScrollview.scrollEnabled;
+            containingScrollview.scrollEnabled = NO;
+            offsetToRestore = containingScrollview.contentOffset;
+        }
+    }
     [super deleteBackward];
+    
+    if (containingScrollview && willBeEmpty) {
+        containingScrollview.scrollEnabled = scrollEnabled;
+        containingScrollview.contentOffset = offsetToRestore;
+    }
+    
 }
 
 - (void)setSelectedTextRange:(UITextRange *)selectedTextRange;

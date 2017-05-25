@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -107,6 +107,9 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 // These methods will be called to save and load any configuration information for the inspectors themselves on startup/shutdown and when workspaces are switched
 
 - (BOOL)mayInspectObject:(id)anObject;
+
+//
+@property(nonatomic,assign) CGFloat inspectorWidth;
 
 @end
 

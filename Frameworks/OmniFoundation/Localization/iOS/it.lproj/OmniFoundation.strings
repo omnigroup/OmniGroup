@@ -98,17 +98,20 @@
 /* invalid bundle reason */
 "Duplicate bundle name" = "Duplica nome pacchetto";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
-"e" = "e";
-
 /* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
 "EC public keys are not usable on this OS version" = "Chiavi pubbliche CE non utilizzabili con questa versione di SO";
 
-/* time span formatter span - needs one trailing space */
-"elapsed " = "scaduto ";
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "gt";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "ot";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Elemento “%1$@” non consentito sul percorso: %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "mt";
 
 /* Provisioning profile parsing error reason – invalid PKCS#7 file */
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "Il profilo di provisioning incorporato non è un archivio PKCS#7 valido";
@@ -118,6 +121,18 @@
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "Profilo di provisioning incorporato non leggibile";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "met";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "st";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "set";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "at";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Creazione della directory per il documento di blocco in “%@” non riuscita.";

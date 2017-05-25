@@ -1,0 +1,75 @@
+/* font size label format string in points */
+"%@ points" = "%@ pontos";
+
+/* title format for color component slider
+   title format for color component slider - alpha component, 0-100 */
+
+"<alpha title+value>" = "Opacidade: %d%%";
+
+/* title format for color component slider - blue component in RGB model, 0-255 */
+"<blue title+value>" = "Azul: %d";
+
+/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+"<brightness title+value>" = "Brilho: %d%%";
+
+/* title format for color component slider - green component in RGB model, 0-255 */
+"<green title+value>" = "Verde: %d";
+
+/* title format for color component slider - hue angle in HSV model, degrees */
+"<hue title+value>" = "Matiz: %d°";
+
+/* title format for color component slider - red component in RGB model, 0-255 */
+"<red title+value>" = "Vermelho: %d";
+
+/* title format for color component slider - saturation component in HSV model, 0-100 */
+"<saturation title+value>" = "Saturação: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "Branco: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "Todas as Fontes";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Cor de fundo";
+
+/* color inspector title */
+"Color" = "Cor";
+
+/* Inspector slice title for font family
+   Title for the font family list in the inspector */
+
+"Font" = "Fonte";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Fonte maior";
+
+/* Font size description accessibility label */
+"Font size" = "Tamanho da fonte";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Fonte menor";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Seleção Múltipla";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Nenhuma cor selecionada";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Sem Seleção";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Fontes Recomendadas";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Normal";
+
+/* Label for font size controls */
+"Size" = "Tamanho";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Cor do Texto";
+
+/* Inspector title */
+"Text Style" = "Estilo do Texto";

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -266,7 +266,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
     }
 
-    if (OFISNULL(selectedOption.exportType) || (storeIdentifier != nil && ![selectedOption.exportType isEqualToString:storeIdentifier])) {
+    if (OFISNULL(selectedOption.exportType) || storeIdentifier == nil || (![selectedOption.exportType isEqualToString:storeIdentifier])) {
         [self _performActionForExportOption:selectedOption];
     }
     else {

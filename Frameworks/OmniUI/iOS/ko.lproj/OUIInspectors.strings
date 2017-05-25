@@ -1,0 +1,75 @@
+/* font size label format string in points */
+"%@ points" = "%@포인트";
+
+/* title format for color component slider
+   title format for color component slider - alpha component, 0-100 */
+
+"<alpha title+value>" = "불투명도: %d%%";
+
+/* title format for color component slider - blue component in RGB model, 0-255 */
+"<blue title+value>" = "파란색: %d";
+
+/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+"<brightness title+value>" = "밝기: %d%%";
+
+/* title format for color component slider - green component in RGB model, 0-255 */
+"<green title+value>" = "녹색: %d";
+
+/* title format for color component slider - hue angle in HSV model, degrees */
+"<hue title+value>" = "색조: %d°";
+
+/* title format for color component slider - red component in RGB model, 0-255 */
+"<red title+value>" = "빨간색: %d";
+
+/* title format for color component slider - saturation component in HSV model, 0-100 */
+"<saturation title+value>" = "채도: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "흰색: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "모든 서체";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "배경 색상";
+
+/* color inspector title */
+"Color" = "색상";
+
+/* Inspector slice title for font family
+   Title for the font family list in the inspector */
+
+"Font" = "서체";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "서체 크게";
+
+/* Font size description accessibility label */
+"Font size" = "서체 크기";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "서체 작게";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "다중 선택";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "선택한 색상 없음";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "선택 항목 없음";
+
+/* Title for section of font list */
+"Recommended Fonts" = "권장 서체";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "일반";
+
+/* Label for font size controls */
+"Size" = "크기";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "텍스트 색상";
+
+/* Inspector title */
+"Text Style" = "텍스트 스타일";

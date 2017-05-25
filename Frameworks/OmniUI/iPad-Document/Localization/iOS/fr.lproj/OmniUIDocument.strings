@@ -264,7 +264,7 @@
 "Move to..." = "Placer dans…";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "Déplacer…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mon document";
@@ -432,7 +432,7 @@
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "Le compte « %@ » possède peut-être des documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications locales ?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "Un mot de passe est nécessaire pour ouvrir le document “%@”.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "L’opération n’a pas pu être terminée.";

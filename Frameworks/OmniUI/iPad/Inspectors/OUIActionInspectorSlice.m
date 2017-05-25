@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,8 +66,10 @@ RCS_ID("$Id$");
 - (void)loadView;
 {
     CGRect textWellFrame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
-    UIView *containerView = [[UIView alloc] initWithFrame:textWellFrame];
-    containerView.preservesSuperviewLayoutMargins = YES;
+    
+    
+    self.contentView = [[UIView alloc] init];
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
     _textWell.translatesAutoresizingMaskIntoConstraints = NO;
@@ -89,19 +91,27 @@ RCS_ID("$Id$");
     else
         _textWell.text = self.title;
 
-    [containerView addSubview:_textWell];
+    [self.contentView addSubview:_textWell];
         
-    self.view = containerView;
-    self.view.translatesAutoresizingMaskIntoConstraints = NO;
-
+    UIView *view = [[UIView alloc] init];
+    
+    [view addSubview:self.contentView];
+    
+    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
+    self.view = view;
+    
     CGFloat buffer = [OUIInspectorSlice sliceAlignmentInsets].left;
     
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[_textWell.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leadingAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leadingAnchor constant:0]];
-    [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1]];
-    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:containerView.topAnchor]];
-    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]];
+    [constraintsToActivate addObject:[_textWell.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor constant:0]];
+    [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:buffer * -1]];
+    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.contentView.topAnchor]];
+    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]];
     [NSLayoutConstraint activateConstraints:constraintsToActivate];
 }
 

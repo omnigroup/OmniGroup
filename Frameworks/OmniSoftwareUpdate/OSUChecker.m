@@ -1230,6 +1230,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (NSDate *)_convertRFC822DateString:(NSString *)dateString
 {
+    if ([NSString isEmptyString:dateString]) {
+        return nil;
+    }
+
     // Guard against some possible bad date formats in the OSU publish date string.
     
     if ([dateString rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"-"]].location != NSNotFound) {
@@ -1243,9 +1247,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     NSDate *date = [self.dateFormatter dateFromString:dateString];
-    if (! date) {
+    if (date == nil) {
         OSU_DEBUG(1, @"failed to convert: %@ into a RFC822 date", dateString);
-        // bug:///139165 (iOS-OmniGraffle Crasher: assertion fail in OmniSoftwareUpdate -[OSUChecker _convertRFC822DateString:] (OSUChecker.m:1246))
         OBASSERT_NOT_REACHED("failed to convert: %@ into a RFC822 date", dateString);
     }
     return date;

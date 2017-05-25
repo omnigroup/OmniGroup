@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OSUPartialItem.h"
+
+@import OmniFoundation;
 
 RCS_ID("$Id$")
 
@@ -21,13 +23,19 @@ static NSString *publishDateElement = @"pubDate";
 
 - (instancetype)initWithXMLData:(NSData *)data
 {
-    if (self = [super init]) {
-        self.releaseNotesURLString = @"";
-        self.publishDateString = @"";
-        NSXMLParser *parser = [[NSXMLParser alloc] initWithData:data];
-        parser.delegate = self;
-        [parser parse];
-    }
+    self = [super init];
+    if (self == nil)
+        return nil;
+
+    self.releaseNotesURLString = @"";
+    self.publishDateString = @"";
+    NSXMLParser *parser = [[NSXMLParser alloc] initWithData:data];
+    parser.delegate = self;
+    [parser parse];
+
+    if ([NSString isEmptyString:self.publishDateString])
+        return nil;
+
     return self;
 }
 

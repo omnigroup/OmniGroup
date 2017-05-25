@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,6 +38,7 @@ RCS_ID("$Id$")
 @property (nonatomic, strong) IBOutlet NSBox *additionalControlsBox;
 @property (nonatomic, strong) IBOutlet NSView *stringControlsView;
 @property (nonatomic, strong) IBOutlet NSView *regularExpressionControlsView;
+@property (nonatomic, strong) NSCell *regularExpressionCell;
 
 - (id <OAFindPattern>)currentPatternWithBackwardsFlag:(BOOL)backwardsFlag;
 - (BOOL)findStringWithBackwardsFlag:(BOOL)backwardsFlag;
@@ -53,7 +54,39 @@ RCS_ID("$Id$")
 
 - (instancetype)init;
 {
-    return [super initWithWindowNibName:@"OAFindPanel"];
+    if (!(self = [super initWithWindowNibName:@"OAFindPanel"])) {
+        return nil;
+    }
+
+    _supportsRegularExpressions = YES;
+
+    return self;
+}
+
+- (void)_updateFindTypeMatrix;
+{
+    NSInteger numberOfColumns = self.findTypeMatrix.numberOfColumns;
+    if (self.supportsRegularExpressions) {
+        if (numberOfColumns != 2) {
+            [self.findTypeMatrix addColumnWithCells:[NSArray arrayWithObject:self.regularExpressionCell]];
+            self.regularExpressionCell = nil;
+        }
+    } else {
+        if (numberOfColumns == 2) {
+            self.regularExpressionCell = [self.findTypeMatrix.cells objectAtIndex:1];
+            [self.findTypeMatrix removeColumn:1];
+            [self findTypeChanged:nil];
+        }
+    }
+}
+
+- (void)setSupportsRegularExpressions:(BOOL)supportsRegularExpressions;
+{
+    if (_supportsRegularExpressions == supportsRegularExpressions) {
+        return;
+    }
+    _supportsRegularExpressions = supportsRegularExpressions;
+    [self _updateFindTypeMatrix];
 }
 
 #pragma mark - Menu Actions
@@ -62,6 +95,11 @@ RCS_ID("$Id$")
 {
     NSWindow *window = [self window]; // Load interface if needed
     OBASSERT(window);
+
+    id target = self.target;
+    if ([target respondsToSelector:@selector(supportsFindRegularExpressions)]) {
+        self.supportsRegularExpressions = [target supportsFindRegularExpressions];
+    }
     
     [_searchTextField setStringValue:[self restoreFindText]];
     [window setFrame:[OAWindowCascade unobscuredWindowFrameFromStartingFrame:window.frame avoidingWindows:nil] display:YES animate:YES];

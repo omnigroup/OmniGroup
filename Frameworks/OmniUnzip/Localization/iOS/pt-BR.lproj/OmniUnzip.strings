@@ -1,0 +1,36 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Uma entrada do arquivo comprimido tinha um nome que não pôde ser convertido em um caminho do sistema de arquivos.";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "O nome de usuário do arquivo comprimido \"%@\" está duplicado.";
+
+/* error reason */
+"The unzip library failed to open %@." = "A biblioteca de descompressão não pôde abrir %@.";
+
+/* error reason */
+"The zip library function %s returned %d" = "A função %1$s da biblioteca de compressão retornou %2$d";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "A função %1$s da biblioteca de compressão retornou %2$d ao tentar ler os dados da entrada \"%3$@\" em \"%4$@\".";
+
+/* error reason */
+"Unable to close zip data." = "Não foi possível fechar os dados comprimidos.";
+
+/* error reason */
+"Unable to close zip file." = "Não foi possível fechar o arquivo comprimido.";
+
+/* error reason */
+"Unable to create zip file." = "Não foi possível criar o arquivo comprimido.";
+
+/* error description */
+"Unable to open zip archive." = "Não foi possível abrir o arquivo comprimido.";
+
+/* error description
+   error reason */
+"Unable to read zip data." = "Não foi possível ler os dados comprimidos.";
+
+/* error description */
+"Unable to read zip file." = "Não foi possível ler o arquivo comprimido.";
+
+/* error description */
+"Unable to write zip file." = "Não foi possível gravar o arquivo comprimido.";

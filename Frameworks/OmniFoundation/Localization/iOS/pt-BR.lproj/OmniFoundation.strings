@@ -1,0 +1,299 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1f GB";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1f GHz";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f kB";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1f KHz";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f MB";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1f MHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f PB";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f TB";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1f THz";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d bytes";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%u Hz";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "aprox. %.1f horas";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "aprox. %d minutos";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "aprox. %d segundos";
+
+/* approximate time interval: one minute */
+"about a minute" = "aprox. um minuto";
+
+/* approximate time interval: one hour */
+"about an hour" = "aprox. uma hora";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "Outro aplicativo anulou o bloqueio em “%@”.";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "O pacote é obsoleto";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "O pacote requer software adicional";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "A biblioteca bzip2 retornou o código de erro %1$d ao terminar a compressão. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "A biblioteca bzip2 retornou o código de erro %1$d ao ler os dados. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "A biblioteca bzip2 retornou o código de erro %1$d ao gravar os dados. %2$s.";
+
+/* OFLockFile recovery option */
+"Cancel" = "Cancelar";
+
+/* error recovery option */
+"Cancel <error recovery>" = "Cancelar";
+
+/* error description */
+"Cannot create socket." = "Não é possível criar o soquete.";
+
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "Alterar a configuração?";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "Não foi possível criar o diretório";
+
+/* Provisioning profile parsing error general description */
+"Could not parse entitlements from embedded provisioning profile" = "Não foi possível analisar titularidades do perfil de provisão integrado";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"d" = "d";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"day" = "dia";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"days" = "dias";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "Nome de pacote duplicado";
+
+/* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
+"EC public keys are not usable on this OS version" = "Não é possível usar chaves públicas EC nesta versão de SO";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "dd";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "hd";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "Elemento '%1$@' não permitido no caminho: %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "md";
+
+/* Provisioning profile parsing error reason – invalid PKCS#7 file */
+"Embedded provisioning profile is not a valid PKCS#7 archive" = "O perfil de provisão integrado não é um arquivo comprimido PKCS#7 válido";
+
+/* Provisioning profile parsing error reason – no embedded.mobileprovision file */
+"Embedded provisioning profile not found" = "Perfil de provisão integrado não encontrado";
+
+/* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
+"Embedded provisioning profile not readable" = "Perfil de provisão integrado ilegível";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "med";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "sd";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "sed";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "ad";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "Falha ao criar o diretório do arquivo de bloqueio em “%@”.";
+
+/* error reason */
+"Failed to serialize lock information." = "Falha ao serializar informações de bloqueio.";
+
+/* error reason */
+"Failed to write lock file.  %@" = "Falha ao gravar informações de bloqueio.  %@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"h" = "h";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"hour" = "hora";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"hours" = "horas";
+
+/* formatter input error */
+"Invalid time span format" = "Formato de intervalo de tempo inválido";
+
+/* local bundle path readable string */
+"local configuration file" = "arquivo de configuração local";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
+"m" = "m";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"minute" = "minuto";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"minutes" = "minutos";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
+"mo" = "mê";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"month" = "mês";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"months" = "meses";
+
+/* error reason */
+"No root element was found" = "Não foi encontrado nenhum elemento raiz";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "O pacote não é válido";
+
+/* OFLockFile recovery option */
+"Override Lock" = "Anular bloqueio";
+
+/* Provisioning profile parsing error reason – invalid plist */
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "O conteúdo PKCS#7 do perfil de provisão integrado não era um arquivo plist válido";
+
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "Restaurar o valor padrão de “%@”";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "Restaurar o valor padrão de todos os ajustes de configuração interna";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"s" = "s";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"second" = "segundo";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"seconds" = "segundos";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "Definir “%1$@” como “%2$@”";
+
+/* Document decryption error message - a file within the encrypted file wrapper can't be read */
+"The encrypted item \"%@\" is missing or unreadable." = "O item criptografado “%@” está ausente ou ilegível.";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "O certificado de servidor para “%@” não parece ser válido. Este site pode não ser confiável. Deseja conectar mesmo assim?";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "O certificado de servidor para “%@” tem uma data inválida. Ele pode ter expirado ou não estar ativo ainda. Deseja conectar mesmo assim?";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "O certificado de servidor para “%@” não está assinado por nenhum servidor raiz. Este site pode não ser confiável. Deseja conectar mesmo assim?";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "O certificado de servidor para “%@” ainda não é válido. Este site pode não ser confiável. Deseja conectar mesmo assim?";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "O certificado de servidor para “%@” está assinado por um servidor raiz não confiável. Este site pode não ser confiável. Deseja conectar mesmo assim?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "Este link de configuração fará as seguintes alterações:";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Este bloqueio foi executado por %1$@ usando o computador “%2$@” em %3$@ às %4$@.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Este bloqueio foi executado por %1$@ usando o computador “%2$@” em %3$@ às %4$@.\n\nVocê pode anular este bloqueio mas, se fizer isso, o outro aplicativo poderá perder dados se ainda estiver em execução.";
+
+/* compression error description */
+"Unable to compress data." = "Não foi possível comprimir os dados.";
+
+/* decompression error description */
+"Unable to decompress data." = "Não foi possível descomprimir os dados.";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "Não foi possível descomprimir os dados gzip: cabeçalho inválido";
+
+/* compression error description */
+"Unable to initialize compression" = "Não foi possível inicializar a compressão";
+
+/* decompression error description */
+"Unable to initialize decompression" = "Não foi possível inicializar a descompressão";
+
+/* error description */
+"Unable to lock document." = "Não foi possível bloquear o documento.";
+
+/* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
+   Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
+
+"Unexpected CMS content-type" = "Tipo de conteúdo CMS inesperado";
+
+/* error message - CMS object has an unknown algorithm identifier for compression of its content */
+"Unknown compression algorithm" = "Algoritmo de compressão desconhecido";
+
+/* Error message when a CMS KeyTransport algorithm is not recognized */
+"Unknown public key algorithm" = "Algoritmo de chave pública desconhecido";
+
+/* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
+"Unknown(cryptographic algorithm)" = "Desconhecido";
+
+/* decompression error reason */
+"unrecognized compression format." = "formato de compressão não reconhecido.";
+
+/* error message - CMS object has an unknown algorithm identifier for encryption of its content */
+"Unsupported encryption algorithm" = "Algoritmo de criptografia incompatível";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"w" = "se";
+
+/* error description */
+"Warning encountered while loading XML." = "Foi encontrado um aviso ao carregar o XML.";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"week" = "semana";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"weeks" = "semanas";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"y" = "a";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"year" = "ano";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"years" = "anos";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib retornou o código de erro %d.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib retornou o código de erro %1$d. %2$s.";

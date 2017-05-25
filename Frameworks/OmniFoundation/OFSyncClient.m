@@ -45,6 +45,7 @@ static NSString * const OFSyncClientHardwareCPUTypeKey = @"HardwareCPUType";
 static NSString * const OFSyncClientHardwareCPUTypeNameKey = @"HardwareCPUTypeName";
 static NSString * const OFSyncClientHardwareCPUTypeDescriptionKey = @"HardwareCPUTypeDescription";
 static NSString * const OFSyncClientCurrentFrameworkVersion = @"CurrentFrameworkVersion";
+static NSString * const OFSyncClientApplicationMarketingVersion = @"ApplicationMarketingVersion";
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
@@ -82,7 +83,7 @@ static NSString *OFSyncClientHostIdentifier(NSString *domain)
 
 #else
 
-static NSString *OFSyncClientHostIdentifier(NSString *domain)
+static NSString * _Nonnull OFSyncClientHostIdentifier(NSString * _Nonnull domain)
 {
     OBPRECONDITION(![NSString isEmptyString:domain]);
     
@@ -289,7 +290,7 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
 
 @implementation OFSyncClientParameters
 
-- initWithDefaultClientIdentifierPreferenceKey:(NSString *)defaultClientIdentifierPreferenceKey hostIdentifierDomain:(NSString *)hostIdentifierDomain currentFrameworkVersion:(OFVersionNumber *)currentFrameworkVersion;
+- (id)initWithDefaultClientIdentifierPreferenceKey:(NSString *)defaultClientIdentifierPreferenceKey hostIdentifierDomain:(NSString *)hostIdentifierDomain currentFrameworkVersion:(OFVersionNumber *)currentFrameworkVersion;
 {
     OBPRECONDITION(![NSString isEmptyString:defaultClientIdentifierPreferenceKey]);
     OBPRECONDITION(![NSString isEmptyString:hostIdentifierDomain]);
@@ -341,7 +342,7 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
 
 @implementation OFSyncClient
 
-+ (NSMutableDictionary *)makeClientStateWithPreviousState:(NSDictionary *)oldClientState parameters:(OFSyncClientParameters *)parameters onlyIncludeRequiredKeys:(BOOL)onlyRequiredKeys;
++ (NSMutableDictionary *)makeClientStateWithPreviousState:(nullable NSDictionary *)oldClientState parameters:(OFSyncClientParameters *)parameters onlyIncludeRequiredKeys:(BOOL)onlyRequiredKeys;
 {
     OBPRECONDITION(parameters);
     OBPRECONDITION(!oldClientState || [oldClientState objectForKey:OFSyncClientHostIdentifierKey]);
@@ -374,6 +375,7 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     client[OFSyncClientLastSyncDateKey] = syncDate;
     
     client[OFSyncClientCurrentFrameworkVersion] = [parameters.currentFrameworkVersion cleanVersionString];
+    client[OFSyncClientApplicationMarketingVersion] = [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"];
     
     if (onlyRequiredKeys)
         return client;
@@ -443,13 +445,13 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
 #endif
 }
 
-- initWithURL:(NSURL *)clientURL previousClient:(OFSyncClient *)previousClient parameters:(OFSyncClientParameters *)parameters error:(NSError **)outError;
+- (id)initWithURL:(NSURL *)clientURL previousClient:(nullable OFSyncClient *)previousClient parameters:(OFSyncClientParameters *)parameters error:(NSError **)outError;
 {
     NSDictionary *propertyList = [[self class] makeClientStateWithPreviousState:previousClient.propertyList parameters:parameters onlyIncludeRequiredKeys:NO];
     return [self initWithURL:clientURL propertyList:propertyList error:outError];
 }
 
-- initWithURL:(NSURL *)clientURL propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
+- (id)initWithURL:(NSURL *)clientURL propertyList:(NSDictionary *)propertyList error:(NSError **)outError;
 {
     OBPRECONDITION(clientURL);
     OBPRECONDITION(propertyList);
@@ -534,6 +536,17 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
         versionNumber = [[OFVersionNumber alloc] initWithVersionString:@"0"];
     }
     
+    return versionNumber;
+}
+
+- (nullable OFVersionNumber *)applicationMarketingVersion;
+{
+    NSString *versionString = _propertyList[OFSyncClientApplicationMarketingVersion];
+    if ([NSString isEmptyString:versionString]) {
+        return nil;
+    }
+    
+    OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
     return versionNumber;
 }
 

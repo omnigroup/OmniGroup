@@ -16,6 +16,7 @@
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 
 #import "OUIParameters.h"
 
@@ -195,6 +196,9 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
             continue;
         }
         
+        // This is a hack to make sure the slice checks with THIS pane for its appropriateness. Please see commit message for more details.
+        OUIStackedSlicesInspectorPane *oldContainingPane = slice.containingPane;
+        slice.containingPane = self;
         if ([slice isAppropriateForInspectedObjects:inspectedObjects]) {
             // If this slice includes a top group spacer and the previous slice was a spacer, remove that previous slice as it's not needed
             if (slice.includesInspectorSliceGroupSpacerOnTop && (previousSlice != nil) && [previousSlice isKindOfClass:[OUIEmptyPaddingInspectorSlice class]]) {
@@ -205,6 +209,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
             [appropriateSlices addObject:slice];
             previousSlice = slice;
         }
+        slice.containingPane = oldContainingPane;
     }
     // Don't have a spacer at the end, either
     if ([appropriateSlices.lastObject isKindOfClass:[OUIEmptyPaddingInspectorSlice class]]) {
@@ -293,6 +298,11 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         slice.view.backgroundColor = [slice sliceBackgroundColor];
         [self addChildViewController:slice];
         [self.sliceStackView addArrangedSubview:slice.view];
+        
+        if (![slice isKindOfClass:[OUIAbstractTableViewInspectorSlice class]]) {
+            UIEdgeInsets sliceEdgeInsets = [OUIInspectorSlice sliceAlignmentInsets];
+            slice.contentView.layoutMargins = sliceEdgeInsets;
+        }
     }
     for (NSUInteger index = 0; index < slices.count; index++) {
         OUIInspectorSlice *previous = index > 0 ? slices[index-1] : nil;

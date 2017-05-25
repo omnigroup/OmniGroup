@@ -66,6 +66,7 @@ OB_REQUIRE_ARC
         size_t amountConsumedHere = 0, amountProducedHere = 0;
         BOOL subOK = [self transformBuffer:bytes size:byteRange.length final:subblockIsFinal consumed:&amountConsumedHere
                                   toBuffer:output + amountProducedSoFar size:outputLength - amountProducedSoFar produced:&amountProducedHere];
+        OBASSERT_IF(!subOK, self.error != nil);
         
         amountProducedSoFar += amountProducedHere;
         lastReadPosition = byteRange.location + amountConsumedHere;
@@ -93,7 +94,7 @@ OB_REQUIRE_ARC
 
 static dispatch_data_t create_dispatch_data(char *, size_t, size_t) DISPATCH_RETURNS_RETAINED;
 
-- (BOOL)transformData:(NSData *)input range:(NSRange)inputRange final:(BOOL)lastInput consumed:(size_t *)inputConsumed toBlock:(BOOL (^)(dispatch_data_t NS_RELEASES_ARGUMENT buf))bufferConsumer;
+- (BOOL)transformData:(NSData *)input range:(NSRange)inputRange final:(BOOL)lastInput consumed:(size_t *)inputConsumed toBlock:(BOOL (^)(dispatch_data_t NS_RELEASES_ARGUMENT buf, NSError **))bufferConsumer;
 {
     size_t chunk_size = self.chunkSize;
 
@@ -130,9 +131,14 @@ static dispatch_data_t create_dispatch_data(char *, size_t, size_t) DISPATCH_RET
             dispatch_data_t chunk = dispatch_data_create(intermediateBuffer, intermediateFilled, NULL, DISPATCH_DATA_DESTRUCTOR_FREE);
             intermediateBuffer = NULL;
             intermediateFilled = 0;
-            BOOL cb_ok = bufferConsumer(chunk);
-            if (!cb_ok)
+            NSError * __autoreleasing intermediateError = nil;
+            BOOL cb_ok = bufferConsumer(chunk, &intermediateError);
+            OBASSERT_IF(!cb_ok, intermediateError);
+            if (!cb_ok) {
+                if (!error)
+                    error = intermediateError;
                 ok = NO;
+            }
         }
         
         if (!ok)
@@ -142,9 +148,14 @@ static dispatch_data_t create_dispatch_data(char *, size_t, size_t) DISPATCH_RET
     if (intermediateFilled > 0) {
         dispatch_data_t chunk = create_dispatch_data(intermediateBuffer, intermediateFilled, chunk_size);
         intermediateBuffer = NULL;
-        BOOL cb_ok = bufferConsumer(chunk);
-        if (!cb_ok)
+        NSError * __autoreleasing intermediateError = nil;
+        BOOL cb_ok = bufferConsumer(chunk, &intermediateError);
+        OBASSERT_IF(!cb_ok, intermediateError);
+        if (!cb_ok) {
+            if (!error)
+                error = intermediateError;
             ok = NO;
+        }
     } else if (intermediateBuffer != NULL) {
         free(intermediateBuffer);
     }
@@ -176,7 +187,7 @@ static dispatch_data_t create_dispatch_data(char *buffer, size_t buffer_filled, 
         dispatch_data_t __block buf = dispatch_data_empty;
         size_t amountTaken = 0;
         
-        if (![self transformData:input range:(NSRange){0, input.length} final:YES consumed:&amountTaken toBlock:^BOOL(dispatch_data_t  _Nonnull NS_RELEASES_ARGUMENT chunk) {
+        if (![self transformData:input range:(NSRange){0, input.length} final:YES consumed:&amountTaken toBlock:^BOOL(dispatch_data_t  _Nonnull NS_RELEASES_ARGUMENT chunk, NSError **dummyOutError) {
             buf = dispatch_data_create_concat(buf, chunk);
             return YES;
         }]) {
@@ -288,7 +299,15 @@ static dispatch_data_t create_dispatch_data(char *buffer, size_t buffer_filled, 
     *inputConsumed = inputLength - cstrm.src_size;
     *outputProduced = outputLength - cstrm.dst_size;
     
-    return (cok == COMPRESSION_STATUS_ERROR)? NO : YES;
+    if (cok == COMPRESSION_STATUS_ERROR) {
+        // The compression API doesn't actually tell us why anything fails.
+        self.error = [NSError errorWithDomain:OFErrorDomain
+                                         code:(expanding? OFUnableToDecompressData : OFUnableToCompressData)
+                                     userInfo:nil];
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 @synthesize expanding;

@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ typedef void (^OFByteProviderBufferRelease)(void);
 @protocol OFByteProvider
 
 /* Methods implemented by NSData */
-@property (readonly) NSUInteger length;
+@property(nonatomic,readonly) NSUInteger length;
 - (void)getBytes:(void *)buffer range:(NSRange)range;
 
 /* Methods we may implement on specialized providers */
@@ -40,7 +40,7 @@ typedef void (^OFByteProviderBufferRelease)(void);
 @protocol OFByteAcceptor
 
 /* Methods implemented by NSMutableData */
-- (void)setLength:(NSUInteger)length;
+@property(nonatomic,readwrite) NSUInteger length;
 - (void)replaceBytesInRange:(NSRange)range withBytes:(const void *)bytes;
 
 @optional

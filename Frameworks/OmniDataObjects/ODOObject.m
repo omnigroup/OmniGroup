@@ -487,6 +487,12 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 }
 
 // This is in OmniDataObjects so that model classes can call it on super w/o worring about whether they are the base class.  ODO doesn't itself support unarchiving, but this is a convenient place to put a generic awake method that is agnostic about the unarchiving strategy.  For example, and XML-base archiving might call a more complex method that does something specific to that archiver type and then call this generic method.
+
+- (BOOL)isAwakingFromUnarchive;
+{
+    return _flags.isAwakingFromUnarchive;
+}
+
 - (void)awakeFromUnarchive;
 {
     // Nothing; for model classes
@@ -499,6 +505,18 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     OBPRECONDITION(!_flags.isAwakingFromFetch);
 
     // Nothing for us to do; for subclasses to add observers after change processing (re)enabled
+}
+
+- (BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
+{
+    return _flags.isAwakingFromReinsertionAfterUndoneDeletion;
+}
+
+- (void)awakeFromReinsertionAfterUndoneDeletion;
+{
+    OBPRECONDITION(_flags.isAwakingFromReinsertionAfterUndoneDeletion);
+    
+    // Nothing for us to do; for subclasses
 }
 
 - (ODOEntity *)entity;
@@ -662,15 +680,14 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return [self validateForSave:outError];
 }
 
+- (BOOL)isFault;
+{
+    return _flags.isFault;
+}
 
 - (void)willTurnIntoFault;
 {
     // Nothing; for subclasses
-}
-
-- (BOOL)isFault;
-{
-    return _flags.isFault;
 }
 
 - (void)turnIntoFault;
@@ -799,7 +816,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         OBASSERT_NOT_REACHED("Why do you ask?");
         return YES;
     }
-
+    
     ODOProperty *prop = [[_objectID entity] propertyNamed:key];
     NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
     if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
@@ -809,19 +826,29 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         OBASSERT_NOT_REACHED("Shouldn't ask this since we aren't required to keep track of it (though we do...).  CoreData only supports querying persistent properties");
         return NO;
     }
-    if ([prop isKindOfClass:[ODORelationship class]]) {
-        ODORelationship *rel = (ODORelationship *)prop;
-        if ([rel isToMany]) {
-            // We are going to avoid mutating/clearing to-many relationships when an inverse to-one is updated.  So, we won't have a good way to do this w/o a bunch of extra work.  Let's not until we need to.
-            OBRequestConcreteImplementation(self, _cmd);
-        }
-    }
     
     id oldValue = [snapshot objectAtIndex:snapshotIndex];
     
     [self willAccessValueForKey:key];
     id newValue = ODOObjectPrimitiveValueForProperty(self, prop);
     [self didAccessValueForKey:key];
+    
+    if ([prop isKindOfClass:[ODORelationship class]]) {
+        ODORelationship *rel = (ODORelationship *)prop;
+        if ([rel isToMany]) {
+            // We are going to avoid mutating/clearing to-many relationships when an inverse to-one is updated.  So, we won't have a good way to do this w/o a bunch of extra work.  Let's not until we need to.
+            OBRequestConcreteImplementation(self, _cmd);
+        } else {
+            if (oldValue != nil && ![oldValue isKindOfClass:[ODOObject class]]) {
+                OBASSERT([oldValue isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
+                id oldPrimaryKey = oldValue;
+                id newPrimaryKey = [newValue valueForKey:[[[rel destinationEntity] primaryKeyAttribute] name]];
+                return OFNOTEQUAL(oldPrimaryKey, newPrimaryKey);
+            }
+            
+            // fall through
+        }
+    }
     
     return OFNOTEQUAL(oldValue, newValue);
 }
@@ -1055,7 +1082,7 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
 }
 
 // Checks if there are any entries in the changed values that are not in the derived properties.
-- (BOOL)changedNonDerivedChangedValue;
+- (BOOL)hasChangedNonDerivedChangedValue;
 {
     NSSet *set = [[self entity] derivedPropertyNameSet];
     return _changedPropertyNotInSet(self, set, __PRETTY_FUNCTION__);

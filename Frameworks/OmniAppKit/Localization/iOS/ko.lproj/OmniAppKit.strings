@@ -1,0 +1,11 @@
+/* button title */
+"Cancel" = "취소";
+
+/* style validation error message for expected {type} */
+"Expected value of type “%@”" = "“%@” 유형의 예상 값";
+
+/* button title */
+"OK" = "양호";
+
+/* style validation error message for {key} */
+"Unexpected value for key “%@”" = "“%@” 키에 대한 예상치 않은 값";

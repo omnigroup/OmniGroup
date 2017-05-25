@@ -129,8 +129,10 @@ RCS_ID("$Id$");
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
+    if (reason != OUIInspectorUpdateReasonDismissed) {
+        [_tableView reloadData];
+        OUITableViewAdjustHeightToFitContents(_tableView);
+    }
 }
 
 #pragma mark - UIViewController subclass

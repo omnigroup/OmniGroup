@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,5 +8,5 @@
 // $Id$
 
 // Getting the preprocessor to concat the version onto the base identifier is more trouble than it's worth, given that we check this all in a shell script afterward.
-#define OSUInstallerPrivilegedHelperVersion 6
-#define OSUInstallerPrivilegedHelperIdentifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6
+#define OSUInstallerPrivilegedHelperVersion 7
+#define OSUInstallerPrivilegedHelperIdentifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7

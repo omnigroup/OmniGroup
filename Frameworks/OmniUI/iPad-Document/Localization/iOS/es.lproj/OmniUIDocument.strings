@@ -264,7 +264,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "Trasladar...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -301,7 +301,7 @@
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
 
-"OK" = "OK";
+"OK" = "Aceptar";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuración de OmniPresence: %@";
@@ -432,7 +432,7 @@
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "La cuenta “%@” podría tener documentos editados que aún no se han sincronizado en la nube. ¿Desea descartar las modificaciones realizadas en local?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "El documento “%@” requiere una contraseña para abrirlo.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
@@ -459,7 +459,7 @@
 "Title" = "Título";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Al activar la opción Almacenamiento en la nube se gana acceso a documentos almacenados en servicios en la nube, como iCloud Drive o Dropbox. La función Almacenamiento en la nube se encuentra en periodo de pruebas (BETA). Tenga cuidado al usar este servicio. Para más información, consulte la sección “Trabajar en la nube” de la documentación.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Al activar la opción Usar almacenamiento en la nube se gana acceso a documentos almacenados en servicios en la nube, como iCloud Drive o Dropbox. La función de almacenamiento en la nube se encuentra en periodo de pruebas (BETA). Tenga cuidado al usar este servicio. Para más información, consulte la sección “Trabajar en la nube” de la documentación.";
 
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";

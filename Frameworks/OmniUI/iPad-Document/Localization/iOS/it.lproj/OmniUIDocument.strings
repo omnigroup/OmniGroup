@@ -203,7 +203,7 @@
 "Export to…" = "Esporta in…";
 
 /* Export document preview action title. */
-"Export…" = "Esporta…";
+"Export…" = "Esporta...";
 
 /* finished */
 "Finished" = "Fine";
@@ -264,7 +264,7 @@
 "Move to..." = "Sposta in…";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "Sposta...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Documento personale";
@@ -432,7 +432,7 @@
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account \"%@\" può aver modificato documenti non ancora sincronizzati con il cloud. Ignorare le modifiche locali?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "È necessaria una password per aprire il documento \"%@\".";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Impossibile completare l'operazione.";

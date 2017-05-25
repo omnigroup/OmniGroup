@@ -269,6 +269,8 @@ BOOL OADebugTargetSelection = NO;
     OBRecordBacktrace(sel_getName(theAction), OBBacktraceBuffer_PerformSelector);
 
     if (OATargetSelection) {
+        DEBUG_TARGET_SELECTION(@"Checking for modal panel with target %@, key window %@, is modal %d", OBShortObjectDescription(theTarget), OBShortObjectDescription([self keyWindow]), [[self keyWindow] isModalPanel]);
+
         // The normal NSApplication version, sadly, uses internal target lookup for the nil case. It should really call -targetForAction:to:from:.
         // The AppKit version of this uses _NSTargetForSendAction() which has fewer restrictions on the nil target case (since it 'knows' it will pick the right thing _objectFromResponderChainWhichRespondsToAction()). Even if we return the exact same result as it would have calculated, it bails when we are in a modal session and have a menu item targetting a view in the modal window. See bug:///136395 (Mac-OmniOutliner Bug: Should allow pasting into the password decryption field)
         if (!theTarget && ![[self keyWindow] isModalPanel])
@@ -392,8 +394,10 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 {
     if (!theAction || !OATargetSelection)
         return [super targetForAction:theAction];
-    else
+    else {
+        DEBUG_TARGET_SELECTION(@"Forwarding -targetForAction: to targetForAction:to:from: for action %@", NSStringFromSelector(theAction));
         return [self targetForAction:theAction to:nil from:nil];
+    }
 }
 
 - (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
@@ -635,6 +639,10 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     return @"index";
 }
 
+- (NSString *)anchorsPlistFilename;
+{
+    return @"anchors";
+}
 
 - (NSURL *)builtInHelpURLForHelpURLString:(NSString *)helpURLString;
 {
@@ -647,7 +655,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         NSURL *targetURL = [NSURL URLWithString:helpURLString relativeToURL:indexPageURL];
 
         if (OFISEQUAL([targetURL scheme], @"anchor")) {
-            NSURL *anchorsPlistURL = [[NSBundle mainBundle] URLForResource:@"anchors" withExtension:@"plist" subdirectory:helpFolder];
+            NSURL *anchorsPlistURL = [[NSBundle mainBundle] URLForResource:[self anchorsPlistFilename] withExtension:@"plist" subdirectory:helpFolder];
             NSDictionary *anchorsDictionary = [NSDictionary dictionaryWithContentsOfURL:anchorsPlistURL];
             NSString *anchorURLString = [anchorsDictionary objectForKey:helpURLString];
             if (anchorURLString == nil) {

@@ -12,7 +12,7 @@
 
 # If we add the version number and bundle identifier information for the priviledged helper too as global settings in Xcode, including preprocessor defines and compile-time defines, it causes many extra precompiled modules to be generated (due to the different sets of -D flags present in compiles). Instead of defining them one place, we'll use this script to check that all the versions match.
 
-VERSION_NUMBER=6
+VERSION_NUMBER=7
 
 INSTALL_SERVICE_PATH="$CONFIGURATION_BUILD_DIR/OmniSoftwareUpdate.framework/Versions/A/XPCServices/com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc"
 HELPER_EXPECTED_NAME="com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.$VERSION_NUMBER"
@@ -59,7 +59,7 @@ ACTUAL=$(/usr/libexec/PlistBuddy -c "Print :SMPrivilegedExecutables:$HELPER_EXPE
 if [ "$CONFIGURATION" = "Debug" ]; then
     EXPECTED="identifier $HELPER_EXPECTED_NAME and anchor apple generic and certificate leaf[subject.CN] = \"Mac Developer:\"*"
 elif [ "$CONFIGURATION" = "Release" ]; then
-    EXPECTED="identifier $HELPER_EXPECTED_NAME and anchor apple generic and certificate leaf[subject.CN] = \"Developer ID Application: The Omni Group\""
+    EXPECTED="identifier $HELPER_EXPECTED_NAME and anchor apple generic and certificate leaf[subject.CN] = \"Developer ID Application: The Omni Group (34YW5XSRB7)\""
 else
     echo "Unexpected configuration $CONFIGURATION"
     exit 1
@@ -73,7 +73,7 @@ fi
 
 # For Debug builds, we have two authorized clients. For Release, one. It isn't clear why we have both in Debug builds -- might be just historical cruft and maybe we can always have exactly one.
 ACTUAL=$(/usr/libexec/PlistBuddy -c "Print :SMAuthorizedClients:0" "$TMPDIR/OSUCheckVersionNumber-$$.plist")
-EXPECTED="identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = \"Developer ID Application: The Omni Group\""
+EXPECTED="identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerService and anchor apple generic and certificate leaf[subject.CN] = \"Developer ID Application: The Omni Group (34YW5XSRB7)\""
 if [ "$ACTUAL" != "$EXPECTED" ]; then
     echo "*** Error: Helper tool should list Mac Developer version of installer service its SMAuthorizedClients"
     echo "   Expected: $EXPECTED"

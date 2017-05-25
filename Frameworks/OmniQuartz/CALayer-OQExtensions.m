@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -451,7 +451,7 @@ static void _writeString(NSString *str)
     
     id contents = self.contents;
     if (contents) {
-        [str appendFormat:@" contents:%@", contents];
+        [str appendFormat:@" contents:%@", OBShortObjectDescription((id)contents)];
         [str appendFormat:@" grav:%@", self.contentsGravity];
     }
     

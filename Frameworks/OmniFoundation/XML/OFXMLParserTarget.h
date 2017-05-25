@@ -19,6 +19,9 @@
 // In the QName case, an attribute of "xmlns:ns=someurl" is reported as an attribute with a name of "ns", a namespace of "http://www.w3.org/2000/xmlns/" and a value of "someurl". If ":ns" isn't present, the name is the empty string.
 - (void)generateAttributesWithQNames:(void (^ NS_NOESCAPE)(NSMutableArray <OFXMLQName *> *qnames, NSMutableArray <NSString *> *values))receiver;
 
+// Like -generateAttributesWithQNames:, but no arrays are generated. Instead, the block is called once for each pair.
+- (void)generateAttributeQNamePairs:(void (^ NS_NOESCAPE)(OFXMLQName *attributeQName, NSString *attributeValue))receiver;
+
 // In the plain name case, an attribute of "xmlns:ns=someurl" is reported with the name "xmlns:ns" with a value of "someurl". If ":ns" isn't present, the name is just "xmlns". The namespace on attributes is lost (though we could report "<ns:a>" or "ns:b=foo" with the prefix intact, but the prefix is open to change. Ideally everything should move toward the QName interface, but this gives a higher performance backwards compatibility path for OFXMLDocument.
 - (void)generateAttributesWithPlainNames:(void (^ NS_NOESCAPE)(NSMutableArray <NSString *> *names, NSMutableDictionary <NSString *, NSString *> *values))receiver;
 
@@ -39,7 +42,7 @@ typedef enum {
     OFXMLParserElementBehaviorSkip, // Skip this entire element.  No start/end callbacks will occur.
 } OFXMLParserElementBehavior;
 
-@protocol OFXMLParserTarget
+@protocol OFXMLParserTarget <NSObject>
 @optional
 
 // If this returns NULL, the parser will create and free its own.  Otherwise, it will use this and not free it.

@@ -34,7 +34,7 @@ typedef NS_ENUM(unsigned, OFDataTransformOptions) {
 - (BOOL)transformData:(NSData *)input range:(NSRange)inputRange final:(BOOL)lastInput consumed:(size_t *)inputConsumed toBuffer:(void *)output size:(size_t)outputLength produced:(size_t *)outputProduced;
 
 /// Produces a sequence of dispatch_data objects of size self.chunkSize or smaller. Implemented in terms of -transformData:...toBuffer:.
-- (BOOL)transformData:(NSData *)input range:(NSRange)inputRange final:(BOOL)lastInput consumed:(size_t *)inputConsumed toBlock:(BOOL (NS_NOESCAPE ^)(dispatch_data_t  __attribute__((ns_consumed)) buf))bufferConsumer;
+- (BOOL)transformData:(NSData *)input range:(NSRange)inputRange final:(BOOL)lastInput consumed:(size_t *)inputConsumed toBlock:(BOOL (NS_NOESCAPE ^)(dispatch_data_t  __attribute__((ns_consumed)) buf, NSError **))bufferConsumer;
 
 /// One-shot convenience method for transforming a data object.
 ///
@@ -66,13 +66,6 @@ typedef NS_ENUM(unsigned, OFDataTransformOptions) {
 - (instancetype __nullable)initWithCompressionLevel:(int)blockSize100k workFactor:(int)wf;
 @end
 @interface OFBZip2Decompress : OFLimitedBufferSizeTransform
-@end
-
-@interface OFTransformingOutputStream : NSOutputStream
-- (instancetype)initWithStream:(NSOutputStream *)destination transform:(OFDataTransform *)xlat;
-@end
-@interface OFTransformingInputStream : NSInputStream
-- (instancetype)initWithStream:(NSInputStream *)source transform:(OFDataTransform *)xlat;
 @end
 
 NS_ASSUME_NONNULL_END

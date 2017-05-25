@@ -121,8 +121,16 @@ module Xcode
   end
   
   class Workspace::Workspace
+      
+    @@AllowMissing = true
+    
+    def self.allow_missing=(value)
+      @@AllowMissing = value
+    end
+    
     attr_reader :path, :checkout_location, :root
     attr_reader :autocreate_schemes
+    attr_accessor :allow_missing
     
     # The path is the nominal location, while @checkout_location is the real path on disk (possibly a cache)
     def initialize(path, options = {})
@@ -139,6 +147,7 @@ module Xcode
       
       fail "Expected Workspace element at root" unless doc.root.name == "Workspace"
       
+      @allow_missing = @@AllowMissing
       @root = Xcode::Workspace::Group.from_xml(self, doc.root)
       
       @autocreate_schemes = true
@@ -180,6 +189,14 @@ module Xcode
       end
     end
     
+    def missing(path)
+        if allow_missing
+            STDERR.print "--- Skipping missing #{path} (maybe excluded during autobuild)\n"
+        else
+            fail "The path #{path} is missing!"
+        end
+    end
+    
     # Collects the transitive closure of files referenced by this workspace and any xcodeproj files referenced directly or indirectly
     # This depends upon the referenced projects being checked out, and doesn't consider any branched directories, which would be needed for PostAutoBuildSequences
     # The results are instances of Workspace::PathReference. The reference given won't necessarily contain all the project paths refering to its path or subpaths (usually useful for getting rid of bad references, so you might need to use it iteratively).
@@ -209,7 +226,7 @@ module Xcode
         #STDERR.print "project_path = #{project_path}\n"
         project = Xcode::Project.from_path(project_path)
         if !project
-            STDERR.print "--- Skipping missing #{project_path} (maybe excluded during autobuild)\n"
+            missing(project_path)
             next
         end
 

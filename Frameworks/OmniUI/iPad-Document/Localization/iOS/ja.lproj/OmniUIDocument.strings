@@ -203,7 +203,7 @@
 "Export to…" = "書き出し先...";
 
 /* Export document preview action title. */
-"Export…" = "書き出し...";
+"Export…" = "書き出す…";
 
 /* finished */
 "Finished" = "完了";
@@ -264,7 +264,7 @@
 "Move to..." = "移動...";
 
 /* Move document preview action title. */
-"Move…" = "Move…";
+"Move…" = "移動...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "書類";
@@ -432,7 +432,7 @@
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。ローカルで行われた編集内容をすべて破棄しますか？";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
-"The document \"%@\" requires a password to open." = "The document “%@” requires a password to open.";
+"The document \"%@\" requires a password to open." = "書類 “%@” を開くにはパスワードが必要です。";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "操作を完了できませんでした。";

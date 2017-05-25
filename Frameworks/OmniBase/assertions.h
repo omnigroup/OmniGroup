@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,7 +172,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBPOSTCONDITION(expression, ...) do {} while(0)
     #define OBINVARIANT(expression, ...) do {} while(0)
     #define OBASSERT(expression, ...) do {} while(0)
-    #define OBASSERT_NOT_REACHED(...) do { OBRecordBacktrace("NOTREACHED", OBBacktraceBuffer_OBAssertionFailure); } while(0)
+    #define OBASSERT_NOT_REACHED(...) do { OBRecordBacktrace("NOTREACHED", OBBacktraceBuffer_OBAssertionFailure); OBAnalyzerNotReached(); } while(0)
     #define OBASSERT_IF(condition, implication, ...) do {} while(0)
 
     #define OBPRECONDITION_EXPENSIVE(expression, ...) do {} while(0)

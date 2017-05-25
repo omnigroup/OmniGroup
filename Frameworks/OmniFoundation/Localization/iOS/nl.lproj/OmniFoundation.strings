@@ -98,17 +98,20 @@
 /* invalid bundle reason */
 "Duplicate bundle name" = "Bundelnaam komt meer dan één keer voor";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
-"e" = "e";
-
 /* Error message when trying to use an elliptic-curve key on a MacOS or iOS version that does not support them */
 "EC public keys are not usable on this OS version" = "Openbare EC-toetsen zijn niet bruikbaar in deze OS-versie";
 
-/* time span formatter span - needs one trailing space */
-"elapsed " = "verstreken ";
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ed" = "vd";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"eh" = "vu";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element '%1$@' niet toegestaan in pad: %2$@";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"em" = "vm";
 
 /* Provisioning profile parsing error reason – invalid PKCS#7 file */
 "Embedded provisioning profile is not a valid PKCS#7 archive" = "Ingebed voorzieningenprofiel is geen geldig PKCS#7-archief";
@@ -118,6 +121,18 @@
 
 /* Provisioning profile parsing error reason – embedded.mobileprovision unreadable */
 "Embedded provisioning profile not readable" = "Ingebed voorzieningenprofiel niet leesbaar";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"emo" = "vma";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"es" = "vs";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ew" = "vw";
+
+/* time span formatter span - DO NOT add leading or trailing whitespace */
+"ey" = "vj";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Map voor vergrendelingsbestand op '%@' kan niet worden gemaakt.";

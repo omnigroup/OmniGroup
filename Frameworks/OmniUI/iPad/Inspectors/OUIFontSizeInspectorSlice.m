@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -190,8 +190,10 @@ static const CGFloat fontSizeControlWidth = 100.0f;
 - (void)loadView;
 {
     CGRect frame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
-    UIView *containerView = [[UIView alloc] initWithFrame:frame];
-    containerView.preservesSuperviewLayoutMargins = YES;
+    
+    self.contentView = [[UIView alloc] init];
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    
     CGRect fontSizeLabelFrame = CGRectMake(frame.origin.x, frame.origin.y, fontSizeLabelWidth, frame.size.height);
     CGRect fontSizeControlFrame = CGRectMake(CGRectGetMidX(frame) - fontSizeControlWidth / 2, frame.origin.y, fontSizeControlWidth, frame.size.height);
     CGRect increaseButtonFrame = CGRectMake(CGRectGetMaxX(frame) - buttonWidth, frame.origin.y, buttonWidth, frame.size.height);
@@ -215,13 +217,21 @@ static const CGFloat fontSizeControlWidth = 100.0f;
     _fontSizeControl = [self makeFontSizeControlWithFrame:fontSizeControlFrame];
     _fontSizeControl.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font size", @"OUIInspectors", OMNI_BUNDLE, @"Font size description accessibility label");
     
-    [containerView addSubview:_fontSizeLabel];
-    [containerView addSubview:_fontSizeControl];
-    [containerView addSubview:_fontSizeDecreaseStepperButton];
-    [containerView addSubview:_fontSizeIncreaseStepperButton];
+    [self.contentView addSubview:_fontSizeLabel];
+    [self.contentView addSubview:_fontSizeControl];
+    [self.contentView addSubview:_fontSizeDecreaseStepperButton];
+    [self.contentView addSubview:_fontSizeIncreaseStepperButton];
 
-    self.view = containerView;
-    self.view.translatesAutoresizingMaskIntoConstraints = NO;
+    UIView *view = [[UIView alloc] init];
+    
+    [view addSubview:self.contentView];
+    
+    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
+    self.view = view;
 
     _fontSizeControl.translatesAutoresizingMaskIntoConstraints = NO;
     self.fontSizeLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -233,23 +243,23 @@ static const CGFloat fontSizeControlWidth = 100.0f;
 
     [NSLayoutConstraint activateConstraints:
      @[
-       [self.fontSizeIncreaseStepperButton.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-       [self.fontSizeIncreaseStepperButton.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeIncreaseStepperButton.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+       [self.fontSizeIncreaseStepperButton.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
        [self.fontSizeIncreaseStepperButton.widthAnchor constraintEqualToConstant:buttonWidth],
-       [self.fontSizeIncreaseStepperButton.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1],
+       [self.fontSizeIncreaseStepperButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:buffer * -1],
        
-       [self.fontSizeDecreaseStepperButton.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-       [self.fontSizeDecreaseStepperButton.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeDecreaseStepperButton.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+       [self.fontSizeDecreaseStepperButton.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
        [self.fontSizeDecreaseStepperButton.rightAnchor constraintEqualToAnchor:self.fontSizeIncreaseStepperButton.leftAnchor],
        [self.fontSizeDecreaseStepperButton.widthAnchor constraintEqualToConstant:buttonWidth],
        
-       [self.fontSizeLabel.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-       [self.fontSizeLabel.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [self.fontSizeLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+       [self.fontSizeLabel.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
        [self.fontSizeLabel.widthAnchor constraintEqualToConstant:CGRectGetWidth(self.fontSizeLabel.frame)],
-       [self.fontSizeLabel.leadingAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leadingAnchor],
+       [self.fontSizeLabel.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor],
        
-       [_fontSizeControl.topAnchor constraintEqualToAnchor:containerView.topAnchor],
-       [_fontSizeControl.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor],
+       [_fontSizeControl.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+       [_fontSizeControl.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
        [_fontSizeControl.rightAnchor constraintEqualToAnchor:self.fontSizeDecreaseStepperButton.rightAnchor],
        [_fontSizeControl.leftAnchor constraintEqualToAnchor:self.fontSizeLabel.rightAnchor],
        ]

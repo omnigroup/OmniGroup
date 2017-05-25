@@ -43,6 +43,8 @@ RCS_ID("$Id$")
 @property (nonatomic) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist
 @property (nonatomic) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
 
+@property (nonatomic, strong) NSLayoutConstraint *contentWidthConstraint;
+
 @end
 
 #pragma mark -
@@ -496,6 +498,30 @@ RCS_ID("$Id$")
 
 #pragma mark -
 #pragma mark OIConcreteInspector protocol
+
+@synthesize inspectorWidth = _inspectorWidth;
+
+// This allows our container to tell us how wide the inspector part should be, but we then have a constraint that might add on width for a scroller. If inspectorWidth is less than or equal to zero, we turn off our width constraint.
+- (void)setInspectorWidth:(CGFloat)inspectorWidth;
+{
+    if (_inspectorWidth == inspectorWidth) {
+        return;
+    }
+    
+    _inspectorWidth = inspectorWidth;
+    
+    if (_inspectorWidth <= 0) {
+        self.contentWidthConstraint.active = NO;
+        self.contentWidthConstraint = nil;
+    } else {
+        if (!_contentWidthConstraint) {
+            _contentWidthConstraint = [self.contentView.widthAnchor constraintEqualToConstant:_inspectorWidth];
+            _contentWidthConstraint.active = YES;
+        } else {
+            _contentWidthConstraint.constant = _inspectorWidth;
+        }
+    }
+}
 
 - (NSPredicate *)inspectedObjectsPredicate;
 {

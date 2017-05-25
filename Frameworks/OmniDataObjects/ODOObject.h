@@ -18,9 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class NSString, NSArray, NSError, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
-@interface ODOObject : OFObject
-{
-@package
+@interface ODOObject : NSObject {
+  @package
     ODOEditingContext *_editingContext;
     ODOObjectID *_objectID;
     void *_observationInfo;
@@ -34,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int isAwakingFromInsert : 1;
         unsigned int needsAwakeFromFetch : 1;
         unsigned int isAwakingFromFetch : 1;
+        unsigned int isAwakingFromReinsertionAfterUndoneDeletion : 1;
+        unsigned int isAwakingFromUnarchive : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
         unsigned int undeletable : 1;
     } _flags;
@@ -57,14 +58,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setDefaultAttributeValues;
 
-- (BOOL)isAwakingFromInsert;
+@property (nonatomic, readonly, getter=isAwakingFromInsert) BOOL awakingFromInsert;
 - (void)awakeFromInsert;
 
-- (BOOL)isAwakingFromFetch;
+@property (nonatomic, readonly, getter=isAwakingFromFetch) BOOL awakingFromFetch;
 - (void)awakeFromFetch;
 - (void)didAwakeFromFetch;
 
+@property (nonatomic, readonly, getter=isAwakingFromUnarchive) BOOL awakingFromUnarchive;
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
+
+- (BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
+- (void)awakeFromReinsertionAfterUndoneDeletion;
 
 @property (nonnull, nonatomic, readonly) ODOEntity *entity; // do not subclass
 @property (nonnull, nonatomic, readonly) ODOEditingContext *editingContext; // do not subclass
@@ -83,29 +88,31 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)validateForInsert:(NSError **)outError; // Just calls -validateForSave:
 - (BOOL)validateForUpdate:(NSError **)outError; // Just calls -validateForSave:
 
+@property (nonatomic, readonly, getter=isFault) BOOL fault;
+
 - (void)willTurnIntoFault;
-- (BOOL)isFault;
 - (void)turnIntoFault;
+
 - (BOOL)hasFaultForRelationship:(ODORelationship *)rel;
 - (BOOL)hasFaultForRelationshipNamed:(NSString *)key; 
 - (BOOL)toOneRelationship:(ODORelationship *)rel isToObject:(ODOObject *)destinationObject;
 
-- (BOOL)isInserted;
-- (BOOL)isDeleted;
-- (BOOL)isUpdated;
+@property (nonatomic, readonly, getter=isInserted) BOOL inserted;
+@property (nonatomic, readonly, getter=isDeleted) BOOL deleted;
+@property (nonatomic, readonly, getter=isUpdated) BOOL updated;
 
-- (BOOL)isInvalid;
-- (BOOL)isUndeletable;
+@property (nonatomic, readonly, getter=isInvalid) BOOL invalid;
+@property (nonatomic, readonly, getter=isUndeletable) BOOL undeletable;
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
-- (nullable NSDictionary *)changedValues;
-- (nullable NSDictionary *)changedNonDerivedValues;
+@property (nonatomic, nullable, readonly) NSDictionary *changedValues;
+@property (nonatomic, nullable, readonly) NSDictionary *changedNonDerivedValues;
 
 - (nullable id)committedValueForKey:(NSString *)key;
 // - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 
 + (void)addDerivedPropertyNames:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
-- (BOOL)changedNonDerivedChangedValue;
+@property (nonatomic, readonly) BOOL hasChangedNonDerivedChangedValue;
 
 + (void)computeNonDateModifyingPropertyNameSet:(NSMutableSet<NSString *> *)set withEntity:(ODOEntity *)entity;
 - (BOOL)shouldChangeDateModified;
@@ -132,5 +139,15 @@ extern _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingCont
 + (void)setKeys:(NSArray *)keys triggerChangeNotificationsForDependentKey:(NSString *)dependentKey;
 @end
 #endif
+
+// Helper functions for support -awakeFromUnarchive.
+// Clients should dispatch through here rather than sending -awakeFromUnarchive directly, so that -isAwakingFromUnarchive returns the correct value.
+
+void ODOObjectAwakeSingleObjectFromUnarchive(ODOObject *object);
+void ODOObjectAwakeSingleObjectFromUnarchiveWithMessage(ODOObject *object, SEL sel, id arg);
+
+void ODOObjectAwakeObjectsFromUnarchive(id <NSFastEnumeration> objects);
+void ODOObjectAwakeObjectsFromUnarchiveWithMessage(id <NSFastEnumeration> objects, SEL sel, id arg);
+
 
 NS_ASSUME_NONNULL_END
