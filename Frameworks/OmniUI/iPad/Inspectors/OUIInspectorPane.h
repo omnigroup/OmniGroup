@@ -23,9 +23,6 @@
 
 @property(nonatomic,copy, nullable) NSArray *inspectedObjects; // Typically should NOT be set by anything other than -pushPane: or -pushPane:inspectingObjects:.
 
-/// Subclasses should override appropriately. Defualt returns NO.
-@property (nonatomic, readonly) BOOL containsAppropriateSlicesForInspectedObjects;
-
 // Allow panes to configure themselves before being pushed onto the OUIInspector's navigation controller. This is important since the navigation controller queries some properties before -viewWillAppear: is called.
 - (void)inspectorWillShow:(nonnull OUIInspector *)inspector;
 

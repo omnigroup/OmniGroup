@@ -1,4 +1,4 @@
-// Copyright 2008-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniFoundation/OFObject.h>
 
 
-@interface OFIndexPath : OFObject
+@interface OFIndexPath : OFObject <NSCopying>
 
 + (OFIndexPath *)emptyIndexPath;
 + (OFIndexPath *)indexPathWithIndex:(NSUInteger)anIndex;

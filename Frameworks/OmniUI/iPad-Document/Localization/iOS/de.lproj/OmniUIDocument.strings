@@ -101,7 +101,7 @@
 "Clear Title" = "Titel löschen";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Dokument schließen";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Cloudspeicheranbieter";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Info";
-
-/* error title */
-"Invalid Zip Archive" = "Ungültiges Zip-Archiv";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Wird bearbeitet";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Der Vorgang konnte nicht abgeschlossen werden.";
 
-/* error description */
-"The zip archive must contain a single document." = "Das Zip-Archiv muss ein einzelnes Dokument enthalten.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihre Fotos-Mediathek.";
 
@@ -462,7 +456,7 @@
 "Title" = "Titel";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Durch das Aktivieren von Cloudspeicheranbietern erhalten Sie Zugriff auf Dokumente, die bei Clouddiensten wie iCloud Drive oder Dropbox gespeichert sind. Wir führen den Zugriff auf Cloudspeicheranbieter als BETA-Implementierung ein; seien Sie vorsichtig, wenn Sie diesen Dienst aktivieren.";
 
 /* error title */
 "Unable to open file." = "Die Datei kann nicht geöffnet werden.";

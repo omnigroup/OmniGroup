@@ -26,7 +26,8 @@
 
 @interface OUIScalingScrollView : UIScrollView
 
-@property CGSize scrollBufferSize;
+@property(readonly) CGSize scrollBufferSize;
+- (CGSize)preferredScrollBufferSizeForScale:(CGFloat)scale; // for subclasses to override if needed
 @property(nonatomic) OFExtent allowedEffectiveScaleExtent;
 @property(nonatomic) BOOL centerContent;
 @property(nonatomic) UIEdgeInsets minimumInsets;

@@ -8,6 +8,8 @@
 #import <OmniUI/OUIDetailInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/OUIInspectorPane.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorTextWell.h>
@@ -18,7 +20,7 @@ RCS_ID("$Id$");
 @implementation OUIDetailInspectorSliceItem
 @end
 
-@interface OUIDetailInspectorSliceTableViewCell : UITableViewCell
+@interface OUIDetailInspectorSliceTableViewCell : OUIThemedTableViewCell
 @property(nonatomic,assign) BOOL enabled;
 @property(nonatomic,strong) UIImage *valueImage;
 @property(nonatomic,strong) UIImageView *valueImageView;
@@ -65,6 +67,15 @@ RCS_ID("$Id$");
         textFrame.size.width = self.detailTextLabel.frame.origin.x - textFrame.origin.x;
         self.textLabel.frame = textFrame;
     }
+}
+
+#pragma mark OUIInspectorAppearance
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    self.valueImageView.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 @end
@@ -123,6 +134,22 @@ RCS_ID("$Id$");
 - (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
 {
     return nil;
+}
+
+@synthesize placeholderTextColor = _placeholderTextColor;
+- (UIColor *)placeholderTextColor;
+{
+    if (_placeholderTextColor)
+        return _placeholderTextColor;
+    
+    return [OUIInspector disabledLabelTextColor];
+}
+
+- (void)setPlaceholderTextColor:(UIColor *)placeholderTextColor;
+{
+    if (_placeholderTextColor == placeholderTextColor)
+        return;
+    _placeholderTextColor = placeholderTextColor;
 }
 
 - (NSString *)groupTitle;
@@ -214,7 +241,7 @@ RCS_ID("$Id$");
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
     cell.textLabel.text = title;
-    cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
+    cell.textLabel.textColor = placeholder ? self.placeholderTextColor : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
@@ -247,7 +274,7 @@ RCS_ID("$Id$");
     
     cell.detailTextLabel.text = value;
     if (placeholder) {
-        cell.detailTextLabel.textColor = [OUIInspector disabledLabelTextColor];
+        cell.detailTextLabel.textColor = self.placeholderTextColor;
     } else if (cell.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
         cell.detailTextLabel.textColor = [OUIInspector indirectValueTextColor];
     } else {

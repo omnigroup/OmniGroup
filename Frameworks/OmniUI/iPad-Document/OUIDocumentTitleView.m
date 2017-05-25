@@ -40,11 +40,13 @@ static void _commonInit(OUIDocumentTitleView *self)
     
     self->_documentTitleLabel = [[UILabel alloc] init];
     self->_documentTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self->_documentTitleLabel.textAlignment = NSTextAlignmentCenter;
     [self->_documentTitleLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [self->_documentTitleLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     
     self->_documentTitleButton = [UIButton buttonWithType:UIButtonTypeSystem];
     self->_documentTitleButton.translatesAutoresizingMaskIntoConstraints = NO;
+    self->_documentTitleButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     [self->_documentTitleButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [self->_documentTitleButton setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [self->_documentTitleButton addTarget:self action:@selector(_documentTitleButtonTapped:) forControlEvents:UIControlEventTouchUpInside];

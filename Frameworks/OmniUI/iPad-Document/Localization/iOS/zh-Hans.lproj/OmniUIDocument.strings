@@ -101,7 +101,7 @@
 "Clear Title" = "清除标题";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "关闭文稿";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "云存储供应商";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "信息";
-
-/* error title */
-"Invalid Zip Archive" = "无效的 Zip 归档文件";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "编辑";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "此操作无法完成。";
 
-/* error description */
-"The zip archive must contain a single document." = "zip 归档文件必须包含一个文稿。";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "该应用程序不能访问您的图片库。";
 
@@ -462,7 +456,7 @@
 "Title" = "标题";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "打开云存储供应商即可访问存储在云服务（如 iCould Drive 或 Dropbox）中的文稿。我们正在以 BETA 实施的形式推出对云存储供应商的访问；启用此服务时要小心。";
 
 /* error title */
 "Unable to open file." = "无法打开文件。";

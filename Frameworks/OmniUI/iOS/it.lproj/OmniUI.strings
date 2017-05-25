@@ -1,8 +1,12 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ di %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Info su %@";
+
+/* MultiPane Back button title, when system is compact */
+"Back" = "Indietro";
 
 /* Bold button accessibility label */
 "Bold" = "Grassetto";
@@ -86,10 +90,13 @@
 "Note" = "Nota";
 
 /* Text letting the user know why nothing is showing in the inspector */
-"Nothing to Inspect" = "Nothing to Inspect";
+"Nothing to Inspect" = "Nulla da impostare";
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 

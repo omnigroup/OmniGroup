@@ -1,0 +1,36 @@
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Don't build ppc variants
+VALID_ARCHS = x86_64
+ARCHS = $(VALID_ARCHS)
+
+// libbz2 is present, but the headers aren't (its considered private API) on iPhone OS, so only define this here instead of globally.
+BZ2_LDFLAGS = -lbz2
+
+// Use the latest SDK with a specific target OS as our default
+SDKROOT = macosx
+MACOSX_DEPLOYMENT_TARGET = 10.11
+
+// Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
+SKIP_INSTALL = YES
+
+// Xcode 3.1 converts .strings files to UTF-16 by default, which breaks our localization process.
+STRINGS_FILE_OUTPUT_ENCODING = UTF-8
+
+// Don't strip nibs/xibs:  it makes life difficult for our localizers
+IBC_STRIP_NIBS = NO
+IBC_FLATTEN_NIBS = NO
+
+// For Xcode builds, we sign our applications using our individual development certificates ("Mac Developer: [Person]"). For distribution builds, our build scripts will re-sign as "Developer ID Application: [Company]" (for direct downloads) or "3rd Party Mac Developer Application: [Company]" (for Mac App Store submissions).
+OMNI_MAC_CODE_SIGN_IDENTITY = Mac Developer:
+
+// Temporary while getting OS X 10.10 builds working
+WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-objc-designated-initializers
+
+// For Info.plists in frameworks that are shared between Mac/iOS targets
+OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_SERVER
+
+// This establishes a separate location for built targets.
+EFFECTIVE_PLATFORM_NAME=-server

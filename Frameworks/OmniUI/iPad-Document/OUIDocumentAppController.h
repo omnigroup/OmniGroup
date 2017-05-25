@@ -109,7 +109,7 @@
 /// Default is _window.tintColor.
 - (UIColor *)launchActivityIndicatorColor;
 
-- (BOOL)shouldEnabledCopyFromWebDAV; // default YES
+- (BOOL)shouldEnableCopyFromWebDAV; // default YES
 
 // Helpful dialogs
 - (void)presentSyncError:(NSError *)syncError forAccount:(OFXServerAccount *)account inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;

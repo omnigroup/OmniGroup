@@ -33,7 +33,8 @@
     NSDictionary *_attributesByName;
     ODOAttribute *_primaryKeyAttribute;
     
-    NSArray *_snapshotProperties;
+    NSArray <__kindof ODOProperty *> *_snapshotProperties;
+    NSArray <ODOAttribute *> *_snapshotAttributes;
     
     NSArray *_schemaProperties;
     NSString *_insertStatementKey;
@@ -54,7 +55,9 @@
 
 - (void)finalizeModelLoading;
 
-@property(readonly) NSArray *snapshotProperties;
+@property(readonly) NSArray <__kindof ODOProperty *> *snapshotProperties;
 - (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;
+
+@property(readonly) NSArray <__kindof ODOAttribute *> *snapshotAttributes;
 
 @end

@@ -10,26 +10,29 @@
 #import <OmniAppKit/OAFeatures.h>
 
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
+#import <OmniAppKit/OAColor-Archiving.h>
+#import <OmniAppKit/OAColor.h>
+#import <OmniAppKit/OAFontDescriptor.h>
+#import <OmniAppKit/OAParagraphStyle.h>
+#import <OmniAppKit/OATextAttachment.h>
+#import <OmniAppKit/OATextAttributes.h>
+#import <OmniAppKit/OATextStorage.h>
+
+#if OMNI_BUILDING_FOR_MAC || OMNI_BUILDING_FOR_IOS
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniAppKit/OAAppearancePropertyListCoder.h>
-#import <OmniAppKit/OAColor.h>
-#import <OmniAppKit/OAColor-Archiving.h>
 #import <OmniAppKit/OAFindPattern.h>
-#import <OmniAppKit/OAFontDescriptor.h>
-#import <OmniAppKit/OAParagraphStyle.h>
 #import <OmniAppKit/OAStrings.h>
-#import <OmniAppKit/OATextAttachment.h>
 #import <OmniAppKit/OATextAttachmentCell.h>
-#import <OmniAppKit/OATextAttributes.h>
-#import <OmniAppKit/OATextStorage.h>
+#endif
 
-#if defined(TARGET_OS_IPHONE)  && TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_IOS
 #import <OmniAppKit/OAAppearanceColors.h>
 #endif
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 #import <OmniAppKit/NSAlert-OAExtensions.h>
 #import <OmniAppKit/NSAnimationContext-OAExtensions.h>
 #import <OmniAppKit/NSAppearance-OAExtensions.h>

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,6 +41,7 @@
 // Will be called if the corresponding value passed to the 'handler' of -updateItemAtIndex:with: is nil. Defaults to nil.
 - (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
 - (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+@property(nonatomic,copy) UIColor *placeholderTextColor;
 
 - (NSString *)groupTitle;
 

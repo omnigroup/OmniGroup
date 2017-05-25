@@ -54,6 +54,17 @@ NS_ASSUME_NONNULL_BEGIN
     return [self entity].name;
 }
 
++ (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key;
+{
+    ODOEntity *entity = [ODOModel entityForClass:self];
+    if (entity != nil && entity.propertiesByName[key] != nil) {
+        // ODO sends manual notifications when setting the primitive value. Overridden/dynamic accessors should not do automatic notification.
+        return NO;
+    }
+    
+    return [super automaticallyNotifiesObserversForKey:key];
+}
+
 - (instancetype)init NS_UNAVAILABLE;
 {
     OBRejectUnusedImplementation(self, _cmd);
@@ -475,14 +486,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 - (void)setDefaultAttributeValues;
 {
     ODOEntity *entity = self.entity;
-    NSArray *attributes = [entity.snapshotProperties arrayByPerformingBlock:^(ODOProperty *prop){
-        struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        if (!flags.relationship) {
-            return (ODOAttribute *)prop;
-        } else {
-            return (ODOAttribute *)nil;
-        }
-    }];
+    NSArray <ODOAttribute *> *attributes = entity.snapshotAttributes;
 
     // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
     // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.
@@ -951,9 +955,12 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         }
     }
     
-    NSMutableDictionary *changes = [NSMutableDictionary dictionary];
     NSArray *snapshotProperties = [[_objectID entity] snapshotProperties];
     NSUInteger propIndex = [snapshotProperties count];
+    
+    // The dictionary we return will have a short lifetime and we want to avoid time spent re-hashing as the dictionary grows (particularly for inserts where we report all the properties as changed). Maybe we should stop doing that...
+
+    NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:propIndex];
     while (propIndex--) {
         ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
@@ -1025,6 +1032,21 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return result;
 }
 
+- (nullable id)lastProcessedValueForKey:(NSString *)key;
+{
+    OBPRECONDITION(_editingContext);
+    OBPRECONDITION(!_flags.invalid);
+    
+    NSArray *snapshot = [_editingContext _lastProcessedPropertySnapshotForObjectID:_objectID];
+    if (snapshot == nil && ![self isInserted]) {
+        snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
+    }
+    
+    OBASSERT(snapshot != nil);
+    
+    return ODOObjectSnapshotValueForKey(self, _editingContext, snapshot, key, NULL);
+}
+
 - (nullable id)committedValueForKey:(NSString *)key;
 {
     OBPRECONDITION(_editingContext);
@@ -1036,7 +1058,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
 {
     ODOProperty *prop = [[self.objectID entity] propertyNamed:key];
-    if (!prop) {
+    if (prop == nil) {
         OBASSERT(prop);
         return nil;
     }
@@ -1044,7 +1066,9 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
     // Not sure how to handle to-many properties.  So let's not until we need it
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     if (flags.relationship && flags.toMany) {
-        [NSException exceptionWithName:OBAbstractImplementation reason:[NSString stringWithFormat:@"%s needs a concrete implementation at %s:%d", __PRETTY_FUNCTION__, __FILE__, __LINE__] userInfo:nil];
+        OBASSERT_NOT_REACHED();
+        NSString *reason = [NSString stringWithFormat:@"%s needs a concrete implementation at %s:%d", __PRETTY_FUNCTION__, __FILE__, __LINE__];
+        @throw [NSException exceptionWithName:OBAbstractImplementation reason:reason userInfo:nil];
     }
     
     if (!snapshot) {
@@ -1057,7 +1081,7 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
     
     id value = [snapshot objectAtIndex:flags.snapshotIndex];
 
-    if (value && flags.relationship && !flags.toMany) {
+    if (value != nil && flags.relationship && !flags.toMany) {
         if (![value isKindOfClass:[ODOObject class]]) {
             // Might be a lazy to-one fault.  Can't go through primitiveValueForKey: since we've been snapshotted and our current value obviously might differ from that in the snapshot.
             ODORelationship *rel = (ODORelationship *)prop;
@@ -1078,8 +1102,9 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
         }
     }
     
-    if (OFISNULL(value))
+    if (OFISNULL(value)) {
         value = nil;
+    }
     
     return value;
 }

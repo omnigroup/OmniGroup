@@ -53,11 +53,16 @@ static NSMutableDictionary * _Nullable additionalBundleDescriptions;
 static NSArray *oldDisabledBundleNames;
 #endif
 
+static NSUserDefaults *StandardUserDefaults = nil;
+
 @implementation OFBundleRegistry
 
 + (void)initialize;
 {
     OBINITIALIZE;
+
+    // We've seen KVO crashes where it *looks* like the +standardUserDefaults is changing out from underneath us while we had an active observation. Hold on to the one we are going to observe (though we might lose updates).
+    StandardUserDefaults = [[NSUserDefaults standardUserDefaults] retain];
 
     registeredBundleNames = [[NSMutableSet alloc] init];
     softwareVersionDictionary = [[NSMutableDictionary alloc] init];
@@ -138,6 +143,10 @@ OBDidLoad(^{
 }
 #endif
 
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
+static unsigned UserDefaultsContext;
+#endif
+
 + (void)registerKnownBundles;
 {
     OBPRECONDITION([self _checkBundlesAreInsideApp]);
@@ -151,13 +160,29 @@ OBDidLoad(^{
     
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(recordBundleLoading:) name:NSBundleDidLoadNotification object:nil]; // Keep track of future bundle loads
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_defaultsDidChange:) name:NSUserDefaultsDidChangeNotification object:nil]; // Keep track of changes to defaults
+
+    [StandardUserDefaults addObserver:(id)self forKeyPath:OFBundleRegistryDisabledBundlesDefaultsKey options:0 context:&UserDefaultsContext]; // Keep track of changes to defaults
 #endif
     [self registerAdditionalRegistrations];
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     [OFBundledClass processImmediateLoadClasses];
 #endif
 }
+
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
++ (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
+{
+    if (object == StandardUserDefaults && context == &UserDefaultsContext) {
+        OBASSERT([keyPath isEqual:OFBundleRegistryDisabledBundlesDefaultsKey]);
+        OFMainThreadPerformBlock(^{
+            [self _disabledBundlesDefaultChanged];
+        });
+        return;
+    }
+
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+#endif
 
 + (NSDictionary *)softwareVersionDictionary;
 {
@@ -255,7 +280,7 @@ static NSString *_normalizedPath(NSString *path)
         configDictionary = [[NSDictionary alloc] init];
 
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
-    oldDisabledBundleNames = [[[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey] copy];
+    oldDisabledBundleNames = [[StandardUserDefaults arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey] copy];
 #endif
 }
 
@@ -276,7 +301,7 @@ static NSString *_normalizedPath(NSString *path)
 #endif
 
     // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
-    if ((configPathArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
+    if ((configPathArray = [StandardUserDefaults arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
         (configPathArray = [configDictionary objectForKey:OFBundleRegistryConfigSearchPaths])) {
 
         NSMutableArray *newPath = [[NSMutableArray alloc] init];
@@ -306,12 +331,16 @@ static NSString *_normalizedPath(NSString *path)
         // standardPath = ("~/Library/Components", "/Library/Components", "AppWrapper");
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
         standardPath = [[NSArray alloc] initWithObjects:
+                        
+            // We probably could not include this for any platform, but this avoids the need for a sandbox rule.
+#if !OMNI_BUILDING_FOR_SERVER
             // User's library directory
             [NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
 
             // Standard Mac OS X library directories
             [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]],
-
+#endif
+                        
             // App wrapper
             mainBundleResourcesPath,
             mainBundlePath,
@@ -421,7 +450,7 @@ static NSString *_normalizedPath(NSString *path)
 
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     NSSet *disabledBundleNames;
-    NSArray *disabledBundleNamesArray = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey]; 
+    NSArray *disabledBundleNamesArray = [StandardUserDefaults arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey];
     if (disabledBundleNamesArray)
         disabledBundleNames = [NSSet setWithArray:disabledBundleNamesArray];
     else
@@ -500,9 +529,9 @@ static NSString *_normalizedPath(NSString *path)
 
 // Invoked when the defaults change
 // The only reason we watch this is to update our disabled bundles list, so we don't need to do it if we don't have dynamically loaded bundles.
-+ (void)_defaultsDidChange:(NSNotification *)note
++ (void)_disabledBundlesDefaultChanged;
 {
-    NSArray *newDisabledBundleNames = [[NSUserDefaults standardUserDefaults] arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey];
+    NSArray *newDisabledBundleNames = [StandardUserDefaults arrayForKey:OFBundleRegistryDisabledBundlesDefaultsKey];
 
     /* quick equality test */
     if ([oldDisabledBundleNames isEqualToArray:newDisabledBundleNames])
@@ -560,13 +589,10 @@ static NSString *_normalizedPath(NSString *path)
 
     // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
     // We do this before the entries from the bundle infoDictionary so that the main app can override defaults from static libraries.
-    if (bundle != nil) {
+    // Don't spend the time looking in system bundles (or erroneously try to interpret their contents).
+    if (bundle != nil && ![bundlePath hasPrefix:@"/System/"]) {
         for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
-            if ([path hasPrefix:@"/System/"]) {
-                // Don't grab stuff from "/System/Library/Frameworks/PreferencePanes.framework/Resources/global.defaults"
-                continue;
-            }
-            
+
             CFErrorRef error = NULL;
             CFPropertyListRef plist = OFCreatePropertyListFromFile((OB_BRIDGE CFStringRef)path, kCFPropertyListImmutable, &error);
             if (!plist) {

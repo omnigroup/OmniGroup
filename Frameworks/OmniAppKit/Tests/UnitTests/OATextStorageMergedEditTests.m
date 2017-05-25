@@ -1,4 +1,4 @@
-// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,10 +26,23 @@ static NSString *_spacesOfLength(NSUInteger length)
 }
 
 @interface OATextStorageMergedEditTests : OATestCase
++ (Class)textStorageClass;
 @end
 @implementation OATextStorageMergedEditTests
 
-#define STARTING_LENGTH(n) NSTextStorage *ts = [[[NSTextStorage alloc] initWithString:_spacesOfLength(n) attributes:nil] autorelease]; NSUInteger attrIndex __attribute__((unused)) = 0
++ (id)defaultTestSuite;
+{
+    if (self == [OATextStorageMergedEditTests class])
+        return [[[XCTestSuite alloc] init] autorelease]; // abstract class
+    return [super defaultTestSuite];
+}
+
++ (Class)textStorageClass;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
+#define STARTING_LENGTH(n) OATextStorage *ts = [[[[[self class] textStorageClass] alloc] initWithString:_spacesOfLength(n) attributes:nil] autorelease]; NSUInteger attrIndex __attribute__((unused)) = 0
 #define REPLACE(position, length, replaceLength) [ts replaceCharactersInRange:NSMakeRange((position), (length)) withString:_spacesOfLength(replaceLength)]
 #define SET_ATTRS(position, length) [ts setAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:attrIndex++], @"i", nil] range:NSMakeRange((position),(length))]
 #define BEGIN_EDITS [ts beginEditing]
@@ -59,7 +72,7 @@ static NSString *_spacesOfLength(NSUInteger length)
     REPLACE(0, 0, 0);
     REPLACE(0, 1, 3);
 
-    CHECK_MASK(NSTextStorageEditedCharacters);
+    CHECK_MASK(OATextStorageEditedCharacters);
     CHECK_RANGE(0, 3);
     CHECK_DELTA(2); // Was 2. Replaced 1 of those with 3.
     END_EDITS;
@@ -73,7 +86,7 @@ static NSString *_spacesOfLength(NSUInteger length)
     REPLACE(0, 1, 2);
     REPLACE(1, 1, 0);
     
-    CHECK_MASK(NSTextStorageEditedCharacters);
+    CHECK_MASK(OATextStorageEditedCharacters);
     CHECK_RANGE(0, 1);
     CHECK_DELTA(0);
     END_EDITS;
@@ -94,3 +107,108 @@ static NSString *_spacesOfLength(NSUInteger length)
 }
 
 @end
+
+
+// Test the real text storage if we have it.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+@interface OATextStorageMergedEditTestsCocoa : OATextStorageMergedEditTests
+@end
+@implementation OATextStorageMergedEditTestsCocoa
++ (Class)textStorageClass;
+{
+    return [NSTextStorage class];
+}
+@end
+#endif
+
+// Always test our generic replacement
+@interface OATextStorageMergedEditTestsGeneric : OATextStorageMergedEditTests
+@end
+@implementation OATextStorageMergedEditTestsGeneric
++ (Class)textStorageClass;
+{
+    return [OATextStorage_ class];
+}
+@end
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// Generator for editRange tests
+@interface OATextStorageMergedEditTestGenerator : OATestCase
+@end
+
+@implementation OATextStorageMergedEditTestGenerator
+
+- (void)testRandomMergedEdit;
+{
+#define CHECK_SAME do { \
+    XCTAssertEqual([realTextStorage editedMask], [fakeTextStorage editedMask]); \
+    XCTAssertTrue(NSEqualRanges([realTextStorage editedRange], [fakeTextStorage editedRange])); \
+    XCTAssertEqual([realTextStorage changeInLength], [fakeTextStorage changeInLength]); \
+} while (0)
+
+    self.continueAfterFailure = NO;
+
+    OFRandomState *state = OFRandomStateCreate();
+    NSUInteger tries = 1000;
+    
+    while (tries--) {
+        //NSLog(@"try:");
+        
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        
+        NSUInteger startingLength = OFRandomNextState32(state) % 5;
+        //NSLog(@"  startingLength: %ld", startingLength);
+        
+        NSString *str = _spacesOfLength(startingLength);
+        NSTextStorage *realTextStorage = [[[NSTextStorage alloc] initWithString:str attributes:nil] autorelease];
+        OATextStorage_ *fakeTextStorage = [[[OATextStorage_ alloc] initWithString:str attributes:nil] autorelease];
+        OAAssertNoPendingTextStorageEdits(realTextStorage);
+        OAAssertNoPendingTextStorageEdits(fakeTextStorage);
+        CHECK_SAME;
+        
+        [realTextStorage beginEditing];
+        [fakeTextStorage beginEditing];
+        
+        NSUInteger operations = OFRandomNextState32(state) % 6;
+        while (operations--) {
+            NSUInteger operation = OFRandomNextState32(state) % 2;
+            
+            NSUInteger currentLength = [realTextStorage length];
+            NSUInteger editLocation = (currentLength > 0) ? OFRandomNextState32(state) % currentLength : 0;
+            NSUInteger lengthAfterEditLocation = currentLength - editLocation;
+            NSUInteger lengthToEdit = (lengthAfterEditLocation > 0) ? OFRandomNextState32(state) % lengthAfterEditLocation : 0;
+            NSRange editRange = NSMakeRange(editLocation, lengthToEdit);
+            
+            if (operation == 0) {
+                // Replace some characters. We're assuming that replacing spaces with spaces won't ignore the edit.
+                
+                NSUInteger lengthToFillIn = OFRandomNextState32(state) % 5;
+                NSString *replacementString = _spacesOfLength(lengthToFillIn);
+                
+                //NSLog(@"  replace range %@ with string of length %ld", NSStringFromRange(editRange), lengthToFillIn);
+                [realTextStorage replaceCharactersInRange:editRange withString:replacementString];
+                [fakeTextStorage replaceCharactersInRange:editRange withString:replacementString];
+                CHECK_SAME;
+            } else {
+                // Set some attributes
+                
+                //NSLog(@"  set attributes on range %@", NSStringFromRange(editRange));
+                NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:operation], @"i", nil];
+                [realTextStorage setAttributes:attributes range:editRange];
+                [fakeTextStorage setAttributes:attributes range:editRange];
+                CHECK_SAME;
+            }
+        }
+        
+        [realTextStorage endEditing];
+        [fakeTextStorage endEditing];
+        CHECK_SAME;
+        
+        [pool drain];
+    }
+    
+#undef CHECK_SAME
+}
+
+@end
+#endif

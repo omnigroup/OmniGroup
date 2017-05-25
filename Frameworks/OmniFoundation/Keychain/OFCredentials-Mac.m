@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -165,7 +165,7 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     return success;
 }
 
-BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
+BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError * __autoreleasing *outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
 

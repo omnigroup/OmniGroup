@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,6 +131,10 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
         ODAVConformanceTestImp testImp = (typeof(testImp))method_getImplementation(method);
         applier(methodSelector, testImp, (ODAVConformanceTestProgress){.completed = testIndex, .total = testCount});
     }];
+
+    if (methods) {
+        free(methods);
+    }
 }
 
 /*

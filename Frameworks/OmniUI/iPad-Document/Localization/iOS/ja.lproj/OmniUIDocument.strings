@@ -101,7 +101,7 @@
 "Clear Title" = "タイトルを消去";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "書類を閉じる";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "クラウドストレージプロバイダ";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "情報";
-
-/* error title */
-"Invalid Zip Archive" = "無効な Zip アーカイブ";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "編集中";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "操作を完了できませんでした。";
 
-/* error description */
-"The zip archive must contain a single document." = "zip アーカイブには単一の書類が含まれている必要があります。";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "このアプリにはフォトライブラリへのアクセス権がありません。";
 
@@ -462,7 +456,7 @@
 "Title" = "タイトル";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "クラウドストレージプロバイダを有効にすると、iCloud Drive や Dropbox などのクラウドサービスに保存されている書類にアクセスできるようになります。クラウドストレージプロバイダの機能はベータ版ですので、このサービスを有効にする際には十分に注意してください。";
 
 /* error title */
 "Unable to open file." = "ファイルを開けません。";

@@ -1374,6 +1374,13 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [super viewDidLoad];
     self.view.clipsToBounds = YES;
     
+    _normalTitleView = [[OUIDocumentTitleView alloc] init];
+    _normalTitleView.syncAccountActivity = _accountActivity;
+    _normalTitleView.delegate = self;
+    _normalTitleView.hideTitle = YES;
+    _normalTitleView.hideSyncButton = YES;
+    self.navigationItem.titleView = _normalTitleView;
+    
     _backgroundView.image = [[OUIDocumentAppController controller] documentPickerBackgroundImage];
     if (!_backgroundView.image)
         _backgroundView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1.0];
@@ -1450,9 +1457,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         _isAppearing = NO;
         _needsDelayedHandleResize = NO;
     }
-
-    // this forces the sync button to show/hide when the 6+ rotates
-    [self _updateToolbarItemsAnimated:NO];
 }
 
 - (BOOL)shouldAutorotate;
@@ -1491,7 +1495,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     if (!_topControls) {
         [self _setupTitleLabelToUseInCompactWidth];
-        [self _setupTopControls];
+        [self setupTopControls];
     }
     
     _mainScrollView.shouldHideTopControlsOnNextLayout = YES;
@@ -1504,7 +1508,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [self _performDelayedItemPropagationWithCompletionHandler:nil];
 
     [self _updateEmptyViewControlVisibility];
-    [self _updateToolbarItemsAnimated:NO];
     
     if (!_isObservingApplicationDidEnterBackground) { // Don't leak observations if view state transition calls are duplicated/dropped
         _isObservingApplicationDidEnterBackground = YES;
@@ -1521,7 +1524,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     [super viewDidAppear:animated];
     [self _updateEmptyViewControlVisibility];
-    [self _updateToolbarItemsAnimated:YES];
+    [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     
     if (self.traitCollection.forceTouchCapability) {
         self.previewingContext = [self registerForPreviewingWithDelegate:self sourceView:self.view];
@@ -1579,7 +1582,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         [self clearSelection:NO];
     }
     
-    [self _updateToolbarItemsAnimated:YES];
+    [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     [self _updateToolbarItemsEnabledness];
 }
 
@@ -1809,7 +1812,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemView:(OUIDocumentPickerItemView *)itemView finishedEditingName:(NSString *)name;
 {
     self.renameSession = nil;
-    [self _updateToolbarItemsAnimated:YES];
+    [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     _topControls.userInteractionEnabled = YES;
     _mainScrollView.scrollEnabled = YES;
 }
@@ -1871,7 +1874,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self,
     if (self.editing) {
         _setItemSelectedAndBounceView(self, itemView, !item.selected);
         
-        [self _updateToolbarItemsAnimated:NO]; // Update the selected file item count
+        [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:NO]; // Update the selected file item count
         [self _updateToolbarItemsEnabledness];
         return;
     }
@@ -2238,7 +2241,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     return _deleteBarButtonItem;
 }
 
-- (void)_updateToolbarItemsAnimated:(BOOL)animated;
+- (void)_updateToolbarItemsForTraitCollection:(UITraitCollection *)traitCollection animated:(BOOL)animated;
 {
     OBPRECONDITION(_documentStore);
 
@@ -2295,7 +2298,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
                     title = NSLocalizedStringFromTableInBundle(@"Rename Document", @"OmniUIDocument", OMNI_BUNDLE, @"toolbar prompt while renaming a document");
             }
         }
-        navigationItem.titleView = nil;
+        _normalTitleView.hideSyncButton = YES;
         self.displayedTitleString = title;
         [navigationItem setRightBarButtonItems:@[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancelRenaming:)]] animated:animated];
         [navigationItem setHidesBackButton:YES animated:animated];
@@ -2308,6 +2311,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     } else {
         [navigationItem setHidesBackButton:NO animated:animated];
         _topControls.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
+        _normalTitleView.hideSyncButton = NO;
     }
     
     if (editing) {
@@ -2335,8 +2339,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
     } else {
         [self updateTitle];
         // if we're displaying the title in the scrollview, we shouldn't use the titleview to show our sync button. instead, we add it to the right bar button items below.
-        //bug:///141596 (iOS-OmniGraffle Regression: Title overlaps + button at some size classes [off-center])
-        // I removed the code here which used to swap the _normalTitleView into and out of the navigationItem's titleView, which was causing some bad layout due to timing. It turns out that the NavigationItem seems to just Do The Right Thing, so let's let it!
+        
+        BOOL shouldHideNavItemTitleAndSyncButton = (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact);
+        _normalTitleView.hideTitle = shouldHideNavItemTitleAndSyncButton;
+        _normalTitleView.hideSyncButton = shouldHideNavItemTitleAndSyncButton;
     }
     [navigationItem setLeftBarButtonItems:leftItems animated:animated];
 
@@ -2373,7 +2379,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             }
         }
         
-        navigationItem.titleView = nil;
+        _normalTitleView.hideSyncButton = YES;
         self.displayedTitleString = [NSString stringWithFormat:format, [selectedItems count]];
         
 
@@ -2399,8 +2405,12 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 [rightItems addObject:self.addDocumentButtonItem];
             }
 
-            if ([_mainScrollView isShowingTitleLabel] && _normalTitleView.syncAccountActivity != nil) { // checks to see if we're compact
+            if ((traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) && _normalTitleView.syncAccountActivity != nil) { // checks to see if we're compact
                 [rightItems addObject:_normalTitleView.syncBarButtonItem];
+                _normalTitleView.hideSyncButton = YES;
+            }
+            else {
+                _normalTitleView.hideSyncButton = NO;
             }
         }
     }
@@ -2462,7 +2472,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
 #define TOP_CONTROLS_SPACING 20.0
 #define TOP_CONTROLS_VERTICAL_SPACING 16.0
 
-- (void)_setupTopControls;
+- (void)setupTopControls;
 {
     NSArray *availableFilters = [self availableFilters];
     BOOL willDisplayFilter = ([availableFilters count] > 1);
@@ -2582,6 +2592,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
     
     [self.mainScrollView setNeedsLayout];
     [self.mainScrollView layoutIfNeeded];
+    
+    [self _updateToolbarItemsForTraitCollection:newCollection animated:YES];
     
     [coordinator animateAlongsideTransition:nil
                                  completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
@@ -2833,33 +2845,14 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)_checkTitleDisplay;
 {
-    if (!_normalTitleView) {
-        _normalTitleView = [[OUIDocumentTitleView alloc] init];
-        _normalTitleView.syncAccountActivity = _accountActivity;
-        _normalTitleView.delegate = self;
-    }
-    
     _titleLabelToUseInCompactWidth.text = self.displayedTitleString;
+    _normalTitleView.title = self.displayedTitleString;
 
-    if ([_mainScrollView isShowingTitleLabel]) {
-        _normalTitleView.title = @"";
-        _normalTitleView.hideTitle = YES;
-        self.navigationItem.title = @"";
-    } else {
-        if (self.navigationItem.titleView) {
-            _normalTitleView.title = self.displayedTitleString;
-        } else {
-            self.navigationItem.title = self.displayedTitleString;
-        }
-        _normalTitleView.hideTitle = NO;
-        
-        // get VO to read a hint for the navigationItem's titleView
-        _normalTitleView.isAccessibilityElement = YES;
-        _normalTitleView.accessibilityLabel = self.displayedTitleString;
-        _normalTitleView.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Scroll down to show sort and filter controls", @"OmniUIDocument", OMNI_BUNDLE, @"document picker compact title view accessibility hint");
-
-    }
-    [_normalTitleView sizeToFit];
+    // get VO to read a hint for the navigationItem's titleView
+    _normalTitleView.isAccessibilityElement = YES;
+    _normalTitleView.accessibilityLabel = self.displayedTitleString;
+    _normalTitleView.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Scroll down to show sort and filter controls", @"OmniUIDocument", OMNI_BUNDLE, @"document picker compact title view accessibility hint");
+    
     [_titleLabelToUseInCompactWidth sizeToFit];
     [_mainScrollView setNeedsLayout];
 }
@@ -2941,7 +2934,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
     self.renameSession = [[OUIDocumentRenameSession alloc] initWithDocumentPicker:self itemView:itemView];
     
-    [self _updateToolbarItemsAnimated:YES];
+    [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     _topControls.userInteractionEnabled = NO;
     _mainScrollView.scrollEnabled = NO;
 }
@@ -2951,7 +2944,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     [_renameSession cancelRenaming];
     self.renameSession = nil;
     
-    [self _updateToolbarItemsAnimated:YES];
+    [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     _topControls.userInteractionEnabled = YES;
     _mainScrollView.scrollEnabled = YES;
 }

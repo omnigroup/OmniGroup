@@ -1,0 +1,23 @@
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings
+#include "Server-Global-Common.xcconfig"
+
+// Common settings for Debug configurations
+OMNI_GLOBAL_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER)
+OMNI_GLOBAL_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS = DEBUG DEBUG_$(USER)
+OMNI_GLOBAL_PER_CONFIGURATION_SWIFT_FLAGS = -DDEBUG -DDEBUG_$(USER)
+
+// When debugging, it's often helpful to turn off optimizations
+GCC_OPTIMIZATION_LEVEL = 0
+GCC_WARN_UNINITIALIZED_AUTOS = NO
+ENABLE_TESTABILITY = YES
+
+SWIFT_OPTIMIZATION_LEVEL = -Onone
+ONLY_ACTIVE_ARCH = YES
+
+// Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
+OMNI_BUILD_FILE_SUFFIX=-$(CONFIGURATION)
+OMNI_BUILD_IDENTIFIER_SUFFIX=.$(CONFIGURATION)

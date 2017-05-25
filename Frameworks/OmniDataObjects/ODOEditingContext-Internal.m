@@ -197,7 +197,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
 {
     ODOObjectID *objectID = [object objectID];
     
-    if ([_objectIDToLastProcessedSnapshot objectForKey:objectID]) {
+    if ([_objectIDToLastProcessedSnapshot objectForKey:objectID] != nil) {
         // This object has already been snapshotted this editing processing cycle.
         // Inserted objects can be 'updated' in the recent set.  Can't use -isUpdated in our assertion since that will return NO for inserted objects that have been updated since being first processed.
 #ifdef OMNI_ASSERTIONS_ON
@@ -216,8 +216,9 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
         return;
     }
     
-    if (!_objectIDToLastProcessedSnapshot)
+    if (_objectIDToLastProcessedSnapshot == nil) {
         _objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
+    }
 
     NSArray *snapshot = _ODOObjectCreatePropertySnapshot(object);
     [_objectIDToLastProcessedSnapshot setObject:snapshot forKey:objectID];
@@ -227,23 +228,41 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     if ([_objectIDToCommittedPropertySnapshot objectForKey:objectID] == nil) {
         // As above, -[ODOObject isInserted:] will be NO already for objects that were inserted, but are being deleted.
         if (!ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object)) {
-            if (!_objectIDToCommittedPropertySnapshot)
+            if (_objectIDToCommittedPropertySnapshot == nil) {
                 _objectIDToCommittedPropertySnapshot = [[NSMutableDictionary alloc] init];
+            }
             [_objectIDToCommittedPropertySnapshot setObject:snapshot forKey:objectID];
         }
     }
 }
 
+- (nullable NSArray *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+{
+    OBPRECONDITION(objectID != nil);
+#ifdef OMNI_ASSERTIONS_ON
+    ODOObject *object = [_registeredObjectByID objectForKey:objectID]; // Might be nil if we have the id for something that would be a fault, were it require to be created.
+#endif
+    
+    NSArray *snapshot = [_objectIDToLastProcessedSnapshot objectForKey:objectID];
+#ifdef OMNI_ASSERTIONS_ON
+    if (snapshot == nil && object != nil) {
+        OBASSERT([object isInserted]);
+    }
+#endif
+    
+    return snapshot;
+}
+
 - (nullable NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 {
-    OBPRECONDITION(objectID);
+    OBPRECONDITION(objectID != nil);
 #ifdef OMNI_ASSERTIONS_ON
     ODOObject *object = [_registeredObjectByID objectForKey:objectID]; // Might be nil if we have the id for something that would be a fault, were it require to be created.
 #endif
     
     NSArray *snapshot = [_objectIDToCommittedPropertySnapshot objectForKey:objectID];
 #ifdef OMNI_ASSERTIONS_ON
-    if (!snapshot && object) {
+    if (snapshot == nil && object != nil) {
         OBASSERT(![object isUpdated]);
         OBASSERT(![object isDeleted]);
     }

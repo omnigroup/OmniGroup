@@ -41,6 +41,8 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 @interface ODAVConnection : NSObject
 
++ (NSDate *)dateFromString:(NSString *)httpDate;
+
 - (instancetype)init NS_UNAVAILABLE;
 - initWithSessionConfiguration:(ODAVConnectionConfiguration *)configuration baseURL:(NSURL *)baseURL NS_DESIGNATED_INITIALIZER;
 

@@ -22,9 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 extern NSString *OFMakeServiceIdentifier(NSURL *originalURL, NSString *username, NSString *realm);
 
-extern NSURLCredential * __nullable OFReadCredentialsForServiceIdentifier(NSString * __nullable serviceIdentifier, NSError **outError);
-extern BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError **outError);
-extern BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError);
+extern NSURLCredential * __nullable OFReadCredentialsForServiceIdentifier(NSString * __nullable serviceIdentifier, NSError * __autoreleasing *outError);
+extern BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError * __autoreleasing *outError);
+extern BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError * __autoreleasing *outError);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 extern NSURLCredential * __nullable OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NSString *username); // For importing legacy credentials on iOS

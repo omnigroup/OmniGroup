@@ -39,6 +39,27 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		342AEE371ED5327700FDB031 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 340D86FF1EC12FCC00261434;
+			remoteInfo = "OmniAppKit-server";
+		};
+		342AEE3F1ED5327700FDB031 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B77AB51EC0FE5500BBBA65;
+			remoteInfo = "OmniBase-server";
+		};
+		342AEE4F1ED5327700FDB031 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34A063261EC110A60099028D;
+			remoteInfo = "OmniFoundation-server";
+		};
 		34392A9A19C37B1C00D08401 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */;
@@ -235,13 +256,6 @@
 			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F;
 			remoteInfo = OFClobberDetectionZoneTest;
 		};
-		34ED74551199B7240023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F;
-			remoteInfo = OFMainThreadLockTest;
-		};
 		34ED74571199B7240023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
@@ -338,7 +352,6 @@
 		3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
 		3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
-		349413101B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		349413111B66B27D001FA03A /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
 		349413121B66B27D001FA03A /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
 		349413131B66B27D001FA03A /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -537,7 +550,6 @@
 				3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */,
 				3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */,
-				349413101B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */,
 				34915C78116FE3E4005EA90E /* Omni-Global-Common.xcconfig */,
 				34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */,
 				34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */,
@@ -592,6 +604,7 @@
 				348ADC7719C113C2003AEF77 /* OmniBase.framework */,
 				348ADC7919C113C2003AEF77 /* OBUnitTests.xctest */,
 				349412F71B66B26A001FA03A /* OmniBase.framework */,
+				342AEE401ED5327700FDB031 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -601,12 +614,12 @@
 			children = (
 				34ED744A1199B7240023E017 /* OmniFoundation.framework */,
 				348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */,
+				342AEE501ED5327700FDB031 /* OmniFoundation.framework */,
 				348ADC8E19C113C2003AEF77 /* OFUnitTests.xctest */,
 				34ED744E1199B7240023E017 /* OFUnitTests.xctest */,
 				34ED74501199B7240023E017 /* OFSimpleLockTest */,
 				34ED74521199B7240023E017 /* OFDedicatedThreadSchedulerTest */,
 				34ED74541199B7240023E017 /* OFClobberDetectionTest */,
-				34ED74561199B7240023E017 /* OFMainThreadLockTest */,
 				34ED74581199B7240023E017 /* OFCrashOnExceptionTest */,
 				34ED745A1199B7240023E017 /* OFRandomRepeatTest */,
 				348ADC9019C113C2003AEF77 /* OFXMLParsingTest */,
@@ -638,8 +651,9 @@
 			isa = PBXGroup;
 			children = (
 				34ED74931199B8570023E017 /* OmniAppKit.framework */,
-				34ED74951199B8570023E017 /* OAUnitTests.xctest */,
 				348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */,
+				342AEE381ED5327700FDB031 /* OmniAppKit.framework */,
+				34ED74951199B8570023E017 /* OAUnitTests.xctest */,
 				348ADC6D19C113C2003AEF77 /* OAUnitTests.xctest */,
 				34ED74971199B8570023E017 /* OAMakeImageSizeIntegral */,
 			);
@@ -728,6 +742,27 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		342AEE381ED5327700FDB031 /* OmniAppKit.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniAppKit.framework;
+			remoteRef = 342AEE371ED5327700FDB031 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		342AEE401ED5327700FDB031 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 342AEE3F1ED5327700FDB031 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		342AEE501ED5327700FDB031 /* OmniFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFoundation.framework;
+			remoteRef = 342AEE4F1ED5327700FDB031 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		34392A9B19C37B1C00D08401 /* OmniQuartz.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -880,13 +915,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OFClobberDetectionTest;
 			remoteRef = 34ED74531199B7240023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED74561199B7240023E017 /* OFMainThreadLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFMainThreadLockTest;
-			remoteRef = 34ED74551199B7240023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34ED74581199B7240023E017 /* OFCrashOnExceptionTest */ = {

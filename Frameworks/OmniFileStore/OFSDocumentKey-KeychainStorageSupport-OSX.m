@@ -197,7 +197,7 @@ static NSData *readFromKeychain(NSString *keyLabel, NSData *applicationLabel, NS
         return nil;
     }
     
-    return (__bridge NSData *)resultData;
+    return CFBridgingRelease(resultData);
 }
 
 @implementation OFSDocumentKey (Keychain)

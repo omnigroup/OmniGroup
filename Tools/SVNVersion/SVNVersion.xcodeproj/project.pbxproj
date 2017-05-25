@@ -29,6 +29,17 @@
 			name = "SVNVersion-Mac-Only";
 			productName = "SVNVersion-Mac-Only";
 		};
+		344BDE9C1EC0F54C0006B0C1 /* SVNVersion-Server-Only */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 344BDE9E1EC0F54C0006B0C1 /* Build configuration list for PBXAggregateTarget "SVNVersion-Server-Only" */;
+			buildPhases = (
+				344BDE9D1EC0F54C0006B0C1 /* Build SVNVersion.h */,
+			);
+			dependencies = (
+			);
+			name = "SVNVersion-Server-Only";
+			productName = "SVNVersion-Mac-Only";
+		};
 		34DBCD14190709F400968086 /* SVNVersion */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = 34DBCD15190709F400968086 /* Build configuration list for PBXAggregateTarget "SVNVersion" */;
@@ -38,6 +49,7 @@
 				3440204819072E300002120F /* PBXTargetDependency */,
 				5F3D704A1B66B6D400FF7D64 /* PBXTargetDependency */,
 				3440204A19072E300002120F /* PBXTargetDependency */,
+				344BDEAC1EC0F5A00006B0C1 /* PBXTargetDependency */,
 			);
 			name = SVNVersion;
 			productName = SVNVersion;
@@ -69,6 +81,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 3440204119072DB60002120F;
 			remoteInfo = "SVNVersion-Mac-Only";
+		};
+		344BDEAB1EC0F5A00006B0C1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34DBCD0E190709E100968086 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 344BDE9C1EC0F54C0006B0C1;
+			remoteInfo = "SVNVersion-Server-Only";
 		};
 		5F3D70491B66B6D400FF7D64 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -116,6 +135,16 @@
 		3440203919072D900002120F /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3440203B19072D900002120F /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3440203C19072D900002120F /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		344BDEA11EC0F57B0006B0C1 /* Target-Server-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Server-Common.xcconfig"; sourceTree = "<group>"; };
+		344BDEA21EC0F57B0006B0C1 /* Server-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		344BDEA31EC0F57B0006B0C1 /* Server-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		344BDEA41EC0F57B0006B0C1 /* Server-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		344BDEA51EC0F57B0006B0C1 /* Server-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		344BDEA61EC0F57B0006B0C1 /* Server-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		344BDEA71EC0F57B0006B0C1 /* Server-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		344BDEA81EC0F57B0006B0C1 /* Server-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Common.xcconfig"; sourceTree = "<group>"; };
+		344BDEA91EC0F57B0006B0C1 /* Server-Global-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		344BDEAA1EC0F57B0006B0C1 /* Server-Global-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
 		5F7FA9DA1B66B74300011605 /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		5F7FA9DB1B66B74300011605 /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -160,7 +189,17 @@
 				3440202F19072D900002120F /* Omni-Tool-Common.xcconfig */,
 				3440203119072D900002120F /* Omni-Tool-Debug.xcconfig */,
 				3440203219072D900002120F /* Omni-Tool-Release.xcconfig */,
+				344BDEA21EC0F57B0006B0C1 /* Server-Application-Common.xcconfig */,
+				344BDEA31EC0F57B0006B0C1 /* Server-Application-Debug.xcconfig */,
+				344BDEA41EC0F57B0006B0C1 /* Server-Application-Release.xcconfig */,
+				344BDEA51EC0F57B0006B0C1 /* Server-Framework-Common.xcconfig */,
+				344BDEA61EC0F57B0006B0C1 /* Server-Framework-Debug.xcconfig */,
+				344BDEA71EC0F57B0006B0C1 /* Server-Framework-Release.xcconfig */,
+				344BDEA81EC0F57B0006B0C1 /* Server-Global-Common.xcconfig */,
+				344BDEA91EC0F57B0006B0C1 /* Server-Global-Debug.xcconfig */,
+				344BDEAA1EC0F57B0006B0C1 /* Server-Global-Release.xcconfig */,
 				3440203319072D900002120F /* Target-Mac-Common.xcconfig */,
+				344BDEA11EC0F57B0006B0C1 /* Target-Server-Common.xcconfig */,
 				3440203419072D900002120F /* Target-Touch-Common.xcconfig */,
 				5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */,
 				3440203519072D900002120F /* Touch-Application-Common.xcconfig */,
@@ -213,6 +252,7 @@
 				3440203D19072DAD0002120F /* SVNVersion-iOS-Only */,
 				5F3D70441B66B6B000FF7D64 /* SVNVersion-watchOS-Only */,
 				3440204119072DB60002120F /* SVNVersion-Mac-Only */,
+				344BDE9C1EC0F54C0006B0C1 /* SVNVersion-Server-Only */,
 			);
 		};
 /* End PBXProject section */
@@ -234,6 +274,21 @@
 			showEnvVarsInLog = 0;
 		};
 		3440204619072E1E0002120F /* Build SVNVersion.h */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build SVNVersion.h";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
+			showEnvVarsInLog = 0;
+		};
+		344BDE9D1EC0F54C0006B0C1 /* Build SVNVersion.h */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -276,6 +331,11 @@
 			target = 3440204119072DB60002120F /* SVNVersion-Mac-Only */;
 			targetProxy = 3440204919072E300002120F /* PBXContainerItemProxy */;
 		};
+		344BDEAC1EC0F5A00006B0C1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 344BDE9C1EC0F54C0006B0C1 /* SVNVersion-Server-Only */;
+			targetProxy = 344BDEAB1EC0F5A00006B0C1 /* PBXContainerItemProxy */;
+		};
 		5F3D704A1B66B6D400FF7D64 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 5F3D70441B66B6B000FF7D64 /* SVNVersion-watchOS-Only */;
@@ -311,6 +371,22 @@
 		3440204419072DB60002120F /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3440203319072D900002120F /* Target-Mac-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		344BDE9F1EC0F54C0006B0C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 344BDEA11EC0F57B0006B0C1 /* Target-Server-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		344BDEA01EC0F54C0006B0C1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 344BDEA11EC0F57B0006B0C1 /* Target-Server-Common.xcconfig */;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -379,6 +455,15 @@
 			buildConfigurations = (
 				3440204319072DB60002120F /* Debug */,
 				3440204419072DB60002120F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		344BDE9E1EC0F54C0006B0C1 /* Build configuration list for PBXAggregateTarget "SVNVersion-Server-Only" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				344BDE9F1EC0F54C0006B0C1 /* Debug */,
+				344BDEA01EC0F54C0006B0C1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

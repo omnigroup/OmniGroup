@@ -48,8 +48,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFXMLMakerTests class]) {
-        // This abstract superclass doesn't have tests of its own.
-        return (XCTestSuite * _Nonnull)nil;
+        return [[XCTestSuite alloc] init];
     }
 
     return [super defaultTestSuite];

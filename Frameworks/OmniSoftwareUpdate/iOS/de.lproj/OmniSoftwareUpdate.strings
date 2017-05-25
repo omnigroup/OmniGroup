@@ -31,8 +31,7 @@
 /* Software update report entry name */
 "Device" = "Gerät";
 
-/* software update settings section title
-   software update settings title */
+/* software update settings title */
 
 "Device Information" = "Geräteinformationen";
 

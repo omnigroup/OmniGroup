@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,30 +9,44 @@
 
 #import <Availability.h>
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-// 14207119: TextKit: NSTextAttachment.h is not usable as a standalone import
-@class NSData;
-#import <UIKit/NSAttributedString.h>
+@class NSData, NSFileWrapper;
 
+#if OMNI_BUILDING_FOR_IOS
+// 14207119: TextKit: NSTextAttachment.h is not usable as a standalone import
+#import <UIKit/NSAttributedString.h>
 #import <UIKit/NSTextAttachment.h>
+#endif
+
+#if OMNI_BUILDING_FOR_IOS || OMNI_BUILDING_FOR_SERVER
+
+#if OMNI_BUILDING_FOR_SERVER
+#import <OmniFoundation/OFObject.h>
+#define _OATextAttachmentSuperclass OFObject
+#else
+#define _OATextAttachmentSuperclass NSTextAttachment
+#endif
 
 // TextKit's NSTextAttachment only supports flat-files (14181271: TextKit: NSTextAttachment needs file wrapper support).
-// It also removes the notion of a cell which we might want to keep for now at least.
-@class NSFileWrapper;
-@protocol OATextAttachmentCell;
 
-@interface OATextAttachment : NSTextAttachment
+#if OMNI_BUILDING_FOR_IOS
+// It also removes the notion of a cell which we might want to keep for now at least.
+@protocol OATextAttachmentCell;
+#endif
+
+@interface OATextAttachment : _OATextAttachmentSuperclass
 
 - initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 
 @property(nonatomic,retain) NSFileWrapper *fileWrapper;
+
+#if OMNI_BUILDING_FOR_IOS
 @property(nonatomic,retain) id <OATextAttachmentCell> attachmentCell;
+#endif
 
 @end
+#endif
 
-#else
-
+#if OMNI_BUILDING_FOR_MAC
 #import <AppKit/NSTextAttachment.h>
 #define OATextAttachment NSTextAttachment
-
 #endif

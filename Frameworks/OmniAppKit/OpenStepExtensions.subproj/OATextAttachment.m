@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,23 +7,31 @@
 
 #import <OmniAppKit/OATextAttachment.h>
 
-#import <OmniBase/OmniBase.h>
+@import Foundation;
+@import OmniBase;
+
+#if OMNI_BUILDING_FOR_IOS
+#import <OmniAppKit/OATextAttachmentCell.h>
+#endif
+
 
 RCS_ID("$Id$");
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_IOS || OMNI_BUILDING_FOR_SERVER
 
-#import <OmniAppKit/OATextAttachmentCell.h>
 #import <OmniFoundation/OFUTI.h>
 
 @implementation OATextAttachment
 {
     NSFileWrapper *_fileWrapper;
+#if OMNI_BUILDING_FOR_IOS
     id <OATextAttachmentCell> _cell;
+#endif
 }
 
 - initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 {
+#if OMNI_BUILDING_FOR_IOS
     NSData *contents = nil;
     NSString *fileType = nil;
 
@@ -42,6 +50,7 @@ RCS_ID("$Id$");
     
     if (!(self = [super initWithData:contents ofType:fileType]))
         return nil;
+#endif
     
     _fileWrapper = [fileWrapper retain];
     
@@ -52,13 +61,17 @@ RCS_ID("$Id$");
 {
     [_fileWrapper release];
 
+#if OMNI_BUILDING_FOR_IOS
     _cell.attachment = nil;
     [_cell release];
-    
+#endif
+
     [super dealloc];
 }
 
 @synthesize fileWrapper = _fileWrapper;
+
+#if OMNI_BUILDING_FOR_IOS
 @synthesize attachmentCell = _cell;
 - (void)setAttachmentCell:(id <OATextAttachmentCell>)cell;
 {
@@ -68,6 +81,7 @@ RCS_ID("$Id$");
     _cell = [cell retain];
     cell.attachment = self;
 }
+#endif
 
 @end
 #endif

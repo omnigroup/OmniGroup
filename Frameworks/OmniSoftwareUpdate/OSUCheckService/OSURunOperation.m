@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,7 +163,9 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     
     OSU_DEBUG_QUERY(1, "Performing check with URL %@", _request.URL);
 
+    // This retains the delegate (us)!
     _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:_delegateQueue];
+
     _dataTask = [_session dataTaskWithRequest:_request];
     [_dataTask resume];
 }
@@ -174,7 +176,9 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     OBPRECONDITION(_session, "Shouldn't be finished yet");
     OBPRECONDITION(_dataTask, "Shouldn't be finished yet");
     OBPRECONDITION(_completionHandler, "Shouldn't be finished yet");
-    
+
+    OBExpectDeallocation(self);
+
     NSURL *url = _request.URL;
     NSMutableDictionary *resultDict = [NSMutableDictionary dictionary];
     
@@ -235,11 +239,15 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     
     OSURunOperationCompletionHandler handler = _completionHandler;
 
+    OBRetainAutorelease(self);
+
     // Clean up possible retain cycles
     _completionHandler = nil;
     _delegateQueue = nil;
 
     _dataTask = nil;
+
+    [_session invalidateAndCancel]; // Cause it to release its delegate (us).
     _session = nil;
     
     handler(resultDict, nil);

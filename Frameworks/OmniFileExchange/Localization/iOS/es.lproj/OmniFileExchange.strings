@@ -56,7 +56,7 @@
 "Documents" = "Documentos";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Sincronice documentos Omni. El registro es gratuito.";
+"Easily sync Omni documents. Signup is free!" = "Sincroniza documentos Omni. El registro es gratuito.";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportar a “%@”";
@@ -82,16 +82,16 @@
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
-"Please check that the account information you entered is correct." = "Compruebe que la información de cuenta introducida es correcta.";
+"Please check that the account information you entered is correct." = "Comprueba que la información de cuenta introducida es correcta.";
 
 /* error description */
-"Please choose another location for your synced documents." = "Seleccione otra ubicación para los documentos sincronizados.";
+"Please choose another location for your synced documents." = "Selecciona otra ubicación para los documentos sincronizados.";
 
 /* account validation error suggestion */
-"Please enter an address for the account." = "Introduzca una dirección para la cuenta.";
+"Please enter an address for the account." = "Introduce una dirección para la cuenta.";
 
 /* account validation error suggestion */
-"Please enter an username for the account." = "Introduzca un nombre de usuario para la cuenta.";
+"Please enter an username for the account." = "Introduce un nombre de usuario para la cuenta.";
 
 /* account validation error description */
 "Server location not found" = "No se encuentra la ubicación del servidor";
@@ -109,31 +109,31 @@
 "Testing Server for Compatibility" = "Probando la compatibilidad del servidor";
 
 /* error reason */
-"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "La cuenta de la nube requiere el formato de OmniPresence %1$@, pero este dispositivo está usando el formato %2$@. Actualice esta copia de OmniPresence.";
+"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "La cuenta de la nube requiere el formato de OmniPresence %1$@, pero este dispositivo está usando el formato %2$@. Actualiza esta copia de OmniPresence.";
 
 /* Error description */
 "The document \"%@\" is not fully downloaded." = "El documento “%@” no se ha descargado completamente.";
 
 /* error description */
-"The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "La carpeta de documentos locales propuesta ya contiene archivos. Especifique una carpeta vacía o una que todavía no exista.";
+"The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "La carpeta de documentos locales propuesta ya contiene archivos. Especifica una carpeta vacía o una que todavía no exista.";
 
 /* error description */
-"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "La carpeta de documentos locales propuesta no está en un volumen local. Seleccione una ubicación local en el equipo.";
+"The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "La carpeta de documentos locales propuesta no está en un volumen local. Selecciona una ubicación local en el equipo.";
 
 /* error description */
 "The selected local folder appears to be inside a %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada parece encontrarse en una carpeta de %@. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
 
 /* error description */
-"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en su carpeta de %@, que puede sincronizarse con iCloud Drive en Sierra. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
+"The selected local folder is in your %@ folder, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en tu carpeta de %@, que puede sincronizarse con iCloud Drive en Sierra. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
 
 /* error description */
-"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en su carpeta de %@. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
+"The selected local folder is in your %@ folder. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en tu carpeta de %@. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
 
 /* error description */
-"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en el escritorio, que puede sincronizarse con iCloud Drive en Sierra.  El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
+"The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "La carpeta local seleccionada se encuentra en el escritorio, que puede sincronizarse con iCloud Drive en Sierra. El uso de dos sistemas de sincronización de archivos en una misma carpeta puede ocasionar la pérdida de datos.";
 
 /* error reason */
-"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Esta aplicación requiere el formato de OmniPresence %1$@, pero la cuenta en la nube está usando el formato %2$@. Actualice la cuenta en la nube.";
+"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Esta aplicación requiere el formato de OmniPresence %1$@, pero la cuenta en la nube está usando el formato %2$@. Actualiza la cuenta en la nube.";
 
 /* Error reason */
 "This OmniPresence folder contains another OmniPresence synced folder." = "Esta carpeta OmniPresence contiene otra carpeta sincronizada vía OmniPresence.";
@@ -160,7 +160,7 @@
 "Unable to verify login credentials at this time." = "No se han podido comprobar las credenciales de acceso.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Utilice su propio espacio WebDAV.";
+"Use your own WebDAV space." = "Utiliza tu propio espacio WebDAV.";
 
 /* Account validation step description */
 "Validating Account..." = "Validando cuenta…";

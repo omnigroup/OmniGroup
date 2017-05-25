@@ -250,5 +250,5 @@ NSOperation <OFCredentialChallengeDisposition> *OFImmediateCredentialResponse(NS
     op.disposition = disposition;
     op.credential = credential;
     [op start];
-    return op;
+    return [op autorelease];
 }

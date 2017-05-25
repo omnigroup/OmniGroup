@@ -245,7 +245,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         self.mainPane.inspectedObjects = objects;
         
         if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-            [self.navigationController popToAppropriatePane];
+            [self.navigationController popToRootViewControllerAnimated:NO];
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,24 +11,28 @@
 #import <OmniFoundation/OFExtent.h>
 #import <Availability.h>
 
+extern NSInteger OAFontDescriptorRegularFontWeight(void); // NSFontManager-style weight
+extern NSInteger OAFontDescriptorBoldFontWeight(void); // NSFontManager-style weight
+extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
+
 // On the Mac, NSFontDescriptor is toll-free bridged to CTFontDescriptorRef. NSFont doesn't seem to be bridged, but presumably each platform returns the appropriate font type.
 // OBFinishPorting: is this still true in 7.0?
 // On iPhone, there is no class to bridge to.  So, this class is currently a wrapper of a CTFontDescriptorRef instead of a subclass/replacement for NSFontDescriptor.
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_IOS
     #define OAPlatformFontClass UIFont
-#else
+#elif OMNI_BUILDING_FOR_MAC
     #import <ApplicationServices/ApplicationServices.h> // CoreText lives in this umbrella on the Mac
     #define OAPlatformFontClass NSFont
 #endif
+
+
+#ifdef OAPlatformFontClass
+
 #define OAFontDescriptorPlatformFont OAPlatformFontClass *
 @class OAPlatformFontClass;
 
 @class NSNotification, NSDictionary;
-
-extern NSInteger OAFontDescriptorRegularFontWeight(void); // NSFontManager-style weight
-extern NSInteger OAFontDescriptorBoldFontWeight(void); // NSFontManager-style weight
-extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
 
 // Returns the _minimal_ set of attributes (on iOS at least). Primarily useful for testing and debugging.
 extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
@@ -45,27 +49,27 @@ extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 - initWithName:(NSString *)name size:(CGFloat)size; // Used when reading fonts from RTF
 - initWithFont:(OAFontDescriptorPlatformFont)font;
 
-- (NSDictionary *)fontAttributes;
+@property(nonatomic,readonly) NSDictionary *fontAttributes;
 
 // These accessors return the value stored in the descriptor's attributes dictionary, if present, or else return the attributes of the font obtained by resolving the descriptor.
-- (NSString *)family;
-- (CGFloat)size;
-- (BOOL)hasExplicitWeight;
-- (NSInteger)weight;
+@property(nonatomic,readonly) NSString *family;
+@property(nonatomic,readonly) CGFloat size;
+@property(nonatomic,readonly) BOOL hasExplicitWeight;
+@property(nonatomic,readonly) NSInteger weight;
 - (BOOL)valueForTrait:(uint32_t)trait;
-- (BOOL)italic;
-- (BOOL)bold;
-- (BOOL)condensed;
-- (BOOL)fixedPitch;
-- (NSString *)fontName;
-- (NSString *)postscriptName;
-- (OAFontDescriptorPlatformFont)font;
+@property(nonatomic,readonly) BOOL italic;
+@property(nonatomic,readonly) BOOL bold;
+@property(nonatomic,readonly) BOOL condensed;
+@property(nonatomic,readonly) BOOL fixedPitch;
+@property(nonatomic,readonly) NSString *fontName;
+@property(nonatomic,readonly) NSString *postscriptName;
+@property(nonatomic,readonly) OAFontDescriptorPlatformFont font;
 
 // These return the desired values, where as our other properties return calculated values. If a value doesn't have a desired setting, it will return nil.
 @property(nonatomic,readonly) NSString *desiredFontName;
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (NSString *)localizedStyleName;
+#if OMNI_BUILDING_FOR_IOS
+@property(nonatomic,readonly) NSString *localizedStyleName;
 #endif
 
 - (OAFontDescriptor *)newFontDescriptorWithFamily:(NSString *)family;
@@ -78,3 +82,25 @@ extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 - (OAFontDescriptor *)newFontDescriptorWithFixedPitch:(BOOL)fixedPitch;
 
 @end
+
+#else // OAPlatformFontClass
+
+// Otherwise, we define a simple value class.
+@interface OAFontDescriptor : OFObject <NSCopying>
+
+- initWithFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
+
+@property(nonatomic,readonly) NSString *family;
+@property(nonatomic,readonly) CGFloat size;
+@property(nonatomic,readonly) NSInteger weight;
+@property(nonatomic,readonly) BOOL italic;
+@property(nonatomic,readonly) BOOL bold;
+@property(nonatomic,readonly) BOOL condensed;
+@property(nonatomic,readonly) BOOL fixedPitch;
+
+@property(nonatomic,readonly) BOOL hasExplicitWeight;
+@property(nonatomic,readonly) NSString *desiredFontName;
+
+@end
+
+#endif // OAPlatformFontClass

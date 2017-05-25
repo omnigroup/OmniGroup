@@ -560,6 +560,14 @@ enum {
     
     enabled = !enabled;
     [[OSUPreferences includeHardwareDetails] setBoolValue:enabled];
+
+#if 1 && defined(DEBUG)
+    if (enabled) {
+        NSLog(@"Triggering a OSU check right now");
+        [[OSUChecker sharedUpdateChecker] checkSynchronously];
+    }
+
+#endif
 }
 
 - (void)_dismissStandaloneViewController:(id)sender;

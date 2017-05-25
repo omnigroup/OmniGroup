@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,9 @@
 RCS_ID("$Id$")
 
 @implementation ODOObjectID
+{
+    NSUInteger _hash;
+}
 
 - (instancetype)initWithEntity:(ODOEntity *)entity primaryKey:(id)primaryKey;
 {
@@ -22,7 +25,11 @@ RCS_ID("$Id$")
     
     _entity = [entity retain];
     _primaryKey = [primaryKey copy];
-    
+
+    // This gets called a lot, so we'll cache it.
+    // Hash values not archivable due to pointer case.  Could use [[_entity name] hash]...
+    _hash = [_primaryKey hash] ^ (uintptr_t)_entity;
+
     return self;
 }
 
@@ -68,7 +75,7 @@ RCS_ID("$Id$")
 
 - (NSUInteger)hash;
 {
-    return [_primaryKey hash] ^ (uintptr_t)_entity; // Hash values not archivable due to pointer case.  Could use [[_entity name] hash]...
+    return _hash;
 }
 
 - (BOOL)isEqual:(id)otherObject;

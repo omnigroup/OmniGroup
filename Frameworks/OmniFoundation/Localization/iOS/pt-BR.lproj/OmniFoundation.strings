@@ -141,7 +141,7 @@
 "Failed to serialize lock information." = "Falha ao serializar informações de bloqueio.";
 
 /* error reason */
-"Failed to write lock file.  %@" = "Falha ao gravar o arquivo de bloqueio.  %@";
+"Failed to write lock file.  %@" = "Falha ao gravar informações de bloqueio.  %@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "h";
@@ -168,7 +168,7 @@
 "minutes" = "minutos";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (month) */
-"mo" = "me";
+"mo" = "mê";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "mês";
@@ -183,7 +183,7 @@
 "Not a valid bundle" = "O pacote não é válido";
 
 /* OFLockFile recovery option */
-"Override Lock" = "Anular Bloqueio";
+"Override Lock" = "Anular bloqueio";
 
 /* Provisioning profile parsing error reason – invalid plist */
 "PKCS#7 contents of embedded provisioning profile were not a valid plist" = "O conteúdo PKCS#7 do perfil de provisão integrado não era um arquivo plist válido";
@@ -272,7 +272,7 @@
 "Unsupported encryption algorithm" = "Algoritmo de criptografia incompatível";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"w" = "s";
+"w" = "se";
 
 /* error description */
 "Warning encountered while loading XML." = "Foi encontrado um aviso ao carregar o XML.";

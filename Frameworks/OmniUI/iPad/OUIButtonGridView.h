@@ -24,7 +24,7 @@ typedef NS_OPTIONS(NSUInteger, OUIButtonGridViewBorder) {
 @required
 
 - (NSUInteger)buttonGridView:(OUIButtonGridView *)buttonGridView numberOfColumnsInRow:(NSInteger)row;
-- (UIButton *)buttonGridView:(OUIButtonGridView *)buttonGridView buttonForColumnAtIndexPath:(NSIndexPath *)indexPath;
+- (UIButton *)buttonGridView:(OUIButtonGridView *)buttonGridView buttonForIndexPath:(NSIndexPath *)indexPath;
 - (NSUInteger)numberOfRowsInButtonGridView:(OUIButtonGridView *)buttonGridView;
 
 - (void)buttonGridView:(OUIButtonGridView *)buttonGridView tappedButton:(UIButton *)button atIndexPath:(NSIndexPath *)indexPath;
@@ -38,7 +38,7 @@ typedef NS_OPTIONS(NSUInteger, OUIButtonGridViewBorder) {
 + (UIButton *)buttonGridViewButtonWithTitle:(NSString *)title;
 
 @property (nonatomic, assign, nullable) IBOutlet id <OUIButtonGridViewDataSource> dataSource;
-@property (nonatomic, assign) NSUInteger borderMask;
+@property (nonatomic, assign) OUIButtonGridViewBorder borderMask;
 @property (nonatomic, copy, nullable) UIColor *buttonSeparatorStrokeColor;
 
 - (nullable UIButton *)buttonAtIndexPath:(NSIndexPath *)indexPath;

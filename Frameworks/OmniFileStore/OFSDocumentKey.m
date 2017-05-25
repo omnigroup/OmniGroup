@@ -165,9 +165,16 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
         // Note that the kCCDecodeError code here is actually set by other OFS bits – per unwrapData() in OFSDocumentKey.m, CCSymmetricKeyUnwrap() can return bad codes, so we substitute a better code there
         // (If the CommonCrypto unwrap function is someday updated to conform to its own documentation, it will return kCCDecodeError naturally)
         if (outError && [*outError hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:kCCDecodeError]) {
+            id wrongPasswordInfoValue;
+#if defined(DEBUG)
+            wrongPasswordInfoValue = password;
+#else
+            wrongPasswordInfoValue = @YES;
+#endif
+            
             NSString *description = NSLocalizedStringFromTableInBundle(@"Incorrect encryption password.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error description");
             NSString *reason = NSLocalizedStringFromTableInBundle(@"Could not decode encryption document key.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error reason");
-            OFSErrorWithInfo(outError, OFSEncryptionNeedAuth, description, reason, OFSEncryptionWrongPassword, password, nil);
+            OFSErrorWithInfo(outError, OFSEncryptionNeedAuth, description, reason, OFSEncryptionWrongPassword, wrongPasswordInfoValue, nil);
         }
         
         return NO;

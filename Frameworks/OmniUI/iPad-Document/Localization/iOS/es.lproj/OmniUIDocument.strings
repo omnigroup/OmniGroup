@@ -44,7 +44,7 @@
 "1 Item Selected" = "1 elemento seleccionado";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ya existe un documento con el nombre “%@”. ¿Desea sustituirlo? Esta acción no se puede deshacer.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ya existe un documento con el nombre “%@”. ¿Deseas sustituirlo? Esta acción no se puede deshacer.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Información de la cuenta";
@@ -83,7 +83,7 @@
 "Cannot Export Item" = "No se puede exportar el elemento";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Seleccione un formato para enviar “%@” por e-mail:";
+"Choose a format for emailing \"%@\":" = "Selecciona un formato para enviar “%@” por e-mail:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Elegir una plantilla";
@@ -92,7 +92,7 @@
 "Choose Account Type" = "Elegir tipo de cuenta";
 
 /* export options title */
-"Choose Format" = "Seleccione un formato";
+"Choose Format" = "Selecciona un formato";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Borrar campo de nombre";
@@ -101,7 +101,7 @@
 "Clear Title" = "Borrar título";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Cerrar documento";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Almacenamiento en la nube";
@@ -169,7 +169,7 @@
 "Duplicate %ld Items" = "Duplicar %ld elementos";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Sincronice documentos Omni entre dispositivos. El registro es gratuito.";
+"Easily sync Omni documents between devices. Signup is free!" = "Sincroniza documentos Omni entre dispositivos. El registro es gratuito.";
 
 /* When displaying a sync error, this is the option to change the username and password. */
 "Edit Credentials" = "Editar credenciales";
@@ -184,7 +184,7 @@
 "Empty Trash" = "Vaciar papelera";
 
 /* webdav help */
-"Enter the location of your WebDAV space." = "Introduzca la ubicación de su espacio WebDAV.";
+"Enter the location of your WebDAV space." = "Introduce la ubicación de su espacio WebDAV.";
 
 /* export button title
    export options title
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Información";
-
-/* error title */
-"Invalid Zip Archive" = "Archivo zip no válido";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Está editando";
@@ -310,7 +307,7 @@
 "OmniPresence Configuration: %@" = "Configuración de OmniPresence: %@";
 
 /* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "Abra este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
+"Open this file on another device to configure OmniPresence there." = "Abre este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
 
 /* Generic name for location of external documents */
 "Other" = "Otros";
@@ -352,7 +349,7 @@
 "Replace" = "Reemplazar";
 
 /* replace document title */
-"Replace document?" = "¿Desea sustituir el documento?";
+"Replace document?" = "¿Deseas sustituir el documento?";
 
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Comunicar error";
@@ -370,7 +367,7 @@
 "Save" = "Guardar";
 
 /* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "Desplácese hacia abajo para mostrar, clasificar y filtrar controles";
+"Scroll down to show sort and filter controls" = "Desplázate hacia abajo para mostrar, clasificar y filtrar controles";
 
 /* document picker button label */
 "Search" = "Buscar";
@@ -379,7 +376,7 @@
 "Select" = "Seleccionar";
 
 /* Main toolbar title for a no selected documents. */
-"Select a Document" = "Seleccione un documento";
+"Select a Document" = "Selecciona un documento";
 
 /* send to app description */
 "Send \"%@\" to app as:" = "Enviar “%@” a una aplicación como:";
@@ -414,25 +411,25 @@
 "Sync Now" = "Sincronizar ahora";
 
 /* empty template picker button text */
-"Tap here to add a document without a template." = "Toque aquí para añadir un documento sin plantilla.";
+"Tap here to add a document without a template." = "Toca aquí para añadir un documento sin plantilla.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Pulse aquí o el signo + de la barra de herramientas para añadir un documento.";
+"Tap here, or on the + in the toolbar, to add a document." = "Pulsa aquí o el signo + de la barra de herramientas para añadir un documento.";
 
 /* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Toque el símbolo + de la barra de herramientas para añadir un documento de otra app o guardado en iCloud Drive.";
+"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Toca el símbolo + de la barra de herramientas para añadir un documento de otra app o guardado en iCloud Drive.";
 
 /* file name label for template filte types */
 "Template:" = "Plantilla:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%1$@” tiene %2$ld documentos editados que todavía no se han sincronizado en la nube. ¿Desea descartar las modificaciones?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%1$@” tiene %2$ld documentos editados que todavía no se han sincronizado en la nube. ¿Deseas descartar las modificaciones?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%@” tiene un documento editado que no se ha sincronizado en la nube. ¿Desea descartar las modificaciones?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "La cuenta “%@” tiene un documento editado que no se ha sincronizado en la nube. ¿Deseas descartar las modificaciones?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "La cuenta “%@” podría tener documentos editados que aún no se han sincronizado en la nube. ¿Desea descartar las modificaciones realizadas en local?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "La cuenta “%@” podría tener documentos editados que aún no se han sincronizado en la nube. ¿Deseas descartar las modificaciones realizadas en local?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "El documento “%@” requiere una contraseña para abrirlo.";
@@ -440,29 +437,26 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
 
-/* error description */
-"The zip archive must contain a single document." = "El archivo zip debe contener un solo documento.";
-
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a su biblioteca de imágenes.";
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu biblioteca de imágenes.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";
 
 /* Error reason for a document operation failing due to a missing file. */
-"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Este documento no es accesible. Es posible que el archivo se haya eliminado, renombrado o desplazado vía iTunes u otro proveedor externo de documentos. Intente eliminar al archivo y añadirlo de nuevo.";
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Este documento no es accesible. Es posible que el archivo se haya eliminado, renombrado o desplazado vía iTunes u otro proveedor externo de documentos. Intenta eliminar al archivo y añadirlo de nuevo.";
 
 /* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede duplicar el elemento porque no se ha descargado completamente. Toque el elemento y espere a que se descargue antes de intentarlo de nuevo.";
+"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede duplicar el elemento porque no se ha descargado completamente. Toca el elemento y espera a que se descargue antes de intentarlo de nuevo.";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede exportar el elemento porque no se ha descargado completamente. Pulse el elemento y espere a que se descargue antes de intentarlo de nuevo.";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede exportar el elemento porque no se ha descargado completamente. Pulsa el elemento y espera a que se descargue antes de intentarlo de nuevo.";
 
 /* sort by title */
 "Title" = "Título";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Al activar la opción “Usar almacenamiento en la nube” se gana acceso a documentos almacenados en servicios en la nube, como iCloud Drive o Dropbox. La función Proveedores de almacenamiento en la nube se encuentra en periodo de pruebas (BETA). Ten cuidado al usar este servicio.";
 
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";

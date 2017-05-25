@@ -263,7 +263,7 @@ void OFDeleteAllCredentials(void)
         OFSecError("SecItemDelete", err, NULL);
 }
 
-BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
+BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError * __autoreleasing *outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
     

@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -152,8 +152,8 @@ OB_REQUIRE_ARC;
                                     @"bool_": @(YES),
                                     @"size": @{@"width": @(10), @"height": @(20)},
                                     @"insets": @{@"top": @(1), @"left": @(2), @"bottom": @(3), @"right": @(4)},
-                                    @"colorWithWhite": @{@"w": @(0.5), @"a": @(0.25)},
-                                    @"colorWithRGB": @{@"r": @(0.125), @"g": @(0.25), @"b": @(0.5), @"a": @(0.75)},
+                                    @"colorWithWhite": @{@"space": @"gg22", @"w": @(0.5), @"a": @(0.25)},
+                                    @"colorWithRGB": @{@"space": @"srgb", @"r": @(0.125), @"g": @(0.25), @"b": @(0.5), @"a": @(0.75)},
                                     @"colorWithHSB": @{@"h": @(0.125), @"s": @(0.25), @"b": @(0.5), @"a": @(0.75)},
                                     @"imageWithString": @"NSApplicationIcon",
                                     @"imageWithName": @{@"name": @"NSApplicationIcon"},
@@ -180,7 +180,7 @@ OB_REQUIRE_ARC;
 {
     NSDictionary *expectedPlist = @{
                                     @"TopLevelFloat": @(1),
-                                    @"Color": @{@"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
+                                    @"Color": @{@"space": @"srgb", @"r": @(0.42), @"g": @(0.42), @"b": @(0.42), @"a": @(1)},
                                     @"EdgeInsets": @{@"top": @(42), @"left": @(42), @"bottom": @(42), @"right": @(42), },
                                     @"OverriddenFloat": @(-1),
                                     @"Nested": @{@"Float": @(1)},

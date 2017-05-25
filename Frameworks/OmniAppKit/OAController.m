@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,23 +54,6 @@ RCS_ID("$Id$")
         id oldValue = [preferences valueForKey:key];
         id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
         id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
-        
-        if ([key isEqualToString:@"AppleLanguages"] && coercedValue && [coercedValue isKindOfClass:[NSArray class]]) {
-            for (NSString *localeIdentifier in (NSArray *)coercedValue) {
-                NSString *canonicalLocaleIdentifier = [NSLocale canonicalLocaleIdentifierFromString:localeIdentifier];
-                NSArray *availableLanguages = NSLocale.availableLocaleIdentifiers;
-                if (![availableLanguages containsObject:canonicalLocaleIdentifier]) {
-                    // The given string is not a known localeIdentifier. INVALID!!!
-                    NSAlert *alert = [[NSAlert alloc] init];
-                    alert.messageText = NSLocalizedStringFromTableInBundle(@"Preference change error", @"OmniAppKit", OMNI_BUNDLE, @"preference change error alert title");
-                    alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot change the '%@' preference from '%@' to '%@' because '%@' is not a valid locale identifier.", @"OmniAppKit", OMNI_BUNDLE, @"alert message"), key, oldValue, stringValue, localeIdentifier];
-                    [alert addButtonWithTitle:OAOK()];
-                    (void)[alert runModal];
-                    return NO;
-                }
-            }
-        }
-        
         if (coercedValue == nil) {
             NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
             return NO;

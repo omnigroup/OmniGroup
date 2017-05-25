@@ -8,6 +8,7 @@
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
@@ -87,6 +88,9 @@ RCS_ID("$Id$");
 {
     [super updateInterfaceFromInspectedObjects:reason];
     [self reloadTableAndResize];
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self _updateAppearance];
 }
 
 #pragma mark - UIViewController subclass
@@ -123,8 +127,9 @@ RCS_ID("$Id$");
     [super viewWillAppear:animated];
     //If we are inspecting a new type of graphic for the first time (like tapping a graphic when we first open the document) the it is possible for the table view to have no content. We then try to resize an empty table view to fit its content size, but the table view has no contents and the resize function expects the table view to have contents. So, make sure we have contents first.
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
-    // Might be coming back from a detail pane that edited a displayed value
-    [self reloadTableAndResize];
+
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self _updateAppearance];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
@@ -156,6 +161,33 @@ RCS_ID("$Id$");
     UIView *view = [[UIView alloc] init];
     view.backgroundColor = [UIColor clearColor];
     return view;
+}
+
+#pragma mark OUIThemedApperanceClient
+
+- (void)_updateAppearance;
+{
+    OUIInspectorAppearance *appearance = [OUIInspectorAppearance appearance];
+    
+    switch (self.tableViewStyle) {
+        case UITableViewStyleGrouped:
+            self.tableView.backgroundColor = appearance.InspectorBackgroundColor;
+            self.tableView.separatorColor = appearance.TableViewSeparatorColor;
+            break;
+        default:
+            ;
+    }
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)appearance;
+{
+    [super themedAppearanceDidChange:appearance];
+    [self _updateAppearance];
+}
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    return self.tableView.visibleCells;
 }
 
 @end

@@ -101,7 +101,7 @@
 "Clear Title" = "Cancella titolo";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Chiudi documento";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Provider di archiviazione cloud";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Info";
-
-/* error title */
-"Invalid Zip Archive" = "Archivio compresso non valido";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Sta modificando";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Impossibile completare l'operazione.";
 
-/* error description */
-"The zip archive must contain a single document." = "L'archivio compresso deve contenere solo un documento.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "L'app non ha accesso alla libreria fotografica.";
 
@@ -462,7 +456,7 @@
 "Title" = "Titolo";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Attivando Provider di archiviazione cloud ottieni l'accesso ai documenti archiviati sui servizi cloud, come iCloud Drive o Dropbox. Stiamo presentando l'accesso a Provider di archiviazione cloud come implementazione BETA; presta la massima attenzione se attivi questo servizio.";
 
 /* error title */
 "Unable to open file." = "Impossibile aprire il documento.";

@@ -11,13 +11,13 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OATextStorage.h> // OAAttachmentCharacter
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 #import <AppKit/NSStringDrawing.h>
 #endif
 
 RCS_ID("$Id$")
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 @interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
 @property (nonatomic,weak) OATextAttachment *attachment;
 @end
@@ -30,7 +30,7 @@ RCS_ID("$Id$")
     static NSString *AttachmentString = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        unichar c = NSAttachmentCharacter;
+        unichar c = OAAttachmentCharacter;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
     });
     return AttachmentString;
@@ -57,12 +57,12 @@ RCS_ID("$Id$")
 
 - (BOOL)containsAttachments;
 {
-    return [self containsAttribute:NSAttachmentAttributeName];
+    return [self containsAttribute:OAAttachmentAttributeName];
 }
 
 - (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
 {
-    return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
+    return [self attribute:OAAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
 }
 
 - (void)eachAttachmentInRange:(NSRange)range action:(void (^ NS_NOESCAPE)(NSRange attachmentRange, __kindof OATextAttachment *attachment, BOOL *stop))applier;
@@ -77,7 +77,7 @@ RCS_ID("$Id$")
         if (attachmentRange.length == 0)
             break;
 
-        OATextAttachment *attachment = [self attribute:NSAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
+        OATextAttachment *attachment = [self attribute:OAAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
 
         // It is possible to have stray attachment characters without an attachment.
         if (attachment) {
@@ -93,7 +93,7 @@ RCS_ID("$Id$")
     [self eachAttachmentInRange:NSMakeRange(0, [self length]) action:applier];
 }
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
 {
     OAInlineImageTextAttachmentCell *imageCell = [[OAInlineImageTextAttachmentCell alloc] initImageCell:anImage];
@@ -105,14 +105,14 @@ RCS_ID("$Id$")
 }
 #endif
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 - (NSData *)rtf;
 {
     return [self RTFFromRange:NSMakeRange(0, [self length]) documentAttributes:@{}];
 }
 #endif
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 // ASSUMPTION: These are for one line
 - (void)drawInRectangle:(NSRect)rectangle verticallyCentered:(BOOL)verticallyCenter;
 {
@@ -182,7 +182,7 @@ RCS_ID("$Id$")
 @end
 
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 @implementation OAInlineImageTextAttachmentCell
 
 // Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.

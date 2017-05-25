@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -193,6 +193,14 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
 {
     return [self description];
+}
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    // Instance are immutable.
+    return [self retain];
 }
 
 #pragma mark -

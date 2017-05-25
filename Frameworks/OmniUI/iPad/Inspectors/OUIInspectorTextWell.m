@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -202,7 +202,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             _setAttr(attributedText, NSFontAttributeName, font);
     }
     
-    UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
+    UIColor *textColor = textType == TextTypePlaceholder ? self.disabledTextColor : [self textColor];
     _setAttr(attributedText, NSForegroundColorAttributeName, textColor);
     
     OBASSERT(_textField); // use the alignment already set up when the editor was created
@@ -374,6 +374,25 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     if (_labelColor == labelColor)
         return;
     _labelColor = labelColor;
+    
+    [self _updateLabels];
+    [self setNeedsLayout];
+}
+
+@synthesize disabledTextColor = _disabledTextColor;
+- (UIColor *)disabledTextColor;
+{
+    if (_disabledTextColor)
+        return _disabledTextColor;
+    
+    return [OUIInspector disabledLabelTextColor];
+}
+
+- (void)setDisabledTextColor:(UIColor *)disabledTextColor;
+{
+    if (_disabledTextColor == disabledTextColor)
+        return;
+    _disabledTextColor = disabledTextColor;
     
     [self _updateLabels];
     [self setNeedsLayout];
@@ -629,7 +648,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         attrText = attrFormat;
     }
     
-    UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
+    UIColor *textColor = textType == TextTypePlaceholder ? self.disabledTextColor : [self textColor];
     _setAttr(attrText, NSForegroundColorAttributeName, textColor);
     
     // Align the text horizontally and truncate instead of wrapping.
@@ -654,7 +673,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             if (font)
                 _setAttr(attrLabel, NSFontAttributeName, font);
             
-            UIColor *labelColor = self.enabled ? [self labelColor] : [OUIInspector disabledLabelTextColor];
+            UIColor *labelColor = self.enabled ? [self labelColor] : self.disabledTextColor;
             _setAttr(attrLabel, NSForegroundColorAttributeName, labelColor);
             
             if (!_labelLabel) {
@@ -678,7 +697,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             if (font)
                 _setAttr(attrString, NSFontAttributeName, font);
             
-            UIColor *textColor = textType == TextTypePlaceholder ? [OUIInspector disabledLabelTextColor] : [self textColor];
+            UIColor *textColor = textType == TextTypePlaceholder ? self.disabledTextColor : [self textColor];
             _setAttr(attrString, NSForegroundColorAttributeName, textColor);
             
             // Right align and tail truncate the text

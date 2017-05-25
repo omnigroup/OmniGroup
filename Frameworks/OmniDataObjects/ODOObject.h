@@ -111,10 +111,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=isInvalid) BOOL invalid;
 @property (nonatomic, readonly, getter=isUndeletable) BOOL undeletable;
 
-- (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
+- (BOOL)hasChangedKeySinceLastSave:(NSString *)key NS_SWIFT_NAME(hasChangedKeySinceLastSave(_:));
 @property (nonatomic, nullable, readonly) NSDictionary *changedValues;
 @property (nonatomic, nullable, readonly) NSDictionary *changedNonDerivedValues;
 
+- (nullable id)lastProcessedValueForKey:(NSString *)key;
 - (nullable id)committedValueForKey:(NSString *)key;
 // - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 

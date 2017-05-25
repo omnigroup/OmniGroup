@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <CoreFoundation/CFPropertyList.h>
 #import <OmniBase/objc.h>
 #import <OmniBase/macros.h>
+#import <Foundation/NSError.h>
 
 CFPropertyListRef OFCreatePropertyListFromFile(CFStringRef filePath, CFPropertyListMutabilityOptions options, CFErrorRef *outError) CF_RETURNS_RETAINED;
 

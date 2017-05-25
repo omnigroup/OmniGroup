@@ -70,27 +70,6 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)popToAppropriatePane {
-    UIViewController *appropriateViewController = nil;
-    
-    for (UIViewController *viewController in self.viewControllers) {
-        OUIInspectorPane *pane = OB_CHECKED_CAST(OUIInspectorPane, viewController);
-        BOOL isPaneAppropriate = [pane containsAppropriateSlicesForInspectedObjects];
-        
-        if (isPaneAppropriate) {
-            appropriateViewController = pane;
-        } else {
-            break;
-        }
-    }
-        
-    if (appropriateViewController != nil) {
-        [self popToViewController:appropriateViewController animated:NO];
-    } else {
-        [self popToRootViewControllerAnimated:NO];
-    }
-}
-
 - (void)_keyboardWillShow:(NSNotification*)note {
     if ([self.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
         [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];

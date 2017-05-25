@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_objectWillBeUpdated:(ODOObject *)object;
 - (void)_registerObject:(ODOObject *)object;
 - (void)_snapshotObjectPropertiesIfNeeded:(ODOObject *)object;
+- (nullable NSArray *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 - (nullable NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 
 #ifdef OMNI_ASSERTIONS_ON

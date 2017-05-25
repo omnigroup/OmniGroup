@@ -126,7 +126,7 @@ typedef enum {
 
 // Subcodes for OFSEncryptionNeedAuth: these are keys in the userinfo dictionary
 #define OFSEncryptionNeedPassword            (@"need-password")    // exists if no password supplied, but we could continue if we got a good one
-#define OFSEncryptionWrongPassword           (@"wrong-password")   // exists if a password was supplied but it didn't work
+#define OFSEncryptionWrongPassword           (@"wrong-password")   // exists if a password was supplied but it didn't work. The value associated with this key is not guaranteed to be of any particular type, nor does it necessarily carry meaningful information.
 #define OFSEncryptionNeedKeychain            (@"need-keychain")    // exists if it has a keychain reference but we couldn't use it
 #define OFSEncryptionKeyStore                (@"key-store")        // contains the NSData key management blob
 

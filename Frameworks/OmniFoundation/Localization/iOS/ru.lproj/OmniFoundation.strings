@@ -53,7 +53,7 @@
 "Bundle is obsolete" = "Пакет устарел";
 
 /* invalid bundle reason */
-"Bundle requires additional software" = "Для пакета требуется дополнительное ПО";
+"Bundle requires additional software" = "Пакет требует дополнительного ПО";
 
 /* compression error reason */
 "bzip2 library returned error code %d when finishing compression. %s." = "Библиотека bzip2 при завершении сжатия вернула ошибку с кодом %1$d. %2$s.";
@@ -81,13 +81,13 @@
    Error message when stat() fails when trying to create a directory tree */
 
 
-"Could not create directory" = "Не удалось создать папку";
+"Could not create directory" = "Не удалось создать каталог";
 
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "Не удалось обработать права из встроенного профиля подготовки";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"d" = "д";
+"d" = "дн.";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "день";
@@ -162,19 +162,19 @@
 "m" = "мин.";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"minute" = "мин.";
+"minute" = "минута";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"minutes" = "минут";
+"minutes" = "мин.";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "мес.";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"month" = "мес.";
+"month" = "месяц";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"months" = "месяцев";
+"months" = "мес.";
 
 /* error reason */
 "No root element was found" = "Корневой элемент не найден";
@@ -192,7 +192,7 @@
 "Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";
 
 /* alert title when clicking on a configuration value URL */
-"Restore all internal configuration settings to defaults" = "Восстановить значения по умолчанию для всех внутренних параметров настройки";
+"Restore all internal configuration settings to defaults" = "Восстановить для всех внутренних настроек значения по умолчанию";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "с";
@@ -204,7 +204,7 @@
 "seconds" = "секунд";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Задать «%1$@» для «%2$@»";
+"Set \"%@\" to \"%@\"" = "Задать для «%1$@» значение «%2$@»";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
 "The encrypted item \"%@\" is missing or unreadable." = "Зашифрованный элемент «%@» отсутствует или не читается.";
@@ -225,13 +225,13 @@
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» подписан ненадежным корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
 
 /* alert message header when clicking on a configuration value URL */
-"This configuration link will make the following changes:" = "Эта ссылка конфигурации вносит следующие изменения:";
+"This configuration link will make the following changes:" = "Эта ссылка конфигурации внесет следующие изменения:";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера “%2$@” %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
 
 /* compression error description */
 "Unable to compress data." = "Не удается сжать данные.";
@@ -263,7 +263,7 @@
 "Unknown public key algorithm" = "Неизвестный алгоритм открытого ключа";
 
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
-"Unknown(cryptographic algorithm)" = "Неизвестный";
+"Unknown(cryptographic algorithm)" = "Неизвестно";
 
 /* decompression error reason */
 "unrecognized compression format." = "неизвестный формат сжатия.";
@@ -284,7 +284,7 @@
 "weeks" = "недель";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"y" = "г";
+"y" = "г.";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "год";
@@ -293,7 +293,7 @@
 "years" = "лет";
 
 /* zlib error reason */
-"zlib returned error code %d." = "Функция zlib вернула код ошибки zlib %d.";
+"zlib returned error code %d." = "возвращенный код ошибки zlib %d.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";
+"zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";

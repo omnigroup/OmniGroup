@@ -38,8 +38,7 @@ static NSData *utf8(NSString *str)
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFCompressionTest class]) {
-        // This abstract superclass doesn't have tests of its own.
-        return (XCTestSuite * _Nonnull)nil;
+        return [[XCTestSuite alloc] init];
     } else {
         return [super defaultTestSuite];
     }

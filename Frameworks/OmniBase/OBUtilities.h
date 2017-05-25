@@ -79,7 +79,7 @@ extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffe
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...)
-                    NORETURN __attribute__((format(__NSString__, 5, 6)));
+                    NORETURN __attribute__((cold)) __attribute__((format(__NSString__, 5, 6)));
 
 #define OBRequestConcreteImplementation(self, sel) _OBRequestConcreteImplementation((self), (sel), __FILE__, __LINE__)
 #define OBRejectUnusedImplementation(self, sel) _OBRejectUnusedImplementation((self), (sel), __FILE__, __LINE__)

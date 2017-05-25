@@ -5,7 +5,7 @@
 "%0.1f GHz" = "%0.1f GHz";
 
 /* abbreviated string for bytes format */
-"%0.1f kB" = "%0.1f KB";
+"%0.1f kB" = "%0.1f kB";
 
 /* abbreviated string for kilohertz format */
 "%0.1f KHz" = "%0.1f KHz";
@@ -87,7 +87,7 @@
 "Could not parse entitlements from embedded provisioning profile" = "无法从嵌入式配置文件解析权限";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"d" = " 天";
+"d" = "天";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "天";
@@ -108,7 +108,7 @@
 "eh" = "已用小时";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "以下路径不允许元素“%1$@” : %2$@";
+"Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "em" = "已用分钟";
@@ -144,7 +144,7 @@
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"h" = " 小时";
+"h" = "小时";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "小时";
@@ -159,7 +159,7 @@
 "local configuration file" = "本地配置文件";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
-"m" = " 分";
+"m" = "分钟";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分钟";
@@ -168,7 +168,7 @@
 "minutes" = "分钟";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace (month) */
-"mo" = " 月";
+"mo" = "月";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "月";
@@ -195,7 +195,7 @@
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"s" = " 秒";
+"s" = "秒";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "秒";
@@ -210,19 +210,19 @@
 "The encrypted item \"%@\" is missing or unreadable." = "缺少加密项“%@”或无法读取。";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。该证书可能已过期，或尚未激活。是否仍要连接？";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。 该证书可能已过期，或尚未激活。 是否仍要连接？";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。 此站点不受信任。 是否仍要连接？";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "本配置链接会进行以下更改：";
@@ -240,16 +240,16 @@
 "Unable to decompress data." = "不能解压缩数据。";
 
 /* decompression exception format */
-"Unable to decompress gzip data: invalid header" = "不能解压缩 gzip 数据 : 无效的标头";
+"Unable to decompress gzip data: invalid header" = "不能解压缩 gzip 数据：标题无效";
 
 /* compression error description */
-"Unable to initialize compression" = "无法初始化压缩";
+"Unable to initialize compression" = "不能初始化压缩";
 
 /* decompression error description */
-"Unable to initialize decompression" = "无法初始化解压缩";
+"Unable to initialize decompression" = "不能初始化解压缩";
 
 /* error description */
-"Unable to lock document." = "不能锁定文档。";
+"Unable to lock document." = "不能锁定文稿。";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */
@@ -263,7 +263,7 @@
 "Unknown public key algorithm" = "未知的公开密钥算法";
 
 /* Name used for unknown algorithm (instead of RSA, DSA, ECDH, etc.) */
-"Unknown(cryptographic algorithm)" = "未知";
+"Unknown(cryptographic algorithm)" = "未知的";
 
 /* decompression error reason */
 "unrecognized compression format." = "无法识别的压缩格式。";
@@ -272,7 +272,7 @@
 "Unsupported encryption algorithm" = "不支持的加密算法";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"w" = " 周";
+"w" = "周";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
@@ -284,7 +284,7 @@
 "weeks" = "周";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"y" = " 年";
+"y" = "年";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "年";

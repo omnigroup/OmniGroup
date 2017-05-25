@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFAsynchronousOperation.h>
 
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <stdatomic.h>
 
 RCS_ID("$Id$");
@@ -16,6 +17,9 @@ OB_REQUIRE_ARC
 
 @implementation OFAsynchronousOperation
 {
+@private
+    void (^_preCompletionBlock)(void);
+
 @protected
     enum operationState : uint_fast8_t {
         operationState_unstarted = 0, // Must be 0 so that object initialization automatically gives us the correct initial state
@@ -25,10 +29,14 @@ OB_REQUIRE_ARC
     
     _Atomic(enum operationState) _state;
     
+    // The following are all protected by @synchronized(self); they're touched less often.
     BOOL observingCancellation;
+    BOOL subclassHandlingCancellation;
 }
 
+@synthesize preCompletionBlock = _preCompletionBlock;
 
+static void _locked_updateObservation(OFAsynchronousOperation *self, BOOL shouldObserve);
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)theKey
 {
@@ -70,6 +78,12 @@ OB_REQUIRE_ARC
 {
     [self observeCancellation:NO];
     
+    if (_preCompletionBlock) {
+        void (^blk)(void) = _preCompletionBlock;
+        _preCompletionBlock = nil;
+        blk();
+    }
+    
     [self willChangeValueForKey:OFOperationIsExecutingKey];
     [self willChangeValueForKey:OFOperationIsFinishedKey];
     enum operationState st = operationState_running;
@@ -88,14 +102,24 @@ static char observationCookie;
 
 - (void)observeCancellation:(BOOL)yn;
 {
+    @synchronized (self) {
+        subclassHandlingCancellation = yn;
+        _locked_updateObservation(self, yn);
+    }
+}
+
+static void _locked_updateObservation(OFAsynchronousOperation *self, BOOL shouldObserve)
+{
     /* We can't easily use atomic ops to handle this case, because we need to make sure that the add/remove observer calls are invoked in the same order as their threads' corresponding access to observingCancellation (otherwise the eventual state of the object won't match observingCancellation). */
     /* One downside here is that during the "initial" observation, which can call our subclass's -handleCancellation, we're still holding the @synchronized lock. This doesn't seem likely to be a problem very often but could potentially lead to a deadlock if a subclass's -handleCancellation can block on something that blocks on us. */
-    @synchronized (self) {
-        if (yn && !observingCancellation) {
-            [self addObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:&observationCookie];
-        } else if (!yn && observingCancellation) {
-            [self removeObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey context:&observationCookie];
-        }
+    BOOL amObserving = self->observingCancellation;
+    
+    if (shouldObserve && !amObserving) {
+        self->observingCancellation = YES;
+        [self addObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:&observationCookie];
+    } else if (!shouldObserve && amObserving) {
+        self->observingCancellation = NO;
+        [self removeObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey context:&observationCookie];
     }
 }
 
@@ -111,6 +135,7 @@ static char observationCookie;
     OBASSERT(value != nil);
     
     if ([value boolValue]) {
+        // Presumably, the cancelled value can only go from false to true once.
         [(OFAsynchronousOperation *)object handleCancellation];
     }
 }
@@ -118,6 +143,36 @@ static char observationCookie;
 - (void)handleCancellation;
 {
     OBRequestConcreteImplementation(self, _cmd);
+}
+
+- (NSMutableDictionary *)debugDictionary
+{
+    NSMutableDictionary *d = [super debugDictionary];
+    
+    enum operationState st = _state;
+    NSString *stateName;
+    switch(st) {
+        case operationState_unstarted:
+            stateName = @"unstarted";
+            break;
+            
+        case operationState_running:
+            stateName = @"running";
+            break;
+            
+        case operationState_finished:
+            stateName = @"finished";
+            break;
+            
+        default:
+            stateName = @"???";
+            break;
+    }
+    
+    [d setObject:stateName forKey:@"state"];
+    [d setBoolValue:self.isCancelled forKey:OFOperationIsCancelledKey defaultValue:NO];
+    
+    return d;
 }
 
 @end

@@ -1,0 +1,22 @@
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all Mac targets
+#include "Target-Server-Common.xcconfig"
+
+// Common settings for Framework targets
+DYLIB_CURRENT_VERSION = 1
+DYLIB_COMPATIBILITY_VERSION = 1
+FRAMEWORK_VERSION = A
+DEFINES_MODULE = YES
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_SERVER OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_SERVER -DOMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+
+
+OMNI_FRAMEWORK_TARGET_PATH = @rpath
+DYLIB_INSTALL_NAME_BASE = @rpath
+
+// Frameworks get signed as they are copied into the containing app
+CODE_SIGN_IDENTITY =

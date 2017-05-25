@@ -108,6 +108,15 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
             OBInvokeAssertionFailureHandler("ASSERT_IF", expr_str, file, line, @"" __VA_ARGS__); \
     } while (NO)
 
+    #define OBASSERT_IFF(condition, implication, ...) _OBASSERT_IFF0(condition, implication, #condition " <==> " #implication, __FILE__, __LINE__, __VA_ARGS__)
+    #define _OBASSERT_IFF0(condition, implication, expr_str, file, line, ...) \
+    do { \
+        BOOL OB_condition_value_ = (condition)? YES : NO; \
+        BOOL OB_implication_value_ = (implication)? YES : NO; \
+        if ((OB_condition_value_ && !OB_implication_value_) || (!OB_condition_value_ && OB_implication_value_)) \
+            OBInvokeAssertionFailureHandler("ASSERT_IFF", expr_str, file, line, @"" __VA_ARGS__); \
+    } while (NO)
+
     #define OBPRECONDITION_EXPENSIVE(expression, ...) do { \
         if (OBEnableExpensiveAssertions) \
             _OBASSERT_CORE("PRECONDITION", expression, #expression, __VA_ARGS__); \
@@ -185,6 +194,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBASSERT(expression, ...) do {} while(0)
     #define OBASSERT_NOT_REACHED(...) do { OBRecordBacktrace("NOTREACHED", OBBacktraceBuffer_OBAssertionFailure); OBAnalyzerNotReached(); } while(0)
     #define OBASSERT_IF(condition, implication, ...) do {} while(0)
+    #define OBASSERT_IFF(condition, implication, ...) do {} while(0)
 
     #define OBPRECONDITION_EXPENSIVE(expression, ...) do {} while(0)
     #define OBPOSTCONDITION_EXPENSIVE(expression, ...) do {} while(0)

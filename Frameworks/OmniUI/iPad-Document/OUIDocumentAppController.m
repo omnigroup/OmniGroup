@@ -958,7 +958,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     }];
 }
 
-- (BOOL)shouldEnabledCopyFromWebDAV; // default YES
+- (BOOL)shouldEnableCopyFromWebDAV; // default YES
 {
     return YES;
 }
@@ -986,7 +986,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
                 // Import from WebDAV
-                if ([self shouldEnabledCopyFromWebDAV]) {
+                if ([self shouldEnableCopyFromWebDAV]) {
                     OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^(UIViewController *presentingViewController){
                         OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
                         accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");

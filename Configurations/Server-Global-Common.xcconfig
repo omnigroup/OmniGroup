@@ -1,0 +1,193 @@
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Include private configuration variables for Omni-local builds
+#include "Private/Omni-Global.xcconfig"
+
+// Build setting overrides for the current store target
+// Our 'Server' pseudo platform should always act like it's the Omni Store for now, ignoring the store symlinks.
+#include "Omni-Global-Common-OmniStore.xcconfig"
+
+// Common settings
+
+// NS_BUILD_32_LIKE_64 makes CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
+// Also, define a few useful macros for making configuration-specific builds.
+// Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release}.xcconfig, which seems to work fine.
+// Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
+// Can add this when building with custom clang to avoid ARC writeback bugs: -fobjc-arc-disable-writeback
+
+OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\""
+
+// These are normally set by the build system when doing a demo build, but you can uncomment them here to do one in Xcode.
+// See the build system notes about why we don't append '.RetailDemo' to the bundle identifier.
+// OMNI_RETAIL_DEMO_PREPROCESSOR_DEFINITIONS=OMNI_RETAIL_DEMO IPAD_RETAIL_DEMO OMNI_PRODUCT_NAME_SUFFIX=-RetailDemo
+// OMNI_PRODUCT_NAME_SUFFIX=-RetailDemo
+
+GCC_PREPROCESSOR_DEFINITIONS = $(OMNI_GLOBAL_PRIVATE_PREPROCESSOR_DEFINITIONS) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS) $(OMNI_RETAIL_DEMO_PREPROCESSOR_DEFINITIONS)
+INFOPLIST_PREPROCESSOR_DEFINITIONS = $(OMNI_GLOBAL_PRIVATE_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)  $(OMNI_RETAIL_DEMO_PREPROCESSOR_DEFINITIONS)
+
+OTHER_SWIFT_FLAGS = $(OMNI_STORE_SWIFT_FLAGS) $(OMNI_GLOBAL_PRIVATE_SWIFT_FLAGS) $(OMNI_GLOBAL_COMMON_SWIFT_FLAGS) $(OMNI_GLOBAL_PER_CONFIGURATION_SWIFT_FLAGS) $(OMNI_TARGET_COMMON_SWIFT_FLAGS) $(OMNI_TARGET_PER_CONFIGURATION_SWIFT_FLAGS)
+
+// Xcode doesn't need to strip anything, we'll do that ourselves using Scripts/StripApplication
+STRIP_INSTALLED_PRODUCT = NO
+COPY_PHASE_STRIP = NO
+
+// Bitcode makes crash reports unreadable since Apple builds a new binary with a new uuid
+ENABLE_BITCODE = NO
+STRIP_BITCODE_FROM_COPIED_FILES = NO
+
+SWIFT_VERSION = 3.0
+
+GCC_PREFIX_HEADER = $(PROJECT_NAME)_Prefix.h
+
+// Radar 22784786, mentioned in the Xcode 7.1b2 release notes says that setting this to NO is recommended to avoid "Include of non-modular header inside framework module"
+ALWAYS_SEARCH_USER_PATHS = NO
+
+
+YACC = $(DT_TOOLCHAIN_DIR)/usr/bin/bison
+YACCFLAGS = -y
+YACC_GENERATED_FILE_STEM = InputFileStem
+LEX_SUPPRESS_DEFAULT_RULE = YES
+
+GCC_OPTIMIZATION_LEVEL = 2
+GCC_FAST_OBJC_DISPATCH = YES
+GCC_GENERATE_DEBUGGING_SYMBOLS = YES
+GCC_C_LANGUAGE_STANDARD = gnu99
+GCC_ENABLE_OBJC_EXCEPTIONS = YES
+GCC_NO_COMMON_BLOCKS = YES
+
+// Enable __weak in Manual Retain/Release files
+CLANG_ENABLE_OBJC_WEAK = YES
+
+//
+// Warnings
+//
+
+// Apple LLVM c - Preprocessing
+ENABLE_STRICT_OBJC_MSGSEND = YES
+
+// Apple LLVM compiler 4.2 - Warning Policies
+//GCC_WARN_INHIBIT_ALL_WARNINGS
+//GCC_WARN_PEDANTIC
+GCC_TREAT_WARNINGS_AS_ERRORS = YES
+
+// Apple LLVM compiler 4.2 - Warnings - All languages
+GCC_WARN_CHECK_SWITCH_STATEMENTS = YES
+GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = YES
+CLANG_WARN_EMPTY_BODY = YES
+GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO
+GCC_WARN_SHADOW = YES
+CLANG_WARN_BOOL_CONVERSION = YES
+CLANG_WARN_CONSTANT_CONVERSION = YES
+GCC_WARN_64_TO_32_BIT_CONVERSION = YES
+// We could use this to get warning about unichar->char, OSStatus->OSErr, int->BOOL.
+// Sadly, this produces tons of false positives (such as CFIndex<->NSUInteger changing signedness)
+// Greg Parker reports something about this flag is usable clang with the sign conversion noise turned off (NSUInteger vs CFIndex), <https://twitter.com/#!/gparker/status/78039974372573184>
+CLANG_WARN_ENUM_CONVERSION = YES
+CLANG_WARN_INT_CONVERSION = YES
+CLANG_WARN_BOOL_CONVERSION = YES
+CLANG_WARN_INFINITE_RECURSION = YES;
+CLANG_WARN_SUSPICIOUS_MOVE = YES;
+//CLANG_WARN_IMPLICIT_SIGN_CONVERSION
+//CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION = YES // False positives -- need more work to enable this. Radar 24552805.
+GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES
+GCC_WARN_ABOUT_RETURN_TYPE = YES
+GCC_WARN_MISSING_PARENTHESES = YES
+//GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS
+GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES
+GCC_WARN_ABOUT_MISSING_NEWLINE = YES
+//  -Wnullable-to-nonnull-conversion doesn't catch much, sadly. https://llvm.org/bugs/show_bug.cgi?id=30804
+WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
+//GCC_WARN_ABOUT_POINTER_SIGNEDNESS
+GCC_WARN_SIGN_COMPARE = YES
+//CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES
+//GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS
+//GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS
+GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES
+GCC_WARN_UNINITIALIZED_AUTOS = YES
+GCC_WARN_UNKNOWN_PRAGMAS = YES
+CLANG_WARN_UNREACHABLE_CODE = YES
+GCC_WARN_UNUSED_FUNCTION = YES
+GCC_WARN_UNUSED_LABEL = YES
+//GCC_WARN_UNUSED_PARAMETER
+GCC_WARN_UNUSED_VALUE = YES
+GCC_WARN_UNUSED_VARIABLE = YES
+
+// Apple LLVM compiler 4.2 - Warnings - C++
+//CLANG_WARN__EXIT_TIME_DESTRUCTORS
+//GCC_WARN_NON_VIRTUAL_DESTRUCTOR
+//GCC_WARN_HIDDEN_VIRTUAL_FUNCTIONS
+//GCC_WARN_ABOUT_INVALID_OFFSETOF_MACRO
+//CLANG_WARN_CXX0X_EXTENSIONS
+
+// Apple LLVM compiler 4.2 - Warnings - Objective-C
+CLANG_WARN__DUPLICATE_METHOD_MATCH = YES
+//CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES
+//CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS
+//GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL
+//GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES // This is -Wselector, apparently. This has lots of false positives... http://llvm.org/bugs/show_bug.cgi?id=12322 -Wselector incorrectly warns about unimplemented selectors
+CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES
+//CLANG_WARN_OBJC_RECEIVER_WEAK
+// GCC_WARN_STRICT_SELECTOR_MATCH = YES // Lots of false positives. NSNotificationCenter vs NSDistributedNotificationCenter due to redeclaration of -addObserver:name:selector:object. NSDictionary vs NSUserDefaults to to redeclaration of -objectForKey:
+GCC_WARN_UNDECLARED_SELECTOR = YES
+//CLANG_WARN__ARC_BRIDGE_CAST_NONARC
+
+// Don't show up in the Xcode settings UI. Removed?
+// GCC_WARN_PROTOTYPE_CONVERSION = YES // This produces a lot of false positives (passing int as unsigned, for example)
+
+// Static Analyzer - Checks
+CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
+CLANG_ANALYZER_DEADCODE_DEADSTORES = YES
+CLANG_ANALYZER_NONNULL = YES
+CLANG_ANALYZER_GCD = YES
+CLANG_ANALYZER_MALLOC = YES
+
+// Static Analyzer - Checks - Objective-C
+CLANG_ANALYZER_OBJC_ATSYNC = YES
+CLANG_ANALYZER_OBJC_NSCFERROR = YES
+CLANG_ANALYZER_OBJC_INCOMP_METHOD_TYPES = YES
+CLANG_ANALYZER_OBJC_CFNUMBER = YES
+CLANG_ANALYZER_OBJC_COLLECTIONS = YES
+CLANG_ANALYZER_OBJC_UNUSED_IVARS = YES
+CLANG_ANALYZER_OBJC_SELF_INIT = YES
+CLANG_ANALYZER_OBJC_RETAIN_COUNT = YES
+
+// Static Analyzer - Checks - Security
+CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = NO
+CLANG_ANALYZER_SECURITY_KEYCHAIN_API = YES
+CLANG_ANALYZER_SECURITY_INSECUREAPI_UNCHECKEDRETURN = YES
+CLANG_ANALYZER_SECURITY_INSECUREAPI_GETPW_GETS = YES
+CLANG_ANALYZER_SECURITY_INSECUREAPI_MKSTEMP = YES
+CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = NO
+CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = NO
+CLANG_ANALYZER_SECURITY_INSECUREAPI_VFORK = YES
+
+INSTALL_MODE_FLAG = a+rX
+
+// Modules
+CLANG_ENABLE_MODULES = YES
+
+// We generally want our debug information format to be dwarf-with-dsym (and valgrind likes it best too), except when using OOM which only understands the older stabs format
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+// DEBUG_INFORMATION_FORMAT = stabs
+GCC_DEBUGGING_SYMBOLS = full
+
+// When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'right' one here.
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -C -I"$(CONFIGURATION_BUILD_DIR)/include" -I"$(SHARED_DERIVED_FILE_DIR)"
+INFOPLIST_PREPROCESS = YES
+
+// Make sure we look for the built SVNVersions.h in the right spot
+// Also, look for <foo/bar.h> headers that other projects have installed
+// As of Xcode 7.1, headers for static libraries are installed in UninstalledProducts/$(PLATFORM_NAME)/include; may be able to get rid of UninstalledProducts/include before too long.
+HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD_DIR" "$(TARGET_BUILD_DIR)/include" "$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include" "$(OBJROOT)/UninstalledProducts/include"
+
+GCC_VERSION = com.apple.compilers.llvm.clang.1_0
+//CC[sdk=iphone*]=/Users/bungi/Source/LLVM/llvm-build/Release+Asserts/bin/clang
+//CC[sdk=iphonesimulator*]=/Users/bungi/Source/LLVM/llvm-build/Release+Asserts/bin/clang
+//CC[sdk=macos*]=/Users/bungi/Source/LLVM/llvm-build/Release+Asserts/bin/clang
+//CLANG_ENABLE_MODULE_DEBUGGING = NO // ToT clang doesn't understand -gmodules
+// ENABLE_BITCODE = NO // ToT clang doesn't know bitcode
+
+RUN_CLANG_STATIC_ANALYZER = NO
+CLANG_STATIC_ANALYZER_MODE = deep

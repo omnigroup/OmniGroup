@@ -10,6 +10,7 @@
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOModel.h>
+#import <OmniFoundation/NSArray-OFExtensions.h>
 
 #import "ODOProperty-Internal.h"
 #import "ODOEntity-SQL.h"
@@ -40,6 +41,7 @@ RCS_ID("$Id$")
     [_attributes release];
     [_primaryKeyAttribute release];
     [_snapshotProperties release];
+    [_snapshotAttributes release];
     [_schemaProperties release];
 
     // We just hold uniquing keys for the statements since the database can't close if we have open statements (and the model might be used by multiple database connections anyway).
@@ -466,6 +468,15 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     _snapshotProperties = [[NSArray alloc] initWithArray:snapshotProperties];
     [snapshotProperties release];
     
+    _snapshotAttributes = [[_snapshotProperties arrayByPerformingBlock:^(ODOProperty *prop){
+        struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
+        if (!flags.relationship) {
+            return (ODOAttribute *)prop;
+        } else {
+            return (ODOAttribute *)nil;
+        }
+    }] copy];
+
     // Since we don't support many-to-many relationships, to-manys are totally derived from the inverse to-one.  Let the instance class add more derived properties.
     NSMutableSet *derivedPropertyNameSet = [NSMutableSet set];
     [_instanceClass addDerivedPropertyNames:derivedPropertyNameSet withEntity:self];
@@ -509,10 +520,16 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     OBASSERT(ODOPropertySetterImpl(_primaryKeyAttribute) == NULL);
 }
 
-- (NSArray *)snapshotProperties;
+- (NSArray <__kindof ODOProperty *> *)snapshotProperties;
 {
     OBPRECONDITION(_snapshotProperties);
     return _snapshotProperties;
+}
+
+- (NSArray <ODOAttribute *> *)snapshotAttributes;
+{
+    OBPRECONDITION(_snapshotAttributes);
+    return _snapshotAttributes;
 }
 
 - (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;

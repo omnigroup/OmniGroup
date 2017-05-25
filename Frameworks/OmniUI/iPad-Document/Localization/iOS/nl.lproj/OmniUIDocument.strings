@@ -101,7 +101,7 @@
 "Clear Title" = "Wis titel";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Sluit document";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Leveranciers van cloudopslag";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Info";
-
-/* error title */
-"Invalid Zip Archive" = "Ongeldig zip-archief";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Is bezig met bewerken";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "De bewerking kan niet worden voltooid.";
 
-/* error description */
-"The zip archive must contain a single document." = "Het zip-archief moet één document bevatten.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Deze app heeft geen toegang tot uw fotobibliotheek.";
 
@@ -462,7 +456,7 @@
 "Title" = "Titel";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Het inschakelen van Leveranciers van cloudopslag biedt toegang tot documenten die zijn opgeslagen op de cloudservices, zoals iCloud Drive of Dropbox. We introduceren toegang tot Leveranciers van cloudopslag als een BETA-implementatie. Let op wanneer u deze service inschakelt.";
 
 /* error title */
 "Unable to open file." = "Kan bestand niet openen.";

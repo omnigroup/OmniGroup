@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -275,8 +275,16 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
         OBASSERT(![propertyListValue isKindOfClass:[NSData class]]);
         NSLog(@"+[OFPreference coerceStringValue:toTypeOfPropertyListValue: unimplemented conversion to NSData");
         return nil;
-    } else if ([propertyListValue isKindOfClass:[NSArray class]] || [propertyListValue isKindOfClass:[NSDictionary class]]) { // <array> or <dict>
-        return [stringValue propertyList];
+    } else if ([propertyListValue isKindOfClass:[NSArray class]]) { // <array>
+        id coercedValue = [stringValue propertyList];
+        if (![coercedValue isKindOfClass:[NSArray class]])
+            return nil;
+        return coercedValue;
+    } else if ([propertyListValue isKindOfClass:[NSDictionary class]]) { // <dict>
+        id coercedValue = [stringValue propertyList];
+        if (![coercedValue isKindOfClass:[NSDictionary class]])
+            return nil;
+        return coercedValue;
     }
     return nil;
 }
@@ -1063,8 +1071,8 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 @end
 
+static NSUserDefaults *StandardUserDefaults = nil;
 static NSMutableDictionary *ConfigurationValueRegistrations = nil;
-static id UserDefaultsObserver = nil;
 
 NSString * const OFChangeConfigurationValueURLPath = @"/change-configuration-value";
 
@@ -1087,30 +1095,9 @@ NSString * const OFChangeConfigurationValueURLPath = @"/change-configuration-val
     
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        // We've seen KVO crashes where it *looks* like the +standardUserDefaults is changing out from underneath us while we had an active observation. Hold on to the one we are going to observe (though we might lose updates).
+        StandardUserDefaults = [[NSUserDefaults standardUserDefaults] retain];
         ConfigurationValueRegistrations = [[NSMutableDictionary alloc] init];
-        UserDefaultsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification object:[NSUserDefaults standardUserDefaults] queue:nil usingBlock:^(NSNotification *notification) {
-            // Make sure this work is performed on the main thread, asynchronously, if necessary, in the case that we get notified by a background thread.
-            //
-            // N.B. We do this instead of passing a queue when registering for the notification because if we do, that will block the posting thread until the main thread handles the notification. But in the case of handling NSUserDefaultsDidChangeNotification we can end up deadlocking for one of two reasons:
-            //
-            // - Because OFPreference holds a lock on the posting thread,
-            //   and we try to grab the lock on the main thread. See
-            //   <bug:///122290> (Bug: OFPreference deadlock).
-            //
-            // - Because of a deadlock in NSUserDefaults/CFPreferences itself.
-            //   Unfortunately Xcode terminated my debug session before I
-            //   could grab the backtraces. I think we were setting a
-            //   preference on the background thread, and the main thread
-            //   was blocked in _CFPREFERENCES_IS_WAITING_FOR_CFPREFSD.
-            //
-            //   I'll update this comment when that data becomes available.
-            //
-            // So we'll just receive the notification on whatever thread posted it, then ensure we handle it asynchronously on the main thread if needed.
-            
-            OFMainThreadPerformBlock(^{
-                [self _updateAllConfigurationValues];
-            });
-        }];
     });
 }
 
@@ -1167,14 +1154,7 @@ static NSString *ConfigurationValuesURLScheme = nil;
     return url;
 }
 
-+ (void)_updateAllConfigurationValues;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-
-    [ConfigurationValueRegistrations enumerateKeysAndObjectsUsingBlock:^(NSString *name, OFConfigurationValue *configurationValue, BOOL *stop) {
-        [configurationValue update];
-    }];
-}
+static unsigned ConfigurationContext;
 
 - initWithKey:(NSString *)key integral:(BOOL)integral defaultValue:(double)defaultValue minimumValue:(double)minimumValue maximumValue:(double)maximumValue;
 {
@@ -1193,7 +1173,8 @@ static NSString *ConfigurationValuesURLScheme = nil;
     _defaultValue = defaultValue;
     _minimumValue = minimumValue;
     _maximumValue = maximumValue;
-    
+
+    [StandardUserDefaults addObserver:self forKeyPath:_key options:0 context:&ConfigurationContext];
     [self update];
     
     return self;
@@ -1201,6 +1182,8 @@ static NSString *ConfigurationValuesURLScheme = nil;
 
 - (void)dealloc;
 {
+    [StandardUserDefaults removeObserver:self forKeyPath:_key context:&ConfigurationContext];
+
     [_key release];
     [_observers release];
     [super dealloc];
@@ -1286,6 +1269,38 @@ static NSString *ConfigurationValuesURLScheme = nil;
 {
     return [NSString stringWithFormat:@"<%@:%p %@ integral:%d>", NSStringFromClass([self class]), self, _key, _integral];
 }
+
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
+{
+    if (object == StandardUserDefaults && context == &ConfigurationContext) {
+        OBASSERT([keyPath isEqual:_key]);
+
+        // Make sure this work is performed on the main thread, asynchronously, if necessary, in the case that we get notified by a background thread.
+        //
+        // N.B. We do this instead of passing a queue when registering for the notification because if we do, that will block the posting thread until the main thread handles the notification. But in the case of handling NSUserDefaultsDidChangeNotification we can end up deadlocking for one of two reasons:
+        //
+        // - Because OFPreference holds a lock on the posting thread,
+        //   and we try to grab the lock on the main thread. See
+        //   <bug:///122290> (Bug: OFPreference deadlock).
+        //
+        // - Because of a deadlock in NSUserDefaults/CFPreferences itself.
+        //   Unfortunately Xcode terminated my debug session before I
+        //   could grab the backtraces. I think we were setting a
+        //   preference on the background thread, and the main thread
+        //   was blocked in _CFPREFERENCES_IS_WAITING_FOR_CFPREFSD.
+        //
+        //   I'll update this comment when that data becomes available.
+        //
+        // So we'll just receive the notification on whatever thread posted it, then ensure we handle it asynchronously on the main thread if needed.
+
+        OFMainThreadPerformBlock(^{
+            [self update];
+        });
+        return;
+    }
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
 
 @end
 

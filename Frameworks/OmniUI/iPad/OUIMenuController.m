@@ -42,7 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dealloc;
 {
-    _menuNavigationController.popoverPresentationController.delegate = nil;
+    // Do *NOT* call -popoverPresentationController here, since that will create one if it has already been cleared by the dismissal path, creating a retain cycle.
+    //_menuNavigationController.popoverPresentationController.delegate = nil;
+
     _menuNavigationController.delegate = nil;
 }
 
@@ -239,7 +241,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)_discardMenu;
 {
-    _menuNavigationController.popoverPresentationController.delegate = nil;
+    // Do *NOT* call -popoverPresentationController here, since that will create one if it has already been cleared by the dismissal path, creating a retain cycle.
+    //_menuNavigationController.popoverPresentationController.delegate = nil;
     _menuNavigationController = nil;
     _topOptions = @[];
 }

@@ -91,14 +91,14 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
         return;
     
     CGSize oldScrollBuffer = self.scrollBufferSize;
-    [self _updateScrollBufferSize];
-    CGSize updatedBuffer = self.scrollBufferSize;
+    CGSize preferredScrollBufferSize = [self preferredScrollBufferSizeForScale:effectiveScale];
 
-    if (view.scale == effectiveScale && CGSizeEqualToSize(oldScrollBuffer, updatedBuffer)) {
-        // early out if we're not changing the scale
+    if (view.scale == effectiveScale && CGSizeEqualToSize(oldScrollBuffer, preferredScrollBufferSize)) {
+        // early out if we're not changing anything
         return;
     }
 
+    _scrollBufferSize = preferredScrollBufferSize;
 
     view.scale = effectiveScale;
     
@@ -106,7 +106,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     view.transform = CGAffineTransformIdentity;
     
     // Build the new frame based on an integral scaling of the canvas size and make the bounds match. Thus the view is 1-1 pixel resolution.
-    CGSize viewportBufferSize = updatedBuffer;
+    CGSize viewportBufferSize = preferredScrollBufferSize;
     // Buffer needs to be added to each edge, so * 2
     CGSize fullSize = CGSizeMake(effectiveScale * unscaledContentSize.width + 2 * viewportBufferSize.width,
                                  effectiveScale * unscaledContentSize.height + 2 * viewportBufferSize.height);
@@ -154,7 +154,8 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     [view scaleChanged];
 }
 
-- (void)_updateScrollBufferSize
+// Might want buffer for a scale that's about to be set, not our current one
+- (CGSize)preferredScrollBufferSizeForScale:(CGFloat)scale
 {
     CGSize viewportBufferSize = CGSizeZero;
     
@@ -167,7 +168,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     CGFloat percentage = self.delegate.scrollBufferAsPercentOfViewportSize;
     viewportBufferSize.width *= percentage;
     viewportBufferSize.height *= percentage;
-    self.scrollBufferSize = viewportBufferSize;
+    return viewportBufferSize;
 }
 
 - (void)adjustContentInsetAnimated:(BOOL)animated;

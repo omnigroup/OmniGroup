@@ -1,0 +1,25 @@
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all Mac targets
+#include "Target-Server-Common.xcconfig"
+
+// Common settings for Application targets
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_SERVER
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_SERVER
+
+LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/../Frameworks
+OTHER_LDFLAGS = $(value) -ObjC
+
+// So that frameworks can use Swift, even if the main app doesn't otherwise
+ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
+
+// Build setting overrides for the current store target
+// Our 'Server' pseudo platform should always act like it's the Omni Store for now, ignoring the store symlinks.
+#include "Omni-Application-Common-OmniStore.xcconfig"
+
+// We want to sign all apps
+CODE_SIGN_IDENTITY = $(OMNI_MAC_CODE_SIGN_IDENTITY)

@@ -11,6 +11,7 @@
 
 #import <OmniUI/OUIEmptyPaddingInspectorSlice.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
@@ -35,7 +36,6 @@ NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUI
 
 @interface OUIStackedSlicesInspectorPaneContentView : UIScrollView
 @property (nonatomic, strong) OUIInspectorBackgroundView *backgroundView;
-- (UIColor *)inspectorBackgroundViewColor;
 @end
 
 @implementation OUIStackedSlicesInspectorPaneContentView
@@ -65,6 +65,11 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 - (UIColor *)inspectorBackgroundViewColor;
 {
     return [_backgroundView inspectorBackgroundViewColor];
+}
+
+- (void)setInspectorBackgroundViewColor:(UIColor *)color;
+{
+    _backgroundView.backgroundColor = color;
 }
 
 - (void)layoutSubviews;
@@ -123,6 +128,17 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (UIColor *)inspectorBackgroundViewColor;
+{
+    return self.view.backgroundColor;
+}
+
+- (void)setInspectorBackgroundViewColor:(UIColor *)color;
+{
+    self.view.backgroundColor = color;
+    [self.view setNeedsDisplay];
 }
 
 - (void)setSliceAlignmentInsets:(UIEdgeInsets)newValue;
@@ -226,10 +242,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     NSArray *inspectedObjects = self.inspectedObjects;
     
     return [self appropriateSlices:_availableSlices forInspectedObjects:inspectedObjects];
-}
-
-- (BOOL)containsAppropriateSlicesForInspectedObjects {
-    return ([[self appropriateSlicesForInspectedObjects] count] > 0);
 }
 
 static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesInspectorPaneContentView *view, OUIInspectorSlice *slice)
@@ -532,6 +544,22 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         [UIView setAnimationCurve:notifier.lastAnimationCurve];
         view.contentInset = insets;
     }];
+}
+
+#pragma mark - OUIInspectorAppearance
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients
+{
+    return self.availableSlices;
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
+    view.inspectorBackgroundViewColor = appearance.InspectorBackgroundColor;
 }
 
 @end

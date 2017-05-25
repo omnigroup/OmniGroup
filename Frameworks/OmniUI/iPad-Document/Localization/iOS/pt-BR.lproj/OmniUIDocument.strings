@@ -101,7 +101,7 @@
 "Clear Title" = "Limpar Título";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Fechar Documento";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Provedores de Armazenamento na Nuvem";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Info";
-
-/* error title */
-"Invalid Zip Archive" = "Arquivo Comprimido Zip Inválido";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Está modificando";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "A operação não pôde ser concluída.";
 
-/* error description */
-"The zip archive must contain a single document." = "O arquivo comprimido zip precisa conter um único documento.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Este app não tem acesso à sua Fototeca.";
 
@@ -462,7 +456,7 @@
 "Title" = "Título";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "A ativação dos Provedores de Armazenamento na Nuvem dá acesso a documentos armazenados em serviços da nuvem, como iCloud Drive ou Dropbox. Estamos introduzindo acesso aos Provedores de Armazenamento na Nuvem como uma implementação BETA. Tenha cuidado ao ativar este serviço.";
 
 /* error title */
 "Unable to open file." = "Não foi possível abrir o arquivo.";

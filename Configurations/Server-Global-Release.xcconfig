@@ -1,0 +1,16 @@
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings
+#include "Server-Global-Common.xcconfig"
+
+// Common settings for Release configurations
+DSTROOT = /
+// INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
+
+SWIFT_OPTIMIZATION_LEVEL = -Owholemodule
+
+// Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
+OMNI_BUILD_FILE_SUFFIX=
+OMNI_BUILD_IDENTIFIER_SUFFIX=

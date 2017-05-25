@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,6 +59,7 @@ typedef enum {
 @property(copy,nonatomic) NSString *label;
 @property(strong,nonatomic) UIFont *labelFont;
 @property(strong,nonatomic) UIColor *labelColor;
+@property(strong,nonatomic) UIColor *disabledTextColor; // Used in the value for TextTypePlaceholder, label if !enabled. [OUIInspector disabledLabelTextColor] by default
 
 @property(copy,nonatomic) NSString *placeholderText;
 

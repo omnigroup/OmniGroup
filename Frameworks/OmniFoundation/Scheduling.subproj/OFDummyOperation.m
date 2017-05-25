@@ -7,6 +7,10 @@
 
 #import <OmniFoundation/OFDummyOperation.h>
 
+#import <OmniBase/OmniBase.h>
+
+RCS_ID("$Id$");
+
 OB_REQUIRE_ARC
 
 @implementation OFDummyOperation

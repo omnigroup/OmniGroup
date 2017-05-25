@@ -326,6 +326,8 @@ NS_ASSUME_NONNULL_BEGIN
     if (option.attentionDotView) {
         cell.iconView = option.attentionDotView;
     } else if (option.image) {
+        // can get a stale view if we're dequeued by scrolling
+        [cell.iconView removeFromSuperview];
         cell.iconView = [[UIImageView alloc] initWithImage:[option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
         cell.iconView.contentMode = UIViewContentModeScaleAspectFit;
     }

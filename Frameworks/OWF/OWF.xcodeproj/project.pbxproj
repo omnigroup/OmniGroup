@@ -260,6 +260,13 @@
 			remoteGlobalIDString = 5FE81E171B62AE980056756C;
 			remoteInfo = "OmniBase-watchOS";
 		};
+		3417E8201ECBC72B00644BE8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A4E05FE08AA72B10098FF0F;
+			remoteInfo = OmniFoundation;
+		};
 		343EB4B419509EFE000534A9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
@@ -322,13 +329,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F;
 			remoteInfo = OFClobberDetectionZoneTest;
-		};
-		344B89C116C9A2BC004C709D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F;
-			remoteInfo = OFMainThreadLockTest;
 		};
 		344B89C316C9A2BC004C709D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -406,6 +406,27 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4AFE72E408A02E9E00ED9F2D;
 			remoteInfo = ONThreadedLookupTest;
+		};
+		34E06DD61ECBC43E00B0C6BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D02A06167E5CCB005E680B /* OmniNetworking.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 4AFE726808A02E9D00ED9F2D;
+			remoteInfo = "OmniNetworking (Framework)";
+		};
+		34E06DDF1ECBC43F00B0C6BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B77AB51EC0FE5500BBBA65;
+			remoteInfo = "OmniBase-server";
+		};
+		34E06DF01ECBC43F00B0C6BC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34A063261EC110A60099028D;
+			remoteInfo = "OmniFoundation-server";
 		};
 		34E6D44717EA1EA000B5543B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1171,12 +1192,12 @@
 			children = (
 				344B89B416C9A2BC004C709D /* OmniFoundation.framework */,
 				343EB4CA19509EFE000534A9 /* OmniFoundation.framework */,
+				34E06DF11ECBC43F00B0C6BC /* OmniFoundation.framework */,
 				343EB4CC19509EFE000534A9 /* OFUnitTests.xctest */,
 				344B89BA16C9A2BC004C709D /* OFUnitTests.xctest */,
 				344B89BC16C9A2BC004C709D /* OFSimpleLockTest */,
 				344B89BE16C9A2BC004C709D /* OFDedicatedThreadSchedulerTest */,
 				344B89C016C9A2BC004C709D /* OFClobberDetectionTest */,
-				344B89C216C9A2BC004C709D /* OFMainThreadLockTest */,
 				344B89C416C9A2BC004C709D /* OFCrashOnExceptionTest */,
 				344B89C616C9A2BC004C709D /* OFRandomRepeatTest */,
 				344B89C816C9A2BC004C709D /* OFXMLParsingTest */,
@@ -1196,6 +1217,7 @@
 				343EB4B519509EFE000534A9 /* OmniBase.framework */,
 				343EB4B719509EFE000534A9 /* OBUnitTests.xctest */,
 				3416C6051BD942A400CDDA7F /* OmniBase.framework */,
+				34E06DE01ECBC43F00B0C6BC /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1562,6 +1584,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				3417E8211ECBC72B00644BE8 /* PBXTargetDependency */,
+				34E06DD71ECBC43E00B0C6BC /* PBXTargetDependency */,
 			);
 			name = "OWF (Framework)";
 			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
@@ -1784,13 +1808,6 @@
 			remoteRef = 344B89BF16C9A2BC004C709D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		344B89C216C9A2BC004C709D /* OFMainThreadLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFMainThreadLockTest;
-			remoteRef = 344B89C116C9A2BC004C709D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		344B89C416C9A2BC004C709D /* OFCrashOnExceptionTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -1866,6 +1883,20 @@
 			fileType = "compiled.mach-o.executable";
 			path = ONThreadedLookupTest;
 			remoteRef = 34D02A18167E5CCB005E680B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34E06DE01ECBC43F00B0C6BC /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 34E06DDF1ECBC43F00B0C6BC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34E06DF11ECBC43F00B0C6BC /* OmniFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFoundation.framework;
+			remoteRef = 34E06DF01ECBC43F00B0C6BC /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34E6D44817EA1EA000B5543B /* OFNetStateNotifierTest */ = {
@@ -2066,6 +2097,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3417E8211ECBC72B00644BE8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = OmniFoundation;
+			targetProxy = 3417E8201ECBC72B00644BE8 /* PBXContainerItemProxy */;
+		};
+		34E06DD71ECBC43E00B0C6BC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniNetworking (Framework)";
+			targetProxy = 34E06DD61ECBC43E00B0C6BC /* PBXContainerItemProxy */;
+		};
 		4AA536CB08B27DE600F0872D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4AA5364E08B27DE600F0872D /* OWFWebPounder */;

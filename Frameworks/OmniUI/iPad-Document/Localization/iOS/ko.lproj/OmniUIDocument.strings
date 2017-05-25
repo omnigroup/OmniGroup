@@ -101,7 +101,7 @@
 "Clear Title" = "제목 지우기";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "도큐멘트 닫기";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "클라우드 저장소 공급자";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "정보";
-
-/* error title */
-"Invalid Zip Archive" = "유효하지 않은 Zip 아카이브";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "편집 중";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "작업을 완료할 수 없습니다.";
 
-/* error description */
-"The zip archive must contain a single document." = "zip 아카이브에는 단일 도큐멘트가 들어 있어야 합니다.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "이 앱은 사용자의 사진 라이브러리에 액세스할 수 없습니다.";
 
@@ -462,7 +456,7 @@
 "Title" = "제목";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "클라우드 저장소 공급자를 설정하면 iCloud Drive 또는 Dropbox와 같은 클라우드 서비스에 저장된 도큐멘트에 액세스할 수 있습니다. 클라우드 저장소 공급자에 대한 액세스는 BETA 구현으로 제공되었습니다. 이 서비스를 활성화할 때는 주의하십시오.";
 
 /* error title */
 "Unable to open file." = "파일을 열 수 없습니다.";

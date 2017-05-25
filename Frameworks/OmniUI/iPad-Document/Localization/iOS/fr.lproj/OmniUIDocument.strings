@@ -101,7 +101,7 @@
 "Clear Title" = "Effacer titre";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Fermer le document";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Fournisseurs de stockage sur le cloud";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Infos";
-
-/* error title */
-"Invalid Zip Archive" = "Archive zip non valide";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Est en train de modifier";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "L’opération n’a pas pu être terminée.";
 
-/* error description */
-"The zip archive must contain a single document." = "L’archive zip doit contenir un seul document.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Cette app n’a pas accès à votre photothèque.";
 
@@ -462,7 +456,7 @@
 "Title" = "Titre";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "L’activation des fournisseurs de stockage sur le cloud donne accès à des documents stockés sur des services comme iCloud Drive ou Dropbox. L’accès aux fournisseurs de stockage sur le cloud que nous vous proposons est en phase de développement BÊTA ; soyez prudent lorsque vous activez ce service.";
 
 /* error title */
 "Unable to open file." = "Impossible d’ouvrir le fichier.";

@@ -174,7 +174,7 @@ static NSDateFormatter *HttpDateFormatter;
 {
     OBINITIALIZE;
     
-#if defined(OMNI_ASSERTIONS_ON) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
+#if defined(OMNI_ASSERTIONS_ON) && OMNI_BUILDING_FOR_MAC
     if ([[NSProcessInfo processInfo] isSandboxed]) {
         // Sandboxed Mac applications cannot talk to the network by default. Give a better hint about why stuff is failing than the default (NSPOSIXErrorDomain+EPERM).
         
@@ -191,6 +191,11 @@ static NSDateFormatter *HttpDateFormatter;
     [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     
     HttpDateFormatter = dateFormatter;
+}
+
++ (NSDate *)dateFromString:(NSString *)httpDate;
+{
+    return [HttpDateFormatter dateFromString:httpDate];
 }
 
 - init;

@@ -101,7 +101,7 @@
 "Clear Title" = "Очистить заголовок";
 
 /* Close Document toolbar item accessibility label. */
-"Close Document" = "Close Document";
+"Close Document" = "Закрыть документ";
 
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Облачные службы";
@@ -219,9 +219,6 @@
 
 /* Info item accessibility label */
 "Info" = "Инфо";
-
-/* error title */
-"Invalid Zip Archive" = "Недопустимый Zip-архив";
 
 /* doc picker title label editing accessibility value */
 "Is editing" = "Редактирует";
@@ -440,9 +437,6 @@
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Не удалось выполнить операцию.";
 
-/* error description */
-"The zip archive must contain a single document." = "Zip-архив должен содержать один документ.";
-
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "Эта программа не имеет доступа к медиатеке.";
 
@@ -462,7 +456,7 @@
 "Title" = "Заголовок";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Включение поставщиков облачных хранилищ предоставляет доступ к документам, хранящимся в облачных службах, таких как iCloud Drive или Dropbox. Функция доступа к облачным хранилищам является как бета-версией; используйте ее с осторожностью.";
 
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";
