@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,9 +23,8 @@
 #import <OmniBase/OBExpectedDeallocation.h>
 
 #import <OmniBase/OBObject.h>
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <OmniBase/OBPostLoader.h>
-#endif
+#import <OmniBase/OBLoadAction.h>
+
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/OBLogger.h>
 

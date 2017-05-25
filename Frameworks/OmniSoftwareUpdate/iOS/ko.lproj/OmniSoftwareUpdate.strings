@@ -1,0 +1,126 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ 코어";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld 충돌";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld 시간";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld 실행";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld분";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "모든 버전";
+
+/* Software update report entry name */
+"App ID" = "앱 ID";
+
+/* Software update report entry name */
+"App version" = "앱 버전";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "확인 작업을 실패했습니다.";
+
+/* Software update report entry name */
+"CPU" = "CPU";
+
+/* Software update report entry name */
+"Device" = "장치";
+
+/* software update settings section title
+   software update settings title */
+
+"Device Information" = "장치 정보";
+
+/* error description */
+"Error fetching software update information." = "소프트웨어 업데이트 정보를 인출하는 중 오류가 발생했습니다.";
+
+/* error description */
+"Error while checking for updated version." = "업데이트된 버전을 검사하는 중 오류가 발생했습니다.";
+
+/* error reason */
+"Exception raised: %@" = "예외 사항 발생: %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "The Omni Group에서 지원할 장치 및 iOS 버전을 결정할 수 있도록 지원하기";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "이 정보를 공유하도록 선택하면 저희 소프트웨어가 지원해야 할 장치 및 iOS 버전을 결정하는 데 도움이 됩니다.\n\n이 정보는 전적으로 익명으로 유지 관리됩니다.";
+
+/* Software update report entry name */
+"iOS version" = "iOS 버전";
+
+/* Software update report entry name */
+"Language" = "언어";
+
+/* Software update report entry name */
+"Memory" = "메모리";
+
+/* Software update report entry string for a single crash */
+"One crash" = "1회 충돌";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "1시간";
+
+/* Software update report entry string for a single launch */
+"One launch" = "1회 실행";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "1분";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "나중에 다시 시도하거나 저희에게 연락하여 고장 상태를 알려주십시오.";
+
+/* Software update report entry name */
+"Report ID" = "보고서 ID";
+
+/* Software update report entry name */
+"Report version" = "보고서 버전";
+
+/* Settings option title
+   software update settings cell title */
+
+"Send Anonymous Data" = "익명 데이터 전송";
+
+/* software update settings menu title */
+"Settings" = "설정";
+
+/* Software update report entry name */
+"Storage" = "저장 장치";
+
+/* error reason */
+"The background software update service failed." = "백그라운드 소프트웨어 업데이트 서비스를 실패했습니다.";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "<%@>에서 반환된 데이터가 유효한 XML 도큐멘트가 아닙니다.";
+
+/* Settings option title */
+"The following information will be sent:" = "다음 정보가 전송됩니다.";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "업데이트 정보가 서명되지 않았습니다.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "서명을 검사하는 중 문제가 발생했습니다.";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "이 버전";
+
+/* error reason */
+"Timed out waiting for the software update service." = "소프트웨어 업데이트 서비스를 기다리는 중 시간이 초과되었습니다.";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "도구가 데이터를 반환하지 않음";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "소프트웨어 업데이트 서버에서 응답을 인증할 수 없습니다.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "소프트웨어 업데이트 정보를 인출할 수 없습니다.";
+
+/* error description */
+"Unable to parse response from the software update server." = "소프트웨어 업데이트 서버에서 응답을 구문 분석할 수 없습니다.";

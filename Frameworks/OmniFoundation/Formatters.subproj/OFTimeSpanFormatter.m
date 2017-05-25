@@ -858,13 +858,14 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                     }
                 }
             }
-            
-            // Only look for archive unit strings, not long forms or abbreviations
-            for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-                if ([scanner scanString:unit.abbreviatedString intoString:NULL]) {
-                    lastMatchedUnit = unitIndex;
-                    break;
+            if (!_flags.allowsElapsedUnits || unitIndex == UNITS_COUNT) {
+                // Only look for archive unit strings, not long forms or abbreviations
+                for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
+                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
+                    if ([scanner scanString:unit.abbreviatedString intoString:NULL]) {
+                        lastMatchedUnit = unitIndex;
+                        break;
+                    }
                 }
             }
         } else {

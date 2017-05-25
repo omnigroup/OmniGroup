@@ -30,6 +30,7 @@ RCS_ID("$Id$");
     OUITabBarButton *button = [self buttonWithType:UIButtonTypeCustom];
     button->_isVerticalTabButton = YES;
     button.showButtonImage = YES;
+    button.showButtonTitle = YES;
     return button;
 }
 
@@ -66,6 +67,7 @@ RCS_ID("$Id$");
 - (void)OUITabBarButton_commonInit;
 {
     self.showButtonImage = _isVerticalTabButton;
+    self.showButtonTitle = YES;
     self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self appearanceDidChange];
 }
@@ -86,7 +88,7 @@ RCS_ID("$Id$");
 - (void)updateImageViewTintColors;
 {
     UIColor *tintColor = nil;
-    if (self.appearanceDelegate != nil && self.selected) {
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)] && self.selected) {
         tintColor = [self.appearanceDelegate selectedTabTintColor];
     }
     
@@ -107,8 +109,12 @@ RCS_ID("$Id$");
     UIColor *selectedTitleColor;
     UIColor *disabledTitleColor;
     if (self.appearanceDelegate != nil) {
-        selectedTitleColor = self.appearanceDelegate.selectedTabTintColor;
-        disabledTitleColor = self.appearanceDelegate.disabledTabTintColor;
+        if ([self.appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)]) {
+            selectedTitleColor = self.appearanceDelegate.selectedTabTintColor;
+        }
+        if ([self.appearanceDelegate respondsToSelector:@selector(disabledTabTintColor)]) {
+            disabledTitleColor = self.appearanceDelegate.disabledTabTintColor;
+        }
     } else {
         selectedTitleColor = [UIColor blackColor];
         disabledTitleColor = [UIColor lightGrayColor];
@@ -172,7 +178,10 @@ RCS_ID("$Id$");
 - (CGFloat)_xOffsetDividingTitleAndImage;
 {
     CGSize imageSize = [[self imageForState:UIControlStateNormal] size];
-    return CGRectGetWidth([self bounds]) - imageSize.width - 10;
+    if (self.showButtonTitle)
+        return CGRectGetWidth([self bounds]) - imageSize.width - 10;
+    else
+        return (CGRectGetWidth([self bounds])/2.0) - (imageSize.width/2.0);
 }
 
 #pragma mark Appearance

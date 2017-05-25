@@ -314,7 +314,7 @@ static unsigned SyncAgentRunningAccountsContext;
     [viewToSave bringSubviewToFront:closingDocumentIndicatorView];
     [closingDocumentIndicatorView startAnimating];
 
-    OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
+    _document.applicationLock = [OUIInteractionLock applicationLock];
     [_documentPicker navigateToContainerForItem:_document.fileItem dismissingAnyOpenDocument:NO animated:NO];
     
     OBStrongRetain(_document);
@@ -333,7 +333,8 @@ static unsigned SyncAgentRunningAccountsContext;
         
         // If the document was saved, it will have already updated *its* previews, if we were launched into a document w/o the document picker ever being visible, we might not have previews loaded for other documents
         [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
-            [lock unlock];
+            [_document.applicationLock unlock];
+            _document.applicationLock = nil;
             
             if (completionHandler)
                 completionHandler();
@@ -379,6 +380,13 @@ static unsigned SyncAgentRunningAccountsContext;
                         [_snapshotForDocumentRebuilding removeFromSuperview];
                         _snapshotForDocumentRebuilding = nil;
                     }];
+}
+
+- (void)documentDidFailToRebuildViewController:(OUIDocument *)document;
+{
+    self.window.userInteractionEnabled = YES;
+    [_snapshotForDocumentRebuilding removeFromSuperview];
+    _snapshotForDocumentRebuilding = nil;
 }
 
 - (OUIDocument *)document;
@@ -471,14 +479,15 @@ static unsigned SyncAgentRunningAccountsContext;
             return;
         }
 
-        OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
+        document.applicationLock = [OUIInteractionLock applicationLock];
 
         [document openWithCompletionHandler:^(BOOL success){
             if (!success) {
                 OUIDocumentHandleDocumentOpenFailure(document, nil);
 
                 [activityIndicator hide];
-                [lock unlock];
+                [document.applicationLock unlock];
+                document.applicationLock = nil;
 
                 onFail();
                 return;
@@ -558,7 +567,8 @@ static unsigned SyncAgentRunningAccountsContext;
                 if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
                     [documentViewController documentFinishedOpening];
                 [activityIndicator hide];
-                [lock unlock];
+                [document.applicationLock unlock];
+                document.applicationLock = nil;
                 
                 // Ensure that when the document is closed we'll be using a filter that shows it.
                 [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
@@ -574,7 +584,7 @@ static unsigned SyncAgentRunningAccountsContext;
         // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail.
         doOpen = [doOpen copy];
         
-        OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
+        _document.applicationLock = [OUIInteractionLock applicationLock];
         
         [_document closeWithCompletionHandler:^(BOOL success) {
             [self _setDocument:nil];
@@ -582,11 +592,13 @@ static unsigned SyncAgentRunningAccountsContext;
             if ([topLevelNavController presentedViewController]) {
                 [topLevelNavController dismissViewControllerAnimated:NO completion:^{
                     doOpen();
-                    [lock unlock];
+                    [_document.applicationLock unlock];
+                    _document.applicationLock = nil;
                 }];
             } else {
                 doOpen();
-                [lock unlock];
+                [_document.applicationLock unlock];
+                _document.applicationLock = nil;
             }
         }];
     } else {

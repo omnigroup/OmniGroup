@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,13 +46,16 @@ static NSColorList *classicCrayonsColorList(void)
 
 // Adding a color list to the color panel when it is NOT in list mode, will not to anything.  Radar #4341924.
 @implementation NSColorPanel (OAHacks)
+
 static void (*originalSwitchToPicker)(id self, SEL _cmd, NSColorPicker *picker);
-+ (void)performPosing;
-{
+
+OBPerformPosing(^{
+    Class self = objc_getClass("NSColorPanel");
     // No public API for this
     if ([self instancesRespondToSelector:@selector(_switchToPicker:)])
 	originalSwitchToPicker = (typeof(originalSwitchToPicker))OBReplaceMethodImplementationWithSelector(self, @selector(_switchToPicker:), @selector(_replacement_switchToPicker:));
-}
+});
+
 - (void)_replacement_switchToPicker:(NSColorPicker *)picker;
 {
     originalSwitchToPicker(self, _cmd, picker);
@@ -987,12 +990,11 @@ NSString * const OAColorToPropertyListTransformerName = @"OAColorToPropertyList"
 
 @implementation OAColorToPropertyList
 
-+ (void)didLoad;
-{
-    OAColorToPropertyList *instance = [[self alloc] init];
+OBDidLoad(^{
+    OAColorToPropertyList *instance = [[OAColorToPropertyList alloc] init];
     [NSValueTransformer setValueTransformer:instance forName:OAColorToPropertyListTransformerName];
     [instance release];
-}
+});
 
 + (Class)transformedValueClass;
 {
@@ -1032,17 +1034,16 @@ NSString * const OANegateBooleanToControlColorTransformerName = @"OANegateBoolea
 
 @implementation OABooleanToControlColor
 
-+ (void)didLoad;
-{
-    OABooleanToControlColor *normal = [[self alloc] init];
+OBDidLoad(^{
+    OABooleanToControlColor *normal = [[OABooleanToControlColor alloc] init];
     [NSValueTransformer setValueTransformer:normal forName:OABooleanToControlColorTransformerName];
     [normal release];
     
-    OABooleanToControlColor *negate = [[self alloc] init];
+    OABooleanToControlColor *negate = [[OABooleanToControlColor alloc] init];
     negate->_negate = YES;
     [NSValueTransformer setValueTransformer:negate forName:OANegateBooleanToControlColorTransformerName];
     [negate release];
-}
+});
 
 + (Class)transformedValueClass;
 {

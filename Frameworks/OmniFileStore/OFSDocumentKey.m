@@ -36,11 +36,6 @@ static uint16_t chooseUnusedSlot(NSIndexSet *used);
 static uint16_t derive(uint8_t derivedKey[MAX_SYMMETRIC_KEY_BYTES], NSString *password, NSData *salt, CCPseudoRandomAlgorithm prf, unsigned int rounds, NSError **outError);
 static NSData *deriveFromPassword(NSDictionary *docInfo, NSString *password, struct skbuf *outWk, NSError **outError);
 
-#if 0 && !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-/* iOS doesn't have the concept of a keychain item ref */
-static OSStatus removeItemFromKeychain(SecKeychainItemRef keyRef);
-#endif
-
 #define unsupportedError(e, t) ofsUnsupportedError_(e, __LINE__, t)
 #define arraycount(a) (sizeof(a)/sizeof(a[0]))
 

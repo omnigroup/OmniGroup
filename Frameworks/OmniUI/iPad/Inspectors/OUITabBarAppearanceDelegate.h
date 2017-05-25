@@ -11,6 +11,7 @@
 
 @protocol OUITabBarAppearanceDelegate <NSObject>
 
+@optional
 - (UIColor *)verticalTabSeparatorColor;
 - (UIColor *)verticalTabRightEdgeColor;
 - (UIColor *)verticalTabRightEdgeFadeToColor;

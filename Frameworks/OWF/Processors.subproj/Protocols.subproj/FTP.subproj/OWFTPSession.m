@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,10 +120,10 @@ static NSString *defaultPassword = nil;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentCacheFlushedNotification:) name:OWContentCacheFlushNotification object:nil];
 }
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWFTPSession class];
     [[OFController sharedController] addStatusObserver:(id)self];
-}
+});
 
 + (void)controllerDidInitialize:(OFController *)controller;
 {

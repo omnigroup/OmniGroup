@@ -24,6 +24,8 @@
 /* Begin PBXBuildFile section */
 		151FB8721DEF9955003E84F5 /* OmniSoftwareUpdate.strings in Resources */ = {isa = PBXBuildFile; fileRef = 151FB8701DEF9955003E84F5 /* OmniSoftwareUpdate.strings */; };
 		151FB87C1DEF9979003E84F5 /* OmniSystemInfo.strings in Resources */ = {isa = PBXBuildFile; fileRef = 151FB87A1DEF9979003E84F5 /* OmniSystemInfo.strings */; };
+		15C1EFDF1E859AD700557EA5 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15C1EFDD1E859AD700557EA5 /* ko.lproj */; };
+		15C1EFE01E859AD700557EA5 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15C1EFDE1E859AD700557EA5 /* pt-BR.lproj */; };
 		3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -554,6 +556,8 @@
 		15AFEB0918A06A1500AC19A2 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = iOS/ru.lproj; sourceTree = "<group>"; };
 		15AFEB0A18A06A1500AC19A2 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		15AFEB0B18A06A4300AC19A2 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = iOS/ja.lproj; sourceTree = "<group>"; };
+		15C1EFDD1E859AD700557EA5 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = iOS/ko.lproj; sourceTree = "<group>"; };
+		15C1EFDE1E859AD700557EA5 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = SOURCE_ROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSoftwareUpdate_Prefix.h; sourceTree = "<group>"; };
 		3409FDF712664BD600BA898D /* OSUCheckerTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckerTarget.h; sourceTree = "<group>"; };
@@ -1021,7 +1025,9 @@
 				15AFEB0618A06A1500AC19A2 /* fr.lproj */,
 				15AFEB0718A06A1500AC19A2 /* it.lproj */,
 				15AFEB0B18A06A4300AC19A2 /* ja.lproj */,
+				15C1EFDD1E859AD700557EA5 /* ko.lproj */,
 				15AFEB0818A06A1500AC19A2 /* nl.lproj */,
+				15C1EFDE1E859AD700557EA5 /* pt-BR.lproj */,
 				15AFEB0918A06A1500AC19A2 /* ru.lproj */,
 				15AFEB0A18A06A1500AC19A2 /* zh-Hans.lproj */,
 			);
@@ -1814,7 +1820,9 @@
 				42943FD61CBC2ACE005E9862 /* OSUDevices.json in Resources */,
 				348A79121B5848350082D55D /* nl.lproj in Resources */,
 				348A790E1B5848350082D55D /* es.lproj in Resources */,
+				15C1EFDF1E859AD700557EA5 /* ko.lproj in Resources */,
 				348A79131B5848350082D55D /* ru.lproj in Resources */,
+				15C1EFE01E859AD700557EA5 /* pt-BR.lproj in Resources */,
 				348A79101B5848350082D55D /* it.lproj in Resources */,
 				348A79111B5848350082D55D /* ja.lproj in Resources */,
 				348A789E1B583DC50082D55D /* OmniSoftwareUpdate.defaults in Resources */,

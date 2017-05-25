@@ -981,7 +981,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)_updateMetadataInteraction;
 {
-    if (self.isReadOnly || _item.scope == nil || ![_item.scope canRenameDocuments]) {
+    if (self.isReadOnly || !_item.isValid || _item.scope == nil || ![_item.scope canRenameDocuments]) {
         _metadataView.userInteractionEnabled = NO;
         return;
     }

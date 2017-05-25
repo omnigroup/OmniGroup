@@ -240,7 +240,6 @@ NSDate *OFSyncClientLastSyncDate(NSDictionary *clientState)
 NSString *OFSyncClientApplicationIdentifier(NSDictionary *clientState)
 {
     NSString *bundleID = [clientState objectForKey:OFSyncClientApplicationIdentifierKey];
-    OBASSERT(![NSString isEmptyString:bundleID]);
     return bundleID;
 }
 

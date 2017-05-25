@@ -1,7 +1,6 @@
 OIInspectionSet.o:-[OIInspectionSet debugDictionary]
 OIInspectorController.o:-[OIInspectorController debugDictionary]
 OIInspectorGroup.o:-[OIInspectorGroup debugDictionary]
-OIInspectorRegistry.o:+[OIInspectorRegistry didLoad]
 OIInspectorController.o:+[OIInspectorController initialize]
 OIInspectorGroup.o:+[OIInspectorGroup initialize]
 OIInspectorHeaderView.o:+[OIInspectorHeaderView initialize]

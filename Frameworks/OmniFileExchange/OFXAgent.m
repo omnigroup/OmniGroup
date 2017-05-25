@@ -200,8 +200,8 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
         // We don't assume that LaunchServices will see our file types (in particular, we might be a testing tool). But it *should* know about the types that our types conform to.
         void (^_addPackagePathExtensions)(NSArray *fileTypes) = ^(NSArray *fileTypes){
             for (NSDictionary *fileType in fileTypes) {
-                NSArray *conformsToTypes = fileType[@"UTTypeConformsTo"];
-                OBASSERT(conformsToTypes);
+                NSArray *conformsToTypes = fileType[(__bridge NSString *)kUTTypeConformsToKey];
+                OBASSERT(conformsToTypes, "No %@ entry in file type %@", kUTTypeConformsToKey, fileType);
                 
                 BOOL isFile = NO;
                 BOOL isFolder = NO;

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,10 +24,9 @@ static NSLock *tempFilenameLock = nil;
 
 @implementation NSFileManager (OFTemporaryPath)
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     tempFilenameLock = [[NSLock alloc] init];
-}
+});
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 // We need this since NSItemReplacementDirectory creates a new directory inside the TemporaryItems directory instead of just returning the TemporaryItems directory. Radar 13965099: Add suitable replacement for FSFindFolder/kTemporaryFolderType

@@ -645,7 +645,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
         NSArray *fileInfos = result.fileInfos;
         if ([fileInfos count] == 0) {
             // This really doesn't make sense. But translate it to an error rather than raising an exception below.
-            NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:[NSDictionary dictionaryWithObject:url forKey:ODAVURLErrorFailingURLErrorKey]];
+            NSError *error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorBadServerResponse userInfo:[NSDictionary dictionaryWithObject:url forKey:NSURLErrorFailingURLErrorKey]];
             COMPLETE_AND_RETURN(nil, error);
         }
         
@@ -717,7 +717,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                 COMPLETE_AND_RETURN(nil, error);
             } else if (!info.isDirectory) {
                 // Is there a better error code for this? Do any of our callers distinguish this case from general failure?
-                NSError *returnError = [NSError errorWithDomain:NSPOSIXErrorDomain code:ENOTDIR userInfo:[NSDictionary dictionaryWithObject:url forKey:ODAVURLErrorFailingURLStringErrorKey]];
+                NSError *returnError = [NSError errorWithDomain:NSPOSIXErrorDomain code:ENOTDIR userInfo:[NSDictionary dictionaryWithObject:url forKey:NSURLErrorFailingURLErrorKey]];
                 COMPLETE_AND_RETURN(nil, returnError);
             }
             // Otherwise, it's just that the collection is empty.

@@ -374,17 +374,19 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 - (void)_didReceiveResponse:(NSURLResponse *)response;
 {
-#ifdef OMNI_ASSERTIONS_ON
     // We'll already have a _response set for credential errors, via -_credentialsNotFoundForChallenge:.
     if (_response) {
+        // The NSURL machinery handles redirects without even showing them to us; the only expected situation for us to get multiple responses is during authentication requests.
+        // If this assertion fails it's probably fine to extend it with additional status codes.
         OBASSERT([_response statusCode] == ODAV_HTTP_UNAUTHORIZED);
-        OBASSERT([(NSHTTPURLResponse *)response statusCode] == [_response statusCode]);
-        
-        // In the past we fell through, discarding the old response and keeping the new one. We'll keep doing that, but the two responses should be nearly identical.
     }
-#endif
     
+    // Discard information we may have collected from a previous response.
     _response = nil;
+    _resultData = nil;
+    _bytesReceived = 0;
+    _shouldCollectDetailsForError = NO;
+    _errorData = nil;
     
     if (![response isKindOfClass:[NSHTTPURLResponse class]]) {
         // This will mean we treat it as success in that we'll try to decode the response data.

@@ -1,4 +1,4 @@
-// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ static NSArray *shortWeekdayNames;
 static NSArray *longWeekdayNames;
 static NSTimeZone *gmtTimeZone;
 
-+ (void)didLoad;
+static void setup(void)
 {
     nonalphaOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[[NSCharacterSet letterCharacterSet] invertedSet]];
     nonalphanumericOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[[NSCharacterSet alphanumericCharacterSet] invertedSet]];
@@ -56,6 +56,10 @@ static NSTimeZone *gmtTimeZone;
     longWeekdayNames = [[NSArray alloc] initWithObjects:@"sunday", @"monday", @"tuesday", @"wednesday", @"thursday", @"friday", @"saturday", nil];
     gmtTimeZone = [NSTimeZone timeZoneWithName:@"GMT"];
 }
+
+OBDidLoad(^{
+    setup();
+});
 
 + (void)setDebugHTTPDateParsing:(BOOL)shouldDebug;
 {

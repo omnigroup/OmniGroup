@@ -21,6 +21,7 @@
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIShieldView.h>
 #import <OmniUI/OUIPasswordAlert.h>
+#import <OmniUI/OUIInteractionLock.h>
 
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -54,6 +55,10 @@ static int32_t OUIDocumentInstanceCount = 0;
 
 @interface OUIDocument (/**NSUndoManager Observer*/)
 @property (strong,nonatomic) NSUndoManager *observedUndoManager;
+@end
+
+@interface OUIDocument ()
+@property (nonatomic) BOOL isDefinitelyClosing;
 @end
 
 OB_HIDDEN
@@ -430,6 +435,15 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     OBRequestConcreteImplementation(self, _cmd);
 }
 
+- (void)setApplicationLock:(OUIInteractionLock *)applicationLock;
+{
+    if (_applicationLock == applicationLock) {
+        return;
+    }
+    [_applicationLock unlock];
+    _applicationLock = applicationLock;
+}
+
 - (UIResponder *)defaultFirstResponder;
 {
     UIViewController <OUIDocumentViewController> *viewController = self.documentViewController;
@@ -641,7 +655,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 {
     OBPRECONDITION((self.documentState & UIDocumentStateClosed) == 0);
     
-    if ((self.documentState & UIDocumentStateClosed) != 0) {
+    if (!self.isDefinitelyClosing && (self.documentState & UIDocumentStateClosed) != 0) {
         // we may be being asked to close before we have finished opening.  note that and save the completion handler for when we can actually close.
         // we will close if/when we have successfully opened.
         _savedCloseCompletionBlock = [completionHandler copy];
@@ -700,19 +714,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     
     // Make sure that if the app is backgrounded, we don't get left in the middle of a close operation (still being a file presenter) where the user could delete us (via iTunes or iCloud) and then on foregrounding of the app UIDocument can get confused.
     OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocument.close"];
-    
-    [super closeWithCompletionHandler:^(BOOL success){
+
+    void (^closedCompletion)(BOOL success) = ^void(BOOL success) {
         DEBUG_DOCUMENT(@"%@ %@ success %d", [self shortDescription], NSStringFromSelector(_cmd), success);
 
         [self _updateUndoIndicator];
-        
+
         void (^previewCompletion)(void) = ^{
             OBASSERT(_isClosing == YES);
             _isClosing = NO;
-            
+
             if (completionHandler)
-                completionHandler(success);
-            
+            completionHandler(success);
+
             if (_afterCloseRelinquishToWriter) {
                 // A document that was open to generate previews has been closed. We need to finish up accomodating that deletion now.
                 OBASSERT(self.forPreviewGeneration);
@@ -723,26 +737,32 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
             // Let the document picker know that a new preview is available. We do this here rather than in OUIDocumentPreviewGenerator since if a new document is opened while an existing document is already open (and thus the old document is closed), say by tapping on a document while in Mail and while our app is running and showing a document, then the preview generator might not ever do the generation.
             [[NSNotificationCenter defaultCenter] postNotificationName:OUIDocumentPreviewsUpdatedForFileItemNotification object:self.fileItem userInfo:nil];
-            
+
             [activity finished];
         };
 
         ODSFileItem *fileItem = self.fileItem;
         if (fileItem != nil && !hadError) { // New document being closed to save its initial state before being opened to edit?
-            
+
             // Our save path should have updated our file item's latest fileEdit.
             OBASSERT([fileItem.fileModificationDate isEqual:self.fileModificationDate]);
 
             // The date refresh is asynchronous, so we'll force preview loading in the case that we know we should consider the previews out of date.
             OFFileEdit *fileEdit = fileItem.fileEdit;
-            
+
             [self _writePreviewsIfNeeded:(hadChanges == NO) fileEdit:fileEdit withCompletionHandler:previewCompletion];
-            
+
             [OUIDocumentAppController setDocumentState:viewState forFileEdit:fileEdit];
         } else {
             previewCompletion();
         }
-    }];
+    };
+
+    if ((self.documentState & UIDocumentStateClosed) != 0) {
+        closedCompletion(YES);
+    } else {
+        [super closeWithCompletionHandler:closedCompletion];
+    }
 }
 
 /*
@@ -1000,10 +1020,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
     
     // The document may not exist (deletions while we were backgrounded, which don't go through -accommodatePresentedItemDeletionWithCompletionHandler:, but at any rate we can't read it.
-    OUIDocumentAppController *controller = [OUIDocumentAppController controller];
-    [controller closeDocumentWithCompletionHandler:^{
-        [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
-    }];
+        OUIDocumentAppController *controller = [OUIDocumentAppController controller];
+        [controller closeDocumentWithCompletionHandler:^{
+            [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
+        }];
 }
 
 - (void)_cleanupAndSignalFailedRevertWithCompletionHandler:(void (^)(BOOL success))completionHandler;
@@ -1036,14 +1056,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     // Forget our view controller since UIDocument's reloading will call -openWithCompletionHandler: again and we'll make a new view controller
     // Note; doing a view controller rebuild via -relinquishPresentedItemToWriter: seems hard/impossible not only due to the crazy spaghetti mess of blocks but also because it is invoked on UIDocument's background thread, while we need to mess with UIViews.
+    __weak OUIDocument *document = self;
     UIViewController <OUIDocumentViewController> *oldDocumentViewController = _documentViewController;
+    UIViewController *oldPresentedViewController = self.viewControllerToPresent;
     _documentViewController = nil;
-    [oldDocumentViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
     oldDocumentViewController.document = nil;
     completionHandler = [completionHandler copy];
     
     [super revertToContentsOfURL:url completionHandler:^(BOOL success){
         if (!success) {
+            __strong OUIDocument *strongDoc = document;
+            [[OUIDocumentAppController controller] documentDidFailToRebuildViewController:strongDoc];
+            [oldPresentedViewController dismissViewControllerAnimated:NO completion:nil];
+            document.isDefinitelyClosing = YES;
             // Possibly deleted via iTunes while the document was open and we were backgrounded. Hit this as part of <bug:///77658> ([Crash] After deleting a lot of docs via iTunes you crash on next launch of app) and logged Radar 10775218: UIDocument should manage background tasks when performing state transitions. We should be working around this with our own background task management now.
             NSLog(@"Failed to revert document %@", self);
             
@@ -1689,7 +1714,7 @@ password = enteredPassword;
         
         {
             OUIDocument *strongDoc = self.document;
-            
+
             if (!strongDoc || self.cancelled) {
                 enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
                 [self finish];
@@ -1698,16 +1723,35 @@ password = enteredPassword;
             
             fileItem = strongDoc.fileItem;
             presenter = strongDoc.documentViewController;
+
         }
-        
-        if (!presenter)
-            presenter = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-        
+
+        BOOL needToChangeUserInteractionEnabled = NO;
+        UINavigationController *navController = nil;
+        if (!presenter) {
+            UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
+            presenter = [window rootViewController];
+            BOOL userinteractionEnabled = window.userInteractionEnabled;
+            UIViewController *presentedViewController = [presenter presentedViewController];
+            if (presentedViewController) {
+                if ([presentedViewController isKindOfClass:UINavigationController.class]) {
+                    navController = (UINavigationController *)presentedViewController;
+                    presenter = navController.topViewController;
+                } else {
+                    presenter = presentedViewController;
+                }
+                if (!userinteractionEnabled) {
+                    window.userInteractionEnabled = YES;
+                    needToChangeUserInteractionEnabled = YES;
+                }
+            }
+        }
+
         NSString *promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened"),
                                    fileItem.name];
         
         OUIPasswordAlert *dialog = [[OUIPasswordAlert alloc] initWithTitle:promptMessage options:0];
-        
+
         dialog.finished = ^(OUIPasswordAlert *a, OUIPasswordAlertAction action){
             switch (action) {
                 default:
@@ -1718,9 +1762,15 @@ password = enteredPassword;
                     enteredPassword = a.password;
                     break;
             }
+            if (needToChangeUserInteractionEnabled) {
+                UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
+                window.userInteractionEnabled = NO;
+            }
             [self finish];
         };
-        
+
+        [self.document.applicationLock unlock];
+        self.document.applicationLock = nil;
         [dialog showFromController:presenter];
     });
 }

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,15 +24,15 @@ static void (*originalDeviceRGBImp)(NSColor *color, SEL _cmd);
 static void (*originalDeviceGrayImp)(NSColor *color, SEL _cmd);
 static void (*originalDeviceCMYKImp)(NSColor *color, SEL _cmd);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSColor");
     originalPatternImp = (typeof(originalPatternImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSPatternColor"), @selector(set), self, @selector(_setPattern));
     originalCalibratedRGBImp = (typeof(originalCalibratedRGBImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedRGBColor"), @selector(set), self, @selector(_setCalibratedRGB));
     originalCalibratedGrayImp = (typeof(originalCalibratedGrayImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedWhiteColor"), @selector(set), self, @selector(_setCalibratedGray));
     originalDeviceRGBImp = (typeof(originalDeviceRGBImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceRGBColor"), @selector(set), self, @selector(_setDeviceRGB));
     originalDeviceGrayImp = (typeof(originalDeviceGrayImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceWhiteColor"), @selector(set), self, @selector(_setDeviceGray));
     originalDeviceCMYKImp = (typeof(originalDeviceCMYKImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceCMYKColor"), @selector(set), self, @selector(_setDeviceCMYK));
-}
+});
 
 - (void)setCoreGraphicsRGBValues;
 {

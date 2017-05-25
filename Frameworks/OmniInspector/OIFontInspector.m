@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,11 +18,11 @@ static void (*original_orderOut)(id self, SEL _cmd, id sender) = NULL;
 
 @implementation NSFontPanel (OIExtensions)
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSFontPanel");
     original_orderFront = (typeof(original_orderFront))OBReplaceMethodImplementationWithSelector(self, @selector(orderFront:), @selector(_replacement_orderFront:));
     original_orderOut = (typeof(original_orderOut))OBReplaceMethodImplementationWithSelector(self, @selector(orderOut:), @selector(_replacement_orderOut:));
-}
+});
 
 - (void)_replacement_orderFront:sender;
 {

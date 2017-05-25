@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,8 +20,7 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 #ifdef OMNI_ASSERTIONS_ON
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     if ([[NSProcessInfo processInfo] isSandboxed]) {
         NSDictionary *entitlements = [[NSProcessInfo processInfo] effectiveCodeSigningEntitlements:NULL];
         
@@ -35,7 +34,7 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
         OBASSERT([appleEventExceptions containsObject:@"com.barebones.mailsmith"], "Missing temporary exception entitlement needed in order to compose feedback message in Mailsmith.");
         OBASSERT([appleEventExceptions containsObject:@"com.microsoft.entourage"], "Missing temporary exception entitlement needed in order to compose feedback message in Entourage.");
     }
-}
+});
 
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,11 +91,12 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
     return ok;
 }
 
-+ (void)performPosing
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSWhoseSpecifier");
+
     originalObjectsByEvaluatingWithContainers = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(objectsByEvaluatingWithContainers:), @selector(replacement_objectsByEvaluatingWithContainers:));
     originalPutKeyFormAndDataInRecord = (typeof(originalPutKeyFormAndDataInRecord))OBReplaceMethodImplementationWithSelector(self,  @selector(_putKeyFormAndDataInRecord:), @selector(replacement_putKeyFormAndDataInRecord:));
-}
+});
 
 @end
 

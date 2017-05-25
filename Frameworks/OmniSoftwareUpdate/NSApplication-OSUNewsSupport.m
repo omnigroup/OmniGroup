@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,11 +28,12 @@ RCS_ID("$Id$");
 @end
 
 @implementation NSApplication (OSUNewsSupport)
+
 static BOOL (*originalValidateMenuItem)(NSApplication *self, SEL _cmd, NSMenuItem *menuItem);
-+ (void)didLoad
-{
-    originalValidateMenuItem = (typeof(originalValidateMenuItem))OBReplaceMethodImplementationWithSelector([self class], @selector(validateMenuItem:), @selector(replacement_validateMenuItem:));
-}
+
+OBDidLoad(^{
+    originalValidateMenuItem = (typeof(originalValidateMenuItem))OBReplaceMethodImplementationWithSelector([NSApplication class], @selector(validateMenuItem:), @selector(replacement_validateMenuItem:));
+});
 
 - (IBAction)showNews:(id)sender;
 {

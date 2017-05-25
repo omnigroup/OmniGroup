@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,15 @@
 
 @property (nonatomic, copy) NSString *title;
 @property (nonatomic,strong) UIColor *titleColor;
-@property BOOL titleCanBeTapped;
-@property BOOL hideTitle;
+@property (nonatomic, assign) BOOL titleCanBeTapped;
+@property (nonatomic, assign) BOOL hideTitle;
+@property (nonatomic, assign) BOOL hideSyncButton;
 
-@property (nonatomic, strong) UIBarButtonItem *syncBarButtonItem;
+@property (nonatomic, readonly, strong) UIButton *closeDocumentButton;
+@property (nonatomic, assign) BOOL shouldShowCloseDocumentButton;
+
+@property (nonatomic, readonly, strong) UIBarButtonItem *closeDocumentBarButtonItem;
+@property (nonatomic, readonly, strong) UIBarButtonItem *syncBarButtonItem;
 
 @end
 

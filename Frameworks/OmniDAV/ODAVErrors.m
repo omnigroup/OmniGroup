@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,6 @@ NSString * const ODAVHTTPErrorStringKey = @"errorString";
 
 // using the same values as those found in NSURLErrorFailingURLStringErrorKey and NSURLErrorFailingURLErrorKey
 NSString * const ODAVURLErrorFailingURLErrorKey = @"NSErrorFailingURLKey";
-NSString * const ODAVURLErrorFailingURLStringErrorKey = @"NSErrorFailingURLStringKey";
 
 BOOL ODAVShouldOfferToReportError(NSError *error)
 {
@@ -35,7 +34,7 @@ BOOL ODAVShouldOfferToReportError(NSError *error)
             return NO; // Authorization issues cannot be resolved by the app
         if (httpErrorCode == ODAV_HTTP_INSUFFICIENT_STORAGE)
             return NO; // Storage space issues cannot be resolved by the app
-        if (httpErrorCode == ODAV_HTTP_SERVICE_UNAVAILABLE && ![[[[httpError userInfo] objectForKey:ODAVURLErrorFailingURLErrorKey] host] containsString:@"omnigroup.com"])
+        if (httpErrorCode == ODAV_HTTP_SERVICE_UNAVAILABLE && ![[[[httpError userInfo] objectForKey:NSURLErrorFailingURLErrorKey] host] containsString:@"omnigroup.com"])
             return NO; // Service unavailable issue for some server that isn't ours
     }
 

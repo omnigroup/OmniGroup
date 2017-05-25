@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development. Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,5 +13,9 @@
 
 - (BOOL)deriveWithKeychainIdentifier:(NSString *)ident error:(NSError **)outError;
 - (BOOL)storeWithKeychainIdentifier:(NSString *)ident displayName:(NSString *)displayName error:(NSError **)outError;
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
++ (BOOL)deleteAllEntriesWithError:(NSError **)outError;
+#endif
 
 @end

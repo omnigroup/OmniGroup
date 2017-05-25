@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,8 +18,7 @@ static void (*original_orderFront)(id self, SEL _cmd, id sender) = NULL;
 @implementation NSColorPanel (OIExtensions)
 
 // So it turns out that if the color panel mode is 1-4, the color panel is created with the slider picker, which has a popup on it that grabs cmd-1 through cmd-4. We want those key equivalents for ourselves, so we need to keep the color panel from stealing them. The easiest (only?) way to do that is to make sure some other picker comes up first so we have a chance to use cmd-1 through cmd-4 in the menu bar. Mode 6 is the color wheel.
-+ (void)didLoad;
-{
+OBDidLoad(^{
     @autoreleasepool {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSInteger currentMode = [defaults integerForKey:@"NSColorPanelMode"];
@@ -27,13 +26,12 @@ static void (*original_orderFront)(id self, SEL _cmd, id sender) = NULL;
         if (currentMode >= 1 && currentMode <= 4)
             [defaults setInteger:6 forKey:@"NSColorPanelMode"];
     }
-}
+});
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSColorPanel");
     original_orderFront = (typeof(original_orderFront))OBReplaceMethodImplementationWithSelector(self, @selector(orderFront:), @selector(_replacement_orderFront:));
-
-}
+});
 
 - (void)toggleWindow:sender;
 {

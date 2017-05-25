@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,8 +30,7 @@ enum {
     THREADS_WAITING, NO_THREADS_WAITING
 };
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     if (mainThreadInterlock == nil) {
         mainThreadInterlock = [[NSConditionLock alloc] init];
         [mainThreadInterlock lock];
@@ -39,7 +38,7 @@ enum {
         threadsWaiting = 0;
         recursionCount = 0;
     }
-}
+});
 
 + (BOOL)mainThreadOpsOK;
 {

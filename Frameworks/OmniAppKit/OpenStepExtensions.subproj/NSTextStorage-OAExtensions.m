@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,10 +37,9 @@ RCS_ID("$Id$")
 
 static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX_TYPE i) = NULL;
 
-+ (void)didLoad;
-{
-    originalValueInCharactersAtIndex = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(valueInCharactersAtIndex:), @selector(replacement_valueInCharactersAtIndex:));
-}
+OBDidLoad(^{
+    originalValueInCharactersAtIndex = (void *)OBReplaceMethodImplementationWithSelector([NSTextStorage class],  @selector(valueInCharactersAtIndex:), @selector(replacement_valueInCharactersAtIndex:));
+});
 
 - (id)replacement_valueInCharactersAtIndex:(CHARACTER_INDEX_TYPE)characterIndex;
 {
@@ -75,12 +74,11 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 @implementation NSTextStorage (OAExtensions)
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     NSScriptCoercionHandler *handler = [NSScriptCoercionHandler sharedCoercionHandler];
-    [handler registerCoercer:self selector:@selector(coerceList:toClass:) toConvertFromClass:[NSArray class] toClass:self];
-    [self registerConversionFromRecord];
-}
+    [handler registerCoercer:[NSTextStorage class] selector:@selector(coerceList:toClass:) toConvertFromClass:[NSArray class] toClass:[NSTextStorage class]];
+    [NSTextStorage registerConversionFromRecord];
+});
 
 // Basically, I think undo was implemented incorrectly (possibly for good reasons) on NSTextView/NSTextStorage. The model should be responsible for registering undo events, and the view responsible for setting undo action names.  But in this case, NSTextView really does the registration (prossibly for efficiency reasons -- coalescing character changes seems like an obvious possibility).
 // This method tries to find an undo manager by finding an attached text view.  This is used by OAStyledTextStorage and when logging undo events generated from OAStyle (i.e., not from the view).  If the undo support on NSTextStorage had been done 'properly' (at least according to me :) in the first place this wouldn't be necessary.

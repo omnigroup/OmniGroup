@@ -1,4 +1,4 @@
-// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,10 +22,10 @@ RCS_ID("$Id$")
 
 @implementation OWMacOSPeterLewisFTPProcessor
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWMacOSPeterLewisFTPProcessor class];
     [self registerForContentTypeString:@"OWFTPDirectory/MacOS-PeterLewis" cost:1.0f];
-}
+});
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {

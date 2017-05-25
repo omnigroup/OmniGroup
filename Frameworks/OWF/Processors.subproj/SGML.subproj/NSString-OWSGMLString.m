@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,11 +101,12 @@ RCS_ID("$Id$")
 
 @implementation NSString (OWSGMLStringPrivate)
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [NSString class];
+    
     // Ensure +needsEscapeCharacterSet gets set up before we go multithreaded, since then we'd have to deal with leaks or locks.
     [self needsEscapeCharacterSet];
-}
+});
 
 + (NSCharacterSet *)needsEscapeCharacterSet;
 {

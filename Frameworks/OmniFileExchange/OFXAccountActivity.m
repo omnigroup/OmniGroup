@@ -1,4 +1,4 @@
-// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -132,8 +132,16 @@ static unsigned OFXAccountActivityContext;
 
 - (void)_updateFromAccount;
 {
+    BOOL wasActive = _isActive;
+
     self.isActive = _account.isSyncInProgress;
     self.lastError = _account.lastError;
+
+    if (wasActive && !_isActive && _lastError == nil) {
+        // If all the containers were up to date vs. the server date, then we might not get any metadata table changes for a manual sync request.
+        self.lastSyncDate = [NSDate date];
+    }
+
     DEBUG_ACTIVITY(1, @"active:%d lastError:%@", self.isActive, self.lastError);
 }
 

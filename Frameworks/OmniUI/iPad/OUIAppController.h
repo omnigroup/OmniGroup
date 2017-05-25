@@ -37,6 +37,8 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 + (nonnull instancetype)sharedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 + (NSString *)applicationName;
++ (nullable NSString *)applicationEdition;
++ (BOOL)inSandboxStore;
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 

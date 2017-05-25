@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,8 +85,7 @@ RCS_ID("$Id$")
 
 static id SplitViewDidResizeObserver;
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     SplitViewDidResizeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSSplitViewDidResizeSubviewsNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         NSSplitView *splitView = note.object;
         for (NSView *subview in splitView.subviews) {
@@ -109,7 +108,7 @@ static id SplitViewDidResizeObserver;
             }
         }
     }];
-}
+});
 
 #endif
 

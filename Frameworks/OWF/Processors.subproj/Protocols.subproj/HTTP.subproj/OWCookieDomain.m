@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -94,11 +94,11 @@ static inline void _locked_checkCookiesLoaded()
     distantPastInterval = [[NSDate distantPast] timeIntervalSinceReferenceDate];
 }
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWCookieDomain class];
     [[OFController sharedController] queueSelector:@selector(_loadCookies) forObject:(id)self whenStatus:OFControllerStatusInitialized];
     [[OFController sharedController] queueSelector:@selector(saveCookies) forObject:(id)self whenStatus:OFControllerStatusTerminating];
-}
+});
 
 + (void)registerCookie:(OWCookie *)newCookie fromURL:(OWURL *)url siteURL:(OWURL *)siteURL;
 {

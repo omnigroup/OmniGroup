@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,12 +17,12 @@ typedef NS_OPTIONS(NSUInteger, OUIViewControllerDescendantType) {
 #define OUIViewControllerDescendantTypeNone 0
 #define OUIViewControllerDescendantTypeAny (OUIViewControllerDescendantTypeChild | OUIViewControllerDescendantTypePresented)
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, OUIViewControllerVisibility) {
     OUIViewControllerVisibilityHidden,
     OUIViewControllerVisibilityAppearing,
     OUIViewControllerVisibilityVisible,
     OUIViewControllerVisibilityDisappearing,
-} OUIViewControllerVisibility;
+};
 
 @interface UIViewController (OUIExtensions)
 
@@ -51,6 +51,13 @@ typedef enum {
 /// Returns a list of this view controller and all its children recursively, one per line, indented to show hierarchy. Analogous to -[UIView recursiveDescription].
 - (NSString *)recursiveDescription;
 #endif
+
+/**
+ A common practice is for view controllers to dismiss their presented view controller on trait collection change. This method allows presented view controllers to decide for themselves whether they should be dismissed. This is intended to be called by a view controller that may have a presented view controller during willTransitionToTraitCollection:withTransitionCoordinator:. The transitioning view controller will call this on its presentedViewController. Default returns YES;
+ 
+ @return Returns whether the receiver should be dismissed (assuming it is presented) should the application transition to the passed in trait collection
+ */
+- (BOOL)shouldBeDismissedTransitioningToTraitCollection:(UITraitCollection *)traitCollection;
 
 - (void)expectDeallocationOfControllerTreeSoon;
 

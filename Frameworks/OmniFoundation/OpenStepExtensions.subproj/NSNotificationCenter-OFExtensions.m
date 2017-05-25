@@ -1,4 +1,4 @@
-// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,8 +29,9 @@ static void (*original_removeObserverNameObject)(id self, SEL _cmd, id observer,
 
 // Not currently asserting on the block-based observations since those _can_ have an explicit queue, but if they don't it might be good to assert. But, the -removeObserver: gets called for block-based notification unsubscription, so maybe should do both anyway.
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSNotificationCenter");
+    
     original_addObserverSelectorNameObject = (typeof(original_addObserverSelectorNameObject))OBReplaceMethodImplementationWithSelector(self, @selector(addObserver:selector:name:object:), @selector(replacement_addObserver:selector:name:object:));
     OBASSERT(original_addObserverSelectorNameObject);
     
@@ -48,7 +49,7 @@ static void (*original_removeObserverNameObject)(id self, SEL _cmd, id observer,
 
     original_removeObserverNameObject = (typeof(original_removeObserverNameObject))OBReplaceMethodImplementationWithSelector(self, @selector(removeObserver:name:object:), @selector(replacement_removeObserver:name:object:));
     OBASSERT(original_removeObserverNameObject);
-}
+});
 
 - (void)replacement_addObserver:(id)observer selector:(SEL)aSelector name:(NSString *)aName object:(id)anObject;
 {

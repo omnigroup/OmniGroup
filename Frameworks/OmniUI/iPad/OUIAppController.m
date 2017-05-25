@@ -6,7 +6,6 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIAppController+InAppStore.h>
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <MobileCoreServices/UTCoreTypes.h>
@@ -180,9 +179,6 @@ static void __iOS7B5CleanConsoleOutput(void)
     [[self class] registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
     [[self class] registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
     
-    // Setup vendorID at app launch to fix <bug:///107092>. See bug notes for more details.
-    [self vendorID];
-    
     return self;
 }
 
@@ -195,6 +191,26 @@ static void __iOS7B5CleanConsoleOutput(void)
         appName = [infoDictionary objectForKey:(NSString *)kCFBundleNameKey];
     }
     return appName;
+}
+
++ (nullable NSString *)applicationEdition;
+{
+    return nil;
+}
+
++ (BOOL)inSandboxStore;
+{
+#if TARGET_IPHONE_SIMULATOR
+    return YES;
+#else
+    static BOOL inSandboxStore;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *receiptName = [[[NSBundle mainBundle] appStoreReceiptURL] lastPathComponent];
+        inSandboxStore = OFISEQUAL(receiptName, @"sandboxReceipt");
+    });
+    return inSandboxStore;
+#endif
 }
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
@@ -382,8 +398,9 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *testFlightString = [OUIAppController inSandboxStore] ? @" TestFlight" : @"";
-    NSString *proString = [self isPurchaseUnlocked:[self proUpgradeProductIdentifier]] ? @" [Pro]" : @"";
-    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], proString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    NSString *appEdition = [OUIAppController applicationEdition];
+    NSString *editionString = [NSString isEmptyString:appEdition] ? @"" : [@" " stringByAppendingString:appEdition];
+    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
 }
 
 
@@ -410,9 +427,11 @@ static void __iOS7B5CleanConsoleOutput(void)
         NSURL *url = [NSURL URLWithString:urlString];
         OBASSERT(url);
         if (![[UIApplication sharedApplication] openURL:url]) {
-            // Need to pop up an alert telling the user? Might happen now since we don't have Mail,  but they shouldn't be able to delete that in the real world.  Though maybe our url string is bad.
+            // Need to pop up an alert telling the user? Might happen now since we don't have Mail, but they shouldn't be able to delete that in the real world.  Though maybe our url string is bad.
             NSLog(@"Unable to open mail url %@ from string\n%@\n", url, urlString);
+#if !TARGET_IPHONE_SIMULATOR
             OBASSERT_NOT_REACHED("Couldn't open mail url");
+#endif
         }
         return;
     }
@@ -856,20 +875,6 @@ static UIImage *menuImage(NSString *name)
     additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAfterReleaseNotes];
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
-    
-    for (NSString *productIdentifier in [self inAppPurchaseIdentifiers]) {
-        if ([self isPurchaseUnlocked:productIdentifier])
-            continue;
-
-        NSString *purchaseTitle = [self purchaseMenuItemTitleForInAppStoreProductIdentifier:productIdentifier];
-        if ([NSString isEmptyString:purchaseTitle])
-            continue;
-        
-        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:self.inAppPurchasesMenuImage action:^(UIViewController *presentingViewController){
-            [[OUIAppController controller] showInAppPurchases:productIdentifier viewController:presentingViewController];
-        }];
-        [options addObject:option];
-    }
     
     additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAtEnd];
     if (additionalOptions)

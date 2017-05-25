@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-// Don't try to read defaults in +didLoad, they might not be registered yet.  In +didLoad, register for OFControllerDidInitNotification, then read defaults when that's posted.
+// Don't try to read defaults in OBDidLoad actions, they might not be registered yet. Register for OFControllerDidInitNotification, then read defaults when that's posted.
 
 #import <Foundation/NSUserDefaults.h>
 #import <OmniFoundation/OFBundleRegistryTarget.h>

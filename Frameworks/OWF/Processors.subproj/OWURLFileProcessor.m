@@ -1,4 +1,4 @@
-// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,10 +31,10 @@ static OWContentType *sourceContentType;
     sourceContentType = [OWContentType contentTypeForString:@"application/x-url"];
 }
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWURLFileProcessor class];
     [self registerProcessorClass:self fromContentType:sourceContentType toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:NO];
-}
+});
 
 + (OWContentType *)sourceContentType;
 {

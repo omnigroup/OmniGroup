@@ -26,7 +26,7 @@
 /* Subclasses may call -observeCancellation to cause -handleCancellation to be called. -handleCancellation may be called before this method returns (if the operation is already canceled or if it is canceled right then). Because of asynchrony, it may also be called after the subclass calls -finish (though presumably not after -finish returns). */
 - (void)observeCancellation:(BOOL)yn;
 
-/* Override point. Subclasses should not call super. Subclasses are still responsible for calling -finish whether or not this method is invoked. This method may be called on any thread, regardless of */
+/* Override point. Subclasses should not call super. Subclasses are still responsible for calling -finish whether or not this method is invoked. This method may be called on any thread, regardless of whicih thread the operation is queued or running on. */
 - (void)handleCancellation;
 
 /* This method is for use by concrete subclasses: -finish must be called exactly once after -start returns. The operation will transition to the finished, non-executing state. Concrete subclasses will presumably add a property holding their result; they must set that property before finishing. */

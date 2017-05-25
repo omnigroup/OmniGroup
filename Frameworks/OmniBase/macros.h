@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -135,7 +135,7 @@ static inline NSString *OBUnlocalized(NSString *value) __attribute__((annotate("
     return value;
 }
 
-// Hack to define a protocol for OBPerformRuntimeChecks() to check for deprecated dataSource/delegate methods where _implementing_ a method with a given name is considered wrong (likely the method has been removed from the protocol or renamed). The inline is enough to trick the compiler into emitting the protocol into the .o file, though this seems fragile.  OBPostLoader will use this macro itself once and will assert that at least one such deprecated protocol is found, just to make sure this hack keeps working. This macro is intended to be used in a .m file; otherwise the hack function defined would get multiple definitions.
+// Hack to define a protocol for OBPerformRuntimeChecks() to check for deprecated dataSource/delegate methods where _implementing_ a method with a given name is considered wrong (likely the method has been removed from the protocol or renamed). The inline is enough to trick the compiler into emitting the protocol into the .o file, though this seems fragile.  OBRuntimeCheck will use this macro itself once and will assert that at least one such deprecated protocol is found, just to make sure this hack keeps working. This macro is intended to be used in a .m file; otherwise the hack function defined would get multiple definitions.
 // Since these protocols are only examied when assertions are enabled, this should be wrapped in a OMNI_ASSERTIONS_ON check.
 #import <OmniBase/assertions.h> // Since we want you to use OMNI_ASSERTIONS_ON, make sure it is imported
 #ifdef OMNI_ASSERTIONS_ON

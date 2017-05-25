@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,9 +56,8 @@ static id (*originalPerformDefaultImplementation)(id self, SEL cmd) = NULL;
     return originalPerformDefaultImplementation(self, _cmd);
 }
 
-+ (void)didLoad;
-{
-    originalPerformDefaultImplementation = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(performDefaultImplementation), @selector(replacement_performDefaultImplementation));
-}
+OBDidLoad(^{
+    originalPerformDefaultImplementation = (void *)OBReplaceMethodImplementationWithSelector([NSSetCommand class],  @selector(performDefaultImplementation), @selector(replacement_performDefaultImplementation));
+});
 
 @end

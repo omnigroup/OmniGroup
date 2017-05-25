@@ -14,9 +14,7 @@
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFUTI.h>
-#import <OmniUI/OUIAppController+InAppStore.h>
 #import <OmniUI/OUIBarButtonItem.h>
-#import <OmniUI/OUIInAppStoreViewController.h>
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
@@ -210,6 +208,12 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 - (BOOL)shouldAutorotate;
 {
     return YES;
+}
+
+- (BOOL)shouldBeDismissedTransitioningToTraitCollection:(UITraitCollection *)traitCollection;
+{
+    // We should avoid losing progress while exporting.
+    return NO;
 }
 
 #pragma mark - API
@@ -523,8 +527,6 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     _needsToCheckInAppPurchaseAvailability = YES;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadExportTypes:) name:OUIInAppStoreViewControllerUpgradeInstalledNotification object:nil];
-    
     if ([sender isKindOfClass:[OUIExportOption class]]) {
         OUIExportOption *option = (OUIExportOption *)sender;
         [_exporter purchaseExportType:option.exportType navigationController:self.navigationController];

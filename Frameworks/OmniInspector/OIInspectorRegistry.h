@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
 
-+ (void)registerAdditionalPanel:(NSWindowController *)additionalController;
 + (OIInspectorRegistry *)inspectorRegistryForMainWindow;
 + (BOOL)allowsEmptyInspectorList;
 
@@ -56,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (OIInspectorController *)controllerWithInspector:(OIInspector <OIConcreteInspector> *)inspector;
 
 /// Finds an existing OIInspectorController for the given OIInspector's identifier. This method will never create a new controller, and returns nil if the identifier is not associated with an existing controller's inspector.
-- (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
+- (nullable OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 
 - (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
 
@@ -130,7 +129,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 extern NSString * const OIInspectionSetChangedNotification;
-extern NSString * const OIWorkspacesHelpURLKey;
 
 @interface NSView (OIInspectorExtensions)
 - (BOOL)isInsideInspector;

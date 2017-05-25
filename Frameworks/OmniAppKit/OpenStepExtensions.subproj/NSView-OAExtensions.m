@@ -76,10 +76,10 @@ RCS_ID("$Id$")
 
 static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSView");
     original_setFrameSize = (typeof(original_setFrameSize))OBReplaceMethodImplementationWithSelector(self, @selector(setFrameSize:), @selector(OALogging_setFrameSize:));
-}
+});
 
 - (void)OALogging_setFrameSize:(NSSize)newSize;
 {
@@ -155,17 +155,18 @@ static void replacement_unlockFocus(NSView *self, SEL _cmd)
     original_unlockFocus(self, _cmd);
 }
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     OBASSERT(ViewsBeingDrawn == nil);
     
     ViewsBeingDrawn = [[NSCountedSet alloc] init];
     
+    Class self = objc_getClass("NSView");
+
     original_didAddSubview = (typeof(original_didAddSubview))OBReplaceMethodImplementation(self, @selector(didAddSubview:), (IMP)replacement_didAddSubview);
     original_willRemoveSubview = (typeof(original_willRemoveSubview))OBReplaceMethodImplementation(self, @selector(willRemoveSubview:), (IMP)replacement_willRemoveSubview);
     original_lockFocus = (typeof(original_lockFocus))OBReplaceMethodImplementation(self, @selector(lockFocus), (IMP)replacement_lockFocus);
     original_unlockFocus = (typeof(original_unlockFocus))OBReplaceMethodImplementation(self, @selector(unlockFocus), (IMP)replacement_unlockFocus);
-}
+});
 
 #endif
 

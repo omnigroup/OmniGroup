@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,7 @@
 - (NSArray *)documentPickerAvailableFilters:(OUIDocumentPicker *)picker; // array of OUIDocumentPickerFilter
 - (BOOL)documentPickerShouldOpenButNotDisplayUTType:(NSString *)fileType;
 - (NSPredicate *)documentPickerAvailableUTTypesPredicate:(OUIDocumentPicker *)picker; //expects a string of the fileType
+- (BOOL)documentPickerShouldAlwaysStackFilterControls;
 
 // Open
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;

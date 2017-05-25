@@ -88,10 +88,9 @@ static NSArray *oldDisabledBundleNames;
 #endif
 }
 
-+ (void)didLoad;
-{
-    [self registerKnownBundles];
-}
+OBDidLoad(^{
+    [OFBundleRegistry registerKnownBundles];
+});
 
 #ifdef OMNI_ASSERTIONS_ON
 + (BOOL)_checkBundlesAreInsideApp;
@@ -366,9 +365,12 @@ static NSString *_normalizedPath(NSString *path)
         aPath = _normalizedPath([bundleDict objectForKey:PathBundleDescriptionKey]);
         if (aPath)
             [seenPaths addObject:aPath];
-        aPath = _normalizedPath([[bundleDict objectForKey:PathBundleDescriptionKey] bundlePath]);
-        if (aPath)
-            [seenPaths addObject:aPath];
+        id pathValue = [bundleDict objectForKey:PathBundleDescriptionKey];
+        if ([pathValue respondsToSelector:@selector(bundlePath)]) {
+            aPath = _normalizedPath([pathValue bundlePath]);
+            if (aPath)
+                [seenPaths addObject:aPath];
+        }
     }
 
     NSDictionary *environmentDictionary = [[NSProcessInfo processInfo] environment];

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIAboutThisAppViewController.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
@@ -405,6 +406,11 @@ RCS_ID("$Id$")
 
 - (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
 {
+    // This is only dismissing the about view controller to cope with the radar filed in bug:///139071 (iOS-OmniGraffle Regression: Crash rotating iPhone while About > Build Details are displayed (UIViewReportBrokenSuperviewChain))
+    if (self.presentedViewController != nil && [self.presentedViewController isKindOfClass:[UINavigationController class]] && [((UINavigationController *)self.presentedViewController).topViewController isKindOfClass:[OUIAboutThisAppViewController class]]) {
+        [self.presentedViewController dismissViewControllerAnimated:NO completion:nil];
+    }
+
     [self _setUpNavigationControllerForTraitCollection:newCollection unconditionally:NO];
     [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
 }

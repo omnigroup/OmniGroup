@@ -26,7 +26,6 @@ RCS_ID("$Id$");
 {
     NSNumberFormatter *_wholeNumberFormatter;
     NSNumberFormatter *_fractionalNumberFormatter;
-    UIView *_fontSizeControl;
     BOOL _touchIsDown;
 }
 
@@ -98,7 +97,6 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
     _fractionalNumberFormatter = [[NSNumberFormatter alloc] init];
     [_fractionalNumberFormatter setPositiveFormat:decimalFormat];
     
-    
     return self;
 }
 
@@ -121,7 +119,10 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
 - (UIView *)makeFontSizeControlWithFrame:(CGRect)frame; // Return a new view w/o adding it to the view heirarchy
 
 {
-    UILabel *label = [[UILabel alloc] initWithFrame:frame];
+    OUIInspectorTextWell *label = [[OUIInspectorTextWell alloc] initWithFrame:frame];
+    label.editable = YES;
+    [label addTarget:self action:@selector(stepperTextFieldAction:) forControlEvents:UIControlEventValueChanged];
+
     label.textColor = [OUIInspector disabledLabelTextColor];
     label.font = [UIFont boldSystemFontOfSize:[OUIInspectorTextWell fontSize]];
     return label;
@@ -157,15 +158,43 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
             break;
     }
     
-    NSString *text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points"), valueText];
+    NSString *text = nil;
+    if (self.fontSizePointsString != nil) {
+        text = [NSString stringWithFormat:@"%@ %@", valueText, self.fontSizePointsString];
+    } else {
+        text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points"), valueText];
+    }
 
     [self updateFontSizeControl:_fontSizeControl withText:text];
 }
 
 - (void)updateFontSizeControl:(UIView *)fontSizeControl withText:(NSString *)text;
 {
-    UILabel *label = OB_CHECKED_CAST(UILabel, fontSizeControl);
+    OUIInspectorTextWell *label = OB_CHECKED_CAST(OUIInspectorTextWell, fontSizeControl);
     label.text = text;
+}
+
+- (void)stepperTextFieldAction:(OUIInspectorTextWell *)sender;
+{
+    NSInteger value = [[sender text] integerValue];
+    if (value == 0) {
+        return;
+    }
+    
+    CGFloat newSize = _normalizeFontSize(value);
+    for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
+        OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
+        if (fontDescriptor) {
+            fontDescriptor = [fontDescriptor newFontDescriptorWithSize:newSize];
+        } else {
+            UIFont *font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
+            fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
+        }
+        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:self.undoManager];
+    }
+    
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self->_fontSizeControl.accessibilityValue);
 }
 
 #pragma mark - OUIInspectorSlice subclass
@@ -260,7 +289,7 @@ static const CGFloat fontSizeControlWidth = 100.0f;
        
        [_fontSizeControl.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
        [_fontSizeControl.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
-       [_fontSizeControl.rightAnchor constraintEqualToAnchor:self.fontSizeDecreaseStepperButton.rightAnchor],
+       [_fontSizeControl.rightAnchor constraintEqualToAnchor:self.fontSizeDecreaseStepperButton.leftAnchor],
        [_fontSizeControl.leftAnchor constraintEqualToAnchor:self.fontSizeLabel.rightAnchor],
        ]
      ];

@@ -27,6 +27,7 @@
 
 @property (nonatomic) BOOL usesVerticalLayout;
 @property (nonatomic) BOOL showsTabImage;
+@property (nonatomic) BOOL showsTabTitle;
 @property (nonatomic, copy) UIFont *tabTitleFont;
 @property (nonatomic, copy) UIFont *selectedTabTitleFont;
 

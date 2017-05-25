@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,6 +82,20 @@ RCS_ID("$Id$");
     NSDecimalNumber *timeSpan;
     NSString *timeSpanString = @"2d";
     NSString *expectedTimeSpanString = @"2d";
+    XCTAssertTrue ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
+    XCTAssertEqualObjects (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
+}
+
+- (void)testArchiveUnitFormatterAllowsElapsed;
+{
+    OFTimeSpanFormatter *formatter = [[OFTimeSpanFormatter alloc] init];
+    formatter.usesArchiveUnitStrings = YES;
+    formatter.allowsElapsedUnits = YES;
+    formatter.shouldReturnNumber = NO;
+    formatter.displayUnmodifiedTimeSpan = YES;
+    OFTimeSpan *timeSpan;
+    NSString *timeSpanString = @"2ed 3eh";
+    NSString *expectedTimeSpanString = @"2ed 3eh";
     XCTAssertTrue ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     XCTAssertEqualObjects (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 }

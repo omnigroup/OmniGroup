@@ -11,6 +11,7 @@
 #import <OmniBase/assertions.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/OBObject.h>
+#import <OmniBase/OBLoadAction.h>
 
 #import <Foundation/NSUserDefaults.h>
 #import <Foundation/FoundationErrors.h>
@@ -70,12 +71,12 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     return self;
 }
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     OBLogErrorCreations = [[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"];
     
+    Class self = objc_getClass("NSError");
     original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementation(self, @selector(initWithDomain:code:userInfo:), (IMP)_replacement_initWithDomain_code_userInfo);
-}
+});
 
 - (NSError *)underlyingErrorWithDomain:(NSString *)domain;
 {

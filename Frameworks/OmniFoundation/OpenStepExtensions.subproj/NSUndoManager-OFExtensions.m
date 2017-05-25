@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -267,20 +267,13 @@ void _OFUndoManagerPopCallSite(NSUndoManager *undoManager)
 
 @implementation NSUndoManager (OFUndoLogging)
 
-// Only call +performPosing explicitly on iOS; on Mac, we have OBPostLoader, which makes that call for us.
-#if 1 && defined(DEBUG) && (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-+ (void)load
-{
-    [self performPosing];
-}
-#endif
-
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     // Need to turn on undo logging? Add an environment variable in your app's scheme, setting OFUndoManagerLoggingOptions to one of the values defined in this file's header
-    if (getenv("OFUndoManagerLoggingOptions") != NULL)
+    if (getenv("OFUndoManagerLoggingOptions") != NULL) {
+        Class self = objc_getClass("NSUndoManager");
         [self setLoggingOptions:atoi(getenv("OFUndoManagerLoggingOptions"))]; // TODO: Use an OFEnumNameTable and NSUserDefaults to make this more friendly
-}
+    }
+});
 
 - (void)logging_replacement_removeAllActions;
 {

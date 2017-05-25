@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,14 +40,13 @@ static id _replacement_mutable_initWithString(id self, SEL _cmd, NSString *strin
     return _original_mutable_initWithString(self, _cmd, string);
 }
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     _original_immutable_initWithString_attributes = (typeof(_original_immutable_initWithString_attributes))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteAttributedString"), @selector(initWithString:attributes:), (IMP)_replacement_immutable_initWithString_attributes);
     _original_immutable_initWithString = (typeof(_original_immutable_initWithString))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteAttributedString"), @selector(initWithString:), (IMP)_replacement_immutable_initWithString);
 
     _original_mutable_initWithString_attributes = (typeof(_original_mutable_initWithString_attributes))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteMutableAttributedString"), @selector(initWithString:attributes:), (IMP)_replacement_mutable_initWithString_attributes);
     _original_mutable_initWithString = (typeof(_original_mutable_initWithString))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteMutableAttributedString"), @selector(initWithString:), (IMP)_replacement_mutable_initWithString);
-}
+});
 #endif
 
 

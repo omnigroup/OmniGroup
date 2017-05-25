@@ -86,29 +86,38 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
-    self.label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
+    self.contentView = [[UIView alloc] init];
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    self.label = [[UILabel alloc] init];
+    self.label.translatesAutoresizingMaskIntoConstraints = NO;
     [self.label applyStyle:OUILabelStyleInspectorSliceInstructionText];
     
     self.label.numberOfLines = 0; // No limit
     self.label.text = _instructionText;
     self.label.lineBreakMode = NSLineBreakByWordWrapping;
 
-    [containerView addSubview:self.label];
+    [self.contentView addSubview:self.label];
 
     //constraints
-    containerView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.label.translatesAutoresizingMaskIntoConstraints = NO;
 
     [NSLayoutConstraint activateConstraints:
      @[
-       [self.label.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor],
-       [self.label.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor],
-       [self.label.topAnchor constraintEqualToAnchor:containerView.topAnchor constant:self.class.sliceAlignmentInsets.top],
-       [self.label.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor constant:self.class.sliceAlignmentInsets.bottom]
+       [self.label.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor],
+       [self.label.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor],
+       [self.label.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:self.class.sliceAlignmentInsets.top],
+       [self.label.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:self.class.sliceAlignmentInsets.bottom]
        ]];
 
-    self.view = containerView;
+    UIView *view = [[UIView alloc] init];
+    [view addSubview:self.contentView];
+    
+    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
+    self.view = view;
     
     [self sizeChanged];
 }

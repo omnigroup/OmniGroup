@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 @interface OUIFontSizeInspectorSlice : OUIAbstractFontInspectorSlice
 
 @property(nonatomic,strong) IBOutlet UILabel *fontSizeLabel;
+@property(nonatomic,strong) IBOutlet UIView *fontSizeControl;
 @property(nonatomic,strong) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
 @property(nonatomic,strong) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
 
@@ -25,5 +26,7 @@
 - (UIView *)makeFontSizeControlWithFrame:(CGRect)frame; // Return a new view w/o adding it to the view heirarchy
 - (void)updateFontSizeControl:(UIView *)fontSizeControl forFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
 - (void)updateFontSizeControl:(UIView *)fontSizeControl withText:(NSString *)text;
+
+@property (nonatomic, strong) NSString *fontSizePointsString;
 
 @end

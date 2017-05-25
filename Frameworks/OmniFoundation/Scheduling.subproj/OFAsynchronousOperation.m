@@ -88,6 +88,8 @@ static char observationCookie;
 
 - (void)observeCancellation:(BOOL)yn;
 {
+    /* We can't easily use atomic ops to handle this case, because we need to make sure that the add/remove observer calls are invoked in the same order as their threads' corresponding access to observingCancellation (otherwise the eventual state of the object won't match observingCancellation). */
+    /* One downside here is that during the "initial" observation, which can call our subclass's -handleCancellation, we're still holding the @synchronized lock. This doesn't seem likely to be a problem very often but could potentially lead to a deadlock if a subclass's -handleCancellation can block on something that blocks on us. */
     @synchronized (self) {
         if (yn && !observingCancellation) {
             [self addObserver:(id)[OFAsynchronousOperation class] forKeyPath:OFOperationIsCancelledKey options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionInitial context:&observationCookie];
@@ -101,6 +103,7 @@ static char observationCookie;
 {
     if (context != &observationCookie) {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+        return;
     }
     
     OBASSERT([keyPath isEqualToString:OFOperationIsCancelledKey]);

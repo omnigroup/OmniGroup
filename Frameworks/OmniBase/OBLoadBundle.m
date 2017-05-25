@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniBase/OmniBase.h>
-#import <OmniBase/OBPostLoader.h>
+#import <OmniBase/OBLoadAction.h>
 
 RCS_ID("$Id$");
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     
     // Run our ABI checks
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    [OBPostLoader processClasses];
+    OBInvokeRegisteredLoadActions();
     [pool drain];
 
     return 0;

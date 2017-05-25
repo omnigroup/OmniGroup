@@ -2328,12 +2328,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
     } else {
         [self updateTitle];
         // if we're displaying the title in the scrollview, we shouldn't use the titleview to show our sync button. instead, we add it to the right bar button items below.
-        // we're explicitly checking for compact or regular to avoid setting our titleView before we have a difinitive size class, which causes some constraint failures that aren't actually important, once the right size-class gets set.
-        if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular) {
-            self.navigationItem.titleView = _normalTitleView;
-        } else if (self.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
-            self.navigationItem.titleView = nil;
-        }
+        //bug:///141596 (iOS-OmniGraffle Regression: Title overlaps + button at some size classes [off-center])
+        // I removed the code here which used to swap the _normalTitleView into and out of the navigationItem's titleView, which was causing some bad layout due to timing. It turns out that the NavigationItem seems to just Do The Right Thing, so let's let it!
     }
     [navigationItem setLeftBarButtonItems:leftItems animated:animated];
 
@@ -2693,8 +2689,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
         [viewsDict setValue:self.filtersSegmentedControl forKey:@"filters"];
     }
                                  
-    
-    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
+    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact || ([delegate respondsToSelector:@selector(documentPickerShouldAlwaysStackFilterControls)] && [delegate documentPickerShouldAlwaysStackFilterControls])) {
         // use short labels for the filters control
         filterTitles = [availableFilters arrayByPerformingBlock:^(OUIDocumentPickerFilter *filter) {
             return filter.localizedFilterChooserShortButtonLabel;
@@ -2711,10 +2707,12 @@ static UIImage *ImageForScope(ODSScope *scope) {
                                                                                              options:kNilOptions
                                                                                              metrics:metricsDict
                                                                                                views:viewsDict]];
-            [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[sort]|"
-                                                                                               options:kNilOptions
-                                                                                               metrics:nil
-                                                                                                 views:viewsDict]];
+            [horizontalConstraints addObject:[NSLayoutConstraint constraintWithItem:self.sortSegmentedControl
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:self.filtersSegmentedControl
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                         multiplier:1.f constant:0.f]];
             [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[filters]|"
                                                                                                options:kNilOptions
                                                                                                metrics:nil

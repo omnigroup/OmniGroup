@@ -1,4 +1,4 @@
-// Copyright 2016 The Omni Group. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -238,6 +238,20 @@ static NSData *retrieveItemData(CFTypeRef item, CFTypeRef itemClass)
     }
 }
 
+static BOOL deleteAllFromKeychain(NSError **outError)
+{
+    // This banks on OFSDocumentKey being the only user of stored symmetric keys.
+    const void *keys[2] = { kSecAttrKeyClass, kSecClass, };
+    const void *values[2] = { kSecAttrKeyClassSymmetric, kSecClassKey, };
+    CFDictionaryRef query = CFDICT(keys, values);
+    
+    OSStatus err = SecItemDelete(query);
+    if (err != noErr && outError != NULL) {
+        *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil];
+    }
+    return (err == noErr);
+}
+
 #pragma mark -
 
 @implementation OFSDocumentKey (Keychain)
@@ -361,7 +375,11 @@ static int whined = 0;
     }
     
     return YES;
-    
+}
+
++ (BOOL)deleteAllEntriesWithError:(NSError **)outError;
+{
+    return deleteAllFromKeychain(outError);
 }
 
 @end

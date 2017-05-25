@@ -1,4 +1,4 @@
-// Copyright 1999-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,8 +75,9 @@ static NSBundle *(*original_bundleWithIdentifier)(id self, SEL _cmd, NSString *i
     return nil;
 }
 
-+ (void) performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSBundle");
+    
     cachedBundlesForClasses = [[NSMutableDictionary alloc] init];
     cachedBundlesForClassesLock = [[NSLock alloc] init];
     oldBundleForClass = (typeof(oldBundleForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self)/* we're replacing a class method */, @selector(bundleForClass:), @selector(replacement_bundleForClass:));
@@ -84,6 +85,6 @@ static NSBundle *(*original_bundleWithIdentifier)(id self, SEL _cmd, NSString *i
     
     original_bundleWithIdentifier = (typeof(original_bundleWithIdentifier))OBReplaceMethodImplementationWithSelector(object_getClass(self) /* we're replacing a class method */, @selector(bundleWithIdentifier:), @selector(replacement_bundleWithIdentifier:));
     OBPOSTCONDITION(original_bundleWithIdentifier != NULL);
-}
+});
 
 @end

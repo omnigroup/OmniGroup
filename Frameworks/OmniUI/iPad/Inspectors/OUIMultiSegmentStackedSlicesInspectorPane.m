@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,8 +32,16 @@ RCS_ID("$Id$");
     
     _titleTabBar = [[OUITabBar alloc] initWithFrame:CGRectMake(0,0,[OUIInspector defaultInspectorContentWidth],30)];
     _titleTabBar.tabTitles = [_segments valueForKey:@"title"];
+    // titles have to be set before images, because reasons.
+    for (OUIInspectorSegment *segment in _segments) {
+        if (segment.image) {
+            _titleTabBar.showsTabImage = YES;
+            _titleTabBar.showsTabTitle = NO;
+            [_titleTabBar setImage:segment.image forTabWithTitle:segment.title];
+        }
+    }
     [_titleTabBar addTarget:self action:@selector(_changeSegment:) forControlEvents:UIControlEventValueChanged];
-    
+    _titleTabBar.appearanceDelegate = self;
     // Do this once in case we are told to inspect objects before our view is supposedly loaded.
     _titleTabBar.selectedTabIndex = 0;
     [self _changeSegment:nil];
@@ -67,10 +75,6 @@ RCS_ID("$Id$");
 static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
 {
     NSArray *toolbarItems = [[[segment slices] objectAtIndex:0] toolbarItems];
-    
-    if ([toolbarItems count] == 0)
-        // We don't need the bottom toolbar, but toggling between having a toolbar and not is buggy, seemingly in UIPopoverController. For one thing, it animates even if we pass around animate:NO. Turning that off via OUIWithoutAnimating(^{...}), the SHADOW behind the popover still animates. Also, the content size of the popover is what the contained view controller gets to set, so we would need to report a greater size for non-toolbar controllers, or we'd need OUIInspector to adjust height when it toggled the toolbar on/off.
-        toolbarItems = [NSArray arrayWithObject:[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL]];
     
     return toolbarItems;
 }
@@ -149,6 +153,13 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
        [_contentView.leftAnchor constraintEqualToAnchor:container.leftAnchor],
        [_contentView.rightAnchor constraintEqualToAnchor:container.rightAnchor],
        ]];
+}
+
+#pragma mark - OUITabBarAppearanceDelegate
+
+- (UIColor *)selectedTabTintColor;
+{
+    return [UIColor blackColor];
 }
 
 

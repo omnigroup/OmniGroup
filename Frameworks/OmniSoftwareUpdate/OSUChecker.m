@@ -238,12 +238,11 @@ static void OSUAtExitHandler(void)
 #endif
 }
 
-// On the Mac, we'll automatically start when OFController gets running. On iOS we don't have OBPostLoader or OFController and apps must call +startWithTarget: and +shutdown
+// On the Mac, we'll automatically start when OFController gets running. On iOS we don't have OFController and apps must call +startWithTarget: and +shutdown
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-+ (void)didLoad;
-{
-    [[OFController sharedController] addStatusObserver:(id)self];
-}
+OBDidLoad(^{
+    [[OFController sharedController] addStatusObserver:(id)[OSUChecker class]];
+});
 #endif
 
 static OSUChecker *sharedChecker = nil;
@@ -594,7 +593,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #pragma mark -
 #pragma mark NSObject (OFControllerStatusObserver)
 
-// On the Mac, we'll automatically start when OFController gets running. On iOS we don't have OBPostLoader or OFController and apps must call +startWithTarget: and +shutdown
+// On the Mac, we'll automatically start when OFController gets running. On iOS we don't have OFController and apps must call +startWithTarget: and +shutdown
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (void)controllerStartedRunning:(OFController *)controller;
 {

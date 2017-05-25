@@ -9,14 +9,13 @@
 
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
+#import <OmniUI/OUIAboutThisAppViewController.h>
 #import <OmniUI/OUIAbstractColorInspectorSlice.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 #import <OmniUI/OUIActionInspectorSlice.h>
 #import <OmniUI/OUIActionViewController.h>
 #import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAnimationSequence.h>
-#import <OmniUI/OUIAppController+InAppStore.h>
-#import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIAttentionSeekingButton.h>
 #import <OmniUI/OUIBarButtonItem.h>
@@ -68,8 +67,6 @@
 #import <OmniUI/OUIGradientView.h>
 #import <OmniUI/OUIHoldOnesHorsesIndicator.h>
 #import <OmniUI/OUIImages.h>
-#import <OmniUI/OUIInAppStoreObserver.h>
-#import <OmniUI/OUIInAppStoreViewController.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorButton.h>
 #import <OmniUI/OUIInspectorDelegate.h>
@@ -112,7 +109,6 @@
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIPasswordAlert.h>
 #import <OmniUI/OUIPurchaseURLCommand.h>
-#import <OmniUI/OUIReceiptRefreshRequest.h>
 #import <OmniUI/OUIRotationGestureRecognizer.h>
 #import <OmniUI/OUIRotationLock.h>
 #import <OmniUI/OUIScalingScrollView.h>

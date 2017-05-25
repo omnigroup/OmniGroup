@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -234,6 +234,9 @@ static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeM
 
 static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeMask)
 {
+    OBPRECONDITION(size.width >= 1);
+    OBPRECONDITION(size.height >= 1);
+
 #if 0 // alpha only doesn't seem to work right. it seems like they have an off-by-one error since we get a diagonalized pattern with garbage at the end in this case. Either that, or something is goofy with bytesPerRow in this case (this was with a 70x120 image).
     size_t componentCount = 1;
     CGImageAlphaInfo alphaInfo = kCGImageAlphaOnly;
@@ -250,6 +253,10 @@ static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeM
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(colorSpaceName);
     CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, bytesPerRow, colorSpace, (CGBitmapInfo)alphaInfo);
     CGColorSpaceRelease(colorSpace);
+
+    if (!ctx) {
+        return NULL;
+    }
 
     CGRect bounds = CGRectMake(0, 0, size.width, size.height);
     _drawInnerShadow(ctx, bounds, shadowEdgeMask);

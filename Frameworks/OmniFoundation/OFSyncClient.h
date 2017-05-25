@@ -18,7 +18,7 @@ extern NSMutableDictionary *OFSyncBaseClientState(NSString *domain, NSString *cl
 
 extern NSString *OFSyncClientIdentifier(NSDictionary *clientState);
 extern NSDate *OFSyncClientLastSyncDate(NSDictionary *clientState);
-extern NSString *OFSyncClientApplicationIdentifier(NSDictionary *clientState);
+extern NSString * _Nullable OFSyncClientApplicationIdentifier(NSDictionary *clientState);
 extern OFVersionNumber *OFSyncClientVersion(NSDictionary *clientState);
 extern NSString *OFSyncClientHardwareModel(NSDictionary *clientState);
 

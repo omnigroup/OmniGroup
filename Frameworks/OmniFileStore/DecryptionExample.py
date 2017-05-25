@@ -16,6 +16,18 @@ from cryptography.hazmat import primitives
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.ciphers import algorithms, modes, Cipher
 
+try:
+    import __builtin__
+except ImportError:
+    # Python 3
+    import builtins as __builtin__
+
+def print(*args, **kwargs):
+    """Custom print that is silent if this is loaded as a module"""
+    if __name__ != '__main__':
+        return None
+    return __builtin__.print(*args, **kwargs)
+
 # Key type name constants
 ActiveAES_CTR_HMAC  = 'ActiveAES_CTR_HMAC'  # Currently-active CTR+HMAC key
 RetiredAES_CTR_HMAC = 'RetiredAES_CTR_HMAC' # Old key used after rollover

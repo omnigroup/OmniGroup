@@ -1,4 +1,4 @@
-// Copyright 2000-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 RCS_ID("$Id$");
+
+#import <OmniBase/OBLoadAction.h>
 
 /*
  Various hacks into the Cocoa scripting support to make debugging easier.
@@ -24,14 +26,15 @@ RCS_ID("$Id$");
 static NSClassDescription * (*original_NSClassDescription_classDescriptionForClass)(Class self, SEL _cmd, Class aClass);
 static void (*original_NSClassDescription_registerClassDescriptionForClass)(Class self, SEL _cmd, NSClassDescription *description, Class aClass);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
     
+    Class self = objc_getClass("NSClassDescription");
+
     original_NSClassDescription_classDescriptionForClass = (typeof(original_NSClassDescription_classDescriptionForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self), @selector(classDescriptionForClass:), @selector(replacement_classDescriptionForClass:));
     original_NSClassDescription_registerClassDescriptionForClass = (typeof(original_NSClassDescription_registerClassDescriptionForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self), @selector(registerClassDescription:forClass:), @selector(replacement_registerClassDescription:forClass:));
-}
+});
 
 + (void)replacement_registerClassDescription:(NSClassDescription *)description forClass:(Class)aClass;
 {
@@ -60,16 +63,17 @@ static void (*original_NSClassDescription_registerClassDescriptionForClass)(Clas
 
 static BOOL (*original_NSPositionalSpecifier_describedClass_isSubclassOfClass)(Class self, SEL _cmd, id cls, Class superclass) = NULL;
 
-+ (void)performPosing;
-{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
+    Class self = objc_getClass("NSPositionalSpecifier");
+
     original_NSPositionalSpecifier_describedClass_isSubclassOfClass = (typeof(original_NSPositionalSpecifier_describedClass_isSubclassOfClass))OBReplaceClassMethodImplementationWithSelector(self, @selector(_describedClass:isSubclassOfClass:), @selector(_replacement_describedClass:isSubclassOfClass:));
+});
 #pragma clang diagnostic pop
-}
 
 + (BOOL)_replacement_describedClass:(id)cls isSubclassOfClass:(Class)otherClass;
 {
@@ -86,13 +90,14 @@ static BOOL (*original_NSPositionalSpecifier_describedClass_isSubclassOfClass)(C
 
 static id (*original_NSScriptObjectSpecifier_objectsByEvaluatingSpecifier)(NSScriptObjectSpecifier *self, SEL _cmd);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
 
+    Class self = objc_getClass("NSScriptObjectSpecifier");
+
     original_NSScriptObjectSpecifier_objectsByEvaluatingSpecifier = (typeof(original_NSScriptObjectSpecifier_objectsByEvaluatingSpecifier))OBReplaceMethodImplementationWithSelector(self, @selector(objectsByEvaluatingSpecifier), @selector(replacement_objectsByEvaluatingSpecifier));
-}
+});
 
 - (id)replacement_objectsByEvaluatingSpecifier;
 {
@@ -110,14 +115,15 @@ static id (*original_NSScriptObjectSpecifier_objectsByEvaluatingSpecifier)(NSScr
 static id (*original_NSIndexSpecifier_objectsByEvaluatingSpecifier)(NSIndexSpecifier *self, SEL _cmd);
 static id (*original_objectsByEvaluatingWithContainers)(NSIndexSpecifier *self, SEL _cmd, id containers);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
 
+    Class self = objc_getClass("NSIndexSpecifier");
+
     original_NSIndexSpecifier_objectsByEvaluatingSpecifier = (typeof(original_NSIndexSpecifier_objectsByEvaluatingSpecifier))OBReplaceMethodImplementationWithSelector(self, @selector(objectsByEvaluatingSpecifier), @selector(replacement_objectsByEvaluatingSpecifier));
     original_objectsByEvaluatingWithContainers = (typeof(original_objectsByEvaluatingWithContainers))OBReplaceMethodImplementationWithSelector(self, @selector(objectsByEvaluatingWithContainers:), @selector(replacement_objectsByEvaluatingWithContainers:));
-}
+});
 
 - (id)replacement_objectsByEvaluatingSpecifier;
 {
@@ -147,17 +153,18 @@ static NSString *(*original_NSScriptClassDescription_keyWithAppleEventCode)(NSSc
 static BOOL (*original_NSScriptClassDescription_supportsCommand)(id self, SEL _cmd, NSScriptCommandDescription *commandDef);
 static SEL (*original_NSScriptClassDescription_selectorForCommand)(id self, SEL _cmd, NSScriptCommandDescription *commandDef);
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
+
+    Class self = objc_getClass("NSScriptClassDescription");
 
     original_NSScriptClassDescription_classDescriptionForClass = (typeof(original_NSScriptClassDescription_classDescriptionForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self), @selector(classDescriptionForClass:), @selector(replacement_classDescriptionForClass:));
     original_NSScriptClassDescription_classDescriptionForKey = (typeof(original_NSScriptClassDescription_classDescriptionForKey))OBReplaceMethodImplementationWithSelector(self, @selector(classDescriptionForKey:), @selector(replacement_classDescriptionForKey:));
     original_NSScriptClassDescription_keyWithAppleEventCode = (typeof(original_NSScriptClassDescription_keyWithAppleEventCode))OBReplaceMethodImplementationWithSelector(self, @selector(keyWithAppleEventCode:), @selector(replacement_keyWithAppleEventCode:));
     original_NSScriptClassDescription_supportsCommand = (typeof(original_NSScriptClassDescription_supportsCommand))OBReplaceMethodImplementationWithSelector(self, @selector(supportsCommand:), @selector(replacement_supportsCommand:));
     original_NSScriptClassDescription_selectorForCommand = (typeof(original_NSScriptClassDescription_selectorForCommand))OBReplaceMethodImplementationWithSelector(self, @selector(selectorForCommand:), @selector(replacement_selectorForCommand:));
-}
+});
 
 + (NSScriptClassDescription *)replacement_classDescriptionForClass:(Class)aClass;
 {
@@ -208,13 +215,14 @@ static SEL (*original_NSScriptClassDescription_selectorForCommand)(id self, SEL 
 
 static id (*original_coerceValue_toClass)(id self, SEL _cmd, id value, Class cls) = NULL;
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
     
+    Class self = objc_getClass("NSScriptCoercionHandler");
+
     original_coerceValue_toClass = (typeof(original_coerceValue_toClass))OBReplaceMethodImplementationWithSelector(self, @selector(coerceValue:toClass:), @selector(replacement_coerceValue:toClass:));
-}
+});
 
 - (id)replacement_coerceValue:(id)value toClass:(Class)toClass;
 {

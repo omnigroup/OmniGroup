@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,10 +21,10 @@ RCS_ID("$Id$");
 
 static NSString *aboutAliasFilename = nil;
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWAboutURLProcessor class];
     [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"about"] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:YES];
-}
+});
 
 + (void)initialize
 {

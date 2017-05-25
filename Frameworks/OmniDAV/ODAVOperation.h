@@ -13,14 +13,16 @@
 
 @class ODAVRedirect;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ODAVOperation : NSObject <ODAVAsynchronousOperation>
 
 - (NSError *)prettyErrorForDAVError:(NSError *)davError;
 
-@property(nonatomic,readonly) NSError *error;
+@property(nonatomic,readonly,nullable) NSError *error;
 
 @property(nonatomic,readonly) NSInteger statusCode;
-- (NSString *)valueForResponseHeader:(NSString *)header;
+- (NSString * __nullable)valueForResponseHeader:(NSString *)header;
 
 @property(nonatomic,readonly) NSArray <ODAVRedirect *> *redirects; /* see below */
 
@@ -32,7 +34,7 @@
 /* The array returned by -redirects holds a sequence of ODAVRedirect objects, each corresponding to one redirection or URL rewrite. */
 @interface ODAVRedirect : NSObject
 
-+ (NSURL *)suggestAlternateURLForURL:(NSURL *)url withRedirects:(NSArray <ODAVRedirect *> *)redirects;
++ (NSURL * __nullable)suggestAlternateURLForURL:(NSURL *)url withRedirects:(NSArray <ODAVRedirect *> *)redirects;
 
 @property(nonatomic,readonly,copy) NSURL *from;
 @property(nonatomic,readonly,copy) NSURL *to;
@@ -45,7 +47,10 @@ extern NSString * const ODAVContentTypeHeader;
 #define    kODAVRedirectPROPFIND    (@"PROPFIND")  /* Redirected ourselves because PROPFIND returned a URL other than the one we did a PROPFIND on; see for example the last paragraph of RFC4918 [5.2] */
 #define    kODAVRedirectContentLocation  (@"Content-Location")  /* "Redirect" because a response included a Content-Location: header; see e.g. RFC4918 [5.2] para 8 */
 
-void ODAVAddRedirectEntry(NSMutableArray <ODAVRedirect *> *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary *responseHeaders) OB_HIDDEN;
+void ODAVAddRedirectEntry(NSMutableArray <ODAVRedirect *> *entries, NSString *type, NSURL *from, NSURL *to, NSDictionary * __nullable responseHeaders) OB_HIDDEN;
 
 /* Returns YES if the string matches the 'byte-content-range' production from rfc7233. Fills in any out parameters which apply; unspecified values are left alone. Returns YES iff the header is successfully parsed (but may touch some output values even on failure). */
-BOOL ODAVParseContentRangeBytes(NSString *contentRange, unsigned long long *outFirstByte, unsigned long long *outLastByte, unsigned long long *outTotalLength);
+BOOL ODAVParseContentRangeBytes(NSString * __nullable contentRange, unsigned long long * __nullable outFirstByte, unsigned long long * __nullable outLastByte, unsigned long long * __nullable outTotalLength);
+
+
+NS_ASSUME_NONNULL_END

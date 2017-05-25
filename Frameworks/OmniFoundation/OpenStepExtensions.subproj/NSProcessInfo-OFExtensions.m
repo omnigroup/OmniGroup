@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,10 +30,10 @@ static NSString *_replacement_hostName(NSProcessInfo *self, SEL _cmd)
     OBASSERT_NOT_REACHED("Do not call -[NSProcessInfo hostName] as it may hang with a long timeout if reverse DNS entries for the host's IP aren't configured.  Use OFHostName() instead.");
     return _original_hostName(self, _cmd);
 }
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSProcessInfo");
     _original_hostName = (typeof(_original_hostName))OBReplaceMethodImplementation(self, @selector(hostName), (IMP)_replacement_hostName);
-}
+});
 #endif
 
 - (NSNumber *)processNumber;

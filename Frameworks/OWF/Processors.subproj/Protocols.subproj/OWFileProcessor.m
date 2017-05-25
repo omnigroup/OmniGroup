@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,12 +38,12 @@ RCS_ID("$Id$")
 static OFPreference *directoryIndexFilenamePreference = nil;
 static OFPreference *fileRefreshIntervalPreference = nil;
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWFileProcessor class];
     [self registerProcessorClass:self fromContentType:[OWURL contentTypeForScheme:@"file"] toContentType:[OWContentType wildcardContentType] cost:1.0f producingSource:YES];
     directoryIndexFilenamePreference = [OFPreference preferenceForKey:@"OWDirectoryIndexFilename"];
     fileRefreshIntervalPreference = [OFPreference preferenceForKey:@"OWFileRefreshInterval"];
-}
+});
 
 + (OFMultiValueDictionary *)headersForFilename:(NSString *)filename;
 {

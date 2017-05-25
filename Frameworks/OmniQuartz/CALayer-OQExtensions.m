@@ -233,8 +233,14 @@ static void OQEnableDrawInContextLogging(void)
 }
 
 #if defined(OQ_ANIMATION_LOGGING_ENABLED) || defined(LOG_CONTENT_FILLING) || defined(LOG_DRAW_IN_CONTEXT_TIME) || defined(LOG_RENDER_IN_CONTEXT_TIME) || defined(OMNI_ASSERTIONS_ON)
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+
+#if !TARGET_OS_OSX
+    // We previously had a +performPosing method on all platforms, but it only got called on the Mac.
+    return;
+#endif
+
+    Class self = objc_getClass("CALayer");
 #if defined(OMNI_ASSERTIONS_ON)
     INSTALL_CONVERT_CHECK(Point, from);
     INSTALL_CONVERT_CHECK(Point, to);
@@ -259,7 +265,7 @@ static void OQEnableDrawInContextLogging(void)
 #if defined(LOG_RENDER_IN_CONTEXT_TIME)
     OQEnableRenderInContextLogging();
 #endif
-}
+});
 #endif
 
 - (CALayer *)rootLayer;

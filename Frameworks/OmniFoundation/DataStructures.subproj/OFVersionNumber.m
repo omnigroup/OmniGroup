@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -410,12 +410,11 @@ NSString * const OFVersionNumberTransformerName = @"OFVersionNumberTransformer";
 
 @implementation OFVersionNumberTransformer
 
-+ (void)didLoad;
-{
-    OFVersionNumberTransformer *instance = [[self alloc] init];
+OBDidLoad(^{
+    OFVersionNumberTransformer *instance = [[OFVersionNumberTransformer alloc] init];
     [NSValueTransformer setValueTransformer:instance forName:@"OFVersionNumberTransformer"];
     [instance release];
-}
+});
 
 + (Class)transformedValueClass;
 {

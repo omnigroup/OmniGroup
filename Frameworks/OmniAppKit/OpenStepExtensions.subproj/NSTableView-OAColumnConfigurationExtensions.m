@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,11 +47,11 @@ RCS_ID("$Id$")
 static void (*originalOutlineSetDataSource)(NSOutlineView *self, SEL _cmd, id <NSOutlineViewDataSource> dataSource);
 static void (*originalOutlineReloadData)(NSOutlineView *self, SEL _cmd);
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [NSOutlineView class];
     originalOutlineSetDataSource = (typeof(originalOutlineSetDataSource))OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
     originalOutlineReloadData = (typeof(originalOutlineReloadData))OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
-}
+});
 
 // NSOutlineView method replacements
 
@@ -76,12 +76,12 @@ static void (*originalSetDataSource)(NSTableView *self, SEL _cmd, id <NSTableVie
 static void (*originalReloadData)(NSTableView *self, SEL _cmd);
 static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SEL _cmd, NSString *identifier);
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [NSTableView class];
     originalSetDataSource = (typeof(originalSetDataSource))OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
     originalReloadData = (typeof(originalReloadData))OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
     originalTableColumnWithIdentifier = (typeof(originalTableColumnWithIdentifier))OBReplaceMethodImplementationWithSelector(self, @selector(tableColumnWithIdentifier:), @selector(_replacementTableColumnWithIdentifier:));
-}
+});
 
 
 // NSTableView method replacements

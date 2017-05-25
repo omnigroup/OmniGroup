@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,9 +25,9 @@ static id replacement_executeCommand(NSScriptCommand *self, SEL _cmd)
     return result;
 }
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSScriptCommand");
     original_executeCommand = (typeof(original_executeCommand))OBReplaceMethodImplementation(self, @selector(executeCommand), (IMP)replacement_executeCommand);
-}
+});
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,14 +22,14 @@ RCS_ID("$Id$")
 
 @implementation OWUnixFTPProcessor
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
+    Class self = [OWUnixFTPProcessor class];
     [self registerForContentTypeString:@"OWFTPDirectory/UNIX" cost:1.0f];
     [self registerForContentTypeString:@"OWFTPDirectory/RHAPSODY" cost:1.0f];
     [self registerForContentTypeString:@"OWFTPDirectory/unknown" cost:10.0f];
     [self registerForContentTypeString:@"OWFTPDirectory/Windows_NT" cost:3.0f];
     [self registerForContentTypeString:@"OWFTPDirectory/MacOS-MachTen" cost:2.0f];
-}
+});
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {

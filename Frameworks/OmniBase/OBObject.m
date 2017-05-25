@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,7 @@
 
 #import <OmniBase/OBObject.h>
 
-// If we do end up pulling over OBObject, let's try to avoid OBPostLoader on the iPhone.  This means no +didLoad, +performPosing, and friends (but quicker startup).
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <OmniBase/OBPostLoader.h>
-#endif
+#import <OmniBase/OBLoadAction.h>
 
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
@@ -53,9 +50,7 @@ static BOOL OBObjectDebug = NO;
 #endif
 
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-        [OBPostLoader processClasses];
-#endif
+        OBInvokeRegisteredLoadActions();
     }
 
 #ifdef DEBUG_INITIALIZE

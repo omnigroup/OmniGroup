@@ -45,6 +45,7 @@
 - (void)documentDidDisableEnditing:(OUIDocument *)document;
 - (void)documentWillRebuildViewController:(OUIDocument *)document;
 - (void)documentDidRebuildViewController:(OUIDocument *)document;
+- (void)documentDidFailToRebuildViewController:(OUIDocument *)document;
 
 - (void)openDocument:(ODSFileItem *)fileItem;
 - (void)openDocument:(ODSFileItem *)fileItem fromPeekWithWillPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;

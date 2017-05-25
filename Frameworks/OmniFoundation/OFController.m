@@ -241,7 +241,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     }];
 }
 
-/*" Subscribes the observer to a set of notifications based on the methods that it implements in the OFControllerStatusObserver informal protocol.  Classes can register for these notifications in their +didLoad methods (and those +didLoad methods probably shouldn't do much else, since defaults aren't yet registered during +didLoad). "*/
+/*" Subscribes the observer to a set of notifications based on the methods that it implements in the OFControllerStatusObserver informal protocol.  Classes can register for these notifications in their OBDidLoad actions (and those actions probably shouldn't do much else, since defaults aren't yet registered). "*/
 - (void)addStatusObserver:(id <OFControllerStatusObserver>)observer;
 {
     OBPRECONDITION(observer != nil);

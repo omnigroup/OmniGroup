@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,10 +39,6 @@ static NSMutableDictionary *bundledClassRegistry;
 static NSString *OFBundledClassDidLoadNotification;
 static NSMutableArray *immediateLoadClasses;
 
-#ifndef PRELOAD_ALL_CLASSES
-#define PRELOAD_ALL_CLASSES 0
-#endif
-
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -51,47 +47,9 @@ static NSMutableArray *immediateLoadClasses;
     bundledClassRegistry = [[NSMutableDictionary alloc] initWithCapacity:64];
     immediateLoadClasses = [[NSMutableArray alloc] init];
     OFBundledClassDidLoadNotification = [@"OFBundledClassDidLoad" retain];
-
-#if PRELOAD_ALL_CLASSES
-    if ([NSThread isMultiThreaded]) {
-#ifdef DEBUG
-        NSLog(@"Warning: +[%@ %@] called after going multithreaded!", NSStringFromClass(self), NSStringFromSelector(_cmd));
-#endif
-        [self loadAllClasses];
-    } else {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loadAllClasses) name:NSWillBecomeMultiThreadedNotification object:nil];
-    }
-#endif
 }
 
 static BOOL OFBundledClassDebug = NO;
-
-+ (void)loadAllClasses;
-{
-    // We've discovered that a lot of OmniWeb's crashes are caused by one thread loading a bundle while another thread is trying to look up a method implementation:  apparently the Objective C runtime is not thread-safe with respect to loading bundles.  As an experiment, we're now preloading all the bundles to see if that makes the application more stable.  Unfortunately, this slows down our launch time, which was already bad enough.
-    // We've thought of three alternatives to preloading:
-    // 1. Wait until all other threads are idle before loading a bundle.  (Huge disadvantage: if we're downloading a 100MB file, that might pause all the threads for a long time.)
-    // 2. Suspend all other threads, and walk their stacks to see if any are in the Objective C runtime.  Once all threads are out of the runtime go ahead and load the bundle, then resume the threads.
-    // 3. Try to patch the runtime so it is thread-safe.
-
-    [bundleLock lock];
-    @try {
-        NSString *aClassName;
-        NSEnumerator *classNameEnumerator = [bundledClassRegistry keyEnumerator];
-        while ((aClassName = [classNameEnumerator nextObject])) {
-            OFBundledClass *bundledClass = [bundledClassRegistry objectForKey:aClassName];
-            
-            @try {
-                [bundledClass loadBundledClass];
-            } @catch (NSException *exc) {
-                NSLog(@"+[OFBundledClass loadAllClasses]: Exception while loading %@: %@", aClassName, [exc reason]);
-            }
-        }
-    } @catch (NSException *exc) {
-        NSLog(@"+[OFBundledClass loadAllClasses]: %@", [exc reason]);
-    }
-    [bundleLock unlock];
-}
 
 + (Class)classNamed:(NSString *)aClassName;
 {

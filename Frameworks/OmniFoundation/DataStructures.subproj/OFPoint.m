@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,12 +126,11 @@ NSString * const OFPointToPropertyListTransformerName = @"OFPointToPropertyListT
 
 @implementation OFPointToPropertyListTransformer
 
-+ (void)didLoad;
-{
-    OFPointToPropertyListTransformer *instance = [[self alloc] init];
+OBDidLoad(^{
+    OFPointToPropertyListTransformer *instance = [[OFPointToPropertyListTransformer alloc] init];
     [NSValueTransformer setValueTransformer:instance forName:OFPointToPropertyListTransformerName];
     [instance release];
-}
+});
 
 + (Class)transformedValueClass;
 {

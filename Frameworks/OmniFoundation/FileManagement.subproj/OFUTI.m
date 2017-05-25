@@ -39,10 +39,18 @@ NSString * const OFTUTIDeclarationUsageType = @"OFTUTIDeclarationUsageType";
 //   },
 //   ...
 // }
-static NSDictionary *MainBundleExportedTypeDeclarationsByTag;
-static NSDictionary *MainBundleImportedTypeDeclarationsByTag;
+static NSDictionary *ExportedTypeDeclarationsByTag;
+static NSDictionary *ImportedTypeDeclarationsByTag;
+
+// A mapping of the type definitions that we've found
+static NSDictionary <NSString *, NSDictionary *> *TypeDefinitionByIdentifier;
 
 static BOOL OFUTIDiagnosticsEmitted = NO;
+
+static BOOL _TypeConformsToType(NSString *type, NSString *conformsToType)
+{
+    return UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)conformsToType);
+}
 
 #define OFUTI_DIAG(fmt, ...) \
     do { \
@@ -58,14 +66,15 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
     // A type declaration is a dictionary...
     for (NSDictionary *declaration in typeDeclarations) {
         // ...with a string value for kUTTypeIdentifierKey...
-        NSString *identifier = [declaration objectForKey:(NSString *)kUTTypeIdentifierKey];
-        if ([identifier isKindOfClass:[NSString class]])
-            identifier = [identifier lowercaseString];
-        else {
+        NSString *identifier = declaration[(NSString *)kUTTypeIdentifierKey];
+        if (![identifier isKindOfClass:[NSString class]]) {
             OFUTI_DIAG(@"Type declaration identifier must be a string; found \"%@\" instead.", identifier);
             continue;
         }
-        
+
+        // TODO: Warn about this instead of silently 'fixing' it.
+        identifier = [identifier lowercaseString];
+
         // ...and a tag specification dictionary as a value for kUTTypeTagSpecificationKey.
         NSDictionary *tagSpecs = [declaration objectForKey:(NSString *)kUTTypeTagSpecificationKey];
         if (!tagSpecs)
@@ -108,13 +117,13 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                     [classDict setObject:mappedIdentifiers forKey:value];
                     [mappedIdentifiers release];
                 } else {
-                    BOOL conformsToPublicData = UTTypeConformsTo((__bridge CFStringRef)identifier, kUTTypeData);
-                    BOOL conformsToPublicDirectory = UTTypeConformsTo((__bridge CFStringRef)identifier, kUTTypeDirectory);
+                    BOOL conformsToPublicData = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeData);
+                    BOOL conformsToPublicDirectory = _TypeConformsToType(identifier, (__bridge NSString *)kUTTypeDirectory);
                     
                     if (!conformsToPublicData && !conformsToPublicDirectory) {
-                        OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory);
+                        OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
                     } else if (conformsToPublicData && conformsToPublicDirectory) {
-                        OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory);
+                        OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one. Declaration is %@", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory, declaration);
                     }
 
                     // This allows an Application to define a specific UTI for export only which is not declared in UTExportedTypeDeclarations.  This allows an application to register multiple UTIs for say HTML, without generating an error.
@@ -123,10 +132,11 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                         conformsToPublicData = NO;
                         conformsToPublicDirectory = NO;
                     }
+
                     // Enumerate the existing types declared for this tag and warn if they share the same conformance to the flat-file (public.data) or directory (public.directory) physical type trees.
                     for (NSString *existingIdentifier in mappedIdentifiers) {
-                        if ((conformsToPublicData && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeData))
-                            || (conformsToPublicDirectory && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeDirectory))) {
+                        if ((conformsToPublicData && _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeData))
+                            || (conformsToPublicDirectory && _TypeConformsToType(existingIdentifier, (__bridge NSString *)kUTTypeDirectory))) {
                             OFUTI_DIAG(@"Conflict detected registering type \"%@\": type \"%@\" has already claimed tag \"%@\" for class \"%@\". Which one is used is undefined.", identifier, existingIdentifier, value, tagClass);
                             OFUTI_DIAG(@"If these types are for export only, consider using the %@ key with value %@ in the type definition in your Info.plist to silence this warning.", OFTUTIDeclarationUsageType, OFExportOnlyDeclaration);
                             break;
@@ -142,6 +152,20 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
     return result;
 }
 
+static void AddTypeDefinitions(NSMutableDictionary <NSString *, NSDictionary *> *typeDefinitionByIdentifier, NSArray <NSDictionary *> *typeDefinitions)
+{
+    for (NSDictionary *typeDefinition in typeDefinitions) {
+        NSString *identifier = typeDefinition[(NSString *)kUTTypeIdentifierKey];
+        if (!identifier) {
+            OBASSERT_NOT_REACHED("Type definition doesn't contain an identifier: %@", typeDefinition);
+            continue;
+        }
+
+        OBASSERT(typeDefinitionByIdentifier[identifier] == nil);
+        typeDefinitionByIdentifier[identifier] = typeDefinition;
+    }
+}
+
 static void InitializeKnownTypeDictionaries()
 {
     static dispatch_once_t onceToken;
@@ -153,15 +177,51 @@ static void InitializeKnownTypeDictionaries()
         NSBundle *controllingBundle = [OFController controllingBundle];
 #endif
         NSDictionary *infoDictionary = [controllingBundle infoDictionary];
-        
-        MainBundleExportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTExportedTypeDeclarationsKey], (NSString *)kUTExportedTypeDeclarationsKey);
-        MainBundleImportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTImportedTypeDeclarationsKey], (NSString *)kUTImportedTypeDeclarationsKey);
+
+        NSArray <NSDictionary *> *exportedTypeDeclarations = infoDictionary[(NSString *)kUTExportedTypeDeclarationsKey];
+        NSArray <NSDictionary *> *importedTypeDeclarations = infoDictionary[(NSString *)kUTImportedTypeDeclarationsKey];
+
+        // Keep a record of all the imported and exported type definitions. LaunchServices only pays attention to the app bundle, but we want to emulate some queries for xctest bundles.
+        {
+            NSMutableDictionary <NSString *, NSDictionary *> *typeDefinitionByIdentifier = [NSMutableDictionary dictionary];
+            AddTypeDefinitions(typeDefinitionByIdentifier, exportedTypeDeclarations);
+            AddTypeDefinitions(typeDefinitionByIdentifier, importedTypeDeclarations);
+            TypeDefinitionByIdentifier = [typeDefinitionByIdentifier copy];
+
+            // Warn if we have a type definition that says it conforms to another type for which we can't find a definition.
+#ifdef OMNI_ASSERTIONS_ON
+            [TypeDefinitionByIdentifier enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, NSDictionary *typeDefinition, BOOL * _Nonnull stop) {
+                id conformsToValue = typeDefinition[(__bridge NSString *)kUTTypeConformsToKey];
+                if (!conformsToValue) {
+                    return;
+                }
+                if (![conformsToValue isKindOfClass:[NSArray class]]) {
+                    conformsToValue = @[conformsToValue];
+                }
+
+                for (NSString *conformsToType in conformsToValue) {
+                    OBASSERT([conformsToType isKindOfClass:[NSString class]]);
+
+                    if (typeDefinitionByIdentifier[conformsToType]) {
+                        // This is a type we know about via our plist entries
+                        return;
+                    }
+
+                    NSDictionary *conformedDefinition = CFBridgingRelease(UTTypeCopyDeclaration((__bridge CFStringRef)conformsToType));
+                    OBASSERT(conformedDefinition != nil, "Type %@ is declared to conform to %@, which cannot be found.", identifier, conformsToType);
+                }
+            }];
+#endif
+        }
+
+        ExportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations(exportedTypeDeclarations, (NSString *)kUTExportedTypeDeclarationsKey);
+        ImportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations(importedTypeDeclarations, (NSString *)kUTImportedTypeDeclarationsKey);
         
         // Warn if both the exported and imported type dictionaries both declared types for the same tag.
-        NSArray *allTagClasses = [[MainBundleExportedTypeDeclarationsByTag allKeys] arrayByAddingObjectsFromArray:[MainBundleImportedTypeDeclarationsByTag allKeys]];
+        NSArray *allTagClasses = [[ExportedTypeDeclarationsByTag allKeys] arrayByAddingObjectsFromArray:[ImportedTypeDeclarationsByTag allKeys]];
         for (NSString *tagClass in allTagClasses) {
-            NSDictionary *exportedClassDict = [MainBundleExportedTypeDeclarationsByTag objectForKey:tagClass];
-            NSDictionary *importedClassDict = [MainBundleImportedTypeDeclarationsByTag objectForKey:tagClass];
+            NSDictionary *exportedClassDict = [ExportedTypeDeclarationsByTag objectForKey:tagClass];
+            NSDictionary *importedClassDict = [ImportedTypeDeclarationsByTag objectForKey:tagClass];
             
             [exportedClassDict enumerateKeysAndObjectsUsingBlock:^(id tagValue, id exportedMappedIdentifiers, BOOL *stop) {
                 NSArray *importedMappedIdentifiers = [importedClassDict objectForKey:tagValue];
@@ -169,7 +229,7 @@ static void InitializeKnownTypeDictionaries()
                     OFUTI_DIAG(@"Conflict detected registering imported type declaration \"%@\": exported type \"%@\" has already claimed tag \"%@\" for class \"%@\". The exported type will be preferred.", [importedMappedIdentifiers objectAtIndex:0], [exportedMappedIdentifiers objectAtIndex:0], tagValue, tagClass);
             }];
         }
-        
+
         // Break in the debugger just once if assertions are enabled, rather than once for each diagnostic message.
         OBASSERT(OFUTIDiagnosticsEmitted == NO);
     });
@@ -239,9 +299,9 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     // Check our Info.plist first, preferring exported types over imported ones.
     InitializeKnownTypeDictionaries();
     
-    OB_FOR_ALL(dict, MainBundleExportedTypeDeclarationsByTag, MainBundleImportedTypeDeclarationsByTag) {
+    OB_FOR_ALL(dict, ExportedTypeDeclarationsByTag, ImportedTypeDeclarationsByTag) {
         EnumerateIdentifiersForTagInDictionary(dict, tagClass, tagValue, ^(NSString *typeIdentifier, BOOL *stop) {
-            if (!conformingToUTIOrNil || UTTypeConformsTo((__bridge CFStringRef)typeIdentifier, (__bridge CFStringRef)conformingToUTIOrNil)) {
+            if (!conformingToUTIOrNil || _TypeConformsToType(typeIdentifier, conformingToUTIOrNil)) {
                 enumerator(typeIdentifier, &stopEnumerating);
                 if (stopEnumerating)
                     *stop = YES;
@@ -300,7 +360,7 @@ BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...)
     BOOL conforms = NO;
     NSString *checkType;
     while ((checkType = va_arg(args, NSString *))) {
-        if (UTTypeConformsTo((OB_BRIDGE CFStringRef)type, (OB_BRIDGE CFStringRef)checkType)) {
+        if (_TypeConformsToType(type, checkType)) {
             conforms = YES;
             break;
         }
@@ -317,7 +377,7 @@ BOOL OFTypeConformsToOneOfTypesInArray(NSString *type, NSArray<NSString *> *type
     }
     
     for (NSString *checkType in types) {
-        if (UTTypeConformsTo((OB_BRIDGE CFStringRef)type, (OB_BRIDGE CFStringRef)checkType)) {
+        if (_TypeConformsToType(type, checkType)) {
             return YES;
         }
     }

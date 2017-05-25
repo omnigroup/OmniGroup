@@ -1198,7 +1198,7 @@ static ODSScope *_templateScope = nil;
     void (^motionCompletion)(NSSet *createdItems) = ^(NSSet *createdItems){
         OBASSERT([NSThread isMainThread]);
         if (completionHandler)
-            completionHandler(movedFileItems, errors);
+            completionHandler(createdItems, errors);
     };
     
     // TODO: This is ugly. In the case of a move, at least, we want to pass the file presenter that would hear about the move so that it will not get notifications. We do this since we have to handle the notifications ourselves anyway (since sometimes they don't get sent -- for case-only renames, for example). ODSLocalDirectoryScope conforms, but OFXDocumentStoreScope does not, leaving OFXAccountAgent to deal with NSFilePresenter.

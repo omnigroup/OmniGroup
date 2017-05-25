@@ -167,8 +167,9 @@ RCS_ID("$Id$")
 
 
         // Implicitly kick web all URLs over to Safari 
-        BOOL isWebURL = !([requestURL isFileURL]);
-
+        BOOL isLocalAnchor = [scheme isEqualToString:@"x-invalid"];
+        BOOL isWebURL = !isLocalAnchor && ![requestURL isFileURL];
+        
         if (isWebURL) {
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
                 NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");

@@ -1,4 +1,4 @@
-// Copyright 2000-2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,10 +19,10 @@ static void (*original_addSubview_positioned_relativeTo)(id self, SEL _cmd, NSVi
 static Class _NSTileContainerLayerClass;
 static NSString *const AddedSubviewsKey = @"com.omnigroup.OmniAppKit.OALayerBackedFix.AddedSubviews";
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
     _NSTileContainerLayerClass = NSClassFromString(@"_NSTileContainerLayer");
     if (_NSTileContainerLayerClass) {
+        Class self = objc_getClass("NSView");
         original_addSubview_positioned_relativeTo = (typeof(original_addSubview_positioned_relativeTo))OBReplaceMethodImplementationWithSelector(self, @selector(addSubview:positioned:relativeTo:), @selector(OALayerBackedFix_addSubview:positioned:relativeTo:));
     } else {
         BOOL isOperatingSystemMavericksOrLater = YES; // [OFVersionNumber isOperatingSystemMavericksOrLater]
@@ -30,7 +30,7 @@ static NSString *const AddedSubviewsKey = @"com.omnigroup.OmniAppKit.OALayerBack
             OBASSERT_NOT_REACHED("Cannot find class _NSTileContainerLayer; unable to warn about <bug:///86517> (13415520: -[NSView addSubview:positioned:relativeTo:] inserts sublayers in wrong position)");
         }
     }
-}
+});
 
 - (void)OALayerBackedFix_addSubview:(NSView *)aView positioned:(NSWindowOrderingMode)place relativeTo:(NSView *)otherView;
 {

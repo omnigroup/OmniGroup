@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,10 +17,10 @@ static OSErr (*original_dispatchRawAppleEvent)(NSAppleEventManager* self, SEL _c
 
 @implementation NSAppleEventManager (OAExtensions)
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSAppleEventManager");
     original_dispatchRawAppleEvent = (typeof(original_dispatchRawAppleEvent))OBReplaceMethodImplementation(self, @selector(dispatchRawAppleEvent:withRawReply:handlerRefCon:), (IMP)_replacement_dispatchRawAppleEvent);
-}
+});
 
 static BOOL _aeListContainsObjectSpecifiers(const AEDescList *list)
 {

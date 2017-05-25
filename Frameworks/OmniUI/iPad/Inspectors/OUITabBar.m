@@ -128,7 +128,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     self.opaque = NO;
     self.clearsContextBeforeDrawing = YES;
     self.contentMode = UIViewContentModeRedraw;
-    
+    self.showsTabTitle = YES;
     self.tabTitleFont = [[self class] defaultTabTitleFont];
     self.selectedTabTitleFont = [[self class] defaultSelectedTabTitleFont];
     
@@ -221,6 +221,9 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         OUITabBarButton *button = self.tabButtons[index];
         [UIView performWithoutAnimation:^{
             [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+            if (self.showsTabTitle == NO) {
+                [button setTitle:@"" forState:UIControlStateNormal];
+            }
             [button layoutIfNeeded];
         }];
     }
@@ -256,8 +259,10 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
             OUITabBarButton *button = (_usesVerticalLayout ? [OUITabBarButton verticalTabBarButton] : [OUITabBarButton tabBarButton]);
             button.appearanceDelegate = self.appearanceDelegate;
             button.showButtonImage = self.showsTabImage;
-            
-            [button setTitle:title forState:UIControlStateNormal];
+            button.showButtonTitle = self.showsTabTitle;
+            if (self.showsTabTitle) {
+                [button setTitle:title forState:UIControlStateNormal];
+            }
             [button addTarget:self action:@selector(selectTab:) forControlEvents:UIControlEventTouchUpInside];
             
             UIImage *image = self.tabImages[index];
@@ -514,7 +519,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 
 - (UIColor *)verticalTabSeparatorColor;
 {
-    if (self.appearanceDelegate != nil) {
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(verticalTabSeparatorColor)]) {
         return self.appearanceDelegate.verticalTabSeparatorColor;
     }
     
@@ -543,10 +548,18 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     UIColor *gradientStartColor;
     UIColor *gradientEndColor;
     if (self.appearanceDelegate != nil) {
+        if ([self.appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)]) {
         gradientStartColor = self.appearanceDelegate.horizontalTabBottomStrokeColor;
+        }
+        if ([self.appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
         gradientEndColor = self.appearanceDelegate.horizontalTabSeparatorTopColor;
-    } else {
+        }
+    }
+
+    if (gradientStartColor == nil) {
         gradientStartColor = [UIColor colorWithWhite:0.80 alpha:1.0];
+    }
+    if (gradientEndColor == nil) {
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
     }
     
@@ -569,8 +582,12 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     UIColor *gradientStartColor;
     UIColor *gradientEndColor;
     if (self.appearanceDelegate != nil) {
+        if ([self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeFadeToColor)]) {
         gradientStartColor = self.appearanceDelegate.verticalTabRightEdgeFadeToColor;
+        }
+        if ([self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeColor)]) {
         gradientEndColor = self.appearanceDelegate.verticalTabRightEdgeColor;
+        }
     } else {
         gradientStartColor = [UIColor colorWithWhite:0.96 alpha:0.0];
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];

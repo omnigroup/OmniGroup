@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,14 +53,13 @@ static NSString *scratchDirectoryPath;
 static NSLock *scratchDirectoryLock;
 static mode_t permissionsMask = 0022;
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     scratchDirectoryPath = nil;
     scratchDirectoryLock = [[NSLock alloc] init];
 
     permissionsMask = umask(permissionsMask);
     umask(permissionsMask); // Restore the original value
-}
+});
 
 - (NSString *)scratchDirectoryPath;
 {

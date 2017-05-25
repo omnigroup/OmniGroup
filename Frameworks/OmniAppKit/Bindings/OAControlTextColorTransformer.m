@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,16 +24,15 @@ RCS_ID("$Id$");
 
 /*" This value transformer transforms a boolean into either the controlTextColor or the disabledControlTextColor. It's useful for binding a text field to a boolean which controls the enabled state of the control it is the label for. (See also -[NSTextField(OAExtensions) changeColorAsIfEnabledStateWas:].) "*/
 
-+ (void)didLoad;
-{
-    OAControlTextColorTransformer *normal = [[self alloc] init];
+OBDidLoad(^{
+    OAControlTextColorTransformer *normal = [[OAControlTextColorTransformer alloc] init];
     normal.negate = NO;
     [NSValueTransformer setValueTransformer:normal forName:@"OAControlTextColor"];
     
-    OAControlTextColorTransformer *negated = [[self alloc] init];
+    OAControlTextColorTransformer *negated = [[OAControlTextColorTransformer alloc] init];
     negated.negate = YES;
     [NSValueTransformer setValueTransformer:negated forName:@"OAControlTextColorInverted"];
-}
+});
 
 + (Class)transformedValueClass;
 {

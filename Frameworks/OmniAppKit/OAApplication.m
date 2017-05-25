@@ -960,9 +960,9 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 + (void)_setupOmniApplication;
 {
-    [OBObject self]; // Trigger +[OBPostLoader processClasses]
+    [OBObject self]; // Trigger OBInvokeRegisteredLoadActions()
     
-    // Wait until defaults are registered with OBPostLoader to look this up.
+    // Wait until defaults are registered via OBInvokeRegisteredLoadActions() to look this up.
     OATargetSelection = [[NSUserDefaults standardUserDefaults] boolForKey:@"OATargetSelection"];
 
     // make these images available to client nibs and whatnot (retaining them so they stick around in cache).

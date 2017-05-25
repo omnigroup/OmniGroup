@@ -32,15 +32,15 @@ static NSWindow *becomingKeyWindow = nil;
 
 @implementation NSWindow (OAExtensions)
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSWindow");
     oldBecomeKeyWindow = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(becomeKeyWindow), @selector(replacement_becomeKeyWindow));
     oldResignKeyWindow = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(resignKeyWindow), @selector(replacement_resignKeyWindow));
     oldMakeKeyAndOrderFront = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(makeKeyAndOrderFront:), @selector(replacement_makeKeyAndOrderFront:));
     oldDidChangeValueForKey = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(didChangeValueForKey:), @selector(replacement_didChangeValueForKey:));
     oldSetFrameDisplayAnimateIMP = (typeof(oldSetFrameDisplayAnimateIMP))OBReplaceMethodImplementationWithSelector(self, @selector(setFrame:display:animate:), @selector(replacement_setFrame:display:animate:));    
     oldDisplayIfNeededIMP = (typeof(oldDisplayIfNeededIMP))OBReplaceMethodImplementationWithSelector(self, @selector(displayIfNeeded), @selector(_OA_replacement_displayIfNeeded));
-}
+});
 
 static NSMutableArray *zOrder;
 
@@ -503,10 +503,10 @@ static BOOL (*original_validateUserInterfaceItem)(NSWindow *self, SEL _cmd, id <
 
 @implementation NSWindow (NSWindowTabbingExtensions)
 
-+ (void)performPosing;
-{
+OBPerformPosing(^{
+    Class self = objc_getClass("NSWindow");
     original_validateUserInterfaceItem = (typeof(original_validateUserInterfaceItem))OBReplaceMethodImplementation(self, @selector(validateUserInterfaceItem:), (IMP)[[self class] instanceMethodForSelector:@selector(_replacement_validateUserInterfaceItem:)]);
-}
+});
 
 - (BOOL)_replacement_validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item;
 {
@@ -573,12 +573,11 @@ static OAWinderUserTabbingPreferenceObserver *_sharedUserWindowTabbingPreference
 
 @implementation OAWinderUserTabbingPreferenceObserver : NSObject
 
-+ (void)didLoad;
-{
+OBDidLoad(^{
     if (_sharedUserWindowTabbingPreferenceObserver == nil) {
         _sharedUserWindowTabbingPreferenceObserver = [[OAWinderUserTabbingPreferenceObserver alloc] init];
     }
-}
+});
 
 - (instancetype)init;
 {

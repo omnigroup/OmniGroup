@@ -8,15 +8,19 @@
 // $Id$
 
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
+#import <OmniUI/OUITabBarAppearanceDelegate.h>
 
 @class OUITabBar;
 
 @interface OUIInspectorSegment : NSObject
+// setting a title is required even for tabs which are image-only, because OUITabBar currently uses the title to destermine which image goes with which tab.
+// currently if you set an image, the tab will be set to use images and not display the title, it will only be used internally.
 @property(nonatomic,copy) NSString *title;
 @property(nonatomic,copy) NSArray *slices;
+@property(nonatomic,copy) UIImage *image;
 @end
 
-@interface OUIMultiSegmentStackedSlicesInspectorPane : OUIStackedSlicesInspectorPane
+@interface OUIMultiSegmentStackedSlicesInspectorPane : OUIStackedSlicesInspectorPane <OUITabBarAppearanceDelegate>
 
 @property(nonatomic,readonly) OUITabBar *titleTabBar;
 @property(nonatomic,strong) NSArray *segments;

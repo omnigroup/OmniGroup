@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,8 +39,6 @@ extern BOOL ODAVShouldOfferToReportError(NSError *error);
 #define ODAVResponseLocationErrorKey (@"Location")
 
 extern NSString * const ODAVURLErrorFailingURLErrorKey;          // > 4.0 use NSURLErrorFailingURLErrorKey
-extern NSString * const ODAVURLErrorFailingURLStringErrorKey;    // > 4.0 use NSURLErrorFailingURLStringErrorKey
-
 
 // Codes are HTTP error codes.  You'd think Foundation would define such a domain...
 extern NSString * const ODAVHTTPErrorDomain;

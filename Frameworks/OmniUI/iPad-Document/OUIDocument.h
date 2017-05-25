@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@
 
 @class UIResponder, UIView, UIViewController;
 @class ODSFileItem, OUIDocumentViewController;
-@class OUIDocumentPreview, OUIImageLocation;
+@class OUIDocumentPreview, OUIImageLocation, OUIInteractionLock;
 
 @protocol OUIDocumentViewController;
 
@@ -46,6 +46,7 @@
 @property(nonatomic,readonly) UIViewController <OUIDocumentViewController> *documentViewController;
 @property(nonatomic,readonly) BOOL editingDisabled;
 @property(nonatomic) BOOL isDocumentEncrypted; // If it is encrypted, it will be unreadable.
+@property(nonatomic, strong) OUIInteractionLock *applicationLock;
 
 @property(nonatomic,readonly) UIResponder *defaultFirstResponder; // Defaults to the documentViewController, or if that view controller implements -defaultFirstResponder, returns the result of that.
 

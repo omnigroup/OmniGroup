@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,65 +19,6 @@
 RCS_ID("$Id$");
 
 @implementation NSDocument (OAExtensions)
-
-#ifdef OMNI_ASSERTIONS_ON
-
-static void checkDeprecatedSelector(Class documentSubclass, Class documentClass, SEL sel)
-{
-    if (documentClass != OBClassImplementingMethod(documentSubclass, sel))
-	NSLog(@"%@ is implementing %@, but this is deprecated!", NSStringFromClass(documentSubclass), NSStringFromSelector(sel));
-}
-#define CHECK_DOCUMENT_API(sel) checkDeprecatedSelector(aClass, self, sel)
-
-+ (void)didLoad;
-{
-    // Check that no deprecated APIs are implemented in subclasses of NSDocument.  NSDocument changes its behavior if you *implement* the deprecated APIs and we want to stay on the mainstream path.
-    // This assumes that all NSDocument subclasses are present at launch time.
-    
-    // Get the class list
-    unsigned int classCount = 0, newClassCount = objc_getClassList(NULL, 0);
-    Class *classes = NULL;
-    while (classCount < newClassCount) {
-	classCount = newClassCount;
-	classes = reallocf(classes, sizeof(Class) * classCount);
-	newClassCount = objc_getClassList(classes, classCount);
-    }
-    
-    if (classes != NULL) {
-	unsigned int classIndex;
-	
-	// Loop over the gathered classes and process the requested implementations
-	for (classIndex = 0; classIndex < classCount; classIndex++) {
-	    Class aClass = classes[classIndex];
-	    
-	    if (aClass != self && OBClassIsSubclassOfClass(aClass, self)) {
-		CHECK_DOCUMENT_API(@selector(dataRepresentationOfType:));
-		CHECK_DOCUMENT_API(@selector(fileAttributesToWriteToFile:ofType:saveOperation:));
-		CHECK_DOCUMENT_API(@selector(fileName));
-		CHECK_DOCUMENT_API(@selector(fileWrapperRepresentationOfType:));
-		CHECK_DOCUMENT_API(@selector(initWithContentsOfFile:ofType:));
-		CHECK_DOCUMENT_API(@selector(initWithContentsOfURL:ofType:));
-		CHECK_DOCUMENT_API(@selector(loadDataRepresentation:ofType:));
-		CHECK_DOCUMENT_API(@selector(loadFileWrapperRepresentation:ofType:));
-		CHECK_DOCUMENT_API(@selector(printShowingPrintPanel:));
-		CHECK_DOCUMENT_API(@selector(readFromFile:ofType:));
-		CHECK_DOCUMENT_API(@selector(readFromURL:ofType:));
-		CHECK_DOCUMENT_API(@selector(revertToSavedFromFile:ofType:));
-		CHECK_DOCUMENT_API(@selector(revertToSavedFromURL:ofType:));
-		CHECK_DOCUMENT_API(@selector(runModalPageLayoutWithPrintInfo:));
-		CHECK_DOCUMENT_API(@selector(saveToFile:saveOperation:delegate:didSaveSelector:contextInfo:));
-		CHECK_DOCUMENT_API(@selector(setFileName:));
-		CHECK_DOCUMENT_API(@selector(writeToFile:ofType:));
-		CHECK_DOCUMENT_API(@selector(writeToFile:ofType:originalFile:saveOperation:));
-		CHECK_DOCUMENT_API(@selector(writeToURL:ofType:));
-		CHECK_DOCUMENT_API(@selector(writeWithBackupToFile:ofType:saveOperation:));
-	    }
-	}
-        
-        free(classes);
-    }
-}
-#endif
 
 - (NSArray <__kindof NSWindowController *> *)windowControllersOfClass:(Class)windowControllerClass;
 {
