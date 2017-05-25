@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,12 +24,6 @@
 // 
 
 @interface ONMulticastSocket : ONUDPSocket
-{
-    int mcastTTL;  // Requested TTL for multicast packets, or -1 if not specified by caller
-    struct {
-        unsigned int shouldLoop: 2;
-    } mcastFlags;
-}
 
 + (unsigned int)maximumGroupMemberships;
     // Returns the maximum number of groups of which a single socket may be made a member.

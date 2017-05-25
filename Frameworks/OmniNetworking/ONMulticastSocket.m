@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,13 +19,15 @@
 
 RCS_ID("$Id$")
 
-@interface ONMulticastSocket (Private)
-- (void)_changeGroupMembership:(ONHostAddress *)groupAddress localInterface:(ONInterface *)localInterface add:(BOOL)shouldAdd;
-@end
-
 #define ONMCAST_OPT_USE_DEFAULT 2
 
 @implementation ONMulticastSocket
+{
+    int mcastTTL;  // Requested TTL for multicast packets, or -1 if not specified by caller
+    struct {
+        unsigned int shouldLoop: 2;
+    } mcastFlags;
+}
 
 + (unsigned int)maximumGroupMemberships;
 {
@@ -135,9 +137,7 @@ RCS_ID("$Id$")
     return [super writeBytes:byteCount fromBuffer:aBuffer toPortAddress:aPortAddress];
 }
 
-@end
-
-@implementation ONMulticastSocket (Private)
+#pragma mark - Private
 
 - _initWithSocketFD:(int)aSocketFD connected:(BOOL)isConnected
 {

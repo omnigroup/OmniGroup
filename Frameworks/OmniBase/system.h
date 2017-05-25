@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,19 +67,4 @@ extern "C" {
 
 #error Unknown system!
 
-#endif
-
-// Default to using BSD socket API.
-
-#ifndef OBSocketRead
-#define OBSocketRead(socketFD, buffer, byteCount) read(socketFD, buffer, byteCount)
-#endif
-#ifndef OBSocketWrite
-#define OBSocketWrite(socketFD, buffer, byteCount) write(socketFD, buffer, byteCount)
-#endif
-#ifndef OBSocketWriteVectors
-#define OBSocketWriteVectors(socketFD, buffers, bufferCount) writev(socketFD, buffers, bufferCount)
-#endif
-#ifndef OBSocketClose
-#define OBSocketClose(socketFD) close(socketFD)
 #endif

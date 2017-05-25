@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,11 +13,12 @@
 
 RCS_ID("$Id$")
 
-@interface ONServiceEntry (Private)
-- _initWithServiceName:(NSString *)aServiceName protocolName:(NSString *)aProtocolName port:(int)portNumber;
-@end
-
 @implementation ONServiceEntry
+{
+    NSString *serviceName;
+    NSString *protocolName;
+    int portNumber;
+}
 
 static NSRecursiveLock *serviceLookupLock;
 static NSMutableDictionary *serviceCache;
@@ -187,9 +188,7 @@ static NSMutableDictionary *portHints;
     return [self retain];
 }
 
-@end
-
-@implementation ONServiceEntry (Private)
+#pragma mark - Private
 
 - _initWithServiceName:(NSString *)aServiceName protocolName:(NSString *)aProtocolName port:(int)aPortNumber;
 {

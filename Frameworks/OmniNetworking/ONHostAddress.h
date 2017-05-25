@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,6 @@
 @class NSData;
 
 @interface ONHostAddress : OBObject <NSCopying>
-{
-}
 
 + (ONHostAddress *)hostAddressWithInternetAddress:(const void *)anInternetAddress family:(unsigned char)addressFamily;
     // Returns an ONHostAddress with the given internet address, which is interpreted in the given address family. The address should be in network byte order. addressFamily can be AF_INET, AF_INET6, or AF_APPLETALK.

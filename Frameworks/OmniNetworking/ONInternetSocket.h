@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,20 +20,13 @@
 
 @interface ONInternetSocket : ONSocket
 {
+@protected
     /* The underlying BSD socket descriptor, or -1 */
     int socketFD;
-
+    
     /* A mutex which protects changes to socketFD and other ivars */
     pthread_mutex_t socketLock;
 
-    /* protocol family of socket, if socketFD is not -1 */
-    short socketPF;
-        
-    /* Cached attributes of the endpoints of the socket connection, if any */
-    ONPortAddress *localAddress;
-    ONPortAddress *remoteAddress;
-    ONHost *remoteHost;
-    
     struct {
         unsigned int listening:1;
         unsigned int connected:1;
@@ -45,8 +38,11 @@
         unsigned int allowAddressReuse:1;
         unsigned int allowBroadcast:1;
     } flags;
-
-    int requestedLocalPort;  // 0=any port, -1=not bound to a local address yet
+    
+    /* Cached attributes of the endpoints of the socket connection, if any */
+    ONPortAddress *localAddress;
+    ONPortAddress *remoteAddress;
+    ONHost *remoteHost;
 }
 
 + (int)socketType;

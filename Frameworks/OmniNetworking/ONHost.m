@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,15 +27,14 @@ RCS_ID("$Id$")
 #endif
 #endif
 
-@interface ONHost (Private)
-+ (NSString *)_punycodeEncode:(NSString *)aString;
-+ (NSString *)_punycodeDecode:(NSString *)aString;
-
-- (BOOL)_tryLocalhost;
-- (BOOL)_tryToLookupHostInfoAsDottedQuad;
-@end
-
 @implementation ONHost
+{
+    NSString *hostname;
+    NSString *canonicalHostname;
+    NSArray *addresses;
+    NSMutableDictionary *serviceAddresses;
+    NSDate *expirationDate;
+}
 
 BOOL ONHostNameLookupDebug = NO;
 static NSRecursiveLock *ONHostLookupLock;
@@ -709,10 +708,7 @@ static void locked_disconnectFromSysConfig(void)
     return debugDictionary;
 }
 
-@end
-
-
-@implementation ONHost (ONInternalAPI)
+#pragma mark - Internal
 
 + (void)_raiseExceptionForHostErrorNumber:(int)hostErrorNumber hostname:(NSString *)aHostname;
 {
@@ -871,10 +867,7 @@ static void locked_disconnectFromSysConfig(void)
     [addressBuf release];
 }
 
-
-@end
-
-@implementation ONHost (Private)
+#pragma mark - Private
 
 // Punycode is defined in RFC 3492
 

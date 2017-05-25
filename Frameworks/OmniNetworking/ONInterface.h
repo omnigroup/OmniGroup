@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,20 +24,6 @@ typedef enum _ONInterfaceCategory {
 } ONInterfaceCategory;
 
 @interface ONInterface : OBObject
-{
-    NSString *name;
-    NSArray *interfaceAddresses;
-    /* Not sure if this is the right way to represent this. Possibly "destinationAddresses" should be an array instead of a dictionary. Possibly these dictionaries need to be able to represent multiple values for a key. */
-    NSDictionary *destinationAddresses; // for point-to-point links
-    NSDictionary *broadcastAddresses;   // for shared-medium links, e.g. ethernet
-    NSDictionary *netmaskAddresses;
-
-    ONInterfaceCategory interfaceCategory;
-    int interfaceType;
-    unsigned int maximumTransmissionUnit;
-    unsigned int flags;
-    unsigned int index;
-}
 
 + (NSArray *)getInterfaces:(BOOL)rescan;
 + (NSArray *)interfaces;

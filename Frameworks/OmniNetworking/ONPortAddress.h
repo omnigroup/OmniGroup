@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,9 +23,6 @@
 @class ONHost;
 
 @interface ONPortAddress : OBObject <NSCoding, NSCopying>
-{
-    struct sockaddr *portAddress;
-}
 
 - initWithHost:(ONHost *)aHost portNumber:(unsigned short int)port;
 - initWithHostAddress:(ONHostAddress *)hostAddress portNumber:(unsigned short int)port;

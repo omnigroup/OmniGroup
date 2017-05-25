@@ -1,4 +1,4 @@
-// Copyright 1999-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,6 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <OmniBase/system.h> // For OBSocketClose()
 
 #import <sys/ioctl.h>
 #import <sys/socket.h>
@@ -31,11 +30,21 @@ static NSArray *interfaces = nil;
 
 static ONHostAddress *firstAddressOfFamily(NSArray *addresses, int desiredFamily);
 
-@interface ONInterface (PrivateAPI)
-- (id)_initFromIfaddrs:(struct ifaddrs *)info;
-@end
-
-@implementation ONInterface (PrivateAPI)
+@implementation ONInterface
+{
+    NSString *name;
+    NSArray *interfaceAddresses;
+    /* Not sure if this is the right way to represent this. Possibly "destinationAddresses" should be an array instead of a dictionary. Possibly these dictionaries need to be able to represent multiple values for a key. */
+    NSDictionary *destinationAddresses; // for point-to-point links
+    NSDictionary *broadcastAddresses;   // for shared-medium links, e.g. ethernet
+    NSDictionary *netmaskAddresses;
+    
+    ONInterfaceCategory interfaceCategory;
+    int interfaceType;
+    unsigned int maximumTransmissionUnit;
+    unsigned int flags;
+    unsigned int index;
+}
 
 static const struct { int ift; ONInterfaceCategory cat; } interfaceClassification[] = {
     { IFT_ETHER,   ONEtherInterfaceCategory },
@@ -131,10 +140,6 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
     return self;
 }
 
-@end
-
-@implementation ONInterface
-
 + (NSArray *)getInterfaces:(BOOL)rescan
 {
     int oserr;
@@ -225,12 +230,6 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
 - (ONHostAddress *)linkLayerAddress;
 {
     return firstAddressOfFamily(interfaceAddresses, AF_LINK);
-}
-
-- (NSString *)linkLayerAddressString;
-{
-    OB_WARN_OBSOLETE_METHOD;
-    return [[self linkLayerAddress] stringValue];
 }
 
 - (ONInterfaceCategory)interfaceCategory;

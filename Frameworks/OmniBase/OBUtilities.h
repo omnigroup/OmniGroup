@@ -319,18 +319,6 @@ OB_UNUSED_VALUE_FOR_TYPE(CGRect)
 //       printf("%d", i);
 #define OB_FOR_IN(var, array) for (typeof(array[0]) OB_FOR_exprs(var, array))
 
-// Emits a warning indicating that an obsolete method has been called.
-
-#define OB_WARN_OBSOLETE_METHOD \
-    do { \
-        static BOOL warned = NO; \
-            if (!warned) { \
-                warned = YES; \
-                    NSLog(@"Warning: obsolete method %c[%@ %@] invoked", OBObjectIsClass(self)?'+':'-', OBClassForObject(self), NSStringFromSelector(_cmd)); \
-            } \
-            OBASSERT_NOT_REACHED("obsolete method called"); \
-    } while(0)
-
 // Apple doesn't have an NSNotFound equivalent for NSUInteger values (NSNotFound is an NSInteger).
 // Note that for APIs which should match Foundation APIs, you'll need to use NSNotFound even for NSUInteger values.
 #define OB_NSUInteger_NotFound (~(NSUInteger)0)

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,18 +17,6 @@
 #import <Foundation/NSString.h> // For NSStringEncoding
 
 @interface ONSocketStream : OBObject
-{
-    ONSocket *socket;
-    
-    NSMutableData *readBuffer;
-    BOOL readBufferContainsEOF;
-
-    // BOOL socketPushDisabled;
-    unsigned int writeBufferingCount;   // count of nested -beginBuffering / -endBuffering calls
-    size_t totalBufferedBytes;          // number of bytes in writeBuffer
-    size_t firstBufferOffset;           // number of bytes from first buffer to ignore (not counted in totalBufferedBytes)
-    NSMutableArray *writeBuffer;        // array of NSDatas to write
-}
 
 + streamWithSocket:(ONSocket *)aSocket;
 - initWithSocket:(ONSocket *)aSocket;

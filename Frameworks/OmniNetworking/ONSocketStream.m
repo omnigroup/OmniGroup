@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,11 +18,19 @@
 RCS_ID("$Id$")
 
 
-@interface ONSocketStream (Private)
-- (void)_writeSomeBufferedData;
-@end
-
 @implementation ONSocketStream
+{
+    ONSocket *socket;
+    
+    NSMutableData *readBuffer;
+    BOOL readBufferContainsEOF;
+    
+    // BOOL socketPushDisabled;
+    unsigned int writeBufferingCount;   // count of nested -beginBuffering / -endBuffering calls
+    size_t totalBufferedBytes;          // number of bytes in writeBuffer
+    size_t firstBufferOffset;           // number of bytes from first buffer to ignore (not counted in totalBufferedBytes)
+    NSMutableArray *writeBuffer;        // array of NSDatas to write
+}
 
 + streamWithSocket:(ONSocket *)aSocket;
 {
@@ -463,9 +471,7 @@ RCS_ID("$Id$")
     return debugDictionary;
 }
 
-@end
-
-@implementation ONSocketStream (Private)
+#pragma mark - Private
 
 // UIO_MAXIOV is documented in writev(2), but <sys/uio.h> only declares it if defined(KERNEL)
 #ifndef UIO_MAXIOV

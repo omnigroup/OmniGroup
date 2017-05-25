@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,13 @@ static BOOL is_mutex_locked(pthread_mutex_t *m);
 #endif
 
 @implementation ONInternetSocket
+{
+    /* protocol family of socket, if socketFD is not -1 */
+    short socketPF;
+    
+    
+    int requestedLocalPort;  // 0=any port, -1=not bound to a local address yet
+}
 
 BOOL ONSocketStateDebug = NO;
 
@@ -63,7 +70,7 @@ BOOL ONSocketStateDebug = NO;
 #ifdef OMNI_ASSERTIONS_ON
 	int closeReturn = 
 #endif
-	OBSocketClose(socketFD);
+	close(socketFD);
 	OBASSERT(closeReturn == 0);
     }
     socketFD = -1;
@@ -758,13 +765,13 @@ static BOOL is_mutex_locked(pthread_mutex_t *m)
     /* Unclear what this call to shutdown() is needed for; it used to be in -abortSocket. We need to call shutdown() after copying the fd into oldSocketFD, however, since shutdown() may cause another thread to wake up and start closing things, that being one of the few threadsafe operations on ONInternetSocket. */
     /* TODO: Perhaps -abortSocket should merely call shutdown(), and not destroy the FD (or call this method)? In which case, -destroySocketFD wouldn't call shutdown() */
     if (flags.connected && flags.userAbort)
-        shutdown(oldSocketFD, 2); // disallow further sends and receives
+        shutdown(oldSocketFD, SHUT_RDWR); // disallow further sends and receives
     
     if (!flags.shouldNotCloseFD) {
 #ifdef OMNI_ASSERTIONS_ON
         int closeReturn =
 #endif
-        OBSocketClose(oldSocketFD);
+        close(oldSocketFD);
         OBASSERT(closeReturn == 0);
     }
 

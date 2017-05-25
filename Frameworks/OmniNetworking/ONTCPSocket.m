@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,11 +28,13 @@ RCS_ID("$Id$")
 
 #define ONTCP_OPT_USE_DEFAULT 2
 
-@interface ONTCPSocket (Private)
-- (int)socketFDForAcceptedConnection;
-@end
-
 @implementation ONTCPSocket
+{
+    struct {
+        unsigned int useNagle: 2;
+        unsigned int pushWrites: 2;
+    } tcpFlags;
+}
 
 static Class defaultTCPSocketClass = nil;
 
@@ -173,7 +175,7 @@ static Class defaultTCPSocketClass = nil;
         } else
 	    [self acceptConnection];
     }
-    bytesRead = OBSocketRead(socketFD, aBuffer, byteCount);
+    bytesRead = read(socketFD, aBuffer, byteCount);
     switch (bytesRead) {
         case -1:
             if (flags.userAbort)
@@ -213,9 +215,6 @@ static Class defaultTCPSocketClass = nil;
     return [self writeBuffers:&io_vector count:1];
 }
 
-#ifdef MAX_BYTES_PER_WRITE
-#error MAX_BYTES_PER_WRITE not supported any more
-#endif
 - (size_t)writeBuffers:(const struct iovec *)buffers count:(unsigned int)num_iov
 {
     ssize_t bytesWritten;
@@ -229,9 +228,9 @@ static Class defaultTCPSocketClass = nil;
     }
     
     if (num_iov == 1)
-        bytesWritten = OBSocketWrite(socketFD, buffers[0].iov_base, buffers[0].iov_len);
+        bytesWritten = write(socketFD, buffers[0].iov_base, buffers[0].iov_len);
     else if (num_iov > 1)
-        bytesWritten = OBSocketWriteVectors(socketFD, buffers, num_iov);
+        bytesWritten = writev(socketFD, buffers, num_iov);
     else
         bytesWritten = 0;
         
@@ -246,9 +245,7 @@ static Class defaultTCPSocketClass = nil;
     return bytesWritten;
 }
     
-@end
-
-@implementation ONTCPSocket (Private)
+#pragma mark - Private
 
 - _initWithSocketFD:(int)aSocketFD connected:(BOOL)isConnected
 {
