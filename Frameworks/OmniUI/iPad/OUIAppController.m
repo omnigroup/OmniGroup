@@ -329,6 +329,11 @@ static void __iOS7B5CleanConsoleOutput(void)
     }
 }
 
+- (BOOL)hasOnlineHelp;
+{
+    return [self _onlineHelpURL] != nil;
+}
+
 - (void)showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self _showOnlineHelp:sender];

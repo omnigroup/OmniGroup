@@ -84,6 +84,10 @@
     <true/>
     <key>NSHumanReadableCopyright</key>
     <string>© 2010-2011 The Omni Group</string>
+    
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Add photo attachments to rich text documents.</string>
+    
     <key>UIFileSharingEnabled</key>
     <true/>
     <key>OFRegistrations</key>

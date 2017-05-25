@@ -524,8 +524,8 @@ static unsigned SyncAgentRunningAccountsContext;
             [OAFontDescriptor forgetUnusedInstances];
             
             // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
-            OBASSERT([_document undoManager] == [_document.documentViewController undoManager]);
-            OBASSERT([_document undoManager] == [_document.documentViewController.view undoManager]); // Does your view controller implement -undoManager? We don't do this for you right now.
+            OBASSERT([_document undoManager] == [_document.documentViewController undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)");
+            OBASSERT([_document undoManager] == [_document.documentViewController.view undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)"); // Does your view controller implement -undoManager? We don't do this for you right now.
             
             if ([documentViewController respondsToSelector:@selector(restoreDocumentViewState:)]) {
                 OFFileEdit *fileEdit = fileItem.fileEdit;
@@ -1493,7 +1493,7 @@ static NSDictionary *RoleByFileType()
     if (!startedOpeningDocument) {
         [self _fadeInDocumentPickerScrollingToFileItem:fileItemToSelect];
 
-        if (showHelp && [self shouldOpenOnlineHelpOnFirstLaunch]) {
+        if (showHelp && self.hasOnlineHelp && [self shouldOpenOnlineHelpOnFirstLaunch]) {
             dispatch_after(0, dispatch_get_main_queue(), ^{
                 [self showOnlineHelp:nil];
             });

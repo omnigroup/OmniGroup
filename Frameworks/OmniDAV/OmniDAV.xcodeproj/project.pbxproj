@@ -207,6 +207,13 @@
 			remoteGlobalIDString = 34B77A7F1EC0FE5500BBBA65;
 			remoteInfo = "OmniBase-server";
 		};
+		344019481ED6769300F3AABC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34D621AE1B38807700DCE250;
+			remoteInfo = "OmniDAV-iOS";
+		};
 		345299941ECA14BE005E71F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 347661311EC52FA500515F67 /* OmniFoundation.xcodeproj */;
@@ -967,6 +974,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				344019491ED6769300F3AABC /* PBXTargetDependency */,
 			);
 			name = ODAVUnitTestsTouch;
 			productName = ODAVUnitTestsTouch;
@@ -1484,6 +1492,11 @@
 			isa = PBXTargetDependency;
 			name = "OmniBase-server";
 			targetProxy = 1EB922D81ED52463006D24CD /* PBXContainerItemProxy */;
+		};
+		344019491ED6769300F3AABC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34D621AE1B38807700DCE250 /* OmniDAV-iOS */;
+			targetProxy = 344019481ED6769300F3AABC /* PBXContainerItemProxy */;
 		};
 		345299951ECA14BE005E71F5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

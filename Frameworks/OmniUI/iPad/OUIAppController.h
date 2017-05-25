@@ -59,6 +59,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
 - (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("");
+@property(nonatomic,readonly) BOOL hasOnlineHelp;
 - (void)showOnlineHelp:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 
 // UIApplicationDelegate methods that we implement
