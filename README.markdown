@@ -10,14 +10,14 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 8.0 for iOS, watchOS, and Mac OS X. You'll probably have the best results if you do too.
+- We currently use Xcode 8.3.2 for iOS, watchOS, and Mac OS X. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
 Supported Targets
 ----------------------
 
-- We require iOS 10.0 and Mac OS X 10.11.
+- We require iOS 10.3 and Mac OS X 10.11.
 
 Configuring the Source
 ----------------------
