@@ -117,7 +117,7 @@ typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFX
 - (void) setAttribute: (NSString *) name real: (float) value;  // "%g"
 - (void) setAttribute: (NSString *) name real: (float) value format: (NSString *) formatString;
 - (void) setAttribute: (NSString *) name double: (double) value;  // "%.15g"
-- (void) setAttribute: (NSString *) name double: (float) value format: (NSString *) formatString;
+- (void) setAttribute: (NSString *) name double: (double) value format: (NSString *) formatString;
 - (OFXMLElement *)appendElement:(NSString *)elementName;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingString:(NSString *) contents;
 - (OFXMLElement *)appendElement:(NSString *)elementName containingInteger:(int) contents;

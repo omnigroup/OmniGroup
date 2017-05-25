@@ -8,10 +8,9 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
-#import <Foundation/NSNotification.h>
 
-@class NSString, NSURL, NSError, NSDictionary, NSMutableDictionary, NSPredicate;
-@class ODOModel, ODOEntity, ODOAttribute, ODOObjectID, ODOSQLStatement;
+@class NSPredicate, NSURL, NSError, NSString, NSArray;
+@class ODOModel, ODOEntity, ODOAttribute, ODOObjectID, ODOSQLConnection, ODOSQLStatement;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,7 +21,8 @@ extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
 - (id)initWithModel:(ODOModel *)model;
 @property(readonly) ODOModel *model;
 
-@property(nullable, readonly) NSURL *connectedURL;
+@property (nullable, readonly) ODOSQLConnection *connection;
+@property (nullable, readonly) NSURL *connectedURL; // convenience for connection.URL
 - (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
 - (BOOL)disconnect:(NSError **)outError;
 

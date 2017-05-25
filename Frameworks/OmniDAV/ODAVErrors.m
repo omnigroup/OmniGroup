@@ -50,19 +50,29 @@ BOOL ODAVShouldOfferToReportError(NSError *error)
 
 + (NSError *)certificateTrustErrorForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
-    // This error has no localized strings since it is intended to be caught and cause localized UI to be presented to the user to evaluate trust and possibly restart the operation.
     __autoreleasing NSError *error;
     ODAVErrorWithInfo(&error, ODAVCertificateNotTrusted, @"Untrusted certificate", @"Present UI to let the user pick", ODAVCertificateTrustChallengeErrorKey, challenge, nil);
     return error;
 }
 
-- (BOOL)causedByPermissionFailure;
+- (BOOL)causedByDAVPermissionFailure;
 {
     if ([self hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_UNAUTHORIZED])
         return YES;
     if ([self hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted])
         return YES;
     
+    return NO;
+}
+
+- (BOOL)causedByMissingDAVResource;
+{
+    if ([self hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
+        return YES;
+    }
+    if ([self hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVNoSuchDirectory]) {
+        return YES;
+    }
     return NO;
 }
 

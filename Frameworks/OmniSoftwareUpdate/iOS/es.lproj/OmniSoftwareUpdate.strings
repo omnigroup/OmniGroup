@@ -46,7 +46,7 @@
 "Exception raised: %@" = "Excepción: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir compatibilidades y versiones de iOS";
+"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir qué dispositivos y versiones de iOS deben ser compatibles con sus productos";
 
 /* Settings preferences detail text */
 "If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si comparte esta información, nos ayuda con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima.";

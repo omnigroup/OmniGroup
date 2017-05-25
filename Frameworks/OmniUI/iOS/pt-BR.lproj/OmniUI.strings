@@ -1,19 +1,11 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-
+/* Default title for the About menu item */
 "About %@" = "Sobre o %@";
-
-/* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Todas as compras de sua conta App Store atual foram restauradas, mas %@ não aparecia nessas compras.";
 
 /* Bold button accessibility label */
 "Bold" = "Negrito";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "Comprar %@";
 
 /* button title
    button title - password/passphrase prompt
@@ -35,9 +27,6 @@
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "Preferência '%1$@' alterada de '%2$@' para '%3$@'";
 
-/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "Verificar a Existência de Atualização Gratuita";
-
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "confirmar";
 
@@ -47,9 +36,6 @@
 /* increment button accessibility label */
 "Decrement" = "Redução";
 
-/* Button is disabled due to purchase restrictions */
-"Disabled" = "Desativado(a)";
-
 /* Done
    toolbar item title */
 
@@ -57,12 +43,6 @@
 
 /* toolbar item title */
 "Edit" = "Editar";
-
-/* Title explaining that user is eligible for discounted upgrade */
-"Eligible for free upgrade" = "Com direito a atualização gratuita";
-
-/* In app Buy button error title */
-"Error" = "Erro";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "Recurso não ativado nesta demo";
@@ -72,9 +52,6 @@
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Ajuda e Ajustes";
-
-/* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "As Compras Integradas não estão disponíveis ou não são permitidas neste dispositivo. Para ativar a opção de compras, verifique as Restrições no app Ajustes.";
 
 /* increment button accessibility label */
 "Increment" = "Incrementar";
@@ -97,9 +74,6 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Não foi possível abrir o link. Consulte as restrições do Safari em Ajustes.";
 
-/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
-"More Info" = "Mais Informações";
-
 /* News menu item
    News view title */
 
@@ -111,15 +85,12 @@
 /* Full screen note editor title */
 "Note" = "Nota";
 
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Nothing to Inspect";
+
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
-
-
-
 
 
 "OK" = "OK";
@@ -130,15 +101,6 @@
 /* alert title */
 "Preference changed" = "Preferência alterada";
 
-/* Purchase failed alert title */
-"Purchase Failed" = "Falha na Compra";
-
-/* Buy button thank you message */
-"Purchased. Thank you!" = "Comprado. Obrigado!";
-
-/* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "As Compras Estão Desativadas";
-
 /* Redo button title */
 "Redo" = "Refazer";
 
@@ -146,15 +108,6 @@
    release notes html screen title */
 
 "Release Notes" = "Notas da Versão";
-
-/* No purchases found title */
-"Restore Complete" = "Restauração Completa";
-
-/* Restore failed alert title */
-"Restore Failed" = "Falha ao Restaurar";
-
-/* 'Restore Purchases' button title string */
-"Restore Purchases" = "Restaurar Compras";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Alinhamento de texto à direita";
@@ -165,14 +118,8 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Tachado";
 
-/* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Talvez este dispositivo não esteja conectado à Internet.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Confiar Sempre";
-
-/* Alert title for error loading product information */
-"Unable to reach App Store" = "Não foi possível acessar a App Store";
 
 /* Underline button accessibility label */
 "Underline" = "Sublinhar";

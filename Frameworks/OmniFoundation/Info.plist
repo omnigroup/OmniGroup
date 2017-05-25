@@ -32,6 +32,8 @@
 			<dict>
 				<key>DisabledBundles</key>
 				<array/>
+				<key>FirstDayOfTheWeek</key>
+				<integer>-1</integer>
 				<key>OFScratchDirectory</key>
 				<string>NSTemporaryDirectory</string>
 				<key>OFCompletionMatchScoreForFullMatch</key>

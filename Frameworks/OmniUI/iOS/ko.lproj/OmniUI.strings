@@ -1,19 +1,11 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-
+/* Default title for the About menu item */
 "About %@" = "%@ 정보";
-
-/* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "현재 App Store 계정의 모든 구매 내역이 복원되었지만 %@은(는) 이러한 구매 내역 중 하나가 아닙니다.";
 
 /* Bold button accessibility label */
 "Bold" = "볼드체";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "%@ 구입";
 
 /* button title
    button title - password/passphrase prompt
@@ -35,9 +27,6 @@
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "'%1$@' 환경설정을 '%2$@'에서 '%3$@'(으)로 변경했습니다.";
 
-/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "무료 업그레이드 확인";
-
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "확인";
 
@@ -47,9 +36,6 @@
 /* increment button accessibility label */
 "Decrement" = "감소";
 
-/* Button is disabled due to purchase restrictions */
-"Disabled" = "비활성화됨";
-
 /* Done
    toolbar item title */
 
@@ -57,12 +43,6 @@
 
 /* toolbar item title */
 "Edit" = "편집";
-
-/* Title explaining that user is eligible for discounted upgrade */
-"Eligible for free upgrade" = "무료 업그레이드 적용 가능";
-
-/* In app Buy button error title */
-"Error" = "오류";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "이 데모에 대해 활성회되지 않은 기능";
@@ -72,9 +52,6 @@
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "도움말 및 설정";
-
-/* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "앱 내 구입을 사용할 수 없거나 이 장치에서 허용되지 않습니다. 구입을 활성화하려면 설정 앱에서 제한 사항을 확인하십시오.";
 
 /* increment button accessibility label */
 "Increment" = "증가";
@@ -97,9 +74,6 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "링크를 열 수 없습니다. 설정에서 Safari 제한 사항을 확인하십시오.";
 
-/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
-"More Info" = "추가 정보";
-
 /* News menu item
    News view title */
 
@@ -111,15 +85,12 @@
 /* Full screen note editor title */
 "Note" = "메모";
 
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Nothing to Inspect";
+
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
-
-
-
 
 
 "OK" = "양호";
@@ -130,15 +101,6 @@
 /* alert title */
 "Preference changed" = "환경설정 변경";
 
-/* Purchase failed alert title */
-"Purchase Failed" = "구매 실패";
-
-/* Buy button thank you message */
-"Purchased. Thank you!" = "구입되었습니다. 감사합니다!";
-
-/* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "구입이 비활성화되었습니다.";
-
 /* Redo button title */
 "Redo" = "다시 실행";
 
@@ -146,15 +108,6 @@
    release notes html screen title */
 
 "Release Notes" = "릴리스 노트";
-
-/* No purchases found title */
-"Restore Complete" = "복원 완료";
-
-/* Restore failed alert title */
-"Restore Failed" = "복원 실패";
-
-/* 'Restore Purchases' button title string */
-"Restore Purchases" = "구입 내역 복원";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "텍스트 오른쪽 정렬";
@@ -165,14 +118,8 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "취소선";
 
-/* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "이 장치가 인터넷에 연결되어 있지 않습니다.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "항상 신뢰";
-
-/* Alert title for error loading product information */
-"Unable to reach App Store" = "App Store에 연결할 수 없음";
 
 /* Underline button accessibility label */
 "Underline" = "밑줄";

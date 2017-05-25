@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <CommonCrypto/CommonHMAC.h>
 #include <stdint.h>
 
-@class OFSDocumentKey;
+@class OFSKeySlots;
 @class NSData, NSError;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)parseHeader:(NSData *)ciphertext truncated:(BOOL)mayBeTruncated wrappedInfo:(NSRange *)outBlobLocation dataOffset:(size_t * __nullable)outHeaderLength error:(OBNSErrorOutType)outError;
 
-+ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)wrappedKeyInfo documentKey:(OFSDocumentKey *)kek error:(OBNSErrorOutType)outError;
++ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)wrappedKeyInfo documentKey:(OFSKeySlots *)kek error:(OBNSErrorOutType)outError;
 
 // Temporary non-incremental encrypt and decrypt methods
 - (nullable NSData *)decryptData:(NSData *)ciphertext dataOffset:(size_t)headerLength error:(OBNSErrorOutType)outError;

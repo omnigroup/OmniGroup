@@ -232,6 +232,9 @@ NS_ASSUME_NONNULL_BEGIN
     [_processingInstructions release];
     if (_dtdSystemID)
         CFRelease(_dtdSystemID);
+    if (_schemaID) {
+        CFRelease(_schemaID);
+    }
     [_dtdPublicID release];
     [_rootElement release];
     [_loadWarnings release];
@@ -513,7 +516,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[self topElement] setAttribute: name double: value format: @"%.15g"];
 }
 
-- (void) setAttribute: (NSString *) name double: (float) value format: (NSString *) formatString;
+- (void) setAttribute: (NSString *) name double: (double) value format: (NSString *) formatString;
 {
     [[self topElement] setAttribute: name double: value format: formatString];
 }

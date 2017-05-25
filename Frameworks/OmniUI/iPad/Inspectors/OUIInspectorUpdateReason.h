@@ -10,6 +10,5 @@
 typedef NS_ENUM(NSUInteger, OUIInspectorUpdateReason) {
     OUIInspectorUpdateReasonDefault,
     OUIInspectorUpdateReasonObjectsEdited, // Due to -[OUIInspector didEndChangingInspectedObjects]. Most commonly we want to check this to avoid reloading a table view when code following -didEndChangingInspectedObjects will fix the table view.
-    OUIInspectorUpdateReasonDismissed,
     OUIInspectorUpdateReasonNeedsReload
 };

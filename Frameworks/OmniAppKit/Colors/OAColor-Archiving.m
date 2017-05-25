@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@ RCS_ID("$Id$");
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <AppKit/NSColor.h>
 #endif
+
+NSString * const OAColorExternalRepresentationTransformerUserKey = @"OAColorExternalRepresentationTransformer";
 
 @implementation OAColor (XML)
 
@@ -398,15 +400,20 @@ static void _xmlDataAdder(id container, NSString *key, NSData *data)
             .string = _xmlStringAdder,
             .data = _xmlDataAdder
         };
-        [self _addComponentsToContainer:doc adders:adders omittingDefaultValues:YES];
-        
-        // OBFinishPorting: support the 'extra color space'?
-#if 0 && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
-        // This is used in cases where you want to export both the real colorspace AND something that might be understandable to other XML readers (who won't be able to understand catalog colors).
-        NSString *additionalColorSpace = [doc userObjectForKey:OAColorXMLAdditionalColorSpace];
-        if (additionalColorSpace && OFNOTEQUAL(additionalColorSpace, [self colorSpaceName]))
-            [[self colorUsingColorSpaceName:additionalColorSpace] _addComponentsToContainer:doc adders:adders omittingDefaultValues:YES];
-#endif
+
+        // Allow convertion to a color space for the external file format. In particular, some consumers might not be able to handle catalog/named colors and might want a sRGB tuple instead.
+        OAColor *externalColor;
+        NSValueTransformer *colorTransformer = [doc userObjectForKey:OAColorExternalRepresentationTransformerUserKey];
+        if (colorTransformer) {
+            externalColor = [colorTransformer transformedValue:self];
+            if (externalColor == nil) {
+                externalColor = self;
+            }
+        } else {
+            externalColor = self;
+        }
+
+        [externalColor _addComponentsToContainer:doc adders:adders omittingDefaultValues:YES];
     }
     [doc popElement];
 }

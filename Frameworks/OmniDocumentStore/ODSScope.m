@@ -7,23 +7,17 @@
 
 #import <OmniDocumentStore/ODSScope-Subclass.h>
 
-#import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniDocumentStore/ODSErrors.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniDocumentStore/ODSUtilities.h>
-#import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
-#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
-#import <OmniFoundation/NSSet-OFExtensions.h>
-#import <OmniFoundation/NSString-OFPathExtensions.h>
-#import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/OFFileEdit.h>
-#import <OmniFoundation/OFFileMotionResult.h>
-#import <OmniFoundation/OFUTI.h>
 
 #import "ODSStore-Internal.h"
 #import "ODSFileItem-Internal.h"
 #import "ODSItem-Internal.h"
 #import "ODSScope-Internal.h"
+
+@import MobileCoreServices;
+@import OmniFoundation;
 
 RCS_ID("$Id$");
 
@@ -463,7 +457,7 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
              if (!replaced) {
                  if (![replaceError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
                      innerError = replaceError;
-                     [replaceError log:@"Error replacing %@ with %@", toURL, newWritingURL];
+                     [replaceError log:@"Error replacing %@ with %@", newWritingURL, moveSourceURL];
                      return;
                  }
              }
@@ -471,13 +465,20 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
          
          if (!replaced) {
              __autoreleasing NSError *moveError = nil;
-             if (![coordinator moveItemAtURL:moveSourceURL toURL:toURL createIntermediateDirectories:(options & AddByCreatingParentDirectories) error:&moveError]) {
-                 NSLog(@"Error moving %@ -> %@: %@", moveSourceURL, toURL, [moveError toPropertyList]);
+             if (![coordinator moveItemAtURL:moveSourceURL toURL:newWritingURL createIntermediateDirectories:(options & AddByCreatingParentDirectories) error:&moveError]) {
+                 NSLog(@"Error moving %@ -> %@: %@", moveSourceURL, newWritingURL, [moveError toPropertyList]);
                  innerError = moveError;
                  return;
              }
          }
-         
+
+         // We are making a new file here, so make sure the modification date is updated (for our initial user edit date). If needed, we could pass a flag in to disable this (or switch this off by default, but have a flag to enable it). The important bit is that we do this on the background file queue before we look up the fileEdit.
+         __autoreleasing NSError *touchError;
+         if (![[NSFileManager defaultManager] touchItemAtURL:newWritingURL error:NULL]) {
+             [touchError log:@"Cannot update modification date of %@", newWritingURL];
+             // not fatal...
+         }
+
          __autoreleasing NSError *fileError = nil;
          fileEdit = [[OFFileEdit alloc] initWithFileURL:newWritingURL error:&fileError];
          if (!fileEdit) {

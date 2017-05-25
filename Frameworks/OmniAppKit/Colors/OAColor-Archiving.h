@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,3 +36,6 @@ static inline UIColor * __attribute__((overloadable)) OAMakeUIColor(NSDictionary
     return [[OAColor colorFromPropertyListRepresentation:plist] toColor];
 }
 #endif
+
+// A user key on OFXMLDocument that can be set to specify a NSValueTransfomer to convert in-memory colors to another color for the external representation (still a color, but possibly in a different color space). -transformedValue: is called to convert from the in-memory color to the external representation, and -reverseTransformedValue: is used to convert from the external representation to the in-memory representation. If either transform returns nil, the original color is used. This is supported for both OAColor (on iOS and macOS) and NSColor (on macOS).
+extern NSString * const OAColorExternalRepresentationTransformerUserKey;

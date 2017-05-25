@@ -41,6 +41,8 @@ NSString * const OFTUTIDeclarationUsageType = @"OFTUTIDeclarationUsageType";
 // }
 static NSDictionary *ExportedTypeDeclarationsByTag;
 static NSDictionary *ImportedTypeDeclarationsByTag;
+static NSDictionary *ExportedTypeDefinitionByFileType;
+static NSDictionary *ImportedTypeDefinitionByFileType;
 
 // A mapping of the type definitions that we've found
 static NSDictionary <NSString *, NSDictionary *> *TypeDefinitionByIdentifier;
@@ -62,7 +64,25 @@ static BOOL _TypeConformsToType(NSString *type, NSString *conformsToType)
 static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclarations, NSString *declarationType)
 {
     NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *definitions = [[NSMutableDictionary alloc] init];
     
+    if ([declarationType isEqualToString:(NSString *)kUTExportedTypeDeclarationsKey]) {
+        if (ExportedTypeDefinitionByFileType) {
+            [definitions addEntriesFromDictionary:ExportedTypeDefinitionByFileType];
+            [ExportedTypeDefinitionByFileType release];
+        }
+        ExportedTypeDefinitionByFileType = definitions;
+    } else if ([declarationType isEqualToString:(NSString *)kUTImportedTypeDeclarationsKey]) {
+        if (ImportedTypeDefinitionByFileType) {
+            [definitions addEntriesFromDictionary:ImportedTypeDefinitionByFileType];
+            [ImportedTypeDefinitionByFileType release];
+        }
+        ImportedTypeDefinitionByFileType = definitions;
+    } else {
+        [definitions release];
+        definitions = nil;
+    }
+
     // A type declaration is a dictionary...
     for (NSDictionary *declaration in typeDeclarations) {
         // ...with a string value for kUTTypeIdentifierKey...
@@ -74,6 +94,9 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
 
         // TODO: Warn about this instead of silently 'fixing' it.
         identifier = [identifier lowercaseString];
+
+        // register the definition
+        [definitions setObject:declaration forKey:identifier];
 
         // ...and a tag specification dictionary as a value for kUTTypeTagSpecificationKey.
         NSDictionary *tagSpecs = [declaration objectForKey:(NSString *)kUTTypeTagSpecificationKey];
@@ -101,7 +124,7 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                 [result setObject:classDict forKey:tagClass];
                 [classDict release];
             }
-            
+
             for (NSString *value in tagValues) {
                 if (!([value isKindOfClass:[NSString class]])) {
                     OFUTI_DIAG(@"Tag declaration for class \"%@\" of type identifier \"%@\" must be a string; found \"%@\" instead.", tagClass, identifier, value);
@@ -109,7 +132,7 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                 }
                 
                 value = [value lowercaseString];
-                
+
                 // Our dictionary maps from tag values to arrays, even though ideally the array only contains one object.
                 NSMutableArray *mappedIdentifiers = [classDict objectForKey:value];
                 if (!mappedIdentifiers) {
@@ -290,6 +313,42 @@ NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, 
     
     OBASSERT_NOTNULL(resolvedType); // should have at least gotten a dynamic type
     return resolvedType;
+}
+
+static NSString * _Nullable _OFGetFileExtensionFromDeinitionsForType(NSDictionary *definitions, NSString *fileType)
+{
+    NSDictionary *definition = [definitions objectForKey:fileType];
+
+    if (definition) {
+        NSDictionary *tagSpecs = [definition objectForKey:(NSString *)kUTTypeTagSpecificationKey];
+        id values = [tagSpecs objectForKey:(NSString *)kUTTagClassFilenameExtension];
+        if (values) {
+            if ([values isKindOfClass:NSArray.class]) {
+                return [(NSArray *)values firstObject];
+            } else if ([values isKindOfClass:NSString.class]) {
+                return (NSString *)values;
+            }
+        } else {
+            return nil;
+        }
+    }
+    return nil;
+}
+
+NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(NSString *fileType)
+{
+    // Check or own database
+    NSString *fileExtension = _OFGetFileExtensionFromDeinitionsForType(ExportedTypeDefinitionByFileType, fileType);
+
+    if (!fileExtension) {
+        fileExtension = _OFGetFileExtensionFromDeinitionsForType(ImportedTypeDefinitionByFileType, fileType);
+    }
+
+    if (!fileExtension) {
+        fileExtension = [((NSString *)UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension)) autorelease];
+    }
+
+    return fileExtension;
 }
 
 void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString *tagValue, NSString *conformingToUTIOrNil, OFUTIEnumerator enumerator)

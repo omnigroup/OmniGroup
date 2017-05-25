@@ -11,16 +11,6 @@
 
 RCS_ID("$Id$");
 
-id OBAllocateObjectWithIndexedIvars(Class cls, size_t indexedIvarsSize)
-{
-    return NSAllocateObject(cls, indexedIvarsSize, NULL);
-}
-
-void *OBObjectGetIndexedIvars(id object)
-{
-    return object_getIndexedIvars(object);
-}
-
 void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsafe_unretained id *outValue)
 {
     __unsafe_unretained id value = nil;

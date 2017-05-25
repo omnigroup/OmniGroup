@@ -166,6 +166,17 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
         #define OBASSERT_NOT_IMPLEMENTED(obj, selName) _OBAssertNotImplemented(obj, #selName)
     #endif
     
+    #define OBASSERT_DISPATCH_QUEUE(__queue) do { \
+        if (dispatch_assert_queue) { \
+            dispatch_assert_queue(__queue); \
+        } \
+    } while(0)
+    #define OBASSERT_DISPATCH_QUEUE_NOT(__queue) do { \
+        if (dispatch_assert_queue_not) { \
+            dispatch_assert_queue_not(__queue); \
+        } \
+    } while(0)
+
 #else	// else insert blank lines into the code
 
     #define OBPRECONDITION(expression, ...) do {} while(0)
@@ -201,6 +212,9 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
         #define OBASSERT_NO_SUPER_BECAUSE(...)
         #define OBASSERT_NOT_IMPLEMENTED(obj, sel, ...)
     #endif
+    
+    #define OBASSERT_DISPATCH_QUEUE(__queue) do {} while(0)
+    #define OBASSERT_DISPATCH_QUEUE_NOT(__queue) do {} while(0)
 #endif
 #if defined(__cplusplus)
 } // extern "C"

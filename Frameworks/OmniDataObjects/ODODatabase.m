@@ -7,11 +7,12 @@
 
 #import <OmniDataObjects/ODODatabase.h>
 
-#import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOAttribute.h>
-#import <OmniDataObjects/ODORelationship.h>
-#import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOEditingContext.h>
+#import <OmniDataObjects/ODOEntity.h>
+#import <OmniDataObjects/ODOFetchRequest.h>
+#import <OmniDataObjects/ODORelationship.h>
+#import <OmniDataObjects/ODOSQLConnection.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 
 #import <OmniFoundation/OFXMLIdentifier.h>
@@ -23,7 +24,6 @@
 #import "ODOPredicate-SQL.h"
 
 #import <sqlite3.h>
-#import <Foundation/NSFileManager.h>
 
 RCS_ID("$Id$")
 
@@ -120,12 +120,13 @@ static BOOL ODOKeepTemporaryStoreInMemory = NO;
 static BOOL ODOVacuumOnDisconnect = NO;
 
 @interface ODODatabase (/*Private*/)
+
+@property (nonatomic, strong, readwrite) ODOSQLConnection *connection;
+
 - (BOOL)_setupNewDatabase:(NSError **)outError;
 - (BOOL)_populateCachedMetadata:(NSError **)outError;
 - (BOOL)_disconnectWithoutNotifying:(NSError **)outError;
-#ifdef DEBUG
-- (BOOL)_checkInvariants;
-#endif
+
 @end
 
 @implementation ODODatabase
@@ -133,15 +134,13 @@ static BOOL ODOVacuumOnDisconnect = NO;
 @private
     ODOModel *_model;
     
-    NSURL *_connectedURL;
-    struct sqlite3 *_sqlite;
+    ODOSQLStatement *_metadataInsertStatement;
     ODOSQLStatement *_beginTransactionStatement;
     ODOSQLStatement *_commitTransactionStatement;
-    ODOSQLStatement *_metadataInsertStatement;
-    NSMutableDictionary *_cachedStatements;
+    NSMutableDictionary<NSObject<NSCopying> *, ODOSQLStatement *> *_cachedStatements;
     
-    NSMutableDictionary *_committedMetadata;
-    NSMutableDictionary *_pendingMetadataChanges;
+    NSMutableDictionary<NSString *, id> *_committedMetadata;
+    NSMutableDictionary<NSString *, id> *_pendingMetadataChanges;
     
     BOOL _isFreshlyCreated; // YES if we just made the schema and -didSave hasn't been called (which should be called the first time we save a transaction; presumably having an INSERT).
 }
@@ -177,14 +176,18 @@ static BOOL ODOVacuumOnDisconnect = NO;
     [_cachedStatements release];
     _cachedStatements = nil;
     
-    if (_connectedURL) {
+    if (_connection) {
         NSError *error = nil;
         if (![self disconnect:&error]) {
-            NSLog(@"Error disconnecting from '%@': %@", [_connectedURL absoluteString], [error toPropertyList]);
+            NSLog(@"Error disconnecting from '%@': %@", [_connection.URL absoluteString], [error toPropertyList]);
         }
-        [_connectedURL release];
+        [_connection release];
     }
-    OBASSERT(_sqlite == NULL); // Might have gotten an error in -disconnect:, but if so, there is nothing better we can do here
+    
+    // These three should have been cleared by the -disconnect: call above
+    OBASSERT(_beginTransactionStatement == nil);
+    OBASSERT(_commitTransactionStatement == nil);
+    OBASSERT(_metadataInsertStatement == nil);
 
     OBASSERT(_pendingMetadataChanges == nil); // Why didn't they get saved and cleared?
     [_pendingMetadataChanges release]; // ... in case.
@@ -202,113 +205,115 @@ static BOOL ODOVacuumOnDisconnect = NO;
 
 - (NSURL *)connectedURL;
 {
-    OBINVARIANT([self _checkInvariants]);
-    return _connectedURL;
+    return _connection.URL;
 }
 
 - (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
 {
-    OBINVARIANT([self _checkInvariants]);
-    
     if (ODOLogSQL)
         NSLog(@"Connecting to %@", [fileURL absoluteURL]);
     
-    if (_connectedURL) {
+    if (_connection) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to connect to database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot connect to '%@' since the database is already connected to '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [_connectedURL absoluteString], [fileURL absoluteString]];
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot connect to '%@' since the database is already connected to '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [_connection.URL absoluteString], [fileURL absoluteString]];
         ODOError(outError, ODOUnableToConnectDatabase, description, reason);
         return NO;
     }
     
-    OBASSERT(_sqlite == NULL); // invariant should ensure this.
-
-    fileURL = [fileURL absoluteURL];
-    NSString *path = [fileURL path];
-
     // SQLite will silently create the database file if it didn't exist already.  Check if it exists before trying (alternatively, we could do some select to see if it is empty after opening).
+    NSString *path = [[fileURL absoluteURL] path];
     BOOL existed = [[NSFileManager defaultManager] fileExistsAtPath:path];
     
-    // Even on error the output sqlite will supposedly be set and we need to close it.
-    sqlite3 *sql = NULL;
-    int rc = sqlite3_open([path UTF8String], &sql);
-    if (rc != SQLITE_OK) {
-        ODOSQLiteError(outError, rc, sql); // stack the underlying error
-        sqlite3_close(sql);
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot open database at '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [fileURL absoluteString]];
-        ODOError(outError, ODOUnableToConnectDatabase, description, reason);
-        return NO;
-    }
-    
-    // Optimistically assign these.  If we are installing schema, we might fail stil.
-    _sqlite = sql;
-    _connectedURL = [fileURL copy];
-    _committedMetadata = [[NSMutableDictionary alloc] init];
-
+    ODOSQLConnectionOptions options = 0;
     if (ODOAsynchronousWrites) {
-        if (![self executeSQLWithoutResults:@"PRAGMA synchronous = off" error:outError])
-            return NO;
-    } else {
-        if (![self executeSQLWithoutResults:@"PRAGMA synchronous = normal" error:outError])
-            return NO;
+        options |= ODOSQLConnectionAsynchronousWrites;
     }
-
     if (ODOKeepTemporaryStoreInMemory) {
-        if (![self executeSQLWithoutResults:@"PRAGMA temp_store = memory" error:outError])
-            return NO;
+        options |= ODOSQLConnectionKeepTemporaryStoreInMemory;
     }
-
-    if (![self executeSQLWithoutResults:@"PRAGMA auto_vacuum = none" error:outError]) // According to the sqlite documentation: "Auto-vacuum does not defragment the database nor repack individual database pages the way that the VACUUM command does. In fact, because it moves pages around within the file, auto-vacuum can actually make fragmentation worse."
-        return NO;
-
-#if 0
-    // "The maximum size of any string or BLOB or table row."
-    int blobSize = sqlite3_limit(_sqlite, SQLITE_LIMIT_LENGTH, -1/* negative means to not change*/);
-    NSLog(@"blobSize = %d", blobSize);
-#endif
     
-    // string compare functions
-    rc = sqlite3_create_function(_sqlite, ODOComparisonPredicateStartsWithFunctionName, 
-                                 3/*nArg*/,
-                                 SQLITE_UTF8, NULL/*data*/,
-                                 ODOComparisonPredicateStartsWithFunction,
-                                 NULL /*step*/,
-                                 NULL /*final*/);
-    if (rc != SQLITE_OK) {
-        ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
+    _connection = [[ODOSQLConnection alloc] initWithURL:fileURL options:options error:outError];
+    if (_connection == nil) {
         return NO;
     }
-    rc = sqlite3_create_function(_sqlite, ODOComparisonPredicateContainsFunctionName, 
-                                 3/*nArg*/,
-                                 SQLITE_UTF8, NULL/*data*/,
-                                 ODOComparisonPredicateContainsFunction,
-                                 NULL /*step*/,
-                                 NULL /*final*/);
-    if (rc != SQLITE_OK) {
-        ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
+    
+    // Set up string compare functions
+    BOOL stringCompareSuccess = [_connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        int rc;
+        
+        rc = sqlite3_create_function(sqlite, ODOComparisonPredicateStartsWithFunctionName,
+                                     3/*nArg*/,
+                                     SQLITE_UTF8, NULL/*data*/,
+                                     ODOComparisonPredicateStartsWithFunction,
+                                     NULL /*step*/,
+                                     NULL /*final*/);
+        if (rc != SQLITE_OK) {
+            ODOSQLiteError(blockError, rc, sqlite); // stack the underlying error
+            return NO;
+        }
+        
+        rc = sqlite3_create_function(sqlite, ODOComparisonPredicateContainsFunctionName,
+                                     3/*nArg*/,
+                                     SQLITE_UTF8, NULL/*data*/,
+                                     ODOComparisonPredicateContainsFunction,
+                                     NULL /*step*/,
+                                     NULL /*final*/);
+        if (rc != SQLITE_OK) {
+            ODOSQLiteError(blockError, rc, sqlite); // stack the underlying error
+            return NO;
+        }
+        
+        return YES;
+    }];
+    if (!stringCompareSuccess) {
         return NO;
     }
+    
+    // Set up transaction statements
+    _beginTransactionStatement = [[ODOSQLStatement alloc] initWithConnection:_connection sql:@"BEGIN EXCLUSIVE" error:outError];
+    if (!_beginTransactionStatement) {
+        return NO;
+    }
+    _commitTransactionStatement = [[ODOSQLStatement alloc] initWithConnection:_connection sql:@"COMMIT" error:outError];
+    if (!_commitTransactionStatement) {
+        return NO;
+    }
+    
+    BOOL prepareSuccess = [_connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        if (![_beginTransactionStatement prepareIfNeededWithSQLite:sqlite error:blockError]) {
+            return NO;
+        }
+        if (![_commitTransactionStatement prepareIfNeededWithSQLite:sqlite error:blockError]) {
+            return NO;
+        }
+        return YES;
+    }];
+    if (!prepareSuccess) {
+        [self _disconnectWithoutNotifying:NULL];
+        return NO;
+    }
+    
+    _committedMetadata = [[NSMutableDictionary alloc] init];
     
     if (!existed) {
         if (![self _setupNewDatabase:outError]) {
-            // Not so much with the working.  Disconnect (tossing any error that might happen) to clear out the optimistic connection state.
-            NSError *disconnectError = nil;
-            [self _disconnectWithoutNotifying:&disconnectError];
+            // Not so much with the working.  Disconnect (ignoring any error that might happen) to clear out the optimistic connection state.
+            [self _disconnectWithoutNotifying:NULL];
             
             // Since we created the file and it is bogus; blow it away.
             NSError *removeError = nil;
-            if (![[NSFileManager defaultManager] removeItemAtPath:path error:&removeError])
-		NSLog(@"Unable to remove '%@' - %@", path, [removeError toPropertyList]);
-	    
+            if (![[NSFileManager defaultManager] removeItemAtPath:path error:&removeError]) {
+                NSLog(@"Unable to remove '%@' - %@", path, [removeError toPropertyList]);
+            }
+            
             return NO;
         }
     } else {
         // TODO: Validate the existing schema vs. our model?  OmniFocus doesn't need this since it puts the SVN revision in the metadata, but this might be nice.  On the other hand, it will be wasted effort, on launch no less, for the iPhone where the SVN revision would have caught the problem anyway.
         
         if (![self _populateCachedMetadata:outError]) {
-            // Not so much with the working.  Disconnect (tossing any error that might happen) to clear out the optimistic connection state.
-            NSError *disconnectError = nil;
-            [self _disconnectWithoutNotifying:&disconnectError];
+            // Not so much with the working.  Disconnect (ignoring any error that might happen) to clear out the optimistic connection state.
+            [self _disconnectWithoutNotifying:NULL];
             
             return NO;
         }
@@ -316,7 +321,6 @@ static BOOL ODOVacuumOnDisconnect = NO;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:ODODatabaseConnectedURLChangedNotification object:self];
     
-    OBINVARIANT([self _checkInvariants]);
     return YES;
 }
 
@@ -373,7 +377,11 @@ static BOOL ODOVacuumOnDisconnect = NO;
 - (BOOL)writePendingMetadataChanges:(NSError **)outError;
 {
     OBPRECONDITION(_pendingMetadataChanges != nil, @"bug:///139901 (Mac-OmniFocus Engineering: Precondition failure writing metadata changes before desync correction)");
-    if (![self _writeMetadataChanges:outError]) {
+    
+    BOOL transactionSuccess = [self _performTransactionWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        return [self _queue_writeMetadataChangesToSQLite:sqlite error:blockError];
+    }];
+    if (!transactionSuccess) {
         return NO;
     }
     
@@ -388,6 +396,8 @@ static BOOL ODOVacuumOnDisconnect = NO;
 
 static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
 {
+    OBASSERT([statement.connection checkIsManagedSQLite:sqlite]);
+    OBASSERT([statement.connection checkExecutingOnDispatchQueue]);
     uint64_t *outRowCount = context;
     OBASSERT(sqlite3_column_count(statement->_statement) == 1);
     *outRowCount = sqlite3_column_int64(statement->_statement, 0);
@@ -396,20 +406,20 @@ static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *stat
 
 - (BOOL)fetchCommittedRowCount:(uint64_t *)outRowCount fromEntity:(ODOEntity *)entity matchingPredicate:(NSPredicate *)predicate error:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
-    
-    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initRowCountFromEntity:entity database:self predicate:predicate error:outError];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initRowCountFromEntity:entity connection:self.connection predicate:predicate error:outError];
     if (!statement)
         return NO;
     
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _fetchRowCountCallback;
-
-    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, outRowCount, outError);
-
+    BOOL success = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchRowCountCallback;
+        
+        return ODOSQLStatementRun(sqlite, statement, callbacks, outRowCount, blockError);
+    }];
+    
+    OBExpectDeallocation(statement);
     [statement release];
-
     return success;
 }
 
@@ -423,7 +433,6 @@ static BOOL _fetchSumCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement
 
 - (BOOL)fetchCommitedInt64Sum:(int64_t *)outSum fromAttribute:(ODOAttribute *)attribute entity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
     OBPRECONDITION(attribute != nil);
     
     if (predicate != nil) {
@@ -431,18 +440,20 @@ static BOOL _fetchSumCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement
     }
     
     NSString *sql = [NSString stringWithFormat:@"SELECT SUM(%@) FROM %@", [attribute name], [entity name]];
-    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithDatabase:self sql:sql error:outError];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithConnection:self.connection sql:sql error:outError];
     if (!statement)
         return NO;
     
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _fetchSumCallback;
+    BOOL success = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchSumCallback;
+        
+        return ODOSQLStatementRun(sqlite, statement, callbacks, outSum, blockError);
+    }];
     
-    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, outSum, outError);
-    
+    OBExpectDeallocation(statement);
     [statement release];
-    
     return success;
 }
 
@@ -475,44 +486,36 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 
 - (nullable NSArray *)fetchCommittedAttributes:(NSArray<ODOAttribute *> *)attributes fromEntity:(ODOEntity *)entity matchingPredicate:(nullable NSPredicate *)predicate error:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
     OBPRECONDITION(attributes != nil);
+    NSMutableArray *results = [NSMutableArray array];
     
-    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initSelectProperties:attributes fromEntity:entity database:self predicate:predicate error:outError];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initSelectProperties:attributes fromEntity:entity connection:self.connection predicate:predicate error:outError];
     if (statement == nil) {
         return nil;
     }
     
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _fetchAttributesCallback;
+    BOOL success = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchAttributesCallback;
+        
+        FetchAttributesCallbackContext context;
+        context.attributes = attributes;
+        context.results = results;
+        return ODOSQLStatementRun(sqlite, statement, callbacks, &context, blockError);
+    }];
     
-    FetchAttributesCallbackContext context;
-    context.attributes = attributes;
-    context.results = [NSMutableArray array];
-    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, &context, outError);
-    
+    OBExpectDeallocation(statement);
     [statement release];
-    
-    return (success ? context.results : nil);
+    return (success ? results : nil);
 }
 
 #pragma mark Dangerous API
 
-// The given SQL is expected to be a single statement that is executed once and returns no result rows.  Any quoting should have already happened.
 - (BOOL)executeSQLWithoutResults:(NSString *)sql error:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
-    
-    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithDatabase:self sql:sql error:outError];
-    if (!statement)
-        return NO;
-    
-    BOOL success = ODOSQLStatementRunWithoutResults(_sqlite, statement, outError);
-    [statement release];
-    return success;
+    return [self.connection executeSQLWithoutResults:sql error:outError];
 }
-
 
 #pragma mark Private
 
@@ -571,29 +574,27 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
 
 - (BOOL)_populateCachedMetadata:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
-    
     NSString *sql = [NSString stringWithFormat:@"select %@, %@ from %@", ODODatabaseMetadataKeyColumnName, ODODatabaseMetadataPlistColumnName, ODODatabaseMetadataTableName];
-    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithDatabase:self sql:sql error:outError];
+    ODOSQLStatement *statement = [[ODOSQLStatement alloc] initWithConnection:self.connection sql:sql error:outError];
     if (!statement)
         return NO;
     
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _populateCachedMetadataRowCallback;
-
-    BOOL success = ODOSQLStatementRun(_sqlite, statement, callbacks, _committedMetadata, outError);
-
+    BOOL success = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _populateCachedMetadataRowCallback;
+        
+        return ODOSQLStatementRun(sqlite, statement, callbacks, _committedMetadata, blockError);
+    }];
+    
+    OBExpectDeallocation(statement);
     [statement release];
-
     return success;
 }
 
 - (BOOL)_disconnectWithoutNotifying:(NSError **)outError;
 {
-    OBINVARIANT([self _checkInvariants]);
-    
-    if (!_connectedURL) {
+    if (!_connection) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Error disconnecting from database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Attempted to disconnect while not connected.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
         ODOError(outError, ODOErrorDisconnectingFromDatabase, description, reason);
@@ -601,16 +602,12 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     }
     
     if (ODOLogSQL)
-        NSLog(@"Disconnecting from %@", [_connectedURL absoluteURL]);
-
-    // Doing this first right now so that we can have an assertion when building a ODOSQLStatement that the database is connected.  Any indication would do, though.
-    [_connectedURL release];
-    _connectedURL = nil;
+        NSLog(@"Disconnecting from %@", [_connection.URL absoluteURL]);
     
     [_beginTransactionStatement invalidate];
     [_beginTransactionStatement release];
     _beginTransactionStatement = nil;
-
+    
     [_commitTransactionStatement invalidate];
     [_commitTransactionStatement release];
     _commitTransactionStatement = nil;
@@ -619,26 +616,14 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     [_metadataInsertStatement release];
     _metadataInsertStatement = nil;
 
-    for (ODOSQLStatement *statement in [_cachedStatements objectEnumerator])
+    for (ODOSQLStatement *statement in [_cachedStatements objectEnumerator]) {
         [statement invalidate];
+    }
     [_cachedStatements removeAllObjects];
     
-    /* From the docs:
-     ** All SQL statements prepared using sqlite3_prepare() or
-     ** sqlite3_prepare16() must be deallocated using sqlite3_finalize() before
-     ** this routine is called. Otherwise, SQLITE_BUSY is returned and the
-     ** database connection remains open.
-     */
-    int rc = sqlite3_close(_sqlite);
-    if (rc != SQLITE_OK) {
-        ODOSQLiteError(outError, rc, _sqlite); // stack the underlying error
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to disconnect from database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Cannot disconnect from database at '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [_connectedURL absoluteString]];
-        ODOError(outError, ODOUnableToConnectDatabase, description, reason);
-        return NO;
-    } else {
-        _sqlite = NULL;
-    }
+    OBExpectDeallocation(_connection);
+    [_connection release];
+    _connection = nil;
     
     OBASSERT([_pendingMetadataChanges count] == 0); // Otherwise, metadata changes are getting lost.
     [_pendingMetadataChanges release];
@@ -647,26 +632,12 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     [_committedMetadata release];
     _committedMetadata = nil;
     
-    OBINVARIANT([self _checkInvariants]);
     return YES;
 }
 
-#ifdef DEBUG
-- (BOOL)_checkInvariants;
-{
-    OBINVARIANT((_connectedURL == nil) == (_sqlite == NULL));
-    return YES;
-}
-#endif
 @end
 
 @implementation ODODatabase (Internal)
-
-- (sqlite3 *)_sqlite;
-{
-    OBPRECONDITION(_sqlite);
-    return _sqlite;
-}
 
 - (id)_generatePrimaryKeyForEntity:(ODOEntity *)entity;
 {
@@ -679,127 +650,112 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     }
 }
 
-- (BOOL)_beginTransaction:(NSError **)outError;
+- (BOOL)_performTransactionWithError:(NSError **)outError block:(ODOSQLFailablePerformBlock)block;
 {
-    OBPRECONDITION(_sqlite);
-
-    if (!_beginTransactionStatement) {
-        _beginTransactionStatement = [[ODOSQLStatement alloc] initWithDatabase:self sql:@"BEGIN EXCLUSIVE" error:outError];
-        if (!_beginTransactionStatement)
+    return [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        if (!ODOSQLStatementRunWithoutResults(sqlite, _beginTransactionStatement, blockError)) {
             return NO;
-    }
-
-    return ODOSQLStatementRunWithoutResults(_sqlite, _beginTransactionStatement, outError);
-}
-
-- (BOOL)_commitTransaction:(NSError **)outError;
-{
-    OBPRECONDITION(_sqlite);
-
-    if (!_commitTransactionStatement) {
-        _commitTransactionStatement = [[ODOSQLStatement alloc] initWithDatabase:self sql:@"COMMIT" error:outError];
-        if (!_commitTransactionStatement)
-            return NO;
-    }
-    
-    return ODOSQLStatementRunWithoutResults(_sqlite, _commitTransactionStatement, outError);
-}
-
-typedef struct {
-    sqlite3 *sqlite;
-    BOOL errorOccurred;
-    NSError **outError;
-    ODOSQLStatement *insertStatement;
-} ODOWriteMetadataContext;
-
-static void ODOWriteMetadataApplier(const void *key, const void *value, void *context)
-{
-    NSString *keyString = (NSString *)key;
-    id plistObject = (id)value;
-    ODOWriteMetadataContext *ctx = context;
-    
-    if (ctx->errorOccurred)
-        return;
-    
-    if (OFISNULL(plistObject)) {
-        // Use a delete statement
-        OBRequestConcreteImplementation(nil, @selector(_writeMetadataChanges:));
-    } else {
-        if (!ODOSQLStatementBindString(ctx->sqlite, ctx->insertStatement, 1, keyString, ctx->outError)) {
-            ctx->errorOccurred = YES;
-            return;
         }
         
-        NSError *error = nil;
-        NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:plistObject format:NSPropertyListBinaryFormat_v1_0 options:0 error:&error];
+        if (!block(sqlite, blockError)) {
+            return NO;
+        }
+        
+        if (!ODOSQLStatementRunWithoutResults(sqlite, _commitTransactionStatement, blockError)) {
+            return NO;
+        }
+        
+        return YES;
+    }];
+}
+
+- (BOOL)_queue_writeMetadataValue:(id)plistObject forKey:(NSString *)keyString toSQLite:(struct sqlite3 *)sqlite error:(NSError **)outError;
+{
+    OBPRECONDITION(_metadataInsertStatement != nil);
+    OBPRECONDITION(sqlite != NULL);
+    OBPRECONDITION([_connection checkExecutingOnDispatchQueue]);
+    OBPRECONDITION([_connection checkIsManagedSQLite:sqlite]);
+    
+    if (OFISNULL(plistObject)) {
+        // Use a DELETE statement
+        OBRequestConcreteImplementation(nil, _cmd);
+    } else {
+        if (!ODOSQLStatementBindString(sqlite, _metadataInsertStatement, 1, keyString, outError)) {
+            return NO;
+        }
+        
+        NSError *plistError = nil;
+        NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:plistObject format:NSPropertyListBinaryFormat_v1_0 options:0 error:&plistError];
         if (!plistData) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save metadata to database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to convert '%@' to a property list data: %@.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), plistObject, plistData];
-            ODOError(ctx->outError, ODOUnableToSaveMetadata, description, reason);
-            ctx->errorOccurred = YES;
-            return;
-        }
-
-        if (!ODOSQLStatementBindData(ctx->sqlite, ctx->insertStatement, 2, plistData, ctx->outError)) {
-            ctx->errorOccurred = YES;
-            return;
+            ODOError(outError, ODOUnableToSaveMetadata, description, reason);
+            return NO;
         }
         
-        if (!ODOSQLStatementRunWithoutResults(ctx->sqlite, ctx->insertStatement, ctx->outError)) {
-            ctx->errorOccurred = YES;
-            return;
+        if (!ODOSQLStatementBindData(sqlite, _metadataInsertStatement, 2, plistData, outError)) {
+            return NO;
+        }
+        
+        if (!ODOSQLStatementRunWithoutResults(sqlite, _metadataInsertStatement, outError)) {
+            return NO;
         }
     }
+    
+    return YES;
 }
 
-- (BOOL)_writeMetadataChanges:(NSError **)outError;
+- (BOOL)_queue_writeMetadataChangesToSQLite:(struct sqlite3 *)sqlite error:(NSError **)outError;
 {
-    OBPRECONDITION(_sqlite);
-
+    OBPRECONDITION([_connection checkExecutingOnDispatchQueue]);
+    OBPRECONDITION([_connection checkIsManagedSQLite:sqlite]);
+    
     if (!_pendingMetadataChanges)
         return YES;
     
     if (!_metadataInsertStatement) {
-        _metadataInsertStatement = [[ODOSQLStatement alloc] initWithDatabase:self sql:[NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ VALUES (?, ?)", ODODatabaseMetadataTableName] error:outError];
-        if (!_metadataInsertStatement)
+        _metadataInsertStatement = [[ODOSQLStatement alloc] initWithConnection:self.connection sql:[NSString stringWithFormat:@"INSERT OR REPLACE INTO %@ VALUES (?, ?)", ODODatabaseMetadataTableName] error:outError];
+        if (!_metadataInsertStatement) {
             return NO;
+        }
+        if (![_metadataInsertStatement prepareIfNeededWithSQLite:sqlite error:outError]) {
+            [_metadataInsertStatement release];
+            _metadataInsertStatement = nil;
+            return NO;
+        }
     }
-
-   // Result is a repeat of whatever error last came out of sqlite3_step.  Not relevant here.
-   sqlite3_reset(_metadataInsertStatement->_statement);
-                                       
-    ODOWriteMetadataContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
-    ctx.sqlite = _sqlite;
-    ctx.insertStatement = _metadataInsertStatement;
-    ctx.outError = outError;
     
-    CFDictionaryApplyFunction((CFDictionaryRef)_pendingMetadataChanges, ODOWriteMetadataApplier, &ctx);
+    // Result is a repeat of whatever error last came out of sqlite3_step.  Not relevant here.
+    sqlite3_reset(_metadataInsertStatement->_statement);
     
-    return !ctx.errorOccurred;
+    for (NSString *key in _pendingMetadataChanges) {
+        id value = _pendingMetadataChanges[key];
+        if (![self _queue_writeMetadataValue:value forKey:key toSQLite:sqlite error:outError]) {
+            return NO;
+        }
+    }
+    
+    return YES;
 }
 
 // Merge the pending changes into the committed metadata.  This is on the commit-succeeded path so it must not fail.
-
-static void _committedPendingMetadataChangesApplier(const void *key, const void *value, void *context)
-{
-    NSString *keyString = (NSString *)key;
-    id plistObject = (id)value;
-    NSMutableDictionary *committedMetadata = (NSMutableDictionary *)context;
-    
-    if (OFISNULL(plistObject))
-        [committedMetadata removeObjectForKey:keyString];
-    else
-        [committedMetadata setObject:plistObject forKey:keyString];
-}
-
 - (void)_committedPendingMetadataChanges;
 {
     OBPRECONDITION(_committedMetadata);
     
     if (!_pendingMetadataChanges)
         return;
-    CFDictionaryApplyFunction((CFDictionaryRef)_pendingMetadataChanges, _committedPendingMetadataChangesApplier, _committedMetadata);
+    
+    for (NSString *key in _pendingMetadataChanges) {
+        id plistObject = _pendingMetadataChanges[key];
+        
+        if (OFISNULL(plistObject)) {
+            [_committedMetadata removeObjectForKey:key];
+        } else {
+            [_committedMetadata setObject:plistObject forKey:key];
+        }
+    }
+    
     [_pendingMetadataChanges release];
     _pendingMetadataChanges = nil;
 }
@@ -820,7 +776,7 @@ static void _committedPendingMetadataChangesApplier(const void *key, const void 
 - (void)_setCachedStatement:(ODOSQLStatement *)statement forKey:(NSObject <NSCopying> *)key;
 {
     OBPRECONDITION([statement isKindOfClass:[ODOSQLStatement class]]);
-    OBPRECONDITION(statement->_statement); // Need a 'isInvalidated'?
+    OBPRECONDITION([statement isPrepared]);
     OBPRECONDITION([key conformsToProtocol:@protocol(NSCopying)]);
 
     // Unlikely that we will replace keys -- let's check
@@ -844,9 +800,19 @@ static void _committedPendingMetadataChangesApplier(const void *key, const void 
     ODOAttribute *destPrimaryKey = [destEntity primaryKeyAttribute];
     
     NSPredicate *predicate = ODOKeyPathEqualToValuePredicate([inverseRel name], @"something"); // Fake up a constant for the build.  Don't use nil/null since that'd get translated to 'IS NULL'.
-    query = [[ODOSQLStatement alloc] initSelectProperties:[NSArray arrayWithObject:destPrimaryKey] fromEntity:destEntity database:self predicate:predicate error:outError];
-    if (!query)
+    
+    query = [[ODOSQLStatement alloc] initSelectProperties:[NSArray arrayWithObject:destPrimaryKey] fromEntity:destEntity connection:self.connection predicate:predicate error:outError];
+    if (query == nil) {
         return nil;
+    }
+    
+    BOOL prepareSuccess = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        return [query prepareIfNeededWithSQLite:sqlite error:blockError];
+    }];
+    if (!prepareSuccess) {
+        [query release];
+        return nil;
+    }
     
     [self _setCachedStatement:query forKey:rel];
     
@@ -854,5 +820,3 @@ static void _committedPendingMetadataChangesApplier(const void *key, const void 
 }
 
 @end
-
-

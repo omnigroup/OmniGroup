@@ -1027,37 +1027,35 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
         NSNotification *note = [NSNotification notificationWithName:ODOEditingContextDidSaveNotification object:self userInfo:userInfo];
         [userInfo release];
 
-        if (![_database _beginTransaction:outError]) {
-            OBINVARIANT([self _checkInvariants]);
-            return NO;
-        }
-        
         // Ask ODODatabase to write (but not clear) its _pendingMetadataChanges
-        NSError *databaseError = nil;
-        if (![_database _writeMetadataChanges:&databaseError]) {
-            // <bug:///102226> (Discussion: Are at least some of the recent SQL error reports being caused by Clean My Mac, MacKeeper, etc.?)
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save changes to database", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            NSString *reason;
-            BOOL underlyingErrorRequiresReopen = [databaseError hasUnderlyingErrorDomain:ODOSQLiteErrorDomain code:SQLITE_IOERR];
-            if (underlyingErrorRequiresReopen)
-                reason = NSLocalizedStringFromTableInBundle(@"The cache database was removed while it was still open. Close and reopen the database to recover.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
-            else
-                reason = [databaseError localizedFailureReason];
+        BOOL transactionSuccess = [_database _performTransactionWithError:outError block:^(struct sqlite3 *sqlite, NSError **blockError) {
+            NSError *databaseError = nil;
+            if (![_database _queue_writeMetadataChangesToSQLite:sqlite error:&databaseError]) {
+                // <bug:///102226> (Discussion: Are at least some of the recent SQL error reports being caused by Clean My Mac, MacKeeper, etc.?)
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save changes to database", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+                NSString *reason;
+                BOOL underlyingErrorRequiresReopen = [databaseError hasUnderlyingErrorDomain:ODOSQLiteErrorDomain code:SQLITE_IOERR];
+                if (underlyingErrorRequiresReopen)
+                    reason = NSLocalizedStringFromTableInBundle(@"The cache database was removed while it was still open. Close and reopen the database to recover.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+                else
+                    reason = [databaseError localizedFailureReason];
+                
+                NSInteger code = (underlyingErrorRequiresReopen ? ODOUnableToSaveTryReopen : ODOUnableToSave);
+                ODOError(&databaseError, code, description, reason);
+                if (blockError != NULL)
+                    *blockError = databaseError;
+                
+                return NO;
+            }
             
-            NSInteger code = (underlyingErrorRequiresReopen ? ODOUnableToSaveTryReopen : ODOUnableToSave);
-            ODOError(&databaseError, code, description, reason);
-            OBINVARIANT([self _checkInvariants]);
-            if (outError != NULL)
-                *outError = databaseError;
-            return NO;
-        }
+            if (![self _queue_writeProcessedEditsToSQLite:sqlite error:blockError]) {
+                return NO;
+            }
+            
+            return YES;
+        }];
         
-        if (![self _writeProcessedEdits:outError]) {
-            OBINVARIANT([self _checkInvariants]);
-            return NO;
-        }
-        
-        if (![_database _commitTransaction:outError]) {
+        if (!transactionSuccess) {
             OBINVARIANT([self _checkInvariants]);
             return NO;
         }
@@ -1219,7 +1217,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     ODOAttribute *primaryKeyAttribute = [rootEntity primaryKeyAttribute];
     NSPredicate *predicate = [fetch predicate];
     
-    ODORowFetchContext ctx;
+    __block ODORowFetchContext ctx;
     memset(&ctx, 0, sizeof(ctx));
     ctx.entity = rootEntity;
     ctx.instanceClass = [rootEntity instanceClass];
@@ -1233,7 +1231,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     OBASSERT(ctx.primaryKeyColumnIndex != NSNotFound);
     
     // Even if we aren't connected, we can still do in-memory operations.  If the database is totally fresh (no saves have been done since the schema was created) doing a fetch is pointless.  This is an optimization for the import case where we fill caches prior to saving for the first time
-    if ([_database connectedURL] && ![_database isFreshlyCreated]) {
+    if ([_database connection] && ![_database isFreshlyCreated]) {
         //NSLog(@"fetch: %@, predicate = %@, sort = %@", [[fetch entity] name], [fetch predicate], [fetch sortDescriptors]);
         if (ODOLogSQL) {
             NSString *reason = [fetch reason];
@@ -1243,28 +1241,24 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
             ODOSQLStatementLogSQL(@"/* SQL fetch: %@  reason: %@ */ ", [[fetch entity] name], reason);
         }
         
-        ODOSQLStatement *query = [[ODOSQLStatement alloc] initSelectProperties:ctx.schemaProperties fromEntity:rootEntity database:_database predicate:predicate error:outError];
+        ODOSQLStatement *query = [[ODOSQLStatement alloc] initSelectProperties:ctx.schemaProperties fromEntity:rootEntity connection:_database.connection predicate:predicate error:outError];
         if (query == nil) {
             OBASSERT_NOT_REACHED("Failed to build query: %@", outError != NULL ? (id)[*outError toPropertyList] : (id)@"Missing error");
             OBINVARIANT([self _checkInvariants]);
             return nil;
         }
         
-        // TODO: Append the sort descriptors as a 'order by'?  Can't if they have non-schema properties, so for now we can just sort in memory.
-        
-        BOOL success = NO;
-        
-        @try {
+        BOOL success = [_database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+            // TODO: Append the sort descriptors as a 'order by'?  Can't if they have non-schema properties, so for now we can just sort in memory.
             ODOSQLStatementCallbacks callbacks;
             memset(&callbacks, 0, sizeof(callbacks));
             callbacks.row = _fetchPrimaryKeyCallback;
             
-            success = ODOSQLStatementRun([_database _sqlite], query, callbacks, &ctx, outError);
-        } @finally {
-            // Having this -autoreleased can mean we have non-finalized queries when trying to disconnect the database.
-            [query invalidate];
-            [query release];
-        }
+            return ODOSQLStatementRun(sqlite, query, callbacks, &ctx, blockError);
+        }];
+        
+        [query invalidate];
+        [query release];
         
         if (!success) {
 #ifdef DEBUG
@@ -1564,18 +1558,21 @@ static void _writeDeleteApplier(const void *value, void *context)
 }
 
 // Writes the changes, but doesn't clear them (the transaction may fail).
-- (BOOL)_writeProcessedEdits:(NSError **)outError;
+- (BOOL)_queue_writeProcessedEditsToSQLite:(struct sqlite3 *)sqlite error:(NSError **)outError;
 {
     OBPRECONDITION(_recentlyInsertedObjects == nil);
     OBPRECONDITION(_recentlyUpdatedObjects == nil);
     OBPRECONDITION(_recentlyDeletedObjects == nil);
     OBPRECONDITION(_objectIDToLastProcessedSnapshot == nil);
+   
+    OBPRECONDITION([_database.connection checkExecutingOnDispatchQueue]);
+    OBPRECONDITION([_database.connection checkIsManagedSQLite:sqlite]);
     
     // For deletes, there might be a speed advantage to grouping by entity and then issuing a delete where pk in (...) but binding values wouldn't let us bind the set of values.  Maybe we could have a prepared statement for 'delete 10 things' and use that until we had < 10.  Or fill out the last N bindings in the statement with repeated PKs.  Also, angels on a pinhead.
     WriteSQLApplierContext ctx;
     memset(&ctx, 0, sizeof(ctx));
     ctx.database = _database;
-    ctx.sqlite = [_database _sqlite];
+    ctx.sqlite = sqlite;
     ctx.outError = outError;
     
     if (_processedInsertedObjects)

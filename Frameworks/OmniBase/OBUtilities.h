@@ -69,10 +69,6 @@ static inline void OBRetainAutorelease(id object)
     OBAutorelease(object);
 }
 
-// NSAllocateObject and object_getIndexedIvars are not availabe in ARC. Uses of these should be rare...
-extern id OBAllocateObjectWithIndexedIvars(Class cls, size_t indexedIvarsSize) NS_RETURNS_RETAINED;
-extern void *OBObjectGetIndexedIvars(id object);
-
 // ARC doesn't allow object_getInstanceVariable().
 extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsafe_unretained id *outValue);
     

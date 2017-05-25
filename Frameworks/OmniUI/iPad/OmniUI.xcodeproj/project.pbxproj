@@ -10,6 +10,19 @@
 		15632E5A1E527F25003EB174 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E581E527F25003EB174 /* ko.lproj */; };
 		15632E5B1E527F25003EB174 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E591E527F25003EB174 /* pt-BR.lproj */; };
 		18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */; };
+		23105FD91EAFD9AE008E0647 /* MultiPaneCompactNavigationAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FCD1EAFD9AE008E0647 /* MultiPaneCompactNavigationAnimator.swift */; };
+		23105FDA1EAFD9AE008E0647 /* MultiPaneController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FCE1EAFD9AE008E0647 /* MultiPaneController.swift */; };
+		23105FDB1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FCF1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift */; };
+		23105FDC1EAFD9AE008E0647 /* MultiPaneLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD01EAFD9AE008E0647 /* MultiPaneLayout.swift */; };
+		23105FDD1EAFD9AE008E0647 /* MultiPanePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD11EAFD9AE008E0647 /* MultiPanePresenter.swift */; };
+		23105FDE1EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD21EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift */; };
+		23105FDF1EAFD9AE008E0647 /* OUIMultiPaneController.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23105FD31EAFD9AE008E0647 /* OUIMultiPaneController.xcassets */; };
+		23105FE01EAFD9AE008E0647 /* Pane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD41EAFD9AE008E0647 /* Pane.swift */; };
+		23105FE11EAFD9AE008E0647 /* PaneConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD51EAFD9AE008E0647 /* PaneConfiguration.swift */; };
+		23105FE21EAFD9AE008E0647 /* PaneDecoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD61EAFD9AE008E0647 /* PaneDecoration.swift */; };
+		23105FE31EAFD9AE008E0647 /* PaneDividerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD71EAFD9AE008E0647 /* PaneDividerView.swift */; };
+		23105FE41EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23105FD81EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift */; };
+		231060501EAFE95D008E0647 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2310604F1EAFE95D008E0647 /* Bundle.swift */; };
 		232F1EF71DF7436500201BEC /* OUIInspectorNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */; };
 		232F1EF81DF7436500201BEC /* OUIInspectorNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */; };
 		2334FCEF1EA15498008F3ABE /* OUIMenuItemQuickStart.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCE61EA15498008F3ABE /* OUIMenuItemQuickStart.png */; };
@@ -21,6 +34,8 @@
 		2334FCF51EA15498008F3ABE /* OUIMenuItemVideo.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEC1EA15498008F3ABE /* OUIMenuItemVideo.png */; };
 		2334FCF61EA15498008F3ABE /* OUIMenuItemVideo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCED1EA15498008F3ABE /* OUIMenuItemVideo@2x.png */; };
 		2334FCF71EA15498008F3ABE /* OUIMenuItemVideo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEE1EA15498008F3ABE /* OUIMenuItemVideo@3x.png */; };
+		235D67411EB00E06007FCF56 /* OUIMultiPaneNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 235D673F1EB00E06007FCF56 /* OUIMultiPaneNotifications.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		236CA7751B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */; };
 		342C5F7B1B5D935400B5A80D /* UIImage-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */; };
@@ -604,6 +619,19 @@
 		15632E591E527F25003EB174 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "../iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		230612D113E9CB3A005BD284 /* OUIShieldView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIShieldView.h; sourceTree = "<group>"; };
 		230612D213E9CB3A005BD284 /* OUIShieldView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIShieldView.m; sourceTree = "<group>"; };
+		23105FCD1EAFD9AE008E0647 /* MultiPaneCompactNavigationAnimator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPaneCompactNavigationAnimator.swift; path = MultiPane/MultiPaneCompactNavigationAnimator.swift; sourceTree = "<group>"; };
+		23105FCE1EAFD9AE008E0647 /* MultiPaneController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPaneController.swift; path = MultiPane/MultiPaneController.swift; sourceTree = "<group>"; };
+		23105FCF1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPaneControllerBarButtonManagement.swift; path = MultiPane/MultiPaneControllerBarButtonManagement.swift; sourceTree = "<group>"; };
+		23105FD01EAFD9AE008E0647 /* MultiPaneLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPaneLayout.swift; path = MultiPane/MultiPaneLayout.swift; sourceTree = "<group>"; };
+		23105FD11EAFD9AE008E0647 /* MultiPanePresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPanePresenter.swift; path = MultiPane/MultiPanePresenter.swift; sourceTree = "<group>"; };
+		23105FD21EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MultiPaneSlidingOverlayPresentationController.swift; path = MultiPane/MultiPaneSlidingOverlayPresentationController.swift; sourceTree = "<group>"; };
+		23105FD31EAFD9AE008E0647 /* OUIMultiPaneController.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = OUIMultiPaneController.xcassets; path = MultiPane/OUIMultiPaneController.xcassets; sourceTree = "<group>"; };
+		23105FD41EAFD9AE008E0647 /* Pane.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Pane.swift; path = MultiPane/Pane.swift; sourceTree = "<group>"; };
+		23105FD51EAFD9AE008E0647 /* PaneConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaneConfiguration.swift; path = MultiPane/PaneConfiguration.swift; sourceTree = "<group>"; };
+		23105FD61EAFD9AE008E0647 /* PaneDecoration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaneDecoration.swift; path = MultiPane/PaneDecoration.swift; sourceTree = "<group>"; };
+		23105FD71EAFD9AE008E0647 /* PaneDividerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaneDividerView.swift; path = MultiPane/PaneDividerView.swift; sourceTree = "<group>"; };
+		23105FD81EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "UIViewController-MultiPaneControllerExtensions.swift"; path = "MultiPane/UIViewController-MultiPaneControllerExtensions.swift"; sourceTree = "<group>"; };
+		2310604F1EAFE95D008E0647 /* Bundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bundle.swift; sourceTree = "<group>"; };
 		23137CFB19ABB435005D85AE /* OUIPurchaseURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIPurchaseURLCommand.h; sourceTree = "<group>"; };
 		23137CFC19ABB435005D85AE /* OUIPurchaseURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIPurchaseURLCommand.m; sourceTree = "<group>"; };
 		231A234717D94518009E4CA8 /* OUIEmptyOverlayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIEmptyOverlayView.h; sourceTree = "<group>"; };
@@ -620,6 +648,8 @@
 		2334FCEC1EA15498008F3ABE /* OUIMenuItemVideo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemVideo.png; sourceTree = "<group>"; };
 		2334FCED1EA15498008F3ABE /* OUIMenuItemVideo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemVideo@2x.png"; sourceTree = "<group>"; };
 		2334FCEE1EA15498008F3ABE /* OUIMenuItemVideo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemVideo@3x.png"; sourceTree = "<group>"; };
+		235D673F1EB00E06007FCF56 /* OUIMultiPaneNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OUIMultiPaneNotifications.h; path = MultiPane/OUIMultiPaneNotifications.h; sourceTree = "<group>"; };
+		235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OUIMultiPaneNotifications.m; path = MultiPane/OUIMultiPaneNotifications.m; sourceTree = "<group>"; };
 		236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIVisualEffectView-OUIExtensions.h"; sourceTree = "<group>"; };
 		236CA7731B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIVisualEffectView-OUIExtensions.m"; sourceTree = "<group>"; };
 		238730811A5DDF830083C816 /* OUIRotationLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIRotationLock.h; sourceTree = "<group>"; };
@@ -1216,10 +1246,13 @@
 				34EA43E41267A32200BAC7FD /* OUIFeatures.h */,
 				3481D37712A8632400DAC58C /* OUIParameters.h */,
 				34C782C11BDEB71C00536364 /* OmniUI.h */,
+				2310604F1EAFE95D008E0647 /* Bundle.swift */,
 				34C782CC1BDEB79B00536364 /* OmniUI.modulemap */,
 				340B1E2C12B17C00004823B3 /* OmniUI.defaults */,
 				346C4BAA119327B800BE8C49 /* Main App Controllers */,
 				346C4A731193273600BE8C49 /* Inspectors */,
+				23105FC21EAFD98D008E0647 /* MultiPane */,
+				23105FD31EAFD9AE008E0647 /* OUIMultiPaneController.xcassets */,
 				4A5C9CDE198BFFF60080C10D /* About This App */,
 				23FF1F6B18BBF7A00009C3D6 /* View Controllers */,
 				346C4BA61193274A00BE8C49 /* Text */,
@@ -1248,6 +1281,66 @@
 				154E96C51863DE080097E5B3 /* zh-Hans.lproj */,
 			);
 			name = Localization;
+			sourceTree = "<group>";
+		};
+		23105FC21EAFD98D008E0647 /* MultiPane */ = {
+			isa = PBXGroup;
+			children = (
+				235D673F1EB00E06007FCF56 /* OUIMultiPaneNotifications.h */,
+				235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */,
+				23105FCE1EAFD9AE008E0647 /* MultiPaneController.swift */,
+				23105FE51EAFD9B8008E0647 /* Layout */,
+				23105FE61EAFD9CC008E0647 /* Configuration */,
+				23105FE71EAFD9E4008E0647 /* Presentation */,
+				23105FE81EAFD9FC008E0647 /* Extensions */,
+				23105FE91EAFDA06008E0647 /* Decorations */,
+			);
+			name = MultiPane;
+			sourceTree = "<group>";
+		};
+		23105FE51EAFD9B8008E0647 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				23105FD01EAFD9AE008E0647 /* MultiPaneLayout.swift */,
+			);
+			name = Layout;
+			sourceTree = "<group>";
+		};
+		23105FE61EAFD9CC008E0647 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				23105FD41EAFD9AE008E0647 /* Pane.swift */,
+				23105FD51EAFD9AE008E0647 /* PaneConfiguration.swift */,
+			);
+			name = Configuration;
+			sourceTree = "<group>";
+		};
+		23105FE71EAFD9E4008E0647 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				23105FD11EAFD9AE008E0647 /* MultiPanePresenter.swift */,
+				23105FD21EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift */,
+				23105FCD1EAFD9AE008E0647 /* MultiPaneCompactNavigationAnimator.swift */,
+			);
+			name = Presentation;
+			sourceTree = "<group>";
+		};
+		23105FE81EAFD9FC008E0647 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				23105FCF1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift */,
+				23105FD81EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
+		23105FE91EAFDA06008E0647 /* Decorations */ = {
+			isa = PBXGroup;
+			children = (
+				23105FD71EAFD9AE008E0647 /* PaneDividerView.swift */,
+				23105FD61EAFD9AE008E0647 /* PaneDecoration.swift */,
+			);
+			name = Decorations;
 			sourceTree = "<group>";
 		};
 		23FF1F6B18BBF7A00009C3D6 /* View Controllers */ = {
@@ -2025,6 +2118,7 @@
 				348A7A9B1B584BAE0082D55D /* OUIPaletteTheme.h in Headers */,
 				348A7A661B584B590082D55D /* OUISegmentedControlInspectorSlice.h in Headers */,
 				348A7A561B584B590082D55D /* OUIInspectorSlice-Internal.h in Headers */,
+				235D67411EB00E06007FCF56 /* OUIMultiPaneNotifications.h in Headers */,
 				6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */,
 				348A79F81B584AE10082D55D /* OUIAbstractColorInspectorSlice.h in Headers */,
 				348A7B281B584CF10082D55D /* OUIKeyboardNotifier.h in Headers */,
@@ -2196,6 +2290,7 @@
 				TargetAttributes = {
 					348A79BA1B5849C70082D55D = {
 						CreatedOnToolsVersion = 7.0;
+						LastSwiftMigration = 0830;
 					};
 				};
 			};
@@ -2420,6 +2515,7 @@
 				FB11AB0C1C518D570050F4EF /* OUIAttentionDot@2x.png in Resources */,
 				348A7BAC1B584D570082D55D /* zh-Hans.lproj in Resources */,
 				429585D91C4964BE009ED770 /* OUIToolbarUndo-Compact.png in Resources */,
+				23105FDF1EAFD9AE008E0647 /* OUIMultiPaneController.xcassets in Resources */,
 				348A7A071B584AE10082D55D /* OUIColorInspectorPaletteSegment@2x.png in Resources */,
 				348A7B5F1B584D480082D55D /* OUIToolbarUndo@2x.png in Resources */,
 				15632E5A1E527F25003EB174 /* ko.lproj in Resources */,
@@ -2512,7 +2608,9 @@
 				348A7AF91B584CB90082D55D /* NSUndoManager-OUIExtensions.m in Sources */,
 				348A7A6B1B584B590082D55D /* OUIStackedSlicesInspectorPane.m in Sources */,
 				348A7B321B584D050082D55D /* OUIFullScreenNoteTextViewController.m in Sources */,
+				235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */,
 				348A7A911B584BAE0082D55D /* OUIInspectorSearchWell.m in Sources */,
+				23105FDE1EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift in Sources */,
 				348A7ABA1B584C3B0082D55D /* OUITextLayout.m in Sources */,
 				348A7B001B584CC30082D55D /* OUIActionViewController.m in Sources */,
 				348A7A5A1B584B590082D55D /* OUIInspectorSliceView.m in Sources */,
@@ -2546,6 +2644,7 @@
 				348A7B3B1B584D130082D55D /* OUIScrollNotifier.m in Sources */,
 				348A7B551B584D130082D55D /* UIViewController-OUIExtensions.m in Sources */,
 				348A7AF51B584CAD0082D55D /* OUIRotationGestureRecognizer.m in Sources */,
+				23105FDB1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift in Sources */,
 				348A7A4E1B584B590082D55D /* OUIInspector.m in Sources */,
 				348A79E91B584AA50082D55D /* OUIMenuOptionsController.m in Sources */,
 				348A7AC01B584C3B0082D55D /* OUIScalingTextStorage.m in Sources */,
@@ -2565,6 +2664,7 @@
 				348A7B211B584CF10082D55D /* OUIImages.m in Sources */,
 				348A7A7F1B584BAE0082D55D /* OUIInspectorBackgroundView.m in Sources */,
 				348A7AAD1B584C100082D55D /* OUIAboutThisAppViewController.m in Sources */,
+				23105FE21EAFD9AE008E0647 /* PaneDecoration.swift in Sources */,
 				348A7A4A1B584B590082D55D /* OUIEditableTextWellInspectorSlice.m in Sources */,
 				348A7ACA1B584C650082D55D /* OUILoupeOverlay.m in Sources */,
 				348A7A651B584B590082D55D /* OUIOptionListInspectorSlice.m in Sources */,
@@ -2573,6 +2673,7 @@
 				348A7A5F1B584B590082D55D /* OUIInstructionTextInspectorSlice.m in Sources */,
 				348A7A531B584B590082D55D /* OUIInspectorPane.m in Sources */,
 				348A7ADE1B584C810082D55D /* OUIScalingViewTile.m in Sources */,
+				23105FDD1EAFD9AE008E0647 /* MultiPanePresenter.swift in Sources */,
 				348A7A811B584BAE0082D55D /* OUIInspectorButton.m in Sources */,
 				348A7B101B584CC30082D55D /* OUICompletionMatchCell.m in Sources */,
 				6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */,
@@ -2592,6 +2693,7 @@
 				348A7B0E1B584CC30082D55D /* OUIButtonGridView.m in Sources */,
 				348A79FB1B584AE10082D55D /* OUIColorAttributeInspectorSlice.m in Sources */,
 				348A7A421B584B430082D55D /* OUIFontUtilities.m in Sources */,
+				23105FE01EAFD9AE008E0647 /* Pane.swift in Sources */,
 				348A7A311B584AFC0082D55D /* OUITextColorAttributeInspectorSlice.m in Sources */,
 				348A7A691B584B590082D55D /* OUISingleViewInspectorPane.m in Sources */,
 				348A7B121B584CC30082D55D /* OUICustomSubclass.m in Sources */,
@@ -2603,12 +2705,15 @@
 				348A7B081B584CC30082D55D /* OUIBarButtonItem.m in Sources */,
 				348A7A2F1B584AFC0082D55D /* OUIRGBColorPicker.m in Sources */,
 				348A7A131B584AE90082D55D /* OUIColorPicker.m in Sources */,
+				23105FDC1EAFD9AE008E0647 /* MultiPaneLayout.swift in Sources */,
 				348A7A611B584B590082D55D /* OUIMultiSegmentStackedSlicesInspectorPane.m in Sources */,
 				348A7B511B584D130082D55D /* UITableView-OUIExtensions.m in Sources */,
 				348A79E51B584A950082D55D /* OUIPurchaseURLCommand.m in Sources */,
+				23105FDA1EAFD9AE008E0647 /* MultiPaneController.swift in Sources */,
 				348A79E31B584A950082D55D /* OUIDebugURLCommand.m in Sources */,
 				348A7A091B584AE10082D55D /* OUIColorInspectorPane.m in Sources */,
 				348A7B491B584D130082D55D /* UIGestureRecognizer-OUIExtensions.m in Sources */,
+				231060501EAFE95D008E0647 /* Bundle.swift in Sources */,
 				348A7B271B584CF10082D55D /* OUIKeyboardLock.m in Sources */,
 				348A7A851B584BAE0082D55D /* OUIInspectorLabel.m in Sources */,
 				348A79F91B584AE10082D55D /* OUIAbstractColorInspectorSlice.m in Sources */,
@@ -2620,6 +2725,7 @@
 				348A7B061B584CC30082D55D /* OUIAnimationSequence.m in Sources */,
 				348A7A481B584B590082D55D /* OUIDetailInspectorSlice.m in Sources */,
 				348A7B141B584CC30082D55D /* OUIDrawing.m in Sources */,
+				23105FE11EAFD9AE008E0647 /* PaneConfiguration.swift in Sources */,
 				348A7B571B584D130082D55D /* UIWindow-OUIExtensions.m in Sources */,
 				348A7AA11B584BAE0082D55D /* OUITabBarButton.m in Sources */,
 				348A7B341B584D050082D55D /* OUIFullScreenNoteTransition.m in Sources */,
@@ -2648,7 +2754,9 @@
 				348A7A111B584AE90082D55D /* OUIColorInspectorSlice.m in Sources */,
 				348A7A221B584AE90082D55D /* OUIComponentColorPicker.m in Sources */,
 				18FF12F41B684DFF00EC1466 /* OUIInspectorPresentationController.m in Sources */,
+				23105FE31EAFD9AE008E0647 /* PaneDividerView.swift in Sources */,
 				348A7B5B1B584D130082D55D /* UINavigationController-OUIExtensions.m in Sources */,
+				23105FE41EAFD9AE008E0647 /* UIViewController-MultiPaneControllerExtensions.swift in Sources */,
 				348A79E71B584AA50082D55D /* OUIMenuController.m in Sources */,
 				348A7A331B584B3C0082D55D /* OUIFontAttributesInspectorSlice.m in Sources */,
 				348A7B361B584D050082D55D /* OUINumericFieldTableCell.m in Sources */,
@@ -2656,6 +2764,7 @@
 				342C5F7C1B5D935400B5A80D /* UIImage-OUIExtensions.m in Sources */,
 				4AF93D7F1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m in Sources */,
 				348A79DD1B584A910082D55D /* OUIAppController.m in Sources */,
+				23105FD91EAFD9AE008E0647 /* MultiPaneCompactNavigationAnimator.swift in Sources */,
 				423DFE211C24B526006BB12B /* OUIFontSizeInspectorSlice.m in Sources */,
 				348A7AD21B584C720082D55D /* OUITransition.m in Sources */,
 				348A7ABC1B584C3B0082D55D /* OUITextView.m in Sources */,
@@ -2697,11 +2806,16 @@
 			baseConfigurationReference = 348A79D71B5849D30082D55D /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -2710,11 +2824,15 @@
 			baseConfigurationReference = 348A79D81B5849D30082D55D /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

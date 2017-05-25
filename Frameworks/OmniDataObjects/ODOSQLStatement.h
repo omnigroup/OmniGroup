@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 // This is an internal class that should only be used by ODO.
 
-@class ODODatabase, ODOEntity, ODOEditingContext, ODOObject, ODOProperty;
+@class ODOEntity, ODOEditingContext, ODOObject, ODOProperty, ODOSQLConnection;
 
 @interface ODOSQLStatement : OFObject
 {
@@ -23,9 +23,19 @@
     struct sqlite3_stmt *_statement;
 }
 
-- initWithDatabase:(ODODatabase *)database sql:(NSString *)sql error:(NSError **)outError;
-- initSelectProperties:(NSArray<ODOProperty *> *)properties fromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
-- initRowCountFromEntity:(ODOEntity *)rootEntity database:(ODODatabase *)database predicate:(NSPredicate *)predicate error:(NSError **)outError;
+@property (nonatomic, readonly) ODOSQLConnection *connection;
+
+/// Convenience that initializes and prepares a statement immediately, using -prepareIfNeededWithSQLite:error:. As with that method, must be called on a queue appropriate for interacting with the given SQLite database handle.
++ (instancetype)preparedStatementWithConnection:(ODOSQLConnection *)connection SQLite:(struct sqlite3 *)sqlite sql:(NSString *)sql error:(NSError **)outError;
+
+- (id)init NS_UNAVAILABLE;
+- (instancetype)initWithConnection:(ODOSQLConnection *)connection sql:(NSString *)sql error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (instancetype)initSelectProperties:(NSArray<ODOProperty *> *)properties fromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
+- (instancetype)initRowCountFromEntity:(ODOEntity *)rootEntity connection:(ODOSQLConnection *)connection predicate:(NSPredicate *)predicate error:(NSError **)outError;
+
+/// Prepares the underlying sqlite3_stmt for the receiver. Must be called on a queue appropriate for interacting with the given SQLite database handle. (In practice, that generally means -[ODOSQLConnection performSQLAndWaitWithError:block:] or a variant thereof.)
+- (BOOL)prepareIfNeededWithSQLite:(struct sqlite3 *)sqlite error:(NSError **)outError;
+@property (nonatomic, readonly, getter = isPrepared) BOOL prepared;
 
 - (void)invalidate;
 

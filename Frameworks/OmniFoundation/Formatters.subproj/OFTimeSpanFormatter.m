@@ -606,8 +606,11 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
 {
     OFTimeSpan *result = [[OFTimeSpan alloc] initWithTimeSpanFormatter:self];
     float secondsLeft = [aNumber floatValue];
+    BOOL negative = secondsLeft < 0;
     if (!_flags.floatValuesInSeconds)
         secondsLeft *= 3600.0f;
+    if (negative)
+        secondsLeft *= -1.0f;
     
     unsigned int unitIndex;
     for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
@@ -626,6 +629,8 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
             } else {
                 secondsLeft = 0.0f;
             }
+            if (negative)
+                value = -value;
             
             switch (unitIndex) {
                 case UNITS_YEARS: result.years = value; break;

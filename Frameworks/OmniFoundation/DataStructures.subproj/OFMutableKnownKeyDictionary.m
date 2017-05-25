@@ -154,14 +154,14 @@ static inline void _nonNilKey(id key)
 
 + (OFMutableKnownKeyDictionary *)newWithTemplate:(OFKnownKeyDictionaryTemplate *)template;
 {
-    OFMutableKnownKeyDictionary *dict = OBAllocateObjectWithIndexedIvars(self, template->_keyCount * sizeof(id));
+    OFMutableKnownKeyDictionary *dict = NSAllocateObject(self, template->_keyCount * sizeof(id), NULL);
     return [dict _initWithTemplate: template];
 }
 
 // We tell the compiler our values are __unsafe_unretained so that it won't introduce reference counting operations, and then we use OBStrong{Retain,Release} as needed when operating on the buffer.
 static __unsafe_unretained NSObject **_getValues(OFMutableKnownKeyDictionary *self)
 {
-    return (__unsafe_unretained NSObject **)OBObjectGetIndexedIvars(self);
+    return (__unsafe_unretained NSObject **)object_getIndexedIvars(self);
 }
 
 - (void)dealloc;
@@ -323,7 +323,7 @@ static __unsafe_unretained NSObject **_getValues(OFMutableKnownKeyDictionary *se
 
 - (OFMutableKnownKeyDictionary *)mutableKnownKeyCopyWithZone:(NSZone *)zone;
 {
-    OFMutableKnownKeyDictionary *copy = OBAllocateObjectWithIndexedIvars([self class], _template->_keyCount * sizeof(id));
+    OFMutableKnownKeyDictionary *copy = NSAllocateObject([self class], _template->_keyCount * sizeof(id), NULL);
     copy->_template = _template;
     NSUInteger valueCount = _template->_keyCount;
     

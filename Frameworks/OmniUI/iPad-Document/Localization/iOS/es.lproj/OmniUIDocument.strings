@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "Borrar título";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Almacenamiento en la nube";
 
@@ -459,7 +462,7 @@
 "Title" = "Título";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Al activar la opción Usar almacenamiento en la nube se gana acceso a documentos almacenados en servicios en la nube, como iCloud Drive o Dropbox. La función de almacenamiento en la nube se encuentra en periodo de pruebas (BETA). Tenga cuidado al usar este servicio. Para más información, consulte la sección “Trabajar en la nube” de la documentación.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";

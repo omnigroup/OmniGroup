@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "Titel löschen";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Cloudspeicheranbieter";
 
@@ -459,7 +462,7 @@
 "Title" = "Titel";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Durch das Aktivieren von Cloudspeicheranbietern erhalten Sie Zugriff auf Dokumente, die bei Clouddiensten wie iCloud Drive oder Dropbox gespeichert sind. Wir führen den Zugriff auf Cloudspeicheranbieter als BETA-Implementierung ein; seien Sie vorsichtig, wenn Sie diesen Dienst aktivieren. Weitere Informationen finden Sie in der Dokumentation unter „Arbeiten in der Cloud“.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "Die Datei kann nicht geöffnet werden.";

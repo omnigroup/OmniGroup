@@ -1,19 +1,11 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-
+/* Default title for the About menu item */
 "About %@" = "Over %@";
-
-/* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Alle aankopen voor uw huidige App Store-account zijn hersteld, maar %@ was geen van die aankopen.";
 
 /* Bold button accessibility label */
 "Bold" = "Vet";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "Koop %@";
 
 /* button title
    button title - password/passphrase prompt
@@ -35,9 +27,6 @@
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "De voorkeur '%1$@' is gewijzigd van '%2$@' naar '%3$@'";
 
-/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "Controleer op gratis upgrade";
-
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "bevestig";
 
@@ -47,9 +36,6 @@
 /* increment button accessibility label */
 "Decrement" = "Vermindering";
 
-/* Button is disabled due to purchase restrictions */
-"Disabled" = "Uitgeschakeld";
-
 /* Done
    toolbar item title */
 
@@ -57,12 +43,6 @@
 
 /* toolbar item title */
 "Edit" = "Wijzig";
-
-/* Title explaining that user is eligible for discounted upgrade */
-"Eligible for free upgrade" = "Komt in aanmerking voor gratis upgrade";
-
-/* In app Buy button error title */
-"Error" = "Fout";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
@@ -72,9 +52,6 @@
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Help en instellingen";
-
-/* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "In-app aankoop is niet beschikbaar of niet toegestaan op dit apparaat. Om het aanschaffen in te schakelen, schakelt u Beperkingen in de app Instellingen in.";
 
 /* increment button accessibility label */
 "Increment" = "Vermeerdering";
@@ -97,9 +74,6 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
 
-/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
-"More Info" = "Meer info";
-
 /* News menu item
    News view title */
 
@@ -111,15 +85,12 @@
 /* Full screen note editor title */
 "Note" = "Notitie";
 
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Nothing to Inspect";
+
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
-
-
-
 
 
 "OK" = "OK";
@@ -130,15 +101,6 @@
 /* alert title */
 "Preference changed" = "Voorkeur gewijzigd";
 
-/* Purchase failed alert title */
-"Purchase Failed" = "Aankoop mislukt";
-
-/* Buy button thank you message */
-"Purchased. Thank you!" = "Aangeschaft. Bedankt.";
-
-/* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "Kopen is uitgeschakeld";
-
 /* Redo button title */
 "Redo" = "Opnieuw";
 
@@ -146,15 +108,6 @@
    release notes html screen title */
 
 "Release Notes" = "Versiegegevens";
-
-/* No purchases found title */
-"Restore Complete" = "Herstel is voltooid";
-
-/* Restore failed alert title */
-"Restore Failed" = "Herstel mislukt";
-
-/* 'Restore Purchases' button title string */
-"Restore Purchases" = "Herstel aankopen";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Tekst rechts uitlijnen";
@@ -165,14 +118,8 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Doorhalen";
 
-/* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Dit apparaat wordt mogelijk niet verbonden met internet.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Vertrouw altijd";
-
-/* Alert title for error loading product information */
-"Unable to reach App Store" = "Kan de App Store niet bereiken";
 
 /* Underline button accessibility label */
 "Underline" = "Onderstreping";

@@ -41,7 +41,7 @@ static NSMutableDictionary *UniqueTable = nil;
     __block OFKnownKeyDictionaryTemplate *template = nil;
     OFWithLock(Lock, ^{
         if (!(template = [UniqueTable objectForKey: keys])) {
-            template = (OFKnownKeyDictionaryTemplate *)OBAllocateObjectWithIndexedIvars(self, sizeof(NSObject *) * [keys count]);
+            template = (OFKnownKeyDictionaryTemplate *)NSAllocateObject(self, sizeof(NSObject *) * [keys count], NULL);
             template = [template _initWithKeys:keys];
             [UniqueTable setObject:template forKey:keys];
             [template release];

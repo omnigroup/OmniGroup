@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "Wis titel";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Leveranciers van cloudopslag";
 
@@ -459,7 +462,7 @@
 "Title" = "Titel";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Het inschakelen van Leveranciers van cloudopslag biedt toegang tot documenten die zijn opgeslagen op de cloudservices, zoals iCloud Drive of Dropbox. We introduceren toegang tot Leveranciers van cloudopslag als een BETA-implementatie. Let op wanneer u deze service inschakelt. Zie \"Werken in de cloud\"' in de documentatie voor meer informatie.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "Kan bestand niet openen.";

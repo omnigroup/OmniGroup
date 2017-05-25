@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,11 +81,12 @@ RCS_ID("$Id$")
         // list mode set in nib
         [buttonMatrix setAllowsEmptySelection:YES];
     }
-    
+    buttonMatrix.allowPinning = !self.pinningDisabled;
+
     OIButtonMatrixBackgroundView *buttonMatrixBackground = (id)[buttonMatrix superview];
     OBASSERT([buttonMatrixBackground isKindOfClass:[OIButtonMatrixBackgroundView class]]);
     [buttonMatrixBackground setBackgroundColor:nil];
-    
+
     [self _createButtonCellForAllTabs];
     [self _layoutSelectedTabs]; // updates the inspection set in the tabs
 }

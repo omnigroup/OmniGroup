@@ -488,27 +488,32 @@ static BOOL FetchObjectFaultWithContext(ODOEditingContext *self, ODOObject *obje
     OBPRECONDITION(!self->_isResetting); // Can't clear object faults at all while resetting
 
     ODODatabase *database = self->_database;
-
-    ODOSQLStatement *query = [ctx->entity _queryByPrimaryKeyStatement:outError database:database];
-    if (!query)
-        return NO;
     
-    sqlite3 *sqlite = [database _sqlite];
-    OBASSERT(sqlite); // Can't clear faults while disconnected
-
     ODOObjectID *objectID = [object objectID];
     id primaryKey = [objectID primaryKey];
     OBASSERT(primaryKey);
 
-    if (!PrepareQueryByKey(query, sqlite, primaryKey, outError))
-        return NO;
+    BOOL success = [database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        ODOSQLStatement *query = [ctx->entity _queryByPrimaryKeyStatement:blockError database:database sqlite:sqlite];
+        if (!query)
+            return NO;
+        
+        if (!PrepareQueryByKey(query, sqlite, primaryKey, blockError))
+            return NO;
+        
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchObjectCallback;
+        
+        if (!ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError))
+            return NO;
+        
+        return YES;
+    }];
     
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _fetchObjectCallback;
-
-    if (!ODOSQLStatementRun(sqlite, query, callbacks, ctx, outError))
+    if (!success) {
         return NO;
+    }
 
     // Was the object reachable?
     if ([object isFault]) {
@@ -608,19 +613,17 @@ static BOOL FetchSetFaultWithContext(ODOEditingContext *self, ODOObject *owner, 
     ODOObjectID *ownerID = [owner objectID];    
     id ownerPrimaryKey = [ownerID primaryKey];
     OBASSERT(ownerPrimaryKey);
-    sqlite3 *sqlite = [database _sqlite];
     
-    if (!PrepareQueryByKey(query, sqlite, ownerPrimaryKey, outError))
-        return NO;
-
-    ODOSQLStatementCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.row = _fetchPrimaryKeyCallback;
-
-    if (!ODOSQLStatementRun(sqlite, query, callbacks, ctx, outError))
-        return NO;
-    
-    return YES;
+    return [database.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
+        if (!PrepareQueryByKey(query, sqlite, ownerPrimaryKey, blockError))
+            return NO;
+        
+        ODOSQLStatementCallbacks callbacks;
+        memset(&callbacks, 0, sizeof(callbacks));
+        callbacks.row = _fetchPrimaryKeyCallback;
+        
+        return ODOSQLStatementRun(sqlite, query, callbacks, ctx, blockError);
+    }];
 }
 
 // Fetches the primary keys across the relationship, uniquing previously registered objects.  Updates the results for in progress edits and creates faults for the remainder.

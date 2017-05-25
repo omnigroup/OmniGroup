@@ -67,12 +67,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     return [_backgroundView inspectorBackgroundViewColor];
 }
 
-
-- (void)setFrame:(CGRect)frame{
-    [super setFrame:frame];
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidEndChangingInspectedObjectsNotification object:self];
-}
-
 - (void)layoutSubviews;
 {
     [super layoutSubviews]; // Scroller
@@ -98,7 +92,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     NSArray *_slices;
     id <OUIScrollNotifier> _scrollNotifier;
     BOOL _initialLayoutHasBeenDone;
-    CGSize _lastLayoutSize;
 }
 
 + (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ...;
@@ -388,9 +381,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
-    if (reason != OUIInspectorUpdateReasonDismissed) {
-        [self updateSlices];
-    }
+    [self updateSlices];
     
     for (OUIInspectorSlice *slice in _slices) {
         @autoreleasepool {
@@ -433,7 +424,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)loadView;
 {
     OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], self.inspector.mainPane.preferredContentSize.height)];
-    _lastLayoutSize = view.frame.size;
 
     if (!_scrollNotifier)
         _scrollNotifier = [[OUIMinimalScrollNotifierImplementation alloc] init];

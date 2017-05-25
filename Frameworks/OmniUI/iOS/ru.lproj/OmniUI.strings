@@ -1,19 +1,11 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-
+/* Default title for the About menu item */
 "About %@" = "О программе %@";
-
-/* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Все покупки для текущей уч. записи App Store восстановлены, однако %@ в списке покупок отсутствует.";
 
 /* Bold button accessibility label */
 "Bold" = "Жирный";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "Приобрести %@";
 
 /* button title
    button title - password/passphrase prompt
@@ -35,9 +27,6 @@
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
 
-/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "Право на беспл. обновление";
-
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "подтвердить";
 
@@ -47,9 +36,6 @@
 /* increment button accessibility label */
 "Decrement" = "Дециметр";
 
-/* Button is disabled due to purchase restrictions */
-"Disabled" = "Отключено";
-
 /* Done
    toolbar item title */
 
@@ -57,12 +43,6 @@
 
 /* toolbar item title */
 "Edit" = "Изменить";
-
-/* Title explaining that user is eligible for discounted upgrade */
-"Eligible for free upgrade" = "Право на бесплатное обновление";
-
-/* In app Buy button error title */
-"Error" = "Ошибка";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "В демо-версии эта функция не работает";
@@ -72,9 +52,6 @@
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Справка и настройки";
-
-/* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "Покупки в программе недоступны или не разрешены на этом устройстве. Чтобы разрешить покупки, проверьте ограничения в программе «Настройки».";
 
 /* increment button accessibility label */
 "Increment" = "Прирост";
@@ -97,9 +74,6 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
 
-/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
-"More Info" = "Дополнительно";
-
 /* News menu item
    News view title */
 
@@ -111,15 +85,12 @@
 /* Full screen note editor title */
 "Note" = "Примечание";
 
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Nothing to Inspect";
+
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
-
-
-
 
 
 "OK" = "OK";
@@ -130,15 +101,6 @@
 /* alert title */
 "Preference changed" = "Параметр изменен";
 
-/* Purchase failed alert title */
-"Purchase Failed" = "Сбой покупки";
-
-/* Buy button thank you message */
-"Purchased. Thank you!" = "Приобретено. Спасибо!";
-
-/* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "Возможность покупок отключена";
-
 /* Redo button title */
 "Redo" = "Повторить";
 
@@ -146,15 +108,6 @@
    release notes html screen title */
 
 "Release Notes" = "Сведения о выпуске";
-
-/* No purchases found title */
-"Restore Complete" = "Восстановление выполнено";
-
-/* Restore failed alert title */
-"Restore Failed" = "Сбой восстановления";
-
-/* 'Restore Purchases' button title string */
-"Restore Purchases" = "Восстановить покупки";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Выравнивание по правому краю";
@@ -165,14 +118,8 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "Зачеркивание";
 
-/* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Возможно, на устройстве подключение к Интернету.";
-
 /* Certificate trust alert button title */
 "Trust Always" = "Всегда доверять";
-
-/* Alert title for error loading product information */
-"Unable to reach App Store" = "Не удается получить доступ к App Store";
 
 /* Underline button accessibility label */
 "Underline" = "Подчеркивание";

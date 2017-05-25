@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ RCS_ID("$Id$");
 
 @implementation TextViewController
 {
-    TextDocument *_nonretained_document;
+    __weak TextDocument *_weak_document;
     OUIDocumentNavigationItem *_documentNavigationItem;
 
     OUIScalingTextStorage *_scalingTextStorage;
@@ -111,7 +111,7 @@ RCS_ID("$Id$");
 
 #pragma mark - OUIDocumentViewController protocol
 
-@synthesize document = _nonretained_document;
+@synthesize document = _weak_document;
 
 #pragma mark - UIViewController subclass
 
@@ -129,9 +129,11 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    OBASSERT(_nonretained_document);
+    TextDocument *document = _weak_document;
+
+    OBASSERT(document);
     
-    NSTextStorage *underlyingTextStorage = [[NSTextStorage alloc] initWithAttributedString:_nonretained_document.text];
+    NSTextStorage *underlyingTextStorage = [[NSTextStorage alloc] initWithAttributedString:document.text];
     _scalingTextStorage = [[OUIScalingTextStorage alloc] initWithUnderlyingTextStorage:underlyingTextStorage scale:_scale];
     [underlyingTextStorage release];
     
@@ -193,7 +195,7 @@ RCS_ID("$Id$");
 {
     // TODO: Just queue an autosave here and make the document vend a text storage.
     NSAttributedString *text = [[NSAttributedString alloc] initWithAttributedString:[textView.textStorage underlyingTextStorage]];
-    _nonretained_document.text = text;
+    _weak_document.text = text;
     [text release];
     
     [self _scrollTextSelectionToVisibleWithAnimation:YES];

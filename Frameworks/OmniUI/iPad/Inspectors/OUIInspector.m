@@ -149,7 +149,18 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     _navigationController.delegate = self;
     _navigationController.toolbarHidden = YES;
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillShowPane:) name:OUIMultiPaneControllerWillShowPaneNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillPresentPane:) name:OUIMultiPaneControllerWillPresentPaneNotification object:nil];
+    
+    
     return self;
+}
+
+- (void)_multiPaneControllerWillShowPane:(NSNotification *)notification {
+    [self forceUpdateInspectedObjects];
+}
+- (void)_multiPaneControllerWillPresentPane:(NSNotification *)notification {
+    [self forceUpdateInspectedObjects];
 }
 
 - (UIViewController<OUIInspectorPaneContaining> *)viewController {
@@ -196,11 +207,34 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 }
 
 - (void)updateInspectedObjects {
-    NSArray *objects = [self.delegate objectsToInspectForInspector:self];
-    self.mainPane.inspectedObjects = objects;
+    [self _updateInspectedObjects:NO];
+}
+
+- (void)forceUpdateInspectedObjects {
+    [self _updateInspectedObjects:YES];
+}
+
+/// Updates the inspected objects only if self.viewController.view is visibly on screen, or if shouldForce is YES.
+- (void)_updateInspectedObjects:(BOOL)shouldForce {
+    UIViewController *viewController = self.viewController;
+    UIView *inspectorView = (viewController.isViewLoaded) ? viewController.view : nil;
+    UIWindow *window = inspectorView.window;
     
-    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-        [self.navigationController popToRootViewControllerAnimated:NO];
+    if (!shouldForce && window == nil) {
+        return;
+    }
+    
+    CGRect translatedRect = [window convertRect:inspectorView.bounds fromView:inspectorView];
+    BOOL isViewInWindow = CGRectIntersectsRect(translatedRect, window.bounds);
+    
+    // We only update the inspectedObjects if we are forcing an update or if the view is visually in the window.
+    if (shouldForce || isViewInWindow) {
+        NSArray *objects = [self.delegate objectsToInspectForInspector:self];
+        self.mainPane.inspectedObjects = objects;
+        
+        if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
+            [self.navigationController popToRootViewControllerAnimated:NO];
+        }
     }
 }
 

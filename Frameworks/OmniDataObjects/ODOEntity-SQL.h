@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,6 @@ struct sqlite3;
 - (BOOL)_writeUpdate:(struct sqlite3 *)sqlite database:(ODODatabase *)database object:(ODOObject *)object error:(NSError **)outError;
 - (BOOL)_writeDelete:(struct sqlite3 *)sqlite database:(ODODatabase *)database object:(ODOObject *)object error:(NSError **)outError;
 
-- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database;
+- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite;
 
 @end

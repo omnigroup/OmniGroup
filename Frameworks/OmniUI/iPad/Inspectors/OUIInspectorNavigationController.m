@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,26 +27,38 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerDidHidePane:) name:OUIMultiPaneControllerDidHidePaneNotification object:nil];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
+- (void)viewWillAppear:(BOOL)animated
+{
     [super viewWillAppear:animated];
     
     OUIInspectorPane *firstPane = (OUIInspectorPane *)self.viewControllers.firstObject;
     OBASSERT([firstPane isKindOfClass:[OUIInspectorPane class]]);
     
     OUIInspector *inspector = firstPane.inspector;
-    [inspector updateInspectedObjects];
+    [inspector forceUpdateInspectedObjects];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
 {
     [super viewDidDisappear:animated];
+    
+    [self _cleanupInspectedObjects];
+}
+
+- (void)_multiPaneControllerDidHidePane:(NSNotification *)notification {
+    [self _cleanupInspectedObjects];
+}
+
+- (void)_cleanupInspectedObjects {
     // Clear the selection from all the panes we've pushed. The objects in question could go away at any time and there is no reason for us to be observing or holding onto them! Clear stuff in reverse order (tearing down the opposite of setup).
     for (OUIInspectorPane *pane in [self.viewControllers reverseObjectEnumerator]) {
         if ([pane isKindOfClass:[OUIInspectorPane class]]) { // not all view controllers are panes - the image picker isn't!
             pane.inspectedObjects = nil;
-            [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDismissed];
+            [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
         }
     }
 }

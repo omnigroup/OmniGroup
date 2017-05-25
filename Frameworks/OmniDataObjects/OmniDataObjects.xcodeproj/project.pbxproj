@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */; };
-		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; };
+		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
 		34019F7D1B62ED90003A5BE4 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3465D9F60D89C13B00D0B1D9 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019F7E1B62ED90003A5BE4 /* Errors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CCF20D8B065C001A5AB1 /* Errors.m */; };
@@ -57,7 +57,7 @@
 		34019FAA1B62ED9F003A5BE4 /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
 		34019FAB1B62ED9F003A5BE4 /* ODOPredicate.h in Headers */ = {isa = PBXBuildFile; fileRef = 348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019FAC1B62ED9F003A5BE4 /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
-		34019FAD1B62ED9F003A5BE4 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; };
+		34019FAD1B62ED9F003A5BE4 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		34019FAE1B62ED9F003A5BE4 /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
 		34019FAF1B62EDFA003A5BE4 /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5FAA7791193E68F00017D662 /* de.lproj */; };
 		34019FB01B62EDFA003A5BE4 /* es.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5FAA778F193E68F00017D662 /* es.lproj */; };
@@ -153,6 +153,12 @@
 		34C25FC50EAE7AC000F5FC90 /* ODOObject-Accessors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */; };
 		34D5FB1C0E9F20890055E958 /* ODOModel-Creation.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5FB1B0E9F20890055E958 /* ODOModel-Creation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34ED2D9F19467D00005643C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED2D9E19467D00005643C9 /* XCTest.framework */; };
+		3EA806CD1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EA806CE1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
+		3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
+		3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
+		3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
 		5FEBBFD51DAD904900028E6E /* ODOAttribute-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FEBBFD41DAD904900028E6E /* ODOAttribute-Internal.h */; };
 		5FEBBFD61DAD904900028E6E /* ODOAttribute-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FEBBFD41DAD904900028E6E /* ODOAttribute-Internal.h */; };
 /* End PBXBuildFile section */
@@ -329,6 +335,9 @@
 		34D94D5811A1AD5600A9ACC1 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94D5911A1AD5600A9ACC1 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34ED2D9E19467D00005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOSQLConnection.h; sourceTree = "<group>"; };
+		3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLConnection.m; sourceTree = "<group>"; };
+		3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLThreadingTests.m; sourceTree = "<group>"; };
 		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
@@ -495,6 +504,8 @@
 				348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */,
 				348ED05B0D8F7AD9007ADAC9 /* ODOPredicate.h */,
 				348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */,
+				3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */,
+				3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */,
 				3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */,
 				3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */,
 			);
@@ -511,6 +522,7 @@
 				341647610E971390006BF255 /* ODODynamicPropertyTests.m */,
 				346AE8B41909889E00C28CFE /* ODOSnapshotTests.m */,
 				341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */,
+				3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -723,6 +735,7 @@
 				34019F941B62ED96003A5BE4 /* ODORelationship.h in Headers */,
 				34019F961B62ED9B003A5BE4 /* ODOEditingContext-Internal.h in Headers */,
 				34019FA91B62ED9F003A5BE4 /* ODOPredicate-SQL.h in Headers */,
+				3EA806CE1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */,
 				34019F881B62ED96003A5BE4 /* ODOEntity-SQL.h in Headers */,
 				34019FAB1B62ED9F003A5BE4 /* ODOPredicate.h in Headers */,
 				34019F921B62ED96003A5BE4 /* ODOProperty.h in Headers */,
@@ -759,6 +772,7 @@
 				3441C4BE19C8E66200A2FAAE /* ODOEntity-Internal.h in Headers */,
 				3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */,
 				348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */,
+				3EA806CD1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */,
 				348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */,
 				3441C4C319C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */,
 				3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */,
@@ -1076,6 +1090,7 @@
 				34019F861B62ED96003A5BE4 /* ODOAttribute.m in Sources */,
 				34019F991B62ED9B003A5BE4 /* ODOEditingContext.m in Sources */,
 				34019FA11B62ED9B003A5BE4 /* ODOObjectID.m in Sources */,
+				3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */,
 				34019F891B62ED96003A5BE4 /* ODOEntity-SQL.m in Sources */,
 				34019FA31B62ED9F003A5BE4 /* NSPredicate-ODOExtensions.m in Sources */,
 				34019F821B62ED90003A5BE4 /* ODOVersion.m in Sources */,
@@ -1101,6 +1116,7 @@
 				3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */,
 				3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */,
 				341646DB0E970192006BF255 /* ODOAttributeTypeTests.m in Sources */,
+				3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */,
 				341647620E971390006BF255 /* ODODynamicPropertyTests.m in Sources */,
 				346AE8B51909889E00C28CFE /* ODOSnapshotTests.m in Sources */,
 				341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */,
@@ -1117,6 +1133,7 @@
 				343BD2E41B62F384002D09C6 /* OFTestCase.m in Sources */,
 				343BD2E51B62F389002D09C6 /* ODOTestCase.m in Sources */,
 				343BD2E31B62F381002D09C6 /* OBTestCase.m in Sources */,
+				3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */,
 				343BD2EB1B62F39D002D09C6 /* ODOStringCompareFunctionTest.m in Sources */,
 				343BD2E91B62F398002D09C6 /* ODODynamicPropertyTests.m in Sources */,
 				343BD2E81B62F394002D09C6 /* ODOAttributeTypeTests.m in Sources */,
@@ -1144,6 +1161,7 @@
 				344FB1C80D89979200AA63FE /* ODODatabase.m in Sources */,
 				344FB1C90D89979200AA63FE /* ODOProperty.m in Sources */,
 				344FB1CA0D89979200AA63FE /* ODORelationship.m in Sources */,
+				3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */,
 				340DD2ED0D89A3090049D65E /* ODOObjectID.m in Sources */,
 				348409540D89F5EF00E74C9D /* ODOVersion.m in Sources */,
 				34B9CCF30D8B065C001A5AB1 /* Errors.m in Sources */,

@@ -94,6 +94,7 @@
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
+#import <OmniUI/OUIMultiPaneNotifications.h>
 #import <OmniUI/OUIMultiSegmentStackedSlicesInspectorPane.h>
 #import <OmniUI/OUINavigationBar.h>
 #import <OmniUI/OUINavigationBarTextField.h>

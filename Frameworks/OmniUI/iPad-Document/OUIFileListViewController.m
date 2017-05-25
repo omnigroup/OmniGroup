@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -107,7 +107,7 @@ RCS_ID("$Id$");
         
         icon = [_exporter iconForUTI:[fileInfo UTI]];
         // Not so sure about this assert. For example when we're browing through a WebDAV there is no reason to think we will have an icon for every UTI.
-        OBASSERT(icon);
+        OBASSERT(icon, @"bug:///142999 (iOS-OmniGraffle Engineering: Assertion failed: 'Export to WebDAV' as OmniGraffle: Requires 'icon')");
     }
     if (isFolder) {
         icon = [UIImage imageNamed:@"OUIFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];

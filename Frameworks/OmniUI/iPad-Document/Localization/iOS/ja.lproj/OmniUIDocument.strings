@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "タイトルを消去";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "クラウドストレージプロバイダ";
 
@@ -459,7 +462,7 @@
 "Title" = "タイトル";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "クラウドストレージプロバイダを有効にすると、iCloud Drive や Dropbox などのクラウドサービスに保存されている書類にアクセスできるようになります。クラウドストレージプロバイダの機能はベータ版ですので、このサービスを有効にする際には十分に注意してください。詳しくは、マニュアルの「クラウド内での操作」を参照してください。";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "ファイルを開けません。";

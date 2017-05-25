@@ -77,7 +77,8 @@ RCS_ID("$Id$")
         [self.buttonMatrix setAllowsEmptySelection:YES];
     }
     [self.buttonMatrix setTabMatrixHighlightStyle:OITabMatrixYosemiteHighlightStyle];
-    
+    self.buttonMatrix.allowPinning = !self.pinningDisabled;
+
     OIButtonMatrixBackgroundView *buttonMatrixBackground = (id)[self.buttonMatrix superview];
     OBASSERT([buttonMatrixBackground isKindOfClass:[OIButtonMatrixBackgroundView class]]);
     [buttonMatrixBackground setBackgroundColor:nil];

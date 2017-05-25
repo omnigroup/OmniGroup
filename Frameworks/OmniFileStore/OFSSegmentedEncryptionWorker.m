@@ -14,7 +14,7 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSDocumentKey.h>
+#import <OmniFileStore/OFSKeySlots.h>
 #import <OmniFileStore/OFSEncryptionConstants.h>
 #import <OmniBase/OmniBase.h>
 #import "OFSEncryption-Internal.h"
@@ -499,7 +499,7 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     return YES;
 }
 
-+ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)keyblob documentKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
++ (nullable OFSSegmentDecryptWorker *)decryptorForWrappedKey:(NSData *)keyblob documentKey:(OFSKeySlots *)kek error:(NSError * __autoreleasing *)outError;
 {
     OFSSegmentDecryptWorker *result = [[OFSSegmentDecryptWorker alloc] init];
     
@@ -528,9 +528,9 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     
     size_t totalCiphertextLength = [ciphertext length];
     
-    if (totalCiphertextLength <= (segmentsBegin + SEGMENTED_FILE_MAC_LEN)) {
+    if (totalCiphertextLength < (segmentsBegin + SEGMENTED_FILE_MAC_LEN)) {
         // Impossible file length
-        // we must have at least one segment, even if it's empty it will contain the segment MAC
+        // We may have no segments, but even in that case, we'll have the header (before segmentsBegin) and the end-of-ciphertext MAC
         if (outError) *outError = headerError("File too short.");
         return nil;
     }
@@ -538,19 +538,30 @@ static NSRange checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertext
     size_t segmentsLength = totalCiphertextLength - segmentsBegin - SEGMENTED_FILE_MAC_LEN;
     size_t segmentCount = ( segmentsLength + SEGMENT_ENCRYPTED_PAGE_SIZE - 1 ) / SEGMENT_ENCRYPTED_PAGE_SIZE;
     size_t plaintextLength = segmentsLength - (SEGMENT_HEADER_LEN * segmentCount);
-    size_t lastSegmentLength = segmentsLength - (SEGMENT_ENCRYPTED_PAGE_SIZE * (segmentCount-1));
     
-    if (lastSegmentLength < SEGMENT_HEADER_LEN) {
-        // Impossible file length
-        // (some ciphertext lengths do not correspond to any plaintext length)
-        if (outError) *outError = headerError("File too short.");
-        return nil;
+    size_t lastSegmentLength;
+    if (segmentCount > 0) {
+        lastSegmentLength = segmentsLength - (SEGMENT_ENCRYPTED_PAGE_SIZE * (segmentCount-1));
+        
+        if (lastSegmentLength < SEGMENT_HEADER_LEN) {
+            // Impossible file length
+            // (some ciphertext lengths do not correspond to any plaintext length)
+            if (outError) *outError = headerError("File too short.");
+            return nil;
+        }
+    } else {
+        // Initialize just in case, but we don't expect this value to be used – its only reference below should be in dispatch_apply(0, ^{…}), which won't invoke its block.
+        lastSegmentLength = 0;
     }
     
     NSMutableData *plaintext = [NSMutableData dataWithLength:plaintextLength];
 
     char *plaintextBuffer = [plaintext mutableBytes];
     __block atomic_uint_fast32_t errorBits = 0;
+    
+    if (plaintextBuffer == NULL) {
+        NSLog(@"Failed to get mutableBytes from an %@ of length %zu! A crash is likely to occur soon.", NSStringFromClass([plaintext class]), plaintextLength);
+    }
     
     /* Check all the segment MACs, and decrypt */
     dispatch_apply(segmentCount, dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, 0), ^(size_t segmentIndex){

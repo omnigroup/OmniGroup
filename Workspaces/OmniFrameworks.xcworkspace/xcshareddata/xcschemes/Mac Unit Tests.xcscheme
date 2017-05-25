@@ -182,6 +182,16 @@
                ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1E0D27471A6F2CCC00E65230"
+               BuildableName = "OFSUnitTests.xctest"
+               BlueprintName = "OFSUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

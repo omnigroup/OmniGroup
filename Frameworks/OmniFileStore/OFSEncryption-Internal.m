@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,6 +134,17 @@ void cryptOrCrash(CCCryptorRef cryptor, const void *dataIn, size_t dataLength, v
     
     /* The documentation says that the input and output buffers can be the same, but according to a March 2015 thread on the apple-cdsa list, the documentation is wrong. */
     OBASSERT(dataIn != dataOut);
+    
+    /*
+     bug:///142883 (iOS-OmniFocus Crasher: Needs Repro: Crash on decryption)
+     Sometimes we'll get a NULL dataOut pointer passed in here, but we haven't yet determined how that occurs in practice. We still want to crash (see the function name), but in a way that produces just a little extra information for our caller and crash reporter.
+     */
+    if (dataOut == NULL) {
+        NSDictionary *userInfo = @{ @"line" : @(lineno),
+                                    @"input_len" : @(dataLength),
+                                    };
+        [[NSException exceptionWithName:NSInvalidArgumentException reason:@"Cannot update cryptor using NULL out buffer" userInfo:userInfo] raise];
+    }
     
     size_t actualAmountEncrypted = 0;
     CCCryptorStatus cerr = CCCryptorUpdate(cryptor,

@@ -133,7 +133,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     if (!encrypted)
         return nil;
     
-    unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent] fromSlot:NULL];
+    unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent]];
     if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedRead) {
         OBLog(OFSFileManagerLogger, 1, @"    --> always unencrypted read");
         return encrypted;
@@ -156,7 +156,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     
     /* Get a decryption worker. We don't currently cache these, although we could cache them per keyInfo blob value (since that blob both indicates the keyslot, and contains any data needed to derive the file subkey). That cache should live in the DocumentKey class though. */
     NSData *keyInfo = [encrypted subdataWithRange:keyInfoLocation];
-    OFSSegmentDecryptWorker *decryptionWorker = [OFSSegmentDecryptWorker decryptorForWrappedKey:keyInfo documentKey:keyManager error:outError];
+    OFSSegmentDecryptWorker *decryptionWorker = [OFSSegmentDecryptWorker decryptorForWrappedKey:keyInfo documentKey:keyManager.keySlots error:outError];
     if (!decryptionWorker)
         return nil;
     
@@ -180,7 +180,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
         return nil;
     }
     
-    unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent] fromSlot:NULL];
+    unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent]];
     if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedWrite) {
         OBLog(OFSFileManagerLogger, 1, @"    --> always unencrypted write");
         return [underlying writeData:data toURL:url atomically:atomically error:outError];
@@ -272,7 +272,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
         return nil;
     
     int maskSlot = -1;
-    unsigned flags = [keyManager flagsForFilename:file.name fromSlot:&maskSlot];
+    unsigned flags = [keyManager.keySlots flagsForFilename:file.name fromSlot:&maskSlot];
     
     if (flags & OFSDocKeyFlagAlwaysUnencryptedRead) {
         return [[OFSEncryptingFileManagerTasteOperation alloc] initWithResult:maskSlot];
@@ -325,6 +325,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     tasteq.name = NSStringFromSelector(_cmd);
     
     /* Taste the files, oldest-first */
+    OFSKeySlots *keys = keyManager.keySlots;
     while (unusedSlots.count && byAge.count) {
         /* TODO: Arrange to have multiple tastes in flight; they're very small so the delay is probably mostly roundtrip delay not transfer delay. However, don't start piling them on until the first one has come back: in the common case, there'll be one slot, the oldest file will be using it, we'll go to 0 immediately, and we should avoid tasting other files. In any case, we should cancel any enqueued requests once we hit 0. */
         
@@ -332,7 +333,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
         [byAge removeObjectAtIndex:0];
         
         int maskSlot = -1;
-        unsigned flags = [keyManager flagsForFilename:finfo.name fromSlot:&maskSlot];
+        unsigned flags = [keys flagsForFilename:finfo.name fromSlot:&maskSlot];
         if (flags & OFSDocKeyFlagAlwaysUnencryptedRead) {
             if (maskSlot >= 0)
                 [unusedSlots removeIndex:maskSlot];

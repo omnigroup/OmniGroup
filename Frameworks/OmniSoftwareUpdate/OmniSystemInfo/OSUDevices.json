@@ -222,6 +222,16 @@
     "platform": "iPad6,8",
     "comment": "12.9 inch"
   },
+  "J71sAP": {
+    "name": "iPad (2017)",
+    "platform": "iPad6,11",
+    "comment": "9.7 inch"
+  },
+  "J72sAP": {
+    "name": "iPad (2017 LTE)",
+    "platform": "iPad6,12",
+    "comment": "9.7 inch"
+  },
   "N45AP": {
     "name": "iPod Touch 1G"
   },

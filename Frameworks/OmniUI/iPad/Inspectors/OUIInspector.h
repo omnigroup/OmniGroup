@@ -65,7 +65,12 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 - (void)setShowDoneButton:(BOOL)shouldShow;
 
+
+
+/// Updates the inspected objects if self.viewController.view is within the window bounds. This allows us to ignore updates if we're not currently visible.
 - (void)updateInspectedObjects;
+/// Forces the inspected objects to update, even if self.viewController.view is not currently visible.
+- (void)forceUpdateInspectedObjects;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 

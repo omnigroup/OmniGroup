@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 #import <OmniFoundation/OFUtilities.h>
 
 @class UIView, UIImage;
+
+NS_ASSUME_NONNULL_BEGIN;
 
 typedef enum {
     OUIViewVisitorResultStop,
@@ -38,8 +40,8 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 - (UIMotionEffect *)tiltMotionEffectWithMaxTilt:(CGFloat)maxTilt;
 - (void)addMotionMaxTilt:(CGFloat)maxTilt;
 
-- (id)containingViewOfClass:(Class)cls; // can return self
-- (id)containingViewMatching:(OFPredicateBlock)predicate;
+- (nullable __kindof UIView *)containingViewOfClass:(Class)cls; // can return self
+- (nullable __kindof UIView *)containingViewMatching:(OFPredicateBlock)predicate;
 - (OUIViewVisitorResult)applyToViewTree:(OUIViewVisitorBlock)block; // in-order traversal
 
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.
@@ -79,3 +81,5 @@ extern void OUIDisplayNeededViews(void);
 #ifdef OMNI_ASSERTIONS_ON
 extern BOOL OUICheckValidFrame(CGRect rect);
 #endif
+
+NS_ASSUME_NONNULL_END;

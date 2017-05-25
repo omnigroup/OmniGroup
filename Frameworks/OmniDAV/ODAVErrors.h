@@ -101,8 +101,13 @@ typedef enum {
 } ODAVHTTPErrorCode;
 
 @interface NSError (ODAVExtensions)
+
+/// Returns an error indicating a certificate trust problem with the given challenge. This error has no localized strings in its userInfo dictionary, since it is intended to be caught at the app level. Errors of this kind should cause localized UI to be presented to the user to evaluate trust and possibly restart the operation.
 + (NSError *)certificateTrustErrorForChallenge:(NSURLAuthenticationChallenge *)challenge;
-- (BOOL)causedByPermissionFailure;
+
+- (BOOL)causedByDAVPermissionFailure;
+- (BOOL)causedByMissingDAVResource;
+
 @end
 
 // User info key that contains the NSURLAuthenticationChallenge passed when a certificate trust issue was encountered

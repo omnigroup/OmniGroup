@@ -312,14 +312,14 @@ static int whined = 0;
     if (!unwrapped)
         return NO;
     
-    if (!validateSlots(unwrapped)) {
-        OFSError(outError, OFSEncryptionBadFormat, @"Could not decrypt file", @"Successfully unwrapped, but got invalid buffer.");
+    OFSKeySlots *unwrappedSlots = [[OFSKeySlots alloc] initWithData:unwrapped error:outError];
+    if (!unwrappedSlots) {
         return NO;
     }
     
     wk.len = (uint16_t)rawData.length;
     [rawData getBytes:wk.bytes length:wk.len];
-    buf = unwrapped;
+    slots = unwrappedSlots;
     
     return YES;
 }

@@ -63,6 +63,9 @@ typedef void(^OAAttributeMutator)(NSMutableDictionary *attributes, NSMutableDict
     NSDictionary *_attributes;
     OAFontDescriptorPlatformFont _font;
     BOOL _isUniquedInstance;
+
+    // This is only set once _isUniquedInstance is set.
+    CTFontSymbolicTraits _symbolicTraits;
 }
 
 + (void)initialize;
@@ -234,6 +237,9 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         [self release];
         return uniquedInstance;
     } else {
+        // This looks at the cache we are trying to fill if _isUniquedInstance is set, so do this first.
+        _symbolicTraits = _lookupSymbolicTraits(self);
+
         _isUniquedInstance = YES; // Track that we need to remove ourselves from the table in -dealloc
         return self;
     }
@@ -537,8 +543,12 @@ static CTFontSymbolicTraits _clearClassMask(CTFontSymbolicTraits traits)
     return traits & ~kCTFontTraitClassMask;
 }
 
-static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
+static CTFontSymbolicTraits _lookupSymbolicTraits(OAFontDescriptor *self)
 {
+    if (self->_isUniquedInstance) {
+        return self->_symbolicTraits;
+    }
+
     NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
     NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
     if (symbolicTraitsNumber) {
@@ -566,7 +576,7 @@ static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
 // NSFontTraitMask and CTFontSymbolicTraits are the same for italic, bold, narrow and fixed-pitch.  Check others before using this for them.
 static BOOL _hasSymbolicTrait(OAFontDescriptor *self, unsigned trait)
 {
-    CTFontSymbolicTraits traits = _symbolicTraits(self);
+    CTFontSymbolicTraits traits = _lookupSymbolicTraits(self);
     return (traits & trait) != 0;
 }
 
@@ -885,7 +895,7 @@ done:
 static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *self, uint32_t trait, BOOL value)
 {
     OBPRECONDITION(trait != kCTFontBoldTrait, @"Don't set/clear the bold trait without also updating kCTFontWeightTrait. See -[OAFontDescriptor newFontDescriptorWithWeight:].");
-    CTFontSymbolicTraits oldTraits = _symbolicTraits(self);
+    CTFontSymbolicTraits oldTraits = _lookupSymbolicTraits(self);
     CTFontSymbolicTraits newTraits;
     if (value)
         newTraits = oldTraits | trait;
@@ -1031,7 +1041,7 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
     NSMutableDictionary *newAttributes = [fontDescriptor.attributes mutableCopy];
     [newAttributes setObject:newTraitsDict forKey:(id)kCTFontTraitsAttribute];
     [newTraitsDict release];
-    CTFontSymbolicTraits newSymbolicTraits = _symbolicTraits(fontDescriptor);
+    CTFontSymbolicTraits newSymbolicTraits = _lookupSymbolicTraits(fontDescriptor);
     
     // We insert the family name of the existing font into the attributes of the new font descriptor. This deals with situations like going from Helvetica-Bold to regular Helvetica. We need the family name, Helvetica, or we will fail to find a regular weight version of the font named Helvetica-Bold.
     [newAttributes setObject:[fontDescriptor family] forKey:(id)kCTFontFamilyNameAttribute];

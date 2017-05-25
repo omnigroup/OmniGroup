@@ -25,7 +25,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     BOOL _usesVerticalLayout;
     UIFont *_tabTitleFont;
     UIFont *_selectedTabTitleFont;
-    NSUInteger _selectedTabIndex;
+    NSInteger _selectedTabIndex;
     UIView *_footerView;
     CGGradientRef _horizontalSeparatorGradient;
     CGGradientRef _verticalSeparatorGradient;
@@ -179,17 +179,17 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     [self setNeedsLayout];
 }
 
-- (NSUInteger)tabCount;
+- (NSInteger)tabCount;
 {
     return self.tabTitles.count;
 }
 
-- (NSUInteger)selectedTabIndex;
+- (NSInteger)selectedTabIndex;
 {
     return _selectedTabIndex;
 }
 
-- (void)setSelectedTabIndex:(NSUInteger)selectedTabIndex;
+- (void)setSelectedTabIndex:(NSInteger)selectedTabIndex;
 {
     _selectedTabIndex = selectedTabIndex;
 
@@ -251,7 +251,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
         [numberFormatter setUsesGroupingSeparator:NO];
         
-        NSUInteger tabCount = self.tabCount;
+        NSInteger tabCount = self.tabCount;
         NSMutableArray *buttonsArray = [NSMutableArray array];
         
         OBASSERT([self.tabImages count] == [self.tabTitles count]);
@@ -287,10 +287,10 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     
     if (self.usesVerticalLayout) {
         const CGFloat buttonHeight = 64;
-        NSUInteger tabCount = self.tabCount;
+        NSInteger tabCount = self.tabCount;
         CGRect remainingFrame = self.bounds;
 
-        for (NSUInteger index = 0; index < tabCount; index ++) {
+        for (NSInteger index = 0; index < tabCount; index ++) {
             UIButton *button = self.tabButtons[index];
             CGRect buttonFrame = CGRectZero;
             CGRectDivide(remainingFrame, &buttonFrame, &remainingFrame, buttonHeight, CGRectMinYEdge);
@@ -310,13 +310,13 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
             [self addSubview:_footerView];
         }
     } else {
-        NSUInteger tabCount = self.tabCount;
+        NSInteger tabCount = self.tabCount;
         CGRect remainingFrame = self.bounds;
         CGFloat widths[tabCount];
         
         [self computeTabWidths:widths];
         
-        for (NSUInteger index = 0; index < tabCount; index ++) {
+        for (NSInteger index = 0; index < tabCount; index ++) {
             UIButton *button = self.tabButtons[index];
             CGRect buttonFrame = CGRectZero;
             CGRectDivide(remainingFrame, &buttonFrame, &remainingFrame, widths[index], CGRectMinXEdge);
@@ -337,7 +337,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     CGRect bounds = self.bounds;
 
     if (self.usesVerticalLayout) {
-        NSUInteger buttonCount = _tabButtons.count;
+        NSInteger buttonCount = _tabButtons.count;
         CGFloat halfPixel = 0.5 / self.contentScaleFactor;
         
         // Right hand edge
@@ -347,12 +347,12 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
                 CGRect buttonFrame = button.frame;
                 CGFloat x = CGRectGetMaxX(bounds);
 
-                if (_selectedTabIndex != index) {
+                if (_selectedTabIndex != (NSInteger)index) {
                     CGContextMoveToPoint(context, x, CGRectGetMinY(buttonFrame));
                     CGContextAddLineToPoint(context, x, CGRectGetMaxY(buttonFrame));
                 }
                 
-                if (index == buttonCount - 1) {
+                if ((NSInteger)index == buttonCount - 1) {
                     CGContextMoveToPoint(context, x, CGRectGetMaxY(buttonFrame));
                     CGContextAddLineToPoint(context, x, CGRectGetMaxY(bounds));
                 }
@@ -393,7 +393,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
                 CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMaxY(buttonFrame) - halfPixel);
                 
                 
-                CGContextSetLineWidth(context, index == buttonCount - 1 ? 4 : 1 / self.contentScaleFactor);
+                CGContextSetLineWidth(context, (NSInteger)index == buttonCount - 1 ? 4 : 1 / self.contentScaleFactor);
                 CGContextStrokePath(context);
             }];
         }
@@ -414,10 +414,10 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
                 CGContextMoveToPoint(context, x, CGRectGetMinY(bounds));
                 CGContextAddLineToPoint(context, x, CGRectGetMaxY(bounds) - halfPixel*2);
                 
-                if (_selectedTabIndex > 0 && (_selectedTabIndex - 1) == index) {
+                if (_selectedTabIndex > 0 && (_selectedTabIndex - 1) == (NSInteger)index) {
                     CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - halfPixel);
                     CGContextAddLineToPoint(context, x + halfPixel, CGRectGetMaxY(bounds) - halfPixel);
-                } else if (_selectedTabIndex < (_tabTitles.count - 1) && (_selectedTabIndex == index)) {
+                } else if (_selectedTabIndex < ((NSInteger)_tabTitles.count - 1) && (_selectedTabIndex == (NSInteger)index)) {
                     CGContextMoveToPoint(context, x - halfPixel, CGRectGetMaxY(bounds) - halfPixel);
                     CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds) - halfPixel);
                 }
@@ -444,7 +444,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 
 - (IBAction)selectTab:(id)sender;
 {
-    NSUInteger selectedTabIndex = [self.tabButtons indexOfObjectIdenticalTo:sender];
+    NSInteger selectedTabIndex = [self.tabButtons indexOfObjectIdenticalTo:sender];
     self.selectedTabIndex = selectedTabIndex;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
@@ -502,7 +502,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 
 - (void)computeTabWidths:(CGFloat *)widths;
 {
-    NSUInteger tabCount = self.tabCount;
+    NSInteger tabCount = self.tabCount;
     if (tabCount == 0) {
         return;
     }

@@ -18,17 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFTestCase
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    // This would happen automatically on the Mac via OBPostLoader
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [OFBundleRegistry registerKnownBundles];
-    [OFPreference class];
-#endif
-}
-
 + (XCTest *)dataDrivenTestSuite
 {    
     NSString *casesPath = [[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"tests"];

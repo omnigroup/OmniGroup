@@ -15,6 +15,8 @@
 
 RCS_ID("$Id$");
 
+#define DetailArrowWidth 28
+
 @implementation OUIDetailInspectorSliceItem
 @end
 
@@ -52,6 +54,18 @@ RCS_ID("$Id$");
         self.valueImageView.hidden = NO;
     } else {
         self.valueImageView.hidden = YES;
+    }
+    
+    CGRect detailFrame = self.detailTextLabel.frame;
+    detailFrame.size = self.detailTextLabel.intrinsicContentSize;
+    // The detail label should start where it will fit the whole label in front of the arrow
+    detailFrame.origin.x = self.frame.size.width - detailFrame.size.width - DetailArrowWidth;
+    self.detailTextLabel.frame = detailFrame;
+    CGRect textFrame = self.textLabel.frame;
+    CGSize contentSize = self.textLabel.intrinsicContentSize;
+    if (textFrame.origin.x + contentSize.width > self.detailTextLabel.frame.origin.x) {
+        textFrame.size.width = self.detailTextLabel.frame.origin.x - textFrame.origin.x;
+        self.textLabel.frame = textFrame;
     }
 }
 
@@ -129,10 +143,8 @@ RCS_ID("$Id$");
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    if (reason != OUIInspectorUpdateReasonDismissed) {
-        [_tableView reloadData];
-        OUITableViewAdjustHeightToFitContents(_tableView);
-    }
+    [_tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(_tableView);
 }
 
 #pragma mark - UIViewController subclass
@@ -206,6 +218,7 @@ RCS_ID("$Id$");
     cell.textLabel.text = title;
     cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
+    cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
     NSString *value = item.value;
     UIImage *valueImage = item.valueImage;

@@ -162,6 +162,7 @@
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSAttributedString-OFExtensions.h>
 #import <OmniFoundation/NSBundle-OFExtensions.h>
+#import <OmniFoundation/NSCalendar-OFExtensions.h>
 #import <OmniFoundation/NSData-OFCompression.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFExtensions.h>

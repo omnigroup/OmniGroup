@@ -1,19 +1,11 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
-
+/* Default title for the About menu item */
 "About %@" = "%@ について";
-
-/* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "現在の App Store アカウントに対する購入はすべて復元されましたが、%@ はこれらの購入に含まれていませんでした。";
 
 /* Bold button accessibility label */
 "Bold" = "ボールド";
-
-/* 'Buy' button title format. Placeholder is the price. The currency symbol will be provided at run time. */
-"Buy %@" = "購入（%@）";
 
 /* button title
    button title - password/passphrase prompt
@@ -35,9 +27,6 @@
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "'%1$@' 環境設定を '%2$@' から '%3$@' に変更しました";
 
-/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "無料アップグレードを確認";
-
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "確認";
 
@@ -47,9 +36,6 @@
 /* increment button accessibility label */
 "Decrement" = "減らす";
 
-/* Button is disabled due to purchase restrictions */
-"Disabled" = "無効";
-
 /* Done
    toolbar item title */
 
@@ -57,12 +43,6 @@
 
 /* toolbar item title */
 "Edit" = "編集";
-
-/* Title explaining that user is eligible for discounted upgrade */
-"Eligible for free upgrade" = "無料アップグレードを受けられます";
-
-/* In app Buy button error title */
-"Error" = "エラー";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "このデモでは機能が無効になっています";
@@ -72,9 +52,6 @@
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "ヘルプと設定";
-
-/* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "アプリ内課金が利用できないか、このデバイス上では許可されていません。設定アプリの機能制限を確認してください。";
 
 /* increment button accessibility label */
 "Increment" = "増やす";
@@ -97,9 +74,6 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
 
-/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
-"More Info" = "詳しい情報";
-
 /* News menu item
    News view title */
 
@@ -111,15 +85,12 @@
 /* Full screen note editor title */
 "Note" = "メモ";
 
+/* Text letting the user know why nothing is showing in the inspector */
+"Nothing to Inspect" = "Nothing to Inspect";
+
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
-
-
-
 
 
 "OK" = "OK";
@@ -130,15 +101,6 @@
 /* alert title */
 "Preference changed" = "環境設定が変更されました";
 
-/* Purchase failed alert title */
-"Purchase Failed" = "購入に失敗";
-
-/* Buy button thank you message */
-"Purchased. Thank you!" = "お買い上げいただき、ありがとうございます！";
-
-/* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "購入機能が無効";
-
 /* Redo button title */
 "Redo" = "やり直し";
 
@@ -146,15 +108,6 @@
    release notes html screen title */
 
 "Release Notes" = "リリースノート";
-
-/* No purchases found title */
-"Restore Complete" = "復元完了";
-
-/* Restore failed alert title */
-"Restore Failed" = "復元に失敗";
-
-/* 'Restore Purchases' button title string */
-"Restore Purchases" = "購入を復元";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "テキストの右揃え";
@@ -165,14 +118,8 @@
 /* Strike Through button accessibility label */
 "Strike Through" = "取り消し線";
 
-/* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "このデバイスはインターネットに接続していない可能性があります。";
-
 /* Certificate trust alert button title */
 "Trust Always" = "常に信頼する";
-
-/* Alert title for error loading product information */
-"Unable to reach App Store" = "App Store にアクセスできません";
 
 /* Underline button accessibility label */
 "Underline" = "アンダーライン";

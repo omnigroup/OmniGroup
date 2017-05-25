@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "Очистить заголовок";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "Облачные службы";
 
@@ -459,7 +462,7 @@
 "Title" = "Заголовок";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Включение облачных служб предоставляет доступ к документам, хранящимся в облачных службах, таких как iCloud Drive или Dropbox. Функция доступа к облачным хранилищам является бета-версией; используйте ее с осторожностью. Дополнительные сведения см. в разделе «Использование облачных служб» в документации.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";

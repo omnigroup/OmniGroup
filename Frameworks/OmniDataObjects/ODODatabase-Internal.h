@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,19 +8,24 @@
 // $Id$
 
 #import <OmniDataObjects/ODODatabase.h>
+#import <OmniDataObjects/ODOSQLConnection.h>
 
-@class ODOEntity, ODORelationship, ODOSQLStatement;
+@class ODOEntity, ODORelationship, ODOSQLStatement, ODOSQLConnection;
 
 extern NSString * const ODODatabaseMetadataTableName;
 extern NSString * const ODODatabaseMetadataKeyColumnName;
 extern NSString * const ODODatabaseMetadataPlistColumnName;
 
 @interface ODODatabase (Internal)
-- (struct sqlite3 *)_sqlite;
+
 - (id)_generatePrimaryKeyForEntity:(ODOEntity *)entity;
-- (BOOL)_beginTransaction:(NSError **)outError;
-- (BOOL)_commitTransaction:(NSError **)outError;
-- (BOOL)_writeMetadataChanges:(NSError **)outError;
+
+/// Convenience for calling -performSQLAndWaitWithError:block:, wrapping the given block in `BEGIN EXCLUSIVE`/`COMMIT` to form a SQLite transaction.
+- (BOOL)_performTransactionWithError:(NSError **)outError block:(ODOSQLFailablePerformBlock)block;
+
+// Flushes pending metadata changes to the connected database. Must be called from within a block passed to one of ODOSQLConnection's perform-SQL methods.
+- (BOOL)_queue_writeMetadataChangesToSQLite:(struct sqlite3 *)sqlite error:(NSError **)outError;
+
 - (void)_committedPendingMetadataChanges;
 - (void)_discardPendingMetadataChanges;
 

@@ -12,14 +12,14 @@
 @protocol OUITabBarAppearanceDelegate <NSObject>
 
 @optional
-- (UIColor *)verticalTabSeparatorColor;
-- (UIColor *)verticalTabRightEdgeColor;
-- (UIColor *)verticalTabRightEdgeFadeToColor;
+@property (nonatomic, readonly) UIColor *verticalTabSeparatorColor;
+@property (nonatomic, readonly) UIColor *verticalTabRightEdgeColor;
+@property (nonatomic, readonly) UIColor *verticalTabRightEdgeFadeToColor;
 
-- (UIColor *)horizontalTabBottomStrokeColor;
-- (UIColor *)horizontalTabSeparatorTopColor;
+@property (nonatomic, readonly) UIColor *horizontalTabBottomStrokeColor;
+@property (nonatomic, readonly) UIColor *horizontalTabSeparatorTopColor;
 
-- (UIColor *)selectedTabTintColor;
-- (UIColor *)disabledTabTintColor;
+@property (nonatomic, readonly) UIColor *selectedTabTintColor;
+@property (nonatomic, readonly) UIColor *disabledTabTintColor;
 
 @end

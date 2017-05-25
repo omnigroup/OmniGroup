@@ -34,8 +34,8 @@
 @property (nonatomic, copy) UIFont *verticalTabTitleFont;
 @property (nonatomic, copy) UIFont *selectedVerticalTabTitleFont;
 
-@property (nonatomic) NSUInteger selectedTabIndex;
-@property (nonatomic, readonly) NSUInteger tabCount;
+@property (nonatomic) NSInteger selectedTabIndex;
+@property (nonatomic, readonly) NSInteger tabCount;
 @property (nonatomic, copy) NSArray *tabTitles;
 
 - (void)setImage:(UIImage *)image forTabWithTitle:(NSString *)tabTitle;

@@ -628,8 +628,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 if (!strelf.forPreviewGeneration) {
                     [strelf updateViewControllerToPresent];
                     
-                    NSString *lastEditedMessage = [strelf _lastEditedMessage];
-                    [strelf _queueUpdateMessage:lastEditedMessage];
+                    [strelf _queueUpdateMessageProvider:^NSString *{
+                        NSString *lastEditedMessage = [strelf _lastEditedMessage];
+                        return lastEditedMessage;
+                    }];
                 }
             }
 
@@ -1091,8 +1093,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             
             [self updateViewControllerToPresent];
 
-            NSString *lastEditedMessage = [self _lastEditedMessage];
-            [self _queueUpdateMessage:lastEditedMessage];
+            [self _queueUpdateMessageProvider:^NSString *{
+                NSString *lastEditedMessage = [self _lastEditedMessage];
+                return lastEditedMessage;
+            }];
         }
     }];
 }
@@ -1221,23 +1225,28 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     if (_accommodatingDeletion)
         return; // Don't pop up an alert about moving into the dead zone.
     
-    NSString *updateMessage = nil;
+    NSURL *originalURLPriorToPresentedItemDidMoveToURL = _originalURLPriorToPresentedItemDidMoveToURL;
+    __weak typeof(self) weakSelf = self;
+    [self _queueUpdateMessageProvider:^NSString *{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        NSString *updateMessage = nil;
         
-    // TODO: Test changing file extension? Maybe have 'type changed' variant?
-    // TODO: Test incoming delete. We should not alert if we got closed
-    if (OFNOTEQUAL([_originalURLPriorToPresentedItemDidMoveToURL lastPathComponent], [newURL lastPathComponent])) {
-        NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Renamed to %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been renamed on another device");
+        // TODO: Test changing file extension? Maybe have 'type changed' variant?
+        // TODO: Test incoming delete. We should not alert if we got closed
+        if (OFNOTEQUAL([originalURLPriorToPresentedItemDidMoveToURL lastPathComponent], [newURL lastPathComponent])) {
+            NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Renamed to %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been renamed on another device");
+            
+            NSString *displayName = [[strongSelf.fileItem class] displayNameForFileURL:newURL fileType:strongSelf.fileType];
+            OBFinishPortingLater("Can't ask the file item for its editing name. Need a class method of some sort.");
+            updateMessage = [NSString stringWithFormat:messageFormat, displayName];
+        } else {
+            // The code above handles both renames and deletions. If we get althey way to here, we will assume a move has happend. Unfortunately, there is no way to know where the standard 'Shared Documents' part of the path ends and the user created/visible path begins. Because of this, we can't provide any relevant folder/path information. For now, we'll just let the user know that the document was moved.
+            updateMessage = NSLocalizedStringFromTableInBundle(@"Document moved.", @"OmniUIDocument", OMNI_BUNDLE, @"Message letting the user know that their document was moved from one folder to another.");
+            
+        }
         
-        NSString *displayName = [[self.fileItem class] displayNameForFileURL:newURL fileType:self.fileType];
-        OBFinishPortingLater("Can't ask the file item for its editing name. Need a class method of some sort.");
-        updateMessage = [NSString stringWithFormat:messageFormat, displayName];
-    } else {
-        // The code above handles both renames and deletions. If we get althey way to here, we will assume a move has happend. Unfortunately, there is no way to know where the standard 'Shared Documents' part of the path ends and the user created/visible path begins. Because of this, we can't provide any relevant folder/path information. For now, we'll just let the user know that the document was moved.
-        updateMessage = NSLocalizedStringFromTableInBundle(@"Document moved.", @"OmniUIDocument", OMNI_BUNDLE, @"Message letting the user know that their document was moved from one folder to another.");
-        
-    }
-    
-    [self _queueUpdateMessage:updateMessage];
+        return updateMessage;
+    }];
 }
 
 - (NSString *)_persistentPathForFile;
@@ -1590,31 +1599,40 @@ static OFPreference *LastEditsPreference;
     [self finishUndoGroup];
 }
 
-/// Queues any type of 'update' message to be displayed. (Ex. last updated date/time or if the documet is moved/renamed.)
-- (void)_queueUpdateMessage:(NSString *)message;
+///  A block that is envoked on the main thread that returns any type of 'update' message to be displayed. (Ex. last updated date/time or if the documet is moved/renamed.)
+typedef NSString * (^MessageProvider)(void);
+
+/// Enqueues an MessageProvider onto the main queue.
+- (void)_queueUpdateMessageProvider:(MessageProvider)messageProvider;
 {
-    OBPRECONDITION(![NSString isEmptyString:message]);
+    OBPRECONDITION(messageProvider != nil);
     OBPRECONDITION(!_accommodatingDeletion);
     
-    if (message == nil || self.forPreviewGeneration) {
+    if (messageProvider == nil || self.forPreviewGeneration) {
         // No point in doing any of thise if we don't acutally have a message to show or if we aren't a user-visible open document
         return;
     }
     
-    
-    if ([self shouldShowUpdateMessage] == NO) {
-        return;
-    }
+    messageProvider = [messageProvider copy];
     
     // See commentary in -_willBeRenamedLocally about this hack.
     if (CFAbsoluteTimeGetCurrent() - _lastLocalRenameTime < 5) {
         return;
     }
     
+    __weak typeof(self) weakSelf = self;
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if ([strongSelf shouldShowUpdateMessage] == NO) {
+            return;
+        }
+
         // Cancel any current alert.
         self.lastQueuedUpdateMessage = nil;
         [self dismissUpdateMessage];
+        
+        // We verify that messageBlock is non-nil above, so we don't need to check here before calling.
+        NSString *message = messageProvider();
 
         // Queue up new message.
         self.lastQueuedUpdateMessage = message;

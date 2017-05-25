@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development. Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development. Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniFileStore/OFSEncryptionConstants.h>
 
 #import "OFSDocumentKey-Internal.h"
+#import "OFSEncryption-Internal.h"
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #error Building OFSDocumentKey Mac Keychain support on an iOS platform
@@ -226,14 +227,14 @@ static NSData *readFromKeychain(NSString *keyLabel, NSData *applicationLabel, NS
         return NO;
     }
     
-    if (!validateSlots(unwrapped)) {
-        OFSError(outError, OFSEncryptionBadFormat, @"Could not decrypt file", @"Successfully unwrapped, but got invalid buffer.");
+    OFSKeySlots *keytable = [[OFSKeySlots alloc] initWithData:unwrapped error:outError];
+    if (!keytable) {
         return NO;
     }
     
     wk.len = (uint16_t)rawData.length;
     [rawData getBytes:wk.bytes length:wk.len];
-    buf = unwrapped;
+    slots = keytable;
     return YES;
 }
 

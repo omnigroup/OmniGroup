@@ -21,6 +21,7 @@
 
 @optional
 - (void)prepareToExport;
+- (NSArray *)fileItemsToExport;
 
 @end
 

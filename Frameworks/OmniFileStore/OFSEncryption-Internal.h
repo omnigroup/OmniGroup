@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,9 @@ extern const char magic_ver1_0[FMT_V1_0_MAGIC_LEN] OB_HIDDEN;
 NSError *ofsWrapCCError(CCCryptorStatus cerr, NSString *op, NSString *extra, NSObject *val) __attribute__((cold)) OB_HIDDEN; /* CommonCrypto errors fit in the OSStatus error domain */
 #define ofsWrapSecError(e,o,k,v) ofsWrapCCError(e,o,k,v) /* Security.framework errors are also OSStatus error codes */
 BOOL ofsUnsupportedError_(NSError **outError, int lineno, NSString *badThing) __attribute__((cold)) OB_HIDDEN;
+
+/* AESWRAP utilities */
+extern NSData *unwrapData(const uint8_t *wrappingKey, size_t wrappingKeyLength, NSData *wrappedData, NSError **outError) OB_HIDDEN;
 
 /* CTR cryptor utilities */
 extern CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint8_t segmentIV[kCCBlockSizeAES128], const uint8_t *key, unsigned keyLength, NSError **outError) OB_HIDDEN;

@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -286,13 +286,13 @@ static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         }
         [sql appendString:@")"];
         
-        insertStatement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
+        insertStatement = [ODOSQLStatement preparedStatementWithConnection:database.connection SQLite:sqlite sql:sql error:outError];
         [sql release];
-        if (!insertStatement)
+        if (!insertStatement) {
             return NO;
+        }
         
         [database _setCachedStatement:insertStatement forKey:_insertStatementKey];
-        [insertStatement release];
         
         // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
         insertStatement = [database _cachedStatementForKey:_insertStatementKey];
@@ -354,13 +354,13 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         }
         [sql appendFormat:@" WHERE %@ = ?", [_primaryKeyAttribute name]];
         
-        updateStatement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
+        updateStatement = [ODOSQLStatement preparedStatementWithConnection:database.connection SQLite:sqlite sql:sql error:outError];
         [sql release];
-        if (!updateStatement)
+        if (!updateStatement) {
             return NO;
+        }
 
         [database _setCachedStatement:updateStatement forKey:_updateStatementKey];
-        [updateStatement release];
 
         // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
         updateStatement = [database _cachedStatementForKey:_updateStatementKey];
@@ -384,15 +384,14 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     if (!statement) {
         NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"DELETE FROM %@ WHERE %@ = ?", _name, [_primaryKeyAttribute name]];
         
-        statement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
+        statement = [ODOSQLStatement preparedStatementWithConnection:database.connection SQLite:sqlite sql:sql error:outError];
         [sql release];
-        if (!statement)
+        if (!statement) {
             return NO;
+        }
         
         [database _setCachedStatement:statement forKey:_deleteStatementKey];
-        [statement release];
-
-    
+        
         // clang scan-build will issue a use-after release warning below if we don't do this (since it doesn't know that -_setCachedStatement:forKey: will retain.  Really, this makes sense since the method might do anything, including rejecting the new statement for some reason.  So, look it up again.
         statement = [database _cachedStatementForKey:_deleteStatementKey];
     }
@@ -411,14 +410,22 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     return ODOSQLStatementRun(sqlite, statement, callbacks, NULL, outError);
 }
 
-- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database;
+- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite;
 {
+    OBPRECONDITION([database.connection checkExecutingOnDispatchQueue]);
+    OBPRECONDITION([database.connection checkIsManagedSQLite:sqlite]);
+    
     ODOSQLStatement *queryByPrimaryKeyStatement = [database _cachedStatementForKey:_queryByPrimaryKeyStatementKey];
     if (!queryByPrimaryKeyStatement) {
         NSPredicate *predicate = ODOKeyPathEqualToValuePredicate([_primaryKeyAttribute name], @"something"); // Fake up a constant for the build.  Don't use nil/null since that'd get translated to 'IS NULL'.
-        queryByPrimaryKeyStatement = [[ODOSQLStatement alloc] initSelectProperties:[self _schemaProperties] fromEntity:self database:database predicate:predicate error:outError];
-        if (!queryByPrimaryKeyStatement)
+        queryByPrimaryKeyStatement = [[ODOSQLStatement alloc] initSelectProperties:[self _schemaProperties] fromEntity:self connection:database.connection predicate:predicate error:outError];
+        if (queryByPrimaryKeyStatement == nil) {
             return nil;
+        }
+        if (![queryByPrimaryKeyStatement prepareIfNeededWithSQLite:sqlite error:outError]) {
+            [queryByPrimaryKeyStatement release];
+            return nil;
+        }
         
         [database _setCachedStatement:queryByPrimaryKeyStatement forKey:_queryByPrimaryKeyStatementKey];
         [queryByPrimaryKeyStatement release];

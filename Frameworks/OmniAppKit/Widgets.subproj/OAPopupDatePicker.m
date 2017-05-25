@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -144,7 +144,7 @@ static NSSize calendarImageSize;
     	[window setCollectionBehavior:collectionBehavior];  
     }
 
-    [OFPreference addObserver:self selector:@selector(_firstDayOfTheWeekDidChange:) forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
+    [OFPreference addObserver:self selector:@selector(_firstDayOfTheWeekDidChange:) forPreference:[NSCalendar firstDayOfTheWeekPreference]];
     [self _firstDayOfTheWeekDidChange:nil];
     
     return self;
@@ -152,7 +152,7 @@ static NSSize calendarImageSize;
 
 - (void)dealloc;
 {
-    [OFPreference removeObserver:self forPreference:[OFPreference preferenceForKey:@"FirstDayOfTheWeek"]];
+    [OFPreference removeObserver:self forPreference:[NSCalendar firstDayOfTheWeekPreference]];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     [_datePickerObjectValue release];
@@ -484,12 +484,7 @@ static NSSize calendarImageSize;
 - (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
 {
      // OmniPlan lets users set a different first day of week from the system default. See <bug:///30007> (Bug: Preference for first day of the week [start])
-    static OFPreference *firstWeekdayPreference;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        firstWeekdayPreference = [OFPreference preferenceForKey:@"FirstDayOfTheWeek"];
-    });
-    
+    OFPreference *firstWeekdayPreference = [NSCalendar firstDayOfTheWeekPreference];
     NSCalendar *calendar = [[NSCalendar currentCalendar] retain];
     
     if ([firstWeekdayPreference hasNonDefaultValue]) {

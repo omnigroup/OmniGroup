@@ -182,7 +182,34 @@ RCS_ID("$Id$")
 
 - (void)export:(id)sender
 {
-    ODSFileItem *fileItem = [self.hostViewController fileItemToExport];
+    ODSFileItem *fileItem;
+    if ([self.hostViewController respondsToSelector:@selector(fileItemsToExport)]) {
+        NSArray *items = [self.hostViewController fileItemsToExport];
+        if (items.count > 1) {
+            NSMutableArray *paths = [NSMutableArray array];
+            for (ODSFileItem *item in items)
+                [paths addObject:item.fileURL.path];
+            
+            NSString *zipName = [[[NSNumber numberWithInteger:items.count] description] stringByAppendingPathExtension:@"zip"];
+            NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:zipName];
+            @autoreleasepool {
+                __autoreleasing NSError *error = nil;
+                if (![OUZipArchive createZipFile:zipPath fromFilesAtPaths:paths error:&error]) {
+                    OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+                    return;
+                }
+            }
+            NSURL *zipURL = [NSURL fileURLWithPath:zipPath];
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[zipURL] applicationActivities:nil];
+            activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+            activityViewController.popoverPresentationController.barButtonItem = sender;
+            [self.hostViewController presentViewController:activityViewController animated:YES completion:nil];
+            return;
+        }
+        fileItem = items.anyObject;
+    } else {
+        fileItem = [self.hostViewController fileItemToExport];
+    }
     [self exportItem:fileItem sender:sender];
 }
 

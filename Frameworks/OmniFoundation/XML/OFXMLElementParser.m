@@ -36,6 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc {
+
+    [_rootElement release];
+    [_elementStack release];
+    [super dealloc];
+}
+
 @synthesize delegate = _weak_delegate;
 
 - (OFXMLElement *)topElement;

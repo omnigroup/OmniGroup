@@ -1026,6 +1026,10 @@
 		E22C35B014587A7D0036797A /* OFIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = E218272F1456049B0097BBFE /* OFIndexPath.m */; };
 		E22C35B214587A8A0036797A /* OFCompletionMatch.m in Sources */ = {isa = PBXBuildFile; fileRef = E218273B145605170097BBFE /* OFCompletionMatch.m */; };
 		E264C0930AEFDE9B004948CB /* OFScannerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E264C0900AEFDE7C004948CB /* OFScannerTests.m */; };
+		E27C01301EB2512F007FD6AF /* NSCalendar-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = E27C012E1EB2512F007FD6AF /* NSCalendar-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E27C01311EB2512F007FD6AF /* NSCalendar-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = E27C012E1EB2512F007FD6AF /* NSCalendar-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E27C01321EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */; };
+		E27C01331EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */; };
 		E290847C1CC735450029DC85 /* OFMutableStringExtensionsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = E290847B1CC735450029DC85 /* OFMutableStringExtensionsTest.m */; };
 		F220577108CF6059004B6007 /* OFTimeSpanFormatterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F220577008CF6059004B6007 /* OFTimeSpanFormatterTest.m */; };
 /* End PBXBuildFile section */
@@ -2042,6 +2046,8 @@
 		E218273A145605170097BBFE /* OFCompletionMatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFCompletionMatch.h; path = DataStructures.subproj/OFCompletionMatch.h; sourceTree = "<group>"; };
 		E218273B145605170097BBFE /* OFCompletionMatch.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFCompletionMatch.m; path = DataStructures.subproj/OFCompletionMatch.m; sourceTree = "<group>"; };
 		E264C0900AEFDE7C004948CB /* OFScannerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFScannerTests.m; sourceTree = "<group>"; };
+		E27C012E1EB2512F007FD6AF /* NSCalendar-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSCalendar-OFExtensions.h"; sourceTree = "<group>"; };
+		E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSCalendar-OFExtensions.m"; sourceTree = "<group>"; };
 		E290847B1CC735450029DC85 /* OFMutableStringExtensionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFMutableStringExtensionsTest.m; sourceTree = "<group>"; };
 		E2FCCB3C062205A40097A11C /* OFAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFAlias.h; path = FileManagement.subproj/OFAlias.h; sourceTree = SOURCE_ROOT; };
 		E2FCCB3D062205A40097A11C /* OFAlias.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFAlias.m; path = FileManagement.subproj/OFAlias.m; sourceTree = SOURCE_ROOT; };
@@ -2405,6 +2411,8 @@
 				00E51D0EFE8AAEA611C9CC38 /* NSBundle-OFFixes.m */,
 				5FD243A21D12189F009AB347 /* NSCache-OFExtensions.h */,
 				5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */,
+				E27C012E1EB2512F007FD6AF /* NSCalendar-OFExtensions.h */,
+				E27C012F1EB2512F007FD6AF /* NSCalendar-OFExtensions.m */,
 				00E51D2BFE8AAEA611C9CC38 /* NSCalendarDate-OFExtensions.h */,
 				00E51D0FFE8AAEA611C9CC38 /* NSCalendarDate-OFExtensions.m */,
 				342A9EC608C89683006AA532 /* NSComparisonPredicate-OFExtensions.h */,
@@ -3534,6 +3542,7 @@
 				34F16BC9194F765600AD9C4D /* OFDateFormatConversion.h in Headers */,
 				1E498A9F1D6BC77200996D7D /* OFAEADCryptor.h in Headers */,
 				34F16C2F194F797700AD9C4D /* OFXMLString.h in Headers */,
+				E27C01311EB2512F007FD6AF /* NSCalendar-OFExtensions.h in Headers */,
 				34F16B62194F6E6E00AD9C4D /* OFBinding.h in Headers */,
 				34F16BF1194F76FD00AD9C4D /* NSMutableString-OFExtensions.h in Headers */,
 				1E1B93AB19D232A700693752 /* OFASN1Utilities.h in Headers */,
@@ -3732,6 +3741,7 @@
 				4A4E068908AA72B10098FF0F /* OFIObjectSelector.h in Headers */,
 				4A4E068A08AA72B10098FF0F /* OFIObjectSelectorBool.h in Headers */,
 				4A4E068B08AA72B10098FF0F /* OFIObjectSelectorInt.h in Headers */,
+				E27C01301EB2512F007FD6AF /* NSCalendar-OFExtensions.h in Headers */,
 				4A4E068C08AA72B10098FF0F /* OFIObjectSelectorIntInt.h in Headers */,
 				4A4E068D08AA72B10098FF0F /* OFIObjectSelectorObject.h in Headers */,
 				4A4E068E08AA72B10098FF0F /* OFIObjectSelectorObjectInt.h in Headers */,
@@ -4602,6 +4612,7 @@
 				34F16B6D194F6E9F00AD9C4D /* OFObject.m in Sources */,
 				1EEA8E2C1D35C93D002EF965 /* GeneratedOIDs.m in Sources */,
 				34F16C15194F779100AD9C4D /* OFBackgroundActivity.m in Sources */,
+				E27C01331EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */,
 				34F16B90194F6F4700AD9C4D /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				34F16B7D194F6EE000AD9C4D /* OFSyncClient.m in Sources */,
 				34F16C17194F779F00AD9C4D /* OFCredentials.m in Sources */,
@@ -4668,6 +4679,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A4E06AE08AA72B10098FF0F /* NSObjectSpecifier-OFFixes.m in Sources */,
+				E27C01321EB2512F007FD6AF /* NSCalendar-OFExtensions.m in Sources */,
 				4A4E06AF08AA72B10098FF0F /* OFAddScriptCommand.m in Sources */,
 				4A4E06B008AA72B10098FF0F /* OFRemoveScriptCommand.m in Sources */,
 				4A4E06B108AA72B10098FF0F /* OFScriptPlaceholder.m in Sources */,

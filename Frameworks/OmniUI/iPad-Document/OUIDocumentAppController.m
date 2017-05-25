@@ -131,9 +131,6 @@ static unsigned SyncAgentRunningAccountsContext;
 {
     UIWindow *_window;
     
-    dispatch_once_t _roleByFileTypeOnce;
-    NSDictionary *_roleByFileType;
-    
     NSArray *_editableFileTypes;
 
     OUIDocument *_document;
@@ -1110,12 +1107,15 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
 
 - (NSArray *)_viewableFileTypes;
 {
-    return [[[self _roleByFileType] keyEnumerator] allObjects];
+    return [[RoleByFileType() keyEnumerator] allObjects];
 }
 
-- (NSDictionary *)_roleByFileType;
+static NSDictionary *RoleByFileType()
 {
-    dispatch_once(&_roleByFileTypeOnce, ^{
+    static dispatch_once_t onceToken;
+    static NSDictionary *roleByFileType;
+
+    dispatch_once(&onceToken, ^{
         // Make a fast index of all our declared UTIs
         NSMutableDictionary *contentTypeRoles = [[NSMutableDictionary alloc] init];
         NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
@@ -1129,10 +1129,10 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
         }
         
-        _roleByFileType = [contentTypeRoles copy];
+        roleByFileType = [contentTypeRoles copy];
     });
-    OBPOSTCONDITION(_roleByFileType != nil);
-    return _roleByFileType;
+    OBPOSTCONDITION(roleByFileType != nil);
+    return roleByFileType;
 }
 
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
@@ -1142,7 +1142,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     if (uti == nil)
         return NO;
     
-    for (NSString *candidateUTI in [self _roleByFileType]) {
+    for (NSString *candidateUTI in RoleByFileType()) {
         if (OFTypeConformsTo(uti, candidateUTI))
             return YES;
     }
@@ -1983,10 +1983,20 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                                     return;
                                 }
                                 
-                                OBFinishPortingLater("TODO: Reveal scope in document picker");
-                                //                            _documentPicker.selectedScopeViewController.selectedScope = _localScope;
-                                
-                                [self openDocument:newFileItem];
+                                [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:YES];
+                                [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
+                                newFileItem.selected = YES;
+                                [_documentPicker.selectedScopeViewController setEditing:YES animated:YES];
+
+                                // Wait half a second to see if any other documents are coming in at the same time. If we get only one, open it, but
+                                // if there are more than one we want to stay in the doc picker with them all selected.
+                                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC / 2)), dispatch_get_main_queue(), ^{
+                                    NSSet *selection = _documentPicker.selectedScopeViewController.selectedItems;
+                                    if (selection.count == 1 && selection.anyObject == newFileItem) {
+                                        [_documentPicker.selectedScopeViewController setEditing:NO animated:NO];
+                                        [self openDocument:newFileItem];
+                                    }
+                                });
                             });
                         }];
                     } else {

@@ -100,6 +100,9 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "제목 지우기";
 
+/* Close Document toolbar item accessibility label. */
+"Close Document" = "Close Document";
+
 /* Cloud Storage Providers preference nvigation bar title */
 "Cloud Storage Providers" = "클라우드 저장소 공급자";
 
@@ -459,7 +462,7 @@
 "Title" = "제목";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "클라우드 저장소 공급자를 설정하면 iCloud Drive 또는 Dropbox와 같은 클라우드 서비스에 저장된 도큐멘트에 액세스할 수 있습니다. 클라우드 저장소 공급자에 대한 액세스는 베타 구현으로 제공되었습니다. 이 서비스를 활성화할 때는 주의하십시오. 자세히 알아보려면 설명서에서 \"클라우드 작업\"을 참조하십시오.";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.";
 
 /* error title */
 "Unable to open file." = "파일을 열 수 없습니다.";

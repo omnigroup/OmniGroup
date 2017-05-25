@@ -35,6 +35,9 @@ extern NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNu
 // Returns a uniform type identifier for the given tag class and value. If multiple identifiers are defined for the same tag value, this function prefers types that are registered by the running executable's main bundle. Optionally, returned types can be restricted to those conforming to the identifier named by the conformingToUTIOrNull parameter.
 extern NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tag, CFStringRef _Nullable conformingToUTIOrNull);
 
+// Returns a file extension for a given uniform type identifier.  This function prefers prefers types that are registered by the running exceutable's main bundle
+extern NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(NSString *fileType);
+
 // Hide the bridging and return an autoreleased NSString
 #define OFPreferredPathExtensionForUTI(uti) ((NSString *)CFBridgingRelease(UTTypeCopyPreferredTagWithClass(_OFAsCFString(uti), kUTTagClassFilenameExtension)))
 

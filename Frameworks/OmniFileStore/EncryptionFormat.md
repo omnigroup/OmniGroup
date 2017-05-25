@@ -109,7 +109,7 @@ A file consists of:
             * HMAC key ( SEGMENTED\_MAC\_KEY\_LEN = 16 bytes )
             * Zero-padding to boundary as needed by AESWRAP (zero bytes)
     * Padding to a 16-byte boundary. Must be zero; must be checked by reader.
-* Variable-length array of encrypted segments
+* Variable-length array of encrypted segments, which may be empty
     * Segment IV (12 bytes = block size minus the 32-bit AES-CTR counter)
     * Segment MAC (20 bytes)
     * Segment data (SEGMENTED\_PAGE\_SIZE = 64k bytes, except possibly for the last segment)

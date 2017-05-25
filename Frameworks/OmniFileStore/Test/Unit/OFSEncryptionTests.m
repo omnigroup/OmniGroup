@@ -65,8 +65,9 @@ RCS_ID("$Id$");
             continue;
         NSMethodSignature *sig = [self instanceMethodSignatureForSelector:method_getName(m)];
         
-        XCTestSuite *subsuite = [XCTestSuite testSuiteWithName:nm];
-        [suite addTest:subsuite];
+        // rdar://31840246 – Xcode crashes running a test suite with mixed XCTestSuite and XCTestCase children from the Test navigator. Not using subsuites for now; we'll add all tests directly to the default top-level suite.
+//        XCTestSuite *subsuite = [XCTestSuite testSuiteWithName:nm];
+//        [suite addTest:subsuite];
         
 #define NUM_SLOTTYPES 2
         static const enum OFSDocumentKeySlotType slottypes[NUM_SLOTTYPES] = { SlotTypeActiveAESWRAP, SlotTypeActiveAES_CTR_HMAC };
@@ -77,7 +78,7 @@ RCS_ID("$Id$");
             [inv setArgument:(void *)&(slottypes[i]) atIndex:2];
             OFSEncryptionTests *tst = [self testCaseWithInvocation:inv];
             tst.subname = [NSString stringWithFormat:@"%@%d", nm, slottypes[i]];
-            [subsuite addTest:tst];
+            [suite addTest:tst]; // Adding directly to the top level. See above.
         }
 #undef NUM_SLOTTYPES
     }
@@ -136,7 +137,7 @@ static const char *thing3 = "Thing three\n";
     OFSMutableDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     NSMutableData *backing = [NSMutableData data];
     size_t prefixLen;
@@ -176,7 +177,7 @@ static const char *thing3 = "Thing three\n";
     OFSMutableDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2"];
@@ -286,7 +287,7 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
     OFSMutableDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2Large"];
@@ -364,7 +365,7 @@ static void wrXY(char *into, int x, int y)
     OFSMutableDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAES_CTR_HMAC];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test3Large"];
@@ -452,10 +453,10 @@ static void wrXY(char *into, int x, int y)
     size_t offset = 0;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
     OBShouldNotError(otherDocKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [otherDocKey discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
+    [otherDocKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
     
     for (int whichCiphertext = 0; whichCiphertext < 3; whichCiphertext ++) {
         NSData *plaintext, *ciphertext, *decrypted;
@@ -495,7 +496,7 @@ static void wrXY(char *into, int x, int y)
         OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
         XCTAssertGreaterThan(derivationInfoLocation.location, 0u);
         XCTAssertGreaterThanOrEqual(derivationInfoLocation.length, keyInfoBlobSizeMinimum);
-        OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]);
+        OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey.keySlots error:&error]);
         OBShouldNotError(decrypted = [decryptor decryptData:ciphertext dataOffset:offset error:&error]);
         XCTAssertEqualObjects(plaintext, decrypted);
         
@@ -515,7 +516,7 @@ static void wrXY(char *into, int x, int y)
             derivationInfoLocation = (NSRange){ 0, 0 };
             if (![OFSSegmentDecryptWorker parseHeader:damagedCiphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]) {
                 XCTAssertNotNil(error);
-            } else if ((decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[damagedCiphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]) == nil) {
+            } else if ((decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[damagedCiphertext subdataWithRange:derivationInfoLocation] documentKey:docKey.keySlots error:&error]) == nil) {
                 XCTAssertNotNil(error);
             } else {
                 XCTAssertNil(error);
@@ -531,7 +532,7 @@ static void wrXY(char *into, int x, int y)
         derivationInfoLocation = (NSRange){ 0, 0 };
         OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
         // We might fail when getting the file key (if the two docKeys have different keyslot identifiers) or when decrypting (if they have the same key identifiers, but different keys).
-        decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:otherDocKey error:&error];
+        decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:otherDocKey.keySlots error:&error];
         decrypted = decryptor? [decryptor decryptData:ciphertext dataOffset:offset error:&error] : nil;
         XCTAssertNil(decrypted, @"Decryption should fail: wrong key");
     }
@@ -545,7 +546,7 @@ static void wrXY(char *into, int x, int y)
     OFSMutableDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:SlotTypeActiveAESWRAP];
     
 
     for (unsigned  npages = 1; npages < 4; npages ++) {
@@ -572,7 +573,7 @@ static void wrXY(char *into, int x, int y)
             size_t offset = 0;
             NSRange derivationInfoLocation = { 0, 0 };
             OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
-            OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey error:&error]);
+            OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey.keySlots error:&error]);
             OBShouldNotError(decrypted = [decryptor decryptData:ciphertext dataOffset:offset error:&error]);
             XCTAssertEqualObjects(plaintext, decrypted);
             
@@ -594,8 +595,8 @@ static void wrXY(char *into, int x, int y)
     const char *sekrit = "DOOMDOOMDOOMDOOM";
     
     OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey discardKeysExceptSlots:nil retireCurrent:YES generate:slotType];
-    XCTAssertEqual(docKey.keySlots.count, (NSUInteger)1);
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:YES generate:slotType];
+    XCTAssertEqual(docKey.keySlots.keySlots.count, (NSUInteger)1);
 
     OBShouldNotError([docKey setPassword:passwd error:&error]);
     
@@ -609,7 +610,7 @@ static void wrXY(char *into, int x, int y)
             
             if (slotType == SlotTypeActiveAESWRAP) {
                 // For AESWRAP slots, we provide the material we want wrapped, and it gives us back a blob wrapping it.
-                OBShouldNotError(kb = [docKey wrapFileKey:(void *)sekrit length:16 error:&error]);
+                OBShouldNotError(kb = [docKey.keySlots wrapFileKey:(void *)sekrit length:16 error:&error]);
             } else if (slotType == SlotTypeActiveAES_CTR_HMAC) {
                 // For CTR+HMAC slots, we don't actually have any wrapped material.
                 OFSSegmentEncryptWorker *worker;
@@ -621,8 +622,8 @@ static void wrXY(char *into, int x, int y)
             }
             [keyblobs addObject:kb];
             uint16_t theIndex = OSReadBigInt16([kb bytes], 0);
-            XCTAssertTrue([docKey.keySlots containsIndex:theIndex]);
-            XCTAssertFalse([docKey.retiredKeySlots containsIndex:theIndex]);
+            XCTAssertTrue([docKey.keySlots.keySlots containsIndex:theIndex]);
+            XCTAssertFalse([docKey.keySlots.retiredKeySlots containsIndex:theIndex]);
             if (j == 0) {
                 XCTAssertFalse([indices containsIndex:theIndex]);
                 [indices addIndex:theIndex];
@@ -637,7 +638,7 @@ static void wrXY(char *into, int x, int y)
         }
         
         XCTAssertEqual(docKeyChangecount, [docKey changeCount]);
-        [docKey discardKeysExceptSlots:indices retireCurrent:YES generate:slotType];
+        [docKey.mutableKeySlots discardKeysExceptSlots:indices retireCurrent:YES generate:slotType];
         XCTAssertNotEqual(docKeyChangecount, [docKey changeCount]);
         docKeyChangecount = [docKey changeCount];
     }
@@ -667,19 +668,19 @@ static void wrXY(char *into, int x, int y)
         /* Should succeed */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [otherDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        unw = [otherDocKey.keySlots unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         TEST_UNW_SUCCEEDED;
         
         /* Should succeed */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [docKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        unw = [docKey.keySlots unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         TEST_UNW_SUCCEEDED;
 
         /* May succeed or fail */
         memset(obuf, '*', 32);
         error = nil;
-        unw = [intermediateDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        unw = [intermediateDocKey.keySlots unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([intermediateIndices containsIndex:thisBlobIndex]) {
             TEST_UNW_SUCCEEDED;
         } else {
@@ -701,7 +702,7 @@ static void wrXY(char *into, int x, int y)
     
     /* Check that behavior */
     XCTAssertEqual(docKeyChangecount, [docKey changeCount]);
-    [docKey discardKeysExceptSlots:keptSlots retireCurrent:NO generate:SlotTypeNone];
+    [docKey.mutableKeySlots discardKeysExceptSlots:keptSlots retireCurrent:NO generate:SlotTypeNone];
     XCTAssertNotEqual(docKeyChangecount, [docKey changeCount]);
     docKeyChangecount = [docKey changeCount];
     
@@ -715,7 +716,7 @@ static void wrXY(char *into, int x, int y)
         
         memset(obuf, '*', 32);
         error = nil;
-        unw = [docKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        unw = [docKey.keySlots unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([keptSlots containsIndex:thisBlobIndex]) {
             /* Should succeed */
             TEST_UNW_SUCCEEDED;
@@ -730,7 +731,7 @@ static void wrXY(char *into, int x, int y)
         
         memset(obuf, '*', 32);
         error = nil;
-        unw = [futureDocKey unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
+        unw = [futureDocKey.keySlots unwrapFileKey:kb into:obuf length:sizeof(obuf) error:&error];
         if ([keptSlots containsIndex:thisBlobIndex]) {
             /* Should succeed */
             TEST_UNW_SUCCEEDED;
@@ -743,6 +744,38 @@ static void wrXY(char *into, int x, int y)
             }
         }
     }
+}
+
+/// Exploratory test for bug:///142883 (iOS-OmniFocus Crasher: Needs Repro: Crash on decryption)
+- (void)testDecryptionNullPlaintextPointer:(enum OFSDocumentKeySlotType)keyType;
+{
+    NSError * __autoreleasing error = nil;
+    
+    OFSMutableDocumentKey *docKey;
+    OFSSegmentDecryptWorker *decryptor;
+    size_t offset = 0;
+    
+    OBShouldNotError(docKey = [[OFSMutableDocumentKey alloc] initWithData:nil error:&error]);
+    [docKey.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:NO generate:keyType];
+    
+    NSData *plaintext = [@"foo" dataUsingEncoding:NSUTF8StringEncoding]; // short enough to fit in one encrypted segment
+    NSData *ciphertext;
+    
+    OBShouldNotError(ciphertext = [[docKey encryptionWorker:&error] encryptData:plaintext error:&error]);
+        
+    // Break out the decryption pass, calling into the buffer method directly, so we can deliberately pass a bad out pointer and see what happens.
+    offset = 0;
+    NSRange derivationInfoLocation = { 0, 0 };
+    OBShouldNotError([OFSSegmentDecryptWorker parseHeader:ciphertext truncated:NO wrappedInfo:&derivationInfoLocation dataOffset:&offset error:&error]);
+    OBShouldNotError(decryptor = [OFSSegmentDecryptWorker decryptorForWrappedKey:[ciphertext subdataWithRange:derivationInfoLocation] documentKey:docKey.keySlots error:&error]);
+    
+    const uint8_t *cipherBytes = [ciphertext bytes];
+    NSUInteger segmentStart = NSMaxRange(derivationInfoLocation);
+    NSUInteger segmentLength = [ciphertext length] - segmentStart;
+    const uint8_t *segment = cipherBytes + segmentStart;
+    uint8_t *result = (uint8_t * _Nonnull)NULL; // Fake out the compiler into letting us pass NULL
+    XCTAssertThrows([decryptor decryptBuffer:(segment + SEGMENT_HEADER_LEN) range:NSMakeRange(0, segmentLength - SEGMENT_HEADER_LEN) index:0 into:result header:segment error:&error]);
+    // N.B. I'm fairly sure that the range passed in above is incorrect, but since we expect to crash before actually decoding any data, I'm leaving it for now. A better reference point for readers is -[OFSSegmentDecryptWorker(OneShot) decryptData:dataOffset:error:].
 }
 
 @end
@@ -819,7 +852,7 @@ static ODAVTestServer *srv;
 - (OFSEncryptingFileManager *)initializedWrapper:(OFSFileManager *)fm
 {
     OFSMutableDocumentKey *keys = [[OFSMutableDocumentKey alloc] initWithData:nil error:NULL];
-    [keys discardKeysExceptSlots:nil retireCurrent:NO generate:SlotTypeActiveAES_CTR_HMAC];
+    [keys.mutableKeySlots discardKeysExceptSlots:nil retireCurrent:NO generate:SlotTypeActiveAES_CTR_HMAC];
     if (![keys setPassword:self.password error:NULL]) {
         XCTFail(@"Could not generate document key");
         return nil;
@@ -929,8 +962,8 @@ static ODAVTestServer *srv;
     XCTAssertEqualObjects(testData2, roundtrip);
     
     OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
-    NSIndexSet *activeKeys = efm.keyStore.keySlots;
-    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots);
+    NSIndexSet *activeKeys = efm.keyStore.keySlots.keySlots;
+    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots.keySlots);
     XCTAssertEqual(activeKeys.count, (NSUInteger)1);
     NSInteger expectedKeySlot = [activeKeys firstIndex];
     
@@ -992,8 +1025,8 @@ static ODAVTestServer *srv;
     XCTAssertEqualObjects(testData1, roundtrip);
     
     OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
-    NSIndexSet *activeKeys = efm.keyStore.keySlots;
-    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots);
+    NSIndexSet *activeKeys = efm.keyStore.keySlots.keySlots;
+    XCTAssertEqualObjects(activeKeys, rfm.keyStore.keySlots.keySlots);
     NSArray *infos;
     OBShouldNotError(infos = [rfm directoryContentsAtURL:rfm.baseURL collectingRedirects:nil error:&error]);
 

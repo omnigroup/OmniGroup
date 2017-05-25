@@ -86,9 +86,7 @@ RCS_ID("$Id$");
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
-    if (reason != OUIInspectorUpdateReasonDismissed) {
-        [self reloadTableAndResize];
-    }
+    [self reloadTableAndResize];
 }
 
 #pragma mark - UIViewController subclass

@@ -45,6 +45,12 @@ OBDEPRECATED_METHOD(-handleRunException:)
 OBDEPRECATED_METHOD(-handleInitException:)
 OBDEPRECATED_METHOD(-currentRunExceptionPanel)
 
+@interface OAApplication ()
+
+@property (nonatomic, assign) BOOL isTerminating;
+
+@end
+
 @implementation OAApplication
 {
     NSTimeInterval lastEventTimeInterval;
@@ -465,6 +471,12 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         [super reportException:anException];
 }
 
+- (void)terminate:(id)sender
+{
+    self.isTerminating = YES;
+    [super terminate:sender];
+}
+
 #pragma mark NSResponder subclass
 
 - (void)presentError:(NSError *)error modalForWindow:(NSWindow *)window delegate:(id)delegate didPresentSelector:(SEL)didPresentSelector contextInfo:(void *)contextInfo;
@@ -480,7 +492,13 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         NSBeep();
         return;
     }
-    
+
+    if (self.isTerminating) {
+        // Can’t run a modal error while terminating. This avoids a crash-on-quit.
+        NSLog(@"%s called while terminating with error: %@", __PRETTY_FUNCTION__, error);
+        return;
+    }
+
     // nil/NULL here can crash in the superclass crash trying to build an NSInvocation from this goop.  Let's not.
     if (!delegate) {
         delegate = self;

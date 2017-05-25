@@ -18,6 +18,10 @@
 		1E1B38111C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */; };
 		1E1B38121C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */; };
 		1E1B38131C1F97D3004402A9 /* OFSEncryption-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */; };
+		1E3AF1121E8B04A6008CD83C /* OFSKeySlots.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3AF1101E8B04A6008CD83C /* OFSKeySlots.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E3AF1131E8B04A6008CD83C /* OFSKeySlots.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E3AF1111E8B04A6008CD83C /* OFSKeySlots.m */; };
+		1E3AF1141E8B04C0008CD83C /* OFSKeySlots.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E3AF1101E8B04A6008CD83C /* OFSKeySlots.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1E3AF1151E8B04CA008CD83C /* OFSKeySlots.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E3AF1111E8B04A6008CD83C /* OFSKeySlots.m */; };
 		1E6A38F21C225DC100B8D56A /* template-simpledav.conf in Resources */ = {isa = PBXBuildFile; fileRef = 1E6A38F11C225DC100B8D56A /* template-simpledav.conf */; };
 		1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E6CB90A1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m */; };
@@ -79,6 +83,14 @@
 		34FA1FBF1B5EF50000ED0B6F /* ru.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBF4185F991900EFB846 /* ru.lproj */; };
 		34FA1FC01B5EF50000ED0B6F /* zh-Hans.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBF5185F991900EFB846 /* zh-Hans.lproj */; };
 		34FA1FC21B5EF53E00ED0B6F /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC10F71F9D80096AADB /* OmniBase.framework */; };
+		3EB714471EAA84DA007B6447 /* OFSSegmentedEncryptionProviderAcceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */; };
+		3EB714481EAA84DA007B6447 /* OFSSegmentedEncryptionProviderAcceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */; };
+		3EB714491EAA84DD007B6447 /* OFSSegmentedEncryptionProviderAcceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B38081C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EB7144A1EAA84DD007B6447 /* OFSSegmentedEncryptionProviderAcceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E1B38081C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EB7144B1EAA84F3007B6447 /* OFSFileByteAcceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E9BC7E91A70405D00882D0B /* OFSFileByteAcceptor.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EB7144C1EAA84F4007B6447 /* OFSFileByteAcceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E9BC7E91A70405D00882D0B /* OFSFileByteAcceptor.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		3EB7144D1EAA84F8007B6447 /* OFSFileByteAcceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9BC7EA1A70405D00882D0B /* OFSFileByteAcceptor.m */; };
+		3EB7144E1EAA84F8007B6447 /* OFSFileByteAcceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E9BC7EA1A70405D00882D0B /* OFSFileByteAcceptor.m */; };
 		3EDE64811CF3B74F00ACE7CC /* OFSDocumentKey-KeychainStorageSupport-iOS.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E4659161C619DDE005F315E /* OFSDocumentKey-KeychainStorageSupport-iOS.m */; };
 		3EE57CAB1D6773D6006F6304 /* OFSDocumentKey-KeychainStorageSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EDE64821CF3B96400ACE7CC /* OFSDocumentKey-KeychainStorageSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EE57CAC1D6773D6006F6304 /* OFSDocumentKey-KeychainStorageSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EDE64821CF3B96400ACE7CC /* OFSDocumentKey-KeychainStorageSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -119,6 +131,8 @@
 		1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSSegmentedEncryptionProviderAcceptor.m; sourceTree = "<group>"; };
 		1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFSEncryption-Internal.h"; sourceTree = "<group>"; };
 		1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFSEncryption-Internal.m"; sourceTree = "<group>"; };
+		1E3AF1101E8B04A6008CD83C /* OFSKeySlots.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSKeySlots.h; sourceTree = "<group>"; };
+		1E3AF1111E8B04A6008CD83C /* OFSKeySlots.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSKeySlots.m; sourceTree = "<group>"; };
 		1E4659161C619DDE005F315E /* OFSDocumentKey-KeychainStorageSupport-iOS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFSDocumentKey-KeychainStorageSupport-iOS.m"; sourceTree = "<group>"; };
 		1E6A38F11C225DC100B8D56A /* template-simpledav.conf */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "template-simpledav.conf"; path = "Test/LocalWebDAVServer/template-simpledav.conf"; sourceTree = SOURCE_ROOT; };
 		1E6CB9091A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSSegmentedEncryptionWorker.h; sourceTree = "<group>"; };
@@ -342,6 +356,8 @@
 				1E1B38091C1F96B5004402A9 /* OFSSegmentedEncryptionProviderAcceptor.m */,
 				1E1B380E1C1F97D3004402A9 /* OFSEncryption-Internal.h */,
 				1E1B380F1C1F97D3004402A9 /* OFSEncryption-Internal.m */,
+				1E3AF1101E8B04A6008CD83C /* OFSKeySlots.h */,
+				1E3AF1111E8B04A6008CD83C /* OFSKeySlots.m */,
 				1EF8306C1A01C046006CBDA3 /* OFSDocumentKey.h */,
 				3EE57CAA1D677151006F6304 /* OFSDocumentKey-Internal.h */,
 				1EF8306D1A01C046006CBDA3 /* OFSDocumentKey.m */,
@@ -444,11 +460,14 @@
 				34415DB71BE06A58001EE0F7 /* OmniFileStore.h in Headers */,
 				3474D9A61B5EF2EE0084B8AE /* OFSFileOperation.h in Headers */,
 				1EE97FD91B8BF6DB00E0943F /* OFSEncryptingFileManager.h in Headers */,
+				3EB7144B1EAA84F3007B6447 /* OFSFileByteAcceptor.h in Headers */,
 				1EE97FDB1B8BF6E900E0943F /* OFSSegmentedEncryptionWorker.h in Headers */,
+				3EB7144A1EAA84DD007B6447 /* OFSSegmentedEncryptionProviderAcceptor.h in Headers */,
 				3474D9A31B5EF2EE0084B8AE /* OFSFileManagerDelegate.h in Headers */,
 				1E946FF51BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */,
 				1EE97FDF1B8BF6FE00E0943F /* OFSDocumentKey.h in Headers */,
 				3EE57CAC1D6773D6006F6304 /* OFSDocumentKey-KeychainStorageSupport.h in Headers */,
+				1E3AF1141E8B04C0008CD83C /* OFSKeySlots.h in Headers */,
 				1E1B38111C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -465,11 +484,14 @@
 				3469F30A10FD900100FF0307 /* OFSFileManagerDelegate.h in Headers */,
 				34415DB61BE06A58001EE0F7 /* OmniFileStore.h in Headers */,
 				34B5E45012773A810007C4E3 /* OFSFileOperation.h in Headers */,
+				3EB7144C1EAA84F4007B6447 /* OFSFileByteAcceptor.h in Headers */,
 				1E6CB90B1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.h in Headers */,
+				3EB714491EAA84DD007B6447 /* OFSSegmentedEncryptionProviderAcceptor.h in Headers */,
 				1EF8B67619A43214002590DF /* OFSEncryptingFileManager.h in Headers */,
 				1E946FF41BFD3DD900BD102C /* OFSEncryptionConstants.h in Headers */,
 				34201EE21464897900A45403 /* OFSFeatures.h in Headers */,
 				3EE57CAB1D6773D6006F6304 /* OFSDocumentKey-KeychainStorageSupport.h in Headers */,
+				1E3AF1121E8B04A6008CD83C /* OFSKeySlots.h in Headers */,
 				1E1B38101C1F97D3004402A9 /* OFSEncryption-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -651,7 +673,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3474D9AB1B5EF2EE0084B8AE /* Errors.m in Sources */,
+				1E3AF1151E8B04CA008CD83C /* OFSKeySlots.m in Sources */,
+				3EB714471EAA84DA007B6447 /* OFSSegmentedEncryptionProviderAcceptor.m in Sources */,
 				3EDE64811CF3B74F00ACE7CC /* OFSDocumentKey-KeychainStorageSupport-iOS.m in Sources */,
+				3EB7144D1EAA84F8007B6447 /* OFSFileByteAcceptor.m in Sources */,
 				3474D9A71B5EF2EE0084B8AE /* OFSFileOperation.m in Sources */,
 				3474D9A51B5EF2EE0084B8AE /* OFSFileFileManager.m in Sources */,
 				1EE97FDA1B8BF6E500E0943F /* OFSEncryptingFileManager.m in Sources */,
@@ -668,7 +693,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				3444B06B0F71FFFF005CFD59 /* OFSDAVFileManager.m in Sources */,
+				1E3AF1131E8B04A6008CD83C /* OFSKeySlots.m in Sources */,
+				3EB714481EAA84DA007B6447 /* OFSSegmentedEncryptionProviderAcceptor.m in Sources */,
 				3EE57CAE1D677AB1006F6304 /* OFSDocumentKey-KeychainStorageSupport-OSX.m in Sources */,
+				3EB7144E1EAA84F8007B6447 /* OFSFileByteAcceptor.m in Sources */,
 				3444B06F0F71FFFF005CFD59 /* OFSFileFileManager.m in Sources */,
 				1E6CB90D1A67309000B6D4AF /* OFSSegmentedEncryptionWorker.m in Sources */,
 				1EF830701A01C046006CBDA3 /* OFSDocumentKey.m in Sources */,
@@ -754,6 +782,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE880F71F89C0096AADB /* Omni-Bundle-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				INFOPLIST_FILE = Test/Unit/Info.plist;
@@ -767,6 +796,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE890F71F89C0096AADB /* Omni-Bundle-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				INFOPLIST_FILE = Test/Unit/Info.plist;

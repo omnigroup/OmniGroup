@@ -327,7 +327,7 @@ static NSDateFormatter *HttpDateFormatter;
             }
         }
         
-        if (result == nil && ([fileInfoError causedByUnreachableHost] || [fileInfoError causedByPermissionFailure])) {
+        if (result == nil && ([fileInfoError causedByUnreachableHost] || [fileInfoError causedByDAVPermissionFailure])) {
             COMPLETE_AND_RETURN(nil, fileInfoError);  // If we're not connected to the Internet, then no other error is particularly relevant
         }
         

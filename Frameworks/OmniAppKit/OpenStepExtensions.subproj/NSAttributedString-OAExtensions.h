@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,8 @@
 - (BOOL)containsAttachments;
 - (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
 
-- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange, OATextAttachment *, BOOL *stop))applier;
+- (void)eachAttachmentInRange:(NSRange)range action:(void (^ NS_NOESCAPE)(NSRange attachmentRange, __kindof OATextAttachment *attachment, BOOL *stop))applier;
+- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange attachmentRange, __kindof OATextAttachment *attachment, BOOL *stop))applier;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;

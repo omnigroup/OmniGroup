@@ -84,6 +84,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 @property (readonly) BOOL wantsHeader;
 @property (readonly) BOOL isCollapsible;
+@property (readonly) BOOL pinningDisabled;
 
 @end
 

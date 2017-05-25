@@ -165,7 +165,6 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 {
     [super setTitle:title];
     _documentTitleView.title = title;
-    [_documentTitleView sizeToFit];
 }
 
 // We allow overriding the title temporarily (while in Edit mode on the toolbar, for example, to display instructional text). When the titleView is set back to nil we use our normal rename UI.
@@ -318,6 +317,10 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 - (void)documentTitleView:(OUIDocumentTitleView *)documentTitleView titleTapped:(id)sender;
 {
+    if (_renaming) {
+        return;
+    }
+    
     _renaming = YES;
     [self _updateItemsForRenaming];
 }

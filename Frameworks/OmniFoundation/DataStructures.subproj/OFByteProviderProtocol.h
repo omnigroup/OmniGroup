@@ -45,6 +45,7 @@ typedef void (^OFByteProviderBufferRelease)(void);
 
 @optional
 
+- (void)flushByteAcceptor;
 - (NSError *)error;
 
 @end

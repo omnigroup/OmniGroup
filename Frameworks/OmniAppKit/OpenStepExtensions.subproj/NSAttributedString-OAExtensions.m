@@ -65,24 +65,32 @@ RCS_ID("$Id$")
     return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
 }
 
-- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange, OATextAttachment *, BOOL *stop))applier;
+- (void)eachAttachmentInRange:(NSRange)range action:(void (^ NS_NOESCAPE)(NSRange attachmentRange, __kindof OATextAttachment *attachment, BOOL *stop))applier;
 {
     NSString *string = [self string];
     NSString *attachmentString = [NSAttributedString attachmentString];
-    
-    NSUInteger location = 0, end = [self length];
+
+    NSUInteger location = range.location, end = NSMaxRange(range);
     BOOL stop = NO;
     while (location < end && !stop) {
-        NSRange attachmentRange = [string rangeOfString:attachmentString options:0 range:NSMakeRange(location,end-location)];
+        NSRange attachmentRange = [string rangeOfString:attachmentString options:NSLiteralSearch range:NSMakeRange(location,end-location)];
         if (attachmentRange.length == 0)
             break;
-        
+
         OATextAttachment *attachment = [self attribute:NSAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
-        OBASSERT(attachment);
-        applier(attachmentRange, attachment, &stop);
-        
+
+        // It is possible to have stray attachment characters without an attachment.
+        if (attachment) {
+            applier(attachmentRange, attachment, &stop);
+        }
+
         location = NSMaxRange(attachmentRange);
     }
+}
+
+- (void)eachAttachment:(void (^ NS_NOESCAPE)(NSRange attachmentRange, __kindof OATextAttachment *attachment, BOOL *stop))applier;
+{
+    [self eachAttachmentInRange:NSMakeRange(0, [self length]) action:applier];
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

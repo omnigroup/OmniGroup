@@ -508,7 +508,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
-        Class cls = [[OUIDocumentAppController controller] documentClassForURL:templateFileItem.fileURL];
+        Class cls = [[OUIDocumentAppController controller] documentClassForURL:temporaryURL];
         
         // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
         
@@ -779,8 +779,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)_revealButDontActivateNewDocumentFileItem:(ODSFileItem *)createdFileItem completionHandler:(void (^)(void))completionHandler;
 {
-    // Touch just to make sure the date is updated
-    [[NSFileManager defaultManager] touchItemAtURL:[createdFileItem fileURL] error:NULL];
     // do some scrolling
     [self ensureSelectedFilterMatchesFileItem:createdFileItem];
     [self scrollItemToVisible:createdFileItem animated:YES];
@@ -1328,6 +1326,15 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 }
 
 #pragma mark - OUIDocumentExporterHost protocol
+
+- (NSArray *)fileItemsToExport
+{
+    NSMutableArray *files = [NSMutableArray array];
+    for (ODSFileItem *item in self.selectedItems)
+        if ([item isKindOfClass:[ODSFileItem class]])
+            [files addObject:item];
+    return files;
+}
 
 - (ODSFileItem *)fileItemToExport
 {
@@ -2421,12 +2428,6 @@ static UIImage *ImageForScope(ODSScope *scope) {
             [self deleteBarButtonItem].enabled = NO;
         } else {
             BOOL isViewingTrash = self.selectedScope.isTrash;
-            ODSFileItem *singleSelectedFileItem = (count == 1) ? self.singleSelectedFileItem : nil;
-            
-            // Disable the export option while in the trash. We also don't support exporting multiple documents at the same time.
-            BOOL canExport = !isViewingTrash && (singleSelectedFileItem != nil);
-            if (canExport)
-                canExport = [_exporter canExportFileItem:singleSelectedFileItem];
             
             BOOL canMove;
             if (isViewingTrash)
@@ -2438,7 +2439,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             else
                 canMove = NO;
             
-            _exportBarButtonItem.enabled = canExport;
+            _exportBarButtonItem.enabled = !isViewingTrash;
             _moveBarButtonItem.enabled = canMove;
             _duplicateDocumentBarButtonItem.enabled = YES;
             [self deleteBarButtonItem].enabled = YES; // Deletion while in the trash is just an immediate removal.

@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 @interface OFSFileByteAcceptor : NSObject <OFByteProvider, OFByteAcceptor>
 
 - (instancetype)initWithFileDescriptor:(int)fd closeOnDealloc:(BOOL)closeopt;
+
+// Redeclared from OFByteAcceptor to make them non-@optional
 - (NSError *)error;
 - (void)flushByteAcceptor;
 

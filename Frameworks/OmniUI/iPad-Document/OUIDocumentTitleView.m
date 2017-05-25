@@ -54,8 +54,9 @@ static void _commonInit(OUIDocumentTitleView *self)
     self->_titleColor = [UIColor blackColor];
     [self _updateTitles];
     
+    UIImage *syncImage = [UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     self->_syncButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self->_syncButton setImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+    [self->_syncButton setImage:syncImage forState:UIControlStateNormal];
     self->_syncButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self->_syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self->_syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
@@ -63,8 +64,9 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self->_syncButton addTarget:self action:@selector(_syncButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     self->_syncButton.hidden = YES;
     
+    UIImage *closeDocumentImage = [UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     self->_closeDocumentButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self->_closeDocumentButton setImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+    [self->_closeDocumentButton setImage:closeDocumentImage forState:UIControlStateNormal];
     self->_closeDocumentButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self->_closeDocumentButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self->_closeDocumentButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
@@ -107,7 +109,10 @@ static void _commonInit(OUIDocumentTitleView *self)
     
     self.frame = (CGRect) {
         .origin = CGPointZero,
-        .size = [self systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
+        .size = (CGSize) {
+            .width = 0, // Width will be resized via UINavigationBar during its layout.
+            .height = MAX(syncImage.size.height, closeDocumentImage.size.height) // UINavigationBar will never change our size, so we need to set that up here.
+        }
     };
 }
 
@@ -164,6 +169,10 @@ static void _commonInit(OUIDocumentTitleView *self)
 
 - (void)setTitle:(NSString *)title;
 {
+    if ([_title isEqualToString:title]) {
+        return;
+    }
+    
     _title = title;
     [self _updateTitles];
 }

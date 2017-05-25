@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -171,8 +171,12 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
 {
     NSURL *fileURL = originalFileEdit.originalFileURL;
     
-    id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
+    if (![self->_currentPreviewUpdatingFileItem isValid]) {
+        [self _finishedUpdatingPreview];
+        return;
+    }
     
+    id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
     if (![delegate previewGenerator:self shouldGeneratePreviewForURL:fileURL]) {
         [OUIDocumentPreview writeEmptyPreviewsForFileEdit:originalFileEdit];
         [self _finishedUpdatingPreview];
