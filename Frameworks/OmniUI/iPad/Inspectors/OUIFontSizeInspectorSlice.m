@@ -212,7 +212,6 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
 
 #pragma mark - UIViewController subclass
 
-static const CGFloat buttonWidth = 30;
 static const CGFloat fontSizeLabelWidth = 125.0f;
 static const CGFloat fontSizeControlWidth = 100.0f;
 
@@ -220,6 +219,7 @@ static const CGFloat fontSizeControlWidth = 100.0f;
 {
     CGRect frame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
     
+    CGFloat buttonWidth = [OUIInspectorStepperButton stepperButtonSize].width;
     self.contentView = [[UIView alloc] init];
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     

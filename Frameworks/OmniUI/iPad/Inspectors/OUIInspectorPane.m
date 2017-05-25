@@ -82,7 +82,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     _inspectedObjects = inspectedObjects;
     
     if (self.viewLoaded) {
-        OUIInspectorUpdateReason reason = (_inspectedObjects == nil) ? OUIInspectorUpdateReasonDismissed : OUIInspectorUpdateReasonDefault;
+        OUIInspectorUpdateReason reason = (_inspectedObjects == nil) ? OUIInspectorUpdateReasonDismissed : OUIInspectorUpdateReasonNeedsReload;
         [self updateInterfaceFromInspectedObjects:reason];
     }
 }

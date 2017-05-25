@@ -46,6 +46,9 @@
 // Default documentStoreFilter's filterPredicate
 - (NSPredicate *)defaultDocumentStoreFilterFilterPredicate:(OUIDocumentPicker *)picker;
 
+// Notification that the document picker is about to appear
+- (void)documentPicker:(OUIDocumentPicker *)picker viewWillAppear:(BOOL)animated;
+
 // Your opportunity to customize the default item view before it's in its superview
 - (void)documentPicker:(OUIDocumentPicker *)picker willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
 - (void)documentPicker:(OUIDocumentPicker *)picker willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;
@@ -66,6 +69,7 @@
 // Only called if there are 2 or more files being duplicated (not if any items are folders). The return value should be a format string taking one %ld argument. The file items are provided in case the receiver would return a different title based on the file types.
 - (NSString *)documentPickerAlertTitleFormatForDuplicatingFileItems:(NSSet *)fileItems;
 
+- (BOOL)documentPickerWantsVisibleNavigationBarAtRoot:(OUIDocumentPicker *)picker;
 
 // Deprecated
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker toolbarPromptForRenamingFileItem:(ODSFileItem *)fileItem OB_DEPRECATED_ATTRIBUTE;

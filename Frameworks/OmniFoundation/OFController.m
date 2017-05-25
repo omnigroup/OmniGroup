@@ -12,7 +12,6 @@
 #import <OmniBase/OBBacktraceBuffer.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
-#import <OmniFoundation/NSThread-OFExtensions.h>
 #import <OmniFoundation/OFBacktrace.h>
 #import <OmniFoundation/OFInvocation.h>
 #import <OmniFoundation/OFObject-Queue.h>

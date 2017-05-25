@@ -430,6 +430,9 @@ RCS_ID("$Id$")
         }
     }
     
+    if ([_delegate respondsToSelector:@selector(documentPicker:viewWillAppear:)])
+        [_delegate documentPicker:self viewWillAppear:animated];
+
     [super viewWillAppear:animated];
 }
 
@@ -448,8 +451,13 @@ RCS_ID("$Id$")
     UIImage *backgroundImage;
     UIColor *barTintColor;
     NSDictionary *barTitleAttributes;
+    BOOL wantsVisibleNavigationBarAtRoot = NO;
     
-    if (!_isSetUpForCompact && (viewController == _homeScreenContainer || viewController == _homeScreenViewController)) {
+    if ([self.delegate respondsToSelector:@selector(documentPickerWantsVisibleNavigationBarAtRoot:)]) {
+        wantsVisibleNavigationBarAtRoot = [self.delegate documentPickerWantsVisibleNavigationBarAtRoot:self];
+    }
+    
+    if (!wantsVisibleNavigationBarAtRoot && (!_isSetUpForCompact && (viewController == _homeScreenContainer || viewController == _homeScreenViewController))) {
         static UIImage *blankImage;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{

@@ -129,13 +129,13 @@ RCS_ID("$Id$");
     
     [self.contentView addSubview: _fontAttributeSegmentedControl];
 
-
+    self.rightMarginLayoutConstraint = [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
     [NSLayoutConstraint activateConstraints:
      @[
        [_fontAttributeSegmentedControl.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor],
-       [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor],
+       self.rightMarginLayoutConstraint,
        [_fontAttributeSegmentedControl.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-       [self.contentView.heightAnchor constraintEqualToConstant:46.0],
+       [self.contentView.heightAnchor constraintEqualToConstant:[self sliceHeight]],
        ]
      ];
 
@@ -156,6 +156,11 @@ RCS_ID("$Id$");
     [super viewWillAppear:animated];
     [self.view setNeedsLayout];
     [self.view layoutIfNeeded];
+}
+
+- (CGFloat)sliceHeight;
+{
+    return 46;
 }
 
 #pragma mark - OUIInspectorSlice subclass

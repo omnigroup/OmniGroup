@@ -33,7 +33,7 @@ typedef struct _OFXMLParserTargetFunctions {
     
     void (*startElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName, id <OFXMLParserMultipleAttributeGenerator> multipleAttributeGenerator, id <OFXMLParserSingleAttributeGenerator> singleAttributeGenerator);
     
-    void (*endElement)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser);
+    void (*endElement)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementQName);
     void (*endUnparsedElementWithQName)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, OFXMLQName *elementName, NSString *identifier, NSData *contents);
     
     void (*addWhitespace)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
@@ -61,7 +61,7 @@ static void OFXMLParserTargetFunctionsLookup(OFXMLParserTargetFunctions *functio
     GET_IMP(addProcessingInstruction, @selector(parser:addProcessingInstructionNamed:value:));
     GET_IMP(behaviorForElementWithQName, @selector(parser:behaviorForElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:));
     GET_IMP(startElementWithQName, @selector(parser:startElementWithQName:multipleAttributeGenerator:singleAttributeGenerator:));
-    GET_IMP(endElement, @selector(parserEndElement:));
+    GET_IMP(endElement, @selector(parser:endElementWithQName:));
     GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:identifier:contents:));
     GET_IMP(addWhitespace, @selector(parser:addWhitespace:));
     GET_IMP(addString, @selector(parser:addString:));
@@ -628,8 +628,10 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
             state->rootElementFinished = YES;
     }
     
-    if (state->targetImp.endElement)
-        state->targetImp.endElement(state->target, @selector(parserEndElement:), parser);
+    if (state->targetImp.endElement) {
+        OFXMLQName *qname = OFXMLInternedNameTableGetInternedName(state->nameTable, (const char *)URI, (const char *)localname);
+        state->targetImp.endElement(state->target, @selector(parser:endElementWithQName:), parser, qname);
+    }
 
     [state->whitespaceBehaviorStack removeLastObject];
     

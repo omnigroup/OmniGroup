@@ -30,6 +30,8 @@ RCS_ID("$Id$")
 @dynamic omniNeutralPlaceholderColor;
 @dynamic omniNeutralLightweightColor;
 
+@dynamic textColorForDarkBackgroundColor;
+
 @dynamic omniDeleteColor;
 
 @dynamic omniExplanotextColor;
@@ -56,6 +58,8 @@ RCS_ID("$Id$")
 @dynamic omniNeutralDeemphasizedColor;
 @dynamic omniNeutralPlaceholderColor;
 @dynamic omniNeutralLightweightColor;
+
+@dynamic textColorForDarkBackgroundColor;
 
 @dynamic omniDeleteColor;
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group.  All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,9 +53,9 @@ static id _commonInit(OUIInspectorButton *self)
 
 #pragma mark - UIView subclass
 
-- (CGSize)sizeThatFits:(CGSize)size;
+- (CGSize)intrinsicContentSize
 {
-    return CGSizeMake(size.width, [[self class] buttonHeight]);
+    return CGSizeMake(UIViewNoIntrinsicMetric, [[self class] buttonHeight]);
 }
 
 - (void)tintColorDidChange;

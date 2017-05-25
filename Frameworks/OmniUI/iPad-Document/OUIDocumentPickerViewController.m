@@ -471,9 +471,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:templateFileItem];
         UIView *view = _documentPicker.navigationController.topViewController.view;
         if (fileItemView)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:view.window.tintColor];
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
         else
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:view.window.tintColor];
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
     }
 
     // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
@@ -1626,7 +1626,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 UIPreviewAction *exportAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Export…", @"OmniUIDocument", OMNI_BUNDLE, @"Export document preview action title.")
                                                                            style:UIPreviewActionStyleDefault
                                                                          handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewViewController) {
-                                                                             [_exporter exportItem:fileItem];
+                                                                             [_exporter exportItem:fileItem sender:nil];
                                                                          }];
                 [documentPreviewingViewController addPreviewAction:exportAction];
                 
@@ -2552,7 +2552,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     UIFont *titleFont = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     NSString *title = OBUnlocalized(@"Title"); // Configured later -- possibly remove this...
     _titleLabelToUseInCompactWidth.font = titleFont;
-    _titleLabelToUseInCompactWidth.textColor = [UIColor darkTextColor];
+    _titleLabelToUseInCompactWidth.textColor = [[OmniUIDocumentAppearance appearance] documentPickerTintColorAgainstBackground];
     _titleLabelToUseInCompactWidth.textAlignment = NSTextAlignmentCenter;
     _titleLabelToUseInCompactWidth.contentMode = UIViewContentModeBottom;
     _titleLabelToUseInCompactWidth.text = title;
@@ -2697,7 +2697,11 @@ static UIImage *ImageForScope(ODSScope *scope) {
         }];
         for (NSUInteger i = 0; i < filterTitles.count; i++) {
             NSString *title = filterTitles[i];
-            [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
+            // it is possible to add filters when pro becomes unlocked, so need to handle additions
+            if (self.filtersSegmentedControl.numberOfSegments <= i)
+                [self.filtersSegmentedControl insertSegmentWithTitle:title atIndex:i animated:NO];
+            else
+                [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
         }
         [self.filtersSegmentedControl sizeToFit];
         
@@ -2749,7 +2753,11 @@ static UIImage *ImageForScope(ODSScope *scope) {
         }];
         for (NSUInteger i = 0; i < filterTitles.count; i++) {
             NSString *title = filterTitles[i];
-            [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
+            // it is possible to add filters when pro becomes unlocked, so need to handle additions
+            if (self.filtersSegmentedControl.numberOfSegments <= i)
+                [self.filtersSegmentedControl insertSegmentWithTitle:title atIndex:i animated:NO];
+            else
+                [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
         }
         [self.filtersSegmentedControl sizeToFit];
         

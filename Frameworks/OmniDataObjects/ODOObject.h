@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class NSString, NSArray, NSError, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
-@interface ODOObject : NSObject {
+@interface ODOObject : OFObject {
   @package
     ODOEditingContext *_editingContext;
     ODOObjectID *_objectID;

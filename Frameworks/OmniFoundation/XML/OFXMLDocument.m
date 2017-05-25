@@ -48,6 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 
     // Support for callers to squirrel away state and then extract it again.
     NSMutableDictionary *_userObjects;
+
+    // Set while we are parsing, in order to read the root element.
+    OFXMLElementParser *_elementParser;
+}
+
++ (Class)elementParserClass;
+{
+    return [OFXMLElementParser class];
 }
 
 - (nullable instancetype)initWithRootElement:(OFXMLElement *)rootElement
@@ -231,6 +239,11 @@ NS_ASSUME_NONNULL_BEGIN
     [_whitespaceBehavior release];
     [_userObjects release];
     [super dealloc];
+}
+
+- (__kindof OFXMLElementParser *)makeElementParser;
+{
+    return [[[OFXMLElementParser alloc] init] autorelease];
 }
 
 - (nullable NSData *)xmlData:(NSError **)outError;
@@ -567,115 +580,29 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 {
-    OBPRECONDITION(qname);
+    OBPRECONDITION(_elementParser);
 
-    OFXMLElement *element;
-    
-    if (multipleAttributeGenerator) {
-        __block NSMutableArray *attributeOrder = nil;
-        __block NSMutableDictionary *attributeDictionary = nil;
-        
-        [multipleAttributeGenerator generateAttributesWithPlainNames:^(NSMutableArray<NSString *> *names, NSMutableDictionary<NSString *,NSString *> *values) {
-            // We are *not* copying these since OFXMLParser specifically yields mutable instances for its target to take over.
-            attributeOrder = [names retain];
-            attributeDictionary = [values retain];
-        }];
-        
-        element = [[OFXMLElement alloc] initWithName:qname.name attributeOrder:attributeOrder attributes:attributeDictionary];
-        [attributeOrder release];
-        [attributeDictionary release];
-    } else if (singleAttributeGenerator) {
-        __block NSString *attributeName = nil;
-        __block NSString *attributeValue = nil;
-
-        [singleAttributeGenerator generateAttributeWithPlainName:^(NSString *name, NSString *value) {
-            attributeName = [name copy];
-            attributeValue = [value copy];
-        }];
-        
-        element = [[OFXMLElement alloc] initWithName:qname.name attributeName:attributeName attributeValue:attributeValue];
-        [attributeName release];
-        [attributeValue release];
-    } else {
-        element = [[OFXMLElement alloc] initWithName:qname.name];
-    }
-
-    
-    if (!_rootElement) {
-        _rootElement = [element retain];
-        OBASSERT([_elementStack count] == 0);
-        [_elementStack addObject: _rootElement];
-    } else {
-        OBASSERT([_elementStack count] != 0);
-        [[_elementStack lastObject] appendChild: element];
-        [_elementStack addObject: element];
-    }
-    [element release];
-    
-    OBPOSTCONDITION([_elementStack count] == parser.elementDepth);
+    // Delegate parsing for the root element.
+    parser.target = _elementParser;
+    [_elementParser parser:parser startElementWithQName:qname multipleAttributeGenerator:multipleAttributeGenerator singleAttributeGenerator:singleAttributeGenerator];
 }
 
-// Should only be called if the whitespace behavior indicates we wanted it and we are inside the root element.
-- (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
-{
-    OBPRECONDITION(_rootElement);
+#pragma mark - OFXMLElementParserDelegate
 
-    // Note that we are not calling -_addString: here since that does string merging but whitespace should (I think) only be reported in cases where we don't want it merged or it can't be merged.  This needs more investigation and test cases, etc.
-    [self.topElement appendChild:whitespace];
+- (OFXMLParserElementBehavior)elementParser:(OFXMLElementParser *)elementParser behaviorForElementWithQName:(OFXMLQName *)name multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
+{
+    // We could maybe call the optional OFXMLParserTarget method on ourselves, but that's a bit odd since if this gets called, we aren't the target. Instead, subclasses can override this required delegate method.
+    return OFXMLParserElementBehaviorParse;
 }
 
-// If the last child of the top element is a string, replace it with the concatenation of the two strings.
-// TODO: Later we should have OFXMLString be an array of strings that is lazily concatenated to avoid slow degenerate cases (and then replace the last string with a OFXMLString with the two elements).  Actually, it might be better to just stick in an NSMutableArray of strings and then clean it up when the element is finished.
-- (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+- (void)elementParser:(OFXMLElementParser *)elementParser parser:(OFXMLParser *)parser parsedElement:(OFXMLElement *)element;
 {
-    OFXMLElement *top = self.topElement;
-    NSArray *children = top.children;
-    NSUInteger count = [children count];
-    
-    if (count) {
-        id lastChild = [children lastObject];
-        if ([lastChild isKindOfClass:[NSString class]]) {
-            NSString *newString = [[NSString alloc] initWithFormat: @"%@%@", lastChild, string];
-            [top removeChildAtIndex:count - 1];
-            [top appendChild:newString];
-            [newString release];
-            return;
-        }
-    }
-    
-    [top appendChild:string];
-}
+    OBPRECONDITION(_rootElement == nil);
 
-- (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
-{
-    OFXMLElement *top = self.topElement;
-    OFXMLComment *comment = [[OFXMLComment alloc] initWithString:string];
-    [top appendChild:comment];
-    [comment release];
-}
+    _rootElement = [element retain];
 
-- (void)parserEndElement:(OFXMLParser *)parser;
-{
-    OBPRECONDITION([_elementStack count] != 0);
-    
-    OFXMLElement *element = [_elementStack lastObject];
-    if (_rootElement == element)
-        return;
-    
-    [_elementStack removeLastObject];
-    
-    OBPOSTCONDITION([_elementStack count] == parser.elementDepth);
-}
-
-- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
-{
-    OBPRECONDITION(_rootElement);
-    
-    OFXMLUnparsedElement *element = [[OFXMLUnparsedElement alloc] initWithQName:qname identifier:identifier data:contents];
-    [self.topElement appendChild:element];
-    [element release];
-    
-    OBPOSTCONDITION([_elementStack count] == parser.elementDepth);
+    OBASSERT([_elementStack count] == 0);
+    [_elementStack addObject: _rootElement];
 }
 
 #pragma mark - Debugging
@@ -733,6 +660,9 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[self whitespaceBehavior] defaultWhitespaceBehavior:defaultWhitespaceBehavior target:self];
 
+    _elementParser = [[self makeElementParser] retain];
+    _elementParser.delegate = self;
+
     if (prepareParser) {
         prepareParser(self, parser);
     }
@@ -745,7 +675,10 @@ NS_ASSUME_NONNULL_BEGIN
     OBASSERT(_rootElement);
     
     _stringEncoding = parser.encoding;
-    
+
+    [_elementParser release];
+    _elementParser = nil;
+
     [_loadWarnings release];
     _loadWarnings = nil;
     

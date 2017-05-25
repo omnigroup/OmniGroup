@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -545,23 +545,19 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         return _horizontalSeparatorGradient;
     }
    
-    UIColor *gradientStartColor;
-    UIColor *gradientEndColor;
-    if (self.appearanceDelegate != nil) {
-        if ([self.appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)]) {
-        gradientStartColor = self.appearanceDelegate.horizontalTabBottomStrokeColor;
-        }
-        if ([self.appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
-        gradientEndColor = self.appearanceDelegate.horizontalTabSeparatorTopColor;
-        }
-    }
+    UIColor *gradientStartColor = nil;
+    UIColor *gradientEndColor = nil;
 
-    if (gradientStartColor == nil) {
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)] && [self.appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
+        gradientStartColor = self.appearanceDelegate.horizontalTabBottomStrokeColor;
+        gradientEndColor = self.appearanceDelegate.horizontalTabSeparatorTopColor;
+    } else {
         gradientStartColor = [UIColor colorWithWhite:0.80 alpha:1.0];
-    }
-    if (gradientEndColor == nil) {
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
     }
+
+    OBASSERT(gradientStartColor != nil);
+    OBASSERT(gradientEndColor != nil);
     
     NSArray *colors = @[(id)gradientStartColor.CGColor, (id)gradientEndColor.CGColor];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -579,20 +575,20 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         return _verticalSeparatorGradient;
     }
     
-    UIColor *gradientStartColor;
-    UIColor *gradientEndColor;
-    if (self.appearanceDelegate != nil) {
-        if ([self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeFadeToColor)]) {
+    UIColor *gradientStartColor = nil;
+    UIColor *gradientEndColor = nil;
+
+    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeFadeToColor)] && [self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeColor)]) {
         gradientStartColor = self.appearanceDelegate.verticalTabRightEdgeFadeToColor;
-        }
-        if ([self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeColor)]) {
         gradientEndColor = self.appearanceDelegate.verticalTabRightEdgeColor;
-        }
     } else {
         gradientStartColor = [UIColor colorWithWhite:0.96 alpha:0.0];
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
     }
     
+    OBASSERT(gradientStartColor != nil);
+    OBASSERT(gradientEndColor != nil);
+
     NSArray *colors = @[(id)gradientStartColor.CGColor, (id)gradientEndColor.CGColor];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     

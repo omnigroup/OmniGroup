@@ -772,13 +772,14 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
  */
 - (void)autosaveWithCompletionHandler:(void (^)(BOOL))completionHandler;
 {
-    OBPRECONDITION([self hasUnsavedChanges]);
     OBPRECONDITION(![self.undoManager isUndoing]);
     OBPRECONDITION(![self.undoManager isRedoing]);
     
     DEBUG_UNDO(@"Autosave running...");
 
-    [self _willSave];
+    if ([self hasUnsavedChanges]) { // If we somehow end up here with unsaved changes, don't call -_willSave.
+        [self _willSave];
+    }
 
     [super autosaveWithCompletionHandler:^(BOOL success){
         DEBUG_UNDO(@"  Autosave success = %d", success);

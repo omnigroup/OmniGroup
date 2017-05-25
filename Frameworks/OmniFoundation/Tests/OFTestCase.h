@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import "OBTestCase.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OFTestCase : OBTestCase
 
@@ -52,6 +54,7 @@ typedef BOOL (^OFDiffFileCompareData)(NSString *relativePath1, NSData *data1,
 @property(nonatomic,copy) OFDiffFileCompareData compareData; // Only used if the two data objects are not -isEqual:. This can do semantic comparisons (like unarchiving and comparing the unarchived versions).
 @end
 
-extern BOOL OFSameFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFileOperations *operations); // query, not required
-extern void OFDiffFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFileOperations *operations); // fails if the files aren't the same
+extern BOOL OFSameFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFileOperations * _Nullable operations); // query, not required
+extern void OFDiffFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFileOperations * _Nullable operations); // fails if the files aren't the same
 
+NS_ASSUME_NONNULL_END

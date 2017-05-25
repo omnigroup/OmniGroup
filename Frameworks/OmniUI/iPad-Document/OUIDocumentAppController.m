@@ -456,10 +456,10 @@ static unsigned SyncAgentRunningAccountsContext;
     if (!isOpeningFromPeek) {
         OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
         if (fileItemView) {
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:self.window.tintColor];
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
         }
         else if (self.window.rootViewController == _documentPicker) {
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:self.window.tintColor];
+            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:UIColor.whiteColor];
         }
     }
     
@@ -969,6 +969,9 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     OUIDocumentPickerViewController *scopeViewController = _documentPicker.selectedScopeViewController;
     if (scopeViewController != nil && scopeViewController.canAddDocuments && !scopeViewController.selectedScope.isExternal) {
         switch (position) {
+            case OUIAppMenuOptionPositionBeforeReleaseNotes:
+                break;
+
             case OUIAppMenuOptionPositionAfterReleaseNotes:
             {
                 UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
@@ -1384,6 +1387,11 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     // Okay to do nothing
 }
 
+- (UIColor *)launchActivityIndicatorColor {
+    return _window.tintColor;
+}
+
+
 #pragma mark -
 #pragma mark UIApplicationDelegate
 
@@ -1670,7 +1678,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
         _documentPicker = [[OUIDocumentPicker alloc] initWithDocumentStore:_documentStore];
         _documentPicker.delegate = self;
         
-        OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge color:_window.tintColor];
+        OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge color:[self launchActivityIndicatorColor]];
         _window.rootViewController = launchViewController;
         [_window makeKeyAndVisible];
         
@@ -1735,22 +1743,22 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                                                            orShowingOnlineHelp:NO // Don't always try to open the welcome document; just if we copy samples
                                                              completionHandler:^{
                                                                  
-                                                                 // Don't start generating previews until we have decided whether to open a document at launch time (which will prevent preview generation until it is closed).
-                                                                 strongSelf->_previewGenerator = [[OUIDocumentPreviewGenerator alloc] init];
-                                                                 strongSelf->_previewGenerator.delegate = strongSelf;
-                                                                 strongSelf->_previewGeneratorForegrounded = YES;
+                    // Don't start generating previews until we have decided whether to open a document at launch time (which will prevent preview generation until it is closed).
+                    strongSelf->_previewGenerator = [[OUIDocumentPreviewGenerator alloc] init];
+                    strongSelf->_previewGenerator.delegate = strongSelf;
+                    strongSelf->_previewGeneratorForegrounded = YES;
 
-                                                                 
-                                                                 // Cache population should have already started, but we should wait for it before queuing up previews.
-                                                                 [OUIDocumentPreview afterAsynchronousPreviewOperation:^{
-                                                                     [strongSelf->_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:strongSelf->_documentStore.mergedFileItems];
-                                                                 }];
-                                                                 
-                                                                 // Without this, if we are launched in the background on 7.0b4, the snapshot image saved will not have our laid-out view contents.
-                                                                 [strongSelf->_window layoutIfNeeded];
 
-                                                                 [activity finished];
-                                                       }];
+                    // Cache population should have already started, but we should wait for it before queuing up previews.
+                    [OUIDocumentPreview afterAsynchronousPreviewOperation:^{
+                        [strongSelf->_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:strongSelf->_documentStore.mergedFileItems];
+                    }];
+
+                    // Without this, if we are launched in the background on 7.0b4, the snapshot image saved will not have our laid-out view contents.
+                    [strongSelf->_window layoutIfNeeded];
+
+                    [activity finished];
+                }];
             }];
 
         
@@ -1922,15 +1930,16 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     return YES;
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options;
 {
     // NOTE: If we are suspending launch actions (possibly due to handling a crash), _didFinishLaunching will be NO and we'd drop this on the ground. So, we add this as launch action as well. We could try to preflight the URL to see if it is certain we can't open it, but we'd have a hard time getting an accurate answer (many of the actions are async anyway).
+    BOOL shouldOpenInPlace = [options boolForKey:UIApplicationOpenURLOptionsOpenInPlaceKey];
     
     void (^launchAction)(void) = ^{
         if (!_didFinishLaunching)  // if the app is launched by an open request from another app, then this is called and then application:didFinishLaunchingWithOptions: is called
             return;            // and application:didFinishLaunchingWithOptions: handles opening the doc
         
-        DEBUG_LAUNCH(1, @"Did openURL:%@ sourceApplication:%@ annotation:%@", url, sourceApplication, annotation);
+        DEBUG_LAUNCH(1, @"Did openURL:%@ options:%@", url, options);
         
         if ([self isSpecialURL:url]) {
             _specialURLToHandle = [url copy];
@@ -1958,7 +1967,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
                 OBASSERT(_documentStore);
                 
                 void (^scanAction)(void) = ^{
-                    if (ODSIsInInbox(url)) {
+                    if (!shouldOpenInPlace || ODSIsInInbox(url)) {
                         OBASSERT(_localScope);
                         
                         [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {

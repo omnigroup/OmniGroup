@@ -1,4 +1,4 @@
-// Copyright 2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 @class OUIDocument;
 @protocol OUIDocumentViewController <NSObject>
 // Set after the view controller is returned from the subclass implementation of -[OUIDocument makeViewController] (which should _not_ set it). Cleared when the document is closed.
-@property(nonatomic, weak) OUIDocument *document;
+@property(nonatomic, weak) __kindof OUIDocument *document;
 
 @optional
 

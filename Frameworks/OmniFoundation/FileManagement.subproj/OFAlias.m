@@ -38,9 +38,13 @@ RCS_ID("$Id$");
     
     FSRef fsRef;
     AliasHandle aliasHandle = NULL;
-    
-    require(CFURLGetFSRef(urlRef, &fsRef) == true, error_out);
-    require_noerr(FSNewAlias(NULL, &fsRef, &aliasHandle), error_out);
+
+    if (!CFURLGetFSRef(urlRef, &fsRef)) {
+        goto error_out;
+    }
+    if (!FSNewAlias(NULL, &fsRef, &aliasHandle)) {
+        goto error_out;
+    }
 
     CFRelease(urlRef);
     
@@ -127,7 +131,11 @@ error_out:
             path = CFBridgingRelease(urlString);
             break;
         } else {
-            NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
+            if (result == fnfErr) {
+                // This is an expected 'error' -- ideally we'd either remove this code or pass back an NSError.
+            } else {
+                NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
+            }
         }
         
         if (result == nsvErr) {
@@ -150,7 +158,11 @@ error_out:
             path = CFBridgingRelease(aliasPath);
             break;
         } else {
-            NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
+            if (result == fnfErr) {
+                // This is an expected 'error' -- ideally we'd either remove this code or pass back an NSError.
+            } else {
+                NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
+            }
         }
     } while (0);
 

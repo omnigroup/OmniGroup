@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,11 @@ RCS_ID(")$Id$");
 
 + (instancetype)overlayViewWithMessage:(NSString *)message buttonTitle:(NSString *)buttonTitle action:(void (^)(void))action;
 {
+    return [self overlayViewWithMessage:message buttonTitle:buttonTitle customFontColor:[OAAppearanceDefaultColors appearance].textColorForDarkBackgroundColor action:action];
+}
+
++ (instancetype)overlayViewWithMessage:(NSString *)message buttonTitle:(NSString *)buttonTitle customFontColor:(UIColor *)customFontColor action:(void (^)(void))action;
+{
     static UINib *nib;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -41,21 +46,28 @@ RCS_ID(")$Id$");
     OBASSERT([topLevelObjects[0] isKindOfClass:[self class]]);
     
     OUIEmptyOverlayView *view = topLevelObjects[0];
-    [view _setUpWithMessage:message buttonTitle:buttonTitle action:action];
+    [view _setUpWithMessage:message buttonTitle:buttonTitle customFontColor:customFontColor action:action];
     
     return view;
 }
 
-- (void)_setUpWithMessage:(NSString *)message buttonTitle:(NSString *)buttonTitle action:(void (^)(void))action;
+// if you don't want a custom font color, pass nil.
+- (void)_setUpWithMessage:(NSString *)message buttonTitle:(NSString *)buttonTitle customFontColor:(UIColor *)customFontColor action:(void (^)(void))action;
 {
     OBASSERT_NOTNULL(_messageLabel);
     _messageLabel.text = message;
-    _messageLabel.textColor = [OAAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
+    if (customFontColor) {
+        _messageLabel.textColor = customFontColor;
+    } else {
+        
+    }
     
     OBASSERT_NOTNULL(_button);
     [_button setTitle:buttonTitle forState:UIControlStateNormal];
     _button.titleLabel.textAlignment = NSTextAlignmentCenter;
-    _button.tintColor = [UIColor blackColor];
+    if (customFontColor) {
+        _button.tintColor = customFontColor;
+    }
     self.buttonWidth = [NSLayoutConstraint constraintWithItem:_button
                                                     attribute:NSLayoutAttributeWidth
                                                     relatedBy:NSLayoutRelationEqual

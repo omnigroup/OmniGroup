@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,6 @@
 #import <Availability.h>
 #import <OmniFoundation/OFMessageQueue.h>
 #import <OmniFoundation/OFMessageQueueDelegateProtocol.h>
-#import <OmniFoundation/NSThread-OFExtensions.h>
 
 #import <Foundation/NSPort.h>
 #import <Foundation/NSPortMessage.h>

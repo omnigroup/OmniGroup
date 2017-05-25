@@ -65,9 +65,14 @@ RCS_ID("$Id$")
 
 - (IBAction)close:(id)sender;
 {
-    if ([_delegate respondsToSelector:@selector(webViewControllerDidClose:)]) {
-        [_delegate webViewControllerDidClose:self];
-    }
+    if ([_delegate respondsToSelector:@selector(webViewControllerShouldClose:)] && ![_delegate webViewControllerShouldClose:self])
+        return;
+
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (_closeBlock != NULL) {
+            _closeBlock(self);
+        }
+    }];
 }
 
 #pragma mark - API
@@ -126,6 +131,25 @@ RCS_ID("$Id$")
     self.onLoadJavaScripts[javaScript] = [completionHandler copy] ?: [NSNull null];
 }
 
+- (void)callJavaScript:(NSString *)javaScript completionHandler:(void (^)(id, NSError *error))completionHandler;
+{
+#ifdef DEBUG_kc
+    NSLog(@"DEBUG JAVASCRIPT: %@", javaScript);
+#endif
+    [self.webView evaluateJavaScript:javaScript completionHandler:completionHandler];
+}
+
+- (void)callJavaScriptFunction:(NSString *)function withJSONParameters:(id)parameters completionHandler:(void (^)(id, NSError *error))completionHandler;
+{
+    NSError *jsonError = nil;
+    NSString *parametersArchive = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:parameters options:0 error:&jsonError] encoding:NSUTF8StringEncoding];
+    if (parametersArchive == nil) {
+        completionHandler(nil, jsonError);
+    } else {
+        [self callJavaScript:[NSString stringWithFormat:@"%@(%@)", function, parametersArchive] completionHandler:completionHandler];
+    }
+}
+
 #pragma mark - MFMailComposeViewControllerDelegate
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
@@ -139,12 +163,32 @@ RCS_ID("$Id$")
 {
     NSURL *requestURL = [navigationAction.request URL];
 
+    // Callback
+    if (OFISEQUAL(requestURL.scheme, @"callback")) {
+        if (_callbackBlock != NULL) {
+            NSString *callback = requestURL.resourceSpecifier;
+            _callbackBlock(self, callback);
+        }
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return; // Don't load this in the WebView
+    }
+
     if (navigationAction.navigationType == WKNavigationTypeLinkActivated) {
 #ifdef DEBUG_kc
         NSLog(@"WebView link: %@", requestURL);
 #endif
 
         NSString *scheme = [[requestURL scheme] lowercaseString];
+
+        // Callback
+        if ([scheme isEqualToString:@"callback"]) {
+            if (_callbackBlock != NULL) {
+                NSString *callback = requestURL.resourceSpecifier;
+                _callbackBlock(self, callback);
+            }
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return; // Don't load this in the WebView
+        }
 
         // Mailto link
         if ([scheme isEqualToString:@"mailto"]) {
@@ -204,6 +248,11 @@ RCS_ID("$Id$")
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
 {
     [self endSpinner];
+
+    if (_reloadBlock != NULL) {
+        _reloadBlock(self, webView.URL);
+    }
+
     [self _runOnLoadJavaScripts];
 }
 
@@ -319,7 +368,7 @@ RCS_ID("$Id$")
     // Avoid creating a retain cycle here; we don't want to keep the web view alive and processing onload scripts when this view controller has been dismissed
     __weak typeof(self) weakSelf = self;
     NSString *javaScript = OB_CHECKED_CAST(NSString, [self.onLoadJavaScripts keyAtIndex:0]);
-    [self.webView evaluateJavaScript:javaScript completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+    [self.webView evaluateJavaScript:javaScript completionHandler:^(id result, NSError *error) {
         __strong typeof(self) strongSelf = weakSelf;
         if (strongSelf == nil) {
             return;

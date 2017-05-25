@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2017 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,20 +29,35 @@ static NSString * const stateNames[] = {
     [UIGestureRecognizerStateFailed]    = @"      FAILED",
 };
 
+static NSString *_stringToLog(UIGestureRecognizer *self, NSString *message) {
+    NSString *identifier = self.debugIdentifier;
+    if (identifier == nil) {
+        identifier = @": ";
+    } else {
+        identifier = [NSString stringWithFormat:@" “%@”: ", identifier];
+    }
+    return [NSString stringWithFormat:@"%@ recognizer%@%@", message, identifier, [self shortDescription]];
+}
+
+static void _logRecognizer(UIGestureRecognizer *self, NSString *message) {
+    NSLog(@"%@", _stringToLog(self, message));
+}
+
 static void _replacement_setState(UIGestureRecognizer *self, SEL _cmd, UIGestureRecognizerState state)
 {
     NSUInteger nameCount = sizeof(stateNames)/sizeof(stateNames[0]);    
-    NSString *name = @"????";
-    if (state < nameCount)
-        name = stateNames[state];
+    NSString *stateName = @"????";
+    if (state < nameCount) {
+        stateName = stateNames[state];
+    }
     
-    NSLog(@"%@ recognizer %@", name, [self shortDescription]);
+    _logRecognizer(self, stateName);
     original_setState(self, _cmd, state);
     
     UIGestureRecognizerState acceptedState = self.state;
     if (acceptedState != state) {
         // The delegate gets called in -setState:UIGestureRecognizerStateBegan and can refuse to begin.
-        NSLog(@"%@ recognizer %@", name, [self shortDescription]);
+        _logRecognizer(self, stateName);
     }
 }
 
@@ -50,14 +65,14 @@ static void (*original_setEnabled)(UIGestureRecognizer *self, SEL _cmd, BOOL ena
 
 static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL enabled)
 {
-    NSString *name;
-    if (enabled)
-        name = @" ++ENABLED++";
-    else
-        name = @"--DISABLED--";
-        
+    NSString *enabledness;
+    if (enabled) {
+        enabledness = @" ++ENABLED++";
+    } else {
+        enabledness = @"--DISABLED--";
+    }
     
-    NSLog(@"%@ recognizer %@", name, [self shortDescription]);
+    _logRecognizer(self, enabledness);
     original_setEnabled(self, _cmd, enabled);
 }
 
@@ -70,14 +85,33 @@ static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL en
 }
 #endif
 
-- (UIView *)hitView;
+static void *debugIdentifierKey = &debugIdentifierKey;
+- (nullable NSString *)debugIdentifier
+{
+#ifdef DEBUG
+    id result = objc_getAssociatedObject(self, debugIdentifierKey);
+    return OB_CHECKED_CAST_OR_NIL(NSString, result);
+#else
+    return nil;
+#endif
+}
+
+- (void)setDebugIdentifier:(NSString *)debugIdentifier;
+{
+#ifdef DEBUG
+    objc_setAssociatedObject(self, debugIdentifierKey, debugIdentifier, OBJC_ASSOCIATION_COPY);
+#endif
+    // otherwise no-op
+}
+
+- (nullable UIView *)hitView;
 {
     UIView *view = self.view;
     CGPoint hitPoint = [self locationInView:view];
     return [view hitTest:hitPoint withEvent:nil];
 }
 
-- (UIView *)nearestViewFromViews:(NSArray *)views relativeToView:(UIView *)comparisionView maximumDistance:(CGFloat)maximumDistance;
+- (nullable UIView *)nearestViewFromViews:(NSArray *)views relativeToView:(UIView *)comparisionView maximumDistance:(CGFloat)maximumDistance;
 {
     CGPoint pt = [self locationInView:comparisionView];
     
@@ -104,3 +138,37 @@ static void _replacement_setEnabled(UIGestureRecognizer *self, SEL _cmd, BOOL en
 }
 
 @end
+
+#if OUI_GESTURE_RECOGNIZER_DEBUG
+
+@implementation UIView (OUIGestureRecognizerExtensions)
+
+- (void)logGestureRecognizers;
+{
+    NSMutableString *result = [NSMutableString new];
+    [self _buildGestureRecognizerLog:result prefix:@""];
+    NSLog(@"%@", result);
+}
+
+- (void)_buildGestureRecognizerLog:(NSMutableString *)log prefix:(NSString *)prefix;
+{
+    void(^addLine)(NSString *line) = ^(NSString *line){
+        [log appendString:prefix];
+        [log appendString:line];
+        [log appendString:@"\n"];
+    };
+    addLine([NSString stringWithFormat:@"%@: ", [self class]]);
+    
+    for (UIGestureRecognizer *recognizer in self.gestureRecognizers) {
+        addLine(_stringToLog(recognizer, @"->"));
+    }
+    
+    NSString *newPrefix = [NSString stringWithFormat:@"  %@", prefix];
+    for (UIView *view in self.subviews) {
+        [view _buildGestureRecognizerLog:log prefix:newPrefix];
+    }
+}
+
+@end
+#endif
+

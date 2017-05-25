@@ -60,7 +60,8 @@ RCS_ID("$Id$")
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[self.contentView.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
     [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor]];
-    [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor]];
+    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
+    [constraintsToActivate addObject:self.rightMarginLayoutConstraint];
     [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.contentView.topAnchor]];
     [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]];
     [NSLayoutConstraint activateConstraints:constraintsToActivate];

@@ -371,7 +371,7 @@ static void _registerPreview(OUIDocumentPreview *preview, NSString *previewFilen
                      // This is a race between noticing new previews and the document closing path saving them. There is no big performance issue if the preview we have hasn't been loaded.
                      // See bug:///137636 (iOS-OmniGraffle Crasher: assertion fails sometimes saving document preview on close)
                      (existingPreview.fileEdit == preview.fileEdit && existingPreview->_image == NULL && existingPreview->_loadOperation == nil && preview->_image != NULL)),
-                    @"We should not have an existing preview for a file/date with an image if we are caching a new preview with an image.");
+                    @"We should not have an existing preview for a file/date with an image if we are caching a new preview with an image. bug:///142473 (Frameworks-iOS Unassigned: Assertion failure caching previews: redundant preview when opening a file from iCloud Drive, closing without editing)");
     }
 #endif
     PreviewFileNameToPreview[previewFilename] = preview;

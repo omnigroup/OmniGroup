@@ -57,7 +57,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 {
     // Try to match the default UITableView insets for our default insets.
     static dispatch_once_t predicate;
-    static UIEdgeInsets alignmentInsets = (UIEdgeInsets) { .left = 15.0f, .right = 15.0f, .top = 0.0f, .bottom = 0.0f };
+    static UIEdgeInsets alignmentInsets = (UIEdgeInsets) { .left = 16, .right = 16, .top = 0.0f, .bottom = 0.0f };
     dispatch_once(&predicate, ^{
         UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
         UIEdgeInsets separatorInsets = tableView.separatorInset;

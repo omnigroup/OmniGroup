@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -362,21 +362,22 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
         
     switch (type) {
         case ODOAttributeTypeInt16:
-        case ODOAttributeTypeInt32:
-        {
+        case ODOAttributeTypeInt32: {
             // Could fetch as int64 and check the range.  Maybe in DEBUG builds?
             int intValue = sqlite3_column_int(statement->_statement, columnIndex);
             *value = [[valueClass alloc] initWithInt:intValue];
             return YES;
         }
+            
         case ODOAttributeTypeInt64: {
             int64_t intValue = sqlite3_column_int64(statement->_statement, columnIndex);
             *value = [[valueClass alloc] initWithLongLong:intValue];
             return YES;
         }
+
         case ODOAttributeTypeString: {
             const uint8_t *utf8 = sqlite3_column_text(statement->_statement, columnIndex);
-            if (!utf8) {
+            if (utf8 == NULL) {
                 OBASSERT_NOT_REACHED("Should have been caught by the SQLITE_NULL check");
                 *value = nil;
                 return YES;
@@ -387,6 +388,7 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             *value = [[valueClass alloc] initWithBytes:utf8 length:byteCount encoding:NSUTF8StringEncoding];
             return YES;
         }
+
         case ODOAttributeTypeBoolean: {
             int intValue = sqlite3_column_int(statement->_statement, columnIndex);
             OBASSERT(intValue == 0 || intValue == 1);
@@ -398,27 +400,33 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             *value = [[valueClass alloc] initWithTimeIntervalSinceReferenceDate:ti];
             return YES;
         }
+
         case ODOAttributeTypeFloat32: // No independent float32 value in sqlite3
         case ODOAttributeTypeFloat64: {
             double f = sqlite3_column_double(statement->_statement, columnIndex);
             *value = [[valueClass alloc] initWithDouble:f];
             return YES;
         }
+
         case ODOAttributeTypeData: {
             const void *bytes = sqlite3_column_blob(statement->_statement, columnIndex);
-            if (!bytes) {
-                OBASSERT_NOT_REACHED("Should have been caught by the SQLITE_NULL check");
-                *value = nil;
-                return YES;
+            int byteCount = sqlite3_column_bytes(statement->_statement, columnIndex);
+
+            if (valueClass == Nil) {
+                valueClass = [NSData class];
             }
 
-            if (!valueClass)
-                valueClass = [NSData class];
-
-            int byteCount = sqlite3_column_bytes(statement->_statement, columnIndex);
+            // sqlite will return SQLITE_NULL for the column type for a NULL blob, but returns SQLITE_BLOB and NULL bytes for a 0-length blog.
+            if (bytes == NULL) {
+                OBASSERT(byteCount == 0);
+                *value = [[valueClass alloc] initWithBytes:NULL length:0];
+                return YES;
+            }
+            
             *value = [[valueClass alloc] initWithBytes:bytes length:byteCount];
             return YES;
         }
+
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable get value of type %d for result column %d of '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, columnIndex, statement->_sql];

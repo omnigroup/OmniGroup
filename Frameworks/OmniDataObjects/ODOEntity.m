@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -293,6 +293,9 @@ static CFComparisonResult _compareByName(const void *val1, const void *val2, voi
 extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,
                                   NSString *instanceClassName, NSArray *properties)
 {
+    // We don't support inheritance, so require at least some properties for now. This may need revisiting in the future if we come up with a good use case for a zero-property entity, like an abstract parent.
+    OBPRECONDITION([properties count] > 0, "ODO expects every entity to have at least one property");
+    
     ODOEntity *entity = [[ODOEntity alloc] init];
     entity->_nonretained_model = (id)0xdeadbeef; // TODO: Hook this up
 
@@ -389,8 +392,11 @@ extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSS
     OBASSERT(OFCFArrayIsSortedAscendingUsingFunction((CFArrayRef)entity->_properties, _compareByName, NULL));
     
     // Make immutable CFArrays that do NOT use CFEqual for equality, but just pointer equality (since we've interned our property names and selectors are pointer-uniqued).
-    {
-        CFIndex propertyCount = [entity->_properties count];
+    CFIndex propertyCount = [entity->_properties count];
+    if (propertyCount == 0) { // Avoid clang-sa warnings about malloc(0)
+        entity->_propertyGetSelectors = CFArrayCreate(kCFAllocatorDefault, NULL, 0, NULL);
+        entity->_propertySetSelectors = CFArrayCreate(kCFAllocatorDefault, NULL, 0, NULL);
+    } else {
         NSString **propertyNamesCArray = malloc(sizeof(NSString *) * propertyCount);
 
         for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
@@ -408,8 +414,8 @@ extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSS
         
         
         // Some of the setters may be NULL (eventually) when we support read-only properties.
-        SEL *getters = malloc(sizeof(SEL) * MAX(propertyCount, 1)); // Avoid clang-sa warning about malloc(0)
-        SEL *setters = malloc(sizeof(SEL) * MAX(propertyCount, 1));
+        SEL *getters = malloc(sizeof(SEL) * propertyCount);
+        SEL *setters = malloc(sizeof(SEL) * propertyCount);
         
         for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
             ODOProperty *property = [entity->_properties objectAtIndex:propertyIndex];

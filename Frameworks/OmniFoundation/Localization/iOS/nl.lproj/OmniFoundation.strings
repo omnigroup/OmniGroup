@@ -47,7 +47,7 @@
 "about an hour" = "ongeveer een uur";
 
 /* error reason */
-"Another application has overridden the lock at \"%@\"." = "De vergrendeling op “%@” is opgeheven door een andere toepassing.";
+"Another application has overridden the lock at \"%@\"." = "De vergrendeling op \"%@\" is opgeheven door een andere toepassing.";
 
 /* invalid bundle reason */
 "Bundle is obsolete" = "Verouderde bundel";
@@ -71,7 +71,7 @@
 "Cancel <error recovery>" = "Annuleer";
 
 /* error description */
-"Cannot create socket." = "Kan socket niet aanmaken.";
+"Cannot create socket." = "Kan socket niet maken.";
 
 /* alert title when clicking on a configuration value URL */
 "Change configuration?" = "Configuratie wijzigen?";
@@ -228,10 +228,10 @@
 "This configuration link will make the following changes:" = "Deze configuratiekoppeling brengt de volgende wijzigingen aan:";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "De vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.\n\nU kunt deze vergrendeling opheffen, maar daardoor kan de andere toepassing gegevens verliezen als deze nog steeds actief is.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer \"%2$@\" op %3$@ om %4$@.\n\nU kunt deze vergrendeling opheffen, maar daardoor kan de andere toepassing gegevens verliezen als deze nog steeds actief is.";
 
 /* compression error description */
 "Unable to compress data." = "Gegevenscompressie niet mogelijk.";

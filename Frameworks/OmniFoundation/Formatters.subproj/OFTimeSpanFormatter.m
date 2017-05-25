@@ -578,7 +578,13 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
 
             OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
             NSString *unitString;
-            if (shouldUseVerboseFormat) {
+            if (_flags.usesArchiveUnitStrings) {
+                if (timeSpan.elapsed && self.allowsElapsedUnits)
+                    unitString = unit.elapsedString;
+                else
+                    unitString = unit.abbreviatedString;
+                [displayString appendFormat:@"%@%@", valueString, unitString];
+            } else if (shouldUseVerboseFormat) {
                 if (timeSpan.elapsed && self.allowsElapsedUnits)
                     unitString = unit.localizedElapsedString;
                 else

@@ -14,6 +14,14 @@
 + (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view;
 + (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
 
+
+/**
+ @param view View to insert the activity indicator into
+ @param color Color of the activity indicator
+ @param bezelColor Color for the bezel. If nil, no bezel will be drawn.
+ */
++ (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color bezelColor:(UIColor *)bezelColor;
+
 - (void)hide;
 
 @end

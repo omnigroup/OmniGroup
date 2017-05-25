@@ -168,6 +168,13 @@ static BOOL _methodSignaturesCompatible(Class cls, SEL sel, const char *sig1, co
             return strcasecmp(sig1, sig2) == 0;
         }
 
+        // bug:///142219 (Frameworks-Mac Engineering: Swift subclass of Obj-C class:  -copyWithZone: has conflicting type signatures between class and its superclass)
+        if (sel == @selector(copyWithZone:)) {
+            // Swift loses type information about pointers to structs imported from C, making it less safe than C in some ways...
+            if (_signaturesMatch(sig1, sig2, "@24@0:8^v16", "@24@0:8^{_NSZone=}16"))
+                return YES;
+        }
+        
         // <bug:///122392> (Bug: Swift subclass of Obj-C class:  .cxx_destruct has conflicting type signatures between class and its superclass)
         // Swift generated code includes a cxx_destruct method that mismatches some superclasses (e.g. UIGestureRecognizer)
         // This method shouldn't be our problem, regardless of where it appears or what signature it has
@@ -523,7 +530,13 @@ static BOOL _uncached_isSystemClass(Class cls)
     if (dladdr((__bridge const void *)cls, &info) == 0) {
 
 #ifdef DEBUG_bungi
-        NSLog(@"Cannot determine library path for class %s", class_getName(cls));
+        if (strstr(className, "OmniJS")) {
+            // Swift runtime-generated classes for generics, it looks like...
+        } else if (HAS_PREFIX(className, "ABCD") || HAS_PREFIX(className, "NSManagedObject_ABCD")) {
+            // AddressBook CoreData
+        } else {
+            NSLog(@"Cannot determine library path for class %s", class_getName(cls));
+        }
 #endif
         return NO;
     }
@@ -536,18 +549,12 @@ static BOOL _uncached_isSystemClass(Class cls)
     if (strstr(libraryPath, "/var/containers/Bundle/Application")) // iOS 9.3.1
         return NO;
 
-    // System frameworks
-    if (HAS_PREFIX(libraryPath, "/System/Library/Frameworks/"))
-        return YES;
-    if (HAS_PREFIX(libraryPath, "/System/Library/PrivateFrameworks/"))
+    // System frameworks & plug-ins
+    if (HAS_PREFIX(libraryPath, "/System/Library/"))
         return YES;
     if (HAS_PREFIX(libraryPath, "/usr/lib/"))
         return YES;
     if (HAS_PREFIX(libraryPath, "/Developer/Library/PrivateFrameworks/"))
-        return YES;
-    if (HAS_PREFIX(libraryPath, "/System/Library/CoreServices/"))
-        return YES;
-    if (HAS_PREFIX(libraryPath, "/System/Library/Extensions/"))
         return YES;
 
     // Running in the iOS simulator
@@ -572,6 +579,8 @@ static BOOL _uncached_isSystemClass(Class cls)
     if (strstr(libraryPath, "/MacOSX.platform/Developer/Library/Xcode/Agents/xctest"))
         return YES;
     if (strstr(libraryPath, "/SharedFrameworks/DTXConnectionServices.framework/"))
+        return YES;
+    if (strstr(libraryPath, "/Applications/Xcode")) // Anything else inside any version of Xcode... probably supersedes many of the preceeding cases.
         return YES;
     if (HAS_PREFIX(libraryPath, "/Users/Shared"))
         return NO;

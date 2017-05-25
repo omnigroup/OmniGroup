@@ -28,6 +28,8 @@
 @property (nonatomic, readonly) UIColor *omniNeutralPlaceholderColor;
 @property (nonatomic, readonly) UIColor *omniNeutralLightweightColor;
 
+@property (nonatomic, readonly) UIColor *textColorForDarkBackgroundColor;
+
 @property (nonatomic, readonly) UIColor *omniDeleteColor;
 
 @property (nonatomic, readonly) UIColor *omniExplanotextColor;

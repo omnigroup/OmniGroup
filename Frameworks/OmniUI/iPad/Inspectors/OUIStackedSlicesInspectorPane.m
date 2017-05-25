@@ -34,10 +34,7 @@ RCS_ID("$Id$");
 NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUIStackedSlicesInspectorContentViewDidChangeFrame";
 
 @interface OUIStackedSlicesInspectorPaneContentView : UIScrollView
-{
-@private
-    OUIInspectorBackgroundView *_backgroundView;
-}
+@property (nonatomic, strong) OUIInspectorBackgroundView *backgroundView;
 - (UIColor *)inspectorBackgroundViewColor;
 @end
 
@@ -329,7 +326,15 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)updateSlices;
 {
-    self.slices = [self appropriateSlicesForInspectedObjects];    
+    self.slices = [self appropriateSlicesForInspectedObjects];
+    
+    OUIStackedSlicesInspectorPaneContentView *paneContentView = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
+    if (self.slices.count == 0) {
+        paneContentView.backgroundView.label.text = NSLocalizedStringFromTableInBundle(@"Nothing to Inspect", @"OmniUI", OMNI_BUNDLE, @"Text letting the user know why nothing is showing in the inspector");
+    }
+    else {
+        paneContentView.backgroundView.label.text = nil;
+    }
 }
 
 - (BOOL)inspectorPaneOfClassHasAlreadyBeenPresented:(Class)paneClass;
@@ -383,8 +388,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
-    
-    [self updateSlices];
+    if (reason != OUIInspectorUpdateReasonDismissed) {
+        [self updateSlices];
+    }
     
     for (OUIInspectorSlice *slice in _slices) {
         @autoreleasepool {
@@ -498,9 +504,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)updateContentInsetsForKeyboard
 {
-    OBASSERT(self.isViewLoaded);
-    
-    if (self.view.window == nil) {
+    if (!self.isViewLoaded || self.view.window == nil) {
         return;
     }
     

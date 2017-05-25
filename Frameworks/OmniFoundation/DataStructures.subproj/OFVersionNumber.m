@@ -83,63 +83,9 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-// We require iOS 9.0 currently
-
-+ (BOOL)isOperatingSystemiOS93OrLater;
-{
-    static BOOL isEarlier;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isEarlier = isOperatingSystemAtLeastVersionString(@"9.3");
-    });
-    
-    return isEarlier;
-}
-
-+ (BOOL)isOperatingSystemiOS100OrLater;
-{
-    static BOOL isEarlier;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isEarlier = isOperatingSystemAtLeastVersionString(@"10.0");
-    });
-    
-    return isEarlier;
-}
-
-+ (BOOL)isOperatingSystemiOS101OrLater;
-{
-    static BOOL isEarlier;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isEarlier = isOperatingSystemAtLeastVersionString(@"10.1");
-    });
-    
-    return isEarlier;
-}
-+ (BOOL)isOperatingSystemiOS102OrLater;
-{
-    static BOOL isEarlier;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isEarlier = isOperatingSystemAtLeastVersionString(@"10.2");
-    });
-    
-    return isEarlier;
-}
+// We require iOS 10.3 currently
 
 #else
-
-+ (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"10.11");
-    });
-
-    return isLater;
-}
 
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
 {

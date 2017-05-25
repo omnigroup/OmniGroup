@@ -108,7 +108,7 @@
 "eh" = "ht";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "El elemento '%1$@' no se admite en la ruta: %2$@";
+"Element '%@' not allowed at path: %@" = "Elemento '%1$@' no admitido en la ruta: %2$@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "em" = "mt";
@@ -204,7 +204,7 @@
 "seconds" = "segundos";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Ajustar “%1$@” a “%2$@";
+"Set \"%@\" to \"%@\"" = "Ajustar “%1$@” a “%2$@”";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
 "The encrypted item \"%@\" is missing or unreadable." = "Falta el ítem encriptado “%@” o no se puede leer.";

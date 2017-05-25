@@ -19,7 +19,10 @@
 NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.")
 @interface OUIWebViewController : UIViewController <WKNavigationDelegate>
 
-@property (nonatomic, weak) id<OUIWebViewControllerDelegate> delegate;
+@property (nonatomic, weak) id <OUIWebViewControllerDelegate> delegate;
+@property (nonatomic, copy) void (^closeBlock)(OUIWebViewController *webViewController);
+@property (nonatomic, copy) void (^reloadBlock)(OUIWebViewController *webViewController, NSURL *url);
+@property (nonatomic, copy) void (^callbackBlock)(OUIWebViewController *webViewController, NSString *callback);
 
 @property (nonatomic, copy) NSURL *URL; // loads URL as a side effect of setting it
 @property (nonatomic, readonly, strong) WKWebView *webView;
@@ -27,6 +30,8 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
 
 - (void)invokeJavaScriptAfterLoad:(NSString *)javaScript completionHandler:(void (^)(id, NSError *))completionHandler;
+- (void)callJavaScript:(NSString *)javaScript completionHandler:(void (^)(id, NSError *error))completionHandler;
+- (void)callJavaScriptFunction:(NSString *)function withJSONParameters:(id)parameters completionHandler:(void (^)(id, NSError *error))completionHandler;
 
 - (IBAction)openInSafari:(id)sender;
 - (IBAction)goBack:(id)sender;
@@ -42,8 +47,8 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 
 @optional
 /*!
- * \brief Called when the close button is tapped. It is the delegate's responsibility to dismiss the OUIWebViewController.
+ * \brief Called when the close button is tapped. Return YES if the view controller should dismiss itself.
  */
-- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 @end

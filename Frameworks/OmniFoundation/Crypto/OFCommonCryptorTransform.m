@@ -113,7 +113,7 @@ static size_t round_down_a_bit(size_t len)
                 NSMutableData *newBufferedData = [[NSMutableData alloc] initWithLength:expectedOutput + 1024];
                 amountProducedThisCall = 0;
                 cerr = CCCryptorUpdate(cryptor, input + alreadyConsumed, amountOfferedThisCall, [newBufferedData mutableBytes], [newBufferedData length], &amountProducedThisCall);
-                NSLog(@"Making smidgen buffer, expecting size %zu bytes", expectedOutput);
+                // NSLog(@"Making smidgen buffer, expecting size %zu bytes", expectedOutput);
                 if (cerr == kCCSuccess) {
                     OBASSERT(amountProducedThisCall == expectedOutput);
                     [newBufferedData setLength:amountProducedThisCall];
@@ -130,7 +130,7 @@ static size_t round_down_a_bit(size_t len)
                 // Try to guess how much we can feed the cryptor to exactly fill our output buffer.
                 amountOfferedThisCall = (bufferSpaceWanted >= amountOfferedThisCall)? (spaceAvailable - (bufferSpaceWanted - amountOfferedThisCall)) : spaceAvailable;
                 bufferSpaceWanted = CCCryptorGetOutputLength(cryptor, amountOfferedThisCall, false);
-                NSLog(@"Adjusting cryptor input chunk to %zu bytes, hoping to get %zu out (looks like we do get %zu)", amountOfferedThisCall, spaceAvailable, bufferSpaceWanted);
+                // NSLog(@"Adjusting cryptor input chunk to %zu bytes, hoping to get %zu out (looks like we do get %zu)", amountOfferedThisCall, spaceAvailable, bufferSpaceWanted);
                 
                 if (bufferSpaceWanted > spaceAvailable) {
                     // Nope. Phooey. Assume that the cryptor isn't expanding things by very much. Any slop will be taken up by the smidgen buffer.

@@ -231,25 +231,32 @@ OBPerformPosing(^{
 + (NSImage *)imageForFileType:(NSString *)fileType;
     // It turns out that -[NSWorkspace iconForFileType:] doesn't cache previously returned values, so we cache them here.
 {
-    static NSMutableDictionary *imageDictionary = nil;
-    id image;
-
-    ASSERT_IN_MAIN_THREAD(@"+imageForFileType: is not thread-safe; must be called from the main thread");
-    // We could fix this by adding locks around imageDictionary
-
-    if (!fileType)
+    if (fileType == nil)
         return nil;
-        
-    if (imageDictionary == nil)
-        imageDictionary = [[NSMutableDictionary alloc] init];
 
-    image = [imageDictionary objectForKey:fileType];
-    if (image == nil) {
-        image = [[NSWorkspace sharedWorkspace] iconForFileType:fileType];
-        if (image == nil)
-            image = [NSNull null];
-        [imageDictionary setObject:image forKey:fileType];
+    static NSMutableDictionary *imageDictionary;
+    static NSLock *imageDictionaryLock;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        imageDictionary = [[NSMutableDictionary alloc] init];
+        imageDictionaryLock = [[NSLock alloc] init];
+    });
+
+    id image; // NSImage or NSNull
+
+    @try {
+        [imageDictionaryLock lock];
+        image = [imageDictionary objectForKey:fileType];
+        if (image == nil) {
+            image = [[NSWorkspace sharedWorkspace] iconForFileType:fileType];
+            if (image == nil)
+                image = [NSNull null];
+            [imageDictionary setObject:image forKey:fileType];
+        }
+    } @finally {
+        [imageDictionaryLock unlock];
     }
+
     return image != [NSNull null] ? image : nil;
 }
 

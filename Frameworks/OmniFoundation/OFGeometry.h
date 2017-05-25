@@ -119,6 +119,12 @@ static inline BOOL OFSizeEqualToSizeWithAccuracy(CGSize s1, CGSize s2, CGFloat a
     return true;
 }
 
+static inline BOOL OFRectEqualToRectWithAccuracy(CGRect r1, CGRect r2, CGFloat accuracy)
+{
+    return (OFSizeEqualToSizeWithAccuracy(r1.size, r2.size, accuracy) &&
+            OFPointEqualToPointWithAccuracy(r1.origin, r2.origin, accuracy));
+}
+
 static inline BOOL OFFloatEqualToFloatWithAccuracy(CGFloat f1, CGFloat f2, CGFloat accuracy)
 {
     return fabs(f1 - f2) <= accuracy;

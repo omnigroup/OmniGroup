@@ -46,6 +46,7 @@ OBDEPRECATED_METHOD(-canPerformEditingAction:forTextView:withSender:);
 NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewInsertionPointDidChangeNotification";
 
 @interface OUITextViewSelectedTextHighlightView : UIView
+@property (nonatomic, copy) UIColor *selectionColor;
 @end
 
 @implementation OUITextView
@@ -970,6 +971,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
     if (shouldAlwaysHighlight) {
         _selectedTextHighlightView = [[OUITextViewSelectedTextHighlightView alloc] initWithFrame:self.bounds];
+        _selectedTextHighlightView.selectionColor = [self.tintColor colorWithAlphaComponent:0.25f];
         [self addSubview:_selectedTextHighlightView];
     } else {
         [_selectedTextHighlightView removeFromSuperview];
@@ -1448,7 +1450,6 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
         return nil;
 
     self.opaque = NO;
-    self.alpha = 0.25f;
 
     return self;
 }
@@ -1461,7 +1462,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 - (void)drawRect:(CGRect)rect;
 {
     UITextView *textView = [self containingViewOfClass:[UITextView class]];
-    [self.tintColor setFill];
+    [self.selectionColor setFill];
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     NSArray *selectionRects = [textView selectionRectsForRange:textView.selectedTextRange];
     for (UITextSelectionRect *selectionRect in selectionRects) {

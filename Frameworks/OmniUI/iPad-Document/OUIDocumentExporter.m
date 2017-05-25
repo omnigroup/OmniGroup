@@ -78,8 +78,12 @@ RCS_ID("$Id$")
     return _barButtonItem;
 }
 
+- (void)exportItem:(ODSFileItem *)fileItem
+{
+    [self exportItem:fileItem sender:nil];
+}
 
-- (void)exportItem:(ODSFileItem *)fileItem;
+- (void)exportItem:(ODSFileItem *)fileItem sender:(id)sender;
 {
     if (fileItem == nil || fileItem.scope.isTrash) {
         return;
@@ -161,13 +165,14 @@ RCS_ID("$Id$")
     }
     
     OUIMenuController *menu = [[OUIMenuController alloc] init];
+    menu.sizesToOptionWidth = YES;
     menu.topOptions = topLevelMenuOptions;
     if (topLevelMenuTitle)
         menu.title = topLevelMenuTitle;
     
     menu.tintColor = [self.hostViewController tintColorForExportMenu];
     
-    menu.popoverPresentationController.barButtonItem = self.barButtonItem;
+    menu.popoverPresentationController.barButtonItem = [sender isKindOfClass:[UIBarButtonItem class]] ? sender : self.barButtonItem;
     
     [self.hostViewController presentViewController:menu animated:YES completion:^{
         menu.popoverPresentationController.passthroughViews = nil;
@@ -178,7 +183,7 @@ RCS_ID("$Id$")
 - (void)export:(id)sender
 {
     ODSFileItem *fileItem = [self.hostViewController fileItemToExport];
-    [self exportItem:fileItem];
+    [self exportItem:fileItem sender:sender];
 }
 
 - (NSArray *)availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType
@@ -404,7 +409,6 @@ RCS_ID("$Id$")
 }
 
 - (NSString *)_printTitleForFileItem:(ODSFileItem *)fileItem;
-// overridden by Graffle to return "Print (landscape) or Print (portrait)"
 {
     return [self printButtonTitleForFileItem:fileItem];
 }

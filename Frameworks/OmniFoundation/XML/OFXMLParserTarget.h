@@ -56,7 +56,7 @@ typedef enum {
 
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 
-- (void)parserEndElement:(OFXMLParser *)parser;
+- (void)parser:(OFXMLParser *)parser endElementWithQName:(OFXMLQName *)qname;
 - (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
@@ -67,4 +67,9 @@ typedef enum {
 - (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name attributeQNames:(NSMutableArray *)attributeQNames attributeValues:(NSMutableArray *)attributeValues OB_DEPRECATED_ATTRIBUTE;
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname attributeQNames:(NSMutableArray <OFXMLQName *> *)attributeQNames attributeValues:(NSMutableArray <NSString *> *)attributeValues OB_DEPRECATED_ATTRIBUTE;
 
+@end
+
+
+@interface NSObject (OFXMLParserTargetDeprecated)
+- (void)parserEndElement:(OFXMLParser *)parser OB_DEPRECATED_ATTRIBUTE;
 @end

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,6 +123,7 @@
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
+#import <OmniFoundation/OFXMLElementParser.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 #import <OmniFoundation/OFXMLIdentifierRegistry.h>
 #import <OmniFoundation/OFXMLInternedStringTable.h>
@@ -206,7 +207,6 @@
     #import <OmniFoundation/NSScanner-OFExtensions.h>
     #import <OmniFoundation/NSScriptCommand-OFExtensions.h>
     #import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>
-    #import <OmniFoundation/NSThread-OFExtensions.h>
 #endif
 
 // CoreFoundation extensions

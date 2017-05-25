@@ -12,15 +12,16 @@
 #import <CoreFoundation/CFURL.h>
 #import <OmniFoundation/OFXMLWhitespaceBehavior.h>
 #import <OmniFoundation/OFXMLParserTarget.h>
+#import <OmniFoundation/OFXMLElementParser.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class OFXMLCursor, OFXMLDocument, OFXMLElement, OFXMLWhitespaceBehavior;
+@class OFXMLCursor, OFXMLDocument, OFXMLElement, OFXMLElementParser, OFXMLWhitespaceBehavior;
 @class NSArray, NSMutableArray, NSDate, NSData, NSURL, NSError, NSInputStream;
 
 typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFXMLParser *parser);
 
-@interface OFXMLDocument : OFXMLIdentifierRegistry <OFXMLParserTarget>
+@interface OFXMLDocument : OFXMLIdentifierRegistry <OFXMLParserTarget, OFXMLElementParserDelegate>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (id)initWithRegistry:(OFXMLIdentifierRegistry *)registry NS_UNAVAILABLE;
@@ -71,6 +72,8 @@ typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFX
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior error:(NSError **)outError;
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior error:(NSError **)outError;
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+
+- (__kindof OFXMLElementParser *)makeElementParser;
 
 @property(nonatomic,readonly) OFXMLWhitespaceBehavior *whitespaceBehavior;
 @property(nonatomic,readonly,nullable) CFURLRef dtdSystemID;
@@ -131,11 +134,6 @@ typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFX
 - (void)parser:(OFXMLParser *)parser setSystemID:(NSURL *)systemID publicID:(NSString *)publicID;
 - (void)parser:(OFXMLParser *)parser addProcessingInstructionNamed:(NSString *)piName value:(NSString *)piValue;
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
-- (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
-- (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
-- (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
-- (void)parserEndElement:(OFXMLParser *)parser;
-- (void)parser:(OFXMLParser *)parser endUnparsedElementWithQName:(OFXMLQName *)qname identifier:(NSString *)identifier contents:(NSData *)contents;
 
 @end
 

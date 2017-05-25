@@ -235,6 +235,10 @@ static void *SyncAccountActivityContext = &SyncAccountActivityContext;
     NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:plainTitle attributes:@{NSForegroundColorAttributeName : _titleColor, NSFontAttributeName : [UIFont boldSystemFontOfSize:17.0f]}];
     _documentTitleLabel.attributedText = attributedTitle;
     [_documentTitleButton setAttributedTitle:attributedTitle forState:UIControlStateNormal];
+    
+    // Make sure the title didn't get too long and bleed into the bar button items
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
 }
 
 - (void)_updateTitleVisibility;

@@ -39,6 +39,7 @@
 
 - (BOOL)canExportFileItem:(ODSFileItem *)fileItem;
 - (void)exportItem:(ODSFileItem *)fileItem;
+- (void)exportItem:(ODSFileItem *)fileItem sender:(id)sender;
 - (void)export:(id)sender;
 - (void)emailFileItem:(ODSFileItem *)fileItem;
 - (void)sendEmailWithFileWrapper:(NSFileWrapper *)fileWrapper forExportType:(NSString *)exportType fileName:(NSString *)fileName;

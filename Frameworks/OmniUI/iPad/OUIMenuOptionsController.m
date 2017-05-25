@@ -207,11 +207,12 @@ NS_ASSUME_NONNULL_BEGIN
     } else {
         CGFloat width = 0;
         CGFloat padding = 0;
-        for (UITableViewCell *cell in tableView.visibleCells) { // should be all the cells since we adjusted height already
+        for (OUIMenuOptionTableViewCell *cell in tableView.visibleCells) { // should be all the cells since we adjusted height already
             // Figure out how much space is around each label
             CGRect contentViewRect = [cell.contentView convertRect:cell.contentView.bounds toView:tableView];
             CGRect labelRect = [cell.textLabel convertRect:cell.textLabel.bounds toView:tableView];
-            padding = contentViewRect.size.width - labelRect.size.width;
+            CGRect iconViewRect = [cell.iconView convertRect:cell.iconView.bounds toView:tableView];
+            padding = contentViewRect.size.width - labelRect.size.width - iconViewRect.size.width;
             
             width = MAX(width, [cell.textLabel sizeThatFits:cell.textLabel.bounds.size].width);
         }

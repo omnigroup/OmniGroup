@@ -75,7 +75,7 @@
 
 // UIApplicationDelegate methods we implement (see OUIAppController too)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options;
 - (void)applicationWillEnterForeground:(UIApplication *)application;
 - (void)applicationDidEnterBackground:(UIApplication *)application;
 
@@ -106,6 +106,8 @@
 - (BOOL)shouldOpenOnlineHelpOnFirstLaunch; //defaults YES, implemented this way so you can special-case demo builds.
 // Optional ODSStoreDelegate that we implement
 - (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
+/// Default is _window.tintColor.
+- (UIColor *)launchActivityIndicatorColor;
 
 // Helpful dialogs
 - (void)presentSyncError:(NSError *)syncError forAccount:(OFXServerAccount *)account inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;

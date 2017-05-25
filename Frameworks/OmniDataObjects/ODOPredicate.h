@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,5 +10,9 @@
 #import <Foundation/NSPredicate.h>
 #import <Foundation/NSExpression.h>
 
-extern NSMutableArray *ODOFilteredArrayUsingPredicate(NSArray *array, NSPredicate *predicate);
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSMutableArray * ODOFilteredArrayUsingPredicate(NSArray *array, NSPredicate *predicate);
 extern NSUInteger ODOCountInArrayMatchingPredicate(NSArray *array, NSPredicate *predicate);
+
+NS_ASSUME_NONNULL_END

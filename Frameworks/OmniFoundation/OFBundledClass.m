@@ -9,7 +9,6 @@
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
-#import <OmniFoundation/NSThread-OFExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -185,56 +184,55 @@ static BOOL OFBundledClassDebug = NO;
     if (loaded)
 	return;
 
-    [NSThread lockMainThread];
-    [bundleLock lock];
+    OFMainThreadPerformBlockSynchronously(^{
+        [bundleLock lock];
 
-    if (loaded) {
-	[bundleLock unlock];
-        [NSThread unlockMainThread];
-	return;
-    }
-
-    if (OFBundledClassDebug)
-        NSLog(@"-[OFBundledClass loadBundledClass], className=%@, bundle=%@", className, bundle);
-
-    @try {
-        [self loadDependencyClasses];
-
-        if (bundle) {
-            if (OFBundledClassDebug)
-                NSLog(@"Class %@: loading from %@", className, bundle);
-#ifdef OW_DISALLOW_DYNAMIC_LOADING
-            if (!(bundleClass = NSClassFromString(className))) {
-                NSLog(@"Dynamic load disallowed and class not hardlinked!");
-                abort();
-            }
-#else
-            bundleClass = [bundle classNamed:className];
-            if (!bundleClass) {
-                // If the class is in a framework which is linked into the bundle, then -[NSBundle classNamed:] won't find the class, but NSClassFromString() will.
-                bundleClass = NSClassFromString(className);
-            }
-            [[NSNotificationCenter defaultCenter] postNotificationName:OFBundledClassDidLoadNotification object:bundle];
-#endif
-        } else {
-            bundleClass = NSClassFromString(className);
-            if (bundleClass) {
-                if (OFBundledClassDebug)
-                    NSLog(@"Class %@: found", className);
-            }
+        if (loaded) {
+            [bundleLock unlock];
+            return;
         }
 
-        [self loadModifierClasses];
+        if (OFBundledClassDebug)
+            NSLog(@"-[OFBundledClass loadBundledClass], className=%@, bundle=%@", className, bundle);
 
-        if (!bundleClass)
-            NSLog(@"OFBundledClass unable to find class named '%@'", className);
-        loaded = YES;
-    } @catch (NSException *exc) {
-        NSLog(@"Error loading %@: %@", bundle, [exc reason]);
-    }
+        @try {
+            [self loadDependencyClasses];
 
-    [bundleLock unlock];
-    [NSThread unlockMainThread];
+            if (bundle) {
+                if (OFBundledClassDebug)
+                    NSLog(@"Class %@: loading from %@", className, bundle);
+#ifdef OW_DISALLOW_DYNAMIC_LOADING
+                if (!(bundleClass = NSClassFromString(className))) {
+                    NSLog(@"Dynamic load disallowed and class not hardlinked!");
+                    abort();
+                }
+#else
+                bundleClass = [bundle classNamed:className];
+                if (!bundleClass) {
+                    // If the class is in a framework which is linked into the bundle, then -[NSBundle classNamed:] won't find the class, but NSClassFromString() will.
+                    bundleClass = NSClassFromString(className);
+                }
+                [[NSNotificationCenter defaultCenter] postNotificationName:OFBundledClassDidLoadNotification object:bundle];
+#endif
+            } else {
+                bundleClass = NSClassFromString(className);
+                if (bundleClass) {
+                    if (OFBundledClassDebug)
+                        NSLog(@"Class %@: found", className);
+                }
+            }
+
+            [self loadModifierClasses];
+
+            if (!bundleClass)
+                NSLog(@"OFBundledClass unable to find class named '%@'", className);
+            loaded = YES;
+        } @catch (NSException *exc) {
+            NSLog(@"Error loading %@: %@", bundle, [exc reason]);
+        }
+        
+        [bundleLock unlock];
+    });
 }
 
 // Debugging

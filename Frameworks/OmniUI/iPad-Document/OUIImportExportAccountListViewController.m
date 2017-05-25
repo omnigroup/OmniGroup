@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,7 @@
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIServerAccountSetupViewController.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 
 #import "OUIAddCloudAccountViewController.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -246,7 +247,7 @@ static NSString *const AddAccountReuseIdentifier = @"addAccount";
             message = NSLocalizedStringFromTableInBundle(@"No accounts are configured for importing.", @"OmniUIDocument", OMNI_BUNDLE, @"Import message for empty table view");
         
         NSString *buttonTitle = NSLocalizedStringFromTableInBundle(@"Add an Account", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Setup button title to add a new account");
-        OUIEmptyOverlayView *emptyOverlay = [OUIEmptyOverlayView overlayViewWithMessage:message buttonTitle:buttonTitle action:^{
+        OUIEmptyOverlayView *emptyOverlay = [OUIEmptyOverlayView overlayViewWithMessage:message buttonTitle:buttonTitle customFontColor:nil action:^{
             [self _addServerAccount];
         }];
         

@@ -144,6 +144,17 @@
 		<key>a</key>
 		<integer>1</integer>
 	</dict>
+    <key>textColorForDarkBackgroundColor</key>
+    <dict>
+        <key>h</key>
+        <real>0.0</real>
+        <key>s</key>
+        <real>0.0</real>
+        <key>b</key>
+        <real>1.0</real>
+        <key>a</key>
+        <real>1.0</real>
+    </dict>
 	<key>omniDeleteColor</key>
 	<dict>
 		<key>h</key>

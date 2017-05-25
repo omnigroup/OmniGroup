@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ static const NSTimeInterval kTimeToPauseBetweenFollowingRepeats = 0.25;
 
 + (CGSize)stepperButtonSize;
 {
-    return CGSizeMake(44,44);
+    return CGSizeMake(34,44);
 }
 
 static id _commonInit(OUIInspectorStepperButton *self)

@@ -16,6 +16,7 @@ RCS_ID("$Id$");
 {
     UIView *_view;
     UIColor *_color;
+    UIView *_backgroundView;
     
     UIActivityIndicatorView *_activityIndicator;
     NSUInteger _showCount;
@@ -30,7 +31,7 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
     ViewToActivityIndicator = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerDictionaryKeyCallbacks, &OFNonOwnedPointerDictionaryValueCallbacks);
 }
 
-- initWithView:(UIView *)view color:(UIColor *)color;
+- initWithView:(UIView *)view color:(UIColor *)color bezelColor:(UIColor *)bezelColor;
 {
     OBPRECONDITION(view);
     OBPRECONDITION(view.window); // should already be on screen
@@ -40,7 +41,9 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
     
     _view = view;
     _color = [color copy];
-     
+    _backgroundView = [[UIView alloc] init];
+    _backgroundView.backgroundColor = bezelColor;
+    
     return self;
 }
 
@@ -59,6 +62,9 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
 
     CFDictionaryAddValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view, (__bridge const void *)(self));
 
+    __block CGFloat maxAlpha;
+    __block UIView *viewToFade = nil;
+    
     [UIView performWithoutAnimation:^{
         _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         _activityIndicator.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
@@ -66,18 +72,42 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
         if (_color)
             _activityIndicator.color = _color;
         
-        _activityIndicator.center = _view.center;
-        
         _activityIndicator.layer.zPosition = 2;
         [_activityIndicator startAnimating];
-        _activityIndicator.alpha = 0;
         
-        [_view.superview addSubview:_activityIndicator];
+        _backgroundView.frame = CGRectMake(0, 0, _activityIndicator.bounds.size.width + 40.0, _activityIndicator.bounds.size.height + 40.0);
+        _backgroundView.layer.cornerRadius = 12.0;
+        
+        [_backgroundView addSubview:_activityIndicator];
+        
+        _activityIndicator.center = _backgroundView.center;
+        
+        [_view.superview addSubview:_backgroundView];
+        _backgroundView.center = _view.center;
+        
+        
+        BOOL shouldDrawBezel = (_backgroundView.backgroundColor != nil);
+        if (shouldDrawBezel) {
+            // When we fade the backgroundView in for the animation, we want to respect the alpha of the color that was passed in. Try to grab it here. If this fails for some reason, just default to full opacity.
+            if (![_backgroundView.backgroundColor getRed:NULL green:NULL blue:NULL alpha:&maxAlpha]) {
+                maxAlpha = 1;
+            }
+            
+            viewToFade = _backgroundView;
+            _activityIndicator.alpha = 1;
+            
+        }
+        else {
+            maxAlpha = 1;
+            viewToFade = _activityIndicator;
+            _backgroundView.alpha = 1;
+        }
+        viewToFade.alpha = 0;
     }];
     
     // Just fade this in
     [UIView animateWithDuration:0.3 animations:^{
-        _activityIndicator.alpha = 1;
+        viewToFade.alpha = maxAlpha;
     }];
 }
 
@@ -89,7 +119,9 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
     CFDictionaryRemoveValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view);
     
     [_activityIndicator stopAnimating];
-    [_activityIndicator removeFromSuperview];
+    
+    [_backgroundView removeFromSuperview];
+    _backgroundView = nil;
     _activityIndicator = nil;
 }
 
@@ -120,12 +152,16 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
 
 + (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
 {
+    return [self showActivityIndicatorInView:view withColor:color bezelColor:nil];
+}
+
++ (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color bezelColor:(UIColor *)bezelColor {
     if (!view.window) {
         return nil;
     }
     OUIActivityIndicator *indicator = (__bridge OUIActivityIndicator *)CFDictionaryGetValue(ViewToActivityIndicator, (__bridge CFTypeRef)view);
     if (!indicator)
-        indicator = [[OUIActivityIndicator alloc] initWithView:view color:color];
+        indicator = [[OUIActivityIndicator alloc] initWithView:view color:color bezelColor:bezelColor];
     
     [indicator _show];
     

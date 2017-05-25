@@ -1393,8 +1393,10 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     
     ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:self.remoteBaseDirectory];
 
+#ifdef DEBUG_bungi
+    // Show or flakey networks (or just servers you can't reach because you're not on the vpn) will fail this.
     OBExpectDeallocation(connection); // These shouldn't be long lived...
-
+#endif
     connection.userAgent = _debugName;
     
 #if 0  // Seems redundant: if we don't implement this, we'll just bubble this error up to the invoker, who will present it if that makes sense.

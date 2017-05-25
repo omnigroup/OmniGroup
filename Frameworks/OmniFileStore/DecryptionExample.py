@@ -11,6 +11,7 @@ from __future__ import print_function
 import argparse, collections, getpass, os.path, plistlib, posix, random, struct, sys
 import cryptography.hazmat.primitives.hashes
 import cryptography.hazmat.primitives.keywrap
+from cryptography.hazmat.primitives.keywrap import InvalidUnwrap
 import cryptography.hazmat.primitives.kdf.pbkdf2
 from cryptography.hazmat import primitives
 from cryptography.hazmat.primitives.hmac import HMAC

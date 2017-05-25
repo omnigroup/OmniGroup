@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,7 +116,7 @@ typedef NS_ENUM(NSUInteger, OUIDocumentProviderPreferencesSection) {
 
 - (nullable NSString *)tableView:(nonnull UITableView *)tableView titleForFooterInSection:(NSInteger)section {
     if (section == OUIDocumentProviderPreferencesSectionSwitch) {
-        return NSLocalizedStringFromTableInBundle(@"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation.", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Storage Providers preference informational description");
+        return NSLocalizedStringFromTableInBundle(@"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service.", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Storage Providers preference informational description");
     }
     
     return nil;

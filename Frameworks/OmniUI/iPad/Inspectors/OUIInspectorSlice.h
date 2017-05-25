@@ -71,4 +71,5 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 - (NSNumber *)singleSelectedValueForIntegerSelector:(SEL)sel;
 - (NSValue *)singleSelectedValueForCGPointSelector:(SEL)sel;
 
+@property (nonatomic, weak) NSLayoutConstraint *rightMarginLayoutConstraint;
 @end

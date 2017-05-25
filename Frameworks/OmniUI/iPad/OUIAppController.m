@@ -24,6 +24,7 @@
 #import <OmniUI/OUIDebugURLCommand.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIPurchaseURLCommand.h>
+#import <OmniUI/OUISendFeedbackURLCommand.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
 #import <OmniUI/UIView-OUIExtensions.h>
@@ -178,6 +179,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     [[self class] registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
     [[self class] registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
     [[self class] registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
+    [[self class] registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
     
     return self;
 }
@@ -397,20 +399,47 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (NSString *)fullReleaseString;
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *testFlightString = [OUIAppController inSandboxStore] ? @" TestFlight" : @"";
-    NSString *appEdition = [OUIAppController applicationEdition];
+    NSString *testFlightString = [[self class] inSandboxStore] ? @" TestFlight" : @"";
+    NSString *appEdition = [[self class] applicationEdition];
     NSString *editionString = [NSString isEmptyString:appEdition] ? @"" : [@" " stringByAppendingString:appEdition];
-    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [[self class] applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
 }
 
+- (NSString *)_feedbackAddress;
+{
+    return [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
+}
 
-- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString * _Nullable)body;
+- (NSURL *)_feedbackURLWithSubject:(NSString *)subject body:(nullable NSString *)body;
+{
+    NSString *feedbackAddress = [self _feedbackAddress];
+    NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", feedbackAddress,
+                           [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
+    if (![NSString isEmptyString:body])
+        urlString = [urlString stringByAppendingFormat:@"&body=%@", [NSString encodeURLString:body asQuery:NO leaveSlashes:NO leaveColons:NO]];
+    return [NSURL URLWithString:urlString];
+}
+
+- (NSString *)_defaultFeedbackSubject;
+{
+    return [NSString stringWithFormat:@"%@ Feedback", self.fullReleaseString];
+}
+
+- (NSURL *)_defaultFeedbackURL;
+{
+    return [self _feedbackURLWithSubject:[self _defaultFeedbackSubject] body:nil];
+}
+
+- (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body;
 {
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
-    NSString *feedbackAddress = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
+    NSString *feedbackAddress = [self _feedbackAddress];
     OBASSERT(feedbackAddress);
     if (feedbackAddress == nil)
         return;
+
+    if (subject == nil)
+        subject = [self _defaultFeedbackSubject];
     
     UIViewController *viewControllerToPresentFrom = self.window.rootViewController;
     while (viewControllerToPresentFrom.presentedViewController != nil)
@@ -459,6 +488,18 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (UIImage *)inAppPurchasesMenuImage;
 {
     return menuImage(@"OUIMenuItemPurchases.png");
+}
+
+- (UIImage *)quickStartMenuImage {
+    return menuImage(@"OUIMenuItemQuickStart.png");
+}
+
+- (UIImage *)trialModeMenuImage {
+    return menuImage(@"OUIMenuItemTrial.png");
+}
+
+- (UIImage *)introVideoMenuImage {
+    return menuImage(@"OUIMenuItemVideo.png");
 }
 
 - (BOOL)useCompactBarButtonItemsIfApplicable;
@@ -517,7 +558,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *versionString = infoDictionary[@"CFBundleShortVersionString"];
     NSString *copyrightString = infoDictionary[@"NSHumanReadableCopyright"];
-    NSString *feedbackAddress = infoDictionary[@"OUIFeedbackAddress"];
+    NSString *feedbackAddress = [self _feedbackAddress];
     
     return @{
              OUIAboutScreenBindingsDictionaryVersionStringKey : versionString,
@@ -597,14 +638,12 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
 }
 
-- (void)_sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+- (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    NSString *subject = [NSString stringWithFormat:@"%@ Feedback", self.fullReleaseString];
-    
-    [self sendFeedbackWithSubject:subject body:nil];
+    [self sendFeedbackWithSubject:[self _defaultFeedbackSubject] body:nil];
 }
 
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle NS_EXTENSION_UNAVAILABLE_IOS("")
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil)
@@ -618,14 +657,15 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     
     webNavigationController.modalPresentationStyle = presentationStyle;
+    webNavigationController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     
-    [self.window.rootViewController presentViewController:webNavigationController animated:YES completion:nil];
+    [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
     return webController;
 }
 
 - (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title;
 {
-    return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen];
+    return [self showWebViewWithURL:url title:title withModalPresentationStyle:UIModalPresentationFullScreen animated:YES];
 }
 
 - (void)_showLatestNewsMessage NS_EXTENSION_UNAVAILABLE_IOS("")
@@ -683,7 +723,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     }
     
     if (showNoMatterWhat || ![self haveShownReleaseNotes:urlString]) {
-        self.newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title") withModalPresentationStyle:UIModalPresentationFormSheet];
+        self.newsViewController = [self showWebViewWithURL:[NSURL URLWithString:urlString] title:NSLocalizedStringFromTableInBundle(@"News", @"OmniUI", OMNI_BUNDLE, @"News view title") withModalPresentationStyle:UIModalPresentationFormSheet animated:YES];
     }
     
     self.newsURLCurrentlyShowing = urlString;
@@ -849,7 +889,7 @@ static UIImage *menuImage(NSString *name)
     
     NSString *feedbackMenuTitle = [self feedbackMenuTitle];
     if (![NSString isEmptyString:feedbackMenuTitle] && ![self isRunningRetailDemo]) {
-        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_sendFeedback:)
+        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(sendFeedback:)
                                                            title:feedbackMenuTitle
                                                            image:menuImage(@"OUIMenuItemSendFeedback.png")];
         [options addObject:option];
@@ -866,6 +906,10 @@ static UIImage *menuImage(NSString *name)
         newsOption.attentionDotView = newsButton;
         
     }
+    
+    additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionBeforeReleaseNotes];
+    if (additionalOptions)
+        [options addObjectsFromArray:additionalOptions];
     
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showReleaseNotes:)
                                                        title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
@@ -890,7 +934,7 @@ static UIImage *menuImage(NSString *name)
 
 #pragma mark - OUIWebViewControllerDelegate
 
-- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
+- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (webViewController == self.newsViewController
         && self.newsURLCurrentlyShowing != nil
@@ -914,8 +958,8 @@ static UIImage *menuImage(NSString *name)
         
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIAttentionSeekingNotification object:self userInfo:@{ OUIAttentionSeekingForNewsKey : @(NO) }];
     }
-    
-    [webViewController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+
+    return YES;
 }
 
 #pragma mark - UIResponder subclass

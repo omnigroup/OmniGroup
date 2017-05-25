@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,17 +186,18 @@ static NSDictionary *OAFontFamilySubstitutionDictionary = nil;
     if (canonicalFontFamilyNameDictionary != nil)
         return canonicalFontFamilyNameDictionary;
 
-    [NSThread lockMainThread]; // The font machinery may not be thread safe, but more importantly this keeps two threads from calculating the available fonts at the same time
-    if (canonicalFontFamilyNameDictionary == nil) { // Someone else might have calculated the dictionary while we were waiting on the lock
-        OMNI_POOL_START {
-            NS_DURING {
-                canonicalFontFamilyNameDictionary = [[self generateFontFamilyNameDictionary] retain];
-            } NS_HANDLER {
-                NSLog(@"%@: Warning: Exception raised while generating list of available fonts: %@", NSStringFromClass(self), [localException reason]);
-            } NS_ENDHANDLER;
-        } OMNI_POOL_END;
-    }
-    [NSThread unlockMainThread];
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // The font machinery may not be thread safe, but more importantly this keeps two threads from calculating the available fonts at the same time
+        if (canonicalFontFamilyNameDictionary == nil) { // Someone else might have calculated the dictionary while we were waiting on the lock
+            @autoreleasepool {
+                @try {
+                    canonicalFontFamilyNameDictionary = [[self generateFontFamilyNameDictionary] retain];
+                } @catch (NSException *localException) {
+                    NSLog(@"%@: Warning: Exception raised while generating list of available fonts: %@", NSStringFromClass(self), [localException reason]);
+                }
+            }
+        }
+    });
 
     return canonicalFontFamilyNameDictionary;
 }
