@@ -186,7 +186,7 @@ RCS_ID("$Id$")
         struct sockaddr_in *ipv4Address;
         
         ipv4Address = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
-        bzero(&ipv4Address, sizeof(*ipv4Address));
+        bzero(ipv4Address, sizeof(*ipv4Address));
 
         ipv4Address->sin_len = sizeof(*ipv4Address);
         ipv4Address->sin_family = AF_INET;
