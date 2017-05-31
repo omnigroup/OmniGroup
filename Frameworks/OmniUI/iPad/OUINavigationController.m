@@ -8,7 +8,7 @@
 #import <OmniUI/OUINavigationController.h>
 
 #import <OmniUI/OUINavigationBar.h>
-
+#import <OmniUI/OUISegmentedViewController.h>
 RCS_ID("$Id$")
 
 @interface OUINavigationController ()
@@ -66,6 +66,11 @@ RCS_ID("$Id$")
 - (void)_updateAccessory:(UIViewController *)viewController operation:(UINavigationControllerOperation)operation animated:(BOOL)animated;
 {
     // For now, this is where all constraints get set (it's where we used to calculate and set frames).  Seems to be working fine.
+    if ([viewController wantsHiddenNavigationBar]) {
+        _accessoryAndBackgroundBar.hidden = YES;
+        return;
+    }
+    
     
     UIView *newAccessory = nil;
  
@@ -93,6 +98,7 @@ RCS_ID("$Id$")
         [self.view addSubview:_accessoryAndBackgroundBar];
     } else {
         self.heightConstraintOnAccessoryAndBackgroundView.constant = self.navigationBar.frame.size.height;
+        _accessoryAndBackgroundBar.hidden = NO;
     }
     
     // set up constraints

@@ -54,6 +54,8 @@
 		34D9D3AA1C77A79D00B8B5C0 /* TextDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D9D3A91C77A79D00B8B5C0 /* TextDocumentExporter.m */; };
 		34D9D3D11C77A96C00B8B5C0 /* Text.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D9D3CF1C77A96C00B8B5C0 /* Text.png */; };
 		34D9D3D21C77A96C00B8B5C0 /* Text@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D9D3D01C77A96C00B8B5C0 /* Text@2x.png */; };
+		4AA007221EC67D2100F42BE4 /* OmniJS.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA007211EC67D2100F42BE4 /* OmniJS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		4AA007231EC67D2E00F42BE4 /* MultiMarkdown.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA007201EC67C9400F42BE4 /* MultiMarkdown.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		94B47F811713786500D4EB70 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94B47F801713786500D4EB70 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -429,6 +431,55 @@
 			remoteGlobalIDString = 34EE20D114F0354300722491;
 			remoteInfo = OBUnitTests;
 		};
+		4AA0071D1EC67C9400F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007181EC67C9300F42BE4 /* MultiMarkdown.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34E3B9821CE4EAE8007E8354;
+			remoteInfo = MultiMarkdown;
+		};
+		4AA0071F1EC67C9400F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007181EC67C9300F42BE4 /* MultiMarkdown.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34E3B95F1CE4E7FF007E8354;
+			remoteInfo = "MultiMarkdown-iOS";
+		};
+		4AA0073C1EC6812800F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3451292D1BA9D71A005D4784;
+			remoteInfo = OmniJS;
+		};
+		4AA0073E1EC6812800F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 346105BC1BC59EDA00AD57D0;
+			remoteInfo = OmniJSTests;
+		};
+		4AA007401EC6812800F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 343271C91BF10A97008A7975;
+			remoteInfo = "OmniJS-iOS";
+		};
+		4AA007421EC6812800F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 343271E21BF10AC6008A7975;
+			remoteInfo = "OmniJSTests-iOS";
+		};
+		4AA007441EC6812800F42BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 349C2C371CB32C1D008BBFC0;
+			remoteInfo = OJSGenerateInterface;
+		};
 		A260A7CB1280C170004743FA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A260A7A41280C15A004743FA /* OmniUnzip.xcodeproj */;
@@ -445,6 +496,8 @@
 			dstPath = Frameworks;
 			dstSubfolderSpec = 1;
 			files = (
+				4AA007231EC67D2E00F42BE4 /* MultiMarkdown.framework in Copy Frameworks */,
+				4AA007221EC67D2100F42BE4 /* OmniJS.framework in Copy Frameworks */,
 				342737311B5DAD8600C3408A /* OmniUIDocument.framework in Copy Frameworks */,
 				34BCD8B41B586C5600EBAA20 /* OmniQuartz.framework in Copy Frameworks */,
 				34BCD8B31B586C4E00EBAA20 /* OmniUI.framework in Copy Frameworks */,
@@ -535,6 +588,9 @@
 		34D9D3CF1C77A96C00B8B5C0 /* Text.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Text.png; sourceTree = "<group>"; };
 		34D9D3D01C77A96C00B8B5C0 /* Text@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Text@2x.png"; sourceTree = "<group>"; };
 		34FFD89411DE4062002AA535 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /Developer/Library/Frameworks/SenTestingKit.framework; sourceTree = SDKROOT; };
+		4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniJS.xcodeproj; path = OmniJS/OmniJS.xcodeproj; sourceTree = "<group>"; };
+		4AA007181EC67C9300F42BE4 /* MultiMarkdown.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MultiMarkdown.xcodeproj; path = ../../../../../../FletcherPenney/MultiMarkdown/build/MultiMarkdown.xcodeproj; sourceTree = "<group>"; };
+		4AA007211EC67D2100F42BE4 /* OmniJS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = OmniJS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D1107310486CEB800E47090 /* TextEditor-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = "TextEditor-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		94B47F801713786500D4EB70 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		A260A7A41280C15A004743FA /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
@@ -656,9 +712,11 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4AA007211EC67D2100F42BE4 /* OmniJS.framework */,
 				345B1EFC1A717990005F8D6F /* Photos.framework */,
 				342721511194807400B39788 /* Omni */,
 				34392ABE19C37BDB00D08401 /* Apple */,
+				4AA007181EC67C9300F42BE4 /* MultiMarkdown.xcodeproj */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -727,6 +785,7 @@
 		342721511194807400B39788 /* Omni */ = {
 			isa = PBXGroup;
 			children = (
+				4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */,
 				23FB289317E383D900DF625D /* OmniDAV.xcodeproj */,
 				342721571194809800B39788 /* OmniBase.xcodeproj */,
 				34272163119480A700B39788 /* OmniFoundation.xcodeproj */,
@@ -839,6 +898,27 @@
 			name = Apple;
 			sourceTree = "<group>";
 		};
+		4AA007191EC67C9300F42BE4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AA0071E1EC67C9400F42BE4 /* MultiMarkdown.framework */,
+				4AA007201EC67C9400F42BE4 /* MultiMarkdown.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4AA007321EC6812800F42BE4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4AA0073D1EC6812800F42BE4 /* OmniJS.framework */,
+				4AA0073F1EC6812800F42BE4 /* OmniJSTests.xctest */,
+				4AA007411EC6812800F42BE4 /* OmniJS.framework */,
+				4AA007431EC6812800F42BE4 /* OmniJSTests.xctest */,
+				4AA007451EC6812800F42BE4 /* OJSGenerateInterface */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		A260A7C71280C170004743FA /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -910,6 +990,10 @@
 					ProjectRef = 34392B0A19C37C2200D08401 /* FixStringsFile.xcodeproj */;
 				},
 				{
+					ProductGroup = 4AA007191EC67C9300F42BE4 /* Products */;
+					ProjectRef = 4AA007181EC67C9300F42BE4 /* MultiMarkdown.xcodeproj */;
+				},
+				{
 					ProductGroup = 3427218C119480C400B39788 /* Products */;
 					ProjectRef = 3427218B119480C400B39788 /* OmniAppKit.xcodeproj */;
 				},
@@ -932,6 +1016,10 @@
 				{
 					ProductGroup = 34272164119480A700B39788 /* Products */;
 					ProjectRef = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
+				},
+				{
+					ProductGroup = 4AA007321EC6812800F42BE4 /* Products */;
+					ProjectRef = 4AA007061EC67C6200F42BE4 /* OmniJS.xcodeproj */;
 				},
 				{
 					ProductGroup = 34272183119480B300B39788 /* Products */;
@@ -1278,6 +1366,55 @@
 			fileType = wrapper.cfbundle;
 			path = OBUnitTests.xctest;
 			remoteRef = 34EAF49E1509A6E00040030A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA0071E1EC67C9400F42BE4 /* MultiMarkdown.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MultiMarkdown.framework;
+			remoteRef = 4AA0071D1EC67C9400F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA007201EC67C9400F42BE4 /* MultiMarkdown.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = MultiMarkdown.framework;
+			remoteRef = 4AA0071F1EC67C9400F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA0073D1EC6812800F42BE4 /* OmniJS.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniJS.framework;
+			remoteRef = 4AA0073C1EC6812800F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA0073F1EC6812800F42BE4 /* OmniJSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OmniJSTests.xctest;
+			remoteRef = 4AA0073E1EC6812800F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA007411EC6812800F42BE4 /* OmniJS.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniJS.framework;
+			remoteRef = 4AA007401EC6812800F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA007431EC6812800F42BE4 /* OmniJSTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OmniJSTests.xctest;
+			remoteRef = 4AA007421EC6812800F42BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4AA007451EC6812800F42BE4 /* OJSGenerateInterface */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OJSGenerateInterface;
+			remoteRef = 4AA007441EC6812800F42BE4 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		A260A7CC1280C170004743FA /* OmniUnzip.framework */ = {

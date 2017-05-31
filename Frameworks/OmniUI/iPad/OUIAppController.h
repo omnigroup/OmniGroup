@@ -138,6 +138,8 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (void)destroyCurrentSnapshotTimer;
 extern NSString * const OUISystemIsSnapshottingNotification;
 
+@property (readonly) BOOL canCreateNewDocument;
+
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;

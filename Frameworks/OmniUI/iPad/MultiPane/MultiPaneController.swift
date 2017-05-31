@@ -285,6 +285,18 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return (self.appearanceDelegate?.preferredStatusBarStyle?(for: self)) ?? UIStatusBarStyle.default
     }
     
+    open override var transitionCoordinator: UIViewControllerTransitionCoordinator? {
+        if let superCoordinator = super.transitionCoordinator {
+            return superCoordinator
+        }
+        
+        if let activeContext = multiPanePresenter.transitionContext {
+            return activeContext
+        }
+        
+        return nil
+    }
+    
     // MARK: - Public API
     @objc(addPrimaryViewController:)
     /// Add a view controller to the required pane location. Same as calling add(viewController at location: .center).
@@ -337,10 +349,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
     open func showPane(at location: MultiPaneLocation, animated: Bool) {
-        guard let pane = pane(withLocation: location),
-            pane.isVisible == false else {
-                return
-        }
+        guard let pane = pane(withLocation: location) else { return }
+        guard pane.isVisible == false else { return }
         
         multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode, animated: animated)
     }

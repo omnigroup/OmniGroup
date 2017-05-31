@@ -1736,7 +1736,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
     if (action == @selector(newDocument:)) {
-        return self.canPerformActions && self.selectedScope.canRenameDocuments && !self.selectedScope.isTrash && !self.presentedViewController;
+        return self.canPerformActions && self.selectedScope.canRenameDocuments && !self.selectedScope.isTrash && !self.presentedViewController && [[OUIDocumentAppController sharedController] canCreateNewDocument];
     }
 
     return [super canPerformAction:action withSender:sender];
@@ -2425,6 +2425,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
     for (UIBarButtonItem *button in self.navigationItem.leftBarButtonItems) {
         button.tintColor = (editing) ? editingColor : nil;
     }
+    
+    [self _updateToolbarItemsEnabledness];
 }
 
 - (void)_updateToolbarItemsEnabledness;
@@ -2455,6 +2457,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
             [self deleteBarButtonItem].enabled = YES; // Deletion while in the trash is just an immediate removal.
         }
     }
+    
+    // Disable adding new documents if we are not licensed
+    self.addDocumentButtonItem.enabled = [self canPerformAction:@selector(newDocument:) withSender:nil];
 }
 
 - (void)_ensureLegibilityOfSegmentedControl:(UISegmentedControl*)control{
@@ -2552,6 +2557,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
     }];
 
     _mainScrollView.topControls = _topControls;
+    
+    [self _updateToolbarItemsEnabledness];
 }
 
 #pragma mark Adaptability

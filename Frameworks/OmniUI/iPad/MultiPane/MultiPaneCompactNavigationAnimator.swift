@@ -24,6 +24,9 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
     var transitionWasCancelled: Bool = false // TODO: this should be dependent on the actual animation state.
     var completedTransition: (Bool) -> Void = { _ in }
     
+    fileprivate var interactionChangedBlocks: [() -> ()] = []
+    fileprivate var animationCompletionBlocks: [() -> ()] = []
+    
     var propertyAnimator: UIViewPropertyAnimator?
     
     var presentationStyle: UIModalPresentationStyle {
@@ -63,12 +66,20 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
     }
     
     func finishInteractiveTransition() {
+        for block in interactionChangedBlocks {
+            block()
+        }
+        
         if let propertyAnimator = self.propertyAnimator {
             propertyAnimator.continueAnimation(withTimingParameters: nil, durationFactor: (1.0 - propertyAnimator.fractionComplete))
         }
     }
     
     func cancelInteractiveTransition() {
+        for block in interactionChangedBlocks {
+            block()
+        }
+        
         if let propertyAnimator = self.propertyAnimator {
             propertyAnimator.isReversed = true
             propertyAnimator.continueAnimation(withTimingParameters: nil, durationFactor: propertyAnimator.fractionComplete)
@@ -93,7 +104,7 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
             self.toViewController.removeFromParentViewController()
         }
         
-        self.completedTransition(didComplete)
+        finalizeTransition(didComplete)
     }
     
     func viewController(forKey key: UITransitionContextViewControllerKey) -> UIViewController? {
@@ -138,6 +149,92 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
         self.fromViewController.willMove(toParentViewController: nil)
         parent.addChildViewController(self.toViewController)
     }
+    
+    private func finalizeTransition(_ didComplete: Bool) {
+        self.completedTransition(didComplete)
+        
+        for block in animationCompletionBlocks {
+            block()
+        }
+    }
+}
+
+extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordinatorContext {
+    
+    var transitionDuration: TimeInterval {
+        return animator.transitionDuration(using: self)
+    }
+    
+    var completionCurve: UIViewAnimationCurve {
+        let defaultCurve = UIViewAnimationCurve.linear
+        guard let propertyAnimator = propertyAnimator else { return defaultCurve }
+        guard let parameters = propertyAnimator.timingParameters else { return defaultCurve }
+        
+        switch parameters.timingCurveType {
+        case .builtin: fallthrough
+        case .cubic:
+            let cubic = parameters.cubicTimingParameters!
+            return cubic.animationCurve
+        case .spring: fallthrough
+        case .composed:
+            // TODO: can we do better than linear here?
+            return defaultCurve
+        }
+    }
+    
+    var completionVelocity: CGFloat {
+        return 1.0
+    }
+    
+    var percentComplete: CGFloat {
+        return propertyAnimator?.fractionComplete ?? 0
+    }
+    
+    var initiallyInteractive: Bool {
+        // We never change this flag, so go ahead and use it
+        return isInteractive
+    }
+    
+    var isCancelled: Bool {
+        return transitionWasCancelled
+    }
+    
+    var isInterruptible: Bool {
+        return propertyAnimator?.isInterruptible ?? false
+    }
+    
+}
+
+extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordinator {
+    
+    func animateAlongsideTransition(in view: UIView?, animation: ((UIViewControllerTransitionCoordinatorContext) -> Void)?, completion: ((UIViewControllerTransitionCoordinatorContext) -> Void)? = nil) -> Bool {
+        if let propertyAnimator = propertyAnimator {
+            propertyAnimator.addAnimations({ animation?(self) })
+            propertyAnimator.addCompletion({ _ in completion?(self) })
+        } else {
+            assert(animation == nil, "Unimplemented: MultiPaneController doesn't yet support animations alongside a non-interactive transition") // TODO figure out how to implement this if necessary
+            animationCompletionBlocks.append { [unowned self] in
+                completion?(self)
+            }
+        }
+        
+        return true
+    }
+    
+    func animate(alongsideTransition animation: ((UIViewControllerTransitionCoordinatorContext) -> Void)?, completion: ((UIViewControllerTransitionCoordinatorContext) -> Void)? = nil) -> Bool {
+        return animateAlongsideTransition(in: containerView, animation: animation, completion: completion)
+    }
+    
+    func notifyWhenInteractionChanges(_ handler: @escaping (UIViewControllerTransitionCoordinatorContext) -> Void) {
+        interactionChangedBlocks.append { [unowned self] in
+            handler(self)
+        }
+    }
+    
+    func notifyWhenInteractionEnds(_ handler: @escaping (UIViewControllerTransitionCoordinatorContext) -> Void) {
+        notifyWhenInteractionChanges(handler)
+    }
+    
 }
 
 extension UINavigationControllerOperation {

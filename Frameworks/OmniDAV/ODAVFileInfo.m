@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,10 +15,6 @@
 #import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <MobileCoreServices/MobileCoreServices.h>
-#endif
 
 RCS_ID("$Id$");
 

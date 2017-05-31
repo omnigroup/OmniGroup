@@ -1439,6 +1439,9 @@
 		4ADA019A093F3EEE00F5F615 /* OFVersionNumber.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F4C0EB078F062000E8899E /* OFVersionNumber.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4D18FAA01700C1E10087C230 /* OFThreeValuedMask.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D18FA9E1700C1E10087C230 /* OFThreeValuedMask.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4D18FAA11700C1E10087C230 /* OFThreeValuedMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D18FA9F1700C1E10087C230 /* OFThreeValuedMask.m */; };
+		4D9E12381ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */; };
+		4D9E12391ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */; };
+		4D9E123A1ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */; };
 		5F0714151461B58E00A2481F /* OFDynamicStoreListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FA495691211DE83006BB2BF /* OFDynamicStoreListener.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5F094D941912B6120023588B /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5F094D8C1912B6120023588B /* de.lproj */; };
 		5F094D951912B6120023588B /* es.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5F094D8D1912B6120023588B /* es.lproj */; };
@@ -2464,6 +2467,7 @@
 		4AF8309606A637B400964FAA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		4D18FA9E1700C1E10087C230 /* OFThreeValuedMask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFThreeValuedMask.h; sourceTree = "<group>"; };
 		4D18FA9F1700C1E10087C230 /* OFThreeValuedMask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFThreeValuedMask.m; sourceTree = "<group>"; };
+		4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Collection-OFExtensions.swift"; sourceTree = "<group>"; };
 		5A1D8CE10017C8DCC697A1D6 /* OFCharacterSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFCharacterSet.h; sourceTree = "<group>"; };
 		5A1D8CE20017C8DCC697A1D6 /* OFCharacterSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCharacterSet.m; sourceTree = "<group>"; };
 		5F094D8C1912B6120023588B /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/Mac/de.lproj; sourceTree = "<group>"; };
@@ -2955,6 +2959,7 @@
 			children = (
 				34A71C3E0663D47D0097A113 /* AppleScript */,
 				00E51D28FE8AAEA611C9CC38 /* NSArray-OFExtensions.h */,
+				4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */,
 				00E51D0CFE8AAEA611C9CC38 /* NSArray-OFExtensions.m */,
 				00E51D29FE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.h */,
 				00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */,
@@ -5481,6 +5486,7 @@
 				34A062791EC110A60099028D /* NSMutableAttributedString-OFExtensions.m in Sources */,
 				34A0627A1EC110A60099028D /* NSMutableData-OFExtensions.m in Sources */,
 				34A0627B1EC110A60099028D /* NSMutableDictionary-OFExtensions.m in Sources */,
+				4D9E123A1ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */,
 				34A0627C1EC110A60099028D /* NSMutableSet-OFExtensions.m in Sources */,
 				34A0627D1EC110A60099028D /* OFTransientObjectsTracker.m in Sources */,
 				34A0627E1EC110A60099028D /* NSMutableString-OFExtensions.m in Sources */,
@@ -5736,6 +5742,7 @@
 				42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */,
 				34F16BF2194F770100AD9C4D /* NSMutableString-OFExtensions.m in Sources */,
 				34F16BC8194F758000AD9C4D /* OFCFCallbacks.m in Sources */,
+				4D9E12391ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */,
 				34F16BA4194F74EF00AD9C4D /* OFPoint.m in Sources */,
 				34F16C39194F799C00AD9C4D /* OFXMLError.m in Sources */,
 				3E378DE61DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
@@ -5927,6 +5934,7 @@
 				4A4E071308AA72B10098FF0F /* NSMutableAttributedString-OFExtensions.m in Sources */,
 				4A4E071408AA72B10098FF0F /* NSMutableData-OFExtensions.m in Sources */,
 				4A4E071508AA72B10098FF0F /* NSMutableDictionary-OFExtensions.m in Sources */,
+				4D9E12381ED8B6DA00E04E34 /* Collection-OFExtensions.swift in Sources */,
 				4A4E071608AA72B10098FF0F /* NSMutableSet-OFExtensions.m in Sources */,
 				34DFC149190EDE0D0080AB09 /* OFTransientObjectsTracker.m in Sources */,
 				4A4E071708AA72B10098FF0F /* NSMutableString-OFExtensions.m in Sources */,

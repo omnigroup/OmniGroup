@@ -190,6 +190,8 @@ class MultiPanePresenter: NSObject {
     }
 
     private func present(pane: Pane, presentingController: UIViewController, animated: Bool) {
+        guard pane.viewController.isBeingPresented == false else { return }
+        
         self.delegate?.willPerform(operation: .present, withPane: pane)
         self.overlayPresenter = nil
         
@@ -204,6 +206,7 @@ class MultiPanePresenter: NSObject {
         })
     }
     
+    internal private(set) var transitionContext: MultiPaneNavigationTransitionContext?
     private var interactiveTransition: MultiPaneInteractivePushPopAnimator?
     
     private func navigate(to pane: Pane, presentingController: UIViewController, gesture: UIScreenEdgePanGestureRecognizer?, animated: Bool) {
@@ -251,6 +254,7 @@ class MultiPanePresenter: NSObject {
             }
             self?.delegate?.didPerform(operation: operation, withPane: currentPane)
             
+            self?.transitionContext = nil
             self?.interactiveTransition = nil
         }
         
@@ -268,9 +272,11 @@ class MultiPanePresenter: NSObject {
         if isInteractive {
             transitionContext.isInteractive = true
             let interactiveTransition = MultiPaneInteractivePushPopAnimator(with: gesture!)
+            self.transitionContext = transitionContext
             self.interactiveTransition = interactiveTransition
             interactiveTransition.startInteractiveTransition(transitionContext)
         } else {
+            self.transitionContext = transitionContext
             transitionContext.startTransition()
         }
     }

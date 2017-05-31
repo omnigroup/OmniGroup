@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16E144f" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="16G8c" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -46,8 +46,11 @@
                         <outlet property="nextKeyView" destination="134" id="147"/>
                     </connections>
                 </button>
-                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="132">
-                    <rect key="frame" x="85" y="45" width="455" height="68"/>
+                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="132">
+                    <rect key="frame" x="85" y="45" width="492" height="68"/>
+                    <constraints>
+                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="488" id="jxz-c2-i7J"/>
+                    </constraints>
                     <textFieldCell key="cell" controlSize="small" enabled="NO" sendsActionOnEndEditing="YES" alignment="left" id="158">
                         <font key="font" metaFont="system"/>
                         <string key="title">If you choose to share this information, you'll be helping keep us informed of which hardware and OS versions our software should support.
@@ -102,7 +105,7 @@ This information is kept entirely anonymous.</string>
                 </button>
             </subviews>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="132" secondAttribute="trailing" constant="57" id="09T-yi-FOC"/>
+                <constraint firstAttribute="trailing" secondItem="132" secondAttribute="trailing" constant="20" id="09T-yi-FOC"/>
                 <constraint firstItem="109" firstAttribute="baseline" secondItem="105" secondAttribute="baseline" id="0tH-Kn-AY2"/>
                 <constraint firstItem="124" firstAttribute="leading" secondItem="92" secondAttribute="leading" constant="20" id="1o4-nG-HQE"/>
                 <constraint firstItem="134" firstAttribute="leading" secondItem="132" secondAttribute="leading" constant="-2" id="8Tz-tp-yyD"/>
@@ -110,7 +113,7 @@ This information is kept entirely anonymous.</string>
                 <constraint firstItem="132" firstAttribute="top" secondItem="133" secondAttribute="bottom" constant="14" id="SX7-uJ-hfj"/>
                 <constraint firstItem="134" firstAttribute="top" secondItem="132" secondAttribute="bottom" constant="8" symbolic="YES" id="aIO-du-Xq0"/>
                 <constraint firstItem="105" firstAttribute="leading" secondItem="124" secondAttribute="trailing" constant="7" id="b7z-eZ-BtG"/>
-                <constraint firstItem="134" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="132" secondAttribute="trailing" id="gQO-r0-tgt"/>
+                <constraint firstItem="134" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="132" secondAttribute="trailing" constant="-37" id="gQO-r0-tgt"/>
                 <constraint firstItem="105" firstAttribute="baseline" secondItem="124" secondAttribute="baseline" id="i8w-Lu-ifU"/>
                 <constraint firstItem="133" firstAttribute="leading" secondItem="92" secondAttribute="leading" constant="68" id="l3C-uT-fWr"/>
                 <constraint firstItem="132" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="133" secondAttribute="trailing" id="lvy-24-uTz"/>

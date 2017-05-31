@@ -1,4 +1,4 @@
-// Copyright 2006, 2008, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,15 +11,19 @@
 
 @class NSDateComponents;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OFRelativeDateFormatter : NSDateFormatter
+
+- init;
 
 @property(nonatomic,copy) NSDateComponents *defaultTimeDateComponents;
 @property(nonatomic,assign) BOOL useEndOfDuration;
 @property(nonatomic,strong) NSDate *referenceDate;
 
-- (void)setUseRelativeDayNames:(BOOL)useRelativeDayNames;
-- (BOOL)useRelativeDayNames;
-- (void)setWantsTruncatedTime:(BOOL)wantsTruncatedTime;
-- (BOOL)wantsTruncatedTime;
+@property(nonatomic) BOOL useRelativeDayNames;
+@property(nonatomic) BOOL wantsTruncatedTime;
+
 @end
 
+NS_ASSUME_NONNULL_END

@@ -526,6 +526,10 @@ static void __iOS7B5CleanConsoleOutput(void)
     return [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
+- (BOOL)canCreateNewDocument
+{
+    return YES;
+}
 
 #pragma mark - App menu support
 

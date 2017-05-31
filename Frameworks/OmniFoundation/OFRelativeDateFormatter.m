@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,14 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OFRelativeDateFormatter
+
+// Swift (for whatever reason) isn't seeing the initializer otherwise.
+- init;
 {
-    NSDateComponents *_defaultTimeDateComponents;
-    BOOL _useEndOfDuration;
-    BOOL _useRelativeDayNames;
-    BOOL _wantsTruncatedTime;
+    return [super init];
 }
 
 - (void)dealloc;
@@ -35,21 +37,6 @@ RCS_ID("$Id$");
     OBASSERT_IF(useRelativeDayNames, [self doesRelativeDateFormatting] == NO);
     
     _useRelativeDayNames = useRelativeDayNames;
-}
-
-- (BOOL)useRelativeDayNames;
-{
-    return _useRelativeDayNames;
-}
-
-- (void)setWantsTruncatedTime:(BOOL)wantsTruncatedTime;
-{
-    _wantsTruncatedTime = wantsTruncatedTime;
-}
-
-- (BOOL)wantsTruncatedTime;
-{
-    return _wantsTruncatedTime;   
 }
 
 #pragma mark NSFomatter subclass
@@ -85,7 +72,7 @@ dateString = [super stringForObjectValue:obj]; \
 } while (0)
 
 #if 1
-- (NSString *)stringForObjectValue:(id)obj;
+- (nullable NSString *)stringForObjectValue:(nullable id)obj;
 {
     if (!obj)
 	return @"";
@@ -146,12 +133,12 @@ dateString = [super stringForObjectValue:obj]; \
 }
 #endif
 
-- (NSString *)editingStringForObjectValue:(id)obj;
+- (nullable NSString *)editingStringForObjectValue:(id)obj;
 {
     return [super stringForObjectValue:obj];
 }
 
-- (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string errorDescription:(out NSString **)error;
+- (BOOL)getObjectValue:(out id _Nullable * _Nullable)obj forString:(NSString *)string errorDescription:(out NSString * _Nullable * _Nullable)error;
 {
     // <bug:///101301> (Performance: Customers report ~1 second delays switch view modes [performance, slow, tab, perspective])
     // This was getting called during layout with Apple's text measurement string. No need to bother to try to parse it, which saves calling OFRelativeDateParser (which is relatively expensive).
@@ -203,12 +190,12 @@ dateString = [super stringForObjectValue:obj]; \
     return success;
  }
 
-- (BOOL)isPartialStringValid:(NSString **)partialStringPtr proposedSelectedRange:(NSRangePointer)proposedSelRangePtr originalString:(NSString *)origString originalSelectedRange:(NSRange)origSelRange errorDescription:(NSString **)error;
+- (BOOL)isPartialStringValid:(NSString * _Nonnull * _Nonnull)partialStringPtr proposedSelectedRange:(nullable NSRangePointer)proposedSelRangePtr originalString:(NSString *)origString originalSelectedRange:(NSRange)origSelRange errorDescription:(NSString * _Nullable * _Nullable)error;
 {
     return YES;
 }
 
-- (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string range:(inout NSRange *)rangep error:(out NSError **)error;
+- (BOOL)getObjectValue:(out id _Nullable * _Nullable)obj forString:(NSString *)string range:(inout nullable NSRange *)rangep error:(out NSError **)error;
 {
     NSDate *date = nil;
     BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] withCustomFormat:self.dateFormat error:error];
@@ -225,7 +212,7 @@ dateString = [super stringForObjectValue:obj]; \
     return nil;
 }
 
-- (NSDate *)dateFromString:(NSString *)string;
+- (nullable NSDate *)dateFromString:(NSString *)string;
 {
     OBRejectUnusedImplementation(self, _cmd);
     return nil;
@@ -233,7 +220,7 @@ dateString = [super stringForObjectValue:obj]; \
 
 #pragma mark NSCopying
 
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(nullable NSZone *)zone;
 {
     OFRelativeDateFormatter *copy = [super copyWithZone:zone];
     copy->_defaultTimeDateComponents = [_defaultTimeDateComponents copy];
@@ -244,3 +231,6 @@ dateString = [super stringForObjectValue:obj]; \
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

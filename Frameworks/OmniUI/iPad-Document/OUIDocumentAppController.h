@@ -17,7 +17,7 @@
 @class OFXAgentActivity, OFXServerAccount;
 @class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIDocumentOpenAnimator, OUIBarButtonItem, UIViewController;
 
-@interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate, ODSStoreDelegate>
+@interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate>
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 - (UIWindow *)makeMainWindow; // Called at app startup if the main xib didn't have a window outlet hooked up.

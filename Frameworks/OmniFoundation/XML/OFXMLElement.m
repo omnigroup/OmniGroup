@@ -520,6 +520,17 @@ static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
     return result;
 }
 
+- (NSUInteger)attributeCount;
+{
+    if (_multipleAttributes) {
+        return [_attribute.multiple.order count];
+    }
+    if (_attribute.single.name) {
+        return 1;
+    }
+    return 0;
+}
+
 - (nullable NSArray *)attributeNames;
 {
     if (_multipleAttributes) {
