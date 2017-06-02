@@ -585,6 +585,14 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             }
         }
         
+        panes.forEach { (pane) in
+            guard let sidebar = pane.configuration as? Sidebar else { return }
+            guard sidebar.wantsDivider else { return }
+            guard let divider = sidebar.divider else { return }
+
+            view.bringSubview(toFront:divider)
+        }
+        
         NSLayoutConstraint.activate(MultiPaneLayout.layout(forPanes: layoutPanes))
     }
     

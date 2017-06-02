@@ -41,6 +41,9 @@ RCS_ID("$Id$")
 OFDeclareDebugLogLevel(ODAVConnectionDebug);
 OFDeclareDebugLogLevel(ODAVConnectionTaskDebug)
 
+static OFXMLDocument *ODAVParseXMLResult(NSObject *selfish, NSData *responseData, NSError **outError);
+static NSMutableArray <ODAVFileInfo *> *ODAVParseMultistatus(OFXMLDocument *responseDocument, NSString *originDescription, NSURL *resultsBaseURL, NSInteger *outShortestEntryIndex, NSError **outError);
+
 #define COMPLETE_AND_RETURN(...) do { \
     if (completionHandler) \
         completionHandler(__VA_ARGS__); \
@@ -485,134 +488,21 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             }
         }
         
-        NSMutableArray <ODAVFileInfo *> *fileInfos = [NSMutableArray array];
-        
-        // We'll get back a <multistatus> with multiple <response> elements, each having <href> and <propstat>
-        OFXMLCursor *cursor = [doc cursor];
-        if (![[cursor name] isEqualToString:@"multistatus"]) {
-            __autoreleasing NSError *error;
-            NSString *reason = [NSString stringWithFormat:@"Expected “multistatus” but found “%@” in PROPFIND result from %@.", cursor.name, [request shortDescription]];
-            ODAVError(&error, ODAVOperationInvalidMultiStatusResponse, @"Expected “multistatus” element missing in PROPFIND result.", reason);
-            COMPLETE_AND_RETURN(nil, error);
-        }
-        
         // Date header
         {
             // We could avoid parsing the Date header unless it is requested, but for now I'd like to get assertion failures when a server doesn't return it.
-            NSString *dateHeader = [op valueForResponseHeader:@"Date"];
-            OBASSERT(![NSString isEmptyString:dateHeader]);
-            
-            result.serverDate = [HttpDateFormatter dateFromString:dateHeader];
+            result.serverDate = _serverDateForOperation(op);
             OBASSERT(result.serverDate);
         }
-        
-        while ([cursor openNextChildElementNamed:@"response"]) {
+
+        NSInteger shortestEntryIndex = NSNotFound;
+        NSError * __autoreleasing localError;
+        NSMutableArray <ODAVFileInfo *> *fileInfos = ODAVParseMultistatus(doc, [request shortDescription], resultsBaseURL, &shortestEntryIndex, &localError);
+        if (!fileInfos) {
+            OBASSERT(localError);
+            COMPLETE_AND_RETURN(nil, localError);
+        }
             
-            OBASSERT([[cursor name] isEqualToString:@"response"]);
-            {
-                if (![cursor openNextChildElementNamed:@"href"]) {
-                    OBRequestConcreteImplementation(self, _cmd);
-                    break;
-                }
-                
-                NSString *responsePath = OFCharacterDataFromElement([cursor currentElement]);
-                [cursor closeElement]; // href
-                //NSLog(@"responsePath = %@", responsePath);
-                
-                // There will one propstat element per status.  If there is a directory, for example, we'll get one for the resource type with status200 and one for the getcontentlength with status=404.
-                // For files, there should be one propstat with both in the same <prop>.
-                
-                BOOL exists = NO;
-                BOOL directory = NO;
-                BOOL hasPropstat = NO;
-                off_t size = 0;
-                NSDate *dateModified = nil;
-                NSString *ETag = nil;
-                NSMutableArray *unexpectedPropstatElements = nil;
-                
-                while ([cursor openNextChildElementNamed:@"propstat"]) {
-                    hasPropstat = YES;
-                    
-                    OFXMLElement *anElement;
-                    while( (anElement = [cursor nextChild]) != nil ) {
-                        NSString *childName = [anElement name];
-                        if ([childName isEqualToString:@"prop"]) {
-                            OFXMLElement *propElement;
-                            if ([anElement firstChildAtPath:@"resourcetype/collection"])
-                                directory = YES;
-                            else if ( (propElement = [anElement firstChildNamed:@"getcontentlength"]) != nil ) {
-                                NSString *sizeString = OFCharacterDataFromElement(propElement);
-                                size = [sizeString unsignedLongLongValue];
-                            }
-                            
-                            if ( (propElement = [anElement firstChildNamed:@"getlastmodified"]) != nil ) {
-                                NSString *lastModified = OFCharacterDataFromElement(propElement);
-                                dateModified = [HttpDateFormatter dateFromString:lastModified];
-                            }
-                            
-                            if ( (propElement = [anElement firstChildNamed:@"getetag"]) != nil ) {
-                                ETag = OFCharacterDataFromElement(propElement);
-                            }
-                        } else if ([childName isEqualToString:@"status"]) {
-                            NSString *statusLine = OFCharacterDataFromElement(anElement);
-                            // statusLine ~ "HTTP/1.1 200 OK we rule"
-                            NSRange l = [statusLine rangeOfString:@" "];
-                            if (l.length > 0 && [[statusLine substringWithRange:(NSRange){NSMaxRange(l), 1}] isEqualToString:@"2"])
-                                exists = YES;
-                            
-                            // If we get a 404, or other error, that doesn't mean this resource doesn't exist: it just means this property doesn't exist on this resource.
-                            // But every resource should have either a resourcetype or getcontentlength property, which will be returned to us with a 2xx status.
-                        } else {
-#ifdef OMNI_ASSERTIONS_ON
-                            // Always log the unexpected element if assertions are enabled.
-                            NSLog(@"Unexpected propstat element: %@", [anElement name]);
-#endif
-                            // Collect the unexpected propstat elements for logging later, if necessary.
-                            if (unexpectedPropstatElements == nil)
-                                unexpectedPropstatElements = [NSMutableArray array];
-                            
-                            [unexpectedPropstatElements addObject:anElement];
-                            
-                        }
-                    }
-                    [cursor closeElement]; // propstat
-                }
-                
-                if (!hasPropstat) {
-                    NSLog(@"No propstat element found for path '%@' of propfind of %@", responsePath, url);
-                    if ([unexpectedPropstatElements count] > 0)
-                        NSLog(@"Unexpected propstat elements: %@", [unexpectedPropstatElements valueForKey:@"name"]);
-                        
-                    continue;
-                }
-                
-                // We used to remove the trailing slash here to normalize, but now we do that closer to where we need it.
-                // If we make a request for this URL later, we should use the URL exactly as the server gave it to us, slash or not.
-                
-                NSURL *fullURL = [NSURL URLWithString:responsePath relativeToURL:resultsBaseURL];
-                if (fullURL == nil) {
-                    // If a PROPFIND result's path comes back unencoded (as with Apache/2.2.26 + svn/1.8.10) then let's try encoding it.
-                    fullURL = [NSURL URLWithString:[NSString encodeURLString:responsePath asQuery:NO leaveSlashes:YES leaveColons:YES] relativeToURL:resultsBaseURL];
-                    if (fullURL == nil) {
-                        __autoreleasing NSError *error;
-                        NSString *reason = [NSString stringWithFormat:@"Unable to parse path “%@” in PROPFIND result from %@.", responsePath, [request shortDescription]];
-                        ODAVError(&error, ODAVOperationInvalidPath, @"Invalid path in PROPFIND result", reason);
-                        COMPLETE_AND_RETURN(nil, error);
-                    }
-                }
-                
-                ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:fullURL name:nil exists:exists directory:directory size:size lastModifiedDate:dateModified ETag:ETag];
-                [fileInfos addObject:info];
-            }
-            [cursor closeElement]; // response
-        }
-        
-        
-        if (ODAVConnectionDebug > 0) {
-            NSLog(@"  Found %ld files", [fileInfos count]);
-            for (ODAVFileInfo *fileInfo in fileInfos)
-                NSLog(@"    %@", fileInfo.originalURL);
-        }
         result.fileInfos = fileInfos;
         
         COMPLETE_AND_RETURN(result, nil);
@@ -1276,37 +1166,14 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
         if (operation.error)
             COMPLETE_AND_RETURN(nil, operation, operation.error);
         
-        OFXMLDocument *doc = nil;
-        NSError *documentError = nil;
-        NSTimeInterval start = 0;
-        @autoreleasepool {
-            // It was found and we got data back.  Parse the response.
-            DEBUG_DAV(2, @"xmlString: %@", [NSString stringWithData:responseData encoding:NSUTF8StringEncoding]);
-            
-            if (ODAVConnectionDebug > 1)
-                start = [NSDate timeIntervalSinceReferenceDate];
-            
-            __autoreleasing NSError *error = nil;
-            doc = [[OFXMLDocument alloc] initWithData:responseData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
-            if (!doc)
-                documentError = error; // strongify this to live past the pool
-        }
-        
-        if (ODAVConnectionDebug > 1) {
-            static NSTimeInterval totalWait = 0;
-            NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
-            totalWait += operationWait;
-            NSLog(@"  ... xml: %gs (total %g)", operationWait, totalWait);
-        }
-
+        NSError * __autoreleasing documentError = nil;
+        OFXMLDocument *doc = ODAVParseXMLResult(operation, responseData, &documentError);
         if (!doc) {
-            NSLog(@"Unable to decode XML from WebDAV response: %@", [documentError toPropertyList]);
             COMPLETE_AND_RETURN(nil, nil, documentError);
         } else
             COMPLETE_AND_RETURN(doc, operation, nil);
     }];
 }
-
 
 #pragma mark - Internal API for subclasses
 
@@ -1912,4 +1779,195 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 @end
 
+static OFXMLDocument *ODAVParseXMLResult(NSObject *self, NSData *responseData, NSError **outError)
+{
+    OFXMLDocument *doc = nil;
+    NSError *documentError = nil;
+    NSTimeInterval start = 0;
+    @autoreleasepool {
+        // It was found and we got data back.  Parse the response.
+        DEBUG_DAV(3, @"xmlString: %@", [NSString stringWithData:responseData encoding:NSUTF8StringEncoding]);
+        
+        if (ODAVConnectionDebug > 1)
+            start = [NSDate timeIntervalSinceReferenceDate];
+        
+        __autoreleasing NSError *error = nil;
+        doc = [[OFXMLDocument alloc] initWithData:responseData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
+        if (!doc)
+            documentError = error; // strongify this to live past the pool
+    }
+    
+    if (ODAVConnectionDebug > 1) {
+        static NSTimeInterval totalWait = 0;
+        NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
+        totalWait += operationWait;
+        NSLog(@"  ... xml: %gs (total %g)", operationWait, totalWait);
+    }
+    
+    if (!doc) {
+        NSLog(@"Unable to decode XML from WebDAV response: %@", [documentError toPropertyList]);
+        if (outError)
+            *outError = documentError;
+        return nil;
+    } else {
+        return doc;
+    }
+}
 
+static BOOL wrongElementError(NSString *expected, NSString *subreason, NSString *originDescription, NSURL *underlyingURL, NSError **outError)
+{
+    if (outError) {
+        NSMutableDictionary *uinfo = [NSMutableDictionary dictionary];
+        [uinfo setObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Expected “%@” element missing in multistatus result from %@", @"OmniDAV", OMNI_BUNDLE, @"parsing a multistatus response, expected a particular XML element but found something else"), expected, originDescription]
+                  forKey:NSLocalizedDescriptionKey];
+        if (subreason)
+            [uinfo setObject:subreason forKey:NSLocalizedFailureReasonErrorKey];
+        if (underlyingURL)
+            [uinfo setObject:underlyingURL forKey:NSURLErrorKey];
+        
+        *outError = [NSError errorWithDomain:ODAVErrorDomain
+                                        code:ODAVOperationInvalidMultiStatusResponse
+                                    userInfo:uinfo];
+    }
+    
+    return NO;
+}
+
+static BOOL checkExpectedElement(OFXMLCursor *cursor, NSString *expected, NSString *originDescription, NSURL *underlyingURL, NSError **outError)
+{
+    if (![[cursor name] isEqualToString:@"multistatus"]) {
+        NSString *reason = [NSString stringWithFormat:@"Expected <%@> but found <%@>", expected, cursor.name];
+        return wrongElementError(expected, reason, originDescription, underlyingURL, outError);
+    }
+    
+    return YES;
+}
+
+static NSMutableArray <ODAVFileInfo *> *ODAVParseMultistatus(OFXMLDocument *doc, NSString *originDescription, NSURL *resultsBaseURL, NSInteger *outShortestEntryIndex, NSError **outError)
+{
+    NSMutableArray <ODAVFileInfo *> *fileInfos = [NSMutableArray array];
+    
+    NSString *shortestEntryPath = nil;
+    NSInteger shortestEntryIndex = NSNotFound;
+    
+    // We'll get back a <multistatus> with multiple <response> elements, each having <href> and <propstat>
+    OFXMLCursor *cursor = [doc cursor];
+    if (!checkExpectedElement(cursor, @"multistatus", originDescription, resultsBaseURL, outError))
+        return nil;
+    
+    while ([cursor openNextChildElementNamed:@"response"]) {
+        
+        OBASSERT([[cursor name] isEqualToString:@"response"]);
+        {
+            if (![cursor openNextChildElementNamed:@"href"]) {
+                wrongElementError(@"href", nil, originDescription, resultsBaseURL, outError);
+                return nil;
+            }
+            
+            NSString *responsePath = OFCharacterDataFromElement([cursor currentElement]);
+            [cursor closeElement]; // href
+            //NSLog(@"responsePath = %@", responsePath);
+            
+            // There will one propstat element per status.  If there is a directory, for example, we'll get one for the resource type with status200 and one for the getcontentlength with status=404.
+            // For files, there should be one propstat with both in the same <prop>.
+            
+            BOOL exists = NO;
+            BOOL directory = NO;
+            BOOL hasPropstat = NO;
+            off_t size = 0;
+            NSDate *dateModified = nil;
+            NSString *ETag = nil;
+            NSMutableArray *unexpectedPropstatElements = nil;
+            
+            while ([cursor openNextChildElementNamed:@"propstat"]) {
+                hasPropstat = YES;
+                
+                OFXMLElement *anElement;
+                while( (anElement = [cursor nextChild]) != nil ) {
+                    NSString *childName = [anElement name];
+                    if ([childName isEqualToString:@"prop"]) {
+                        OFXMLElement *propElement;
+                        if ([anElement firstChildAtPath:@"resourcetype/collection"])
+                            directory = YES;
+                        else if ( (propElement = [anElement firstChildNamed:@"getcontentlength"]) != nil ) {
+                            NSString *sizeString = OFCharacterDataFromElement(propElement);
+                            size = [sizeString unsignedLongLongValue];
+                        }
+                        
+                        if ( (propElement = [anElement firstChildNamed:@"getlastmodified"]) != nil ) {
+                            NSString *lastModified = OFCharacterDataFromElement(propElement);
+                            dateModified = [HttpDateFormatter dateFromString:lastModified];
+                        }
+                        
+                        if ( (propElement = [anElement firstChildNamed:@"getetag"]) != nil ) {
+                            ETag = OFCharacterDataFromElement(propElement);
+                        }
+                    } else if ([childName isEqualToString:@"status"]) {
+                        NSString *statusLine = OFCharacterDataFromElement(anElement);
+                        // statusLine ~ "HTTP/1.1 200 OK we rule"
+                        NSRange l = [statusLine rangeOfString:@" "];
+                        if (l.length > 0 && [[statusLine substringWithRange:(NSRange){NSMaxRange(l), 1}] isEqualToString:@"2"])
+                            exists = YES;
+                        
+                        // If we get a 404, or other error, that doesn't mean this resource doesn't exist: it just means this property doesn't exist on this resource.
+                        // But every resource should have either a resourcetype or getcontentlength property, which will be returned to us with a 2xx status.
+                    } else {
+#ifdef OMNI_ASSERTIONS_ON
+                        // Always log the unexpected element if assertions are enabled.
+                        NSLog(@"Unexpected propstat element: %@", [anElement name]);
+#endif
+                        // Collect the unexpected propstat elements for logging later, if necessary.
+                        if (unexpectedPropstatElements == nil)
+                            unexpectedPropstatElements = [NSMutableArray array];
+                        
+                        [unexpectedPropstatElements addObject:anElement];
+                        
+                    }
+                }
+                [cursor closeElement]; // propstat
+            }
+            
+            if (!hasPropstat) {
+                NSLog(@"No propstat element found for path '%@' of PROPFIND of %@", responsePath, resultsBaseURL);
+                if ([unexpectedPropstatElements count] > 0)
+                    NSLog(@"Unexpected propstat elements: %@", [unexpectedPropstatElements valueForKey:@"name"]);
+                
+                continue;
+            }
+            
+            // We used to remove the trailing slash here to normalize, but now we do that closer to where we need it.
+            // If we make a request for this URL later, we should use the URL exactly as the server gave it to us, slash or not.
+            
+            NSURL *fullURL = [NSURL URLWithString:responsePath relativeToURL:resultsBaseURL];
+            if (fullURL == nil) {
+                // If a PROPFIND result's path comes back unencoded (as with Apache/2.2.26 + svn/1.8.10) then let's try encoding it.
+                fullURL = [NSURL URLWithString:[NSString encodeURLString:responsePath asQuery:NO leaveSlashes:YES leaveColons:YES] relativeToURL:resultsBaseURL];
+                if (fullURL == nil) {
+                    __autoreleasing NSError *error;
+                    NSString *reason = [NSString stringWithFormat:@"Unable to parse path “%@” in PROPFIND result from %@.", responsePath, originDescription];
+                    ODAVError(&error, ODAVOperationInvalidPath, @"Invalid path in PROPFIND result", reason);
+                    return nil;
+                }
+            }
+            
+            ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:fullURL name:nil exists:exists directory:directory size:size lastModifiedDate:dateModified ETag:ETag];
+            [fileInfos addObject:info];
+            
+            // When we PROPFIND a collection, we get the collection's info itself, mixed with the info of its contents.
+            // My reading of RFC4918 [5.2] is that all of the contained items MUST have URLs consisting of the container's URL plus one path component.
+            // (The resources may be available at other URLs as well, but I *think* those URLs will not be returned in our multistatus.)
+            // If so, and ignoring the possibility of resources with zero-length names, the container will be the item with the shortest path.
+            // Keep track of the shortest path, and tell the caller which one it was.
+            if (!shortestEntryPath || (shortestEntryPath.length > responsePath.length)) {
+                shortestEntryPath = responsePath;
+                shortestEntryIndex = [fileInfos count] - 1;
+            }
+        }
+        [cursor closeElement]; // response
+    }
+    
+    if (outShortestEntryIndex)
+        *outShortestEntryIndex = shortestEntryIndex;
+    
+    return fileInfos;
+}

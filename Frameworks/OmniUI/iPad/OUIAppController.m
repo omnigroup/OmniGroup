@@ -140,7 +140,6 @@ static void __iOS7B5CleanConsoleOutput(void)
                                   nil
                                   ];
         [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
-        [OFBundleRegistry registerKnownBundles];
         [OFPreference class];
         
         // Ensure that OUIKeyboardNotifier instantiates the shared notifier before the keyboard is shown for the first time, otherwise `lastKnownKeyboardHeight` and `keyboardVisible` may be incorrect.
@@ -280,8 +279,13 @@ static void __iOS7B5CleanConsoleOutput(void)
             [alertController addAction:[UIAlertAction actionWithTitle:optionalActionTitle style:UIAlertActionStyleDefault handler:optionalAction]];
         }
 
-        [viewController presentViewController:alertController animated:YES completion:^{}];
-        
+        UIViewController *topViewController = viewController;
+        UIViewController *vc;
+        while ((vc = topViewController.presentedViewController)) {
+            topViewController = vc;
+        }
+
+        [topViewController presentViewController:alertController animated:YES completion:^{}];
     }];
 }
 

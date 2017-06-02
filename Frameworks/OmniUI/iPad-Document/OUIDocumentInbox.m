@@ -183,7 +183,7 @@ RCS_ID("$Id$");
         if ([entry.name rangeOfString:@"__MACOSX" options:(NSAnchoredSearch | NSCaseInsensitiveSearch)].location != NSNotFound)
             continue;
         NSRange slashRange = [entry.name rangeOfString:@"/"];
-        if (slashRange.location == NSNotFound || slashRange.location < (entry.name.length - 1))
+        if (slashRange.location == NSNotFound || slashRange.location == (entry.name.length - 1))
             [result addObject:entry.name];
     }
     return result;

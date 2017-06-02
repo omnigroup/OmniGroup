@@ -287,69 +287,69 @@ static NSString *_normalizedPath(NSString *path)
 + (NSArray *)standardPath;
 {
     static NSArray *standardPath = nil;
-    NSArray *configPathArray;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSArray *configPathArray;
 
-    if (standardPath)
-        return standardPath;
-
-    // Bundles are stored in the Resources directory of the applications, but tools might have bundles in the same directory as their binary.  Use both paths.
-    // Use the controllingBundle in case we are a unit test.
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
-    NSBundle *mainBundle = [OFController controllingBundle];
-    NSString *mainBundlePath = _normalizedPath([mainBundle bundlePath]);
-    NSString *mainBundleResourcesPath = [[mainBundlePath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"PlugIns"];
+        // Bundles are stored in the Resources directory of the applications, but tools might have bundles in the same directory as their binary.  Use both paths.
+#if OMNI_BUILDING_FOR_MAC
+        NSBundle *mainBundle = [OFController controllingBundle]; // Use the controllingBundle in case we are a unit test.
+        NSString *mainBundlePath = _normalizedPath([mainBundle bundlePath]);
+        NSString *mainBundleResourcesPath = [[mainBundlePath stringByAppendingPathComponent:@"Contents"] stringByAppendingPathComponent:@"PlugIns"];
+#elif OMNI_BUILDING_FOR_IOS
+        NSBundle *mainBundle = [NSBundle mainBundle];
+        NSString *mainBundlePath = _normalizedPath([mainBundle bundlePath]);  // iOS bundles are flat, so look for plug-ins at the top level.
 #endif
 
-    // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
-    if ((configPathArray = [StandardUserDefaults arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
-        (configPathArray = [configDictionary objectForKey:OFBundleRegistryConfigSearchPaths])) {
+        // Search for the config path array in defaults, then in the app wrapper's configuration dictionary.  (In gdb, we set the search path on the command line where it will appear in the NSArgumentDomain, overriding the app wrapper's configuration.)
+        if ((configPathArray = [StandardUserDefaults arrayForKey:OFBundleRegistryConfigSearchPaths]) ||
+            (configPathArray = [configDictionary objectForKey:OFBundleRegistryConfigSearchPaths])) {
 
-        NSMutableArray *newPath = [[NSMutableArray alloc] init];
-        for (NSString *path in configPathArray) {
-            if ([path isEqualToString:OFBundleRegistryConfigAppWrapperPath]) {
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
-                [newPath addObject:mainBundleResourcesPath];
-                [newPath addObject:mainBundlePath];
+            NSMutableArray *newPath = [[NSMutableArray alloc] init];
+            for (NSString *path in configPathArray) {
+                if ([path isEqualToString:OFBundleRegistryConfigAppWrapperPath]) {
+#if OMNI_BUILDING_FOR_MAC
+                    [newPath addObject:mainBundleResourcesPath];
+#endif
+                    [newPath addObject:mainBundlePath];
+
 #ifdef DEBUG
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-                // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
-                // (But don't look here if we're sandboxed, because that won't work.)
-                if (![[NSProcessInfo processInfo] isSandboxed])
-                    [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
+                    // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
+                    // (But don't look here if we're sandboxed, because that won't work.)
+                    if (![[NSProcessInfo processInfo] isSandboxed])
+                        [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
+#endif
+#endif
+                } else
+                    [newPath addObject:path];
+            }
+
+            standardPath = [newPath copy];
+            [newPath release];
+        } else {
+            // standardPath = ("~/Library/Components", "/Library/Components", "AppWrapper");
+            standardPath = [[NSArray alloc] initWithObjects:
+
+                            // We probably could not include this for any platform, but this avoids the need for a sandbox rule.
+#if OMNI_BUILDING_FOR_MAC
+                            // User's library directory
+                            [NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
+
+                            // Standard Mac OS X library directories
+                            [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]],
 #endif
 
+                            // App wrapper
+#if OMNI_BUILDING_FOR_MAC
+                            mainBundleResourcesPath,
 #endif
-#endif
-            } else
-                [newPath addObject:path];
+                            mainBundlePath,
+                            nil];
         }
-
-        standardPath = [newPath copy];
-        [newPath release];
-    } else {
-        // standardPath = ("~/Library/Components", "/Library/Components", "AppWrapper");
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
-        standardPath = [[NSArray alloc] initWithObjects:
-                        
-            // We probably could not include this for any platform, but this avoids the need for a sandbox rule.
-#if !OMNI_BUILDING_FOR_SERVER
-            // User's library directory
-            [NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
-
-            // Standard Mac OS X library directories
-            [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]],
-#endif
-                        
-            // App wrapper
-            mainBundleResourcesPath,
-            mainBundlePath,
-            nil];
-#else
-        standardPath = @[];
-#endif
-    }
-
+    });
+    
     return standardPath;
 }
 
@@ -701,6 +701,7 @@ static NSString *_normalizedPath(NSString *path)
 #endif
 
         OBASSERT(infoDictionary != nil);
+        OBASSERT([infoDictionary count] > 0, "Empty infoDictionary reported for bundle %@", bundle); // iOS will return an empty dictionary in some error conditions
 
         // OK, we're going to register this bundle
         [registeredBundleNames addObject:bundleName];

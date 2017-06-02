@@ -235,6 +235,11 @@ static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id v
 // Generic property getter; logic here and in the specific index cases must match up
 id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
 {
+    return ODOObjectPrimitiveValueForPropertyWithOptions(self, prop, ODOObjectPrimitiveValueForPropertyOptionDefault);
+}
+
+id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *prop, ODOObjectPrimitiveValueForPropertyOptions options)
+{
     OBPRECONDITION(prop != nil);
     OBPRECONDITION(!self->_flags.isFault || prop == [[self->_objectID entity] primaryKeyAttribute]);
     
@@ -257,7 +262,7 @@ id ODOObjectPrimitiveValueForProperty(ODOObject *self, ODOProperty *prop)
             // TODO: Use something like __builtin_expect to tell the inline that rel != nil?  This is the slow path, so I'm not sure it matters...
             value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, snapshotIndex, rel);
         }
-    } else if (value == nil && flags.transient && flags.calculated && ![self _isCalculatingValueForKey:prop.name]) {
+    } else if (value == nil && flags.transient && flags.calculated && ((options & ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues) != 0) && ![self _isCalculatingValueForKey:prop.name]) {
         value = [self calculateValueForKey:prop.name];
         if (value != nil) {
             if ([value conformsToProtocol:@protocol(NSCopying)]) {
@@ -473,8 +478,10 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
         return;
     }
     
+    ODOObjectPrimitiveValueForPropertyOptions options = ODOObjectPrimitiveValueForPropertyOptionDefault & ~(ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues);
+    
     id newValue = value;
-    id oldValue = ODOObjectPrimitiveValueForProperty(self, prop); // It is important to use this so that we'll get lazy to-one faults created
+    id oldValue = ODOObjectPrimitiveValueForPropertyWithOptions(self, prop, options); // It is important to use this so that we'll get lazy to-one faults created
     if (oldValue == value)
         return;
     

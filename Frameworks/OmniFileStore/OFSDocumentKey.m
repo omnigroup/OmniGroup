@@ -442,6 +442,12 @@ static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password
     return super.keySlots;
 }
 
+- (NSData *)data;
+{
+    [self _updateInner];
+    return super.data;
+}
+
 - (BOOL)valid;
 {
     return (slots != nil || mutableSlots != nil)? YES : NO;

@@ -15,7 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 void ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key) OB_HIDDEN;
 
+typedef NS_OPTIONS(NSUInteger, ODOObjectPrimitiveValueForPropertyOptions) {
+    ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues = 1 << 0,
+    ODOObjectPrimitiveValueForPropertyOptionDefault = (ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues),
+};
+
 _Nullable id ODOObjectPrimitiveValueForProperty(ODOObject *object, ODOProperty *prop) OB_HIDDEN;
+_Nullable id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *object, ODOProperty *prop, ODOObjectPrimitiveValueForPropertyOptions options) OB_HIDDEN;
 void ODOObjectSetPrimitiveValueForProperty(ODOObject *object, _Nullable id value, ODOProperty *prop) OB_HIDDEN;
 
 _Nullable id ODODynamicValueForProperty(ODOObject *object, ODOProperty *prop) OB_HIDDEN;

@@ -56,7 +56,7 @@ OBDidLoad(^{
     return *(const OSType *)[signatureBytes bytes];
 }
 
-- (NSString *)helperApplicationForScheme:(NSString *)scheme;
+- (nullable NSString *)helperApplicationForScheme:(NSString *)scheme;
 {
     OBPRECONDITION(![NSString isEmptyString:scheme]);
     if (![scheme hasSuffix:@":"]) {
@@ -78,7 +78,7 @@ OBDidLoad(^{
     return nil;
 }
 
-- (BOOL)launchURL:(NSString *)urlString error:(NSError **)outError;
+- (BOOL)launchURL:(nullable NSString *)urlString error:(NSError **)outError;
     // -launchURL: now uses Launch Services rather than Internet Config.  Since this method was really the driving force behind the class (and it's now both simpler to implement and much more robust), we should probably just torch this whole class and replace it with OALaunchServices or something.  But I'm not doing that now, because don't want to change more code than absolutely necessary this close to release.  (I wouldn't have even touched this if Internet Config hadn't been crashing on URLs which encoded Kanji characters.)
     // RDR: actually, why not kill this method entirely, since 10.1 and newer have -[NSWorkspace openURL:] which is documented to be a similar wrapper for LSOpenCFURLRef()? Maybe also pull the other stuff in this class which isn't used by our apps and is based on non-Apple-recommended API, and rename the class to something more appropriate? 
 {
@@ -132,10 +132,13 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return YES;
 }
 
-- (NSString *)_appleMailScriptForMailApp:(NSString *)mailApp receiver:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames;
+- (NSString *)_appleMailScriptForMailApp:(NSString *)mailApp receiver:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames;
 {
     NSMutableString *script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n set m to a reference to (make new outgoing message)\ntell m\n", mailApp];
-    [script appendFormat:@"make new to recipient with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(receiver)];
+
+    if (receiver != nil) {
+        [script appendFormat:@"make new to recipient with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(receiver)];
+    }
     if (carbonCopy != nil)
         [script appendFormat:@"make new cc recipient with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(carbonCopy)];
     if (blindCarbonCopy != nil)
@@ -158,12 +161,14 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return script;
 }
 
-- (NSString *)_entourageScriptForMailApp:(NSString *)mailApp receiver:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames;
+- (NSString *)_entourageScriptForMailApp:(NSString *)mailApp receiver:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames;
 {
     NSMutableString *script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n set m to make new draft window with properties {%%@}\nactivate\nend tell\n", mailApp];
     NSMutableArray *properties = [NSMutableArray array];
 
-    [properties addObject:[NSString stringWithFormat:@"to recipients: %@", OAFragmentedAppleScriptStringForString(receiver)]];
+    if (receiver != nil) {
+        [properties addObject:[NSString stringWithFormat:@"to recipients: %@", OAFragmentedAppleScriptStringForString(receiver)]];
+    }
     if (carbonCopy != nil)
         [properties addObject:[NSString stringWithFormat:@"CC recipients: %@", OAFragmentedAppleScriptStringForString(carbonCopy)]];
     if (blindCarbonCopy != nil)
@@ -198,13 +203,16 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return [NSString stringWithFormat:script, [properties componentsJoinedByString:@", "]];
 }
 
-- (NSString *)_mailSmithScriptForMailApp:(NSString *)mailApp receiver:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames;
+- (NSString *)_mailSmithScriptForMailApp:(NSString *)mailApp receiver:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames;
 {
     // <sgehrman@cocoatech.com>
     NSMutableString *script = [NSMutableString stringWithFormat:@"tell application \"%@\"\n set m to make new message window\n", mailApp];
     [script appendString:@"activate\n"];
     [script appendString:@"tell m\n"];
-    [script appendFormat:@"make new to_recipient at end with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(receiver)];
+
+    if (receiver != nil) {
+        [script appendFormat:@"make new to_recipient at end with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(receiver)];
+    }
     if (carbonCopy != nil)
         [script appendFormat:@"make new cc_recipient at end with properties {address: %@}\n", OAFragmentedAppleScriptStringForString(carbonCopy)];
     if (blindCarbonCopy != nil)
@@ -225,7 +233,7 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return script;
 }
 
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames error:(NSError **)outError;
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
 {
     NSString *script = nil;
     NSString *mailApp = [self helperApplicationForScheme:@"mailto"];
@@ -242,7 +250,7 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     if (script == nil) {
         if (attachmentFilenames.count == 0) {
             // If we're not trying to attach a file, just use a mailto URL
-            NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", receiver, [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
+            NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", (receiver ?: @""), [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
             if (![NSString isEmptyString:carbonCopy])
             urlString = [urlString stringByAppendingFormat:@"&cc=%@", [NSString encodeURLString:carbonCopy asQuery:NO leaveSlashes:NO leaveColons:NO]];
             if (![NSString isEmptyString:blindCarbonCopy])
@@ -267,12 +275,12 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     return YES;
 }
 
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError
 {
     return [self launchMailTo:receiver carbonCopy:carbonCopy blindCarbonCopy:nil subject:subject body:body attachments:nil error:outError];
 }
 
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError;
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
 {
     return [self launchMailTo:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:nil error:outError];
 }

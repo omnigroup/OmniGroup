@@ -54,7 +54,7 @@
 - (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
 - (BOOL)_canUseEmailBodyForExportType:(NSString *)exportType;
 - (NSArray<OUIMenuOption *> *)additionalExportOptionsForFileItem:(ODSFileItem *)fileItem;
-- (NSMutableArray *)appSpecificAvailableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
+
 - (BOOL)supportsSendToCameraRoll;
 - (BOOL)supportsPrinting;
 - (BOOL)supportsCopyAsImage;
@@ -70,4 +70,9 @@
 - (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;  // not sure we should really have the navigation controller here.  it might need to just be generic view controller (our hostController).  also, it might turn out this can be implemented on the superclass instead of the subclasses.
 - (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
 
+@end
+
+@interface OUIDocumentExporter (OUIDocumentExporterDeprecated)
+// Subclass -[ODSFileItem(OUIDocumentExtensions) availableExportTypesForFileExportToLocalDocuments:] instead.
+- (NSArray *)appSpecificAvailableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType OB_DEPRECATED_ATTRIBUTE;
 @end

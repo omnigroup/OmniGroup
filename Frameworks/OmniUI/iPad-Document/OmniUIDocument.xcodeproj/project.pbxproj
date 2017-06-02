@@ -333,6 +333,8 @@
 		3458F1231B5D75EC000011A6 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1221B5D75EC000011A6 /* OmniAppKit.framework */; };
 		3458F1251B5D75F3000011A6 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1241B5D75F3000011A6 /* MessageUI.framework */; };
 		3470A40D1BDEC0AF00D14049 /* OmniUIDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34EB648A1EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EB64881EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34EB648B1EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34EB64891EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.m */; };
 		423F4FA91BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = 423F4FAB1BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings */; };
 		424E458A1EBCF40200D07D23 /* OUIToolbarDocuments.png in Resources */ = {isa = PBXBuildFile; fileRef = 424E45871EBCF40200D07D23 /* OUIToolbarDocuments.png */; };
 		424E458B1EBCF40200D07D23 /* OUIToolbarDocuments@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 424E45881EBCF40200D07D23 /* OUIToolbarDocuments@2x.png */; };
@@ -661,6 +663,8 @@
 		34CA25CD1A5DA282000FBEC1 /* OmniPresenceToolbarIcon-Active@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Active@3x.png"; sourceTree = "<group>"; };
 		34D77A4A17C7E5DB00829C5D /* OUIMenuItemImport.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemImport.png; sourceTree = "<group>"; };
 		34D77A4B17C7E5DB00829C5D /* OUIMenuItemImport@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemImport@2x.png"; sourceTree = "<group>"; };
+		34EB64881EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODSFileItem-OUIDocumentExtensions.h"; sourceTree = SOURCE_ROOT; };
+		34EB64891EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODSFileItem-OUIDocumentExtensions.m"; sourceTree = SOURCE_ROOT; };
 		423F4FAA1BD6DC8B0038F957 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OmniUIDocumentKeycommands.strings; sourceTree = "<group>"; };
 		424E45871EBCF40200D07D23 /* OUIToolbarDocuments.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarDocuments.png; sourceTree = "<group>"; };
 		424E45881EBCF40200D07D23 /* OUIToolbarDocuments@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarDocuments@2x.png"; sourceTree = "<group>"; };
@@ -1386,6 +1390,8 @@
 				342F490A16779B89007C5FFB /* OUIDocument.m */,
 				FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */,
 				FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */,
+				34EB64881EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.h */,
+				34EB64891EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.m */,
 			);
 			name = Document;
 			sourceTree = "<group>";
@@ -1402,6 +1408,7 @@
 				3458F0521B5D7026000011A6 /* OUIDocumentCreationTemplatePickerViewController.h in Headers */,
 				3458F0781B5D7078000011A6 /* OUIExportOptionViewCell.h in Headers */,
 				3458F04D1B5D7026000011A6 /* OUIDocumentHomeScreenAnimator.h in Headers */,
+				34EB648A1EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.h in Headers */,
 				3458F0351B5D6FD7000011A6 /* OUIDocumentInbox.h in Headers */,
 				3458F0681B5D7064000011A6 /* OUIDocumentPreviewGenerator.h in Headers */,
 				3458F0491B5D7026000011A6 /* OUIDocumentPickerAdaptableContainerViewController.h in Headers */,
@@ -1858,6 +1865,7 @@
 				3458F0531B5D7026000011A6 /* OUIDocumentCreationTemplatePickerViewController.m in Sources */,
 				3458F08D1B5D70B1000011A6 /* OUIDocumentNavigationItem.m in Sources */,
 				3458F0711B5D7078000011A6 /* OUISyncDownloader.m in Sources */,
+				34EB648B1EDF31C000E3086E /* ODSFileItem-OUIDocumentExtensions.m in Sources */,
 				3458F06F1B5D7078000011A6 /* OUIWebDAVSyncListController.m in Sources */,
 				3458F0511B5D7026000011A6 /* OUIDocumentPickerViewController.m in Sources */,
 				3458F0551B5D7026000011A6 /* OUIDocumentSubfolderAnimator.m in Sources */,

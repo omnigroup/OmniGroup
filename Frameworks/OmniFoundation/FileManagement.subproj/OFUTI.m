@@ -319,6 +319,13 @@ NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, 
     return resolvedType;
 }
 
+// This cleans up some Swift bridging oddities with Unmanaged<CFString>? results.
+NSString * _Nullable OFUTIPreferredTagWithClass(NSString *fileType, CFStringRef tag)
+{
+    return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, tag));
+}
+
+
 static NSString * _Nullable _OFGetFileExtensionFromDeinitionsForType(NSDictionary *definitions, NSString *fileType)
 {
     NSDictionary *definition = [definitions objectForKey:fileType];

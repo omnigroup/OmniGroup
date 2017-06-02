@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniBase/OBUtilities.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSArray, NSData, NSError;
 
@@ -21,16 +23,18 @@
 
 // Helper applications for URLs
 
-- (NSString *)helperApplicationForScheme:(NSString *)scheme;
-- (BOOL)launchURL:(NSString *)urlString error:(NSError **)outError;
+- (nullable NSString *)helperApplicationForScheme:(nullable NSString *)scheme;
+- (BOOL)launchURL:(nullable NSString *)urlString error:(NSError **)outError;
 
 // API for sending email
 
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames error:(NSError **)outError;
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body attachments:(nullable NSArray <NSString *> *)attachmentFilenames error:(NSError **)outError;
 
 // Convenience methods which call the above method
 
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError;
-- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError;
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
+- (BOOL)launchMailTo:(nullable NSString *)receiver carbonCopy:(nullable NSString *)carbonCopy blindCarbonCopy:(nullable NSString *)blindCarbonCopy subject:(nullable NSString *)subject body:(nullable NSString *)body error:(NSError **)outError;
 
 @end
+
+NS_ASSUME_NONNULL_END

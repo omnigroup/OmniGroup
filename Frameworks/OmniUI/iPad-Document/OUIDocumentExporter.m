@@ -5,25 +5,27 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#import <OmniUIDocument/OUIDocumentExporter.h>
+
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
+#import <OmniUIDocument/OUIErrors.h>
+#import <OmniUIDocument/ODSFileItem-OUIDocumentExtensions.h>
+
+#import "OUIExportOptionsController.h"
+#import "OUIImportExportAccountListViewController.h"
+
 @import OmniBase;
 @import OmniFoundation;
 @import MessageUI;
 @import MobileCoreServices;
 @import Photos;
 @import OmniUI;
+@import OmniFileExchange;
 
 RCS_ID("$Id$")
-
-#import <OmniUI/OUIAppController.h>
-#import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentExporter.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
-#import <OmniUIDocument/OUIErrors.h>
-
-#import "OUIExportOptionsController.h"
-#import "OUIImportExportAccountListViewController.h"
 
 @implementation OUIDocumentExporter
 
@@ -215,7 +217,9 @@ RCS_ID("$Id$")
 
 - (NSArray *)availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType
 {
-    NSMutableArray *exportTypes = [self appSpecificAvailableExportTypesForFileItem:fileItem serverAccount:serverAccount exportOptionsType:exportOptionsType];
+    BOOL isFileExportToLocalDocuments = (exportOptionsType == OUIExportOptionsExport) && OFISEQUAL(serverAccount.type.identifier, OFXiTunesLocalDocumentsServerAccountTypeIdentifier);
+
+    NSMutableArray *exportTypes = [[fileItem availableExportTypesForFileExportToLocalDocuments:isFileExportToLocalDocuments] mutableCopy];
     if (!exportTypes) {
         exportTypes = [NSMutableArray array];
         
@@ -681,11 +685,6 @@ RCS_ID("$Id$")
 }
 
 - (NSArray<OUIMenuOption *> *)additionalExportOptionsForFileItem:(ODSFileItem *)fileItem
-{
-    return nil;
-}
-
-- (NSMutableArray *)appSpecificAvailableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType
 {
     return nil;
 }
