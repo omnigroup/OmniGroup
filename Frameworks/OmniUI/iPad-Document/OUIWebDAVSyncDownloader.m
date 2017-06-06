@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -359,7 +359,6 @@ RCS_ID("$Id$");
 #endif
     if ([fileWrapper isDirectory]) {
         targetURL = OFURLWithTrailingSlash(targetURL); // RFC 2518 section 5.2 says: In general clients SHOULD use the "/" form of collection names.
-        __autoreleasing NSError *error = nil;
         if (atomically) {
             OBASSERT(_uploadTemporaryURL == nil); // Otherwise we'd need a stack of things to rename rather than just one
             OBASSERT(_uploadFinalURL == nil);
@@ -369,7 +368,11 @@ RCS_ID("$Id$");
             targetURL = OFURLWithTrailingSlash(OFURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
         }
         
-        NSURL *parentURL = [connection synchronousMakeCollectionAtURL:targetURL error:&error].URL;
+        ODAVURLResult *mkcolResult = [connection synchronousMakeCollectionAtURL:targetURL error:outError];
+        if (!mkcolResult)
+            return NO;
+        
+        NSURL *parentURL = mkcolResult.URL;
         if (atomically) {
             _uploadTemporaryURL = parentURL;
             if (parentURL != nil && !OFURLEqualsURL(parentURL, targetURL)) {

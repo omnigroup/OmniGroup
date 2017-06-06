@@ -30,3 +30,20 @@ public extension Collection {
         return self[position]
     }
 }
+
+public extension Collection where Iterator.Element: NSObjectProtocol {
+    func sorted(using descriptors: [NSSortDescriptor]) -> [Iterator.Element] {
+        return self.sorted { (element1, element2) in
+            for descriptor in descriptors {
+                let compareResult = descriptor.compare(element1, to: element2)
+                switch compareResult {
+                case .orderedSame: continue
+                case .orderedAscending: return true
+                case .orderedDescending: return false
+                }
+            }
+            return false
+        }
+    }
+}
+

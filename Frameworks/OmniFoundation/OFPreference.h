@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 // OFPreference instances should be readable in a thread-safe way from any queue, but writing to them should happen on the main queue.
 // See <bug:///122290> (Bug: OFPreference deadlock) and _setValueUnderlyingValue from implementation.
-@interface OFPreference : NSObject
+@interface OFPreference : OBObject
 
 // API
 

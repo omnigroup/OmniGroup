@@ -311,7 +311,9 @@ static NSString *_normalizedPath(NSString *path)
 #if OMNI_BUILDING_FOR_MAC
                     [newPath addObject:mainBundleResourcesPath];
 #endif
+#if OMNI_BUILDING_FOR_MAC || OMNI_BUILDING_FOR_IOS
                     [newPath addObject:mainBundlePath];
+#endif
 
 #ifdef DEBUG
 
@@ -329,24 +331,26 @@ static NSString *_normalizedPath(NSString *path)
             standardPath = [newPath copy];
             [newPath release];
         } else {
-            // standardPath = ("~/Library/Components", "/Library/Components", "AppWrapper");
-            standardPath = [[NSArray alloc] initWithObjects:
-
-                            // We probably could not include this for any platform, but this avoids the need for a sandbox rule.
+            NSMutableArray *paths = [NSMutableArray array];
+            
+            // We probably could not include this for any platform, but this avoids the need for a sandbox rule.
 #if OMNI_BUILDING_FOR_MAC
-                            // User's library directory
-                            [NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]],
+            // User's library directory
+            [paths addObject:[NSString pathWithComponents:[NSArray arrayWithObjects:NSHomeDirectory(), @"Library", @"Components", nil]]];
 
-                            // Standard Mac OS X library directories
-                            [NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]],
+            // Standard Mac OS X library directories
+            [paths addObject:[NSString pathWithComponents:[NSArray arrayWithObjects:@"/", @"Library", @"Components", nil]]];
 #endif
 
-                            // App wrapper
+            // App wrapper
 #if OMNI_BUILDING_FOR_MAC
-                            mainBundleResourcesPath,
+            [paths addObject:mainBundleResourcesPath];
 #endif
-                            mainBundlePath,
-                            nil];
+#if OMNI_BUILDING_FOR_MAC || OMNI_BUILDING_FOR_IOS
+            [paths addObject:mainBundlePath];
+#endif
+            
+            standardPath = [paths copy];
         }
     });
     
@@ -701,7 +705,14 @@ static NSString *_normalizedPath(NSString *path)
 #endif
 
         OBASSERT(infoDictionary != nil);
-        OBASSERT([infoDictionary count] > 0, "Empty infoDictionary reported for bundle %@", bundle); // iOS will return an empty dictionary in some error conditions
+
+#ifdef OMNI_ASSERTIONS_ON
+        if ([bundlePath hasSuffix: @"OmniFoundation.framework/Versions/A/Frameworks"] || [bundlePath hasPrefix: @"/Applications/Xcode"]) {
+            // The OmniFoundation.framework/Versions/A/Frameworks exception can happen when running unit tests (maybe since we allow that framework to have embedded Swift dylibs for command line tool usage).
+        } else {
+            OBASSERT([infoDictionary count] > 0, "Empty infoDictionary reported for bundle %@", bundle); // iOS will return an empty dictionary in some error conditions
+        }
+#endif
 
         // OK, we're going to register this bundle
         [registeredBundleNames addObject:bundleName];

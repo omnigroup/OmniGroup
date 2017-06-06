@@ -297,6 +297,13 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return nil
     }
     
+// MARK: - Other View Controller overrides
+    
+    override open var shouldAutorotate: Bool {
+        guard OUIRotationLock.activeLocks().count == 0 else { return false }
+        return super.shouldAutorotate
+    }
+    
     // MARK: - Public API
     @objc(addPrimaryViewController:)
     /// Add a view controller to the required pane location. Same as calling add(viewController at location: .center).
