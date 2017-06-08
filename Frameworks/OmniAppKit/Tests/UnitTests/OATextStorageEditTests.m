@@ -51,7 +51,7 @@ typedef struct {
 + (id)defaultTestSuite;
 {
     if (self == [OATextStorageEditTests class])
-        return [[[XCTestSuite alloc] init] autorelease]; // abstract class
+        return [[[XCTestSuite alloc] initWithName:@"OATextStorageEditTests"] autorelease]; // abstract class
     return [super defaultTestSuite];
 }
 

@@ -1225,6 +1225,8 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
             
             if (flags.calculated && strstr(attributes, ",R") == NULL) {
                 NSLog(@"Property %@.%@ should be marked readonly!", NSStringFromClass(instanceClass), prop->_name);
+            } else if (!flags.calculated && strstr(attributes, ",R") != NULL) {
+                NSLog(@"Property %@.%@ should not be marked readonly!", NSStringFromClass(instanceClass), prop->_name);
             }
             
             if (strstr(attributes, ",N") == NULL) {

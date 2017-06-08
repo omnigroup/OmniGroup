@@ -11,7 +11,7 @@ import Foundation
 
 extension NSLocking {
 
-    public func protect<T>(_ action: (Void) throws -> T) rethrows -> T {
+    public func protect<T>(_ action: () throws -> T) rethrows -> T {
         lock()
         defer {
             unlock()

@@ -43,8 +43,7 @@ typedef NS_OPTIONS(NSUInteger, OUIButtonGridViewBorder) {
 
 - (nullable UIButton *)buttonAtIndexPath:(NSIndexPath *)indexPath;
 
-// Currently exposed for AX purposes only.
-@property (nonatomic, readonly, copy, nullable) NSArray *buttons;
+@property (nonatomic, readonly, copy, nullable) NSArray <UIButton *> *buttons;
 
 @end
 

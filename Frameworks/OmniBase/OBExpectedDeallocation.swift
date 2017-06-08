@@ -10,7 +10,7 @@
 import Foundation
 
 // We can't use the ObjC macro wrapper, so replicate it here with an @autoclosure block here to avoid evaluating the object if we aren't going to use it.
-public func ExpectDeallocation(of object: @autoclosure (Void) -> AnyObject) {
+public func ExpectDeallocation(of object: @autoclosure () -> AnyObject) {
     if (OBExpectedDeallocationsIsEnabled()) {
         _OBExpectDeallocation(object())
     }

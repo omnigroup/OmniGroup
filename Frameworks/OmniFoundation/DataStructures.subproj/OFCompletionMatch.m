@@ -162,6 +162,8 @@ static void filterIntoResults(
 
 - (id)initWithString:(NSString *)string wordIndexPath:(OFIndexPath *)wordIndexPath characterIndexPath:(OFIndexPath *)characterIndexPath score:(NSInteger)score;
 {
+    self = [super init];
+
     _string = [string retain];
     _wordIndexPath = [wordIndexPath retain];
     _characterIndexPath = [characterIndexPath retain];

@@ -33,7 +33,7 @@ static NSString *_spacesOfLength(NSUInteger length)
 + (id)defaultTestSuite;
 {
     if (self == [OATextStorageMergedEditTests class])
-        return [[[XCTestSuite alloc] init] autorelease]; // abstract class
+        return [[[XCTestSuite alloc] initWithName:@"OATextStorageMergedEditTests"] autorelease]; // abstract class
     return [super defaultTestSuite];
 }
 

@@ -38,7 +38,7 @@ extern BOOL ODAVShouldOfferToReportError(NSError *error);
 
 #define ODAVResponseLocationErrorKey (@"Location")
 
-extern NSString * const ODAVURLErrorFailingURLErrorKey;          // > 4.0 use NSURLErrorFailingURLErrorKey
+extern NSString * const ODAVURLErrorFailingURLErrorKey __attribute__((deprecated("use NSURLErrorFailingURLErrorKey")));          // > 4.0 use NSURLErrorFailingURLErrorKey
 
 // Codes are HTTP error codes.  You'd think Foundation would define such a domain...
 extern NSString * const ODAVHTTPErrorDomain;

@@ -18,6 +18,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSView (DebuggingSPI)
 - (NSString *)_subtreeDescription;
 @end
@@ -28,7 +30,7 @@ static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);
 static void (*oldDidChangeValueForKey)(id self, SEL _cmd, NSString *key);
 static void (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
 static void (*oldDisplayIfNeededIMP)(id, SEL) = NULL;
-static NSWindow *becomingKeyWindow = nil;
+static NSWindow * _Nullable becomingKeyWindow = nil;
 
 @implementation NSWindow (OAExtensions)
 
@@ -42,9 +44,9 @@ OBPerformPosing(^{
     oldDisplayIfNeededIMP = (typeof(oldDisplayIfNeededIMP))OBReplaceMethodImplementationWithSelector(self, @selector(displayIfNeeded), @selector(_OA_replacement_displayIfNeeded));
 });
 
-static NSMutableArray *zOrder;
+static NSMutableArray * _Nullable zOrder;
 
-- (id)_addToZOrderArray;
+- (nullable id)_addToZOrderArray;
 {
     [zOrder addObject:self];
     return nil;
@@ -76,7 +78,7 @@ static NSLock *displayIfNeededBlocksLock = nil;
 static NSMapTable *displayIfNeededBlocks = nil;
 static BOOL displayIfNeededBlocksInProgress = NO;
 
-+ (void)window:(NSWindow *)window beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
++ (void)window:(nullable NSWindow *)window beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -140,7 +142,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     [NSWindow performDisplayIfNeededBlocksForWindow:nil];
 }
 
-+ (void)performDisplayIfNeededBlocksForWindow:(NSWindow *)window;
++ (void)performDisplayIfNeededBlocksForWindow:(nullable NSWindow *)window;
 {
     // Make sure we are executing these blocks only on the main thread
     OBPRECONDITION([NSThread isMainThread]);
@@ -435,7 +437,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     return picked;
 }
 
-- (void)visualizeConstraintsForPickedView:(id)sender;
+- (void)visualizeConstraintsForPickedView:(nullable id)sender;
 {
     [OAViewPicker beginPickingForWindow:self withCompletionHandler:^(NSView *pickedView) {
         if (pickedView)
@@ -443,6 +445,11 @@ static BOOL displayIfNeededBlocksInProgress = NO;
         else
             return NO;
     }];
+}
+
+- (NSResponder * _Nullable)nullableFirstResponder;
+{
+    return self.firstResponder;
 }
 
 // NSCopying protocol
@@ -597,7 +604,7 @@ OBDidLoad(^{
     OBASSERT_NOT_REACHED("Global instance should never be deallocated.");
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey,id> *)change context:(nullable void *)context;
 {
     if (context == OAWindowUserTabbingPreferenceDidChangeObservationContext) {
         [[NSNotificationCenter defaultCenter] postNotificationName:OAWindowUserTabbingPreferenceDidChange object:nil];
@@ -607,3 +614,5 @@ OBDidLoad(^{
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

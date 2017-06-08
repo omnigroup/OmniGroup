@@ -48,7 +48,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFXMLMakerTests class]) {
-        return [[XCTestSuite alloc] init];
+        return [[XCTestSuite alloc] initWithName:@"OFXMLMakerTests"];
     }
 
     return [super defaultTestSuite];

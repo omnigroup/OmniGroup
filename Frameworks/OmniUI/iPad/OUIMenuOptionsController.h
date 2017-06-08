@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIMenuOptionsController : UIViewController
 
-- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 
 - initWithController:(OUIMenuController *)controller options:(NSArray *)options;
 

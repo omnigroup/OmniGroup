@@ -38,7 +38,7 @@ static NSData *utf8(NSString *str)
 + (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFCompressionTest class]) {
-        return [[XCTestSuite alloc] init];
+        return [[XCTestSuite alloc] initWithName:@"OFCompressionTest"];
     } else {
         return [super defaultTestSuite];
     }

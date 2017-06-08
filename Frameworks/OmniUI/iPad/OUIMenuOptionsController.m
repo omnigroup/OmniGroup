@@ -38,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OBPRECONDITION([options count] > 0);
 
+    self = [super init];
+    
     _title = [title copy];
     _options = [options copy];
 
@@ -131,7 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 {
     OBRejectUnusedImplementation(self, _cmd);
 }

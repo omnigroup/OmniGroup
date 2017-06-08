@@ -14,6 +14,8 @@
 
 #import <OmniBase/OBUtilities.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSWindow (OAExtensions)
 
 @property (class, nonatomic, readonly) BOOL hasTabbedWindowSupport;
@@ -42,7 +44,10 @@
 
 - (CGPoint)convertBaseToCGScreen:(NSPoint)windowPoint;
 
-- (IBAction)visualizeConstraintsForPickedView:(id)sender;
+- (IBAction)visualizeConstraintsForPickedView:(nullable id)sender;
+
+// 10.13 marks this weak and thus implicitly nullable. Add this property for use between pre-10.13 Swift code and 10.13 so conditional lets will compile on both targets.
+@property(nonatomic,readonly) NSResponder * _Nullable nullableFirstResponder;
 
 @end
 
@@ -65,3 +70,6 @@
 @end
 
 extern NSNotificationName const OAWindowUserTabbingPreferenceDidChange;
+
+NS_ASSUME_NONNULL_END
+

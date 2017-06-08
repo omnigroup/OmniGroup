@@ -670,7 +670,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     
     OBASSERT(_response != nil);
     if (_response != nil) {
-        [info setObject:[_response URL] forKey:ODAVURLErrorFailingURLErrorKey];
+        [info setObject:[_response URL] forKey:NSURLErrorFailingURLErrorKey];
     } else {
         NSLog(@"_response is nil in %s", __func__);
     }
