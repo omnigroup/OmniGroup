@@ -262,6 +262,27 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = OmniDataObjects;
 		};
+		34AF756F1EEB05CA007E253F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34DBCD14190709F400968086;
+			remoteInfo = SVNVersion;
+		};
+		34AF75711EEB05CE007E253F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34DBCD14190709F400968086;
+			remoteInfo = SVNVersion;
+		};
+		34AF75731EEB05D2007E253F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34DBCD14190709F400968086;
+			remoteInfo = SVNVersion;
+		};
 		34C3DFDD1ECA07A2002AB1B9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3458D0321EC1144B0027D3B5 /* OmniFoundation.xcodeproj */;
@@ -489,6 +510,7 @@
 		34A77A190D89D6880037DE8C /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A9EEB01EC111A8005F9659 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A9EEB21EC111AF005F9659 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SVNVersion.xcodeproj; path = ../../Tools/SVNVersion/SVNVersion.xcodeproj; sourceTree = "<group>"; };
 		34B77C501EC10F6C00BBBA65 /* OmniDataObjects.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniDataObjects.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34B77C521EC10FB800BBBA65 /* Server-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		34B77C531EC10FB800BBBA65 /* Server-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Server-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -644,6 +666,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */,
 				3458D0321EC1144B0027D3B5 /* OmniFoundation.xcodeproj */,
 				340D5ED90DAAD1F700BF27F8 /* CoreData.framework */,
 				34ED2D9E19467D00005643C9 /* XCTest.framework */,
@@ -877,6 +900,13 @@
 			name = Schema;
 			sourceTree = "<group>";
 		};
+		34AF755C1EEB05C2007E253F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		34C3DEAF1ECA07A1002AB1B9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1064,6 +1094,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				34AF75721EEB05CE007E253F /* PBXTargetDependency */,
 				345628301ECA12FA00181154 /* PBXTargetDependency */,
 			);
 			name = "OmniDataObjects-iOS";
@@ -1139,6 +1170,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				34AF75741EEB05D2007E253F /* PBXTargetDependency */,
 				345628321ECA12FF00181154 /* PBXTargetDependency */,
 			);
 			name = "OmniDataObjects-server";
@@ -1160,6 +1192,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				34AF75701EEB05CA007E253F /* PBXTargetDependency */,
 				3456281F1ECA12F500181154 /* PBXTargetDependency */,
 			);
 			name = OmniDataObjects;
@@ -1210,6 +1243,10 @@
 				{
 					ProductGroup = 34C3DEAF1ECA07A1002AB1B9 /* Products */;
 					ProjectRef = 3458D0321EC1144B0027D3B5 /* OmniFoundation.xcodeproj */;
+				},
+				{
+					ProductGroup = 34AF755C1EEB05C2007E253F /* Products */;
+					ProjectRef = 34AF755B1EEB05C2007E253F /* SVNVersion.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -1656,6 +1693,21 @@
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
 			targetProxy = 34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */;
+		};
+		34AF75701EEB05CA007E253F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SVNVersion;
+			targetProxy = 34AF756F1EEB05CA007E253F /* PBXContainerItemProxy */;
+		};
+		34AF75721EEB05CE007E253F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SVNVersion;
+			targetProxy = 34AF75711EEB05CE007E253F /* PBXContainerItemProxy */;
+		};
+		34AF75741EEB05D2007E253F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SVNVersion;
+			targetProxy = 34AF75731EEB05D2007E253F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

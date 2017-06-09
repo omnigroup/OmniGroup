@@ -17,6 +17,8 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 
 @property (nonatomic, readwrite, class) BOOL inspectorAppearanceEnabled;
 
+@property (nonatomic, readonly) UIBarStyle InspectorBarStyle;
+
 @property (nonatomic, readonly) UIColor *InspectorBackgroundColor;
 @property (nonatomic, readonly) UIColor *InspectorDisabledTextColor;
 @property (nonatomic, readonly) UIColor *InspectorTextColor;
