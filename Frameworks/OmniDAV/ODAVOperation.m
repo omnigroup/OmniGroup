@@ -412,7 +412,6 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         NSLog(@"  allHeaderFields: %@", [_response allHeaderFields]);
     }
     
-    
     NSInteger statusCode = [_response statusCode];
     if (statusCode >= 200 && statusCode < 300) {
         // If we got a successful response, we want to pre-populate our result data with empty data rather than ever returning nil
@@ -539,7 +538,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
             continuation = request;
         } else if ([method isEqualToString:@"MOVE"] || [method isEqualToString:@"COPY"]) {
             // MOVE/COPY is a bit dubious. If the source URL gets rewritten by the server, do we know that the destination URL we're sending is still what it should be?
-            // In theory we wouldn't get this, as long as we paid attention to the response to the PUT/MKCOL/PROPFIND request used to create/find the resource we're operating on.po m
+            // In theory we wouldn't get this, as long as we paid attention to the response to the PUT/MKCOL/PROPFIND request used to create/find the resource we're operating on.
             // Exception: When replacing a remote database with the local version, if the user-entered URL incurs a redirect (e.g. http->https), we will still get a redirect on MOVE when moving the old database aside before replacing it with the new one.  TODO: Figure out how to avoid this.
             // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on MOVE?");
             
@@ -688,6 +687,9 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     if (locationHeader) {
         [info setObject:locationHeader forKey:ODAVResponseLocationErrorKey];
     }
+    NSArray <ODAVRedirect *> *preFailureRedirects = self.redirects;
+    if (preFailureRedirects && preFailureRedirects.count)
+        [info setObject:preFailureRedirects forKey:ODAVPreviousRedirectsErrorKey];
     
     // Add the error content.  Need to obey the charset specified in the Content-Type header.  And the content type.
     if (_errorData != nil) {

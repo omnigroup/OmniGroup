@@ -241,7 +241,8 @@ RCS_ID("$Id$");
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
     cell.textLabel.text = title;
-    cell.textLabel.textColor = placeholder ? self.placeholderTextColor : nil;
+    if (placeholder)
+        cell.textLabel.textColor = self.placeholderTextColor;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 

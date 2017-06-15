@@ -608,6 +608,11 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
 #pragma clang diagnostic ignored "-Wundeclared-selector"
 
 #define IGNORE_CRASH(clsName, sel) if (selector == (sel) && [NSStringFromClass([object class]) isEqualToString:(clsName)]) crash = NO;
+        // On the WWDC beta of High Sierra, opening the print panel on a system with a Touch Bar raises an exception because PMPrintWindowController is returning an NSPopoverTouchBarItem with an identifier of "com.apple.print.touchbar.printerButtons" when asked to create an item with identifier "com.apple.print.touchbar.printerPopoverItem". See bug:///145271 (Frameworks-Mac Regression: [macOS High Sierra] Crash when opening the print dialog).
+        if ([OFVersionNumber isOperatingSystemHighSierraOrLater]) {
+            IGNORE_CRASH(@"NSTouchBar", @selector(itemForIdentifier:))
+        }
+
         // NSRemoteSavePanel sometimes fails an assertion when it turns on the "hide extension" checkbox on by itself. Seems harmless?
         IGNORE_CRASH(@"NSRemoteSavePanel", @selector(connection:didReceiveRequest:))
 

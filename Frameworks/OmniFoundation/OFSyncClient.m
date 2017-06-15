@@ -337,6 +337,17 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     return [hostID isEqual:OFSyncClientHostIdentifier(domain)];
 }
 
+- (NSMutableDictionary *)debugDictionary;
+{
+    NSMutableDictionary *d = [super debugDictionary];
+    
+    [d setObject:[_defaultClientIdentifierPreference shortDescription] forKey:@"defaultClientIdentifierPreference"];
+    [d setObject:_hostIdentifierDomain forKey:@"hostIdentifierDomain"];
+    [d setObject:[_currentFrameworkVersion originalVersionString] forKey:@"currentFrameworkVersion"];
+    
+    return d;
+}
+
 @end
 
 @implementation OFSyncClient

@@ -1822,9 +1822,14 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/JavaScript/OUIDocument-OJSDocumentExport.swift",
+				"$(SRCROOT)/JavaScript/OUIDocumentAppController-OJSApplicationExport.swift",
+				"$(SYMROOT)/$(CONFIGURATION)/OJSGenerateInterface",
 			);
 			name = "Generate OmniJSInterfaces";
 			outputPaths = (
+				"$(DERIVED_SOURCES_DIR)/OmniUIDocument-Interfaces.swift",
+				"$(DERIVED_SOURCES_DIR)/OmniUIDocument-Interfaces.strings",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

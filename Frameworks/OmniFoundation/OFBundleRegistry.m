@@ -661,8 +661,8 @@ static NSString *_normalizedPath(NSString *path)
         NSString *bundlePath = _normalizedPath([bundle bundlePath]);
         NSString *bundleName = [bundlePath lastPathComponent];
         NSString *bundleIdentifier = [bundle bundleIdentifier];
-        if ([NSString isEmptyString:bundleIdentifier]) {
-            bundleIdentifier = [bundleName stringByDeletingPathExtension];
+        if (OFIsEmptyString(bundleIdentifier)) {
+            continue;
         }
         NSDictionary *infoDictionary = [bundle infoDictionary];
         
@@ -692,27 +692,9 @@ static NSString *_normalizedPath(NSString *path)
                 continue;
             }
         }
-#else
-        if (!infoDictionary) {
-            // On iOS 8 beta 5, at least, some directories in /usr/lib get registered as framework bundles. On the device, these are in the root, but in the simulator they are in the SDK (hence the suffix check).
-            OBASSERT([bundlePath hasSuffix:@"/usr/lib"] ||
-                     [bundlePath hasSuffix:@"/usr/lib/system"] ||
-                     [bundlePath hasSuffix:@"/usr/lib/system/introspection"] ||
-                     [bundlePath hasSuffix:@"/iPhoneSimulator.platform/Developer/Library/Xcode/Agents"] ||
-                     [bundlePath hasSuffix:@"/System/Library/PrivateFrameworks/UserFS.framework"], "Unexpected bundle path %@", bundlePath);
-            continue;
-        }
 #endif
 
-        OBASSERT(infoDictionary != nil);
-
-#ifdef OMNI_ASSERTIONS_ON
-        if ([bundlePath hasSuffix: @"OmniFoundation.framework/Versions/A/Frameworks"] || [bundlePath hasPrefix: @"/Applications/Xcode"]) {
-            // The OmniFoundation.framework/Versions/A/Frameworks exception can happen when running unit tests (maybe since we allow that framework to have embedded Swift dylibs for command line tool usage).
-        } else {
-            OBASSERT([infoDictionary count] > 0, "Empty infoDictionary reported for bundle %@", bundle); // iOS will return an empty dictionary in some error conditions
-        }
-#endif
+        OBASSERT(infoDictionary.count != 0, "Empty infoDictionary reported for bundle %@", bundle);
 
         // OK, we're going to register this bundle
         [registeredBundleNames addObject:bundleName];

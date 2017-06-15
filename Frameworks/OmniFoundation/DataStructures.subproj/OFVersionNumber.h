@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We require iOS 10.3 now.
 #else
++ (BOOL)isOperatingSystemHighSierraOrLater; // 10.13
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
 + (BOOL)isOperatingSystemSierraWithTouchBarOrLater; // 10.12.1
 #endif

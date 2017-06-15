@@ -158,8 +158,12 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (nonnull instancetype)controller;
 {
-    id controller = [[UIApplication sharedApplication] delegate];
-    OBASSERT([controller isKindOfClass:self]);
+    static id controller;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        controller = [[UIApplication sharedApplication] delegate];
+        OBASSERT([controller isKindOfClass:self]);
+    });
     return controller;
 }
 

@@ -15,6 +15,13 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>InspectorSeparatorColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.9</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
         <key>InspectorDisabledTextColor</key>
         <dict>
             <key>w</key>

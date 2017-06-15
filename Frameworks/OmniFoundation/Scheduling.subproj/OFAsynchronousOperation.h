@@ -22,7 +22,7 @@
 @interface OFAsynchronousOperation: NSOperation
 
 /* An additional utility hook on NSOperation. This block, if set, is called during -finish right *before* the operation's -isFinished property becomes true; this can be used to do additional bookkeeping before any dependent operations start. (In contrast, NSOperation's completionBlock is called *after* -finished becomes true.) */
-@property (nullable,copy) void (^preCompletionBlock)(void);
+@property (nullable,copy) void (^preCompletionBlock)(OFAsynchronousOperation * __nonnull);
 
 /* Subclasses must override -start as described in the NSOperation subclassing notes, and should call [super start] which will put the operation into the "running" state. Subclasses are responsible for cancellation handling (both checking for cancellation after calling [super start], and checking the .cancelled property and/or observing it to cancel a running operation.) */
 
@@ -40,3 +40,4 @@
 @protocol OFErrorable
 @property (readonly,nullable) NSError *error;
 @end
+

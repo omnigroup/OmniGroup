@@ -149,6 +149,7 @@ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
     
     // We do store the full array for snapshots, one slot per snapshot property, even though we don't really need the slots for to-manys.  One optimization would be to pack/unpack them as needed.
     CFMutableArrayRef snapshot = CFArrayCreateMutable(kCFAllocatorDefault, propCount, &OFNSObjectArrayCallbacks);
+    Class instanceClass = [self class];
 
     for (propIndex = 0; propIndex < propCount; propIndex++) {
         ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
@@ -166,7 +167,13 @@ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
                     value = [[(ODOObject *)value objectID] primaryKey];
             }
         }
-                             
+
+        // Classes can opt out of including transient calcuated properties in snapshots.
+        // This is necessary in the case that the transient calculated property is holding pointers to ODOObject instances.
+        if (flags.calculated && flags.transient && ![instanceClass shouldIncludeSnapshotForTransientCalculatedProperty:prop]) {
+            value = nil;
+        }
+
         CFArrayAppendValue(snapshot, value);
     }
     

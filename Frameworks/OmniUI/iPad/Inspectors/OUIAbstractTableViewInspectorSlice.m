@@ -15,6 +15,9 @@ RCS_ID("$Id$");
 
 #define UPPERCASE_LABELS    (1)
 
+@interface OUIInspectorTableViewHeaderFooterView : UITableViewHeaderFooterView
+@end
+
 @implementation OUIAbstractTableViewInspectorSlice
 {
     UITableView *_tableView;
@@ -151,6 +154,13 @@ RCS_ID("$Id$");
     return [UIColor clearColor];
 }
 
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
+{
+    OUIInspectorTableViewHeaderFooterView *view = [[OUIInspectorTableViewHeaderFooterView alloc] init];
+    view.contentView.backgroundColor = [UIColor clearColor];
+    return view;
+}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
 {
     return 12;
@@ -187,7 +197,37 @@ RCS_ID("$Id$");
 
 - (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
 {
-    return self.tableView.visibleCells;
+    NSArray *clients = [super themedAppearanceChildClients];
+    if (self.tableView)
+        clients = [clients arrayByAddingObject:self.tableView];
+
+    return clients;
 }
 
 @end
+
+@implementation OUIInspectorTableViewHeaderFooterView
+
+- (void)didMoveToSuperview;
+{
+    [super didMoveToSuperview];
+    [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    [self _updateColorsFromInspectorAppearance:appearance];
+}
+
+- (void)_updateColorsFromInspectorAppearance:(OUIInspectorAppearance *)appearance;
+{
+    self.contentView.backgroundColor = appearance.InspectorBackgroundColor;
+    self.textLabel.textColor = appearance.TableCellTextColor;
+    self.detailTextLabel.textColor = appearance.TableCellDetailTextLabelColor;
+}
+
+@end
+

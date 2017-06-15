@@ -7,11 +7,11 @@
 
 #import "OSURunOperation.h"
 
-#import "OSURunOperationParameters.h"
-#import "OSUOpenGLExtensions.h"
-#import <OmniSoftwareUpdate/OSUHardwareInfo.h>
 #import "OSUCheckServiceProtocol.h"
+#import "OSUHardwareInfo.h" // Non-framework import intentional
 #import "OSULookupCredentialProtocol.h"
+#import "OSUOpenGLExtensions.h"
+#import "OSURunOperationParameters.h"
 
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>

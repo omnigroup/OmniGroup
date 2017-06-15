@@ -209,6 +209,14 @@ static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
     return OFCFDictionaryGetUIntegerValueWithDefault(_objectToInsertionSequence, (OB_BRIDGE void *)object, NSNotFound);
 }
 
+- (void)applyInInsertionOrder:(void (^)(id object))action;
+{
+    NSArray *objects = [self objectsSortedByInsertionOrder:self.allObjects];
+    for (id object in objects) {
+        action(object);
+    }
+}
+
 //
 // Debugging
 //

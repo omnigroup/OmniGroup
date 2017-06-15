@@ -2459,7 +2459,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     }
     
     // Disable adding new documents if we are not licensed
-    self.addDocumentButtonItem.enabled = [self canPerformAction:@selector(newDocument:) withSender:nil];
+    self.addDocumentButtonItem.enabled = [[OUIAppController sharedController] canCreateNewDocument];
 }
 
 - (void)_ensureLegibilityOfSegmentedControl:(UISegmentedControl*)control{

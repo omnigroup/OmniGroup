@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUISegmentedViewController.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 
 RCS_ID("$Id$")
 
@@ -351,6 +352,16 @@ RCS_ID("$Id$")
     
     return nil;
 }
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST(OUIInspectorAppearance, changedAppearance);
+    UIColor *inspectorBackgroundColor = appearance.InspectorBackgroundColor;
+    
+    self.navigationBar.barStyle = appearance.InspectorBarStyle;
+    self.navigationBar.backgroundColor = inspectorBackgroundColor;
+}
+
 
 @end
 

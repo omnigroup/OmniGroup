@@ -9,6 +9,8 @@
 
 #import <OmniUI/OUINavigationBar.h>
 #import <OmniUI/OUISegmentedViewController.h>
+#import <OmniUI/OUIThemedAppearance.h>
+
 RCS_ID("$Id$")
 
 @interface OUINavigationController ()
@@ -242,6 +244,15 @@ RCS_ID("$Id$")
 {
     [super setViewControllers:viewControllers];
     [self _updateAccessory:[viewControllers lastObject] operation:UINavigationControllerOperationPush animated:NO];
+}
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    NSArray <id<OUIThemedAppearanceClient>> *clients = [super themedAppearanceChildClients];
+    clients = [clients arrayByAddingObjectsFromArray:self.viewControllers];
+    return clients;
 }
 
 @end

@@ -247,16 +247,6 @@ static NSString * const OIWorkspacesHelpURLKey = @"OIWorkspacesHelpURL";
     }
 }
 
-// Let's be honest. I don't know how this is gonna work. This whole method is a note to self. --TAB
-+ (void)revealEmbeddedInspectorInFloatingWindow:(id)sender;
-{
-    NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, sender);
-    NSString *identifier = [menuItem representedObject];
-    OIInspectorRegistry *floatingRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:nil];
-    
-    NSLog(@"identifier = %@, registry = %@", identifier, floatingRegistry);
-}
-
 + (void)updateInspectorForWindow:(NSWindow *)window;
 {
     OIInspectorRegistry *inspectorRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:window];

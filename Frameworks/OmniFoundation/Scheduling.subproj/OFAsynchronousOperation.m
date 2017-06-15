@@ -18,7 +18,7 @@ OB_REQUIRE_ARC
 @implementation OFAsynchronousOperation
 {
 @private
-    void (^_preCompletionBlock)(void);
+    void (^_preCompletionBlock)(OFAsynchronousOperation * __nonnull);
 
 @protected
     enum operationState : uint_fast8_t {
@@ -79,9 +79,9 @@ static void _locked_updateObservation(OFAsynchronousOperation *self, BOOL should
     [self observeCancellation:NO];
     
     if (_preCompletionBlock) {
-        void (^blk)(void) = _preCompletionBlock;
+        void (^blk)(OFAsynchronousOperation * __nonnull) = _preCompletionBlock;
         _preCompletionBlock = nil;
-        blk();
+        blk(self);
     }
     
     [self willChangeValueForKey:OFOperationIsExecutingKey];

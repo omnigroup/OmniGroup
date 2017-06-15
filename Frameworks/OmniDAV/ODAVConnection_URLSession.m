@@ -175,6 +175,8 @@ RCS_ID("$Id$")
         }
         return;
     }
+    
+    // This is called for challenges that aren't related to a specific request, such as proxy authentication, TLS setup, Kerberos negotiation, etc.
 
     [connection _handleChallenge:challenge operation:nil completionHandler:completionHandler];
 }

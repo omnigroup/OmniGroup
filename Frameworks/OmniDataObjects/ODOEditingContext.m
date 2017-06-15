@@ -556,20 +556,33 @@ static void _nullifyRelationships(const void *dictKey, const void *dictValue, vo
     DEBUG_DELETE(@"DELETE: nullify %@ %@", [objectID shortDescription], toOneKeys);
     
     ODOObject *object = [ctx->self->_registeredObjectByID objectForKey:objectID];
-    OBASSERT(object);
-    if (!object)
+    OBASSERT(object != nil);
+    if (object == nil) {
         return;
+    }
         
     // Any objects that were to get relationships nullified don't need to be nullified if they are also getting deleted.
     // Actually, this is false.  If we have an to-one, we need to nullify it so that the inverse to-many has a KVO cycle.  Otherwise, the to-many holder won't get in the updated set, or advertise its change.  Also, we need to publicize the to-one going to nil so that multi-stage KVO keyPath observations will stop their subpath observing.
     
     //if ([ctx->toDelete member:object])
     //return;
+
+    NSMutableSet<ODORelationship *> *toOneRelationships = [NSMutableSet set];
+    NSDictionary<NSString *, ODORelationship *> *relationshipsByName = object.entity.relationshipsByName;
     
     for (NSString *key in toOneKeys) {
-        ODORelationship *rel = [[[object entity] relationshipsByName] objectForKey:key];
-        OBASSERT(rel);
-        OBASSERT([rel isToMany] == NO);
+        ODORelationship *relationship = relationshipsByName[key];
+        OBASSERT(relationship != nil);
+        OBASSERT([relationship isToMany] == NO);
+        if (relationship != nil && ![relationship isToMany]) {
+            [toOneRelationships addObject:relationship];
+        }
+    }
+
+    [object willNullifyRelationships:toOneRelationships];
+
+    for (ODORelationship *rel in toOneRelationships) {
+        NSString *key = rel.name;
         
         // If we are getting deleted, then use the internal path for clearing the forward relationship instead of calling the setter. But, if we are going to stick around (we are on the fringe of the delete cloud), call the setter.
         if ([ctx->toDelete member:object]) {
@@ -580,6 +593,8 @@ static void _nullifyRelationships(const void *dictKey, const void *dictValue, vo
             [object setValue:nil forKey:key];
         }
     }
+    
+    [object didNullifyRelationships:toOneRelationships];
 }
 
 // This just registers the deletes and gathers snapshots for them.  Used both in the public API and in the undo support
@@ -1797,26 +1812,52 @@ typedef enum {
 
 static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, ODOEditingContextUndoRelationshipsAction action)
 {
-    NSArray *toOneRelationships = [entity toOneRelationships];
+    NSArray *toOneRelationships = entity.toOneRelationships;
+    NSMutableSet *relationshipsToNullify = nil;
     
-    for (ODORelationship *rel in toOneRelationships) {
-        ODORelationship *inverseRel = [rel inverseRelationship];
+    if (action == ODOEditingContextUndoRelationshipsForDeletion) {
+        relationshipsToNullify = [NSMutableSet set];
         
-        NSString *forwardKey = [rel name];
-        NSString *invKey = [inverseRel name];
-        ODOObject *dest = ODOGetPrimitiveProperty(object, forwardKey);
-        if (!dest)
+        for (ODORelationship *relationship in toOneRelationships) {
+            ODORelationship *inverseRelationship = relationship.inverseRelationship;
+            
+            NSString *forwardKey = relationship.name;
+            ODOObject *destinationObject = ODOGetPrimitiveProperty(object, forwardKey);
+            if (destinationObject == nil) {
+                continue;
+            }
+            
+            if (![inverseRelationship isToMany]) {
+                continue;
+            }
+            
+            [relationshipsToNullify addObject:relationship];
+        }
+    }
+
+    if (action == ODOEditingContextUndoRelationshipsForDeletion && relationshipsToNullify.count > 0) {
+        [object willNullifyRelationships:relationshipsToNullify];
+    }
+
+    for (ODORelationship *relationship in toOneRelationships) {
+        ODORelationship *inverseRelationship = relationship.inverseRelationship;
+        
+        NSString *forwardKey = relationship.name;
+        NSString *inverseKey = inverseRelationship.name;
+        ODOObject *destinationObject = ODOGetPrimitiveProperty(object, forwardKey);
+        if (destinationObject == nil) {
             continue;
+        }
         
-        if (![inverseRel isToMany]) {
+        if (![inverseRelationship isToMany]) {
             if (action == ODOEditingContextUndoRelationshipsForDeletion) {
                 // one-to-one. nullify the forward key, which should nullify the inverse too.
-                if (dest) {
+                if (destinationObject != nil) {
                     [object willChangeValueForKey:forwardKey];
-                    ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
+                    ODOObjectSetPrimitiveValueForProperty(object, nil, relationship);
                     [object didChangeValueForKey:forwardKey];
                     
-                    OBASSERT([dest valueForKey:invKey] == nil);
+                    OBASSERT([destinationObject valueForKey:inverseKey] == nil);
                 }
             } else {
                 // The inverse will be restored from the other side's snapshot.
@@ -1826,28 +1867,33 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
         }
         
         // Avoid creating/clearing the inverse to-many (our primitive getter would do that).
-        NSMutableSet *toManySet = ODOObjectToManyRelationshipIfNotFault(dest, inverseRel);
+        NSMutableSet *toManySet = ODOObjectToManyRelationshipIfNotFault(destinationObject, inverseRelationship);
         
         NSSet *change = [NSSet setWithObject:object];
         
         if (action == ODOEditingContextUndoRelationshipsForInsertion) {
             OBASSERT([toManySet member:object] == nil);
-            [dest willChangeValueForKey:invKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
+            [destinationObject willChangeValueForKey:inverseKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
             [toManySet addObject:object];
-            [dest didChangeValueForKey:invKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
+            [destinationObject didChangeValueForKey:inverseKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
         } else {
             OBASSERT(action == ODOEditingContextUndoRelationshipsForDeletion);
-            OBASSERT(!toManySet || [toManySet member:object] != nil); // the relationship should be fully formed before we act, or have never been faulted in
+            OBASSERT(toManySet == nil || [toManySet member:object] != nil); // the relationship should be fully formed before we act, or have never been faulted in
             
             // Need to clear the forward to-ones too, to ensure that on undo/redo, any multi-stage keyPaths get their KVO on sub-paths deregistered. Then, when the outside objects remove observers, our to-one getters can return nil and they can clean up w/o trouble.
-            OBASSERT(dest); // checked above
+            OBASSERT(destinationObject != nil); // checked above
             OBASSERT(![object isFault]);
+            
             [object willChangeValueForKey:forwardKey];
-            ODOObjectSetPrimitiveValueForProperty(object, nil, rel);
+            ODOObjectSetPrimitiveValueForProperty(object, nil, relationship);
             [object didChangeValueForKey:forwardKey];
 
-            OBASSERT(!toManySet || [toManySet member:object] == nil); // ODOObjectSetPrimitiveValueForProperty should have cleaned up and sent KVO for the inverse to-many too.
+            OBASSERT(toManySet == nil || [toManySet member:object] == nil); // ODOObjectSetPrimitiveValueForProperty should have cleaned up and sent KVO for the inverse to-many too.
         }
+    }
+
+    if (action == ODOEditingContextUndoRelationshipsForDeletion && relationshipsToNullify.count > 0) {
+        [object didNullifyRelationships:relationshipsToNullify];
     }
 }
 

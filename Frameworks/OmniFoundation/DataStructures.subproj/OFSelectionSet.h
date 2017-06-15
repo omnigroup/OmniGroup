@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)objectsSortedByInsertionOrder:(NSArray *)someObjects;
 - (NSUInteger)insertionOrderForObject:(id)object; // NSNotFound if not present
 
+- (void)applyInInsertionOrder:(void (^)(id object))action;
+
 @end
 
 NS_ASSUME_NONNULL_END

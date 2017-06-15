@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIParameters.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniAppKit/OAColor.h>
 #import <OmniUI/OUITextSelectionSpan.h>
@@ -85,6 +86,8 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
         return;
     }
     
+    // If supplied with a background color, assume the foreground color is thought out to match. But it we have no background color, AND we have not foregroundColor, AND we're doing inspector theming, we're going to pick a background color. We need to pick a foreground color to suit. 
+    OUIInspectorTextExampleView *view = OB_CHECKED_CAST(OUIInspectorTextExampleView, self.view);
     UIColor *backgroundColorValue = [attributedString attribute:NSBackgroundColorAttributeName atIndex:0 effectiveRange:NULL];
     OAColor *backgroundColor;
     if (backgroundColorValue) {
@@ -94,15 +97,34 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
         [noBackgroundAttributedString removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0, stringLength)];
         
         attributedString = noBackgroundAttributedString;
+    } else if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        OUIInspectorAppearance *appearance = [OUIInspectorAppearance appearance];
+        backgroundColor = [OAColor colorWithPlatformColor:appearance.TableCellBackgroundColor];
+        UIColor *foregroundColorValue = [attributedString attribute:NSForegroundColorAttributeName atIndex:0 effectiveRange:NULL];
+
+        if (foregroundColorValue == nil) {
+            NSMutableAttributedString *foregroundAttributedString = [attributedString mutableCopy];
+            [foregroundAttributedString addAttribute:NSForegroundColorAttributeName value:appearance.TableCellTextColor range:NSMakeRange(0, stringLength)];
+            
+            attributedString = foregroundAttributedString;
+        }
     } else {
         backgroundColor = [OAColor clearColor];
     }
     
-    OUIInspectorTextExampleView *view = (OUIInspectorTextExampleView *)self.view;
     view.attributedString = attributedString;
     
     OBASSERT(backgroundColor);
     view.styleBackgroundColor = backgroundColor;
+}
+
+#pragma mark OUIInspectorThemedApperance
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
 }
 
 @end

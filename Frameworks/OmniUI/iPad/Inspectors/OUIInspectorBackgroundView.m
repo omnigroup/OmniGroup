@@ -79,7 +79,7 @@ static id _commonInit(OUIInspectorBackgroundView *self)
     [self containingInspectorBackgroundViewColorChanged];
 }
 
-#pragma mark - OUIThemedApperanceClient
+#pragma mark - OUIThemedAppearanceClient
 
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
 {

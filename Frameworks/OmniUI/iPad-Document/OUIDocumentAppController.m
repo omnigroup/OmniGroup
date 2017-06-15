@@ -1990,6 +1990,11 @@ static NSDictionary *RoleByFileType()
                                     return;
                                 }
                                 
+                                if (_document != nil && [_documentPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [_documentPicker.delegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
+                                    // If we already have an open document and we would accept but not display anything for this file type, then just do nothing and keep the current doc open. (For OmniJS plugin installation, for instance.)
+                                    return;
+                                }
+                                
                                 [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:YES];
                                 [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
                                 newFileItem.selected = YES;
@@ -2003,6 +2008,7 @@ static NSDictionary *RoleByFileType()
                                         [_documentPicker.selectedScopeViewController setEditing:NO animated:NO];
                                         [self openDocument:newFileItem];
                                     } else {
+                                        _isOpeningURL = NO; // Turn this off so that we'll start generating previews right away.
                                         [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:selection];
                                     }
                                 });

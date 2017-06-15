@@ -45,6 +45,7 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic InspectorBarStyle;
 
 @dynamic InspectorBackgroundColor;
+@dynamic InspectorSeparatorColor;
 @dynamic InspectorDisabledTextColor;
 @dynamic InspectorTextColor;
 

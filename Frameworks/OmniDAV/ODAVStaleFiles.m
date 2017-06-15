@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -115,7 +115,7 @@ static const NSUInteger DeletionTriggerCount = 7;
         return nil;
     
     _identifier = ident;
-     // We haven't done the engineering to test for stale directories yet. For example, what do modification dates and file sizes mean for directories on all the various DAV servers?
+     // We haven't done the engineering to test for stale directories yet. For example, what do modification dates and file sizes mean for directories on all the various DAV servers?  [They are not useful to us, according to the DAV spec: they can refer to a file that is unrelated to the directory contents.  -wim]
     _shouldDeleteDirectories = NO;
     
     return self;

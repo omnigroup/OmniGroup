@@ -8,6 +8,7 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+#import <UIKit/UINavigationController.h>
 
 @interface OUISegmentedViewController : UIViewController
 
@@ -26,6 +27,9 @@
 - (CGFloat)topLayoutLength;
 - (void)setShouldShowDismissButton:(BOOL)shouldShow;
 - (void)temporarilyHideDismissButton:(BOOL)hide;
+
+// Redeclared from UINavigationControllerDelegate. Subclasses should call super if overriding.
+- (void)navigationController:(nonnull UINavigationController *)navigationController willShowViewController:(nonnull UIViewController *)viewController animated:(BOOL)animated NS_REQUIRES_SUPER;
 
 @end
 

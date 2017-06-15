@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly,nonatomic) BOOL hasPassword;
 - (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
 
+- (BOOL)borrowUnwrappingFrom:(OFSDocumentKey *)otherKey;
+
 @property (readonly,atomic) OFSKeySlots *keySlots;
 /* Returns some flags for a filename, based on whether it matches any rules added by -setDisposition:forSuffix:. */
 - (unsigned)flagsForFilename:(NSString *)filename;

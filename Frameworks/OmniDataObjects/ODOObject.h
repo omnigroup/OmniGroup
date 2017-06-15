@@ -43,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
++ (BOOL)shouldIncludeSnapshotForTransientCalculatedProperty:(ODOProperty *)property;
 
 @property (class, nonatomic, readonly) ODOEntity *entity; // The entity represented by this subclass. It is only legal to query the entity of leaf subclasses which represents a single entity in the model.
 @property (class, nonatomic, readonly) NSString *entityName; // The name of the entity represented by this subclass. The restrictions on the entity property apply here.
@@ -100,9 +101,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)turnIntoFault;
 
-- (BOOL)hasFaultForRelationship:(ODORelationship *)rel;
+- (BOOL)hasFaultForRelationship:(ODORelationship *)relationship;
 - (BOOL)hasFaultForRelationshipNamed:(NSString *)key; 
-- (BOOL)toOneRelationship:(ODORelationship *)rel isToObject:(ODOObject *)destinationObject;
+- (BOOL)toOneRelationship:(ODORelationship *)relationship isToObject:(ODOObject *)destinationObject;
+
+- (void)willNullifyRelationships:(NSSet<ODORelationship *> *)relationships;
+- (void)didNullifyRelationships:(NSSet<ODORelationship *> *)relationships;
 
 @property (nonatomic, readonly, getter=isInserted) BOOL inserted;
 @property (nonatomic, readonly, getter=isDeleted) BOOL deleted;

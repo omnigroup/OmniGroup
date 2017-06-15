@@ -287,6 +287,56 @@ static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password
     return retval;
 }
 
+#pragma mark Non-passphrase unwrapping
+
+- (BOOL)borrowUnwrappingFrom:(OFSDocumentKey *)otherKey;
+{
+    if (!otherKey)
+        return NO;
+    
+    if (!otherKey.valid)
+        return NO;
+    
+    NSDictionary *otherDerivation = otherKey->passwordDerivation;
+    NSString *myMethod = [passwordDerivation objectForKey:KeyDerivationMethodKey];
+    NSData *wrappedKeys;
+    
+    // This method is just a shortcut for re-using a known password without repeating the time-consuming PBKDF2 step.
+    // So make sure that the resulting unwrapped-and-rewrapped blob probably still makes sense.
+    if ([myMethod isEqual:KeyDerivationMethodPassword]) {
+        if (![[otherDerivation objectForKey:KeyDerivationMethodKey] isEqual:KeyDerivationMethodPassword])
+            return NO;
+        if (![[passwordDerivation objectForKey:PBKDFAlgKey] isEqual:[otherDerivation objectForKey:PBKDFAlgKey]])
+            return NO;
+        if (![[passwordDerivation objectForKey:PBKDFSaltKey] isEqual:[otherDerivation objectForKey:PBKDFSaltKey]])
+            return NO;
+        if (![[passwordDerivation objectForKey:PBKDFPRFKey] isEqual:[otherDerivation objectForKey:PBKDFPRFKey]])
+            return NO;
+        
+        wrappedKeys = [passwordDerivation objectForKey:DocumentKeyKey];
+    } else if ([myMethod isEqual:KeyDerivationStatic]) {
+        // The "static" pseudo-method doesn't care where the wrapping key came from.
+        wrappedKeys = [passwordDerivation objectForKey:StaticKeyKey];
+    } else {
+        // We don't currently have any other key derivation methods, so we don't know how to get the wrapped key from them.
+        return NO;
+    }
+    
+    OFSKeySlots *unwrapped = [[OFSKeySlots alloc] initWithData:wrappedKeys wrappedWithKey:otherKey->wk.bytes length:otherKey->wk.len error:NULL];
+    if (!unwrapped) {
+        // The other document key was wrapped with a different password, passphrase, salt, or something.
+        return NO;
+    }
+    
+    // Success: we've recovered the KEK (and the wrapped keys as well).
+    // Continue as if -deriveWithPassword: had been called with the correct password.
+    memcpy(&wk, &(otherKey->wk), sizeof(wk));
+    slots = unwrapped;
+    return YES;
+}
+
+#pragma mark Client usage
+
 /* Return an encryption worker for an active key slot. Encryption workers can be used from multiple threads, so we can safely cache one and return it here. */
 - (nullable OFSSegmentEncryptWorker *)encryptionWorker:(NSError **)outError;
 {

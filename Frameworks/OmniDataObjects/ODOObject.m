@@ -35,6 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
++ (BOOL)shouldIncludeSnapshotForTransientCalculatedProperty:(ODOProperty *)property;
+{
+    return YES;
+}
+
 + (ODOEntity *)entity;
 {
     ODOEntity *entity = [ODOModel entityForClass:self];
@@ -399,8 +404,6 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 {
-    // REVIEW: Do we want to batch these up and perform the work coalesced at -processPendingChanges time?
-    
     OBPRECONDITION(![self isDeleted]);
     if ([self isDeleted]) {
         return;
@@ -776,65 +779,80 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     [self _turnIntoFault:NO/*deleting*/];
 }
 
-- (BOOL)hasFaultForRelationship:(ODORelationship *)rel;
+- (BOOL)hasFaultForRelationship:(ODORelationship *)relationship;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
-    OBPRECONDITION([rel entity] == [self entity]);
-    OBPRECONDITION([rel isKindOfClass:[ODORelationship class]]);
+    OBPRECONDITION(relationship.entity == self.entity);
+    OBPRECONDITION([relationship isKindOfClass:[ODORelationship class]]);
     
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(rel);
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(relationship);
     OBASSERT(flags.relationship);
-    if (!flags.relationship)
+    if (!flags.relationship) {
         return NO;
+    }
     
-    if (flags.toMany)
-        return ODOObjectToManyRelationshipIsFault(self, rel);
+    if (flags.toMany) {
+        return ODOObjectToManyRelationshipIsFault(self, relationship);
+    }
     
     id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
     if (value && ![value isKindOfClass:[ODOObject class]]) {
-        OBASSERT([value isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
+        OBASSERT([value isKindOfClass:relationship.destinationEntity.primaryKeyAttribute.valueClass]);
         return YES;
     }
+    
     return [value isFault];
 }
 
 - (BOOL)hasFaultForRelationshipNamed:(NSString *)key; 
 {
-    ODORelationship *rel = [[[self entity] relationshipsByName] objectForKey:key];
-    OBASSERT(rel);
-    if (!rel)
+    ODORelationship *relationship = self.entity.relationshipsByName[key];
+    OBASSERT(relationship != nil);
+    if (relationship == nil) {
         return NO;
+    }
     
-    return [self hasFaultForRelationship:rel];
+    return [self hasFaultForRelationship:relationship];
 }
 
 // Handle the check w/o causing lazy faults to be materialized.
-- (BOOL)toOneRelationship:(ODORelationship *)rel isToObject:(ODOObject *)destinationObject;
+- (BOOL)toOneRelationship:(ODORelationship *)relationship isToObject:(ODOObject *)destinationObject;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
     OBPRECONDITION(!destinationObject || [destinationObject editingContext] == _editingContext);
-    OBPRECONDITION([rel entity] == [self entity]);
-    OBPRECONDITION([rel isKindOfClass:[ODORelationship class]]);
-    OBPRECONDITION(![rel isToMany]);
+    OBPRECONDITION([relationship entity] == [self entity]);
+    OBPRECONDITION([relationship isKindOfClass:[ODORelationship class]]);
+    OBPRECONDITION(![relationship isToMany]);
     
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(rel);
+    struct _ODOPropertyFlags flags = ODOPropertyFlags(relationship);
     OBASSERT(flags.relationship);
-    if (!flags.relationship || flags.toMany)
+    if (!flags.relationship || flags.toMany) {
         return NO;
+    }
     
     id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
     
     // Several early-outs could be done here if it turns out to be useful; not doing them for now.
     
     id actualKey = [value isKindOfClass:[ODOObject class]] ? [[value objectID] primaryKey] : value;
-    id queryKey = [[destinationObject objectID] primaryKey];
+    id queryKey = destinationObject.objectID.primaryKey;
     
-    OBASSERT(!actualKey || [actualKey isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
-    OBASSERT(!queryKey || [queryKey isKindOfClass:[[[rel destinationEntity] primaryKeyAttribute] valueClass]]);
+    OBASSERT(!actualKey || [actualKey isKindOfClass:relationship.destinationEntity.primaryKeyAttribute.valueClass]);
+    OBASSERT(!queryKey || [queryKey isKindOfClass:relationship.destinationEntity.primaryKeyAttribute.valueClass]);
     
     return OFISEQUAL(actualKey, queryKey);
+}
+
+- (void)willNullifyRelationships:(NSSet<ODORelationship *> *)relationships;
+{
+    // For subclasses
+}
+
+- (void)didNullifyRelationships:(NSSet<ODORelationship *> *)relationships;
+{
+    // For subclasses
 }
 
 - (BOOL)isInserted;

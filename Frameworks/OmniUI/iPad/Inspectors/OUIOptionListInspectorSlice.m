@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUI/OUIOptionListInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
@@ -74,7 +75,7 @@ RCS_ID("$Id$");
 {
     UITableViewCell *cell = [aTableView dequeueReusableCellWithIdentifier:@"option"];
     if (!cell)
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"option"];
+        cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"option"];
     
     NSUInteger row = indexPath.row;
     

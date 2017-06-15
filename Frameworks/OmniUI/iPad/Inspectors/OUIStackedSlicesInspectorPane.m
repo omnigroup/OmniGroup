@@ -491,6 +491,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     }
     scrollview.contentInset = defaultInsets;
 
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
+    
     [super viewWillAppear:animated];
 }
 
@@ -550,7 +553,11 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients
 {
-    return self.availableSlices;
+    NSArray <id<OUIThemedAppearanceClient>> *clients = self.availableSlices;
+    if ([self inInspector])
+        clients = [clients arrayByAddingObject:self.view];
+    
+    return clients;
 }
 
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
@@ -560,6 +567,8 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     view.inspectorBackgroundViewColor = appearance.InspectorBackgroundColor;
+    self.navigationController.toolbar.barStyle = appearance.InspectorBarStyle;
+    self.navigationController.toolbar.backgroundColor = appearance.InspectorBackgroundColor;
 }
 
 @end

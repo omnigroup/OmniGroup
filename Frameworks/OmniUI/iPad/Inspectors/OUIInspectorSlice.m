@@ -13,6 +13,7 @@
 #import <OmniUI/OUIEmptyPaddingInspectorSlice.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
+#import <OmniUI/OUIThemedAppearance.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
 #import "OUIInspectorSlice-Internal.h"
@@ -504,6 +505,17 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 {
     OBPRECONDITION(parent == nil || [parent isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
     [super didMoveToParentViewController:parent];
+}
+
+#pragma mark - OUIThemedAppearance
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    NSArray *clients = [super themedAppearanceChildClients];
+    if (_bottomSeparator)
+        clients = [clients arrayByAddingObject:_bottomSeparator];
+    
+    return clients;
 }
 
 @end

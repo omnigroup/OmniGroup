@@ -87,6 +87,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #else
 
++ (BOOL)isOperatingSystemHighSierraOrLater; // 10.13
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"10.13");
+    });
+
+    return isLater;
+}
+
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
 {
     static BOOL isLater;

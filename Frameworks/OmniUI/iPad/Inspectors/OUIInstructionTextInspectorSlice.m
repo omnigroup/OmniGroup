@@ -8,6 +8,7 @@
 #import <OmniUI/OUIInstructionTextInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIDrawing.h>
@@ -120,6 +121,19 @@ RCS_ID("$Id$");
     self.view = view;
     
     [self sizeChanged];
+}
+
+#pragma mark OUIInspectorThemedApperance
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.contentView.backgroundColor = appearance.InspectorBackgroundColor;
+    self.label.textColor = appearance.InspectorTextColor;
+    
 }
 
 @end

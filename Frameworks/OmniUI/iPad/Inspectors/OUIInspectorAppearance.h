@@ -20,6 +20,7 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 @property (nonatomic, readonly) UIBarStyle InspectorBarStyle;
 
 @property (nonatomic, readonly) UIColor *InspectorBackgroundColor;
+@property (nonatomic, readonly) UIColor *InspectorSeparatorColor;
 @property (nonatomic, readonly) UIColor *InspectorDisabledTextColor;
 @property (nonatomic, readonly) UIColor *InspectorTextColor;
 

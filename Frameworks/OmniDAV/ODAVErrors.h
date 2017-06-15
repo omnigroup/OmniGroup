@@ -37,6 +37,7 @@ extern BOOL ODAVShouldOfferToReportError(NSError *error);
 #define ODAVError(error, code, description, reason) ODAVErrorWithInfo((error), (code), (description), (reason), nil)
 
 #define ODAVResponseLocationErrorKey (@"Location")
+#define ODAVPreviousRedirectsErrorKey (@"Redirects")
 
 extern NSString * const ODAVURLErrorFailingURLErrorKey __attribute__((deprecated("use NSURLErrorFailingURLErrorKey")));          // > 4.0 use NSURLErrorFailingURLErrorKey
 

@@ -13,6 +13,15 @@ RCS_ID("$Id$");
 
 @implementation OUIThemedTableViewCell
 
+- (void)prepareForReuse;
+{
+    [super prepareForReuse];
+    self.textLabel.textColor = nil;
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+}
+
 - (void)willMoveToSuperview:(UIView *)superview;
 {
     if ([OUIInspectorAppearance inspectorAppearanceEnabled])
