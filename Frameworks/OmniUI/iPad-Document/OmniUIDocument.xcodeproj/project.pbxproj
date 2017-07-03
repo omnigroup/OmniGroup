@@ -1462,7 +1462,6 @@
 			buildConfigurationList = 3458EF3B1B5D6ED0000011A6 /* Build configuration list for PBXNativeTarget "OmniUIDocument-iOS" */;
 			buildPhases = (
 				3458EF2E1B5D6ED0000011A6 /* Headers */,
-				34779F971CD819E000F93ECD /* Generate OmniJSInterfaces */,
 				3458EF2C1B5D6ED0000011A6 /* Sources */,
 				3458EF2F1B5D6ED0000011A6 /* Resources */,
 				3458EF2D1B5D6ED0000011A6 /* Frameworks */,
@@ -1814,26 +1813,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../../Scripts/BuildStringsFromTarget OmniUIDocument\n";
-			showEnvVarsInLog = 0;
-		};
-		34779F971CD819E000F93ECD /* Generate OmniJSInterfaces */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/JavaScript/OUIDocument-OJSDocumentExport.swift",
-				"$(SRCROOT)/JavaScript/OUIDocumentAppController-OJSApplicationExport.swift",
-				"$(SYMROOT)/$(CONFIGURATION)/OJSGenerateInterface",
-			);
-			name = "Generate OmniJSInterfaces";
-			outputPaths = (
-				"$(DERIVED_SOURCES_DIR)/OmniUIDocument-Interfaces.swift",
-				"$(DERIVED_SOURCES_DIR)/OmniUIDocument-Interfaces.strings",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = ../../OmniJS/Tools/OJSGenerateInterface;
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
