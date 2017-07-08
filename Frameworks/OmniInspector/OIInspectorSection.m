@@ -1,4 +1,4 @@
-// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniInspector/OIInspectorSection.h>
+#import <OmniAppKit/OALabelField.h>
 
 RCS_ID("$Id$")
 
@@ -14,6 +15,18 @@ RCS_ID("$Id$")
 - (NSView *)firstKeyView;
 {
     return firstKeyView;
+}
+
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+
+    // setup toolTips for any truncated labels.
+    for (NSView *subview in self.view.subviews) {
+        if ([subview isKindOfClass:OALabelField.class]) {
+            [(OALabelField *)subview setLabelAsToolTipIfTruncated];
+        }
+    }
 }
 
 @end

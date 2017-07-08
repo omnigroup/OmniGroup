@@ -12,7 +12,7 @@
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
 
-#import <OmniBase/ObjC.h>
+#import <OmniBase/objc.h>
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
 

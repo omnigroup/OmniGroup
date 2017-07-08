@@ -36,6 +36,17 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>PopoverBackgroundColor</key>
+        <dict>
+            <key>r</key>
+            <real>0.937255</real>
+            <key>g</key>
+            <real>0.937255</real>
+            <key>b</key>
+            <real>0.956863</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
         <key>SearchBarFieldBackgroundColor</key>
         <dict>
             <key>r</key>
@@ -55,6 +66,20 @@
             <real>0.837255</real>
             <key>b</key>
             <real>0.856863</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
+        <key>HorizontalTabBottomStrokeColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.8</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
+        <key>HorizontalTabSeparatorTopColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.96</real>
             <key>a</key>
             <real>1</real>
         </dict>

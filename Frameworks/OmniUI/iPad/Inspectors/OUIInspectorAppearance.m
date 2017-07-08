@@ -49,8 +49,14 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic InspectorDisabledTextColor;
 @dynamic InspectorTextColor;
 
+@dynamic PopoverBackgroundColor;
+
 @dynamic SearchBarFieldBackgroundColor;
 @dynamic SearchBarBarTintColor;
+
+@dynamic HorizontalTabBottomStrokeColor;
+@dynamic HorizontalTabSeparatorTopColor;
+
 
 @dynamic TableViewSeparatorColor;
 @dynamic TableCellBackgroundColor;

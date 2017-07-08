@@ -767,10 +767,13 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
             [self _updateItemTree];
             
             if (completionHandler) {
-                // Give the completion handler the immediate children of parentFolder that were created (so if we had "a/b/c" duplicating "a/b" to "a/b2", we'd pass back "a/b2" not "a/b2/c".
-                NSSet *addedChildren = [parentFolder childrenContainingItems:createdFileItems];
-                DEBUG_STORE(@"%@ yielded added children %@", motionType, [addedChildren valueForKey:@"shortDescription"]);
-                completionHandler(addedChildren);
+                NSSet *moveItems = createdFileItems;
+                if ([motionType isEqualToString:@"COPY"]) {
+                    // Give the completion handler the immediate children of parentFolder that were created (so if we had "a/b/c" duplicating "a/b" to "a/b2", we'd pass back "a/b2" not "a/b2/c".
+                    moveItems = [parentFolder childrenContainingItems:moveItems];
+                }
+                DEBUG_STORE(@"%@ yielded added children %@", motionType, [moveItems valueForKey:@"shortDescription"]);
+                completionHandler(moveItems);
             }
         }];
     }];

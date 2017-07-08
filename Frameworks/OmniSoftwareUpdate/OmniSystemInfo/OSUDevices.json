@@ -222,6 +222,26 @@
     "platform": "iPad6,8",
     "comment": "12.9 inch"
   },
+  "J120AP": {
+    "name": "iPad Pro (2nd generation)",
+    "platform": "iPad7,1",
+    "comment": "12.9 inch"
+  },
+  "J121AP": {
+    "name": "iPad Pro (2nd generation)",
+    "platform": "iPad7,2",
+    "comment": "12.9 inch"
+  },
+  "J207AP": {
+    "name": "iPad Pro (10.5 inch)",
+    "platform": "iPad7,3",
+    "comment": "10.5 inch"
+  },
+  "J208AP": {
+    "name": "iPad Pro (10.5 inch)",
+    "platform": "iPad7,4",
+    "comment": "10.5 inch"
+  },
   "J71sAP": {
     "name": "iPad (2017)",
     "platform": "iPad6,11",
@@ -342,6 +362,18 @@
   "iMac17,1": {
     "name": "iMac"
   },
+  "iMac18,1": {
+    "name": "iMac",
+    "comment": "21.5 inch, mid 2017"
+  },
+  "iMac18,2": {
+    "name": "iMac",
+    "comment": "21.5 inch, 4K, mid 2017"
+  },
+  "iMac18,3": {
+    "name": "iMac",
+    "comment": "27 inch, 5K, mid 2017"
+  },
   "Macmini1,1": {
     "name": "Mac mini"
   },
@@ -420,6 +452,10 @@
   "MacBook9,1": {
     "name": "MacBook",
     "comment": "Early 2016 12-inch Core m3/m5/m7"
+  },
+  "MacBook10,1": {
+    "name": "MacBook",
+    "comment": "Mid 2017 12-inch"
   },
   "MacBookAir1,1": {
     "name": "MacBook Air"
@@ -549,5 +585,17 @@
   "MacBookPro13,3": {
     "name": "MacBook Pro",
     "comment": "15-inch, late 2016, Touch Bar"
+  },
+  "MacBookPro14,1": {
+    "name": "MacBook Pro",
+    "comment": "13-inch, mid 2017"
+  },
+  "MacBookPro14,2": {
+    "name": "MacBook Pro",
+    "comment": "13-inch, mid 2017, Touch Bar"
+  },
+  "MacBookPro14,3": {
+    "name": "MacBook Pro",
+    "comment": "15-inch, mid 2017, Touch Bar"
   }
 }

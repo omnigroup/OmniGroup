@@ -24,8 +24,13 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 @property (nonatomic, readonly) UIColor *InspectorDisabledTextColor;
 @property (nonatomic, readonly) UIColor *InspectorTextColor;
 
+@property (nonatomic, readonly) UIColor *PopoverBackgroundColor;
+
 @property (nonatomic, readonly) UIColor *SearchBarFieldBackgroundColor;
 @property (nonatomic, readonly) UIColor *SearchBarBarTintColor;
+
+@property (nonatomic, readonly) UIColor *HorizontalTabBottomStrokeColor;
+@property (nonatomic, readonly) UIColor *HorizontalTabSeparatorTopColor;
 
 @property (nonatomic, readonly) UIColor *TableCellBackgroundColor;
 @property (nonatomic, readonly) UIColor *TableCellTextColor;

@@ -8,6 +8,7 @@
 #import <OmniUI/OUIMultiSegmentStackedSlicesInspectorPane.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorBackgroundView.h>
 #import <OmniUI/OUITabBar.h>
 
@@ -15,6 +16,10 @@ RCS_ID("$Id$");
 
 @interface OUIMultiSegmentStackedSlicesInspectorPane (/*Private*/)
 @property (nonatomic, strong) UINavigationItem *segmentsNavigationItem;
+@property (nonatomic, copy) UIColor *selectedTabTintColor;
+@property (nonatomic, copy) UIColor *horizontalTabBottomStrokeColor;
+@property (nonatomic, copy) UIColor *horizontalTabSeparatorTopColor;
+
 @end
 
 @implementation OUIInspectorSegment
@@ -49,6 +54,10 @@ RCS_ID("$Id$");
     // Do this once in case we are told to inspect objects before our view is supposedly loaded.
     _titleTabBar.selectedTabIndex = 0;
     [self _changeSegment:nil];
+    
+    self.selectedTabTintColor = [UIColor blackColor];
+    self.horizontalTabBottomStrokeColor = [UIColor colorWithWhite:0.80 alpha:1.0];
+    self.horizontalTabSeparatorTopColor = [UIColor colorWithWhite:0.96 alpha:1.0];
     
     return self;
 }
@@ -223,15 +232,8 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     [NSLayoutConstraint activateConstraints:constraints];
 }
 
-#pragma mark - OUITabBarAppearanceDelegate
 
-- (UIColor *)selectedTabTintColor;
-{
-    return [UIColor blackColor];
-}
-
-
-#pragma mark - Private
+#pragma mark - PrivateOP
 
 - (void)_changeSegment:(id)sender;
 {
@@ -262,5 +264,21 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
 
     return NSNotFound;
 }
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    self.selectedTabTintColor = appearance.InspectorTextColor;
+    self.horizontalTabBottomStrokeColor = appearance.HorizontalTabBottomStrokeColor;
+    self.horizontalTabSeparatorTopColor = appearance.HorizontalTabSeparatorTopColor;
+    
+    [_titleTabBar appearanceDidChange];
+}
+
+
 
 @end

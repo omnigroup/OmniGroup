@@ -212,12 +212,6 @@ dateString = [super stringForObjectValue:obj]; \
     return nil;
 }
 
-- (nullable NSDate *)dateFromString:(NSString *)string;
-{
-    OBRejectUnusedImplementation(self, _cmd);
-    return nil;
-}
-
 #pragma mark NSCopying
 
 - (id)copyWithZone:(nullable NSZone *)zone;

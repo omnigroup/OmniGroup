@@ -98,6 +98,7 @@
 - (NSString *)recentDocumentShortcutIconImageName;
 - (NSString *)newDocumentShortcutIconImageName;
 - (UIImage *)documentPickerBackgroundImage;
+- (UIColor *)emptyOverlayViewTextColor;
 - (Class)documentClassForURL:(NSURL *)url;
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
 - (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;

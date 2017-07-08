@@ -1236,7 +1236,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     return [self newInspectionSetForResponder:[windowController responderForInspectionSet]];
 }
 
-+ (OIInspectionSet *)newInspectionSetForResponder:(NSResponder *)responder;
++ (OIInspectionSet *)newInspectionSetForResponder:(nullable NSResponder *)responder;
 {
     OIInspectionSet *inspectionSet = [[OIInspectionSet alloc] init];
 

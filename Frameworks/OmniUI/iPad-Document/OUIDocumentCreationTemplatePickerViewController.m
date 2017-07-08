@@ -18,6 +18,7 @@
 #import <OmniUIDocument/OUIDocumentPickerItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerFilter.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
 
 RCS_ID("$Id$");
 
@@ -70,7 +71,7 @@ RCS_ID("$Id$");
     NSString *buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here to add a document without a template.", @"OmniUIDocument", OMNI_BUNDLE, @"empty template picker button text");
     
     __weak OUIDocumentPickerViewController *weakSelf = self;
-    OUIEmptyOverlayView *_templatePickerEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:nil buttonTitle:buttonTitle action:^{
+    OUIEmptyOverlayView *_templatePickerEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:nil buttonTitle:buttonTitle customFontColor:[[OUIDocumentAppController controller] emptyOverlayViewTextColor] action:^{
         [weakSelf newDocumentWithTemplateFileItem:nil];
     }];
     

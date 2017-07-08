@@ -264,7 +264,13 @@ static unsigned SyncAgentRunningAccountsContext;
 - (void)closeAndDismissDocumentWithCompletionHandler:(void (^)(void))completionHandler
 {
     [self closeDocumentWithCompletionHandler:^{
-        [_documentPicker dismissViewControllerAnimated:YES completion:completionHandler];
+        // If there is no presented view controller the completion handler doesn't get called
+        if (_documentPicker.presentedViewController) {
+            [_documentPicker dismissViewControllerAnimated:YES completion:completionHandler];
+        } else {
+            completionHandler();
+        }
+        
     }];
 }
 
@@ -1357,6 +1363,11 @@ static NSDictionary *RoleByFileType()
 - (UIImage *)documentPickerBackgroundImage;
 {
     return nil;
+}
+
+- (UIColor *)emptyOverlayViewTextColor;
+{
+    return _window.tintColor;
 }
 
 - (NSURL *)documentProviderMoreInfoURL;

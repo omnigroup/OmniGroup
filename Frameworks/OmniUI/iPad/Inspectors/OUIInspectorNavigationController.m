@@ -35,13 +35,13 @@ RCS_ID("$Id$")
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
-    
     OUIInspectorPane *firstPane = (OUIInspectorPane *)self.viewControllers.firstObject;
     OBASSERT([firstPane isKindOfClass:[OUIInspectorPane class]]);
     
     OUIInspector *inspector = firstPane.inspector;
     [inspector forceUpdateInspectedObjects];
+    
+    [super viewWillAppear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;

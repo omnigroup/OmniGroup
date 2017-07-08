@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007,2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,11 @@
 
 #import <OmniFoundation/NSObject-OFAppleScriptExtensions.h>
 
-#import <Foundation/NSScriptCoercionHandler.h>
-#import <Foundation/NSScriptClassDescription.h>
-#import <Foundation/NSScriptKeyValueCoding.h>
-#import <Foundation/NSScriptSuiteRegistry.h>
-#import <Foundation/NSScriptObjectSpecifiers.h>
-#import <Foundation/NSScriptWhoseTests.h>
-#import <ApplicationServices/ApplicationServices.h>
+@import ApplicationServices;
+@import Foundation;
+@import Carbon; // For 'keyASUserRecordFields'
+
+#import <OmniFoundation/OFErrors.h>
 
 RCS_ID("$Id$")
 
@@ -441,4 +439,116 @@ RCS_ID("$Id$")
     return specifier;
 }
 
+#pragma mark -
+
+// Minimal conversion routines for what we need.
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    NSScriptObjectSpecifier *specifier = [self objectSpecifier];
+    if (specifier == nil) {
+        // RT #429341 -- 10.6 began adding non-plist values to -[NSWorkspace currentApplication]. We'll be lossy here in the conversion of NSObject's to event descriptors instead of halting everything for no particularly good reason. We'll return a null descriptor so that we have a non-nil (no error) result and so that if we are getting wrapped in a dictionary, we'll an entry for this key (with missing value? not sure w/o testing).
+        return [NSAppleEventDescriptor nullDescriptor];
+    }
+
+    NSAppleEventDescriptor *desc = [specifier descriptor];
+    if (desc == nil) {
+        NSString *reason = [NSString stringWithFormat:@"Cannot convert \"%@\" to an NSAppleEventDescriptor.", [self shortDescription]];
+        OFError(outError, OFUnableToConvertScriptHandlerArgumentToAppleEventDescriptor, reason, @"-descriptor returned nil");
+    }
+
+    return desc;
+}
+
 @end
+
+@implementation NSString (OFAppleScriptExtensions)
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    return [NSAppleEventDescriptor descriptorWithString:self];
+}
+
+@end
+
+@implementation NSNumber (OFAppleScriptExtensions)
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    CFNumberType type = CFNumberGetType((CFNumberRef)self);
+
+    switch (type) {
+        case kCFNumberSInt64Type: {
+            SInt64 int64Value = 0;
+            CFNumberGetValue((CFNumberRef)self, kCFNumberSInt64Type, &int64Value);
+            return [NSAppleEventDescriptor descriptorWithDescriptorType:typeSInt64 bytes:&int64Value length:sizeof(int64Value)];
+        }
+        case kCFNumberSInt32Type:
+            return [NSAppleEventDescriptor descriptorWithInt32:self.intValue];
+        case kCFNumberCharType:
+            return [NSAppleEventDescriptor descriptorWithBoolean:self.boolValue];
+        case kCFNumberFloat64Type:
+            return [NSAppleEventDescriptor descriptorWithDouble:self.doubleValue];
+        default: {
+            NSString *reason = [NSString stringWithFormat:@"Cannot convert \"%@\", type %" PRIdNS " to an NSAppleEventDescriptor.", [self shortDescription], type];
+            OFError(outError, OFUnableToConvertScriptHandlerArgumentToAppleEventDescriptor, reason, @"Unknown number type");
+            return nil;
+        }
+    }
+}
+
+@end
+
+@implementation NSArray (OFAppleScriptExtensions)
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    NSAppleEventDescriptor *result = [NSAppleEventDescriptor listDescriptor];
+
+    NSUInteger objectIndex, objectCount = [self count];
+    for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
+        NSAppleEventDescriptor *desc = [[self objectAtIndex:objectIndex] convertToAppleEventDescriptor:outError];
+        if (!desc)
+            return nil;
+        [result insertDescriptor:desc atIndex:1+objectIndex]; // 1-based
+    }
+
+    return result;
+}
+
+@end
+
+@implementation NSDictionary (OFAppleScriptExtensions)
+
+// We send a 'user field' record for arbitrary keys instead of 4CC keys.
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    NSAppleEventDescriptor *keysAndValues = [NSAppleEventDescriptor listDescriptor];
+
+    NSArray *keys = [[self allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSUInteger descriptorIndex = 1;
+    for (NSString *key in keys) {
+        id value = [self valueForKey:key];
+
+        NSAppleEventDescriptor *keyDesc = [key convertToAppleEventDescriptor:outError];
+        if (keyDesc == nil)
+            return nil;
+
+        NSAppleEventDescriptor *valueDesc = [value convertToAppleEventDescriptor:outError];
+        if (valueDesc == nil)
+            return nil;
+
+        // 1-based
+        [keysAndValues insertDescriptor:keyDesc atIndex:descriptorIndex++];
+        [keysAndValues insertDescriptor:valueDesc atIndex:descriptorIndex++];
+    }
+
+    NSAppleEventDescriptor *result = [NSAppleEventDescriptor recordDescriptor];
+    [result setParamDescriptor:keysAndValues forKeyword:keyASUserRecordFields];
+
+    return result;
+}
+
+@end
+
+

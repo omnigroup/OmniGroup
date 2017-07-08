@@ -184,6 +184,10 @@ RCS_ID("$Id$");
             self.tableView.backgroundColor = appearance.InspectorBackgroundColor;
             self.tableView.separatorColor = appearance.TableViewSeparatorColor;
             break;
+        case UITableViewStylePlain:
+            self.tableView.backgroundColor = appearance.InspectorBackgroundColor;
+            self.tableView.separatorColor = appearance.TableViewSeparatorColor;
+            break;
         default:
             ;
     }
@@ -211,7 +215,9 @@ RCS_ID("$Id$");
 - (void)didMoveToSuperview;
 {
     [super didMoveToSuperview];
-    [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
 }
 
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;

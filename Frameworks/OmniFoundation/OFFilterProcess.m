@@ -1,4 +1,4 @@
-// Copyright 2005-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1248,6 +1248,10 @@ static char *makeEnvEntry(id key, size_t *sepindex, id value)
 
 static char **computeToolEnvironment(NSDictionary *replace_env, NSDictionary *augment_env, NSString *ensurePath)
 {
+    if (augment_env == nil)
+        augment_env = [NSDictionary dictionary];
+    augment_env = [augment_env dictionaryWithObject:@"" forKey:@"DYLD_INSERT_LIBRARIES"];
+
     char **newEnviron;
     NSUInteger newEnvironSize, newEnvironCount;
     BOOL modified;

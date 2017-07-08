@@ -137,10 +137,9 @@ RCS_ID("$Id$");
     
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
     
-    self.view.backgroundColor = appearance.InspectorBackgroundColor;
-//    self.textWell.backgroundColor = appearance.InspectorBackgroundColor;
-    self.textWell.textColor = appearance.InspectorTextColor;
-    self.textWell.labelColor = appearance.InspectorTextColor;
+    self.view.backgroundColor = appearance.TableCellBackgroundColor;
+    self.textWell.textColor = appearance.TableCellTextColor;
+    self.textWell.labelColor = appearance.TableCellTextColor;
     self.textWell.disabledTextColor = appearance.InspectorDisabledTextColor;
 }
 

@@ -3018,6 +3018,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 [lock unlock];
                 for (NSError *error in errorsOrNil)
                     OUI_PRESENT_ALERT_FROM(error, self);
+                [self.activityIndicator stopAnimating];
                 return;
             }
             
@@ -3105,7 +3106,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     
     if (![_documentStore.scopes containsObjectIdenticalTo:_documentScope]) {
         NSString *message = NSLocalizedStringFromTableInBundle(@"This Cloud Account no longer exists.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker because of removed account text");
-        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:message buttonTitle:nil action:nil];
+        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:message buttonTitle:nil customFontColor:[[OUIDocumentAppController controller] emptyOverlayViewTextColor] action:nil];
     } else if (!_emptyOverlayView) {
         NSString *buttonTitle;
         if (_documentScope.isExternal) {
@@ -3115,7 +3116,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
         }
 
         __weak OUIDocumentPickerViewController *weakSelf = self;
-        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:nil buttonTitle:buttonTitle action:^{
+        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:nil buttonTitle:buttonTitle customFontColor:[[OUIDocumentAppController controller] emptyOverlayViewTextColor] action:^{
             [weakSelf newDocument:nil];
         }];
     }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import <OmniUI/OUIInspectorSliceView.h>
 
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
 RCS_ID("$Id$")
@@ -67,6 +68,12 @@ RCS_ID("$Id$")
     return self;
 }
 
+- (void)willMoveToWindow:(UIWindow *)newWindow
+{
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self themedAppearanceDidChange:OUIInspectorAppearance.appearance];
+}
+
 - (void)drawRect:(CGRect)rect;
 {
     // We don't actually need to draw our background - we have a background color that accomplishes that.
@@ -109,6 +116,17 @@ RCS_ID("$Id$")
 @synthesize inspectorSliceAlignmentInsets;
 @synthesize inspectorSliceGroupPosition;
 @synthesize inspectorSliceSeparatorColor;
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    self.backgroundColor = appearance.TableViewSeparatorColor;
+    self.inspectorSliceSeparatorColor = appearance.TableViewSeparatorColor;
+}
 
 @end
 

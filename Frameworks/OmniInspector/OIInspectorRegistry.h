@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 - (void)invalidate;
 
-+ (OIInspectionSet *)newInspectionSetForResponder:(NSResponder *)responder;
++ (OIInspectionSet *)newInspectionSetForResponder:(nullable NSResponder *)responder;
 - (void)updateInspectorForWindow:(NSWindow *)window;
 - (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
 - (void)clearInspectionSet;

@@ -6,12 +6,8 @@
         <integer>1</integer>
         <key>InspectorBackgroundColor</key>
         <dict>
-            <key>h</key>
-            <real>0</real>
-            <key>s</key>
-            <integer>0</integer>
-            <key>b</key>
-            <real>0.25</real>
+            <key>w</key>
+            <real>0.12</real>
             <key>a</key>
             <real>1</real>
         </dict>
@@ -32,7 +28,7 @@
         <key>InspectorTextColor</key>
         <dict>
             <key>w</key>
-            <real>0.7</real>
+            <real>0.45</real>
             <key>a</key>
             <real>1</real>
         </dict>
@@ -40,6 +36,13 @@
         <dict>
             <key>w</key>
             <real>0.5</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
+        <key>PopoverBackgroundColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.25</real>
             <key>a</key>
             <real>1</real>
         </dict>
@@ -65,39 +68,45 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>HorizontalTabBottomStrokeColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.4</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
+        <key>HorizontalTabSeparatorTopColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.12</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
         <key>TableCellBackgroundColor</key>
         <dict>
-            <key>h</key>
-            <real>0</real>
-            <key>s</key>
-            <integer>0</integer>
-            <key>b</key>
-            <real>0.137</real>
+            <key>w</key>
+            <real>0.15</real>
             <key>a</key>
             <real>1</real>
         </dict>
         <key>TableCellDetailTextLabelColor</key>
         <dict>
             <key>w</key>
-            <real>0.7</real>
+            <real>.37</real>
             <key>a</key>
             <real>1</real>
         </dict>
         <key>TableCellTextColor</key>
         <dict>
             <key>w</key>
-            <real>.93</real>
+            <real>.64</real>
             <key>a</key>
             <real>1</real>
         </dict>
         <key>TableViewSeparatorColor</key>
         <dict>
-            <key>h</key>
-            <real>0</real>
-            <key>s</key>
-            <integer>0</integer>
-            <key>b</key>
-            <real>0.137</real>
+            <key>w</key>
+            <real>0.27</real>
             <key>a</key>
             <real>1</real>
         </dict>

@@ -234,4 +234,11 @@ extension UIViewController {
         }
         return false
     }
+    
+    var isVisibleAndAncestorsAreVisible: Bool {
+        if let parent = parent {
+            guard parent.isVisibleAndAncestorsAreVisible else { return false }
+        }
+        return isVisible
+    }
 }

@@ -69,6 +69,9 @@ enum {
     OFEmbeddedProvisioningProfileUnreadableError,
     OFEmbeddedProvisioningProfileMalformedPKCS7Error,
     OFEmbeddedProvisioningProfileMalformedPlistError,
+
+    // AppleScript
+    OFUnableToConvertScriptHandlerArgumentToAppleEventDescriptor,
 };
 
 

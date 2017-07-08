@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class NSArray, NSDictionary, NSScriptObjectSpecifier;
+@class NSAppleEventDescriptor, NSArray, NSDictionary, NSScriptObjectSpecifier;
 
 @interface NSObject (OFAppleScriptExtensions) 
 
@@ -28,5 +28,7 @@
 - (NSString *)appleScriptMakeCommandAt:(NSString *)aLocationSpecifier withIndent:(NSInteger)indent;
 
 - (NSScriptObjectSpecifier *)objectSpecifierByProperty:(NSString *)propertyKey inRelation:(NSString *)myLocation toContainer:(NSObject *)myContainer;
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
 
 @end
