@@ -302,6 +302,10 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     for (OUIInspectorSlice *slice in slices) {
         slice.containingPane = self;
         slice.view.backgroundColor = [slice sliceBackgroundColor];
+        
+        if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+            [slice notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
+        
         [self addChildViewController:slice];
         [self.sliceStackView addArrangedSubview:slice.view];
         

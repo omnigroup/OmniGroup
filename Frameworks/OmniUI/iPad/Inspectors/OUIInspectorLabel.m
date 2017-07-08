@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 
 RCS_ID("$Id$");
 
@@ -40,5 +41,29 @@ static id _commonInit(OUIInspectorLabel *self)
         return nil;
     return _commonInit(self);
 }
+
+- (void)willMoveToSuperview:(UIView *)newSuperview
+{
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        [self notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
+    }
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.textColor = appearance.InspectorTextColor;
+    if (OUIInspectorAppearance.currentTheme == OUIThemedAppearanceThemeDark) {
+        self.shadowColor = OUIShadowColor(OUIShadowTypeLightContentOnDarkBackground);
+        self.shadowOffset = OUIShadowOffset(OUIShadowTypeLightContentOnDarkBackground);
+    } else {
+        self.shadowColor = OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground);
+        self.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
+    }
+}
+
 
 @end

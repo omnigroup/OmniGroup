@@ -83,7 +83,10 @@ RCS_ID("$Id$")
     [self.navigationBar removeFromSuperview];
     self.navigationBar = nil;
 
-    self.view = nil;
+    // <bug:///146312> (iOS-OmniOutliner Engineering: Error: PRECONDITION failed. Requires '_invalidated == NO', at /Users/brent/Projects/omni/OmniGroup/Frameworks/OmniUI/iPad/OUISegmentedViewController.m:44)
+    // Don't set the view to nil. The problem: while closing the document, the layout engine may reference this view, in which case it will load the view and viewDidLoad will get called (because view is nil), which triggers an assertion failure. Instead, let’s expect deallocation.
+//    self.view = nil;
+    OBExpectDeallocation(self);
 }
 
 - (CGFloat)topLayoutLength;{

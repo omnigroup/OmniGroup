@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -158,8 +158,13 @@ RCS_ID("$Id$");
         HeightForAttributesCache = [[NSCache alloc] init];
     });
     
-    if (!attributes)
+    if (!attributes) {
         attributes = @{};
+    }
+    else {
+        attributes = [self _dictionaryMinusAttributesNotRelevantForHeightCalculation:attributes];
+    }
+
     NSNumber *heightNumber = [HeightForAttributesCache objectForKey:attributes];
     if (heightNumber)
         return [heightNumber cgFloatValue];
@@ -181,6 +186,51 @@ RCS_ID("$Id$");
     [HeightForAttributesCache setObject:@(height) forKey:attributes];
     return height;
 }
+
++ (NSDictionary *)_dictionaryMinusAttributesNotRelevantForHeightCalculation:(NSDictionary *)originalAttributes
+{
+    // <bug:///146279> (iOS-OmniOutliner Engineering: *** Expected deallocation of <OSStyleContext:0x61800086e880> 3.15s ago)
+    // PBS 7 July 2017: Remove colors and OSStyle objects. This is conservative: it may not get rid of every single irrelevant attribute. The main thing is to get rid of OSStyle objects, so they don't end up cached and thus outliving their expected lifetime (which causes their OSStyleContext to outlive expectation).
+    // This may have the side effect of fewer cache misses in heightForAttributes:, but it comes at the cost of more-expensive key creation.
+    static dispatch_once_t onceToken;
+    static NSArray *irrelevantKeys = nil;
+    static Class styleClass = nil;
+    dispatch_once(&onceToken, ^{
+        irrelevantKeys = @[NSForegroundColorAttributeName, NSBackgroundColorAttributeName, NSStrokeColorAttributeName, NSUnderlineColorAttributeName, NSStrikethroughColorAttributeName];
+        styleClass = NSClassFromString(@"OSStyle");
+    });
+
+    NSMutableDictionary *attributes = [originalAttributes mutableCopy];
+    [attributes removeObjectsForKeys:irrelevantKeys];
+
+    if (styleClass) {
+        NSMutableArray *keysToRemove = [NSMutableArray array];
+        [attributes enumerateKeysAndObjectsUsingBlock:^(id key, id object, BOOL *stop) {
+            if ([object isKindOfClass:styleClass]) {
+                [keysToRemove addObject:key];
+            }
+            else if ([object isKindOfClass:[NSArray class]]) {
+                if ([self _array:(NSArray *)object containsAnyObjectOfClass:styleClass]) {
+                    [keysToRemove addObject:key];
+                }
+            }
+        }];
+        [attributes removeObjectsForKeys:keysToRemove];
+    }
+
+    return [attributes copy];
+}
+
++ (BOOL)_array:(NSArray *)potentialStylesArray containsAnyObjectOfClass:(Class)class
+{
+    for (id oneObject in potentialStylesArray) {
+        if ([oneObject isKindOfClass:class]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 #endif
 
 - (CGFloat)widthOfLongestLine;

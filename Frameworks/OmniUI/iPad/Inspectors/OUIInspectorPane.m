@@ -98,24 +98,10 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
 }
 
-- (void)viewDidAppear:(BOOL)animated;
-{
-    [super viewDidAppear:animated];
-    self.inspector.animatingPushOrPop = NO;
-}
-
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    self.inspector.animatingPushOrPop = YES;
-    
     [[self view] endEditing:YES];
-}
-
-- (void)viewDidDisappear:(BOOL)animated
-{
-    [super viewDidDisappear:animated];
-    self.inspector.animatingPushOrPop = NO;
 }
 
 - (BOOL)shouldAutorotate;

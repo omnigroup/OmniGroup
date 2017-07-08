@@ -1421,7 +1421,15 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (void)setUpActivityIndicator
 {
     _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    _activityIndicator.color = [OAAppearanceDefaultColors appearance].omniGreenColor;
+    
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIColor *tintColor = window.tintColor;
+    if (tintColor) {
+        _activityIndicator.color = tintColor;
+    } else {
+        _activityIndicator.color = [OAAppearanceDefaultColors appearance].omniGreenColor;
+    }
+
     _activityIndicator.hidesWhenStopped = YES;
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     [self.mainScrollView.superview addSubview:_activityIndicator];
@@ -2483,6 +2491,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
     BOOL willDisplayFilter = ([availableFilters count] > 1);
 
     CGRect topRect = CGRectZero;
+    if (_topControls) {
+        [_topControls removeFromSuperview];
+        _topControls = nil;
+    }
     _topControls = [[UIView alloc] initWithFrame:topRect];
 
     // Sort
@@ -2556,6 +2568,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
         return OUIViewVisitorResultContinue;
     }];
 
+    [_mainScrollView addSubview:_topControls];
     _mainScrollView.topControls = _topControls;
     
     [self _updateToolbarItemsEnabledness];

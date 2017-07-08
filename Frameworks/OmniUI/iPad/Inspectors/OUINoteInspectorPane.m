@@ -149,6 +149,7 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
     [controller loadViewIfNeeded];
     controller.textView.textColor = self.textView.textColor;
     controller.textView.backgroundColor = self.textView.backgroundColor;
+    controller.textView.keyboardAppearance = self.textView.keyboardAppearance;
 
     [self presentViewController:controller animated:YES completion:^() {
     }];

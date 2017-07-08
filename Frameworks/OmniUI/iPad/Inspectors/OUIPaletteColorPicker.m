@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniUI/OUIColorSwatchPicker.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
@@ -149,7 +150,7 @@ RCS_ID("$Id$");
         {
             UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
             label.text = theme.displayName;
-            label.textColor = [OUIInspector labelTextColor];
+            label.textColor = self.textColor;
             label.font = labelFont;
             label.opaque = NO;
             label.backgroundColor = nil;
@@ -184,11 +185,35 @@ RCS_ID("$Id$");
     _themeViews = [themeViews copy];
 }
 
+- (UIColor *)textColor
+{
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        return OUIInspectorAppearance.appearance.InspectorTextColor;
+    
+    return [OUIInspector labelTextColor];
+}
+
 #pragma mark <OUIColorValue>
 
 -(OAColor *)color
 {
     return  self.selectionValue.firstValue;
+}
+
+#pragma mark - OUIInspectorAppearance
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    for (UIView *view in _themeViews) {
+        if ([view isKindOfClass:[UILabel class]]) {
+            UILabel *label = OB_CHECKED_CAST(UILabel, view);
+            if (label) {
+                label.textColor = self.textColor;
+            }
+        }
+    }
 }
 
 @end

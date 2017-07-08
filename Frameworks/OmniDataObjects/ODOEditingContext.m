@@ -1466,10 +1466,10 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 }
 
 
-NSNotificationName ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
-NSNotificationName ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";
-NSNotificationName ODOEditingContextDidSaveNotification = @"ODOEditingContextDidSaveNotification";
-NSNotificationName ODOEditingContextWillSaveNotification = @"ODOEditingContextWillSaveNotification";
+NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
+NSNotificationName const ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";
+NSNotificationName const ODOEditingContextDidSaveNotification = @"ODOEditingContextDidSaveNotification";
+NSNotificationName const ODOEditingContextWillSaveNotification = @"ODOEditingContextWillSaveNotification";
 
 NSString * const ODOInsertedObjectsKey = @"ODOInsertedObjectsKey";
 NSString * const ODOUpdatedObjectsKey = @"ODOUpdatedObjectsKey";

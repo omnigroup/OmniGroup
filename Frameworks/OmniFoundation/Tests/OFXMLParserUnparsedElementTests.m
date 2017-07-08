@@ -52,22 +52,37 @@ RCS_ID("$Id$");
 
 - (void)testLargeUnparsedElementWithIdentifier;
 {
+    [self _testUnparsedElementWithIdentifierOfLength:370000 withMaximumParserChunkSize:256];
+}
+
+- (void)testVeryLargeUnparsedElementWithIdentifierUsingDefaultParserChunkSize;
+{
+    NSUInteger maximumParserChunkSize = [OFXMLParser defaultMaximumParseChunkSize];
+    NSUInteger elementLength = maximumParserChunkSize * 4;
+    
+    [self _testUnparsedElementWithIdentifierOfLength:elementLength withMaximumParserChunkSize:maximumParserChunkSize];
+}
+
+- (void)_testUnparsedElementWithIdentifierOfLength:(NSUInteger)unparsedElementLength withMaximumParserChunkSize:(NSUInteger)maximumParserChuckSize;
+{
     NSString *filler1 = [[NSUUID UUID] UUIDString];
     NSMutableString *filler2 = [NSMutableString string];
     
-    for (NSUInteger i = 0; i < 10000; i++) {
+    // `unparsedElementLength` is the approximate length of the unparsed element
+    
+    while (filler2.length < unparsedElementLength) {
         [filler2 appendString:[[NSUUID UUID] UUIDString]];
         [filler2 appendString:@"/"];
     }
-
+    
     NSString *unparsedElementString = [NSString stringWithFormat:@"<foo id=\"a1\">%@<x>%@</x></foo>", filler1, filler2];
     NSData *unparsedElementData = [unparsedElementString dataUsingEncoding:NSUTF8StringEncoding];
-
+    
     NSString *xmlString = [NSString stringWithFormat:@"<root>%@</root>", unparsedElementString];
     
     NSError *error = nil;
     OFXMLParser *parser = [[OFXMLParser alloc] initWithWhitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] defaultWhitespaceBehavior:OFXMLWhitespaceBehaviorTypeIgnore target:self];
-    parser.maximumParseChunkSize = 256; // Ensure that the unparsed data spans several parser chunks
+    parser.maximumParseChunkSize = maximumParserChuckSize; // Ensure that the unparsed data spans several parser chunks
     OBShouldNotError([parser parseData:[xmlString dataUsingEncoding:NSUTF8StringEncoding] error:&error]);
     
     XCTAssertEqualObjects(_unparsedElementIdentifier, @"a1");

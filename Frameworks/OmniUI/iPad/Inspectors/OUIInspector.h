@@ -57,7 +57,6 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @property(readonly,nonatomic) OUIInspectorPane *mainPane;
 @property(readonly,nonatomic) CGFloat height;
 @property(assign,nonatomic) BOOL alwaysShowToolbar;
-@property(nonatomic) BOOL animatingPushOrPop;
 
 @property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
 

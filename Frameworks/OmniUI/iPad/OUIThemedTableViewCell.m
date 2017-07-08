@@ -8,24 +8,47 @@
 #import <OmniUI/OUIThemedTableViewCell.h>
 
 #import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIThemedTableViewCell
 
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+{
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self == nil) {
+        return nil;
+    }
+    
+    [self applyDefaultLabelColors];
+    
+    return self;
+}
+
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+    
+    [self applyDefaultLabelColors];
+}
+
 - (void)prepareForReuse;
 {
     [super prepareForReuse];
-    self.textLabel.textColor = nil;
     
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        [self applyDefaultLabelColors];
+        UITableView *tableView = [self containingViewOfClass:[UITableView class]];
+        [self applyBackgroundColorsForTableView:tableView];
+    }
 }
 
 - (void)willMoveToSuperview:(UIView *)superview;
 {
     if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
         OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
+        // This is here because we will likely need to know what tableview we are in in order to pick our default background. But if we have set some of this in cellForRowAtIndexPath: we will blow it away. Maybe we can work something out.
         self.selectedBackgroundView = [[UIView alloc] init];
         [self notifyChildrenThatAppearanceDidChange:appearance];
     }
@@ -34,12 +57,24 @@ RCS_ID("$Id$");
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
 {
     [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    UITableView *tableView = [self containingViewOfClass:[UITableView class]];
+    [self applyBackgroundColorsForTableView:tableView];
+}
+
+- (void)applyBackgroundColorsForTableView:(nullable UITableView *)tableView;
+{
+    OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
     self.selectedBackgroundView.backgroundColor = appearance.TableCellSelectedBackgroundColor;
     self.backgroundColor = appearance.TableCellBackgroundColor;
-    self.textLabel.textColor = appearance.TableCellTextColor;
-    self.detailTextLabel.textColor = appearance.TableCellDetailTextLabelColor;
+}
+
+- (void)applyDefaultLabelColors;
+{
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
+        self.textLabel.textColor = appearance.TableCellTextColor;
+        self.detailTextLabel.textColor = appearance.TableCellDetailTextLabelColor;
+    }
 }
 
 @end

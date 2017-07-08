@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,6 +84,12 @@ static inline id OBCallObjectReturnIMPWithObject(IMP imp, id self, SEL _cmd, id 
     return f(self, _cmd, object);
 }
 
+static inline id OBCallObjectReturnIMPWithObjectObject(IMP imp, id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
+{
+    id (*f)(id, SEL, id _Nullable, id _Nullable) = (typeof(f))imp;
+    return f(self, _cmd, object1, object2);
+}
+
 static inline BOOL OBCallBoolReturnIMPWithObjectObject(IMP imp, id self, SEL _cmd, id _Nullable object1, id _Nullable object2)
 {
     BOOL (*f)(id, SEL, id _Nullable, id _Nullable) = (typeof(f))imp;
@@ -118,6 +124,11 @@ static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
 static inline id OBSendObjectReturnMessageWithObject(id self, SEL _cmd, id _Nullable object)
 {
     return OBCallObjectReturnIMPWithObject(objc_msgSend, self, _cmd, object);
+}
+
+static inline id OBSendObjectReturnMessageWithObjectObject(id self, SEL _cmd, id _Nullable object1, id _Nullable object2) {
+
+    return OBCallObjectReturnIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
 }
 
 static inline BOOL OBSendBoolReturnMessageWithObjectObject(id self, SEL _cmd, id _Nullable object1, id _Nullable object2)

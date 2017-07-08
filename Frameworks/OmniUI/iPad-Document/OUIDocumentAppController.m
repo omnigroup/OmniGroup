@@ -123,6 +123,8 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 @property (nonatomic, strong) void (^externalPickerCompletionBlock)(NSURL *);
 @property (nonatomic) BOOL readyToShowNews;
 
+@property (nonatomic, strong) NSArray *pendingImportedFileItems;
+
 @end
 
 static unsigned SyncAgentRunningAccountsContext;
@@ -2006,22 +2008,30 @@ static NSDictionary *RoleByFileType()
                                     return;
                                 }
                                 
-                                [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:YES];
-                                [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
-                                newFileItem.selected = YES;
-                                [_documentPicker.selectedScopeViewController setEditing:YES animated:YES];
-
+                                if (self.pendingImportedFileItems)
+                                    self.pendingImportedFileItems = [self.pendingImportedFileItems arrayByAddingObject:newFileItem];
+                                else
+                                    self.pendingImportedFileItems = @[newFileItem];
+                                
                                 // Wait half a second to see if any other documents are coming in at the same time. If we get only one, open it, but
                                 // if there are more than one we want to stay in the doc picker with them all selected.
                                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC / 2)), dispatch_get_main_queue(), ^{
-                                    NSSet *selection = _documentPicker.selectedScopeViewController.selectedItems;
-                                    if (selection.count == 1 && selection.anyObject == newFileItem) {
-                                        [_documentPicker.selectedScopeViewController setEditing:NO animated:NO];
+                                    if (self.pendingImportedFileItems.lastObject != newFileItem)
+                                        return; // only perform the delayed actions once, not per item
+                                    
+                                    [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:NO];
+                                    if (self.pendingImportedFileItems.count == 1) {
                                         [self openDocument:newFileItem];
                                     } else {
+                                        [_documentPicker.selectedScopeViewController loadViewIfNeeded];
+                                        [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
+                                        [_documentPicker.selectedScopeViewController setEditing:YES animated:NO];
+                                        for (ODSFileItem *item in self.pendingImportedFileItems)
+                                            item.selected = YES;
                                         _isOpeningURL = NO; // Turn this off so that we'll start generating previews right away.
-                                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:selection];
+                                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:self.pendingImportedFileItems];
                                     }
+                                    self.pendingImportedFileItems = nil;
                                 });
                             });
                         }];

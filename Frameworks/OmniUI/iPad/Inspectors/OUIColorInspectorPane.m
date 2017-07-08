@@ -11,6 +11,7 @@
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUINavigationController.h>
 #import <OmniUI/OUISegmentedControl.h>
@@ -228,6 +229,9 @@ RCS_ID("$Id$");
         
         [self _setSelectedColorTypeIndex:bestPickerIndex];
     }
+    
+    if (OUIInspectorAppearance.inspectorAppearanceEnabled)
+        [self notifyChildrenThatAppearanceDidChange:OUIInspectorAppearance.appearance];
 
     // Do this after possibly swapping child view controllers. This allows us to remove the old before it gets send -viewWillAppear:, which would hit an assertion (rightly).
     [super viewWillAppear:animated];
@@ -267,5 +271,23 @@ RCS_ID("$Id$");
 {
     [self.parentSlice endChangingColor];
 }
+
+#pragma mark - OUIInspectorAppearance
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    OUINavigationController *navigationController = OB_CHECKED_CAST(OUINavigationController, self.navigationController);
+    navigationController.navigationBar.barStyle = appearance.InspectorBarStyle;
+    navigationController.navigationBar.backgroundColor = appearance.InspectorBackgroundColor;
+    navigationController.accessoryAndBackgroundBar.barStyle = appearance.InspectorBarStyle;
+    navigationController.accessoryAndBackgroundBar.backgroundColor = appearance.InspectorBackgroundColor;
+    navigationController.accessoryAndBackgroundBar.barTintColor = appearance.InspectorBackgroundColor;
+    navigationController.accessoryAndBackgroundBar.translucent = NO;
+}
+
 
 @end

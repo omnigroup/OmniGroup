@@ -155,6 +155,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return presenter
     }()
     
+    open weak var keyCommandProvider: OUIKeyCommandProvider?
+    open override var keyCommands: [UIKeyCommand]? {
+        return keyCommandProvider?.keyCommands
+    }
+    
     /// Backing property so we can force re-creation of leftEdgePanGesture.
     private var _leftEdgePanGesture: UIScreenEdgePanGestureRecognizer? = nil
     open var leftEdgePanGesture: UIScreenEdgePanGestureRecognizer {
@@ -827,6 +832,18 @@ typealias MultiPaneControllerPaneVisibility = MultiPaneController
 extension MultiPaneControllerPaneVisibility {
     public func paneIsVisible(at location: MultiPaneLocation) -> Bool {
         return pane(withLocation: location)?.isVisible ?? false
+    }
+    public func paneIsOverlaid(at location: MultiPaneLocation) -> Bool {
+        if (self.paneIsVisible(at: location) == false) {
+            return false;
+        }
+        guard let pane = pane(withLocation: location) else { return false }
+
+        if (pane.presentationMode == MultiPanePresentationMode.overlaid) {
+            return true
+        } else {
+            return false
+        }
     }
 }
 

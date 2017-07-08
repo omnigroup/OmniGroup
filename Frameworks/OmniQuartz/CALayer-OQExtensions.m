@@ -156,7 +156,12 @@ static void logAnimation(CALayer *self, CAAnimation *animation, NSString *key)
     }
     if ([animation isKindOfClass:[CATransition class]]) {
         CATransition *trans = (CATransition *)animation;
-        NSLog(@"  type:%@ subtype:%@ start:%g end:%g filter:%@", trans.type, trans.subtype, trans.startProgress, trans.endProgress, trans.filter);
+#if OMNI_BUILDING_FOR_MAC
+        id filter = trans.filter;
+#elif OMNI_BUILDING_FOR_IOS
+        id filter = nil; // This property isn't supported on iOS.
+#endif
+        NSLog(@"  type:%@ subtype:%@ start:%g end:%g filter:%@", trans.type, trans.subtype, trans.startProgress, trans.endProgress, filter);
     }
 }
 static void (*original_addAnimation)(CALayer *self, SEL _cmd, CAAnimation *animation, NSString *key) = NULL;

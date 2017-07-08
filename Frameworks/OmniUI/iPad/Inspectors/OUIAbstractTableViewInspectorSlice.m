@@ -108,6 +108,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(_tableView == nil);
     
     _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 420) style:[self tableViewStyle]];
+    _tableView.translatesAutoresizingMaskIntoConstraints = NO;
     
     // Subclasses must implement these protocols -- this class just does the UIViewController and OUIInspectorSlice glue code dealing with the view property being a UITableView.
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDataSource)]);
@@ -115,7 +116,16 @@ RCS_ID("$Id$");
     
     _tableView.delegate = (id <UITableViewDelegate>)self;
     _tableView.dataSource = (id <UITableViewDataSource>)self;
-    self.view = _tableView;
+    
+    UIView *view = [[UIView alloc] init];
+    [view addSubview:_tableView];
+
+    [_tableView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [_tableView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [_tableView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [_tableView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
+    self.view = view;
 }
 
 - (void)viewDidLoad;

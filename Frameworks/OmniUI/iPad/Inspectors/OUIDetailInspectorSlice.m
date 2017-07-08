@@ -80,10 +80,6 @@ RCS_ID("$Id$");
 
 @end
 
-@interface OUIDetailInspectorSlice()
-@property(nonatomic,strong) UITableView *tableView;
-@end
-
 @implementation OUIDetailInspectorSlice
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -100,14 +96,6 @@ RCS_ID("$Id$");
     
     return self;
 }
-
-- (void)dealloc;
-{
-    _tableView.delegate = nil;
-    _tableView.dataSource = nil;
-}
-
-@synthesize tableView = _tableView;
 
 // The most common case is that there is only one, but subclasses might have a whole group of related options.
 - (NSUInteger)itemCount;
@@ -168,8 +156,8 @@ RCS_ID("$Id$");
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
+    [self.tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(self.tableView);
 }
 
 #pragma mark - UIViewController subclass
@@ -177,26 +165,25 @@ RCS_ID("$Id$");
 - (void)loadView;
 {
     [super loadView];
-    self.tableView = (UITableView *)[self viewIfLoaded];
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
-    _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
+    self.tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
 }
 
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
     
-    [self configureTableViewBackground:_tableView];
+    [self configureTableViewBackground:self.tableView];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
 
-    CGFloat currentHeight = _tableView.contentSize.height;
+    CGFloat currentHeight = self.tableView.contentSize.height;
     OBASSERT(currentHeight > 0.0);
     if (self.heightConstraint == nil) {
-        self.heightConstraint = [_tableView.heightAnchor constraintEqualToConstant:currentHeight];
+        self.heightConstraint = [self.tableView.heightAnchor constraintEqualToConstant:currentHeight];
         self.heightConstraint.active = YES;
     } else {
         self.heightConstraint.constant = currentHeight;
@@ -338,7 +325,7 @@ RCS_ID("$Id$");
         [self.inspector pushPane:details inspectingObjects:[self inspectedObjectsForItemAtIndex:itemIndex]];
     }
     
-    [_tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (UITableViewStyle)tableViewStyle; // The style to use when creating the table view

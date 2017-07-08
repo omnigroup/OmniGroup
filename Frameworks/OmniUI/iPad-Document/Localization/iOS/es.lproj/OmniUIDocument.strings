@@ -184,7 +184,7 @@
 "Empty Trash" = "Vaciar papelera";
 
 /* webdav help */
-"Enter the location of your WebDAV space." = "Introduce la ubicación de su espacio WebDAV.";
+"Enter the location of your WebDAV space." = "Introduce la ubicación de tu espacio WebDAV.";
 
 /* export button title
    export options title
@@ -316,7 +316,7 @@
 "Password" = "Contraseña";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Permiso denegado a la biblioteca de imágenes.";
+"Photo Library permission denied." = "Permiso denegado a la fototeca.";
 
 /* Menu option in the document picker view */
 "Print" = "Imprimir";
@@ -438,7 +438,7 @@
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu biblioteca de imágenes.";
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";

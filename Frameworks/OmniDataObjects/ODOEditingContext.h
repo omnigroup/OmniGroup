@@ -59,11 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-extern NSNotificationName ODOEditingContextObjectsWillBeDeletedNotification;
+extern NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification;
 
-extern NSNotificationName ODOEditingContextObjectsDidChangeNotification;
-extern NSNotificationName ODOEditingContextWillSaveNotification; // Receivers of the notification should not make any changes to the context
-extern NSNotificationName ODOEditingContextDidSaveNotification;
+extern NSNotificationName const ODOEditingContextObjectsDidChangeNotification;
+extern NSNotificationName const ODOEditingContextWillSaveNotification; // Receivers of the notification should not make any changes to the context
+extern NSNotificationName const ODOEditingContextDidSaveNotification;
 
 extern NSString * const ODOInsertedObjectsKey;
 extern NSString * const ODOUpdatedObjectsKey; // All the updated objects

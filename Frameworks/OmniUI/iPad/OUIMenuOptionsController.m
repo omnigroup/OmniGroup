@@ -11,6 +11,7 @@ RCS_ID("$Id$");
 
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
@@ -230,6 +231,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
     //When we move to our parent view controller, its view encompasses the whole screen because that is the default size. So, starting in iOS9, when we move to the parent, we also inherit that size. If we calculate our preferred content size *after* moving, our calculation that relies on our table view staying at its initial size is wrong. Calculating before the move makes our preferred content size calculation correct, and everything resizes properly.
     [self _updatePreferredContentSizeFromOptions];
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        UINavigationBar *navigationBar = self.navigationController.navigationBar;
+        
+        navigationBar.backgroundColor = OUIInspectorAppearance.appearance.InspectorBackgroundColor;
+        navigationBar.barStyle = OUIInspectorAppearance.appearance.InspectorBarStyle;
+    }
+    
     [super willMoveToParentViewController:parent];
 }
 
@@ -346,8 +355,13 @@ NS_ASSUME_NONNULL_BEGIN
         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     } else {
         // Placeholder; one such case is in the 'move to folder' where some folders aren't valid destinations but are listed to show hierarchy
-        label.textColor = [OUIInspector disabledLabelTextColor];
-        cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
+        if (OUIInspectorAppearance.inspectorAppearanceEnabled) {
+            label.textColor = OUIInspectorAppearance.appearance.InspectorDisabledTextColor;
+            cell.imageView.tintColor = OUIInspectorAppearance.appearance.InspectorDisabledTextColor;
+        } else {
+            label.textColor = [OUIInspector disabledLabelTextColor];
+            cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
+        }
         cell.selectionStyle = UITableViewCellEditingStyleNone;
     }
     
