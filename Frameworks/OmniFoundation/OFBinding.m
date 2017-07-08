@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,15 +16,29 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 OBDEPRECATED_METHOD(-humanReadableDescriptionForKey:); // Use the key path variant
 OBDEPRECATED_METHOD(-shortHumanReadableDescriptionForKey:);
 
 static unsigned int _OFBindingObservationContext; 
 
-@interface OFBinding (Private)
+@interface OFBinding () {
+  @protected
+    unsigned int _enabledCount;
+    BOOL _registered;
+    id        _sourceObject;
+    NSString *_sourceKeyPath;
+    id        _nonretained_destinationObject; // We assume the destantion owns us
+    NSString *_destinationKeyPath;
+}
+
 - (void)_register;
 - (void)_deregister;
+
 @end
+
+#pragma mark -
 
 @implementation OFBinding
 
@@ -35,8 +49,14 @@ static unsigned int _OFBindingObservationContext;
     return [super allocWithZone:zone];
 }
 
-- initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
-     destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath;
+- (instancetype)init;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return nil;
+}
+
+- (instancetype)initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
+                   destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath;
 {
     OBPRECONDITION(sourceObject);
     OBPRECONDITION(sourceKeyPath);
@@ -59,7 +79,7 @@ static unsigned int _OFBindingObservationContext;
     return self;
 }
 
-- initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
+- (instancetype)initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
 {
     return [self initWithSourceObject:sourcePoint.object sourceKeyPath:sourcePoint.keyPath destinationObject:destinationPoint.object destinationKeyPath:destinationPoint.keyPath];
 }
@@ -187,7 +207,7 @@ static unsigned int _OFBindingObservationContext;
 #pragma mark -
 #pragma mark NSObject (NSKeyValueObserving)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
 {
     if (context == &_OFBindingObservationContext) {
         OBRequestConcreteImplementation(self, _cmd);
@@ -209,10 +229,8 @@ static unsigned int _OFBindingObservationContext;
     return dict;
 }
 
-@end
-
-
-@implementation OFBinding (Private)
+#pragma mark -
+#pragma mark Private
 
 - (NSKeyValueObservingOptions)_options;
 {
@@ -276,7 +294,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 #pragma mark -
 #pragma mark NSObject (NSKeyValueObserving)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
 {
     if (context == &_OFBindingObservationContext) {
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
@@ -318,7 +336,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 #pragma mark -
 #pragma mark NSObject (NSKeyValueObserving)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
 {
     if (context == &_OFBindingObservationContext) {
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
@@ -380,7 +398,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
     return NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld;
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary<NSKeyValueChangeKey, id> *)change context:(nullable void *)context;
 {
     if (context == &_OFBindingObservationContext) {
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
@@ -445,10 +463,10 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 
 NSString *OFKeyPathForKeys(NSString *firstKey, ...)
 {
-    OBPRECONDITION(firstKey);
+    OBPRECONDITION(firstKey != nil);
     
     if (firstKey == nil)
-        return nil;
+        return (NSString * _Nonnull)nil;
     
     NSMutableString *keyPath = [NSMutableString stringWithString:firstKey];
     
@@ -491,7 +509,7 @@ NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths)
 // Directly modifies the set, publishing KVO changes
 // Computes the delta operations necessary to transition to the new set.  NSController has a bug where whole-property replacement doesn't send the right KVO, so this can be a workaround for that problem, as well as possibly being more efficient.
 
-static void _OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set, BOOL processRemovalsFirst) {
+static void _OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet * _Nonnull * _Nonnull ivar, NSSet *set, BOOL processRemovalsFirst) {
 
     OBPRECONDITION(self);
     OBPRECONDITION(key);
@@ -555,12 +573,12 @@ static void _OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **iv
     }
 }
 
-void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
+void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet * _Nonnull * _Nonnull ivar, NSSet *set)
 {
     _OFSetMutableSet(self, key, ivar, set, NO);
 }
 
-void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
+void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet * _Nonnull * _Nonnull ivar, NSSet *set)
 {
     _OFSetMutableSet(self, key, ivar, set, YES);
 }
@@ -590,3 +608,5 @@ void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set)
     if ([toRemove count] > 0)
         [[self mutableSetValueForKey:key] minusSet:toRemove];
 }
+
+NS_ASSUME_NONNULL_END

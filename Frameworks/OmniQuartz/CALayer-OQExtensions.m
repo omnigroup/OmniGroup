@@ -115,7 +115,7 @@ static BOOL OQIsAnimationLoggingEnabledForLayer(CALayer *layer, NSString *key)
 
 static void logAnimation(CALayer *self, CAAnimation *animation, NSString *key)
 {
-    NSLog(@"%@=%@ delegate:%@ addAnimation:%@ forKey:%@", self.name, [self shortDescription], [self.delegate shortDescription], animation, key);
+    NSLog(@"%@=%@ delegate:%@ addAnimation:%@ forKey:%@", self.name, [self shortDescription], [(id)self.delegate shortDescription], animation, key);
     
     CAMediaTimingFunction *function = animation.timingFunction;
     if (function) {

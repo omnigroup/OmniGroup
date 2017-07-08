@@ -59,6 +59,7 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 
 
 @dynamic TableViewSeparatorColor;
+@dynamic TableCellSelectedBackgroundColor;
 @dynamic TableCellBackgroundColor;
 @dynamic TableCellTextColor;
 @dynamic TableCellDetailTextLabelColor;

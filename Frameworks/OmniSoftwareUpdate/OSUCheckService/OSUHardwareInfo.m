@@ -367,16 +367,13 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
     {
         // -[NSFileManager mountedVolumeURLsIncludingResourceValuesForKeys:options:] just returns nil on iOS...
         unsigned long long totalSize = 0;
-        struct statfs *mountStats = NULL;
-        int mountCount = getmntinfo(&mountStats, MNT_NOWAIT);
-        if (mountCount == 0) {
-            perror("getmntinfo");
+        // We used to loop through all mounted partitions using getmntinfo(3), but apfs returns the disk total for multiple partitions so that was returning an incorrect total. Perhaps what we really want is to look at the size of the filesystem our app's sandbox lives in, but for now let's just grab the size of the root filesystem.
+        struct statfs mountStat;
+        if (statfs("/", &mountStat) != 0) {
+            perror("statfs");
         } else {
-            for (int mountIndex = 0; mountIndex < mountCount; mountIndex++) {
-                struct statfs mountStat = mountStats[mountIndex];
-                unsigned long long size = (unsigned long long)mountStat.f_blocks * (unsigned long long)mountStat.f_bsize;
-                totalSize += size;
-            }
+            unsigned long long size = (unsigned long long)mountStat.f_blocks * (unsigned long long)mountStat.f_bsize;
+            totalSize += size;
         }
         
         if (totalSize > 0) {

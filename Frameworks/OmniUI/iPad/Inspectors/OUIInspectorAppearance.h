@@ -33,6 +33,7 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 @property (nonatomic, readonly) UIColor *HorizontalTabSeparatorTopColor;
 
 @property (nonatomic, readonly) UIColor *TableCellBackgroundColor;
+@property (nonatomic, readonly) UIColor *TableCellSelectedBackgroundColor;
 @property (nonatomic, readonly) UIColor *TableCellTextColor;
 @property (nonatomic, readonly) UIColor *TableCellDetailTextLabelColor;
 @property (nonatomic, readonly) UIColor *TableViewSeparatorColor;

@@ -1,4 +1,4 @@
-// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,22 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFBindingPoint
 
+- (instancetype)init NS_UNAVAILABLE;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return nil;
+}
+
 - (id)initWithObject:(id)object keyPath:(NSString *)keyPath;
 {
-    if (!(self = [super init]))
+    self = [super init];
+    if (self == nil) {
         return nil;
+    }
     
     _object = [object retain];
     _keyPath = [keyPath copy];
@@ -32,8 +41,9 @@ RCS_ID("$Id$");
 
 - (BOOL)isEqual:(id)object;
 {
-    if (![object isKindOfClass:[OFBindingPoint class]])
+    if (![object isKindOfClass:[OFBindingPoint class]]) {
         return NO;
+    }
 
     return OFBindingPointsEqual(self, object);
 }
@@ -60,3 +70,5 @@ BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -378,7 +378,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         
         guard let thePane = pane(withLocation: location) else { return }
         if (thePane.isVisible) {
-            multiPanePresenter.present(pane: thePane, fromViewController: self, usingDisplayMode: displayMode)
+            multiPanePresenter.dismiss(fromViewController: self, animated: true, completion: nil)
         }
     }
 

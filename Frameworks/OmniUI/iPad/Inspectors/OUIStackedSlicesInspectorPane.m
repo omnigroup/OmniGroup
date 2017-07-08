@@ -541,7 +541,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
     UIEdgeInsets insets = view.contentInset;
     insets.bottom = notifier.lastKnownKeyboardHeight;
-    
+    if (self.inspector.alwaysShowToolbar || ([self.toolbarItems count] > 0)) {
+        insets.bottom += self.navigationController.toolbar.frame.size.height;
+    }
     
     [UIView animateWithDuration:notifier.lastAnimationDuration animations:^{
         [UIView setAnimationCurve:notifier.lastAnimationCurve];

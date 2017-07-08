@@ -176,6 +176,12 @@ RCS_ID("$Id$")
     
     menu.popoverPresentationController.barButtonItem = [sender isKindOfClass:[UIBarButtonItem class]] ? sender : self.barButtonItem;
     
+    if (![self.hostViewController isKindOfClass:[OUIDocumentPickerViewController class]] &&  [OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
+        menu.popoverPresentationController.backgroundColor = appearance.PopoverBackgroundColor;
+        menu.menuBackgroundColor = appearance.PopoverBackgroundColor;
+    }
+
     [self.hostViewController presentViewController:menu animated:YES completion:^{
         menu.popoverPresentationController.passthroughViews = nil;
     }];

@@ -25,7 +25,10 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
+
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 // Deprecated methods from OUIEditableFrameDelegate
 OBDEPRECATED_METHOD(-textView:shouldInsertText:);
@@ -55,7 +58,7 @@ NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewI
     OUITextViewSelectedTextHighlightView *_selectedTextHighlightView;
 }
 
-static OUITextView *_activeFirstResponderTextView = nil;
+static OUITextView * _Nullable _activeFirstResponderTextView = nil;
 
 + (OUITextView *)activeFirstResponderTextView;
 {
@@ -220,7 +223,7 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     [self.layoutManager ensureLayoutForTextContainer:self.textContainer];
 }
 
-- (UITextRange *)selectionRangeForPoint:(CGPoint)pt granularity:(UITextGranularity)granularity;
+- (nullable UITextRange *)selectionRangeForPoint:(CGPoint)pt granularity:(UITextGranularity)granularity;
 {
     UITextPosition *hitPosition = [self closestPositionToPoint:pt];
     if (!hitPosition)
@@ -412,7 +415,7 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     return NO;
 }
 
-- (OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan;
+- (nullable OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan;
 {
     NSArray *spans = [self inspectableTextSpans];
     if ([self isEmptyInspectableTextSpans:spans])
@@ -435,7 +438,7 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
 }
 
 // <bug:///137426> (iOS-OmniGraffle Unassigned: Fix Text Inspector)
-- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
+- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^ _Nullable)(OUIInspector *))setupBlock;
 {
 //    NSArray *runs = [self _configureInspector];
     if (setupBlock != NULL)
@@ -453,7 +456,7 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     [self setSelectedTextRange:range showingMenu:show];
 }
 
-- (void)setSelectedTextRange:(UITextRange *)newRange showingMenu:(BOOL)show;
+- (void)setSelectedTextRange:(nullable UITextRange *)newRange showingMenu:(BOOL)show;
 {
     self.selectedTextRange = newRange;
     
@@ -777,61 +780,73 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 #pragma mark - Key commands
 
-- (void)moveUpAtTop:(id)sender;
+static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, UITextPosition *position)
+{
+    if ([input comparePosition:range.start toPosition:position] == NSOrderedDescending)
+        return NO;
+    if ([input comparePosition:position toPosition:range.end] == NSOrderedDescending)
+        return NO;
+    return YES;
+}
+
+- (void)moveUpAtTop:(nullable id)sender;
 {
     // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
 #if 1
     UITextPosition *position = self.selectedTextRange.start;
-    UITextPosition *upPosition = [self _closestPositionByMovingUpFromPosition:position];
-    
-    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)] &&
-        ([self comparePosition:upPosition toPosition:position] == NSOrderedSame ||
-        [self comparePosition:upPosition toPosition:self.beginningOfDocument] == NSOrderedSame)) {
-        [self.delegate textViewMoveUpAtTop:self];
-    } else {
-        // This calls -textViewDidChangeSelection:
-        self.selectedTextRange = [self textRangeFromPosition:upPosition toPosition:upPosition];
+
+    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)]) {
+        UITextRange *firstLineRange = [self.tokenizer rangeEnclosingPosition:self.beginningOfDocument withGranularity:UITextGranularityLine inDirection:UITextLayoutDirectionUp];
+        if (firstLineRange && _rangeContainsPosition(self, firstLineRange, position)) {
+            [self.delegate textViewMoveUpAtTop:self];
+            return;
+        }
     }
+    // This calls -textViewDidChangeSelection:
+    UITextPosition *upPosition = [self _closestPositionByMovingUpFromPosition:position];
+    self.selectedTextRange = [self textRangeFromPosition:upPosition toPosition:upPosition];
 #else
     if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
         [self.delegate textViewMoveUpAtTop:self];
 #endif
 }
 
-- (void)moveDownAtBottom:(id)sender;
+- (void)moveDownAtBottom:(nullable id)sender;
 {
     // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
 #if 1
     UITextPosition *position = self.selectedTextRange.start;
-    UITextPosition *downPosition = [self _closestPositionByMovingDownFromPosition:position];
-    
-    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)] &&
-        ([self comparePosition:downPosition toPosition:position] == NSOrderedSame ||
-         [self comparePosition:downPosition toPosition:self.endOfDocument] == NSOrderedSame)) {
-        [self.delegate textViewMoveDownAtBottom:self];
-    } else {
-        // This calls -textViewDidChangeSelection:
-        self.selectedTextRange = [self textRangeFromPosition:downPosition toPosition:downPosition];
+
+    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)]) {
+        UITextRange *lastLineRange = [self.tokenizer rangeEnclosingPosition:self.endOfDocument withGranularity:UITextGranularityLine inDirection:UITextLayoutDirectionDown];
+        // lastLineRange can be nil if you have "foo\n" and the insertion point is before the "f".
+        if (lastLineRange && _rangeContainsPosition(self, lastLineRange, position)) {
+            [self.delegate textViewMoveDownAtBottom:self];
+            return;
+        }
     }
+    // This calls -textViewDidChangeSelection:
+    UITextPosition *downPosition = [self _closestPositionByMovingDownFromPosition:position];
+    self.selectedTextRange = [self textRangeFromPosition:downPosition toPosition:downPosition];
 #else
     if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
         [self.delegate textViewMoveDownAtBottom:self];
 #endif
 }
 
-- (void)moveRightAtEnd:(id)sender;
+- (void)moveRightAtEnd:(nullable id)sender;
 {
     if ([self.delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
         [self.delegate textViewMoveRightAtEnd:self];
 }
 
-- (void)moveLeftAtBeginning:(id)sender;
+- (void)moveLeftAtBeginning:(nullable id)sender;
 {
-    if ([self.delegate respondsToSelector:@selector(moveLeftAtBeginning:)])
+    if ([self.delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
         [self.delegate textViewMoveLeftAtBeginning:self];
 }
 
-- (void)moveToBeginningOfParagraph:(id)sender;
+- (void)moveToBeginningOfParagraph:(nullable id)sender;
 {
     UITextPosition *position = self.selectedTextRange.start;
     UITextPosition *adjusted = [self.tokenizer positionFromPosition:position toBoundary:UITextGranularityParagraph inDirection:UITextStorageDirectionBackward];
@@ -839,7 +854,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         self.selectedTextRange = [self textRangeFromPosition:adjusted toPosition:adjusted]; // This does call the delegate method -textViewDidChangeSelection:
 }
 
-- (void)moveToBeginningOfParagraphAndModifySelection:(id)sender;
+- (void)moveToBeginningOfParagraphAndModifySelection:(nullable id)sender;
 {
     UITextRange *selectedRange = self.selectedTextRange;
     UITextPosition *position = selectedRange.start;
@@ -848,7 +863,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         self.selectedTextRange = [self textRangeFromPosition:adjusted toPosition:selectedRange.end]; // This does call the delegate method -textViewDidChangeSelection:
 }
 
-- (void)moveToEndOfParagraph:(id)sender;
+- (void)moveToEndOfParagraph:(nullable id)sender;
 {
     UITextPosition *position = self.selectedTextRange.end;
     UITextPosition *adjusted = [self.tokenizer positionFromPosition:position toBoundary:UITextGranularityParagraph inDirection:UITextStorageDirectionForward];
@@ -856,7 +871,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         self.selectedTextRange = [self textRangeFromPosition:adjusted toPosition:adjusted]; // This does call the delegate method -textViewDidChangeSelection:
 }
 
-- (void)moveToEndOfParagraphAndModifySelection:(id)sender;
+- (void)moveToEndOfParagraphAndModifySelection:(nullable id)sender;
 {
     UITextRange *selectedRange = self.selectedTextRange;
     UITextPosition *position = selectedRange.end;
@@ -867,11 +882,11 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 #pragma mark - UITextView subclass
 
-- (id <OUITextViewDelegate>)delegate;
+- (nullable id <OUITextViewDelegate>)delegate;
 {
     return (id <OUITextViewDelegate>)[super delegate];
 }
-- (void)setDelegate:(id<OUITextViewDelegate>)delegate;
+- (void)setDelegate:(nullable id<OUITextViewDelegate>)delegate;
 {
     [super setDelegate:delegate];
 }
@@ -907,7 +922,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     
 }
 
-- (void)setSelectedTextRange:(UITextRange *)selectedTextRange;
+- (void)setSelectedTextRange:(nullable UITextRange *)selectedTextRange;
 {
     // 14921726: TextKit: Selection controls should be dimmed and unresponsive while a popover is up
     // We'll dismiss the inspector in this case (since it is inspecting the original ranges of text and any edits it made would be to those old ranges). We could in theory update the inspected objects, but depending on what's in the selection/inspector the current view stack might not make sense (hypothetical, but say you had an image attachment selected and there was a filter/crop inspector pushed -- if you then adjusted the selection to be not on the image, we'd need to pop the child inspector pane).
@@ -919,12 +934,12 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 #pragma mark - UIResponder subclass
 
-- (NSString *)keyCommandCategories;
+- (nullable NSString *)keyCommandCategories;
 {
     return @"text";
 }
 
-- (NSArray *)keyCommands;
+- (nullable NSArray *)keyCommands;
 {
     return [OUIKeyCommands keyCommandsForCategories:self.keyCommandCategories];
 }
@@ -1076,7 +1091,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
     return bestPosition;
 }
 
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+- (BOOL)canPerformAction:(SEL)action withSender:(nullable id)sender;
 {
     if (self.keepContextualMenuHidden) {
         return NO;
@@ -1167,7 +1182,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
     return [super canPerformAction:action withSender:sender];
 }
 
-- (void)cut:(id)sender;
+- (void)cut:(nullable id)sender;
 {
     NSRange range = self.selectedRange;
     if (range.length == 0) {
@@ -1186,7 +1201,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
     [self performUndoableReplacementOnSelectedRange:replacement];
 }
 
-- (void)copy:(id)sender;
+- (void)copy:(nullable id)sender;
 {
     NSRange range = self.selectedRange;
     if (range.length == 0) {
@@ -1289,7 +1304,7 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
     }];
 }
 
-- (void)paste:(id)sender;
+- (void)paste:(nullable id)sender;
 {
     BOOL preserveStyles = YES;
     id <OUITextViewDelegate> delegate = self.delegate;
@@ -1298,7 +1313,7 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
     [self _pastePreservingStyles:preserveStyles];
 }
 
-- (void)pasteTogglingPreserveStyle:(id)sender;
+- (void)pasteTogglingPreserveStyle:(nullable id)sender;
 {
     BOOL preserveStyles = NO;
     id <OUITextViewDelegate> delegate = self.delegate;
@@ -1307,7 +1322,7 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
     [self _pastePreservingStyles:preserveStyles];
 }
 
-- (void)pasteAsPlainText:(id)sender;
+- (void)pasteAsPlainText:(nullable id)sender;
 {
     [self _pastePreservingStyles:NO];
 }
@@ -1419,7 +1434,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 #pragma mark - Private
 
-- (NSArray *)_configureInspector;
+- (nullable NSArray *)_configureInspector;
 {
     NSArray *runs = self.inspectableObjects;
     if (!runs)
@@ -1439,8 +1454,6 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 @end
 
-#import <OmniUI/UIView-OUIExtensions.h> // For -[UIView containingViewOfClass:]
-
 @implementation OUITextViewSelectedTextHighlightView
 
 - (instancetype)initWithFrame:(CGRect)frame;
@@ -1454,7 +1467,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     return self;
 }
 
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event;
 {
     return nil;
 }
@@ -1471,3 +1484,5 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,8 @@
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIKeyCommands.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class OUITextView, OUITextSelectionSpan;
 
@@ -45,7 +47,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 + (OUITextView *)activeFirstResponderTextView;
 
-@property(nonatomic,weak) id <OUITextViewDelegate> delegate;
+@property(nullable,nonatomic,weak) id <OUITextViewDelegate> delegate;
 
 // UITextView currently has top/bottom padding that we cannot turn off/change
 + (CGFloat)oui_defaultTopAndBottomPadding;
@@ -60,7 +62,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (NSDictionary *)typingAttributesWithAllAttributes; // allow subclasses to ensure that the typing attributes contain the extra attributes which are sometimes stripped out by the runtime.
 - (void)ensureLayout;
 
-- (UITextRange *)selectionRangeForPoint:(CGPoint)pt granularity:(UITextGranularity)granularity;
+- (nullable UITextRange *)selectionRangeForPoint:(CGPoint)pt granularity:(UITextGranularity)granularity;
 - (void)selectForInitialTapAtPoint:(CGPoint)pt;
 
 - (CGRect)boundsOfRange:(UITextRange *)range;
@@ -71,15 +73,15 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 - (NSArray *)inspectableObjects; // Full list of inspectable objects; defaults to -inspectableTextSpans
 - (NSArray *)inspectableTextSpans; // Array of OUITextSelectionSpans
-- (OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan; // Nil if there is no selection or the selection length is zero.
+- (nullable OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan; // Nil if there is no selection or the selection length is zero.
 - (BOOL)isEmptyInspectableTextSpans:(NSArray *)spans;
 
 - (OUIInspector *)textInspector;
 - (void)dismissInspectorImmediatelyIfVisible;
-- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock NS_EXTENSION_UNAVAILABLE_IOS("");
+- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^ _Nullable)(OUIInspector *))setupBlock NS_EXTENSION_UNAVAILABLE_IOS("");
 
 - (void)selectAllShowingMenu:(BOOL)show;
-- (void)setSelectedTextRange:(UITextRange *)newRange showingMenu:(BOOL)show;
+- (void)setSelectedTextRange:(nullable UITextRange *)newRange showingMenu:(BOOL)show;
 
 - (NSDictionary *)attributesInRange:(UITextRange *)range;
 - (id <NSObject>)attribute:(NSString *)attr inRange:(UITextRange *)range;
@@ -100,3 +102,4 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @end
 
+NS_ASSUME_NONNULL_END

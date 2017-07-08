@@ -146,6 +146,10 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
     };
     controller.modalPresentationStyle = UIModalPresentationOverFullScreen;
     
+    [controller loadViewIfNeeded];
+    controller.textView.textColor = self.textView.textColor;
+    controller.textView.backgroundColor = self.textView.backgroundColor;
+
     [self presentViewController:controller animated:YES completion:^() {
     }];
     

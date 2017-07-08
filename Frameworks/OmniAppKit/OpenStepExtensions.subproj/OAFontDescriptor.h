@@ -21,15 +21,17 @@ extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
 
 #if OMNI_BUILDING_FOR_IOS
     #define OAPlatformFontClass UIFont
+    #import <UIKit/UIFont.h>
 #elif OMNI_BUILDING_FOR_MAC
     #import <ApplicationServices/ApplicationServices.h> // CoreText lives in this umbrella on the Mac
+    #import <AppKit/NSFont.h>
     #define OAPlatformFontClass NSFont
 #endif
 
 
 #ifdef OAPlatformFontClass
 
-#define OAFontDescriptorPlatformFont OAPlatformFontClass *
+typedef OAPlatformFontClass *OAFontDescriptorPlatformFont;
 @class OAPlatformFontClass;
 
 @class NSNotification, NSDictionary;

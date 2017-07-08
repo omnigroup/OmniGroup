@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,9 @@
 
 RCS_ID("$Id$")
 
-// Same as 'SELF <op> %@'
+NS_ASSUME_NONNULL_BEGIN
 
+// Same as 'SELF <op> %@'
 NSPredicate *ODOCompareSelfToValuePredicate(NSPredicateOperatorType op, id value)
 {
     NSExpression *selfExpression = [NSExpression expressionForEvaluatedObject];
@@ -20,7 +21,7 @@ NSPredicate *ODOCompareSelfToValuePredicate(NSPredicateOperatorType op, id value
 }
 
 // Same as '%K <op> %@'
-NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredicateOperatorType op, id value)
+NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredicateOperatorType op, id _Nullable value)
 {
     NSExpression *keyPathExpression = [NSExpression expressionForKeyPath:keyPath];
     NSExpression *valueExpression = [NSExpression expressionForConstantValue:value];
@@ -30,7 +31,7 @@ NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredicateOpe
 }
 
 // Same as '%K = %@'
-NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id value)
+NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id _Nullable value)
 {
     return ODOKeyPathCompareToValuePredicate(keyPath, NSEqualToPredicateOperatorType, value);
 }
@@ -93,3 +94,4 @@ BOOL ODOIsTruePredicate(NSPredicate *predicate)
     return [predicate isEqual:truePredicate];
 }
 
+NS_ASSUME_NONNULL_END

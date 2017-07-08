@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,24 +11,20 @@
 #import <OmniBase/macros.h>
 #import <OmniFoundation/OFBindingPoint.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSSet, NSMutableSet, NSMutableArray;
 
 // Reifies a dependency between a source field and a destination field. Changes to the source are detected via KVO and propagated to the destination by KVC. This much is similar to dependent keys in stock KVO. Additional features here are that the binding is reified as an object for which propagation of changes can be disable, reenabled, or forced (for example if we are disabled but want to force an update).
 @interface OFBinding : NSObject
-{
-@protected
-    unsigned int _enabledCount;
-    BOOL _registered;
-    id        _sourceObject;
-    NSString *_sourceKeyPath;
-    id        _nonretained_destinationObject; // We assume the destantion owns us
-    NSString *_destinationKeyPath;
-}
 
-- initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
-     destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath; // designated initializer for now...
 
-- initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
+- (instancetype)init NS_UNAVAILABLE;
+
+- (instancetype)initWithSourceObject:(id)sourceObject sourceKeyPath:(NSString *)sourceKeyPath
+                   destinationObject:(id)destinationObject destinationKeyPath:(NSString *)destinationKeyPath NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithSourcePoint:(OFBindingPoint *)sourcePoint destinationPoint:(OFBindingPoint *)destinationPoint;
 
 - (void)invalidate;
 
@@ -83,9 +79,11 @@ extern NSArray *OFKeysForKeyPath(NSString *keyPath);
 /// Returns a new array by prefixing each key path in keyPaths with the given prefixKey
 extern NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths);
 
-extern void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set);
-extern void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set);
+extern void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet * _Nonnull * _Nonnull ivar, NSSet *set);
+extern void OFSetMutableSetProcessingRemovalsFirst(id self, NSString *key, OB_STRONG NSMutableSet * _Nonnull * _Nonnull ivar, NSSet *set);
 
 extern void OFSetMutableSetByProxy(id self, NSString *key, NSSet *ivar, NSSet *set);
 
 #define OFSetSetProperty(self, key, set) OFSetMutableSet(self, (NO && self.key ? @#key : @#key), &_##key, set)
+
+NS_ASSUME_NONNULL_END

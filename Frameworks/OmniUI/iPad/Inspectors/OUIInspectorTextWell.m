@@ -761,7 +761,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         [_focusIndicatorView removeFromSuperview];
         _focusIndicatorView = nil;
         
-        _valueLabel.textColor = [UIColor blackColor];
+        _valueLabel.textColor = self.textColor;
 
         [self setNeedsLayout];
     }

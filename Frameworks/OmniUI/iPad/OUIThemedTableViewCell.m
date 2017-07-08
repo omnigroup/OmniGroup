@@ -24,15 +24,19 @@ RCS_ID("$Id$");
 
 - (void)willMoveToSuperview:(UIView *)superview;
 {
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
-        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
+        self.selectedBackgroundView = [[UIView alloc] init];
+        [self notifyChildrenThatAppearanceDidChange:appearance];
+    }
 }
-    
+
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
 {
     [super themedAppearanceDidChange:changedAppearance];
     
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    self.selectedBackgroundView.backgroundColor = appearance.TableCellSelectedBackgroundColor;
     self.backgroundColor = appearance.TableCellBackgroundColor;
     self.textLabel.textColor = appearance.TableCellTextColor;
     self.detailTextLabel.textColor = appearance.TableCellDetailTextLabelColor;

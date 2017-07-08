@@ -612,7 +612,13 @@ OBDidLoad(^{
         }
     } else {
         id <NSTableViewDataSource> dataSource = self.dataSource;
-        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
+        if (self.numberOfSelectedRows == 0) {
+            return NO;
+        }
+        if ([dataSource respondsToSelector:@selector(tableView:pasteboardWriterForRow:)]) {
+            return YES;
+        }
+        if ([dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
             return YES;
         }
     }
@@ -625,18 +631,50 @@ OBDidLoad(^{
     if ([self isKindOfClass:[NSOutlineView class]]) {
         NSOutlineView *outlineView = (id)self;
         id <NSOutlineViewDataSource> dataSource = outlineView.dataSource;
-        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
-            return [dataSource outlineView:outlineView writeItems:[outlineView selectedItems] toPasteboard:pasteboard];
-        } else {
+        if (self.numberOfSelectedRows == 0) {
             return NO;
         }
+        if ([dataSource respondsToSelector:@selector(outlineView:pasteboardWriterForItem:)]) {
+            NSMutableArray *items = [NSMutableArray array];
+            [[outlineView selectedItems] enumerateObjectsUsingBlock:^(id  item, NSUInteger idx, BOOL * _Nonnull stop) {
+                id <NSPasteboardWriting> writing = [dataSource outlineView:outlineView pasteboardWriterForItem:item];
+                if (writing) {
+                    [items addObject:writing];
+                }
+            }];
+            if ([items count] == 0) {
+                return NO;
+            }
+            [pasteboard prepareForNewContentsWithOptions:0];
+            return [pasteboard writeObjects:items];
+        }
+        if ([dataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)]) {
+            return [dataSource outlineView:outlineView writeItems:[outlineView selectedItems] toPasteboard:pasteboard];
+        }
+        return NO;
     } else {
         id <NSTableViewDataSource> dataSource = self.dataSource;
-        if (self.numberOfSelectedRows > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
-            return [dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
-        } else {
+        if (self.numberOfSelectedRows == 0) {
             return NO;
         }
+        if ([dataSource respondsToSelector:@selector(tableView:pasteboardWriterForRow:)]) {
+            NSMutableArray *items = [NSMutableArray array];
+            [[self selectedRowIndexes] enumerateIndexesUsingBlock:^(NSUInteger row, BOOL * _Nonnull stop) {
+                id <NSPasteboardWriting> writing = [dataSource tableView:self pasteboardWriterForRow:row];
+                if (writing) {
+                    [items addObject:writing];
+                }
+            }];
+            if ([items count] == 0) {
+                return NO;
+            }
+            [pasteboard prepareForNewContentsWithOptions:0];
+            return [pasteboard writeObjects:items];
+        }
+        if ([dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)]) {
+            return [dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
+        }
+        return NO;
     }
 }
 

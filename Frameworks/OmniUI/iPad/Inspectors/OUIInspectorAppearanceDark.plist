@@ -89,6 +89,13 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>TableCellSelectedBackgroundColor</key>
+        <dict>
+            <key>w</key>
+            <real>1</real>
+            <key>a</key>
+            <real>.2</real>
+        </dict>
         <key>TableCellDetailTextLabelColor</key>
         <dict>
             <key>w</key>
