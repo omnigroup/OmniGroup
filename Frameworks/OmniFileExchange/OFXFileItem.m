@@ -1002,17 +1002,26 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
         __block BOOL success = NO;
+        __block NSError *strongError = nil;
+
         [coordinator prepareForReadingItemsAtURLs:@[] options:0 /* provoke save since we are maybe about to write to the file */
                                writingItemsAtURLs:writingURLs options:NSFileCoordinatorWritingForMerging /* there is no "I might not write option" so other presenters are going to get a relinquish no matter what */
                                             error:outError byAccessor:
          ^(void (^completionHandler)(void)){
-             success = [self _performDownloadCommitToURL:updatedLocalDocumentURL localTemporaryDocumentContentsURL:localTemporaryDocumentContentsURL targetLocalSnapshotURL:targetLocalSnapshotURL container:container downloadedSnapshot:downloadedSnapshot coordinator:coordinator downloadContents:downloadContents isMove:moved error:outError];
+             __autoreleasing NSError *error = nil;
+             success = [self _performDownloadCommitToURL:updatedLocalDocumentURL localTemporaryDocumentContentsURL:localTemporaryDocumentContentsURL targetLocalSnapshotURL:targetLocalSnapshotURL container:container downloadedSnapshot:downloadedSnapshot coordinator:coordinator downloadContents:downloadContents isMove:moved error:&error];
+             if (!success) {
+                 strongError = error;
+             }
 
              if (completionHandler)
                  completionHandler();
          }];
 
         if (!success) {
+            if (outError) {
+                *outError = strongError;
+            }
             cleanup();
             return NO;
         }

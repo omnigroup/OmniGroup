@@ -242,7 +242,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 
         // Set up the default paragraph alignment for when the editor's text is empty. Also, when we make editing text, this will be used for the alignment.
         _textField.textAlignment = self.effectiveTextAlignment;
-        _textField.placeholder = _placeholderText;
+        _textField.attributedPlaceholder = [self _attributedStringForEditingString:_placeholderText];
     }
     return _textField;
 }
@@ -714,6 +714,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
                 [self addSubview:_valueLabel];
             }
             _valueLabel.attributedText = attrString;
+            _valueLabel.textColor = textColor;
             
             _valueLabel.hidden = NO;
         }

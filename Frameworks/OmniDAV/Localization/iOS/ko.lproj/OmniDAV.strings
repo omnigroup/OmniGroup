@@ -1,6 +1,9 @@
 /* error description */
 "Could not access the WebDAV location <%@>." = "WebDAV 위치 <%@>에 액세스할 수 없습니다.";
 
+/* parsing a multistatus response, expected a particular XML element but found something else */
+"Expected “%@” element missing in multistatus result from %@" = "필요한 “%1$@” 요소가 %2$@의 다중 상태 결과에 없습니다.";
+
 /* Text for HTTP error code 507 (insufficient storage) */
 "insufficient storage" = "저장소 부족";
 

@@ -26,7 +26,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 // Both of these should be implemented if either are
 - (NSArray *)textViewReadablePasteboardTypes:(OUITextView *)textView;
-- (NSAttributedString *)textView:(OUITextView *)textView readTextFromItemSet:(NSIndexSet *)itemSet inPasteboard:(UIPasteboard *)pasteboard;
+- (nullable NSAttributedString *)textView:(OUITextView *)textView readTextFromItemSet:(NSIndexSet *)itemSet inPasteboard:(UIPasteboard *)pasteboard;
 
 - (BOOL)textViewShouldPreserveStylesWhenPasting:(OUITextView *)textView defaultValue:(BOOL)defaultValue sender:(id)sender;
 

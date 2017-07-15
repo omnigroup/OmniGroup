@@ -63,6 +63,7 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic TableCellBackgroundColor;
 @dynamic TableCellTextColor;
 @dynamic TableCellDetailTextLabelColor;
+@dynamic TableCellDisclosureTint;
 
 @end
 

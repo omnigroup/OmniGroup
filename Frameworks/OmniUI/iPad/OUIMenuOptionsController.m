@@ -232,13 +232,6 @@ NS_ASSUME_NONNULL_BEGIN
     //When we move to our parent view controller, its view encompasses the whole screen because that is the default size. So, starting in iOS9, when we move to the parent, we also inherit that size. If we calculate our preferred content size *after* moving, our calculation that relies on our table view staying at its initial size is wrong. Calculating before the move makes our preferred content size calculation correct, and everything resizes properly.
     [self _updatePreferredContentSizeFromOptions];
     
-    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
-        UINavigationBar *navigationBar = self.navigationController.navigationBar;
-        
-        navigationBar.backgroundColor = OUIInspectorAppearance.appearance.InspectorBackgroundColor;
-        navigationBar.barStyle = OUIInspectorAppearance.appearance.InspectorBarStyle;
-    }
-    
     [super willMoveToParentViewController:parent];
 }
 

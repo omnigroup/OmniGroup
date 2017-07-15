@@ -692,7 +692,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)())completion
+- (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)(void))completion
 {
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
     __weak OUIDocumentPickerViewController *welf = self;
@@ -1310,6 +1310,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
     }
     self.displayedTitleString = title;
+}
+
+- (void)updateToolbarItemsEnabledness
+{
+    [self _updateToolbarItemsEnabledness];
 }
 
 - (NSString *)nameLabelForItem:(ODSItem *)item;

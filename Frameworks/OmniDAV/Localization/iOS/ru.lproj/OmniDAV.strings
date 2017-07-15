@@ -1,6 +1,9 @@
 /* error description */
 "Could not access the WebDAV location <%@>." = "Не удалось получить доступ к размещению WebDAV <%@>.";
 
+/* parsing a multistatus response, expected a particular XML element but found something else */
+"Expected “%@” element missing in multistatus result from %@" = "Ожидаемый элемент «%1$@» отсутствует мультистатусном результате из %2$@";
+
 /* Text for HTTP error code 507 (insufficient storage) */
 "insufficient storage" = "недостаточно места";
 

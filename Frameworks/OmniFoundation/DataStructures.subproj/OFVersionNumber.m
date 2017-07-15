@@ -83,7 +83,16 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-// We require iOS 10.3 currently
++ (BOOL)isOperatingSystem110OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"11.0");
+    });
+
+    return isLater;
+}
 
 #else
 

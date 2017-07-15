@@ -217,7 +217,7 @@ RCS_ID("$Id$")
 {
     UINavigationController *topLevelNavController = self.topLevelNavigationController;
 
-    void (^completionBlock)() = ^() {
+    void (^completionBlock)(void) = ^() {
         ODSScope *scope = item.scope;
         if (!scope || ![_documentStore.scopes containsObject:scope]) {
             return;

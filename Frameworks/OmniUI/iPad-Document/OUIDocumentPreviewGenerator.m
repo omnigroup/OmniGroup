@@ -44,13 +44,13 @@ static NSMutableArray *blocksWhileDisabled = nil;
    disableCount--;
     
     while (!disableCount && blocksWhileDisabled.count) {
-        void (^block)() = [blocksWhileDisabled objectAtIndex:0];
+        void (^block)(void) = [blocksWhileDisabled objectAtIndex:0];
         [blocksWhileDisabled removeObjectAtIndex:0];
         block();
     }
 }
 
-+ (void)_performOrQueueBlock:(void (^)())block;
++ (void)_performOrQueueBlock:(void (^)(void))block;
 {
     if (disableCount) {
         if (!blocksWhileDisabled)

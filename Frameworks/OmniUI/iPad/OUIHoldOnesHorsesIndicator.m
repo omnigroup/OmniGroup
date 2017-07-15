@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -156,7 +156,7 @@ static UIColor *BackgroundWashColor;
         self.delayedDeactivationHandler();
 }
 
-- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)())handler; // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time before clearing it.
+- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)(void))handler; // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time before clearing it.
 {
     DEBUG_HORSE(@"In %@", NSStringFromSelector(_cmd));
     OBPRECONDITION(self.indicatorView != nil);

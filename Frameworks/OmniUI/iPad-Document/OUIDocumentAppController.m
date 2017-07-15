@@ -1060,7 +1060,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
 
 - (NSArray *)keyCommands;
 {
-    return [OUIKeyCommands keyCommandsForCategories:@"document-controller"];
+    return [OUIKeyCommands keyCommandsForCategories:[NSMutableOrderedSet<NSString *> orderedSetWithObject:@"document-controller"]];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;

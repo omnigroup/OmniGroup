@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -165,7 +165,7 @@ static BOOL _zipError(id self, const char *func, int err, NSError **outError)
         fileMode = S_IFLNK | 0644;
     else
         fileMode = S_IFREG | 0644;
-    info.external_fa = fileMode << 16; // UNIX mode is stored in the upper word.  (The lowest byte is for DOS attributes.)
+    info.external_fa = ((uLong)fileMode) << 16; // UNIX mode is stored in the upper word.  (The lowest byte is for DOS attributes.)
     info.tmz_date.tm_year = (uInt)[components year];
     info.tmz_date.tm_mon = (uInt)([components month] - 1); // Wants 0-based
     info.tmz_date.tm_mday = (uInt)[components day];

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,5 +33,5 @@
 @property (nonatomic) BOOL shouldDrawShadingView;
 
 - (void)activate NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions"); // adds the waiting indicator to the given view, appearing after a short delay; ends user interaction if requested
-- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)())handler NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions"); // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time, or not at all, before clearing it.
+- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)(void))handler NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions"); // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time, or not at all, before clearing it.
 @end

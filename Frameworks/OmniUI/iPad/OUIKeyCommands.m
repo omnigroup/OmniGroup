@@ -225,11 +225,14 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
     }
 }
 
-+ (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSString *)categories;
++ (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSOrderedSet<NSString *> *)categoriesSet;
 {
-    if (categories == nil) {
+    if (categoriesSet == nil) {
         return nil;
     }
+    
+    NSArray<NSString *> *names = [categoriesSet array];
+    NSString *categories = [names componentsJoinedByString:@","];
     
     // TODO: At this point it would be okay to do cross-category de-duping based on the ordered, comma-separated categories string. When done here, if category foo and bar share keycommand, sending "foo", "bar", "foo,bar", "bar,foo" should always result in one version of keycommand.
     NSArray *commands = CategoriesToKeyCommands[categories];
@@ -255,16 +258,14 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
     return commands;
 }
 
-+ (nullable NSArray<UIKeyCommand *> *)keyCommandsWithCategories:(nullable NSString *)categories;
++ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSOrderedSet<NSString *> *)categoriesSet;
 {
-    return [self keyCommandsForCategories:categories];
-}
-
-+ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSString *)categories;
-{
-    if (categories == nil) {
+    if (categoriesSet == nil) {
         return nil;
     }
+    
+    NSArray<NSString *> *names = [categoriesSet array];
+    NSString *categories = [names componentsJoinedByString:@","];
     
     NSSet *selectorNames = CategoriesToSelectorNames[categories];
     if (selectorNames != nil) {
@@ -308,7 +309,7 @@ static NSUInteger DesiredDiscoverabilityTitleLength = 25;
 {
     if ([self conformsToProtocol:@protocol(OUIKeyCommandProvider)] || [self respondsToSelector:@selector(keyCommandCategories)]) {
         id responder = self;
-        NSString *categories = [responder keyCommandCategories];
+        NSOrderedSet<NSString *> *categories = [responder keyCommandCategories];
         if (categories != nil) {
             NSSet *selectorNames = [OUIKeyCommands keyCommandSelectorNamesForCategories:categories];
             return [selectorNames containsObject:NSStringFromSelector(action)];

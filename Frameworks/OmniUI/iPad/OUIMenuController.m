@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (!(self = [super init]))
         return nil;
     
+    _navigationBarStyle = UIBarStyleDefault;
     _showsDividersBetweenOptions = YES;
     _alwaysShowsNavigationBar = NO;
     self.modalPresentationStyle = UIModalPresentationPopover;
@@ -184,10 +185,14 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OBPRECONDITION(navigationController == _menuNavigationController);
     
+    UINavigationBar *navigationBar = navigationController.navigationBar;
+    if (self.navigationBarBackgroundColor)
+        navigationBar.backgroundColor = self.navigationBarBackgroundColor;
+    navigationBar.barStyle = self.navigationBarStyle;
+
     if (!_isShowingAsPopover)
         return;
-
-
+    
     if (self.alwaysShowsNavigationBar) {
         navigationController.navigationBarHidden = NO;
     } else {

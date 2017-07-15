@@ -932,17 +932,19 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
     [_textInspector.viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - UIResponder subclass
+#pragma mark - OUIKeyCommandProvider
 
-- (nullable NSString *)keyCommandCategories;
+- (nullable NSOrderedSet<NSString *> *)keyCommandCategories;
 {
-    return @"text";
+    return [[NSOrderedSet<NSString *> alloc] initWithObjects:@"text", nil];
 }
 
 - (nullable NSArray *)keyCommands;
 {
     return [OUIKeyCommands keyCommandsForCategories:self.keyCommandCategories];
 }
+
+#pragma mark - UIResponder subclass
 
 - (BOOL)becomeFirstResponder;
 {

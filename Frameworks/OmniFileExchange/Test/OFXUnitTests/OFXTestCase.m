@@ -1231,9 +1231,17 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     OBPRECONDITION(fileURL);
     
     __block NSData *result = nil;
+    __block NSError *strongError = nil;
     [self coordinateWritingItemAtURL:fileURL options:NSFileCoordinatorWritingForMerging error:outError byAccessor:^(NSURL *newURL) {
-        result = [NSData dataWithContentsOfURL:fileURL options:options error:outError];
+        __autoreleasing NSError *error;
+        result = [NSData dataWithContentsOfURL:fileURL options:options error:&error];
+        if (!result) {
+            strongError = error;
+        }
     }];
+    if (!result && outError) {
+        *outError = strongError;
+    }
     return result;
 }
 
@@ -1243,10 +1251,17 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     OBPRECONDITION(fileURL);
     
     __block BOOL success = NO;
+    __block NSError *strongError = nil;
     [self coordinateWritingItemAtURL:fileURL options:NSFileCoordinatorWritingForMerging error:outError byAccessor:^(NSURL *newURL) {
-        success = [data writeToURL:fileURL options:options error:outError];
+        __autoreleasing NSError *error;
+        success = [data writeToURL:fileURL options:options error:&error];
+        if (!success) {
+            strongError = error;
+        }
     }];
-    
+    if (!success && outError) {
+        *outError = strongError;
+    }
     return success;
 }
 

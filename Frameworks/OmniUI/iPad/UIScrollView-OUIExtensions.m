@@ -230,7 +230,7 @@ static CGRect _nonautoscrollBounds(UIScrollView *self, NSUInteger allowedDirecti
     }
 }
 
-- (void)animateAlongsideKeyboardHiding:(void (^)())animations;
+- (void)animateAlongsideKeyboardHiding:(void (^)(void))animations;
 {
     if (animations){
         OUIKeyboardNotifier *sharedNotifier = [OUIKeyboardNotifier sharedNotifier];

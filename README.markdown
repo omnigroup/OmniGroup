@@ -10,7 +10,7 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 9 beta 2 for iOS, and watchOS, and Xcode 8.3.2 for Mac OS X. You'll probably have the best results if you do too.
+- We currently use Xcode 9 beta 3 for all platforms. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 

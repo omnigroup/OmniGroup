@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1088,7 +1088,9 @@ static dispatch_data_t cmsDecryptContentGCM(NSData *cek, NSData *nonce, int tagS
 
 static dispatch_data_t cryptorProcessData(CCCryptorRef cryptor, NSData *input, NSError **outError)
 {
-    dispatch_data_t __block result = dispatch_data_empty;
+    __block dispatch_data_t result = dispatch_data_empty;
+    __block NSError *error = nil;
+
     NSUInteger inputLength = input.length;
     [input enumerateByteRangesUsingBlock:^(const void * __nonnull buf, NSRange pos, BOOL * __nonnull stop){
         bool isLast = ( NSMaxRange(pos) >= inputLength );
@@ -1117,12 +1119,16 @@ static dispatch_data_t cryptorProcessData(CCCryptorRef cryptor, NSData *input, N
     fail_out:
         free(outputBuffer);
         result = NULL;
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:cerr userInfo:nil];
+        error = [NSError errorWithDomain:NSOSStatusErrorDomain code:cerr userInfo:nil];
         *stop = YES;
         return;
     }];
-    
+
+    if (result == NULL) {
+        if (outError)
+            *outError = error;
+    }
+
     return result; // May be NULL, if we hit an error in the apply loop.
 }
 

@@ -1001,12 +1001,22 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
     __block BOOL success = NO;
     if (shouldUseCoordinator) {
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        __block NSError *strongError = nil;
         [coordinator coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForMerging error:outError byAccessor:^(NSURL *newURL1, NSURL *newURL2) {
 
             DEBUG_STORE(@"Moving document: %@ -> %@ (scope %@)", sourceURL, destinationURL, self);
             // The documentation also says that this method does a coordinated move, so we don't need to (and in fact, experimentally, if we try we deadlock).
-            success = [[NSFileManager defaultManager] moveItemAtURL:sourceURL toURL:destinationURL error:outError];
+            __autoreleasing NSError *error;
+            success = [[NSFileManager defaultManager] moveItemAtURL:sourceURL toURL:destinationURL error:&error];
+            if (!success) {
+                strongError = error;
+            }
         }];
+        if (!success) {
+            if (outError) {
+                *outError = strongError;
+            }
+        }
     } else {
         DEBUG_STORE(@"Moving document (without extra coordination): %@ -> %@ (scope %@)", sourceURL, destinationURL, self);
         success = [[NSFileManager defaultManager] moveItemAtURL:sourceURL toURL:destinationURL error:outError];
@@ -1040,6 +1050,7 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
         destinationFolderURL = [sourceFolderURL URLByAppendingPathComponent:destinationFolderName isDirectory:YES];
 
         destinationRelativePath = OFFileURLRelativePath(self.documentsURL, destinationFolderURL);
+        OBASSERT_NOTNULL(parentRelativePath);
         OBASSERT([destinationRelativePath isEqualToString:[parentRelativePath stringByAppendingPathComponent:destinationFolderName]]);
     }
     
@@ -1104,12 +1115,23 @@ static ODSScope *_trashScope = nil;
     assert(trashScope != nil);
 
     __block BOOL success = NO;
+    __block NSError *strongError = nil;
     __block NSURL *resultingURL = nil;
     [trashScope _performSynchronousFileAccessUsingBlock:^{
         NSMutableSet *usedFilenames = [trashScope _copyCurrentlyUsedFileNamesInFolderAtURL:nil];
-        resultingURL = [trashScope _moveURL:url avoidingFileNames:usedFilenames usingCoordinator:NO error:outError];
+
+        __autoreleasing NSError *error = nil;
+        resultingURL = [trashScope _moveURL:url avoidingFileNames:usedFilenames usingCoordinator:NO error:&error];
+        if (!resultingURL) {
+            strongError = error;
+        }
+
         success = (resultingURL != nil);
     }];
+
+    if (!success && outError) {
+        *outError = strongError;
+    }
 
     if (outResultingURL != NULL && resultingURL != nil)
         *outResultingURL = resultingURL;
@@ -1395,8 +1417,10 @@ NSString *ODSScopeFindAvailableName(NSSet *usedFileNames, NSString *baseName, NS
             counter++;
         }
         
-        if (![NSString isEmptyString:extension]) // Is nil when we are creating new folders
+        if (![NSString isEmptyString:extension]) { // Is nil when we are creating new folders
+            OBASSERT_NOTNULL(extension);
             candidateName = [candidateName stringByAppendingPathExtension:extension];
+        }
         
         // Not using -memeber: because it uses -isEqual: which was incorrectly returning nil with some Japanese filenames.
         NSString *matchedFileName = [usedFileNames any:^BOOL(id object) {

@@ -60,7 +60,7 @@
 - (void)addSampleDocumentFromURL:(NSURL *)url;
 - (void)exportedDocumentToURL:(NSURL *)url;
     // For exports to iTunes, it's possible that we'll want to show the result of the export in our document picker, e.g., Outliner can export to OPML or plain text, but can also work with those document types. This method is called after a successful export to give the picker a chance to update if necessary.
-- (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)())completion;
+- (void)addDocumentToSelectedScopeFromURL:(NSURL *)fromURL withOption:(ODSStoreAddOption)option openNewDocumentWhenDone:(BOOL)openWhenDone completion:(void (^)(void))completion;
 
 - (NSArray *)availableFilters;
 - (void)animateFilterChangeTo:(NSString *)filterIdentifier withCompletion:(void (^)(void))completion;
@@ -95,6 +95,7 @@
 - (void)addDocumentStoreInitializationAction:(void (^)(OUIDocumentPickerViewController *blockSelf))action; // Note: performed immediately once the document store is initialized
 
 - (void)updateTitle;
+- (void)updateToolbarItemsEnabledness;
 
 - (NSString *)nameLabelForItem:(ODSItem *)item;
 

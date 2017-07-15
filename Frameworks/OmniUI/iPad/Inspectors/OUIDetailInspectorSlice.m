@@ -206,7 +206,7 @@ RCS_ID("$Id$");
     if (!cell) {
         cell = [[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
         
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.hasTintableDisclosureIndicator = YES;
         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     }
     
@@ -342,3 +342,4 @@ RCS_ID("$Id$");
     return YES;
 }
 @end
+

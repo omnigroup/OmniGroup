@@ -11,4 +11,8 @@
 
 @interface OUIThemedTableViewCell : UITableViewCell
 
+@property (readwrite,assign) BOOL hasTintableDisclosureIndicator;
+
+- (void)applyDefaultLabelColors;
+
 @end

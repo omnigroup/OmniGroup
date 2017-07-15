@@ -180,6 +180,9 @@ RCS_ID("$Id$")
         OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
         menu.popoverPresentationController.backgroundColor = appearance.PopoverBackgroundColor;
         menu.menuBackgroundColor = appearance.PopoverBackgroundColor;
+
+        menu.navigationBarBackgroundColor = OUIInspectorAppearance.appearance.InspectorBackgroundColor;
+        menu.navigationBarStyle = OUIInspectorAppearance.appearance.InspectorBarStyle;
     }
 
     [self.hostViewController presentViewController:menu animated:YES completion:^{

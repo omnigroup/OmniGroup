@@ -29,6 +29,8 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
 @property(nonatomic,copy) UIColor *menuBackgroundColor;
 @property(nonatomic,copy) UIColor *menuOptionBackgroundColor;
 @property(nonatomic,copy) UIColor *menuOptionSelectionColor;
+@property(nonatomic,copy) UIColor *navigationBarBackgroundColor;
+@property(nonatomic,assign) UIBarStyle navigationBarStyle;
 
 @property(nonatomic,assign) BOOL sizesToOptionWidth;
 @property(nonatomic,assign) NSTextAlignment textAlignment;

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,10 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OUIKeyCommands : NSObject
 
-+ (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSString *)categories; // Categories should be a comma separated list without whitespace
-+ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSString *)categories; // Categories should be a comma separated list without whitespace
-
-+ (nullable NSArray<UIKeyCommand *> *)keyCommandsWithCategories:(nullable NSString *)categories NS_DEPRECATED_IOS(9_0, 10_0, "Use +keyCommandsForCategories: instead");
++ (nullable NSArray<UIKeyCommand *> *)keyCommandsForCategories:(nullable NSOrderedSet<NSString *> *)categories;
++ (nullable NSSet<NSString *> *)keyCommandSelectorNamesForCategories:(nullable NSOrderedSet<NSString *> *)categories;
 
 + (NSString *)truncatedDiscoverabilityTitle:(NSString *)title;
 
@@ -27,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol OUIKeyCommandProvider
 
 @required
-@property (nullable, nonatomic, readonly) NSString *keyCommandCategories;
+@property (nullable, nonatomic, readonly) NSOrderedSet<NSString *> *keyCommandCategories;
 @property (nullable, nonatomic, readonly) NSArray<UIKeyCommand *> *keyCommands;
 
 @end

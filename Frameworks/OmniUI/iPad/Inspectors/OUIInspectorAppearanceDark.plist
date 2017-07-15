@@ -103,6 +103,13 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>TableCellDisclosureTint</key>
+        <dict>
+            <key>w</key>
+            <real>0.5</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
         <key>TableCellTextColor</key>
         <dict>
             <key>w</key>

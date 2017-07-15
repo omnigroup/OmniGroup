@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$")
                 if (currentCharacter != *lowerCheck && currentCharacter != *upperCheck)
                     break; // mismatch, so return last bucket that matched
                 scannerSkipPeekedCharacter(self);
-                lowerCheck++, upperCheck++;
+                lowerCheck++; upperCheck++;
             }
             if (*lowerCheck) // then we ran out of data, so return last bucket that matched
                 break;
@@ -115,7 +115,7 @@ RCS_ID("$Id$")
 		    if (currentCharacter != *lowerCheck && currentCharacter != *upperCheck)
 			break;
 		    scannerSkipPeekedCharacter(self);
-		    lowerCheck++, upperCheck++;
+                    lowerCheck++; upperCheck++;
 		}
 		if (*lowerCheck) {
 		    break;
