@@ -123,7 +123,7 @@
 
 // We don't want to use the main-bundle related macros when building other bundle types.  This is sometimes what you want to do, but you shouldn't use the macros since it'll make genstrings emit those strings into your bundle as well.  We can't do this from the .xcconfig files since NSBundle's #define wins vs. command line flags.
 #import <Foundation/NSBundle.h> // Make sure this is imported first so that it doesn't get imported afterwards, clobbering our attempted clobbering.
-#if defined(OMNI_BUILDING_FRAMEWORK_OR_BUNDLE)
+#if defined(OMNI_BUILDING_FRAMEWORK_OR_BUNDLE) && (!defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH)
     #undef NSLocalizedString
     #define NSLocalizedString Use_NSBundle_methods_if_you_really_want_to_look_up_strings_in_the_main_bundle
     #undef NSLocalizedStringFromTable

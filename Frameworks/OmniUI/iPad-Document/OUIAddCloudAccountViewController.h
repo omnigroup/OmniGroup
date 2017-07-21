@@ -1,4 +1,4 @@
-// Copyright 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <UIKit/UIViewController.h>
 #import <OmniFileExchange/OFXServerAccount.h>
+#import <OmniUI/OUIAppController.h>
 
 @class OFXServerAccount;
 
@@ -16,7 +17,7 @@
  Shows a list of available account types and navigates to an account editor
  */
 
-@interface OUIAddCloudAccountViewController : UIViewController
+@interface OUIAddCloudAccountViewController : UIViewController <DisabledDemoFeatureAlerter>
 
 - (instancetype)initWithUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
 

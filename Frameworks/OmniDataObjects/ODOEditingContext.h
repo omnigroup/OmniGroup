@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSArray *)executeFetchRequest:(ODOFetchRequest *)fetch error:(NSError **)outError;
 
 - (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
-- (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError;
+- (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError NS_REFINED_FOR_SWIFT;
 
 @end
 

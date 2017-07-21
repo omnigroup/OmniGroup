@@ -36,6 +36,7 @@ extern NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNu
 extern NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tag, CFStringRef _Nullable conformingToUTIOrNull);
 
 extern NSString * _Nullable OFUTIPreferredTagWithClass(NSString *fileType, CFStringRef tag);
+extern NSString * _Nullable OFUTIDescription(NSString *fileType);
 
 // Returns a file extension for a given uniform type identifier.  This function prefers prefers types that are registered by the running exceutable's main bundle
 extern NSString * _Nullable OFPreferredFilenameExtensionForTypePreferringNative(NSString *fileType);

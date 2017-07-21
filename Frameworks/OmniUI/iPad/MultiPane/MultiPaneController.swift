@@ -379,21 +379,30 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Does nothing unless display mode is multi and the location is left or right
     open func hideSidebar(atLocation location: MultiPaneLocation) {
-        guard (displayMode == .multi && (location == .right || location == .left)) else { return }
+        guard ((location == .right || location == .left)) else { return }
+        guard let pane = pane(withLocation: location) else { return }
+        guard pane.isVisible else { return }
         
-        guard let thePane = pane(withLocation: location) else { return }
-        if (thePane.isVisible) {
+        switch pane.presentationMode {
+        case .none:
+            break
+            
+        case .embedded:
+            // N.B. present(pane:fromViewController:usingDisplayMode:) is poorly named; it will actually toggle visibility in some cases, such as this one.
+            multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode)
+            
+        case .overlaid:
             multiPanePresenter.dismiss(fromViewController: self, animated: true, completion: nil)
         }
     }
-
+    
+    /// Dismisses the overlay sidebar if necessary; otherwise a no-op
     open func dismissSidebarIfNecessary(sidebar location: MultiPaneLocation) {
-        if let pane = pane(withLocation: location) {
-            if pane.presentationMode == .overlaid && pane.isVisible {
-                multiPanePresenter.dismiss(fromViewController: self, animated: true, completion: nil)
-            }
+        if let pane = pane(withLocation: location), pane.presentationMode == .overlaid && pane.isVisible {
+            hideSidebar(atLocation: location)
         }
     }
+
 //MARK: - Private api
 //MARK: - Pane containment and layout
     internal func pane(forViewController controller: UIViewController) -> Pane? {

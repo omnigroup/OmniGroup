@@ -215,6 +215,9 @@
 		3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
 		3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
 		3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
+		5F6A50781F1ED236003BA3A5 /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
+		5F73116C1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
+		5F73116D1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
 		5FEBBFD51DAD904900028E6E /* ODOAttribute-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FEBBFD41DAD904900028E6E /* ODOAttribute-Internal.h */; };
 		5FEBBFD61DAD904900028E6E /* ODOAttribute-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FEBBFD41DAD904900028E6E /* ODOAttribute-Internal.h */; };
 /* End PBXBuildFile section */
@@ -552,6 +555,7 @@
 		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODOEditingContext.swift; sourceTree = "<group>"; };
 		5FAA7789193E68F00017D662 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "zh-Hans.lproj"; sourceTree = "<group>"; };
 		5FAA778A193E68F00017D662 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ru.lproj; sourceTree = "<group>"; };
 		5FAA778B193E68F00017D662 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = nl.lproj; sourceTree = "<group>"; };
@@ -935,6 +939,7 @@
 				3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */,
 				344FB1AB0D89973500AA63FE /* ODOEditingContext.h */,
 				344FB1BD0D89979200AA63FE /* ODOEditingContext.m */,
+				5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */,
 				3400B6880D8C625700390D08 /* ODOObject-Internal.h */,
 				348E07220D904E99003C22D6 /* ODOObject-Internal.m */,
 				34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */,
@@ -1212,7 +1217,7 @@
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 0900;
 					};
 					340D5DB40DAACED300BF27F8 = {
 						DevelopmentTeam = 34YW5XSRB7;
@@ -1225,7 +1230,7 @@
 						DevelopmentTeamName = "The Omni Group";
 					};
 					8DC2EF4F0486A6940098B216 = {
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 0900;
 					};
 				};
 			};
@@ -1551,6 +1556,7 @@
 				34019F821B62ED90003A5BE4 /* ODOVersion.m in Sources */,
 				34019F901B62ED96003A5BE4 /* ODOModel.m in Sources */,
 				34019F9D1B62ED9B003A5BE4 /* ODOObject-Accessors.m in Sources */,
+				5F73116D1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */,
 				34019F971B62ED9B003A5BE4 /* ODOEditingContext-Internal.m in Sources */,
 				34019F8B1B62ED96003A5BE4 /* ODOEntity.m in Sources */,
 				34019F8D1B62ED96003A5BE4 /* ODOModel-SQL.m in Sources */,
@@ -1622,6 +1628,7 @@
 				34B77C3E1EC10F6C00BBBA65 /* Errors.m in Sources */,
 				34B77C3F1EC10F6C00BBBA65 /* ODOEntity-SQL.m in Sources */,
 				34B77C401EC10F6C00BBBA65 /* ODOModel-SQL.m in Sources */,
+				5F6A50781F1ED236003BA3A5 /* ODOEditingContext.swift in Sources */,
 				34B77C411EC10F6C00BBBA65 /* ODOEditingContext-Internal.m in Sources */,
 				34B77C421EC10F6C00BBBA65 /* ODOSQLStatement.m in Sources */,
 				34B77C431EC10F6C00BBBA65 /* ODOPredicate-SQL.m in Sources */,
@@ -1651,6 +1658,7 @@
 				34B9CCF30D8B065C001A5AB1 /* Errors.m in Sources */,
 				34B9CDDA0D8B1A4E001A5AB1 /* ODOEntity-SQL.m in Sources */,
 				34B9CDDB0D8B1A56001A5AB1 /* ODOModel-SQL.m in Sources */,
+				5F73116C1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */,
 				3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */,
 				3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */,
 				348ECFF80D8F78BE007ADAC9 /* ODOPredicate-SQL.m in Sources */,
@@ -1794,6 +1802,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1811,6 +1820,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1828,6 +1838,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1844,6 +1855,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",

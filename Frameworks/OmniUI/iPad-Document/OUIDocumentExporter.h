@@ -13,6 +13,7 @@
 @import OmniUnzip;
 
 #import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUI/OUIAppController.h>
 
 @protocol OUIDocumentExporterHost <NSObject>
 
@@ -35,7 +36,7 @@
 - (instancetype)initWithHostViewController:(UIViewController <OUIDocumentExporterHost> *)hostViewController NS_DESIGNATED_INITIALIZER; // For subclassing only
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (nonatomic, readonly, weak) UIViewController <OUIDocumentExporterHost> *hostViewController;
+@property (nonatomic, readonly, weak) UIViewController <OUIDocumentExporterHost, DisabledDemoFeatureAlerter> *hostViewController;
 @property (nonatomic, strong) UIBarButtonItem *barButtonItem;
 
 - (BOOL)canExportFileItem:(ODSFileItem *)fileItem;

@@ -325,6 +325,10 @@ NSString * _Nullable OFUTIPreferredTagWithClass(NSString *fileType, CFStringRef 
     return CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, tag));
 }
 
+NSString * _Nullable OFUTIDescription(NSString *fileType)
+{
+    return CFBridgingRelease(UTTypeCopyDescription((__bridge CFStringRef)fileType));
+}
 
 static NSString * _Nullable _OFGetFileExtensionFromDeinitionsForType(NSDictionary *definitions, NSString *fileType)
 {

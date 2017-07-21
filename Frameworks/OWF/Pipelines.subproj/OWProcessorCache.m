@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,7 +63,7 @@ RCS_ID("$Id$");
     __block NSArray *arcs = nil;
 
     OFWithLock(lock, ^{
-        NSMutableArray *arcReferences = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
+        NSMutableArray <OFWeakReference *> *arcReferences = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
         [arcReferences addObjectsFromArray:otherProcessors];
         arcs = [arcReferences arrayByPerformingBlock:^id(OFWeakReference *weakReference) {
             return weakReference.object;
@@ -103,7 +103,7 @@ RCS_ID("$Id$");
         BOOL anEntryIsHashable = [anEntry isHashable];
         
         if (anEntryIsHashable) {
-            NSArray *preexistingProcessors;
+            NSArray <OFWeakReference *> *preexistingProcessors;
             
             // If the source content is "complete", then it's possible to store it in a hash table. In this case we check to see if the processorsFromHashableSources dictionary has any applicable arcs for this source content.
             
@@ -113,9 +113,9 @@ RCS_ID("$Id$");
             for (NSUInteger linkIndex = linkCount; linkIndex > 0; linkIndex--) {
                 OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex-1];
                 
-                for (NSUInteger processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex ++) {
-                    OWProcessorCacheArc *extant = [preexistingProcessors objectAtIndex:processorIndex];
-                    
+                for (OFWeakReference *extantReference in preexistingProcessors) {
+                    OWProcessorCacheArc *extant = extantReference.object;
+
                     if ([extant processorDescription] != [possible processorDescription])
                         continue;
                     
@@ -241,7 +241,7 @@ RCS_ID("$Id$");
 
     // We don't want to hold the lock longer than necessary, so within our lock we just nullify our instance variables (after caching their values on our stack)
     __strong OFMultiValueDictionary *retainedProcessorsFromHashableSources = processorsFromHashableSources;
-    __strong NSMutableArray *retainedOtherProcessors = otherProcessors;
+    __strong NSMutableArray <OFWeakReference *> *retainedOtherProcessors = otherProcessors;
     processorsFromHashableSources = nil;
     otherProcessors = nil;
     

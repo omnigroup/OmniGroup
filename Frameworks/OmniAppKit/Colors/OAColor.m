@@ -271,6 +271,17 @@ CGColorRef OACreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
 {
     OBPRECONDITION(CGColorGetAlpha((CGColorRef)[colors objectAtIndex:0]) == 1.0f);
 
+    // A common case is that the 'top' (last) color is opaque.
+    CGColorRef lastColor = (__bridge CGColorRef)colors.lastObject;
+    if (CGColorGetAlpha(lastColor) >= 1.0)  {
+        if (CGColorGetColorSpace(lastColor) == destinationColorSpace) {
+            CGColorRetain(lastColor);
+            return lastColor;
+        } else {
+            // Wrong colorspace -- need to convert it.
+        }
+    }
+
     // We calculate the composite color by rendering into a 1x1px 8888RGBA bitmap.
     unsigned char bitmapData[4] = {0, 0, 0, 0};
     CGContextRef ctx = CGBitmapContextCreate(bitmapData, 1, 1, 8, 4, destinationColorSpace, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big);

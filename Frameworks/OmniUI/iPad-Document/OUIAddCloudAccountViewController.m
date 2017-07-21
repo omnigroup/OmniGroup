@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,6 +105,13 @@ RCS_ID("$Id$");
     }
     
     return cell;
+}
+
+#pragma mark - DisabledDemoFeatureAlerter
+
+- (NSString *)alertTitle
+{
+    return NSLocalizedStringFromTableInBundle(@"Cloud storage is disabled in this demo version.", @"OmniUIDocument", OMNI_BUNDLE, @"demo mode disabled message");
 }
 
 #pragma mark - UITableViewDelegate

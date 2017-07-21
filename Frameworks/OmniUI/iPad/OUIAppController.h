@@ -28,6 +28,12 @@ extern NSString *OUIAttentionSeekingNotification;
 /// The key for when attention is sought for new "News" from Omni.
 extern NSString *OUIAttentionSeekingForNewsKey;
 
+@protocol DisabledDemoFeatureAlerter
+- (NSString *)featureDisabledForDemoAlertTitle;
+@optional
+- (NSString *)featureDisabledForDemoAlertMessage;
+@end
+
 @interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate, OUIWebViewControllerDelegate>
 
 + (nonnull instancetype)controller NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
@@ -145,6 +151,10 @@ extern NSString * const OUISystemIsSnapshottingNotification;
 extern BOOL OUIShouldLogPerformanceMetrics;
 extern NSTimeInterval OUIElapsedTimeSinceProcessCreation(void); // For timing startup work before main() is entered
 extern NSTimeInterval OUIElapsedTimeSinceApplicationStarted(void); // Time since the beginning of -[OUIApplication initialize]
+
+@interface UIViewController (DisabledDemoFeatureAlerter) <DisabledDemoFeatureAlerter>
+- (NSString *)featureDisabledForDemoAlertTitle;
+@end
 
 #define OUILogPerformanceMetric(format, ...) if (OUIShouldLogPerformanceMetrics) NSLog((format), ## __VA_ARGS__)
 

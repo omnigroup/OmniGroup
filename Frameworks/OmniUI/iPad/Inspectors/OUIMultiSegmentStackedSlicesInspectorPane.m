@@ -37,9 +37,23 @@ RCS_ID("$Id$");
     if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
         return nil;
     
-    _segments = [self makeAvailableSegments];
-    
     _titleTabBar = [[OUITabBar alloc] initWithFrame:CGRectMake(0,0,[OUIInspector defaultInspectorContentWidth],30)];
+    [_titleTabBar addTarget:self action:@selector(_changeSegment:) forControlEvents:UIControlEventValueChanged];
+    _titleTabBar.appearanceDelegate = self;
+
+    [self reloadAvailableSegments];
+
+    self.selectedTabTintColor = [UIColor blackColor];
+    self.horizontalTabBottomStrokeColor = [UIColor colorWithWhite:0.80 alpha:1.0];
+    self.horizontalTabSeparatorTopColor = [UIColor colorWithWhite:0.96 alpha:1.0];
+    
+    return self;
+}
+
+- (void)reloadAvailableSegments; // this will end up calling makeAvailableSegments
+{
+    _segments = [self makeAvailableSegments];
+
     _titleTabBar.tabTitles = [_segments valueForKey:@"title"];
     // titles have to be set before images, because reasons.
     for (OUIInspectorSegment *segment in _segments) {
@@ -49,17 +63,9 @@ RCS_ID("$Id$");
             [_titleTabBar setImage:segment.image forTabWithTitle:segment.title];
         }
     }
-    [_titleTabBar addTarget:self action:@selector(_changeSegment:) forControlEvents:UIControlEventValueChanged];
-    _titleTabBar.appearanceDelegate = self;
     // Do this once in case we are told to inspect objects before our view is supposedly loaded.
     _titleTabBar.selectedTabIndex = 0;
     [self _changeSegment:nil];
-    
-    self.selectedTabTintColor = [UIColor blackColor];
-    self.horizontalTabBottomStrokeColor = [UIColor colorWithWhite:0.80 alpha:1.0];
-    self.horizontalTabSeparatorTopColor = [UIColor colorWithWhite:0.96 alpha:1.0];
-    
-    return self;
 }
 
 - (UINavigationItem *)segmentsNavigationItem;
@@ -238,6 +244,9 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
 - (void)_changeSegment:(id)sender;
 {
     OBPRECONDITION(_titleTabBar);
+    if (_segments.count == 0) {
+        return;
+    }
     [self setSelectedSegment:[_segments objectAtIndex:[_titleTabBar selectedTabIndex]]];
 }
 

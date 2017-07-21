@@ -60,10 +60,13 @@ static void _InitializeLoadActions(void)
         DidLoadActions = [[NSMutableArray alloc] init];
         ExecutableActions = [[NSMutableArray alloc] init];
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        // Note: adding this observation block on iOS causes a hang in CoreAnimation when initializing a UIWebView
         [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note){
             LOADACTION_DEBUG(@"Bundle loaded %@", note.object);
             OBInvokeRegisteredLoadActions();
         }];
+#endif
     });
 }
 

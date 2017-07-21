@@ -48,7 +48,11 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(OUIPasswordAlertOptions)options;
 {
-    if ([NSString isEmptyString:title]) {
+    self = [super init];
+    if (!self)
+        return nil;
+    
+    if ([NSString isEmptyString:title] && protectionSpace != nil) {
         NSString *name = [protectionSpace realm];
         if ([NSString isEmptyString:name]) {
             name = [protectionSpace host];
@@ -57,21 +61,13 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         title = name;
     }
     
-    return [self initWithTitle:title options:options];
-}
-
-- (id)initWithTitle:(NSString *)title options:(OUIPasswordAlertOptions)options;
-{
-    self = [super init];
-    if (!self)
-        return nil;
-
+    _protectionSpace = [protectionSpace copy];
     _title = [title copy];
     _options = options;
     
     BOOL showUsername = (_options & OUIPasswordAlertOptionShowUsername) != 0;
     BOOL allowEditingUsername = (_options & OUIPasswordAlertOptionAllowsEditingUsername) != 0;
-
+    
     _alertController = [UIAlertController alertControllerWithTitle:_title message:self.message preferredStyle:UIAlertControllerStyleAlert];
     __weak typeof(self) weakSelf = self;
     
@@ -108,8 +104,13 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
     }];
     [_alertController addAction:self.loginAction];
-
+    
     return self;
+}
+
+- (id)initWithTitle:(NSString *)title options:(OUIPasswordAlertOptions)options;
+{
+    return [self initWithProtectionSpace:nil title:title options:options];
 }
 
 - (void)setTitle:(NSString *)title;

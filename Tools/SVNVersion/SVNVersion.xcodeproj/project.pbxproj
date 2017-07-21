@@ -267,6 +267,7 @@
 			);
 			name = "Build SVNVersion.h";
 			outputPaths = (
+				"$(CONFIGURATION_BUILD_DIR)/include/SVNVersion.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -282,6 +283,7 @@
 			);
 			name = "Build SVNVersion.h";
 			outputPaths = (
+				"$(CONFIGURATION_BUILD_DIR)/include/SVNVersion.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -297,6 +299,7 @@
 			);
 			name = "Build SVNVersion.h";
 			outputPaths = (
+				"$(CONFIGURATION_BUILD_DIR)/include/SVNVersion.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -312,6 +315,7 @@
 			);
 			name = "Build SVNVersion.h";
 			outputPaths = (
+				"$(CONFIGURATION_BUILD_DIR)/include/SVNVersion.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

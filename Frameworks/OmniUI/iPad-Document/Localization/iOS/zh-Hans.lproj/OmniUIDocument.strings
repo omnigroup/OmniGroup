@@ -456,7 +456,7 @@
 "Title" = "标题";
 
 /* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "打开云存储供应商即可访问存储在云服务（如 iCould Drive 或 Dropbox）中的文稿。我们正在以 BETA 实施的形式推出对云存储供应商的访问；启用此服务时要小心。";
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "打开云存储供应商即可访问存储在云服务（如 iCloud Drive 或 Dropbox）中的文稿。我们正在以 BETA 实施的形式推出对云存储供应商的访问；启用此服务时要小心。";
 
 /* error title */
 "Unable to open file." = "无法打开文件。";

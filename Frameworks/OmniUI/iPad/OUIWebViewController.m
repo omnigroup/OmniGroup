@@ -173,9 +173,10 @@ RCS_ID("$Id$")
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSURL *requestURL = [navigationAction.request URL];
+    NSString *scheme = [[requestURL scheme] lowercaseString];
 
     // Callback
-    if (OFISEQUAL(requestURL.scheme, @"callback")) {
+    if ([scheme isEqualToString:@"callback"]) {
         if (_callbackBlock != NULL) {
             NSString *callback = requestURL.resourceSpecifier;
             _callbackBlock(self, callback);
@@ -184,32 +185,26 @@ RCS_ID("$Id$")
         return; // Don't load this in the WebView
     }
 
-    if (navigationAction.navigationType == WKNavigationTypeLinkActivated) {
+    // Special URL
+    if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] openURL:requestURL options:@{UIApplicationOpenURLOptionsOpenInPlaceKey : @(NO), UIApplicationOpenURLOptionsSourceApplicationKey : [[NSBundle mainBundle] bundleIdentifier]}]) {
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return; // Don't load this in the WebView
+    }
+
+    // Mailto link
+    if ([scheme isEqualToString:@"mailto"]) {
+        MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
+        controller.mailComposeDelegate = self;
+        [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
+        [self presentViewController:controller animated:YES completion:nil];
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return; // Don't load this in the WebView
+    }
+
+    if (navigationAction.navigationType == WKNavigationTypeLinkActivated || navigationAction.navigationType == WKNavigationTypeOther) {
 #ifdef DEBUG_kc
         NSLog(@"WebView link: %@", requestURL);
 #endif
-
-        NSString *scheme = [[requestURL scheme] lowercaseString];
-
-        // Callback
-        if ([scheme isEqualToString:@"callback"]) {
-            if (_callbackBlock != NULL) {
-                NSString *callback = requestURL.resourceSpecifier;
-                _callbackBlock(self, callback);
-            }
-            decisionHandler(WKNavigationActionPolicyCancel);
-            return; // Don't load this in the WebView
-        }
-
-        // Mailto link
-        if ([scheme isEqualToString:@"mailto"]) {
-            MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
-            controller.mailComposeDelegate = self;
-            [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
-            [self presentViewController:controller animated:YES completion:nil];
-            decisionHandler(WKNavigationActionPolicyCancel);
-            return; // Don't load this in the WebView
-        }
 
         // Explicitly kick over to Safari
         if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
@@ -240,12 +235,6 @@ RCS_ID("$Id$")
             // The above call to -openURL can return no if Safari is off due to restriction. We still don't want to handle the URL.
             decisionHandler(WKNavigationActionPolicyCancel);
             return;
-        }
-
-        // Special URL
-        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] openURL:requestURL options:@{UIApplicationOpenURLOptionsOpenInPlaceKey : @(NO), UIApplicationOpenURLOptionsSourceApplicationKey : [[NSBundle mainBundle] bundleIdentifier]}]) {
-            decisionHandler(WKNavigationActionPolicyCancel);
-            return; // Don't load this in the WebView
         }
     }
 

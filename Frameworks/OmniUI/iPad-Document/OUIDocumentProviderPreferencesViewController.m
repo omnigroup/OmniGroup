@@ -93,6 +93,11 @@ typedef NS_ENUM(NSUInteger, OUIDocumentProviderPreferencesSection) {
     }
 }
 
+- (NSString *)featureDisabledForDemoAlertTitle;
+{
+    return NSLocalizedStringFromTableInBundle(@"Cloud storage is disabled in this demo version.", @"OmniUIDocument", OMNI_BUNDLE, @"disabled for demo title");
+}
+
 - (IBAction)moreInfoButtonTapped:(id)sender {
     NSURL *moreInfoURL = [[OUIDocumentAppController controller] documentProviderMoreInfoURL];
     NSDictionary *emptyOptions = [NSDictionary dictionary];

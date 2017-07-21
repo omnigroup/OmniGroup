@@ -397,7 +397,15 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (BOOL)showFeatureDisabledForRetailDemoAlertFromViewController:(UIViewController *)presentingViewController;
 {
     if ([self isRunningRetailDemo]) {
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo") message:nil preferredStyle:UIAlertControllerStyleAlert];
+        NSString *alertString;
+        NSString *alertMessage;
+        UIViewController <DisabledDemoFeatureAlerter>* alerter = (UIViewController <DisabledDemoFeatureAlerter>*)presentingViewController;
+        alertString = [alerter featureDisabledForDemoAlertTitle];
+        if ([alerter respondsToSelector:@selector(featureDisabledForDemoAlertMessage)]) {
+            alertMessage = [alerter featureDisabledForDemoAlertMessage];
+        }
+        
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertString message:alertMessage preferredStyle:UIAlertControllerStyleAlert];
         [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"Done") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
 
         [presentingViewController presentViewController:alertController animated:YES completion:NULL];
@@ -1073,4 +1081,11 @@ static UIImage *menuImage(NSString *name)
     //Whatever work you want done after the app finishes waiting for Apple's snapshots, implement it inside this method in your subclasses.
 }
 
+@end
+
+@implementation UIViewController (DisabledDemoFeatureAlerter)
+- (NSString *)featureDisabledForDemoAlertTitle;
+{
+    return NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo");
+}
 @end

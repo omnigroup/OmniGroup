@@ -116,7 +116,7 @@ NSString *OFXMLCreateIDFromData(NSData *data)
     while (inputIndex < inputSize || bitsInBuffer > 0) {
         if (bitsInBuffer <= 24 && inputIndex < inputSize) {
             // Room in buffer for 8 more bits
-            buffer |= input[inputIndex] << bitsInBuffer;
+            buffer |= ((uint32_t)input[inputIndex]) << bitsInBuffer;
             inputIndex++;
             bitsInBuffer += 8;
         }

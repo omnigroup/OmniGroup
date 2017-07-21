@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -642,6 +642,18 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         return NO;
     
     return YES;
+}
+
+#pragma mark - DemoFeatureDisabledAlerter
+
+- (NSString *)featureDisabledForDemoAlertTitle
+{
+    return NSLocalizedStringFromTableInBundle(@"OmniPresence is disabled in this demo version.", @"OmniUIDocument", OMNI_BUNDLE, @"demo disabled title");
+}
+
+- (NSString *)featureDisabledForDemoAlertMessage
+{
+    return NSLocalizedStringFromTableInBundle(@"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device.", @"OmniUIDocument", OMNI_BUNDLE, @"demo disabled message");
 }
 
 @end

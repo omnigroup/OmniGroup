@@ -895,7 +895,12 @@ static CGColorRef _CreateCGColorRefWithComponentsOfColor(NSColor *color, CGColor
 - (CGColorRef)newCGColorWithCGColorSpace:(CGColorSpaceRef)destinationColorSpace;
 {
     OBPRECONDITION(destinationColorSpace);
-    
+
+    CGColorRef cgColor = self.CGColor;
+    if (destinationColorSpace == CGColorGetColorSpace(cgColor)) {
+        return CGColorRetain(cgColor);
+    }
+
     NSColorSpace *wrappedColorSpace = [[[NSColorSpace alloc] initWithCGColorSpace:destinationColorSpace] autorelease];
     NSColor *convertedColor = [self colorUsingColorSpace:wrappedColorSpace];
     if (convertedColor)
