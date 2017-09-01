@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -389,7 +389,7 @@ static NSString *ClientComputerName(void)
     infoDictionary[kOFXInfo_ArchiveVersionKey] = @(kOFXInfo_ArchiveVersion);
     
     // Get the date from the file so that if we created the document a long time ago and are just now turning on syncing it will have an accurate date.
-    OBFinishPortingLater("Should get this from the versionContents dictionary we just read using file coordination instead of looking it up again, or at least look it up in the same call with file coordination");
+    OBFinishPortingLater("<bug:///147842> (iOS-OmniOutliner Bug: Get file creation date from the versionContents dictionary we just read using file coordination instead of looking it up again, or at least look it up in the same call with file coordination)");
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[localDocumentURL path] error:outError];
     if (!attributes)
         return nil;
@@ -427,7 +427,7 @@ static NSString *ClientComputerName(void)
     return self;
 }
 
-// OBFinishPorting use the 'actions' class.
+// OBFinishPorting - <bug:///147841> (iOS-OmniOutliner Engineering: Use the 'actions' class in OFXIterateContentFiles)
 static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDictionary *fileInfo))
 {
     NSString *fileType = contents[kOFXContents_FileTypeKey];

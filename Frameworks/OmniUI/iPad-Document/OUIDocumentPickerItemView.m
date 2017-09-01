@@ -29,7 +29,7 @@ RCS_ID("$Id$");
 
 NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDocumentPickerItemViewPreviewsDidLoadNotification";
 
-@interface OUIDocumentPickerItemView (/*Private*/)
+@interface OUIDocumentPickerItemView () <UIDragInteractionDelegate>
 - (void)_loadOrDeferLoadingPreviewsForViewsStartingAtIndex:(NSUInteger)index;
 @property (nonatomic, strong) NSArray *cachedCustomAccessibilityActions;
 @property (nonatomic, strong) NSTimer *hackyTimerToGetRenamingToWorkWithProKeyboard;
@@ -136,6 +136,10 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     [self _updateRasterizesLayer];
     
     [self _setupAccessibilityActions];
+
+    UIDragInteraction *dragInteraction = [[UIDragInteraction alloc] initWithDelegate:self];
+    [self addInteraction:dragInteraction];
+
     return self;
 }
 
@@ -817,6 +821,37 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     return YES;
 }
 
+#pragma mark - UIDragInteractionDelegate
+
+- (NSArray<UIDragItem *> *)_itemsForDragSession:(id<UIDragSession>)session;
+{
+    ODSItem *item = self.item;
+    if (![item isKindOfClass:[ODSFileItem class]])
+        return @[];
+    ODSFileItem *fileItem = (ODSFileItem *)item;
+
+    NSItemProvider *itemProvider = [[NSItemProvider alloc] init];
+    itemProvider.suggestedName = fileItem.name;
+    [itemProvider registerFileRepresentationForTypeIdentifier:fileItem.fileType fileOptions:NSItemProviderFileOptionOpenInPlace visibility:NSItemProviderRepresentationVisibilityAll loadHandler:^NSProgress * _Nullable(void (^ _Nonnull completionHandler)(NSURL * _Nullable, BOOL, NSError * _Nullable)) {
+        completionHandler(fileItem.fileURL, YES, nil);
+        return nil;
+    }];
+
+    UIDragItem *dragItem = [[UIDragItem alloc] initWithItemProvider:itemProvider];
+    dragItem.localObject = item;
+    return @[dragItem];
+}
+
+- (NSArray<UIDragItem *> *)dragInteraction:(UIDragInteraction *)interaction itemsForBeginningSession:(id<UIDragSession>)session;
+{
+    return [self _itemsForDragSession:session];
+}
+
+- (NSArray<UIDragItem *> *)dragInteraction:(UIDragInteraction *)interaction itemsForAddingToSession:(id<UIDragSession>)session withTouchAtPoint:(CGPoint)point;
+{
+    return [self _itemsForDragSession:session];
+}
+
 #pragma mark - Private
 
 - (void)_updateRasterizesLayer;
@@ -961,6 +996,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     } else if (_item.isUploaded == NO) {
         statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotUploaded" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         OBASSERT(statusImage);
+    } else if (_item.scope.isExternal) {
+        statusImage = [UIImage imageNamed:@"OUIDocumentStatusLinked" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     }
     self.statusImage = statusImage;
     

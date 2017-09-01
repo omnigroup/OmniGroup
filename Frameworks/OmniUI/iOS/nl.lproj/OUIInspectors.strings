@@ -48,6 +48,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "Kleiner lettertype";
 
+/* hide more rows button title */
+"Hide More Rows" = "Meer rijen verbergen";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "Meervoudige selectie";
 
@@ -62,6 +65,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "Regular";
+
+/* show more rows button title */
+"Show More Rows" = "Meer rijen weergeven";
 
 /* Label for font size controls */
 "Size" = "Grootte";

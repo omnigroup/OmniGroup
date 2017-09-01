@@ -65,7 +65,7 @@ RCS_ID("$Id$")
 
     if (_invalidated) {
         // If we do this in -oui_invalidate, we can be in the middle of an appearance transition. This can cause <bug:///121483> (Crasher: Crash (sometimes) tapping 'Documents' to close document) by removing the selected view controller from its parent while in the middle of an appearance transition.
-        self.viewControllers = @[];
+        self.viewControllers = nil;
     }
 }
 
@@ -100,6 +100,7 @@ RCS_ID("$Id$")
     }
     
     _viewControllers = [viewControllers copy];
+    
     self.selectedViewController = [_viewControllers firstObject];
 
     if (_viewControllers)
@@ -110,6 +111,12 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(!selectedViewController || [_viewControllers containsObject:selectedViewController]);
 
+    if (_invalidated) {
+        OBASSERT(selectedViewController == nil, @"Don't set up a new view controller if we are in the middle of teardown");
+        _selectedViewController = nil;
+        return;
+    }
+    
     if (_selectedViewController == selectedViewController) {
         return;
     }

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -198,7 +198,7 @@ RCS_ID("$Id$")
 
 - (void)testRemoveLocalDocumentsDirectoryWhileDownloadingDocuments;
 {
-    OBFinishPortingLater("This test is disabled for now."); //  It fails with the current framework, and while we have some ideas for a fix, this is rare enough and the fix dangerous enough that we're leaving this as is for 1.0
+    OBFinishPortingLater("<bug:///147837> (iOS-OmniOutliner Engineering: OFXAgentAccountChangeTestCase.m:201: Test disabled for now)"); //  It fails with the current framework, and while we have some ideas for a fix, this is rare enough and the fix dangerous enough that we're leaving this as is for 1.0
 #if 0
     return;
     

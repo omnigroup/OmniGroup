@@ -306,7 +306,7 @@ BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSErro
     
     OBASSERT(OFReadCredentialsForServiceIdentifier(serviceIdentifier, NULL) == nil);
     
-    OBFinishPortingLater("Store trusted certificates for the same service identifier so we can remove them here");
+    OBFinishPortingLater("<bug:///147855> (Frameworks-iOS Bug: Store trusted certificates for the same service identifier so we can remove them in OFDeleteCredentialsForServiceIdentifier)");
 #if 0
     // TODO: This could be more targetted. Might have multiple accounts on the same host.
     NSString *host = protectionSpace.host;

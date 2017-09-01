@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,7 +83,7 @@ RCS_ID("$Id$");
     NSURL *directoryURL = self.address ?: self.serverAccount.remoteBaseURL;
     NSURL *fileURL = nil;
     
-    OBFinishPortingLater("Why are we doing this instead of using the URL path utilities?");
+    OBFinishPortingLater("Why are we doing this instead of using the URL path utilities? - <bug:///147826> (iOS-OmniOutliner Unassigned: OUIWebDavSyncListController.m:86: use URL path utilities)");
     NSMutableCharacterSet *allowedChars = [NSMutableCharacterSet characterSetWithCharactersInString:@"?"];
     [allowedChars formUnionWithCharacterSet:[NSCharacterSet URLPathAllowedCharacterSet]];
 
@@ -117,7 +117,7 @@ RCS_ID("$Id$");
 {
     [super _loadFiles];
     
-    OBFinishPortingLater("Test changing credentials on another device"); // Used to validate the connection here; what if we add the account, change the password elsewhere and then try to use the account here?
+    OBFinishPortingLater("<bug:///147801> (iOS-OmniOutliner Engineering: OUIWebDAVSyncListController - Test changing credentials on another device (OBFinishPortingLater))"); // Used to validate the connection here; what if we add the account, change the password elsewhere and then try to use the account here?
         
     NSURL *url = self.address ?: self.serverAccount.remoteBaseURL;
     

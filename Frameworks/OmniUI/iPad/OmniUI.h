@@ -9,6 +9,7 @@
 
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
+#import <OmniUI/NSURL-OUIExtensions.h>
 #import <OmniUI/OUIAbstractColorInspectorSlice.h>
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 #import <OmniUI/OUIActionInspectorSlice.h>
@@ -96,7 +97,6 @@
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
 #import <OmniUI/OUIMultiPaneNotifications.h>
 #import <OmniUI/OUIMultiSegmentStackedSlicesInspectorPane.h>
-#import <OmniUI/OUINavigationBar.h>
 #import <OmniUI/OUINavigationBarTextField.h>
 #import <OmniUI/OUINavigationController.h>
 #import <OmniUI/OUINoteInspectorPane.h>

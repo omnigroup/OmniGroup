@@ -82,7 +82,7 @@ RCS_ID("$Id$")
 {
     DEBUG_DAV(1, "Destroying connection");
 
-    OBFinishPortingLater("Should we let tasks finish or cancel them -- maybe make our caller specify which");
+    OBFinishPortingLater("<bug:///147931> (iOS-OmniOutliner Engineering: Should we let tasks finish or cancel them -- maybe make our caller specify which - in -[ODAVConnection_URLSession dealloc])");
     [_session finishTasksAndInvalidate];
     [_delegateQueue waitUntilAllOperationsAreFinished];
 }
@@ -275,7 +275,7 @@ didReceiveResponse:(NSURLResponse *)response
 
     [[connection _operationForTask:dataTask] _didReceiveResponse:response];
     
-    OBFinishPortingLater("OmniDAV should have a means to do file member GETs as downloads to temporary files (NSURLSessionResponseBecomeDownload)");
+    OBFinishPortingLater("<bug:///147932> (iOS-OmniOutliner Bug: OmniDAV should have a means to do file member GETs as downloads to temporary files (NSURLSessionResponseBecomeDownload))");
     if (completionHandler)
         completionHandler(NSURLSessionResponseAllow);
 }

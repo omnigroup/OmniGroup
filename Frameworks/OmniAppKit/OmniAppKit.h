@@ -23,6 +23,7 @@
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 #import <OmniAppKit/OAAppearance.h>
 #import <OmniAppKit/OAAppearancePropertyListCoder.h>
+#import <OmniAppKit/OAColorPalette.h>
 #import <OmniAppKit/OAFindPattern.h>
 #import <OmniAppKit/OAStrings.h>
 #import <OmniAppKit/OATextAttachmentCell.h>
@@ -89,7 +90,6 @@
 #import <OmniAppKit/OAChangeConfigurationValue.h>
 #import <OmniAppKit/OAChasingArrowsProgressIndicator.h>
 #import <OmniAppKit/OACloseButtonOverlay.h>
-#import <OmniAppKit/OAColorPalette.h>
 #import <OmniAppKit/OAColorProfile.h>
 #import <OmniAppKit/OAColorSpaceManager.h>
 #import <OmniAppKit/OAColorWell.h>

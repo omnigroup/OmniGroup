@@ -26,7 +26,6 @@
 #import <OmniUIDocument/OUIDocumentPreviewGenerator.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
 #import <OmniUIDocument/OUIDocumentPreviewingViewController.h>
-#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 #import <OmniUIDocument/OUIDocumentTitleView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIExportOptionsType.h>

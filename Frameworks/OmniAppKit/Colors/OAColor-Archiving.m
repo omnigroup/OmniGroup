@@ -16,9 +16,11 @@ RCS_ID("$Id$");
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OMNI_BUILDING_FOR_MAC
 #import <AppKit/NSColor.h>
 #endif
+
+@import Foundation;
 
 NSString * const OAColorExternalRepresentationTransformerUserKey = @"OAColorExternalRepresentationTransformer";
 

@@ -134,7 +134,7 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
 + (ODAVConnectionConfiguration *)makeConnectionConfiguration;
 {
 #if ODAV_NSURLSESSION
-    OBFinishPortingLater("Look at the callers -- once we move to using NSURLSession, we'll be not reusing https connections across uploads/downloads");
+    OBFinishPortingLater("<bug:///147923> (iOS-OmniOutliner Bug: Look at the callers -- once we move to using NSURLSession, we'll be not reusing https connections across uploads/downloads - in -[OFXAgent makeConnectionConfiguration])");
 
     NSURLSessionConfiguration *configuration = [[NSURLSessionConfiguration defaultSessionConfiguration] copy];
     

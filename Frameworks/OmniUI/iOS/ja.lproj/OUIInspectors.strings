@@ -50,6 +50,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "フォントを小さく";
 
+/* hide more rows button title */
+"Hide More Rows" = "行をさらに隠す";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "複数選択";
 
@@ -64,6 +67,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "標準";
+
+/* show more rows button title */
+"Show More Rows" = "行をさらに表示";
 
 /* Label for font size controls */
 "Size" = "サイズ";

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -152,5 +152,18 @@ RCS_ID("$Id$");
     XCTAssertEqualObjects(sortedOriginalArray, sortedReversedArray);
 }
 
+- (void)testPlistSerialization;
+{
+    NSUInteger indexes[] = {1, 3, 5, 7, 9, 11};
+    OFIndexPath *indexPath = [OFIndexPath emptyIndexPath];
+
+    for (NSUInteger i = 0; i < sizeof(indexes)/sizeof(NSUInteger); i++) {
+        indexPath = [indexPath indexPathByAddingIndex:indexes[i]];
+    }
+    
+    id plist = indexPath.propertyListRepresentation;
+    OFIndexPath *deserializedPath = [OFIndexPath indexPathWithPropertyListRepresentation:plist];
+    XCTAssertEqualObjects(indexPath, deserializedPath);
+}
 
 @end

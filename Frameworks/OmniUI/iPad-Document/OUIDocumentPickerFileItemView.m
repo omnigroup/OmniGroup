@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,7 +102,7 @@ static unsigned FileItemContext;
 {
     [super setDraggingState:draggingState];
     
-    // OBFinishPorting: Add/remove the drag destination halo view later.
+    // OBFinishPorting: <bug:///147827> (iOS-OmniOutliner Bug: OUIDocumentPickerFileItemView.m:105: Add/remove the drag destination halo view later)
     if (draggingState == OUIDocumentPickerItemViewDestinationDraggingState)
         self.backgroundColor = [UIColor greenColor];
     else

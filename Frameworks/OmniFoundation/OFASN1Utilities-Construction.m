@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,13 +60,13 @@ void OFASN1AppendInteger(NSMutableData *buf, uint64_t i)
     bzero(valueBuf, sizeof(valueBuf)); // Arguably shouldn't be needed; RADAR 27875387
     OSWriteBigInt64(valueBuf, 0, i);
     
-    int firstNonzero = 0;
+    unsigned firstNonzero = 0;
     /* A special case in the DER encoding of integers is that the zero integer still contains one byte of zeroes (instead of being a zero-length integer). So the largest we want firstNonzero to be is 7. */
     while (firstNonzero < 7 && valueBuf[firstNonzero] == 0)
         firstNonzero ++;
     
     // ASN.1 integers are signed, so we may need to stuff an extra byte of 0s if the integer is an even number of bytes long.
-    int extra = ( (valueBuf[firstNonzero] & 0x80) == 0 )? 0 : 1;
+    unsigned extra = ( (valueBuf[firstNonzero] & 0x80) == 0 )? 0 : 1;
     
     OFASN1AppendTagLength(buf, BER_TAG_INTEGER, (8 - firstNonzero) + extra);
     if (extra)
@@ -350,7 +350,7 @@ static struct computedSizes ofASN1ComputePieceSizes(const char *fmt, va_list arg
             {
                 unsigned value = va_arg(argList, unsigned int);
                 uint8_t buf[sizeof(uint32_t)];
-                int byteIndex;
+                unsigned byteIndex;
                 bzero(buf, sizeof(buf)); // Arguably shouldn't be needed; RADAR 27875387
                 OSWriteBigInt32(buf, 0, value);
                 for (byteIndex = 0; byteIndex < (int)(sizeof(uint32_t)-1); byteIndex++) {

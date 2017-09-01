@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,7 +103,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     return [_pathForItemDictionary objectForKey:[item itemIdentifier]];
 }
 
-- (nullable NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (nullable OAToolbarItem *)finishSetupForToolbarItem:(OAToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
     if (OAScriptToolbarItemsDisabled)
         return nil;

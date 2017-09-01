@@ -295,21 +295,21 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     // Build Options
     OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
-                                                        action:^(UIViewController *presentingViewController){
+                                                        action:^(OUIMenuOption *option, UIViewController *presentingViewController){
                                                             if (target) {
                                                                 [target undo:nil];
                                                             }
-                                                        } validator:^BOOL{
+                                                        } validator:^BOOL(OUIMenuOption *option){
                                                             return [target canPerformAction:@selector(undo:) withSender:nil];
                                                         }];
     
     
     OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
-                                                        action:^(UIViewController *presentingViewController){
+                                                        action:^(OUIMenuOption *option, UIViewController *presentingViewController){
                                                             if (target) {
                                                                 [target redo:nil];
                                                             }
-                                                        } validator:^BOOL{
+                                                        } validator:^BOOL(OUIMenuOption *option){
                                                             return [target canPerformAction:@selector(redo:) withSender:nil];
                                                         }];
     

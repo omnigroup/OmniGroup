@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -756,7 +756,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
     isMutable = YES;
     return self;
 #else
-    OBFinishPortingWithNote("update for new ColorSync APIs");
+    OBFinishPortingWithNote("<bug:///147881> (iOS-OmniOutliner Engineering: -[OAColorProfile initDefaultProofProfile] - update for new ColorSync APIs)");
 #endif
 }
 

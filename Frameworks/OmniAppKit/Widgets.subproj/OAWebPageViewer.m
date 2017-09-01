@@ -162,6 +162,11 @@ static NSMutableDictionary *sharedViewerCache = nil;
     }
 }
 
+- (BOOL)webViewShouldUseLayer;
+{
+    return YES;
+}
+
 #pragma mark -
 #pragma mark NSWindowController subclass
 
@@ -281,7 +286,10 @@ static NSMutableDictionary *sharedViewerCache = nil;
 - (void)setWebDocumentView:(NSView <WebDocumentView> *)webDocumentView;
 {
     _webDocumentView = webDocumentView;
-    _webDocumentView.wantsLayer = YES;
+
+    // See <bug:///108704> (Crasher: Yosemite: Crash using '?' to access help viewer a second time)
+    // Allow overriding this to avoid  <bug:///146472> (Mac-OmniOutliner Bug: API Reference / Scripting Interface window is black and does not display text).
+    _webDocumentView.wantsLayer = self.webViewShouldUseLayer;
 }
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;

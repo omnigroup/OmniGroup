@@ -167,12 +167,12 @@ NS_ASSUME_NONNULL_BEGIN
 
         [_menuNavigationController dismissViewControllerAnimated:YES completion:^{
             if (option.action != nil) {
-                option.action(presentingViewController);
+                option.action(option, presentingViewController);
             }
         }];
     } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
         if ((option.action != nil) && option.isEnabled) {
-            option.action(presentingViewController);
+            option.action(option, presentingViewController);
         }
         
         _menuNavigationController.viewControllers = @[[self _makeTopMenu]];

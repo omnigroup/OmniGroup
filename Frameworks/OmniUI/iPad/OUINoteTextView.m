@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -279,10 +279,8 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 {
     [super touchesEnded:touches withEvent:event];
     
-    // If we got to -touchesEnded, then a link was NOT tapped.
-    // Move the insertion point underneath the touch, and become editable and firstRsponder
-    
-    [self _becomeEditableWithTouches:touches makeFirstResponder:YES];
+    // If we got to -touchesEnded and a link was NOT tapped, move the insertion point underneath the touch and become editable and firstResponder.
+    [self _openLinkOrBecomeEditableWithTouches:touches makeFirstResponder:YES];
 }
 
 #pragma mark UIScrollView subclass
@@ -363,7 +361,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     return (![self isFirstResponder] && ![self hasText] && _drawsPlaceholder && ![NSString isEmptyString:_placeholder]);
 }
 
-- (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder;
+- (void)_openLinkOrBecomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if ([self isEditable])
         return;
@@ -381,7 +379,15 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     point.x -= textContainerInset.left;
 
     NSString *text = self.text;
-    NSUInteger characterIndex = [layoutManager characterIndexForPoint:point inTextContainer:textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
+    CGFloat partialFraction;
+    NSUInteger characterIndex = [layoutManager characterIndexForPoint:point inTextContainer:textContainer fractionOfDistanceBetweenInsertionPoints:&partialFraction];
+    if (partialFraction > 0.0f && partialFraction < 1.0f) {
+        // Check to see whether the touch landed on a link
+        NSURL *linkURL = [textStorage attribute:NSLinkAttributeName atIndex:characterIndex effectiveRange:NULL];
+        if (linkURL != nil) {
+            return; // UIKit will handle opening this link after the touch ends, as long as we don't block it by making ourselves editable.
+        }
+    }
 
     self.editable = YES;
 

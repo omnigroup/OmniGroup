@@ -28,7 +28,7 @@
 - (NSTimeInterval)lastEventTimeInterval;
 - (BOOL)mouseButtonIsDownAtIndex:(unsigned int)mouseButtonIndex;
 - (BOOL)scrollWheelButtonIsDown;
-- (NSUInteger)launchModifierFlags;
+@property(nonatomic,readonly) NSEventModifierFlags launchModifierFlags;
     
 // Show a specific Help page in an appropriate viewer.
 - (void)showHelpURL:(NSString *)helpURL;

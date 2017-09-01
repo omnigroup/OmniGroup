@@ -498,7 +498,9 @@ static void _registerPreview(OUIDocumentPreview *preview, NSString *previewFilen
 + (BOOL)hasPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(fileEdit);
+    if (fileEdit == nil) {
+        return YES; // we can't be missing any previews for an edit that doesn't exist.
+    }
     
     __block BOOL hasPreviews = NO;
     

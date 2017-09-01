@@ -292,7 +292,10 @@ NS_ASSUME_NONNULL_BEGIN
     }
     
     OUIMenuOption *option = options[row];
-    
+
+    // This is ugly, but the OmniJS options may get mutated by the validation hook, so get this before we look at anything else.
+    BOOL enabled = option.isEnabled;
+
     OUIMenuOptionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"option"];
     if (!cell) {
         cell = [[OUIMenuOptionTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"option"];
@@ -332,7 +335,7 @@ NS_ASSUME_NONNULL_BEGIN
     } else if (option.image) {
         // can get a stale view if we're dequeued by scrolling
         [cell.iconView removeFromSuperview];
-        cell.iconView = [[UIImageView alloc] initWithImage:[option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+        cell.iconView = [[UIImageView alloc] initWithImage:[option.image imageWithRenderingMode:UIImageRenderingModeAutomatic]];
         cell.iconView.contentMode = UIViewContentModeScaleAspectFit;
     }
     
@@ -342,7 +345,7 @@ NS_ASSUME_NONNULL_BEGIN
         label.textColor = omniDeleteColor;
         cell.imageView.tintColor = omniDeleteColor;
     }
-    else if (option.isEnabled || [option.options count] > 0) {
+    else if (enabled || [option.options count] > 0) {
         label.textColor = _tintColor;
         cell.imageView.tintColor = _tintColor;
         cell.selectionStyle = UITableViewCellSelectionStyleDefault;

@@ -90,7 +90,7 @@
 "Note" = "Примечание";
 
 /* Text letting the user know why nothing is showing in the inspector */
-"Nothing to Inspect" = "Нецего инспектировать";
+"Nothing to Inspect" = "Нечего инспектировать";
 
 /* button title
    button title - password/passphrase prompt

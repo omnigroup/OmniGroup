@@ -1060,7 +1060,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     }
     
-    OBASSERT(snapshot != nil);
+    OBASSERT_NOTNULL(snapshot);
     
     return ODOObjectSnapshotValueForKey(self, _editingContext, snapshot, key, NULL);
 }

@@ -174,7 +174,7 @@ RCS_ID("$Id$")
 {
     NSURL *requestURL = [navigationAction.request URL];
     NSString *scheme = [[requestURL scheme] lowercaseString];
-
+    
     // Callback
     if ([scheme isEqualToString:@"callback"]) {
         if (_callbackBlock != NULL) {
@@ -215,10 +215,12 @@ RCS_ID("$Id$")
             }
         }
 
+        // Our load request should be handled locally
+        BOOL isLoadRequest = [requestURL isEqual:self.URL] && (navigationAction.navigationType == WKNavigationTypeOther);
 
-        // Implicitly kick web all URLs over to Safari 
+        // Implicitly kick web all URLs over to Safari
         BOOL isLocalAnchor = [scheme isEqualToString:@"x-invalid"];
-        BOOL isWebURL = !isLocalAnchor && ![requestURL isFileURL];
+        BOOL isWebURL = !isLoadRequest && !isLocalAnchor && ![requestURL isFileURL];
         
         if (isWebURL) {
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {

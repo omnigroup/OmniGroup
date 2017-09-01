@@ -11,6 +11,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 // OFIndexPath is a NSIndexPath workalike.
 //
 // It doesn't have the thread safety and pathological performance problems NSIndexPath suffers due to uniquing.
@@ -195,17 +197,17 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
     return [self description];
 }
 
-#pragma mark - NSCopying
+#pragma mark NSCopying
 
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(nullable NSZone *)zone;
 {
     // Instance are immutable.
     return [self retain];
 }
 
-#pragma mark -
+#pragma mark Private
 
-- (id)_initWithParent:(OFIndexPath *)parent index:(NSUInteger)anIndex length:(NSUInteger)aLength;
+- (id)_initWithParent:(nullable OFIndexPath *)parent index:(NSUInteger)anIndex length:(NSUInteger)aLength;
 {
     _parent = [parent retain];
     _index = anIndex;
@@ -214,3 +216,36 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
 }
 
 @end
+
+#pragma mark -
+
+@implementation OFIndexPath (PropertyListSerialization)
+
++ (OFIndexPath *)indexPathWithPropertyListRepresentation:(NSArray<NSNumber *> *)propertyListRepresentation;
+{
+    OFIndexPath *indexPath = [OFIndexPath emptyIndexPath];
+    
+    for (NSNumber *value in propertyListRepresentation) {
+        OBASSERT([value isKindOfClass:[NSNumber class]]);
+        NSUInteger index = value.unsignedIntegerValue;
+        indexPath = [indexPath indexPathByAddingIndex:index];
+    }
+    
+    return indexPath;
+}
+
+- (NSArray<NSNumber *> *)propertyListRepresentation;
+{
+    NSMutableArray *propertyListRepresentation = [NSMutableArray array];
+    
+    [self enumerateIndexesUsingBlock:^(NSUInteger index, BOOL * _Nonnull stop) {
+        [propertyListRepresentation addObject:@(index)];
+    }];
+    
+    return propertyListRepresentation;
+}
+
+@end
+
+NS_ASSUME_NONNULL_END
+

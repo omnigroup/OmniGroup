@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -278,7 +278,7 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
 {
     [super viewWillAppear:animated];
     
-    OBFinishPortingLater("This isn't reliable -- it works in the WebDAV case, but not OSS, for whatever reason (likely because our UITableView isn't in the window yet");
+    OBFinishPortingLater("<bug:///147833> (iOS-OmniOutliner Bug: OUIServerAccountSetupViewController.m:281 - This isn't reliable -- it works in the WebDAV case, but not OSS, for whatever reason (likely because our UITableView isn't in the window yet)");
     [_tableView layoutIfNeeded];
     
 #if 0 && defined(DEBUG_bungi)

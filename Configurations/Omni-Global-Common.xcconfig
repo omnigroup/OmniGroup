@@ -16,7 +16,7 @@
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
 // Can add this when building with custom clang to avoid ARC writeback bugs: -fobjc-arc-disable-writeback
 
-OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\""
+OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\"" NON_OMNI_BUILD_ENVIRONMENT
 
 // These are normally set by the build system when doing a demo build, but you can uncomment them here to do one in Xcode.
 // See the build system notes about why we don't append '.RetailDemo' to the bundle identifier.
@@ -88,8 +88,8 @@ CLANG_WARN_ENUM_CONVERSION = YES
 CLANG_WARN_INT_CONVERSION = YES
 CLANG_WARN_BOOL_CONVERSION = YES
 CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES
-CLANG_WARN_INFINITE_RECURSION = YES;
-CLANG_WARN_SUSPICIOUS_MOVE = YES;
+CLANG_WARN_INFINITE_RECURSION = YES
+CLANG_WARN_SUSPICIOUS_MOVE = YES
 //CLANG_WARN_IMPLICIT_SIGN_CONVERSION
 //CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION = YES // False positives -- need more work to enable this. Radar 24552805.
 GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES

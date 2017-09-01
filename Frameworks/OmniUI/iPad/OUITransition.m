@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,6 @@
 
 
 RCS_ID("$Id$")
-
-@interface OUITransition ()
-
-@property (nonatomic, strong) UIView *fromSnapshotView;
-@property (nonatomic, strong) UIView *toSnapshotView;
-
-@end
 
 @implementation OUITransition
 
@@ -59,19 +52,27 @@ RCS_ID("$Id$")
     if (CGRectIsEmpty(fromRect) || CGRectIsEmpty(toRect))
         return;
     
-    fromRect = [transitionContext.containerView convertRect:fromRect fromView:self.fromViewController.view];
-    UIView *fromSnapshot = [self.fromSnapshotView resizableSnapshotViewFromRect:fromRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
+    CGRect fromSnapshotRect = [self.fromViewController.view convertRect:fromRect fromView:transitionContext.containerView];
+    UIView *fromSnapshot = [self.fromViewController.view resizableSnapshotViewFromRect:fromSnapshotRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
     fromSnapshot.frame = fromRect;
     [transitionContext.containerView addSubview:fromSnapshot];
     
-    toRect = [transitionContext.containerView convertRect:toRect fromView:self.toViewController.view];
-    UIView *toSnapshot = [self.toSnapshotView resizableSnapshotViewFromRect:toRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
-    toSnapshot.frame = fromSnapshot.frame;
+    CGRect toSnapshotRect = [self.toViewController.view convertRect:toRect fromView:transitionContext.containerView];
+    UIView *toSnapshot = [self.toViewController.view resizableSnapshotViewFromRect:toSnapshotRect afterScreenUpdates:YES withCapInsets:UIEdgeInsetsZero];
+    toSnapshot.frame = [self _rectOfHeight:CGRectGetHeight(toSnapshot.frame) verticallyCenteredOnRect:fromSnapshot.frame];
     toSnapshot.alpha = 0;
     [transitionContext.containerView insertSubview:toSnapshot aboveSubview:fromSnapshot];
     
+#if 0 && defined(DEBUG_correia)
+    fromSnapshot.layer.borderColor = [UIColor greenColor].CGColor;
+    fromSnapshot.layer.borderWidth = 2;
+    toSnapshot.layer.borderColor = [UIColor redColor].CGColor;
+    toSnapshot.layer.borderWidth = 2;
+#endif
+
     [UIView animateWithDuration:self.duration delay:0 options:0 animations:^{
-        fromSnapshot.frame = toRect;
+        fromSnapshot.frame = [self _rectOfHeight:CGRectGetHeight(fromSnapshot.frame) verticallyCenteredOnRect:toRect];
+        fromSnapshot.alpha = 0.0f;
         toSnapshot.frame = toRect;
         toSnapshot.alpha = 1.0f;
     } completion:^(BOOL finished) {
@@ -86,8 +87,9 @@ RCS_ID("$Id$")
 {
     if (CGRectIsEmpty(fromRect))
         return;
+
     fromRect = [transitionContext.containerView convertRect:fromRect fromView:self.fromViewController.view];
-    UIView *fromSnapshot = [self.fromSnapshotView resizableSnapshotViewFromRect:fromRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
+    UIView *fromSnapshot = [self.fromViewController.view resizableSnapshotViewFromRect:fromRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
     fromSnapshot.frame = fromRect;
     [transitionContext.containerView addSubview:fromSnapshot];
 
@@ -103,8 +105,9 @@ RCS_ID("$Id$")
 {
     if (CGRectIsEmpty(toRect))
         return;
+
     toRect = [transitionContext.containerView convertRect:toRect fromView:self.toViewController.view];
-    UIView *toSnapshot = [self.toSnapshotView resizableSnapshotViewFromRect:toRect afterScreenUpdates:NO withCapInsets:UIEdgeInsetsZero];
+    UIView *toSnapshot = [self.toViewController.view resizableSnapshotViewFromRect:toRect afterScreenUpdates:YES withCapInsets:UIEdgeInsetsZero];
     toSnapshot.frame = toRect;
     toSnapshot.alpha = 0.0f;
     [transitionContext.containerView addSubview:toSnapshot];
@@ -118,22 +121,12 @@ RCS_ID("$Id$")
     
 }
 
-#pragma mark Snapshots
-
-- (UIView *)fromSnapshotView;
+- (CGRect)_rectOfHeight:(CGFloat)height verticallyCenteredOnRect:(CGRect)anchorRect;
 {
-    if (_fromSnapshotView == nil) {
-        _fromSnapshotView = [self.fromViewController.view snapshotViewAfterScreenUpdates:NO];
-    }
-    return _fromSnapshotView;
-}
-
-- (UIView *)toSnapshotView;
-{
-    if (_toSnapshotView == nil) {
-        _toSnapshotView = [self.toViewController.view snapshotViewAfterScreenUpdates:YES];
-    }
-    return _toSnapshotView;
+    CGRect rect = anchorRect;
+    rect.origin.y = CGRectGetMidY(anchorRect) - height / 2.0;
+    rect.size.height = height;
+    return rect;
 }
 
 @end

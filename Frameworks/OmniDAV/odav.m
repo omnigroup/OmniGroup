@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -264,7 +264,7 @@ static NSURL *_url(NSString *str)
 
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
-    OBFinishPorting;
+    OBFinishPortingWithNote("<bug:///147929> (iOS-OmniOutliner Unassigned: Implement -[OFSTool fileManager:validateCertificateForChallenge:])");
 }
 
 @end
@@ -282,11 +282,11 @@ int main(int argc, char *argv[])
         __block NSUInteger commandsRunning = 0;
         
         connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
-            OBFinishPortingLater("Adding trust for certificate blindly");
+            OBFinishPortingLater("<bug:///147928> (iOS-OmniOutliner Bug: Adding trust for certificate blindly - in validateCertificateForChallenge block)");
             OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
         };
         connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
-            OBFinishPortingLater("Making up credentials");
+            OBFinishPortingLater("<bug:///147927> (iOS-OmniOutliner Bug: Just making up credentials in findCredentialsForChallenge block)");
             return [NSURLCredential credentialWithUser:@"test" password:@"password" persistence:NSURLCredentialPersistenceForSession];
         };
         

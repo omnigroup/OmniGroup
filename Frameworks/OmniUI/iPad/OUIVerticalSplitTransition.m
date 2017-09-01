@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,8 @@ RCS_ID("$Id$")
     [self didInsertViewIntoContainer:transitionContext];
 
     CGRect leftover;
-    CGRect splitExclusionRect = [transitionContext.containerView convertRect:_splitExcludingRect fromView:transitionView];
+    CGRect splitExclusionRect = (self.splitExcludingRectProvider != NULL) ? self.splitExcludingRectProvider() : CGRectZero;
+    splitExclusionRect = [transitionContext.containerView convertRect:splitExclusionRect fromView:transitionView];
     CGRectDivide(transitionFrame, &topRect, &leftover, CGRectGetMinY(splitExclusionRect), CGRectMinYEdge);
     CGRectDivide(transitionFrame, &leftover, &bottomRect, CGRectGetMaxY(splitExclusionRect), CGRectMinYEdge);
     
@@ -102,6 +103,13 @@ RCS_ID("$Id$")
     self.bottomSnapshot = [transitionView resizableSnapshotViewFromRect:[transitionView convertRect:bottomRect fromView:containerView] afterScreenUpdates:waitForScreenUpdates withCapInsets:UIEdgeInsetsZero];
     self.bottomSnapshot.backgroundColor = self.snapshotBackgroundColor;
 
+#if 0 && defined(DEBUG_correia)
+    self.topSnapshot.layer.borderColor = [UIColor orangeColor].CGColor;
+    self.topSnapshot.layer.borderWidth = 2;
+    self.bottomSnapshot.layer.borderColor = [UIColor orangeColor].CGColor;
+    self.bottomSnapshot.layer.borderWidth = 2;
+#endif
+    
     UIView *topShadowView = [self _shadowViewWithFrame:_topSnapshot.frame];
     UIView *bottomShadowView = [self _shadowViewWithFrame:_bottomSnapshot.frame];
     
@@ -131,21 +139,28 @@ RCS_ID("$Id$")
         [containerView addSubview:_bottomSnapshot];
     }];
     
-    if (!CGRectIsEmpty(_splitExcludingRect)) {
+    if (!CGRectIsEmpty(splitExclusionRect)) {
         if (_fadeType == FadedPortionFadesInPlace) {
             if (self.operation == UINavigationControllerOperationPush) {
-                [self fadeOutRect:_splitExcludingRect inContext:transitionContext];
+                [self fadeOutRect:splitExclusionRect inContext:transitionContext];
             } else {
-                [self fadeInRect:_splitExcludingRect inContext:transitionContext];
+                [self fadeInRect:splitExclusionRect inContext:transitionContext];
             }
         } else if (_fadeType == FadedPortionSlidesInFromTop) {
-            CGRect fadeToRect = _splitExcludingRect;
+            CGRect fadeToRect = [containerView convertRect:splitExclusionRect toView:transitionView];
             fadeToRect.origin.y = CGRectGetMaxY(shiftedTopRect);
-            fadeToRect = [self.toViewController.view convertRect:fadeToRect fromView:containerView];
+            
+            if (self.destinationRectHeightProvider != NULL) {
+                CGFloat destinationRectHeight = self.destinationRectHeightProvider();
+                if (destinationRectHeight > 0) {
+                    fadeToRect.size.height = destinationRectHeight;
+                }
+            }
+
             if (self.operation == UINavigationControllerOperationPush) {
-                [self crossFadeFromRect:_splitExcludingRect toRect:fadeToRect inContext:transitionContext];
+                [self crossFadeFromRect:splitExclusionRect toRect:fadeToRect inContext:transitionContext];
             } else {
-                [self crossFadeFromRect:fadeToRect toRect:_splitExcludingRect inContext:transitionContext];
+                [self crossFadeFromRect:fadeToRect toRect:splitExclusionRect inContext:transitionContext];
             }
         }
     }

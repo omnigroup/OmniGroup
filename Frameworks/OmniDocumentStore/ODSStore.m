@@ -250,7 +250,7 @@ static unsigned ScopeContext;
 {
     OBPRECONDITION(_actionOperationQueue);
     
-    OBFinishPortingLater("Get rid of the queue in this class now that scopes have queues?");
+    OBFinishPortingLater("<bug:///147878> (iOS-OmniOutliner Engineering: ODSStore.m, performAsynchronousFileAccessUsingBlock: Get rid of the queue in this class now that scopes have queues?)");
     [_actionOperationQueue addOperationWithBlock:block];
 }
 
@@ -351,7 +351,7 @@ static unsigned ScopeContext;
     _isScanningItems = YES;
         
     [self performAsynchronousFileAccessUsingBlock:^{
-        OBFinishPortingLater("Not scanning here...");
+        OBFinishPortingLater("<bug:///147936> (iOS-OmniOutliner Bug: Not scanning here... - in -[ODSStore scanItemsWithCompletionHandler:])");
         
         if (completionHandler)
             [[NSOperationQueue mainQueue] addOperationWithBlock:completionHandler];
@@ -400,12 +400,22 @@ static unsigned ScopeContext;
 {
     id <ODSStoreDelegate> delegate = _weak_delegate;
 
-    if (type == ODSDocumentTypeTemplate) {
-        if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewTemplateFiles:)])
-            return [delegate documentStoreDocumentTypeForNewTemplateFiles:self];
-    } else {
-        if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewFiles:)])
-            return [delegate documentStoreDocumentTypeForNewFiles:self];
+    switch (type) {
+        case ODSDocumentTypeNormal:
+            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewFiles:)])
+                return [delegate documentStoreDocumentTypeForNewFiles:self];
+            break;
+        case ODSDocumentTypeTemplate:
+            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewTemplateFiles:)])
+                return [delegate documentStoreDocumentTypeForNewTemplateFiles:self];
+            break;
+        case ODSDocumentTypeOther:
+            if ([delegate respondsToSelector:@selector(documentStoreDocumentTypeForNewOtherFiles:)])
+                return [delegate documentStoreDocumentTypeForNewOtherFiles:self];
+            break;
+        default:
+            OBFinishPortingLater("Is there a new document type we don't know about?");
+            break;
     }
 
     if ([delegate respondsToSelector:@selector(documentStoreEditableDocumentTypes:)]) {
@@ -460,10 +470,24 @@ static unsigned ScopeContext;
 
     id <ODSStoreDelegate> delegate = _weak_delegate;
     NSString *baseName = nil;
-    if (type == ODSDocumentTypeTemplate)
-        baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
-    else
-        baseName = [delegate documentStoreBaseNameForNewFiles:self];
+    // LMTODO: incorporate "other"
+    switch (type) {
+        case ODSDocumentTypeTemplate:
+            baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
+            break;
+        case ODSDocumentTypeNormal:
+            baseName = [delegate documentStoreBaseNameForNewFiles:self];
+            break;
+        case ODSDocumentTypeOther:
+            if ([delegate respondsToSelector:@selector(documentStoreBaseNameForNewOtherFiles:)]) {
+                baseName = [delegate documentStoreBaseNameForNewOtherFiles:self];
+            } else {
+                baseName = [delegate documentStoreBaseNameForNewFiles:self];
+            }
+            break;
+        default:
+            break;
+    }
     if (!baseName) {
         OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
         baseName = @"My Document";

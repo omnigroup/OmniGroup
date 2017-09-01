@@ -1143,13 +1143,13 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
 - (NSString *)desiredFontName;
 {
     // Maybe we need a completely opaque class for font descriptors and have all the callers know they can't do anything special.
-    OBFinishPortingLater("We should maybe have another initializer/setter/something for archiving cases where an explicit font was requested. But then we don't have a way to get the other components.");
+    OBFinishPortingLater("<bug:///147883> (iOS-OmniOutliner Unassigned: -[OAFontDescriptor desiredFontName] - We should maybe have another initializer/setter/something for archiving cases where an explicit font was requested. But then we don't have a way to get the other components)");
     return nil;
 }
 
 - (BOOL)hasExplicitWeight;
 {
-    OBFinishPortingLater("Can we determine this?");
+    OBFinishPortingLater("<bug:///147882> (iOS-OmniOutliner Bug: -[OAFontDescriptor hasExplicitWeight] - can we determine this and return other than NO?)");
     return NO;
 }
 

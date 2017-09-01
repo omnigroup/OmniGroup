@@ -11,9 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class OUIMenuOption;
+
 // If a menu option wants to present a new view controller of its own, it will likely want to know where the menu was presented from. But, by the time the action is invoked, the menu itself will have been dismissed.
-typedef void (^OUIMenuOptionAction)(UIViewController *presentingViewController);
-typedef BOOL (^OUIMenuOptionValidatorAction)(void);
+typedef void (^OUIMenuOptionAction)(OUIMenuOption *option, UIViewController *presentingViewController);
+typedef BOOL (^OUIMenuOptionValidatorAction)(OUIMenuOption *option);
 
 @interface OUIMenuOption : NSObject
 
@@ -31,8 +33,8 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(void);
 - initWithTitle:(NSString *)title image:(nullable UIImage *)image action:(nullable OUIMenuOptionAction)action;
 
 @property(nonatomic, readonly, getter=isSeparator) BOOL separator;
-@property(nonatomic, readonly) NSString *title;
-@property(nonatomic, readonly, nullable) UIImage *image;
+@property(nonatomic, copy) NSString *title;
+@property(nonatomic, strong, nullable) UIImage *image;
 @property(nonatomic, readonly, nullable) OUIMenuOptionAction action;
 @property(nonatomic, readonly, nullable) OUIMenuOptionValidatorAction validator;
 @property(nonatomic, strong) UIView *attentionDotView;
@@ -41,7 +43,7 @@ typedef BOOL (^OUIMenuOptionValidatorAction)(void);
  @discussion An option is considered enabled if it does not have a validator or if it's validator action returns YES. If a validator action is set, it will be called each time isEnabled is called.
  */
 @property (nonatomic, readonly) BOOL isEnabled;
-@property(nonatomic, readonly) BOOL destructive;
+@property(nonatomic) BOOL destructive;
 @property(nonatomic, readonly, nullable) NSArray <OUIMenuOption *> *options; // Child options
 @property(nonatomic) NSUInteger indentationLevel;
 

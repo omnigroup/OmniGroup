@@ -231,7 +231,7 @@ static NSString *_makeCanonicalPath(NSString *path)
         if (otherFileItem.scope != self)
             continue; // cache keys aren't comparable across scopes
         
-        OBFinishPortingLater("move this to subclasses ... OFX scope doesn't care about cache key goop. Can also relax the restriction that document directories end in Documents for OFX");
+        OBFinishPortingLater("<bug:///147935> (iOS-OmniOutliner Engineering: move this to subclasses ... OFX scope doesn't care about cache key goop. Can also relax the restriction that document directories end in Documents for OFX)");
         OBASSERT(OFNOTEQUAL(ODSScopeCacheKeyForURL(otherFileItem.fileURL), ODSScopeCacheKeyForURL(fileURL)));
     }
 #endif

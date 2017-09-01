@@ -55,6 +55,14 @@ static id _commonInit(OUISliceSeparatorView *self)
     [path stroke];
 }
 
+- (void)willMoveToSuperview:(UIView *)superview;
+{
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
+        [self themedAppearanceDidChange:appearance];
+    }
+}
+
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
 {
     [super themedAppearanceDidChange:changedAppearance];

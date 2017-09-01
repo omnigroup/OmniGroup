@@ -45,10 +45,10 @@ void OUITableViewFinishedReactingToSelection(UITableView *tableView, OUITableVie
 void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *tableView, OUITableViewCellSelectionType type, BOOL (^predicate)(NSIndexPath *indexPath))
 {
     NSIndexPath *selectedIndexPath = [tableView indexPathForSelectedRow];
-    OBASSERT(selectedIndexPath);
-    
-    // Clear the selection
-    [tableView deselectRowAtIndexPath:selectedIndexPath animated:YES];
+    if (selectedIndexPath) {
+        // Clear the selection
+        [tableView deselectRowAtIndexPath:selectedIndexPath animated:YES];
+    }
     
     // Update the checkmarks on all the visible cells.    
     for (UITableViewCell *cell in [tableView visibleCells]) {

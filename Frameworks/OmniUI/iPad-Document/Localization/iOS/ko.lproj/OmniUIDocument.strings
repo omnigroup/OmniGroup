@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "도큐멘트 닫기";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "클라우드 저장소 공급자";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "이 데모 버전에서는 클라우드 저장소가 비활성화되어 있습니다.";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "연결됨";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "WebDAV로 내보내기";
 
-/* Menu option in the document picker view */
-"Export to…" = "다음으로 내보내기...";
-
 /* Export document preview action title. */
 "Export…" = "내보내기...";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "%@ 수정됨";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "추가 정보...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "양호";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence에서는 저희가 제공하는 무료 동기화 서비스 또는 모든 호환되는 WebDAV 서버를 사용해서 사용자의 장치 간에 도큐멘트를 자동으로 공유하거나 장치 복원이 필요한 경우를 대비해서 클라우드에 도큐멘트 사본을 저장할 수 있습니다.";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "OmniPresence 구성: %@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "이 데모 버전에서는 OmniPresence가 비활성화되어 있습니다.";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "다른 장치에서 이 파일을 열어서 해당 위치에서 OmniPresence를 구성합니다.";
@@ -388,6 +388,9 @@
 "Send to App" = "앱으로 전송";
 
 /* Menu option in the document picker view */
+"Send to Files" = "파일로 전송";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "사진으로 전송";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "제목";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "클라우드 저장소 공급자를 설정하면 iCloud Drive 또는 Dropbox와 같은 클라우드 서비스에 저장된 도큐멘트에 액세스할 수 있습니다. 클라우드 저장소 공급자에 대한 액세스는 BETA 구현으로 제공되었습니다. 이 서비스를 활성화할 때는 주의하십시오.";
-
 /* error title */
 "Unable to open file." = "파일을 열 수 없습니다.";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "클라우드 저장소 공급자 사용";
 
 /* Account validation status string. */
 "Validating account..." = "계정 검증 중...";

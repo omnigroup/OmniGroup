@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,8 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class OAToolbar;
-@class NSToolbarItem;
+@class OAToolbar, OAToolbarItem;
 @class NSBundle, NSDictionary;
 
 /**
@@ -42,7 +41,7 @@ typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
 // The list of item identifiers provided by this helper. The identifiers should be <name>.<extension>, where the name will be passed into the format strings in the template specified by templateItemIdentifier.
 - (NSArray<NSString *> *)allowedItems;
 
-- (nullable NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (nullable OAToolbarItem *)finishSetupForToolbarItem:(OAToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 
 @end
 

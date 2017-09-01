@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "書類を閉じる";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "クラウドストレージプロバイダ";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "このデモバージョンではクラウドストレージが無効になっています。";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "接続しました";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "WebDAV に書き出す";
 
-/* Menu option in the document picker view */
-"Export to…" = "書き出し先...";
-
 /* Export document preview action title. */
 "Export…" = "書き出す…";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "変更日 %@";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "詳しい情報...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "OK";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence を利用すると、弊社の無料同期サービスや互換性のある任意の WebDAV サーバを使うことができます。また、お持ちのデバイスを復元しなければならない場合に備え、書類のコピーをクラウドに保存しておくこともできます。";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "OmniPresence の構成： %@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "このデモバージョンでは OmniPresence が無効になっています。";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "このファイルを別のデバイス上で開き、そこで OmniPresence を構成してください。";
@@ -388,6 +388,9 @@
 "Send to App" = "アプリに送信";
 
 /* Menu option in the document picker view */
+"Send to Files" = "ファイルに送信";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "写真に送信";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "タイトル";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "クラウドストレージプロバイダを有効にすると、iCloud Drive や Dropbox などのクラウドサービスに保存されている書類にアクセスできるようになります。クラウドストレージプロバイダの機能はベータ版ですので、このサービスを有効にする際には十分に注意してください。";
-
 /* error title */
 "Unable to open file." = "ファイルを開けません。";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "クラウドストレージプロバイダを使用";
 
 /* Account validation status string. */
 "Validating account..." = "アカウントを検証中…";

@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,7 +43,7 @@ static OFDeclareDebugLogLevel(OFNetStateRegistrationDebug);
 #if 0 && defined(DEBUG)
 NSString * const OFNetStateServiceType = @"_omnidebug._tcp."; // Different service type to make it easier to work on local builds w/o seeing chatter from a zillion other devices on the network.
 #else
-NSString * const OFNetStateServiceType = @"_omnistate._tcp."; // OBFinishPorting register this
+NSString * const OFNetStateServiceType = @"_omnistate._tcp."; // OBFinishPorting <bug:///147854> (Frameworks-iOS Engineering: Register _omnistate._tcp.)
 #endif
 
 #ifdef USE_WIDE

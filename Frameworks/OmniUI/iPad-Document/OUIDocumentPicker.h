@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,9 +22,12 @@
 
 - (void)showDocuments;
 - (void)navigateToFolder:(ODSFolderItem *)folderItem animated:(BOOL)animated;
-- (void)navigateToContainerForItem:(ODSItem *)item dismissingAnyOpenDocument:(BOOL)dismissOpenDocument animated:(BOOL)animated;
+- (BOOL)navigateToContainerForItem:(ODSItem *)item dismissingAnyOpenDocument:(BOOL)dismissOpenDocument animated:(BOOL)animated;
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;
 - (ODSScope *)localDocumentsScope;
+
+// Go somewhere, even if the file item can't be found.
+- (void)navigateToBestEffortContainerForItem:(ODSFileItem *)fileItem;
 
 - (void)editSettingsForAccount:(OFXServerAccount *)account;
 

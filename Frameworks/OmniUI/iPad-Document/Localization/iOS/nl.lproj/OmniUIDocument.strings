@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "Sluit document";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "Leveranciers van cloudopslag";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "Appvergrendeling is uitgeschakeld in deze demoversie.";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Aangesloten";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exporteer naar WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "Exporteer naar ...";
-
 /* Export document preview action title. */
 "Export…" = "Exporteer…";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "%@ is gewijzigd";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "Meer info...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "OK";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "Met OmniPresence kunt u onze gratis synchronisatieservice of elke compatibele WebDAV-server gebruiken voor het automatisch delen van documenten tussen uw apparaten of kunt u kopieën van uw documenten bewaren in de cloud voor het geval u uw apparaat moet herstellen.";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuratie OmniPresence: %@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "OmniPresence is uitgeschakeld in deze demoversie.";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Open dit bestand op een ander apparaat om OmniPresence daar te configureren.";
@@ -388,6 +388,9 @@
 "Send to App" = "Verstuur naar app";
 
 /* Menu option in the document picker view */
+"Send to Files" = "Verstuur naar Bestanden";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "Verstuur naar Foto's";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "Titel";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Het inschakelen van Leveranciers van cloudopslag biedt toegang tot documenten die zijn opgeslagen op de cloudservices, zoals iCloud Drive of Dropbox. We introduceren toegang tot Leveranciers van cloudopslag als een BETA-implementatie. Let op wanneer u deze service inschakelt.";
-
 /* error title */
 "Unable to open file." = "Kan bestand niet openen.";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "Leveranciers van cloudopslag gebruiken";
 
 /* Account validation status string. */
 "Validating account..." = "Bezig met valideren van de account…";

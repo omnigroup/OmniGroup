@@ -242,6 +242,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     override open func viewDidAppear(_ animated: Bool) {
+        // <bug:///147267> (Frameworks-iOS Engineering: Remove requirement to subclass MultiPaneController in order to (re)customize leftPaneDisplayButton)
         super.viewDidAppear(animated)
         updateDisplayButtonItems(forMode: displayMode)
     }

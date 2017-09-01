@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -139,7 +139,7 @@ CFHashCode OFCaseInsensitiveStringHash(const void *value)
     // the first 16 characters of each key.
     // This is obviously not a good hashing algorithm for all strings.
     UniChar characters[16];
-    NSUInteger length;
+    CFIndex length;
     CFStringRef string;
     
     string = (CFStringRef)value;
@@ -223,7 +223,7 @@ CFHashCode OFBytesHash_djb2(const void *bytes, NSUInteger byteCount)
     NSUInteger byteIndex = 0;
     while (byteIndex < byteCount) {
         // We could probably load multiple bytes out of the pointer at a time, which might be worth it for performance (but we'd need more code for handling various sizes modulo the word size we used).
-        NSUInteger byte = ((const char *)bytes)[byteIndex];
+        NSUInteger byte = ((const unsigned char *)bytes)[byteIndex];
         byteIndex++;
 
         HASH_UPDATE(byte);

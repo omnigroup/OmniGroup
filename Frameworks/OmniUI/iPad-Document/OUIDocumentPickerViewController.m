@@ -26,7 +26,6 @@
 #import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
-#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 #import <OmniUIDocument/OUIDocumentTitleView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIErrors.h>
@@ -134,6 +133,12 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     OBPRECONDITION(picker);
     OBPRECONDITION(scope);
     OBPRECONDITION(folderItem);
+
+#if defined(DEBUG_lizard)
+    if ([scope isExternal]) {
+        OBStopInDebugger("<bug:///147708> (Frameworks-iOS Bug: Remove Other Documents)");
+    }
+#endif
     
     // Need to provide nib name explicitly, since template picker is a subclass but should use the same nib
     if (!(self = [super initWithNibName:@"OUIDocumentPickerViewController" bundle:OMNI_BUNDLE]))
@@ -315,10 +320,10 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         // <bug://bugs/60005> (Document picker scrolls to empty spot after editing file)
         [_mainScrollView.window layoutIfNeeded];
         
-        //OBFinishPortingLater("Show/open the group scroll view if the item is in a group?");
+        //OBFinishPortingLater("<bug:///147830> (iOS-OmniOutliner Bug: OUIDocumentPickerViewController.m:317 - Show/open the group scroll view if the item is in a group?)");
         ODSFileItem *fileItem = [_documentStore fileItemWithURL:targetURL];
         if (!fileItem) {
-            OBFinishPortingLater("Scroll to the top");
+            OBFinishPortingLater("<bug:///147829> (iOS-OmniOutliner Bug: OUIDocumentPickerViewController.m:320 - Scroll to the top when there’s no fileItem)");
             //[_mainScrollView scrollsToTop]; // this is a getter
         } else
             [_mainScrollView scrollItemToVisible:fileItem animated:animated];
@@ -444,21 +449,19 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     if (![self canPerformAction:_cmd withSender:sender])
         return;
-    
+
     id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
+    ODSDocumentType type = [self _documentTypeForCurrentFilter];
+
     if ([delegate respondsToSelector:@selector(documentPickerTemplateDocumentFilter:)]) {
         OBASSERT([delegate documentPickerTemplateDocumentFilter:_documentPicker], @"Need to provide an actual filter for templates if you expect to use the template picker for new documents");
 
-        ODSDocumentType type = [self _documentTypeForCurrentFilter];
-        
         OUIDocumentCreationTemplatePickerViewController *templateChooser = [[OUIDocumentCreationTemplatePickerViewController alloc] initWithDocumentPicker:_documentPicker folderItem:_folderItem documentType:type];
         templateChooser.isReadOnly = YES;
         [self.navigationController pushViewController:templateChooser animated:YES];
-        
-        return;
+    } else {
+        [self newDocumentWithTemplateFileItem:nil documentType:type completion:nil];
     }
-
-    [self newDocumentWithTemplateFileItem:nil];
 }
 
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
@@ -495,7 +498,12 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 return;
             }
             
-            ODSFileItem *fileItemToRevealFrom = templateFileItem ? templateFileItem : createdFileItem;
+            ODSFileItem *fileItemToRevealFrom;
+            if (templateFileItem != nil && ![[templateFileItem scope] isExternal]) {
+                fileItemToRevealFrom = templateFileItem;
+            } else {
+                fileItemToRevealFrom = createdFileItem;
+            }
             
             // We want the file item to have a new date, but this is the wrong place to do it. Want to do it in the document picker before it creates the item.
             // [[NSFileManager defaultManager] touchItemAtURL:createdItem.fileURL error:NULL];
@@ -950,7 +958,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // New folder
     OUIMenuOption *newFolderOption = nil;
     if (willAddNewFolder) {
-        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self _makeFolderFromSelectedDocuments];
         }];
         [topLevelMenuOptions addObject:newFolderOption];
@@ -1002,7 +1010,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
     } else {
         // This is a valid destination. Great!
-        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^(UIViewController *presentingViewController){
+        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^(OUIMenuOption *_option, UIViewController *presentingViewController){
             [self _moveSelectedDocumentsToFolder:candidateParentFolder];
         }];
     }
@@ -1364,15 +1372,10 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (UIColor *)tintColorForExportMenu
 {
-    return self.navigationController.navigationBar.tintColor;
+    return [UIColor blackColor];
 }
 
 #pragma mark - UIViewController subclass
-
-- (BOOL)automaticallyAdjustsScrollViewInsets;
-{
-    return NO;
-}
 
 - (void)viewDidLoad;
 {
@@ -1408,7 +1411,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         _filteredItems = nil;
         [self setFilteredItems:_current];
     }
-    
+
+    self.mainScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     // We sign up for this notification in -viewDidLoad, instead of -viewWillAppear: since we want to receive it when we are off screen (previews can be updated when a document is closing and we never get on screen -- for example if a document is open and another document is opened via tapping on Mail).
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(_previewsUpdateForFileItemNotification:) name:OUIDocumentPreviewsUpdatedForFileItemNotification object:nil];
@@ -1855,7 +1859,13 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (ODSDocumentType)_documentTypeForCurrentFilter;
 {
     OUIDocumentPickerFilter *currentFilter = [self.class selectedFilterForPicker:_documentPicker];
-    return [currentFilter.identifier isEqualToString:ODSDocumentPickerFilterTemplateIdentifier] ? ODSDocumentTypeTemplate : ODSDocumentTypeNormal;
+    if (currentFilter == nil || [currentFilter.identifier isEqualToString:ODSDocumentPickerFilterDocumentIdentifier]) {
+        return ODSDocumentTypeNormal;
+    } else if ([currentFilter.identifier isEqualToString:ODSDocumentPickerFilterTemplateIdentifier]) {
+        return ODSDocumentTypeTemplate;
+    } else {
+        return ODSDocumentTypeOther;
+    }
 }
 
 static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self, OUIDocumentPickerItemView *itemView, BOOL selected)
@@ -1988,12 +1998,14 @@ static UIImage *ImageForScope(ODSScope *scope) {
     
     for (ODSScope *scope in destinationScopes) {
         NSMutableArray *folderOptions = [NSMutableArray array];
-        if (scope.isExternal && selectedFolders.count != 0)
-            continue; // Don't offer to move a folder to an external scope
+        if (scope.isExternal) {
+            // bug:///147708
+            continue;
+        }
 
         [self _addMoveToFolderOptions:folderOptions candidateParentFolder:scope.rootFolder currentFolder:currentFolder excludedTreeFolders:selectedFolders];
         
-        OUIMenuOptionAction moveToScopeRootAction = ^(UIViewController *presentingViewController){
+        OUIMenuOptionAction moveToScopeRootAction = ^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self _moveSelectedDocumentsToFolder:scope.rootFolder];
         };
         
@@ -2407,12 +2419,14 @@ static UIImage *ImageForScope(ODSScope *scope) {
         
         if ((_documentStore.documentTypeForNewFiles != nil) && !self.selectedScope.isTrash && [_documentStore.scopes containsObjectIdenticalTo:_documentScope]) {
             if (self.selectedScope.isExternal) {
-                OUIBarButtonItem *linkItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(linkDocumentFromExternalContainer:)];
+                UIImage *addImage = [UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                OUIBarButtonItem *linkItem = [[OUIBarButtonItem alloc] initWithImage:addImage style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(linkDocumentFromExternalContainer:)];
                 linkItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Link External Document", @"OmniUIDocument", OMNI_BUNDLE, @"Link External Document toolbar item accessibility label.");
                 [rightItems addObject:linkItem];
             } else {
                 if (!self.addDocumentButtonItem) {
-                    self.addDocumentButtonItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(newDocument:)];
+                    UIImage *addImage = [UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                    self.addDocumentButtonItem = [[OUIBarButtonItem alloc] initWithImage:addImage style:UIBarButtonItemStylePlain target:self action:@selector(newDocument:)];
                     self.addDocumentButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUIDocument", OMNI_BUNDLE, @"New Document toolbar item accessibility label.");
                 }
                 [rightItems addObject:self.addDocumentButtonItem];
@@ -2463,8 +2477,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 canMove = YES; // Make new folder
             else
                 canMove = NO;
-            
-            _exportBarButtonItem.enabled = !isViewingTrash;
+
+            // Exporting more than one thing is really fine, except when sending OmniPlan files via Mail. But we don't have a good way to restrict just that. bug:///147627
+            _exportBarButtonItem.enabled = (!isViewingTrash && count == 1);
+
             _moveBarButtonItem.enabled = canMove;
             _duplicateDocumentBarButtonItem.enabled = YES;
             [self deleteBarButtonItem].enabled = YES; // Deletion while in the trash is just an immediate removal.
@@ -2912,7 +2928,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)_updateFieldsForSelectedFileItem;
 {
-    OBFinishPortingLater("Update the enabledness of the export/delete bar button items based on how many file items are selected");
+    OBFinishPortingLater("<bug:///147828> (iOS-OmniOutliner Bug: OUIDocumentPickerViewController.m: 2919 - Update the enabledness of the export/delete bar button items based on how many file items are selected)");
 #if 0
     _exportBarButtonItem.enabled = (proxy != nil);
     [self deleteBarButtonItem].enabled = (proxy != nil);

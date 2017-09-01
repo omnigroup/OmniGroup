@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
     return suite;
 } 
 
-- (nullable NSString *)name
+- (NSString *)name
 {
     /* For the specific case of -testSomething:(NSString *)what, include the value of what in the test's name. */
     NSInvocation *inv = [self invocation];

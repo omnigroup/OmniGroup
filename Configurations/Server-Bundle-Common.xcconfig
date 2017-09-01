@@ -1,0 +1,20 @@
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all Server targets
+#include "Target-Server-Common.xcconfig"
+
+// App extensions need to know the bundle identifier of their parent app
+// No server 'Store'... needed?
+// #include "Omni-Application-Common-Store.xcconfig"
+
+// Common settings for Bundle targets
+DYLIB_CURRENT_VERSION = 1
+DYLIB_COMPATIBILITY_VERSION = 1
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_SERVER OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_SERVER -DOMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+
+// We want to sign all bundles
+CODE_SIGN_IDENTITY = $(OMNI_MAC_CODE_SIGN_IDENTITY)

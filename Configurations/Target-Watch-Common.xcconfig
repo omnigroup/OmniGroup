@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
@@ -14,7 +14,7 @@ OMNI_WATCH_SDK_VERSION =
 OMNI_WATCH_SDKROOT = watchos
 SDKROOT = $(OMNI_WATCH_SDKROOT)$(OMNI_WATCH_SDK_VERSION)
 
-WATCHOS_DEPLOYMENT_TARGET = 3.0
+WATCHOS_DEPLOYMENT_TARGET = 4.0
 ENABLE_BITCODE = YES
 STRIP_BITCODE_FROM_COPIED_FILES = NO
 GCC_THUMB_SUPPORT = NO

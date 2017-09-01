@@ -209,7 +209,7 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
 
 - (CGFloat)firstLineAscent;
 {
-    OBFinishPortingLater("Returning bogus value");
+    OBFinishPortingLater("<bug:///147846> (iOS-OmniOutliner Bug: Return actual firstLineAscent instead of bogus value)");
     return 0;
 }
 
@@ -460,7 +460,7 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
 {
     self.selectedTextRange = newRange;
     
-    OBFinishPortingLater("Not obeying 'show' argument");
+    OBFinishPortingLater("<bug:///147847> (iOS-OmniOutliner Bug: Obey ‘show’ argument in -[OUITextView setSelectedTextRange:showingMenu:])");
 #if 0
     if (newRange != nil && ![newRange isEmpty]) {
         if (show) { // nested so we don't automatically hide the menu when visible is false, we just don't force it to show

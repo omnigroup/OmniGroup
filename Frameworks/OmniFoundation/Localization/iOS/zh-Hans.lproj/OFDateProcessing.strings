@@ -1,92 +1,91 @@
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "-" = "-";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "+" = "+";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "~" = "~";
 
-/* one-letter abbreviation for day or days, used for scanning user input */
-"d" = "d";
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
+"d" = "天";
 
-/* day, singular, used for scanning user input */
+/* day, singular, used for scanning user input. Do NOT add whitespace */
 "day" = "天";
 
-/* days, plural, used for scanning user input */
+/* days, plural, used for scanning user input. Do NOT add whitespace */
 "days" = "天";
 
-/* one-letter abbreviation for hour or hours, for scanning user input
-   one-letter abbreviation for hour or hours, used for scanning user input */
-"h" = "h";
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
+"h" = "小时";
 
-/* hour, singular, used for scanning user input */
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
 "hour" = "小时";
 
-/* hours, plural, used for scanning user input */
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
 "hours" = "小时";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "last" = "最后";
 
-/* last month, used for scanning user input */
+/* last month, used for scanning user input. Do NOT add whitespace */
 "last month" = "上月";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "last week" = "上周";
 
-/* last year, used for scanning user input */
+/* last year, used for scanning user input. Do NOT add whitespace */
 "last year" = "去年";
 
-/* one-letter abbreviation for month or months, used for scanning user input */
-"m" = "m";
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
+"m" = "月";
 
-/* month, singular, used for scanning user input */
+/* month, singular, used for scanning user input. Do NOT add whitespace */
 "month" = "月";
 
-/* months, plural, used for scanning user input */
+/* months, plural, used for scanning user input. Do NOT add whitespace */
 "months" = "月";
 
-/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
 "next" = "下一";
 
-/* next month, used for scanning user input */
+/* next month, used for scanning user input. Do NOT add whitespace */
 "next month" = "下月";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "next week" = "下周";
 
-/* next year, used for scanning user input */
+/* next year, used for scanning user input. Do NOT add whitespace */
 "next year" = "明年";
 
-/* noon, used for scanning user input */
+/* noon, used for scanning user input. Do NOT add whitespace */
 "noon" = "中午";
 
-/* now, used for scanning user input */
+/* now, used for scanning user input. Do NOT add whitespace */
 "now" = "现在";
 
-/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
 "this" = "此";
 
-/* this month, used for scanning user input */
+/* this month, used for scanning user input. Do NOT add whitespace */
 "this month" = "本月";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "this week" = "本周";
 
-/* this year, used for scanning user input */
+/* this year, used for scanning user input. Do NOT add whitespace */
 "this year" = "今年";
 
-/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tod" = "今天";
 
-/* today, used for scanning user input */
+/* today, used for scanning user input. Do NOT add whitespace */
 "today" = "今天";
 
 /* Today */
 "Today" = "今天";
 
-/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tom" = "明天";
 
 /* tomorrow */
@@ -95,31 +94,31 @@
 /* Tomorrow */
 "Tomorrow" = "明天";
 
-/* tonight, used for scanning user input */
+/* tonight, used for scanning user input. Do NOT add whitespace */
 "tonight" = "今晚";
 
-/* one-letter abbreviation for week or weeks, used for scanning user input */
-"w" = "w";
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
+"w" = "周";
 
-/* week, singular, used for scanning user input */
+/* week, singular, used for scanning user input. Do NOT add whitespace */
 "week" = "周";
 
-/* weeks, plural, used for scanning user input */
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
 "weeks" = "周";
 
-/* one-letter abbreviation for year or years, used for scanning user input */
-"y" = "y";
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
+"y" = "年";
 
-/* year, singular, used for scanning user input */
+/* year, singular, used for scanning user input. Do NOT add whitespace */
 "year" = "年";
 
-/* years, plural, used for scanning user input */
+/* years, plural, used for scanning user input. Do NOT add whitespace */
 "years" = "年";
 
-/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "yes" = "昨天";
 
-/* yesterday, used for scanning user input */
+/* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "昨天";
 
 /* Yesterday */

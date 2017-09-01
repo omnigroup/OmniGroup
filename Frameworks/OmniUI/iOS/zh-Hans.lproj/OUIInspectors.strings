@@ -50,6 +50,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "调小字体";
 
+/* hide more rows button title */
+"Hide More Rows" = "隐藏更多行";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "多个选择";
 
@@ -64,6 +67,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "常规";
+
+/* show more rows button title */
+"Show More Rows" = "显示更多行";
 
 /* Label for font size controls */
 "Size" = "尺寸";

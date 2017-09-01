@@ -23,7 +23,7 @@ RCS_ID("$Id$");
     UITableView *_tableView;
 }
 
-+ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString forTableView:(UITableView *)tableView;
++ (UILabel *)headerLabelWiithText:(NSString *)labelString;
 {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
     UIFont *textFont = [UIFont systemFontOfSize:[UIFont systemFontSize]];
@@ -34,6 +34,14 @@ RCS_ID("$Id$");
 #endif
     label.text = labelString;
     [label sizeToFit];
+
+    return label;
+}
+
++ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString forTableView:(UITableView *)tableView;
+{
+    UILabel *label = [self headerLabelWiithText:labelString];
+
     UIEdgeInsets separatorInset = tableView.separatorInset;
     CGRect labelFrame = label.frame;
     labelFrame.origin.x = separatorInset.left;
@@ -82,6 +90,8 @@ RCS_ID("$Id$");
 - (void)reloadTableAndResize;
 {
     [_tableView reloadData];
+    if (_tableView.window != nil)
+        [_tableView layoutIfNeeded];
     [self _resizeTable];
 }
 
@@ -143,6 +153,13 @@ RCS_ID("$Id$");
 
     if ([OUIInspectorAppearance inspectorAppearanceEnabled])
         [self _updateAppearance];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [self _resizeTable];
+
+    [super viewDidAppear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;

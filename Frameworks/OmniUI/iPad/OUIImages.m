@@ -9,6 +9,13 @@
 
 RCS_ID("$Id$");
 
+static const CGFloat DisclosureIndicatorWidth = 8;
+static const CGFloat DisclosureIndicatorHeight = 13;
+
+UIImage *disclosureIndicatorFallbackImage(void);
+UIImage *findDisclosureImageStartingAtView(UIView *view);
+UIImage *disclosureIndicatorSystemImage(void);
+
 UIImage *OUITableViewItemSelectionImage(UIControlState state)
 {    
     // Not handling all the permutations of states, just the base states.
@@ -54,6 +61,92 @@ UIImage *OUIStepperPlusImage(void)
 UIImage *OUIToolbarUndoImage(void)
 {
     return [UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+UIImage *disclosureIndicatorFallbackImage(void)
+{
+    UIImage *image = nil;
+
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(DisclosureIndicatorWidth, DisclosureIndicatorHeight), NO, 0);
+    {
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        CGRect indicatorRect = CGRectMake(0, 0, DisclosureIndicatorWidth, DisclosureIndicatorHeight);
+
+        CGFloat lineWidth = 2.0;
+        CGFloat inset = (lineWidth / 2.0);
+
+        indicatorRect = CGRectInset(indicatorRect, inset, inset);
+        CGContextSetLineWidth(context, lineWidth);
+
+        [[UIColor greenColor] set]; // Arbitrary; tinted image
+
+        CGContextMoveToPoint(context, CGRectGetMinX(indicatorRect), CGRectGetMinY(indicatorRect));
+        CGContextAddLineToPoint(context, CGRectGetMaxX(indicatorRect), CGRectGetMidY(indicatorRect));
+        CGContextAddLineToPoint(context, CGRectGetMinX(indicatorRect), CGRectGetMaxY(indicatorRect));
+        CGContextStrokePath(context);
+
+        image = UIGraphicsGetImageFromCurrentImageContext();
+        image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+    }
+    UIGraphicsEndImageContext();
+
+    return image;
+}
+
+UIImage *findDisclosureImageStartingAtView(UIView *view)
+{
+    if ([view isKindOfClass:[UIImageView class]]) {
+        UIImageView *imageView = OB_CHECKED_CAST(UIImageView, view);
+        CGSize imageSize = imageView.image.size;
+        if (imageSize.width <= 20 && imageSize.height <= 20) {
+            // Looks like the disclosure image, which in reality is 8x13
+            return imageView.image;
+        }
+    }
+
+    for (UIView *subview in view.subviews) {
+        UIImage *image = findDisclosureImageStartingAtView(subview);
+        if (image != nil) {
+            return image;
+        }
+    }
+
+    return nil;
+}
+
+UIImage *disclosureIndicatorSystemImage(void)
+{
+    UITableViewCell *cell = [[UITableViewCell alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    [cell layoutIfNeeded];
+
+    UIImage *systemImage = findDisclosureImageStartingAtView(cell);
+    if (systemImage != nil) {
+        return [systemImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    }
+
+    return nil;
+}
+
+UIImage *OUIDisclosureIndicatorImage(void)
+{
+    static UIImage *disclosureIndicatorImage = nil;
+
+    if (disclosureIndicatorImage == nil) {
+        // This code is a bit sketchy. We prefer to use the system image if we can, otherwise we drawn an approximation of it in code.
+        // The approximation can be replaced with a local fallback image asset if necessary.
+        //
+        // The code which finds the system image does so by traversing a stock UITableViewCell and looking for an image view of approximately appropriate dimensions.
+
+        disclosureIndicatorImage = disclosureIndicatorSystemImage();
+
+        if (disclosureIndicatorImage == nil) {
+            disclosureIndicatorImage = disclosureIndicatorFallbackImage();
+        }
+    }
+
+    return disclosureIndicatorImage;
 }
 
 @implementation OUIImageLocation

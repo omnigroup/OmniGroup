@@ -18,7 +18,7 @@
 @protocol OUIDocumentExporterHost <NSObject>
 
 - (ODSFileItem *)fileItemToExport;
-- (UIColor *)tintColorForExportMenu;
+- (UIColor *)tintColorForExportMenu; // use [UIColor blackColor] to also get untemplated images
 
 @optional
 - (void)prepareToExport;
@@ -36,7 +36,7 @@
 - (instancetype)initWithHostViewController:(UIViewController <OUIDocumentExporterHost> *)hostViewController NS_DESIGNATED_INITIALIZER; // For subclassing only
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (nonatomic, readonly, weak) UIViewController <OUIDocumentExporterHost, DisabledDemoFeatureAlerter> *hostViewController;
+@property (nonatomic, readonly, weak) UIViewController <OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController;
 @property (nonatomic, strong) UIBarButtonItem *barButtonItem;
 
 - (BOOL)canExportFileItem:(ODSFileItem *)fileItem;

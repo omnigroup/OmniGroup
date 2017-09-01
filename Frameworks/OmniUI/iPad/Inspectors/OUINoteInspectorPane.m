@@ -81,7 +81,7 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 - (void)keyboardDidChange:(NSNotification *)note;
 {
     // Without some help here, UITextView doesn't redisplay exposed contents when the popover grows.
-    OBFinishPortingLater("This still doesn't fully fix things -- in landscape mode, when hiding the keyboard, long notes can end up with the bottom area not redrawn after the popover grows.");
+    OBFinishPortingLater("<bug:///147853> (iOS-OmniOutliner Bug: in landscape mode, when hiding the keyboard, long notes can end up with the bottom area not redrawn after the popover grows)");
     [self.view setNeedsLayout];
     [self.view setNeedsDisplay];
 }

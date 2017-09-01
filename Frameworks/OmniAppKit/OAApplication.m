@@ -32,7 +32,7 @@ RCS_ID("$Id$")
 NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
 
-static NSUInteger launchModifierFlags;
+static NSEventModifierFlags launchModifierFlags;
 static BOOL OATargetSelection;
 
 BOOL OATargetSelectionEnabled(void)
@@ -552,7 +552,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     return [self mouseButtonIsDownAtIndex:2];
 }
 
-- (NSUInteger)launchModifierFlags;
+- (NSEventModifierFlags)launchModifierFlags;
 {
     return launchModifierFlags;
 }

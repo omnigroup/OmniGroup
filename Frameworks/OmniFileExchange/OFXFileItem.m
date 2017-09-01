@@ -811,7 +811,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                     *outCommitError = replaceError;
                 OBChainError(outCommitError);
                 cleanup();
-                OBFinishPorting; // Not sure how to provoke this case to test it or what could be happening.
+                OBFinishPortingWithNote("<bug:///147843> (iOS-OmniOutliner Engineering: Figure out how to test file replacement error in -[OXFileItem prepareUploadTransferWithConnection:error:])"); // Not sure how to provoke this case to test it or what could be happening.
                 return NO;
             }
         }

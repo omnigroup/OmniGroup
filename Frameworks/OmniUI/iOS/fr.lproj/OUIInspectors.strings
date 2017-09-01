@@ -48,6 +48,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "Police plus petite";
 
+/* hide more rows button title */
+"Hide More Rows" = "Masquer plus de lignes";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "Sélection multiple";
 
@@ -62,6 +65,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "Regular";
+
+/* show more rows button title */
+"Show More Rows" = "Afficher plus de lignes";
 
 /* Label for font size controls */
 "Size" = "Taille";

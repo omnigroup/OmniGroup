@@ -178,7 +178,7 @@ OBPerformPosing(^{
 
 #endif
 
-- initWithPropertyList:(NSDictionary *)propertyList;
+- (id)initWithPropertyList:(NSDictionary *)propertyList;
 {
     NSString *domain = [propertyList objectForKey:@"domain"];
     NSNumber *code = [propertyList objectForKey:@"code"];

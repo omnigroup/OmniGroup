@@ -149,15 +149,14 @@ RCS_ID("$Id$");
 
 - (void)showDetails:(id)sender;
 {
-    OBFinishPorting;
+    OBFinishPortingWithNote("<bug:///147849> (iOS-OmniOutliner Bug: Implement -[OUIDetailInspectorSlice showDetails:])");
 }
 
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    [self.tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(self.tableView);
+    [self reloadTableAndResize];
 }
 
 #pragma mark - UIViewController subclass
@@ -206,10 +205,10 @@ RCS_ID("$Id$");
     if (!cell) {
         cell = [[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
         
-        cell.hasTintableDisclosureIndicator = YES;
         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     }
-    
+    cell.hasTintableDisclosureIndicator = YES;
+
     NSUInteger itemIndex = (NSUInteger)indexPath.row;
     OUIDetailInspectorSliceItem *item = [[OUIDetailInspectorSliceItem alloc] init];
     item.title = self.title;
@@ -333,7 +332,12 @@ RCS_ID("$Id$");
     return UITableViewStylePlain;
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForFooterInSection:(NSInteger)section;
+{
+    return 0;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView estimatedHeightForHeaderInSection:(NSInteger)section;
 {
     return 0;
 }

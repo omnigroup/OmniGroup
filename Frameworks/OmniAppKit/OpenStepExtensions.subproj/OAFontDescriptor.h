@@ -16,8 +16,8 @@ extern NSInteger OAFontDescriptorBoldFontWeight(void); // NSFontManager-style we
 extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
 
 // On the Mac, NSFontDescriptor is toll-free bridged to CTFontDescriptorRef. NSFont doesn't seem to be bridged, but presumably each platform returns the appropriate font type.
-// OBFinishPorting: is this still true in 7.0?
-// On iPhone, there is no class to bridge to.  So, this class is currently a wrapper of a CTFontDescriptorRef instead of a subclass/replacement for NSFontDescriptor.
+// OBFinishPorting: <bug:///147888> (Frameworks-iOS Engineering: Consider bridging to UIFontDescriptor, maybe)
+// On iPhone, there is no class to bridge to. (Update 15 Aug. 2017: now there is: UIFontDescriptor.) So, this class is currently a wrapper of a CTFontDescriptorRef instead of a subclass/replacement for NSFontDescriptor.
 
 #if OMNI_BUILDING_FOR_IOS
     #define OAPlatformFontClass UIFont

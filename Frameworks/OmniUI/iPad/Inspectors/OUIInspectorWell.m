@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIDrawing.h>
+#import <OmniUI/OUIImages.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
 #import <UIKit/UIImage.h>
@@ -337,7 +338,7 @@ static CGGradientRef HighlightedButtonGradient = NULL;
 
 + (UIImage *)navigationArrowImage;
 {
-    return [UIImage imageNamed:@"OUINavigationArrow.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    return OUIDisclosureIndicatorImage();
 }
 
 + (UIImage *)navigationArrowImageHighlighted;
@@ -438,7 +439,7 @@ static id _commonInit(OUIInspectorWell *self)
 
 - (void)setNavigationArrowRightView;
 {
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:[[self class] navigationArrowImage]];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:[[[self class] navigationArrowImage] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     imageView.autoresizingMask = imageView.autoresizingMask | UIViewAutoresizingFlexibleLeftMargin;
     imageView.contentMode = UIViewContentModeRight; // This causes us to right-align the view
     self.rightView = imageView;

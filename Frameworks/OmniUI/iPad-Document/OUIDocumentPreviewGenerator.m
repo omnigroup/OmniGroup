@@ -316,8 +316,10 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
     // If there is user-interaction blocking work going on (moving items in the document picker, for example), try to stay out of the way of completion handlers that would resume user interaction.
     NSBlockOperation *previewOperation = [NSBlockOperation blockOperationWithBlock:^{
         OFFileEdit *fileEdit = _currentPreviewUpdatingFileItem.fileEdit;
-        OBASSERT(fileEdit);
-        _writePreviewsForFileItem(self, fileEdit);
+        if (fileEdit != nil) {
+            // It might be nil because it's the first time we've opened this external file item.
+            _writePreviewsForFileItem(self, fileEdit);
+        }
     }];
     previewOperation.queuePriority = NSOperationQueuePriorityLow;
     [[NSOperationQueue mainQueue] addOperation:previewOperation];

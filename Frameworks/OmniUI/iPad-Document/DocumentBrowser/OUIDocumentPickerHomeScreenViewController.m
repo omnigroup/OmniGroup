@@ -7,7 +7,6 @@
 
 #import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
 
-#import <OmniDocumentStore/ODSExternalScope.h>
 #import <OmniDocumentStore/ODSFilter.h>
 #import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSStore.h>
@@ -295,7 +294,14 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 {
     ODSStore *documentStore = _documentPicker.documentStore;
     NSMutableArray *scopesToRemove = [_orderedScopes mutableCopy];
-    NSMutableArray *scopesToAdd = [documentStore.scopes mutableCopy];
+    NSMutableArray *scopesToAdd = [[NSMutableArray alloc] init];
+    for (ODSScope *scope in documentStore.scopes) {
+        if (![scope isExternal]) {
+            // bug:///147708
+            [scopesToAdd addObject:scope];
+        }
+    }
+    
     NSMutableArray *newOrderedScopes = [scopesToAdd mutableCopy];
     [newOrderedScopes sortUsingSelector:@selector(compareDocumentScope:)];
 
@@ -498,6 +504,7 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         cell.textLabel.textColor = nil;
         cell.detailTextLabel.textColor = nil;
     } else if ([scope isKindOfClass:[ODSExternalScope class]]) {
+        OBFinishPorting; // bug:///147708
         cell.imageView.image = externalImage;
         cell.editingAccessoryType = UITableViewCellAccessoryNone;
         cell.textLabel.textColor = self.isEditing ? [UIColor lightGrayColor] : nil;
@@ -538,6 +545,12 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
     
     OBASSERT_NOT_REACHED("Unknown row!");
     return nil;
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // Explicitly disable deleting, because the user can delete the account from the account details, and we'd like a chance to offer a confirmation if there are unsynced edits.
+    return UITableViewCellEditingStyleNone;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
@@ -644,7 +657,7 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
     return YES;
 }
 
-#pragma mark - DemoFeatureDisabledAlerter
+#pragma mark - OUIDisabledDemoFeatureAlerter
 
 - (NSString *)featureDisabledForDemoAlertTitle
 {

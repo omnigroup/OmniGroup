@@ -102,7 +102,7 @@ static unsigned MetadataRegistrationContext;
 
 - (NSURL *)documentsURL;
 {
-    OBPRECONDITION(_documentsURL); // OBFinishPorting: May need to synchronously wait for this... Yuck.
+    OBPRECONDITION(_documentsURL); // OBFinishPorting: <bug:///147840> (iOS-OmniOutliner Bug: OFXDocumentStoreScope.m:105 - May need to synchronously wait for documentsURL)
     return _documentsURL;
 }
 
@@ -178,7 +178,7 @@ static unsigned MetadataRegistrationContext;
         return;
     }
 
-    OBFinishPorting;
+    OBFinishPortingWithNote("<bug:///147905> (iOS-OmniOutliner Bug: Handle the case where trashScope is nil - in -[OFXDocumentStoreScope deleteItems:completionHandler:])");
 #if 0
     // This will do file coordination if the document is downloaded (so other presenters will notice), otherwise just a metadata-based deletion.
     [_syncAgent deleteItemAtURL:fileItem.fileURL completionHandler:completionHandler];
@@ -573,7 +573,7 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
     if ([fileItems any:^BOOL(ODSFileItem *fileItem) { return fileItem.isDownloading || fileItem.downloadRequested; }])
         return;
     
-    // OBFinishPorting: iCloud supposedly eagerly downloads all files on the Mac. We don't have -preferredFileItemForNextAutomaticDownload: on the Mac (it up-calls to the UI to see what previews are on screen), and we are only downloading small files on the Mac.
+    // OBFinishPorting: <bug:///147839> (iOS-OmniOutliner Engineering:) iCloud supposedly eagerly downloads all files on the Mac. We don't have -preferredFileItemForNextAutomaticDownload: on the Mac (it up-calls to the UI to see what previews are on screen), and we are only downloading small files on the Mac.
     ODSFileItem *fileItem = [self.documentStore preferredFileItemForNextAutomaticDownload:_fileItemsToAutomaticallyDownload];
     if (!fileItem)
         fileItem = [_fileItemsToAutomaticallyDownload anyObject];

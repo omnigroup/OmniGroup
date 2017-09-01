@@ -107,7 +107,7 @@ RCS_ID("$Id$");
     return cell;
 }
 
-#pragma mark - DisabledDemoFeatureAlerter
+#pragma mark - OUIDisabledDemoFeatureAlerter
 
 - (NSString *)alertTitle
 {

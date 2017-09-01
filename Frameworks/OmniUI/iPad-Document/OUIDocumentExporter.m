@@ -10,7 +10,6 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 #import <OmniUIDocument/OUIErrors.h>
 #import <OmniUIDocument/ODSFileItem-OUIDocumentExtensions.h>
 
@@ -112,7 +111,7 @@ RCS_ID("$Id$")
     if ([MFMailComposeViewController canSendMail]) {
         // All email options should go here (within the test for whether we can send email)
         // more than one option? Display the 'export options sheet'
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             if (availableExportTypes.count > 0) {
                 [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsEmail];
             }
@@ -123,32 +122,32 @@ RCS_ID("$Id$")
     }
     
     if (canExport) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+#if 0 // bug:///147708
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self exportDocument:fileItem];
         }]];
+#endif
         
-        if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue]) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
-                [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToService];
-            }]];
-        }
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Files", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+            [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToService];
+        }]];
     }
     
     if (canUseOpenIn) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToApp];
         }]];
     }
     
     if (availableImageExportTypes.count > 0) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self copyAsImageForFileItem:fileItem];
             [self clearSelection];
         }]];
     }
     
     if (canSendToCameraRoll) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self sendToCameraRollForFileItem:fileItem];
             [self clearSelection];
         }]];
@@ -156,7 +155,7 @@ RCS_ID("$Id$")
     
     if (canPrint) {
         NSString *printTitle = [self _printTitleForFileItem:fileItem];
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self printDocument:fileItem];
         }]];
     }
@@ -197,21 +196,11 @@ RCS_ID("$Id$")
     if ([self.hostViewController respondsToSelector:@selector(fileItemsToExport)]) {
         NSArray *items = [self.hostViewController fileItemsToExport];
         if (items.count > 1) {
-            NSMutableArray *paths = [NSMutableArray array];
+            NSMutableArray *urls = [NSMutableArray array];
+
             for (ODSFileItem *item in items)
-                [paths addObject:item.fileURL.path];
-            
-            NSString *zipName = [[[NSNumber numberWithInteger:items.count] description] stringByAppendingPathExtension:@"zip"];
-            NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:zipName];
-            @autoreleasepool {
-                __autoreleasing NSError *error = nil;
-                if (![OUZipArchive createZipFile:zipPath fromFilesAtPaths:paths error:&error]) {
-                    OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
-                    return;
-                }
-            }
-            NSURL *zipURL = [NSURL fileURLWithPath:zipPath];
-            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[zipURL] applicationActivities:nil];
+                [urls addObject:[item fileURL]];
+            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:urls applicationActivities:nil];
             activityViewController.modalPresentationStyle = UIModalPresentationPopover;
             activityViewController.popoverPresentationController.barButtonItem = sender;
             [self.hostViewController presentViewController:activityViewController animated:YES completion:nil];

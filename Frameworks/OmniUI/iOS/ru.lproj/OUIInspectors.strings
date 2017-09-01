@@ -50,6 +50,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "Уменьшить шрифт";
 
+/* hide more rows button title */
+"Hide More Rows" = "Скрыть доп. строки";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "Выбрано несколько";
 
@@ -64,6 +67,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "Обычный";
+
+/* show more rows button title */
+"Show More Rows" = "Показать доп. строки";
 
 /* Label for font size controls */
 "Size" = "Размер";

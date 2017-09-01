@@ -36,7 +36,11 @@
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
+// these types can be read and will be saved to a different fileType (presumably our native format). Defaults to @[]
+- (NSArray *)importableFileTypes;
+
 - (IBAction)makeNewDocument:(id)sender;
+- (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 - (IBAction)closeDocument:(id)sender;
 - (void)closeAndDismissDocumentWithCompletionHandler:(void(^)(void))completionHandler;
 - (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;

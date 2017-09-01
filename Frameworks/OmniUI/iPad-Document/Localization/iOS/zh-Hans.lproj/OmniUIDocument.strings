@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "关闭文稿";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "云存储供应商";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "云存储已在此演示版本中禁用。";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "已连接";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "导出至 WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "输出至...";
-
 /* Export document preview action title. */
 "Export…" = "输出…";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "已修改 %@";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "更多信息...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "好";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence 允许您使用我们的免费同步服务或任何兼容的 WebDAV 服务器在设备之间自动共享文稿，或者将您的文稿的副本保存在云中，以防您需要复原设备。";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "OmniPresence 配置：%@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "在其他设备上打开此文件，以配置那里的 OmniPresence。";
@@ -388,6 +388,9 @@
 "Send to App" = "发送到应用程序";
 
 /* Menu option in the document picker view */
+"Send to Files" = "发送至“文件";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "发送至照片";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "标题";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "打开云存储供应商即可访问存储在云服务（如 iCloud Drive 或 Dropbox）中的文稿。我们正在以 BETA 实施的形式推出对云存储供应商的访问；启用此服务时要小心。";
-
 /* error title */
 "Unable to open file." = "无法打开文件。";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "使用云存储供应商";
 
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";

@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,6 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 
 #import "OUIDocumentAppController-Internal.h"
 #import "OUIDocumentInbox.h"
@@ -59,16 +58,12 @@ RCS_ID("$Id$")
     
     [self _loadExternalScopes];
     
-    OFPreference *shouldEnableDocumentProvidersPreference = [OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference];
-    if ([shouldEnableDocumentProvidersPreference boolValue] == YES) {
-        for (ODSScope *scope in [_externalScopes allValues]) {
-            [_documentStore addScope:scope];
-        }
+    for (ODSScope *scope in [_externalScopes allValues]) {
+        [_documentStore addScope:scope];
     }
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
-    [OFPreference addObserver:self selector:@selector(_shouldEnableDocumentProvidersPreferenceChanged:) forPreference:shouldEnableDocumentProvidersPreference];
 
     return self;
 }
@@ -306,6 +301,7 @@ RCS_ID("$Id$")
     return externalScope;
 }
 
+// No matter what the URL is, we always pass the same display name, and we always return the one external scope. Why do we have an array? Why do we pass this URL in?
 - (ODSExternalScope *)_externalScopeForURL:(NSURL *)url;
 {
     NSString *displayName = NSLocalizedStringFromTableInBundle(@"Other", @"OmniUIDocument", OMNI_BUNDLE, @"Generic name for location of external documents");
@@ -420,13 +416,21 @@ RCS_ID("$Id$")
     [_externalDocumentsPreference setArrayValue:[self _externalScopeBookmarks]];
 }
 
-- (void)linkExternalDocumentFromURL:(NSURL *)url;
+- (ODSFileItem *)fileItemFromExternalDocumentURL:(NSURL *)url
 {
-    if (url == nil)
-        return;
-    
+    if (url == nil) {
+        return nil;
+    }
+
     ODSExternalScope *externalScope = [self _externalScopeForURL:url];
     ODSFileItem *fileItem = [self _fileItemFromExternalURL:url inExternalScope:externalScope];
+    return fileItem;
+}
+
+- (void)linkExternalDocumentFromURL:(NSURL *)url;
+{
+    ODSFileItem *fileItem = [self fileItemFromExternalDocumentURL:url];
+
     if (fileItem != nil) {
         OUIDocumentPicker *documentPicker = [OUIDocumentAppController controller].documentPicker;
         [documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
@@ -447,20 +451,6 @@ RCS_ID("$Id$")
     [self _loadExternalScopes];
 }
 
-- (void)_shouldEnableDocumentProvidersPreferenceChanged:(NSNotification *)notification;
-{
-    OBASSERT([notification object] == [OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference]);
-    if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue] == YES) {
-        for (ODSScope *scope in [_externalScopes allValues]) {
-            [_documentStore addScope:scope];
-        }
-    }
-    else {
-        for (ODSScope *scope in [_externalScopes allValues]) {
-            [_documentStore removeScope:scope];
-        }
-    }
-}
 
 @end
 

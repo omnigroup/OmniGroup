@@ -247,6 +247,9 @@
 		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
+		4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; };
+		4A2ED8981F454160000F2513 /* namedColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */; };
+		4A2ED8991F454F9D000F2513 /* OAColorPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4BAB5C1E64C1780007DCE3 /* NSAppearance-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A4BAB5A1E64C1780007DCE3 /* NSAppearance-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A4BAB5D1E64C1780007DCE3 /* NSAppearance-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A4BAB5B1E64C1780007DCE3 /* NSAppearance-OAExtensions.m */; };
 		4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -3035,6 +3038,7 @@
 				3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */,
 				3435EF891DEE4CFE002CB3F9 /* OAStrings.h in Headers */,
 				342F05301B697A6100C7BB34 /* OAAppearanceColors.h in Headers */,
+				4A2ED8991F454F9D000F2513 /* OAColorPalette.h in Headers */,
 				3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */,
 				3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */,
 				3459EE361B694A8400D4F085 /* OAColor-Archiving.h in Headers */,
@@ -3746,6 +3750,7 @@
 			files = (
 				342F05341B697A9000C7BB34 /* OAAppearanceDarkColors.plist in Resources */,
 				342F05351B697A9200C7BB34 /* OAAppearanceDefaultColors.plist in Resources */,
+				4A2ED8981F454160000F2513 /* namedColors.plist in Resources */,
 				159F5E491CE503DA003EF102 /* OmniAppKit.strings in Resources */,
 				342F05331B697A8D00C7BB34 /* OAAppearance.plist in Resources */,
 			);
@@ -3995,6 +4000,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */,
 				3459EE3C1B694A8400D4F085 /* OAColor.m in Sources */,
 				3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */,
 				3459EE381B694A8400D4F085 /* OAColor-Archiving.m in Sources */,

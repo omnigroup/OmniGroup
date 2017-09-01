@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "Закрыть документ";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "Облачные службы";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "Облачное хранилище отключено в этой демо-версии.";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Подключено";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Экспортировать в WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "Экспортировать в…";
-
 /* Export document preview action title. */
 "Export…" = "Экспорт…";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "Изменено %@";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "Дополнительно...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "OK";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence позволяет использовать бесплатную службу синхронизации или любой совместимый сервер WebDAV для автоматической синхронизации документов на всех ваших устройствах или для хранения копий документов в облаке на случай восстановления содержимого устройства.";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Конфигурация OmniPresence: %@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "Служба OmniPresence отключена в этой демо-версии.";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Откройте этот файл на другом устройстве, чтобы настроить там OmniPresence.";
@@ -388,6 +388,9 @@
 "Send to App" = "Отправить в приложение";
 
 /* Menu option in the document picker view */
+"Send to Files" = "Отправить в «Файлы»";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "Отправить в «Фото»";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "Заголовок";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "Включение поставщиков облачных хранилищ предоставляет доступ к документам, хранящимся в облачных службах, таких как iCloud Drive или Dropbox. Функция доступа к облачным хранилищам является бета-версией; используйте ее с осторожностью.";
-
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "Использовать облачные службы";
 
 /* Account validation status string. */
 "Validating account..." = "Проверка учетной записи…";

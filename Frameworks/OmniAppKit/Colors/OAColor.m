@@ -90,7 +90,7 @@ OALinearRGBA OAGetColorRefComponents(CGColorRef c)
                 OBASSERT(CGColorGetNumberOfComponents(c) == 4);
                 return (OALinearRGBA){components[0], components[1], components[2], components[3]};
             default:
-                OBFinishPortingLater("Unknown color space model!");
+                OBFinishPortingLater("<bug:///147856> (Frameworks-iOS Engineering: Handle unknown color space model in OAGetColorRefComponents)");
                 return (OALinearRGBA){1, 0, 0, 1};
         }
     } else

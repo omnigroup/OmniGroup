@@ -153,6 +153,15 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     return [self initWithFileItem:nil url:saveURL error:outError];
 }
 
+- initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+{
+    if ([NSThread isMainThread]) {
+        OBFinishPortingLater("<bug:///147561> Subclassers are supposed to read the contents at importableURL, so this should be on a background queue.");
+    }
+
+    return [self initWithFileItem:nil url:saveURL error:outError];
+}
+
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
@@ -259,6 +268,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     __autoreleasing NSError *resourceError = nil;
     if (![fileURL getResourceValue:&isDirectoryNumber forKey:NSURLIsDirectoryKey error:&resourceError]) {
 #ifdef DEBUG
+        // One way to get here is closing a document that was deleted by a cloud provider while our app was backgrounded. Not sure if we should handle that differently.
         NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
 #endif
     }
@@ -598,7 +608,8 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     }
 #endif
 
-    [self _autoresolveConflicts];
+    if ([[OFPreference preferenceForKey:@"OUIDocumentAutoresolvesConflicts" defaultValue:@(NO)] boolValue])
+          [self _autoresolveConflicts];
 
     __weak OUIDocument *welf = self;
     [super openWithCompletionHandler:^(BOOL success){
@@ -747,14 +758,18 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         if (fileItem != nil && !hadError) { // New document being closed to save its initial state before being opened to edit?
 
             // Our save path should have updated our file item's latest fileEdit.
-            OBASSERT([fileItem.fileModificationDate isEqual:self.fileModificationDate]);
-
+            if (fileItem.fileModificationDate != nil) {
+                OBASSERT([fileItem.fileModificationDate isEqual:self.fileModificationDate]);
+            }
             // The date refresh is asynchronous, so we'll force preview loading in the case that we know we should consider the previews out of date.
             OFFileEdit *fileEdit = fileItem.fileEdit;
+            if (fileEdit != nil) {
+                [self _writePreviewsIfNeeded:(hadChanges == NO) fileEdit:fileEdit withCompletionHandler:previewCompletion];
 
-            [self _writePreviewsIfNeeded:(hadChanges == NO) fileEdit:fileEdit withCompletionHandler:previewCompletion];
-
-            [OUIDocumentAppController setDocumentState:viewState forFileEdit:fileEdit];
+                [OUIDocumentAppController setDocumentState:viewState forFileEdit:fileEdit];
+            } else {
+                previewCompletion();
+            }
         } else {
             previewCompletion();
         }
@@ -1237,7 +1252,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Renamed to %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been renamed on another device");
             
             NSString *displayName = [[strongSelf.fileItem class] displayNameForFileURL:newURL fileType:strongSelf.fileType];
-            OBFinishPortingLater("Can't ask the file item for its editing name. Need a class method of some sort.");
+            OBFinishPortingLater("<bug:///147832> (iOS-OmniOutliner Bug: OUIDocument.m:1245 - Can't ask the file item for its editing name. Need a class method of some sort)");
             updateMessage = [NSString stringWithFormat:messageFormat, displayName];
         } else {
             // The code above handles both renames and deletions. If we get althey way to here, we will assume a move has happend. Unfortunately, there is no way to know where the standard 'Shared Documents' part of the path ends and the user created/visible path begins. Because of this, we can't provide any relevant folder/path information. For now, we'll just let the user know that the document was moved.
@@ -1684,7 +1699,7 @@ typedef NSString * (^MessageProvider)(void);
 - (NSString *)promptForPasswordWithCount:(NSInteger)previousFailureCount hint:(NSString *)passwordHint error:(NSError * _Nullable __autoreleasing *)outError;
 {
     if ([NSThread isMainThread]) {
-        OBFinishPorting;
+        OBFinishPortingWithNote("<bug:///147831> (iOS-OmniOutliner Bug: OUIDocument.m:1692: Show prompt in promptForPasswordWithCount:hint:error: when in main thread)");
     }
     
     OUIDocumentEncryptionPassphrasePromptOperation *prompt = [[OUIDocumentEncryptionPassphrasePromptOperation alloc] init];

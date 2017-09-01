@@ -927,7 +927,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
             [doc appendElement:@"exclusive"];
         }];
         [requestDocument addElement:@"owner" childBlock:^{
-            OBFinishPortingLater("Add actual href for owner");
+            OBFinishPortingLater("<bug:///147879> (iOS-OmniOutliner Engineering: -[ODAVConnection lockURL:completionHandler:] - Add actual href for owner)");
             [doc appendElement:@"href" containingString:@"http://example.com"];
         }];
         
@@ -967,7 +967,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
         NSString *token = [op valueForResponseHeader:@"Lock-Token"];
         DEBUG_DAV(2, @"  --> token %@", token);
         
-        // OBFinishPorting: Handle bad response from the server that doesn't contain a lock token.
+        // OBFinishPorting: <bug:///147880> (iOS-OmniOutliner Bug: -[ODAVConnection lockURL:completionHandler:] - Handle bad response from the server that doesn't contain a lock token)
         OBASSERT(![NSString isEmptyString:token]);
         
         COMPLETE_AND_RETURN(token, errorOrNil);

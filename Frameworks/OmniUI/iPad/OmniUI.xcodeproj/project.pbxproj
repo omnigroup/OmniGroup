@@ -25,15 +25,6 @@
 		231060501EAFE95D008E0647 /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2310604F1EAFE95D008E0647 /* Bundle.swift */; };
 		232F1EF71DF7436500201BEC /* OUIInspectorNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */; };
 		232F1EF81DF7436500201BEC /* OUIInspectorNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */; };
-		2334FCEF1EA15498008F3ABE /* OUIMenuItemQuickStart.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCE61EA15498008F3ABE /* OUIMenuItemQuickStart.png */; };
-		2334FCF01EA15498008F3ABE /* OUIMenuItemQuickStart@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCE71EA15498008F3ABE /* OUIMenuItemQuickStart@2x.png */; };
-		2334FCF11EA15498008F3ABE /* OUIMenuItemQuickStart@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCE81EA15498008F3ABE /* OUIMenuItemQuickStart@3x.png */; };
-		2334FCF21EA15498008F3ABE /* OUIMenuItemTrial.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCE91EA15498008F3ABE /* OUIMenuItemTrial.png */; };
-		2334FCF31EA15498008F3ABE /* OUIMenuItemTrial@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEA1EA15498008F3ABE /* OUIMenuItemTrial@2x.png */; };
-		2334FCF41EA15498008F3ABE /* OUIMenuItemTrial@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEB1EA15498008F3ABE /* OUIMenuItemTrial@3x.png */; };
-		2334FCF51EA15498008F3ABE /* OUIMenuItemVideo.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEC1EA15498008F3ABE /* OUIMenuItemVideo.png */; };
-		2334FCF61EA15498008F3ABE /* OUIMenuItemVideo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCED1EA15498008F3ABE /* OUIMenuItemVideo@2x.png */; };
-		2334FCF71EA15498008F3ABE /* OUIMenuItemVideo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2334FCEE1EA15498008F3ABE /* OUIMenuItemVideo@3x.png */; };
 		235D67411EB00E06007FCF56 /* OUIMultiPaneNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 235D673F1EB00E06007FCF56 /* OUIMultiPaneNotifications.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */; };
 		236CA7741B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -229,8 +220,6 @@
 		348A7AB01B584C240082D55D /* OUISplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 274723431992F31600B1DE5D /* OUISplitViewController.m */; };
 		348A7AB11B584C240082D55D /* OUISegmentedViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 23FF1F6D18BBF7B30009C3D6 /* OUISegmentedViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7AB21B584C240082D55D /* OUISegmentedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 23FF1F6E18BBF7B30009C3D6 /* OUISegmentedViewController.m */; };
-		348A7AB31B584C240082D55D /* OUINavigationBar.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C3A4629177E01B800FCA4B8 /* OUINavigationBar.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		348A7AB41B584C240082D55D /* OUINavigationBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C3A462A177E01B800FCA4B8 /* OUINavigationBar.m */; };
 		348A7AB51B584C240082D55D /* OUINavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C3A462D177E15C000FCA4B8 /* OUINavigationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348A7AB61B584C240082D55D /* OUINavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C3A462E177E15C000FCA4B8 /* OUINavigationController.m */; };
 		348A7AB71B584C240082D55D /* OUIWrappingViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 274798541991E1200022D28C /* OUIWrappingViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -394,12 +383,6 @@
 		348A7B5F1B584D480082D55D /* OUIToolbarUndo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */; };
 		348A7B601B584D480082D55D /* OUIToolbarUndo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */; };
 		348A7B611B584D480082D55D /* OUIColorComponentSliderKnob@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */; };
-		348A7B621B584D480082D55D /* OUIMenuItemAbout@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40219D222A900F31468 /* OUIMenuItemAbout@3x.png */; };
-		348A7B631B584D480082D55D /* OUIMenuItemHelp@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40319D222A900F31468 /* OUIMenuItemHelp@3x.png */; };
-		348A7B641B584D480082D55D /* OUIMenuItemPurchases@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40419D222A900F31468 /* OUIMenuItemPurchases@3x.png */; };
-		348A7B651B584D480082D55D /* OUIMenuItemReleaseNotes@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40519D222A900F31468 /* OUIMenuItemReleaseNotes@3x.png */; };
-		348A7B671B584D480082D55D /* OUIMenuItemSendFeedback@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40719D222A900F31468 /* OUIMenuItemSendFeedback@3x.png */; };
-		348A7B681B584D480082D55D /* OUIMenuItemSettings@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40819D222A900F31468 /* OUIMenuItemSettings@3x.png */; };
 		348A7B691B584D480082D55D /* OUIMenuItemSync@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */; };
 		348A7B6A1B584D480082D55D /* OUIParagraphAlignmentCenter@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */; };
 		348A7B6B1B584D480082D55D /* OUIParagraphAlignmentJustified@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */; };
@@ -416,18 +399,6 @@
 		348A7B761B584D480082D55D /* OUIToolbarInfo@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */; };
 		348A7B771B584D480082D55D /* OUINoteFullScreenZoom.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */; };
 		348A7B781B584D480082D55D /* OUINoteFullScreenZoomBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */; };
-		348A7B791B584D480082D55D /* OUIMenuItemAbout.png in Resources */ = {isa = PBXBuildFile; fileRef = 3438324E167A85D1008A4FD0 /* OUIMenuItemAbout.png */; };
-		348A7B7A1B584D480082D55D /* OUIMenuItemAbout@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A22288916AC874C00F2715C /* OUIMenuItemAbout@2x.png */; };
-		348A7B7B1B584D480082D55D /* OUIMenuItemHelp.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383251167A85D1008A4FD0 /* OUIMenuItemHelp.png */; };
-		348A7B7C1B584D480082D55D /* OUIMenuItemHelp@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383252167A85D1008A4FD0 /* OUIMenuItemHelp@2x.png */; };
-		348A7B7D1B584D480082D55D /* OUIMenuItemPurchases.png in Resources */ = {isa = PBXBuildFile; fileRef = 2BD93374163B295F004CE626 /* OUIMenuItemPurchases.png */; };
-		348A7B7E1B584D480082D55D /* OUIMenuItemPurchases@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 2BD93375163B295F004CE626 /* OUIMenuItemPurchases@2x.png */; };
-		348A7B7F1B584D480082D55D /* OUIMenuItemReleaseNotes.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383253167A85D1008A4FD0 /* OUIMenuItemReleaseNotes.png */; };
-		348A7B801B584D480082D55D /* OUIMenuItemReleaseNotes@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383254167A85D1008A4FD0 /* OUIMenuItemReleaseNotes@2x.png */; };
-		348A7B831B584D480082D55D /* OUIMenuItemSendFeedback.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383256167A85D1008A4FD0 /* OUIMenuItemSendFeedback.png */; };
-		348A7B841B584D480082D55D /* OUIMenuItemSendFeedback@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34383257167A85D2008A4FD0 /* OUIMenuItemSendFeedback@2x.png */; };
-		348A7B851B584D480082D55D /* OUIMenuItemSettings.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B4F15B0BEE000E33AA3 /* OUIMenuItemSettings.png */; };
-		348A7B861B584D480082D55D /* OUIMenuItemSettings@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B5015B0BEE000E33AA3 /* OUIMenuItemSettings@2x.png */; };
 		348A7B871B584D480082D55D /* OUIMenuItemSync.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */; };
 		348A7B881B584D480082D55D /* OUIMenuItemSync@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */; };
 		348A7B891B584D480082D55D /* OUINavigationBarTextFieldBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 273C58731A1ADF6D00CE4C40 /* OUINavigationBarTextFieldBackground.png */; };
@@ -486,19 +457,25 @@
 		34A7474D1E302A1E005CD73F /* OUIExport@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747471E302A1E005CD73F /* OUIExport@3x.png */; };
 		34C782C21BDEB71C00536364 /* OmniUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C782C11BDEB71C00536364 /* OmniUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D4F4251B6AA8F00003556D /* OUIDocumentPreviewArea.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E7656D21F59D5BF008B76B7 /* NSURL-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E7656D31F59D5BF008B76B7 /* NSURL-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7656D11F59D5BF008B76B7 /* NSURL-OUIExtensions.m */; };
 		3EA7ECE21D52A98C00040F4B /* OUIPasswordAlert-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA7ECD81D52A95600040F4B /* OUIPasswordAlert-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		4234FD851F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4234FD841F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift */; };
 		423DFE1C1C24B526006BB12B /* OUIAbstractFontInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 423DFE161C24B526006BB12B /* OUIAbstractFontInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423DFE1D1C24B526006BB12B /* OUIAbstractFontInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE171C24B526006BB12B /* OUIAbstractFontInspectorSlice.m */; };
 		423DFE1E1C24B526006BB12B /* OUIFontFamilyInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 423DFE181C24B526006BB12B /* OUIFontFamilyInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423DFE1F1C24B526006BB12B /* OUIFontFamilyInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE191C24B526006BB12B /* OUIFontFamilyInspectorSlice.m */; };
 		423DFE201C24B526006BB12B /* OUIFontSizeInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 423DFE1A1C24B526006BB12B /* OUIFontSizeInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423DFE211C24B526006BB12B /* OUIFontSizeInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */; };
+		4240B0181F1D616900D72C02 /* DisclosableInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */; };
 		429585D91C4964BE009ED770 /* OUIToolbarUndo-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */; };
 		429585DA1C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */; };
 		429585DB1C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */; };
 		429586641C497D26009ED770 /* OUIToolbarInfo-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */; };
 		429586651C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */; };
 		429586661C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */; };
+		42B7ECF71F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */; };
+		42D6E8AA1F2154F9006B9697 /* DisclosableSliceGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */; };
 		4AF93D7E1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AF93D7F1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AF93D7D1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m */; };
 		4DBBFC671ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DBBFC661ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift */; };
@@ -509,6 +486,7 @@
 		6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */; };
 		6C1709211C2372BA00350F40 /* OUISliceSeparatorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */; };
 		D96A551F1BBF45DC0025623C /* OmniUIKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = D96A551E1BBF45DC0025623C /* OmniUIKeycommands.strings */; };
+		E26E8D9A1F44E7830045CBF2 /* OUIFloatingContentToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */; };
 		E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27879711BD1C0C200B38C43 /* WebKit.framework */; };
 		E28342021EB988C200FDB90F /* OUIThemedTableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E28342001EB988C200FDB90F /* OUIThemedTableViewCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E28342031EB988C200FDB90F /* OUIThemedTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E28342011EB988C200FDB90F /* OUIThemedTableViewCell.m */; };
@@ -518,6 +496,7 @@
 		E2967E451EB3CAB7007E99B6 /* OUIThemedAppearance.m in Sources */ = {isa = PBXBuildFile; fileRef = E2967E431EB3CAB7007E99B6 /* OUIThemedAppearance.m */; };
 		E2967E471EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2967E461EB3FA08007E99B6 /* OUIInspectorAppearanceDark.plist */; };
 		E2967E491EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2967E481EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist */; };
+		FB0C63911F59BB44000FF76C /* GearMenuIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */; };
 		FB11AB081C518D570050F4EF /* OUIAppMenu-Badged.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */; };
 		FB11AB091C518D570050F4EF /* OUIAppMenu-Badged@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */; };
 		FB11AB0A1C518D570050F4EF /* OUIAppMenu-Badged@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */; };
@@ -675,15 +654,6 @@
 		231A234917D94518009E4CA8 /* OUIEmptyOverlayView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIEmptyOverlayView.xib; sourceTree = "<group>"; };
 		232F1EF51DF7436500201BEC /* OUIInspectorNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorNavigationController.h; sourceTree = "<group>"; };
 		232F1EF61DF7436500201BEC /* OUIInspectorNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorNavigationController.m; sourceTree = "<group>"; };
-		2334FCE61EA15498008F3ABE /* OUIMenuItemQuickStart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemQuickStart.png; sourceTree = "<group>"; };
-		2334FCE71EA15498008F3ABE /* OUIMenuItemQuickStart@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemQuickStart@2x.png"; sourceTree = "<group>"; };
-		2334FCE81EA15498008F3ABE /* OUIMenuItemQuickStart@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemQuickStart@3x.png"; sourceTree = "<group>"; };
-		2334FCE91EA15498008F3ABE /* OUIMenuItemTrial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemTrial.png; sourceTree = "<group>"; };
-		2334FCEA1EA15498008F3ABE /* OUIMenuItemTrial@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemTrial@2x.png"; sourceTree = "<group>"; };
-		2334FCEB1EA15498008F3ABE /* OUIMenuItemTrial@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemTrial@3x.png"; sourceTree = "<group>"; };
-		2334FCEC1EA15498008F3ABE /* OUIMenuItemVideo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemVideo.png; sourceTree = "<group>"; };
-		2334FCED1EA15498008F3ABE /* OUIMenuItemVideo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemVideo@2x.png"; sourceTree = "<group>"; };
-		2334FCEE1EA15498008F3ABE /* OUIMenuItemVideo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemVideo@3x.png"; sourceTree = "<group>"; };
 		235D673F1EB00E06007FCF56 /* OUIMultiPaneNotifications.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OUIMultiPaneNotifications.h; path = MultiPane/OUIMultiPaneNotifications.h; sourceTree = "<group>"; };
 		235D67401EB00E06007FCF56 /* OUIMultiPaneNotifications.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OUIMultiPaneNotifications.m; path = MultiPane/OUIMultiPaneNotifications.m; sourceTree = "<group>"; };
 		236CA7721B5D690B00D66AFA /* UIVisualEffectView-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIVisualEffectView-OUIExtensions.h"; sourceTree = "<group>"; };
@@ -708,8 +678,6 @@
 		2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniQuartz.xcodeproj; path = ../../OmniQuartz/OmniQuartz.xcodeproj; sourceTree = "<group>"; };
 		27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUnzip.xcodeproj; path = ../../OmniUnzip/OmniUnzip.xcodeproj; sourceTree = "<group>"; };
-		2BD93374163B295F004CE626 /* OUIMenuItemPurchases.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemPurchases.png; sourceTree = "<group>"; };
-		2BD93375163B295F004CE626 /* OUIMenuItemPurchases@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemPurchases@2x.png"; sourceTree = "<group>"; };
 		3402B70B1270FBBA0031C27D /* OUITableViewItemSelection-Selected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Selected.png"; sourceTree = "<group>"; };
 		3402B727127100C50031C27D /* OUITableViewItemSelection-Highlighted.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Highlighted.png"; sourceTree = "<group>"; };
 		3402B728127100C50031C27D /* OUITableViewItemSelection-Normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Normal.png"; sourceTree = "<group>"; };
@@ -733,13 +701,6 @@
 		343220921270EFAF001B57CB /* OUIFontInspectorPane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontInspectorPane.m; sourceTree = "<group>"; };
 		343220A51270F06E001B57CB /* OUIFontUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontUtilities.h; sourceTree = "<group>"; };
 		343220A61270F06E001B57CB /* OUIFontUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontUtilities.m; sourceTree = "<group>"; };
-		3438324E167A85D1008A4FD0 /* OUIMenuItemAbout.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemAbout.png; sourceTree = "<group>"; };
-		34383251167A85D1008A4FD0 /* OUIMenuItemHelp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemHelp.png; sourceTree = "<group>"; };
-		34383252167A85D1008A4FD0 /* OUIMenuItemHelp@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemHelp@2x.png"; sourceTree = "<group>"; };
-		34383253167A85D1008A4FD0 /* OUIMenuItemReleaseNotes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemReleaseNotes.png; sourceTree = "<group>"; };
-		34383254167A85D1008A4FD0 /* OUIMenuItemReleaseNotes@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemReleaseNotes@2x.png"; sourceTree = "<group>"; };
-		34383256167A85D1008A4FD0 /* OUIMenuItemSendFeedback.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemSendFeedback.png; sourceTree = "<group>"; };
-		34383257167A85D2008A4FD0 /* OUIMenuItemSendFeedback@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSendFeedback@2x.png"; sourceTree = "<group>"; };
 		3438607C12F778ED00A461B8 /* OUIActionInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIActionInspectorSlice.h; sourceTree = "<group>"; };
 		3438607D12F778ED00A461B8 /* OUIActionInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIActionInspectorSlice.m; sourceTree = "<group>"; };
 		34395328134CF20500355D0A /* OUICustomSubclass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICustomSubclass.h; sourceTree = "<group>"; };
@@ -1024,9 +985,12 @@
 		3E609C0F198B78ED006BCF43 /* OUIChangePreferenceURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIChangePreferenceURLCommand.m; sourceTree = "<group>"; };
 		3E609C12198B7951006BCF43 /* OUIDebugURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDebugURLCommand.h; sourceTree = "<group>"; };
 		3E609C13198B7951006BCF43 /* OUIDebugURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDebugURLCommand.m; sourceTree = "<group>"; };
+		3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL-OUIExtensions.h"; sourceTree = "<group>"; };
+		3E7656D11F59D5BF008B76B7 /* NSURL-OUIExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL-OUIExtensions.m"; sourceTree = "<group>"; };
 		3EA7ECD81D52A95600040F4B /* OUIPasswordAlert-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OUIPasswordAlert-Internal.h"; sourceTree = "<group>"; };
 		3EC4402117C5410000715DD9 /* OUICrossfadeViewControllerTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICrossfadeViewControllerTransition.h; sourceTree = "<group>"; };
 		3EC4402217C5410000715DD9 /* OUICrossfadeViewControllerTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICrossfadeViewControllerTransition.m; sourceTree = "<group>"; };
+		4234FD841F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableTableViewInspectorSlice.swift; sourceTree = "<group>"; };
 		42384A1B19F82D4C00A42BFA /* OUIInspectorPresentationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorPresentationController.h; sourceTree = "<group>"; };
 		42384A1C19F82D4C00A42BFA /* OUIInspectorPresentationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorPresentationController.m; sourceTree = "<group>"; };
 		423DFE161C24B526006BB12B /* OUIAbstractFontInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAbstractFontInspectorSlice.h; sourceTree = "<group>"; };
@@ -1035,6 +999,7 @@
 		423DFE191C24B526006BB12B /* OUIFontFamilyInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontFamilyInspectorSlice.m; sourceTree = "<group>"; };
 		423DFE1A1C24B526006BB12B /* OUIFontSizeInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFontSizeInspectorSlice.h; sourceTree = "<group>"; };
 		423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontSizeInspectorSlice.m; sourceTree = "<group>"; };
+		4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableInspectorPane.swift; sourceTree = "<group>"; };
 		4256FAFA1A081AFB0085A680 /* OUIToolbarUndo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarUndo.png; sourceTree = "<group>"; };
 		429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact.png"; sourceTree = "<group>"; };
 		429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact@2x.png"; sourceTree = "<group>"; };
@@ -1042,6 +1007,8 @@
 		429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact.png"; sourceTree = "<group>"; };
 		429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact@2x.png"; sourceTree = "<group>"; };
 		429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo-Compact@3x.png"; sourceTree = "<group>"; };
+		42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableMultiSegmentInspectorPane.swift; sourceTree = "<group>"; };
+		42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableSliceGroup.swift; sourceTree = "<group>"; };
 		4906932417C70543004BD77B /* OUINumericFieldTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINumericFieldTableCell.h; sourceTree = "<group>"; };
 		4906932517C70543004BD77B /* OUINumericFieldTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINumericFieldTableCell.m; sourceTree = "<group>"; };
 		4906932617C70543004BD77B /* OUINumericFieldTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUINumericFieldTableCell.xib; sourceTree = "<group>"; };
@@ -1055,7 +1022,6 @@
 		498EFFD417CF0C420078F593 /* OUIStepperMinus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperMinus@2x.png"; sourceTree = "<group>"; };
 		49C3E85517B96CF40087A458 /* OUIInspectorSliceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorSliceView.h; sourceTree = "<group>"; };
 		49C3E85617B96CF40087A458 /* OUIInspectorSliceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorSliceView.m; sourceTree = "<group>"; };
-		4A22288916AC874C00F2715C /* OUIMenuItemAbout@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAbout@2x.png"; sourceTree = "<group>"; };
 		4AE47BD4138B567E003D72DF /* OUIToolbarButtonFauxHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarButtonFauxHighlight.png; sourceTree = "<group>"; };
 		4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISendFeedbackURLCommand.h; sourceTree = "<group>"; };
 		4AF93D7D1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISendFeedbackURLCommand.m; sourceTree = "<group>"; };
@@ -1093,8 +1059,6 @@
 		5F85377E17CBC03600AEB4A1 /* UIFont-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFont-OUIExtensions.m"; sourceTree = "<group>"; };
 		5F85378117CBC5B800AEB4A1 /* UIFontDescriptor-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFontDescriptor-OUIExtensions.h"; sourceTree = "<group>"; };
 		5F85378217CBC5B800AEB4A1 /* UIFontDescriptor-OUIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFontDescriptor-OUIExtensions.m"; sourceTree = "<group>"; };
-		5F9E2B4F15B0BEE000E33AA3 /* OUIMenuItemSettings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemSettings.png; sourceTree = "<group>"; };
-		5F9E2B5015B0BEE000E33AA3 /* OUIMenuItemSettings@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSettings@2x.png"; sourceTree = "<group>"; };
 		5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemSync.png; sourceTree = "<group>"; };
 		5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSync@2x.png"; sourceTree = "<group>"; };
 		5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIPopoverPresentationController-OUIExtensions.h"; sourceTree = "<group>"; };
@@ -1103,8 +1067,6 @@
 		6C0F040013F5DAE300B4D5C2 /* OUIMultiSegmentStackedSlicesInspectorPane.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMultiSegmentStackedSlicesInspectorPane.m; sourceTree = "<group>"; };
 		6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISliceSeparatorView.h; sourceTree = "<group>"; };
 		6C17091F1C2372BA00350F40 /* OUISliceSeparatorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISliceSeparatorView.m; sourceTree = "<group>"; };
-		6C3A4629177E01B800FCA4B8 /* OUINavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINavigationBar.h; sourceTree = "<group>"; };
-		6C3A462A177E01B800FCA4B8 /* OUINavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINavigationBar.m; sourceTree = "<group>"; };
 		6C3A462D177E15C000FCA4B8 /* OUINavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINavigationController.h; sourceTree = "<group>"; };
 		6C3A462E177E15C000FCA4B8 /* OUINavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINavigationController.m; sourceTree = "<group>"; };
 		6C9DAE8F1798A37F0092347A /* OUITabBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITabBar.h; sourceTree = "<group>"; };
@@ -1142,12 +1104,6 @@
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		AB3EC723150FCCF70027AC6F /* OUIOverlayBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIOverlayBackground@2x.png"; sourceTree = "<group>"; };
 		AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorComponentSliderKnob@3x.png"; sourceTree = "<group>"; };
-		AB69E40219D222A900F31468 /* OUIMenuItemAbout@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAbout@3x.png"; sourceTree = "<group>"; };
-		AB69E40319D222A900F31468 /* OUIMenuItemHelp@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemHelp@3x.png"; sourceTree = "<group>"; };
-		AB69E40419D222A900F31468 /* OUIMenuItemPurchases@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemPurchases@3x.png"; sourceTree = "<group>"; };
-		AB69E40519D222A900F31468 /* OUIMenuItemReleaseNotes@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemReleaseNotes@3x.png"; sourceTree = "<group>"; };
-		AB69E40719D222A900F31468 /* OUIMenuItemSendFeedback@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSendFeedback@3x.png"; sourceTree = "<group>"; };
-		AB69E40819D222A900F31468 /* OUIMenuItemSettings@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSettings@3x.png"; sourceTree = "<group>"; };
 		AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSync@3x.png"; sourceTree = "<group>"; };
 		AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentCenter@3x.png"; sourceTree = "<group>"; };
 		AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentJustified@3x.png"; sourceTree = "<group>"; };
@@ -1174,6 +1130,7 @@
 		E25772D81456162900E0A716 /* OUICompletionMatchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICompletionMatchCell.m; sourceTree = "<group>"; };
 		E263D2A717DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIBorderedAuxiliaryButton.h; sourceTree = "<group>"; };
 		E263D2A817DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIBorderedAuxiliaryButton.m; sourceTree = "<group>"; };
+		E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIFloatingContentToolbar.swift; sourceTree = "<group>"; };
 		E27879711BD1C0C200B38C43 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		E28342001EB988C200FDB90F /* OUIThemedTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIThemedTableViewCell.h; sourceTree = "<group>"; };
 		E28342011EB988C200FDB90F /* OUIThemedTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIThemedTableViewCell.m; sourceTree = "<group>"; };
@@ -1190,6 +1147,7 @@
 		E2A0014C1835913F00B13EB7 /* OUIFullScreenNoteTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTransition.m; sourceTree = "<group>"; };
 		E2C58D8F17DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed.png"; sourceTree = "<group>"; };
 		E2C58D9017DA5ACE00FCE975 /* OUITableViewItemSelection-Mixed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed@2x.png"; sourceTree = "<group>"; };
+		FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = GearMenuIcons.xcassets; sourceTree = "<group>"; };
 		FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged.png"; sourceTree = "<group>"; };
 		FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged@2x.png"; sourceTree = "<group>"; };
 		FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAppMenu-Badged@3x.png"; sourceTree = "<group>"; };
@@ -1525,15 +1483,6 @@
 		346C4A521193273600BE8C49 /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				2334FCE61EA15498008F3ABE /* OUIMenuItemQuickStart.png */,
-				2334FCE71EA15498008F3ABE /* OUIMenuItemQuickStart@2x.png */,
-				2334FCE81EA15498008F3ABE /* OUIMenuItemQuickStart@3x.png */,
-				2334FCE91EA15498008F3ABE /* OUIMenuItemTrial.png */,
-				2334FCEA1EA15498008F3ABE /* OUIMenuItemTrial@2x.png */,
-				2334FCEB1EA15498008F3ABE /* OUIMenuItemTrial@3x.png */,
-				2334FCEC1EA15498008F3ABE /* OUIMenuItemVideo.png */,
-				2334FCED1EA15498008F3ABE /* OUIMenuItemVideo@2x.png */,
-				2334FCEE1EA15498008F3ABE /* OUIMenuItemVideo@3x.png */,
 				FB11AAFF1C518D570050F4EF /* OUIAppMenu-Badged.png */,
 				FB11AB001C518D570050F4EF /* OUIAppMenu-Badged@2x.png */,
 				FB11AB011C518D570050F4EF /* OUIAppMenu-Badged@3x.png */,
@@ -1555,15 +1504,9 @@
 				ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */,
 				ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */,
 				AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */,
-				AB69E40219D222A900F31468 /* OUIMenuItemAbout@3x.png */,
 				FB36A8051C3DC63F00767F49 /* OUIMenuItemAnnouncement.png */,
 				FB36A8061C3DC63F00767F49 /* OUIMenuItemAnnouncement@2x.png */,
 				FB36A8071C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png */,
-				AB69E40319D222A900F31468 /* OUIMenuItemHelp@3x.png */,
-				AB69E40419D222A900F31468 /* OUIMenuItemPurchases@3x.png */,
-				AB69E40519D222A900F31468 /* OUIMenuItemReleaseNotes@3x.png */,
-				AB69E40719D222A900F31468 /* OUIMenuItemSendFeedback@3x.png */,
-				AB69E40819D222A900F31468 /* OUIMenuItemSettings@3x.png */,
 				AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */,
 				AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */,
 				AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */,
@@ -1580,18 +1523,6 @@
 				AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */,
 				50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */,
 				50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */,
-				3438324E167A85D1008A4FD0 /* OUIMenuItemAbout.png */,
-				4A22288916AC874C00F2715C /* OUIMenuItemAbout@2x.png */,
-				34383251167A85D1008A4FD0 /* OUIMenuItemHelp.png */,
-				34383252167A85D1008A4FD0 /* OUIMenuItemHelp@2x.png */,
-				2BD93374163B295F004CE626 /* OUIMenuItemPurchases.png */,
-				2BD93375163B295F004CE626 /* OUIMenuItemPurchases@2x.png */,
-				34383253167A85D1008A4FD0 /* OUIMenuItemReleaseNotes.png */,
-				34383254167A85D1008A4FD0 /* OUIMenuItemReleaseNotes@2x.png */,
-				34383256167A85D1008A4FD0 /* OUIMenuItemSendFeedback.png */,
-				34383257167A85D2008A4FD0 /* OUIMenuItemSendFeedback@2x.png */,
-				5F9E2B4F15B0BEE000E33AA3 /* OUIMenuItemSettings.png */,
-				5F9E2B5015B0BEE000E33AA3 /* OUIMenuItemSettings@2x.png */,
 				5F9E2B5115B0BEE000E33AA3 /* OUIMenuItemSync.png */,
 				5F9E2B5215B0BEE000E33AA3 /* OUIMenuItemSync@2x.png */,
 				273C58731A1ADF6D00CE4C40 /* OUINavigationBarTextFieldBackground.png */,
@@ -1624,6 +1555,7 @@
 				429586611C497D26009ED770 /* OUIToolbarInfo-Compact.png */,
 				429586621C497D26009ED770 /* OUIToolbarInfo-Compact@2x.png */,
 				429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */,
+				FB0C63901F59BB44000FF76C /* GearMenuIcons.xcassets */,
 			);
 			path = Images;
 			sourceTree = SOURCE_ROOT;
@@ -1631,6 +1563,10 @@
 		346C4A731193273600BE8C49 /* Inspectors */ = {
 			isa = PBXGroup;
 			children = (
+				4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */,
+				42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */,
+				42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */,
+				4234FD841F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift */,
 				50AA85941958E89E00103938 /* OUINoteInspectorPane.h */,
 				50AA85951958E89E00103938 /* OUINoteInspectorPane.m */,
 				50AA85961958E89E00103938 /* OUINoteInspectorPane.xib */,
@@ -1841,6 +1777,9 @@
 				945042971A8BE4CF00FFF97C /* UIDevice-OUIExtensions.m */,
 				FB11AB391C51A7930050F4EF /* OUIAttentionSeekingButton.h */,
 				FB11AB3A1C51A7930050F4EF /* OUIAttentionSeekingButton.m */,
+				E26E8D991F44E7830045CBF2 /* OUIFloatingContentToolbar.swift */,
+				3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */,
+				3E7656D11F59D5BF008B76B7 /* NSURL-OUIExtensions.m */,
 			);
 			name = "Extensions & Utilities";
 			sourceTree = "<group>";
@@ -2096,8 +2035,6 @@
 		6C3A4628177E017D00FCA4B8 /* Nav Controller */ = {
 			isa = PBXGroup;
 			children = (
-				6C3A4629177E01B800FCA4B8 /* OUINavigationBar.h */,
-				6C3A462A177E01B800FCA4B8 /* OUINavigationBar.m */,
 				6C3A462D177E15C000FCA4B8 /* OUINavigationController.h */,
 				6C3A462E177E15C000FCA4B8 /* OUINavigationController.m */,
 			);
@@ -2224,6 +2161,7 @@
 				348A7AEC1B584CAD0082D55D /* OUIGestureRecognizer.h in Headers */,
 				348A7ABB1B584C3B0082D55D /* OUITextView.h in Headers */,
 				348A7A591B584B590082D55D /* OUIInspectorSliceView.h in Headers */,
+				3E7656D21F59D5BF008B76B7 /* NSURL-OUIExtensions.h in Headers */,
 				348A7AE81B584C980082D55D /* OUILabeledValueCell.h in Headers */,
 				348A7A821B584BAE0082D55D /* OUIInspectorDividerLine.h in Headers */,
 				348A7B351B584D050082D55D /* OUINumericFieldTableCell.h in Headers */,
@@ -2247,7 +2185,6 @@
 				232F1EF71DF7436500201BEC /* OUIInspectorNavigationController.h in Headers */,
 				348A7A601B584B590082D55D /* OUIMultiSegmentStackedSlicesInspectorPane.h in Headers */,
 				348A7A341B584B3C0082D55D /* OUIFontInspectorPane.h in Headers */,
-				348A7AB31B584C240082D55D /* OUINavigationBar.h in Headers */,
 				348A7B151B584CC30082D55D /* OUIEmptyOverlayView.h in Headers */,
 				348A7B0F1B584CC30082D55D /* OUICompletionMatchCell.h in Headers */,
 				348A7B441B584D130082D55D /* UIFont-OUIExtensions.h in Headers */,
@@ -2476,38 +2413,29 @@
 				348A7A001B584AE10082D55D /* OUIColorInspectorGraySegment.png in Resources */,
 				348A7BA61B584D570082D55D /* es.lproj in Resources */,
 				348A7B871B584D480082D55D /* OUIMenuItemSync.png in Resources */,
-				348A7B801B584D480082D55D /* OUIMenuItemReleaseNotes@2x.png in Resources */,
 				34A747481E302A1E005CD73F /* OUIExport-Compact.png in Resources */,
 				348A7A9A1B584BAE0082D55D /* OUINavigationArrow@2x.png in Resources */,
 				348A7B9A1B584D4C0082D55D /* OUITableViewItemSelection-Mixed.png in Resources */,
-				348A7B621B584D480082D55D /* OUIMenuItemAbout@3x.png in Resources */,
 				348A7B8A1B584D480082D55D /* OUINavigationBarTextFieldBackground@2x.png in Resources */,
 				348A7A0A1B584AE40082D55D /* OUIColorInspectorPane.xib in Resources */,
 				348A7B301B584D000082D55D /* OUIFullScreenNoteTextView.xib in Resources */,
 				348A7B171B584CED0082D55D /* OUIEmptyOverlayView.xib in Resources */,
 				348A7B8C1B584D4C0082D55D /* OUIOverlayBackground.png in Resources */,
-				2334FCEF1EA15498008F3ABE /* OUIMenuItemQuickStart.png in Resources */,
 				348A7A191B584AE90082D55D /* OUIColorSwatchNavigationArrow@2x.png in Resources */,
 				348A7B981B584D4C0082D55D /* OUITableViewItemSelection-Highlighted.png in Resources */,
 				348A7A0D1B584AE90082D55D /* OUIColorInspectorRGBSegment@2x.png in Resources */,
-				2334FCF31EA15498008F3ABE /* OUIMenuItemTrial@2x.png in Resources */,
-				348A7B841B584D480082D55D /* OUIMenuItemSendFeedback@2x.png in Resources */,
 				348A7B6D1B584D480082D55D /* OUIParagraphAlignmentRight@3x.png in Resources */,
-				348A7B831B584D480082D55D /* OUIMenuItemSendFeedback.png in Resources */,
 				FB11AB0E1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged.png in Resources */,
 				3497785E1B5D7BC400E2B216 /* OUIAppMenu@2x.png in Resources */,
 				348A7A1E1B584AE90082D55D /* OUIColorSwatchTranslucentBackground.png in Resources */,
 				348A7A3D1B584B430082D55D /* OUIFontStyle-Bold.png in Resources */,
-				348A7B7C1B584D480082D55D /* OUIMenuItemHelp@2x.png in Resources */,
 				FB11AB0A1C518D570050F4EF /* OUIAppMenu-Badged@3x.png in Resources */,
-				348A7B861B584D480082D55D /* OUIMenuItemSettings@2x.png in Resources */,
 				348A7A781B584BA20082D55D /* OUIParagraphAlignmentLeft.png in Resources */,
 				348A7A991B584BAE0082D55D /* OUINavigationArrow.png in Resources */,
 				348A7A6E1B584B590082D55D /* OUITransparencyCheckerboardBackground-24.png in Resources */,
 				348A7ACC1B584C650082D55D /* OUIRectangularOverlayArrow@2x.png in Resources */,
 				348A7BA21B584D4C0082D55D /* OUIToolbarUndo.png in Resources */,
 				FB36A80A1C3DC63F00767F49 /* OUIMenuItemAnnouncement@3x.png in Resources */,
-				2334FCF51EA15498008F3ABE /* OUIMenuItemVideo.png in Resources */,
 				15632E5B1E527F25003EB174 /* pt-BR.lproj in Resources */,
 				348A7A031B584AE10082D55D /* OUIColorInspectorHSVSegment@2x.png in Resources */,
 				348A7BA01B584D4C0082D55D /* OUIToolbarButtonFauxHighlight.png in Resources */,
@@ -2531,11 +2459,8 @@
 				348A7B371B584D0C0082D55D /* OUINumericFieldTableCell.xib in Resources */,
 				348A7A041B584AE10082D55D /* OUIColorInspectorNoneSegment.png in Resources */,
 				348A7A021B584AE10082D55D /* OUIColorInspectorHSVSegment.png in Resources */,
-				348A7B791B584D480082D55D /* OUIMenuItemAbout.png in Resources */,
 				348A7BA91B584D570082D55D /* ja.lproj in Resources */,
 				348A7B6E1B584D480082D55D /* OUIScalingViewBackgroundPattern@3x.png in Resources */,
-				348A7B681B584D480082D55D /* OUIMenuItemSettings@3x.png in Resources */,
-				348A7B7E1B584D480082D55D /* OUIMenuItemPurchases@2x.png in Resources */,
 				348A7A2D1B584AF90082D55D /* OUIPaletteColorPicker.xib in Resources */,
 				348A7B8B1B584D480082D55D /* OUINavigationBarTextFieldBackground@3x.png in Resources */,
 				348A7AD01B584C650082D55D /* OUITextSelectionOverlay@2x.png in Resources */,
@@ -2547,24 +2472,20 @@
 				348A7AC71B584C3B0082D55D /* OmniUI.keycommands in Resources */,
 				348A7ACF1B584C650082D55D /* OUITextSelectionOverlay.png in Resources */,
 				348A7A0F1B584AE90082D55D /* OUIColorInspectorSelected@2x.png in Resources */,
-				2334FCF41EA15498008F3ABE /* OUIMenuItemTrial@3x.png in Resources */,
 				348A7B711B584D480082D55D /* OUITableViewItemSelection-Highlighted@3x.png in Resources */,
 				348A7BAA1B584D570082D55D /* nl.lproj in Resources */,
 				348A7A2C1B584AF40082D55D /* OUIDefaultPaletteThemes.strings in Resources */,
 				348A7BA51B584D570082D55D /* de.lproj in Resources */,
 				348A79FF1B584AE10082D55D /* OUIColorComponentSliderKnob@2x.png in Resources */,
 				348A7A401B584B430082D55D /* OUIFontStyle-Underline.png in Resources */,
-				348A7B7A1B584D480082D55D /* OUIMenuItemAbout@2x.png in Resources */,
 				348A7B6C1B584D480082D55D /* OUIParagraphAlignmentLeft@3x.png in Resources */,
+				FB0C63911F59BB44000FF76C /* GearMenuIcons.xcassets in Resources */,
 				348A7BA31B584D4C0082D55D /* OUIToolbarInfo.png in Resources */,
-				348A7B671B584D480082D55D /* OUIMenuItemSendFeedback@3x.png in Resources */,
 				348A7B6A1B584D480082D55D /* OUIParagraphAlignmentCenter@3x.png in Resources */,
 				348A7B8E1B584D4C0082D55D /* OUIScalingViewBackgroundPattern.png in Resources */,
 				348A7B601B584D480082D55D /* OUIToolbarUndo@3x.png in Resources */,
 				34A7474A1E302A1E005CD73F /* OUIExport-Compact@3x.png in Resources */,
 				348A7A231B584AE90082D55D /* OUIDefaultPaletteThemes.plist in Resources */,
-				2334FCF11EA15498008F3ABE /* OUIMenuItemQuickStart@3x.png in Resources */,
-				2334FCF61EA15498008F3ABE /* OUIMenuItemVideo@2x.png in Resources */,
 				348A7B5E1B584D400082D55D /* en.lproj in Resources */,
 				348A7B941B584D4C0082D55D /* OUIStepperMinus.png in Resources */,
 				348A7B9B1B584D4C0082D55D /* OUITableViewItemSelection-Mixed@2x.png in Resources */,
@@ -2572,14 +2493,11 @@
 				348A7B8F1B584D4C0082D55D /* OUIScalingViewBackgroundPattern@2x.png in Resources */,
 				348A7A051B584AE10082D55D /* OUIColorInspectorNoneSegment@2x.png in Resources */,
 				348A7B881B584D480082D55D /* OUIMenuItemSync@2x.png in Resources */,
-				2334FCF71EA15498008F3ABE /* OUIMenuItemVideo@3x.png in Resources */,
 				348A7A701B584B590082D55D /* OUINavigationArrow-White.png in Resources */,
-				348A7B631B584D480082D55D /* OUIMenuItemHelp@3x.png in Resources */,
 				348A7B8D1B584D4C0082D55D /* OUIOverlayBackground@2x.png in Resources */,
 				348A7A3E1B584B430082D55D /* OUIFontStyle-Italic.png in Resources */,
 				348A7A741B584BA20082D55D /* OUIParagraphAlignmentCenter.png in Resources */,
 				34A747491E302A1E005CD73F /* OUIExport-Compact@2x.png in Resources */,
-				2334FCF01EA15498008F3ABE /* OUIMenuItemQuickStart@2x.png in Resources */,
 				FB11AB0C1C518D570050F4EF /* OUIAttentionDot@2x.png in Resources */,
 				E2967E491EB3FA75007E99B6 /* OUIInspectorAppearanceLight.plist in Resources */,
 				348A7BAC1B584D570082D55D /* zh-Hans.lproj in Resources */,
@@ -2588,7 +2506,6 @@
 				348A7A071B584AE10082D55D /* OUIColorInspectorPaletteSegment@2x.png in Resources */,
 				348A7B5F1B584D480082D55D /* OUIToolbarUndo@2x.png in Resources */,
 				15632E5A1E527F25003EB174 /* ko.lproj in Resources */,
-				348A7B7F1B584D480082D55D /* OUIMenuItemReleaseNotes.png in Resources */,
 				348A7B781B584D480082D55D /* OUINoteFullScreenZoomBackground.png in Resources */,
 				348A7A391B584B430082D55D /* OUIFontStyle-Bold@2x.png in Resources */,
 				348A7A761B584BA20082D55D /* OUIParagraphAlignmentJustified.png in Resources */,
@@ -2601,7 +2518,6 @@
 				348A7B961B584D4C0082D55D /* OUIStepperPlus.png in Resources */,
 				348A7A751B584BA20082D55D /* OUIParagraphAlignmentCenter@2x.png in Resources */,
 				34A7474C1E302A1E005CD73F /* OUIExport@2x.png in Resources */,
-				348A7B851B584D480082D55D /* OUIMenuItemSettings.png in Resources */,
 				348A7A3B1B584B430082D55D /* OUIFontStyle-Strikethrough@2x.png in Resources */,
 				348A7A7B1B584BA20082D55D /* OUIParagraphAlignmentRight@2x.png in Resources */,
 				348A7A3C1B584B430082D55D /* OUIFontStyle-Underline@2x.png in Resources */,
@@ -2609,20 +2525,16 @@
 				348A7B771B584D480082D55D /* OUINoteFullScreenZoom.png in Resources */,
 				348A7B9E1B584D4C0082D55D /* OUITableViewItemSelection-Selected.png in Resources */,
 				348A7A151B584AE90082D55D /* OUIColorPickerSwatch@2x.png in Resources */,
-				348A7B651B584D480082D55D /* OUIMenuItemReleaseNotes@3x.png in Resources */,
 				348A7A061B584AE10082D55D /* OUIColorInspectorPaletteSegment.png in Resources */,
 				348A7BA71B584D570082D55D /* fr.lproj in Resources */,
 				348A7B6B1B584D480082D55D /* OUIParagraphAlignmentJustified@3x.png in Resources */,
-				348A7B641B584D480082D55D /* OUIMenuItemPurchases@3x.png in Resources */,
 				429586641C497D26009ED770 /* OUIToolbarInfo-Compact.png in Resources */,
 				348A7A711B584B590082D55D /* OUINavigationArrow-White@2x.png in Resources */,
 				348A7B721B584D480082D55D /* OUITableViewItemSelection-Mixed@3x.png in Resources */,
 				348A7ACB1B584C650082D55D /* OUIRectangularOverlayArrow.png in Resources */,
-				2334FCF21EA15498008F3ABE /* OUIMenuItemTrial.png in Resources */,
 				348A7A791B584BA20082D55D /* OUIParagraphAlignmentLeft@2x.png in Resources */,
 				348A79F71B584ACD0082D55D /* OUINoteInspectorPane.xib in Resources */,
 				348A7BAB1B584D570082D55D /* ru.lproj in Resources */,
-				348A7B7B1B584D480082D55D /* OUIMenuItemHelp.png in Resources */,
 				348A7B761B584D480082D55D /* OUIToolbarInfo@3x.png in Resources */,
 				348A7B9D1B584D4C0082D55D /* OUITableViewItemSelection-Normal@2x.png in Resources */,
 				348A7A0C1B584AE90082D55D /* OUIColorInspectorRGBSegment.png in Resources */,
@@ -2640,7 +2552,6 @@
 				348A7B6F1B584D480082D55D /* OUIStepperMinus@3x.png in Resources */,
 				FB11AB0F1C518D570050F4EF /* OUIMenuItemAnnouncement-Badged@2x.png in Resources */,
 				348A7A011B584AE10082D55D /* OUIColorInspectorGraySegment@2x.png in Resources */,
-				348A7B7D1B584D480082D55D /* OUIMenuItemPurchases.png in Resources */,
 				348A7B751B584D480082D55D /* OUITextSelectionOverlay@3x.png in Resources */,
 				348A7A7A1B584BA20082D55D /* OUIParagraphAlignmentRight.png in Resources */,
 				348A79DB1B584A890082D55D /* OmniUI.defaults in Resources */,
@@ -2677,6 +2588,7 @@
 				348A7B451B584D130082D55D /* UIFont-OUIExtensions.m in Sources */,
 				348A7AF91B584CB90082D55D /* NSUndoManager-OUIExtensions.m in Sources */,
 				348A7A6B1B584B590082D55D /* OUIStackedSlicesInspectorPane.m in Sources */,
+				4240B0181F1D616900D72C02 /* DisclosableInspectorPane.swift in Sources */,
 				348A7B321B584D050082D55D /* OUIFullScreenNoteTextViewController.m in Sources */,
 				235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */,
 				348A7A911B584BAE0082D55D /* OUIInspectorSearchWell.m in Sources */,
@@ -2691,9 +2603,9 @@
 				348A7A1D1B584AE90082D55D /* OUIColorSwatchPickerInspectorSlice.m in Sources */,
 				348A7A1B1B584AE90082D55D /* OUIColorSwatchPicker.m in Sources */,
 				348A7B531B584D130082D55D /* UIView-OUIExtensions.m in Sources */,
+				42D6E8AA1F2154F9006B9697 /* DisclosableSliceGroup.swift in Sources */,
 				348A7B3F1B584D130082D55D /* OUIToolbarButton.m in Sources */,
 				348A7B1D1B584CF10082D55D /* OUIGradientView.m in Sources */,
-				348A7AB41B584C240082D55D /* OUINavigationBar.m in Sources */,
 				348A7AC41B584C3B0082D55D /* NSTextStorage-OUIExtensions.m in Sources */,
 				348A7AED1B584CAD0082D55D /* OUIGestureRecognizer.m in Sources */,
 				348A7AB01B584C240082D55D /* OUISplitViewController.m in Sources */,
@@ -2715,6 +2627,7 @@
 				348A7B551B584D130082D55D /* UIViewController-OUIExtensions.m in Sources */,
 				348A7AF51B584CAD0082D55D /* OUIRotationGestureRecognizer.m in Sources */,
 				23105FDB1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift in Sources */,
+				3E7656D31F59D5BF008B76B7 /* NSURL-OUIExtensions.m in Sources */,
 				348A7A4E1B584B590082D55D /* OUIInspector.m in Sources */,
 				348A79E91B584AA50082D55D /* OUIMenuOptionsController.m in Sources */,
 				348A7AC01B584C3B0082D55D /* OUIScalingTextStorage.m in Sources */,
@@ -2760,6 +2673,7 @@
 				348A7AE71B584C980082D55D /* OUIEditableLabeledTableViewCell.m in Sources */,
 				348A7AE31B584C980082D55D /* OUIPasswordAlert.m in Sources */,
 				348A7B0C1B584CC30082D55D /* OUIBorderedAuxiliaryButton.m in Sources */,
+				42B7ECF71F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift in Sources */,
 				348A7B391B584D130082D55D /* OUIOverlayView.m in Sources */,
 				348A7B0E1B584CC30082D55D /* OUIButtonGridView.m in Sources */,
 				348A79FB1B584AE10082D55D /* OUIColorAttributeInspectorSlice.m in Sources */,
@@ -2782,6 +2696,7 @@
 				348A7B511B584D130082D55D /* UITableView-OUIExtensions.m in Sources */,
 				348A79E51B584A950082D55D /* OUIPurchaseURLCommand.m in Sources */,
 				23105FDA1EAFD9AE008E0647 /* MultiPaneController.swift in Sources */,
+				E26E8D9A1F44E7830045CBF2 /* OUIFloatingContentToolbar.swift in Sources */,
 				348A79E31B584A950082D55D /* OUIDebugURLCommand.m in Sources */,
 				348A7A091B584AE10082D55D /* OUIColorInspectorPane.m in Sources */,
 				348A7B491B584D130082D55D /* UIGestureRecognizer-OUIExtensions.m in Sources */,
@@ -2797,6 +2712,7 @@
 				348A7B061B584CC30082D55D /* OUIAnimationSequence.m in Sources */,
 				348A7A481B584B590082D55D /* OUIDetailInspectorSlice.m in Sources */,
 				348A7B141B584CC30082D55D /* OUIDrawing.m in Sources */,
+				4234FD851F3AA14F0062695C /* DisclosableTableViewInspectorSlice.swift in Sources */,
 				23105FE11EAFD9AE008E0647 /* PaneConfiguration.swift in Sources */,
 				348A7B571B584D130082D55D /* UIWindow-OUIExtensions.m in Sources */,
 				348A7AA11B584BAE0082D55D /* OUITabBarButton.m in Sources */,

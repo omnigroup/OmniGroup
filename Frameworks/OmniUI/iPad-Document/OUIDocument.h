@@ -29,6 +29,9 @@
 // Subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like). Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
 - initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
 
+// Subclass this method to handle reading of any CFBundleDocumentTypes returned from -[OUIDocumentAppController importableFileTypes]. Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
+- initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+
 // This can be called when creating a document to be read into and then saved by non-framework code.
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 

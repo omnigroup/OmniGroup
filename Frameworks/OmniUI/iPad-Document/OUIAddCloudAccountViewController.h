@@ -17,7 +17,7 @@
  Shows a list of available account types and navigates to an account editor
  */
 
-@interface OUIAddCloudAccountViewController : UIViewController <DisabledDemoFeatureAlerter>
+@interface OUIAddCloudAccountViewController : UIViewController <OUIDisabledDemoFeatureAlerter>
 
 - (instancetype)initWithUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
 

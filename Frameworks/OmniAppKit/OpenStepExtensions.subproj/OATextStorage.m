@@ -145,7 +145,7 @@ static Class OATextStorageClass = Nil;
 - (NSUndoManager *)undoManager;
 {
     // TODO: -[NSTextStorage(OAExtensions) undoManager] should probably move to whatever we do here (rather than grunging over the layout managers.
-    OBFinishPortingLater("Return an undo manager");
+    OBFinishPortingLater("<bug:///147889> (Frameworks-Mac Engineering: -[OATextStorage undoManager] - return an undoManager)");
     return nil;
 }
 
@@ -220,7 +220,7 @@ static void _processEditing(OATextStorage_ *self)
 
 - (void)fixFontAttributeInRange:(NSRange)aRange;
 {
-    // OBFinishPortingLater("Fix up attributes");
+    // OBFinishPortingLater("<bug:///147890> (Frameworks-Mac Bug: Implement -[OATextStorage fixFontAttributeInRange:])");
 }
 
 - (void)processEditing;

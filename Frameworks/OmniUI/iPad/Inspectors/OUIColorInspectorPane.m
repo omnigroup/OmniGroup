@@ -197,11 +197,6 @@ RCS_ID("$Id$");
 {
     UIView *pickerView = _currentColorPicker.view;
     if ([pickerView isKindOfClass:[UIScrollView class]]) {
-        UIScrollView *scrollview = OB_CHECKED_CAST(UIScrollView, pickerView);
-        CGFloat topOffset = self.topLayoutGuide.length + CGRectGetHeight(_colorTypeSegmentedControl.frame) + BOTTOM_SPACING_BELOW_ACCESSORY + 8.0f;
-        scrollview.contentInset = UIEdgeInsetsMake(topOffset, 0.0f, 0.0f, 0.0f);
-        scrollview.contentOffset = (CGPoint){0.0f, -topOffset};
-
         // After updating our inset, we want to give our picker the opportunity to scroll back to its selected value
         [_currentColorPicker scrollToSelectionValueAnimated:NO];
     }

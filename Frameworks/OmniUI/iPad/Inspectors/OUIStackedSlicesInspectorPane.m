@@ -344,6 +344,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     OUIStackedSlicesInspectorPaneContentView *paneContentView = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     if (self.slices.count == 0) {
         paneContentView.backgroundView.label.text = NSLocalizedStringFromTableInBundle(@"Nothing to Inspect", @"OmniUI", OMNI_BUNDLE, @"Text letting the user know why nothing is showing in the inspector");
+        paneContentView.backgroundView.label.font = [paneContentView.backgroundView.label.font fontWithSize:InspectorFontSize];
     }
     else {
         paneContentView.backgroundView.label.text = nil;
@@ -472,9 +473,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         OBASSERT(slice.containingPane == self);
         OBASSERT([self isChildViewController:slice]);
         UIView *sliceView = slice.view;
+        [self.sliceStackView addArrangedSubview:sliceView];
         [sliceView.widthAnchor constraintEqualToAnchor:self.sliceStackView.widthAnchor].active = YES;
         sliceView.backgroundColor = [slice sliceBackgroundColor];
-        [self.sliceStackView addArrangedSubview:sliceView];
     }
 
     self.view = view;

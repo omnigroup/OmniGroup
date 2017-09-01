@@ -103,8 +103,8 @@
 /* Close Document toolbar item accessibility label. */
 "Close Document" = "Fechar Documento";
 
-/* Cloud Storage Providers preference nvigation bar title */
-"Cloud Storage Providers" = "Provedores de Armazenamento na Nuvem";
+/* demo mode disabled message */
+"Cloud storage is disabled in this demo version." = "O armazenamento em nuvem está desativado nesta versão demo.";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Conectado";
@@ -202,9 +202,6 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exportar para WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "Exportar para…";
-
 /* Export document preview action title. */
 "Export…" = "Exportar…";
 
@@ -243,9 +240,6 @@
 
 /* modified date accessibility value */
 "Modified %@" = "Modificado %@";
-
-/* Cloud Storage Providers more information button title */
-"More Info…" = "Mais Informações…";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -303,8 +297,14 @@
 
 "OK" = "OK";
 
+/* demo disabled message */
+"OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "O OmniPresence permite usar nosso serviço de sincronização gratuito, ou qualquer servidor WebDAV compatível, para compartilhar automaticamente documentos entre os dispositivos ou para manter cópias dos documentos na nuvem, caso você precise restaurar o dispositivo.";
+
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuração do OmniPresence: %@";
+
+/* demo disabled title */
+"OmniPresence is disabled in this demo version." = "O OmniPresence está desativado nesta versão demo.";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Abra este arquivo em outro dispositivo para configurar o OmniPresence nele.";
@@ -388,6 +388,9 @@
 "Send to App" = "Enviar para um App";
 
 /* Menu option in the document picker view */
+"Send to Files" = "Enviar para Arquivos";
+
+/* Menu option in the document picker view */
 "Send to Photos" = "Enviar para Fotos";
 
 /* export options title
@@ -455,14 +458,8 @@
 /* sort by title */
 "Title" = "Título";
 
-/* Cloud Storage Providers preference informational description */
-"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service." = "A ativação dos Provedores de Armazenamento na Nuvem dá acesso a documentos armazenados em serviços da nuvem, como iCloud Drive ou Dropbox. Estamos introduzindo acesso aos Provedores de Armazenamento na Nuvem como uma implementação BETA. Tenha cuidado ao ativar este serviço.";
-
 /* error title */
 "Unable to open file." = "Não foi possível abrir o arquivo.";
-
-/* Cloud Storage Providers preference settings screen title */
-"Use Cloud Storage Providers" = "Usar Provedores de Armazenamento na Nuvem";
 
 /* Account validation status string. */
 "Validating account..." = "Validando conta…";

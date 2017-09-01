@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,44 +7,44 @@
 
 #import <OmniAppKit/OAColorPalette.h>
 
-#import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniFoundation/OmniFoundation.h>
+@import Foundation;
+@import OmniBase;
+@import OmniFoundation;
+
+#if TARGET_OS_IOS
+@import UIKit;
+#else
+@import AppKit;
+#endif
 
 RCS_ID("$Id$")
 
 @implementation OAColorPalette
 
-static NSDictionary *namedColorsDictionary = nil;
-
-#define NonBuggyCharacterSet NSMutableCharacterSet
-
-+ (void)initialize;
+static NSDictionary *namedColorsDictionary(void)
 {
-    OBINITIALIZE;
-
-    namedColorsDictionary = [[NSDictionary alloc] initWithContentsOfFile:[[NSBundle bundleForClass:[OAColorPalette class]] pathForResource:@"namedColors" ofType:@"plist"]];
+    static NSDictionary *_namedColorsDictionary;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _namedColorsDictionary = [[NSDictionary alloc] initWithContentsOfFile:[OMNI_BUNDLE pathForResource:@"namedColors" ofType:@"plist"]];
+    });
+    return _namedColorsDictionary;
 }
 
 #define MAX_HEX_TEXT_LENGTH 40
 
 static inline unsigned int parseHexString(NSString *hexString, unsigned long long int *parsedHexValue)
 {
-    unichar hexText[MAX_HEX_TEXT_LENGTH];
-    unichar hexDigit;
-    unsigned int textIndex;
-    unsigned long long int hexValue;
-    unsigned int hexDigitsFound;
-
     NSUInteger hexLength = [hexString length];
     if (hexLength > MAX_HEX_TEXT_LENGTH)
         hexLength = MAX_HEX_TEXT_LENGTH;
+
+    unichar hexText[hexLength];
     [hexString getCharacters:hexText range:NSMakeRange(0, hexLength)];
 
-    textIndex = 0;
-    hexValue = 0;
-    hexDigitsFound = 0;
+    unsigned int textIndex = 0;
+    unsigned long long int hexValue = 0;
+    unsigned int hexDigitsFound = 0;
 
     while (textIndex < hexLength && (isspace(hexText[textIndex]) || hexText[textIndex] == '#')) {
         // Skip leading whitespace and #'s
@@ -52,7 +52,7 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
     }
 
     while (textIndex < hexLength) {
-        hexDigit = hexText[textIndex++];
+        unichar hexDigit = hexText[textIndex++];
 
         if (hexDigit >= '0' && hexDigit <= '9') {
             hexDigit = hexDigit - '0';
@@ -78,15 +78,11 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
     return hexDigitsFound;
 }
 
-static NSColor *colorForHexString(NSString *colorString, NSColorSpace *space)
+static OA_PLATFORM_COLOR_CLASS *_colorForHexString(NSString *colorString)
 {
     unsigned long long int rawColor;
-    unsigned int red, green, blue;
-    unsigned int maskForSingleComponent;
+    unsigned int bytesInColor = parseHexString(colorString, &rawColor);
     unsigned int bitsPerComponent;
-    unsigned int bytesInColor;
-
-    bytesInColor = parseHexString(colorString, &rawColor);
     if (bytesInColor < 6)
         bitsPerComponent = 4;
     else if (bytesInColor < 9)
@@ -94,8 +90,9 @@ static NSColor *colorForHexString(NSString *colorString, NSColorSpace *space)
     else
         bitsPerComponent = 12;
 
-    maskForSingleComponent = (1 << bitsPerComponent) - 1;
+    unsigned int maskForSingleComponent = (1 << bitsPerComponent) - 1;
 
+    unsigned int red, green, blue;
     blue = (unsigned int)(rawColor & maskForSingleComponent);
     rawColor >>= bitsPerComponent;
     green = (unsigned int)(rawColor & maskForSingleComponent);
@@ -106,59 +103,54 @@ static NSColor *colorForHexString(NSString *colorString, NSColorSpace *space)
     components[0] = (CGFloat)red / (CGFloat)maskForSingleComponent;
     components[1] = (CGFloat)green / (CGFloat)maskForSingleComponent;
     components[2] = (CGFloat)blue / (CGFloat)maskForSingleComponent;
-    components[3] = (CGFloat)1; /* Alpha */
+    components[3] = (CGFloat)1.0f; /* Alpha */
     
-    return [NSColor colorWithColorSpace:space components:components count:4];
+    return [OA_PLATFORM_COLOR_CLASS colorWithRed:components[0] green:components[1] blue:components[2] alpha:components[3]];
 }
 
-static inline NSColor *colorForNamedColorString(NSString *colorString, NSColorSpace *space)
+static inline OA_PLATFORM_COLOR_CLASS *_colorForNamedColorString(NSString *colorString)
 {
-    NSString *namedColorString;
-
-    namedColorString = [namedColorsDictionary objectForKey:[colorString lowercaseString]];
-    if (namedColorString) {
+    NSString *namedColorString = [namedColorsDictionary() objectForKey:[colorString lowercaseString]];
+    if (namedColorString != nil) {
         // Found the named color, look up its hex value and return the color
-        return colorForHexString(namedColorString, space);
+        return _colorForHexString(namedColorString);
     } else {
         // Named color not found
         return nil;
     }
 }
 
-+ (NSColor *)colorForString:(NSString *)colorString colorSpace:(NSColorSpace *)space;
++ (OA_PLATFORM_COLOR_CLASS *)colorForHexString:(NSString *)colorString;
 {
-    if ([space colorSpaceModel] != NSRGBColorSpaceModel) {
-        OBRejectInvalidCall(self, _cmd, @"Color space for reading hex strings must be an RGB color space");
-    }
-        
+    return _colorForHexString(colorString);
+}
+
++ (OA_PLATFORM_COLOR_CLASS *)colorForString:(NSString *)colorString;
+{
     if (colorString == nil || [colorString length] == 0)
         return nil;
     if ([colorString hasPrefix:@"#"]) {
-        NSColor *hexColor;
-
         // Should be a hex color string
-        hexColor = colorForHexString(colorString, space);
-        if (hexColor) {
+        OA_PLATFORM_COLOR_CLASS *hexColor = _colorForHexString(colorString);
+        if (hexColor != nil) {
             return hexColor;
         } else {
             // Sometimes people set their colors to "#RED"
-            return colorForNamedColorString([colorString substringFromIndex:1], space);
+            return _colorForNamedColorString([colorString substringFromIndex:1]);
         }
     } else {
-        NSColor *namedColor;
-
         // Try named color string first
-        namedColor = colorForNamedColorString(colorString, space);
-        if (namedColor) {
+        OA_PLATFORM_COLOR_CLASS *namedColor = _colorForNamedColorString(colorString);
+        if (namedColor != nil) {
             return namedColor;
         } else {
             // Sometimes people write hex colors without a leading "#"
-            return colorForHexString(colorString, space);
+            return _colorForHexString(colorString);
         }
     }
 }
 
-static NSString *stringForColor(NSColor *color, double gammaValue)
+static NSString *_stringForColor(OA_PLATFORM_COLOR_CLASS *color)
 {
     CGFloat red = 0.0f, green = 0.0f, blue = 0.0f, alpha = 0.0f;
 
@@ -166,23 +158,18 @@ static NSString *stringForColor(NSColor *color, double gammaValue)
         return nil;
 
     // Note: alpha is ignored
-    // Note that colorUsingColorSpaceName: may fail, leaving the values at zero.
-    [[color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]] getRed:&red green:&green blue:&blue alpha:&alpha];
-    if (gammaValue != 1.0f) {
-        red = (CGFloat)pow(red, 1.0 / gammaValue);
-        green = (CGFloat)pow(green, 1.0 / gammaValue);
-        blue = (CGFloat)pow(blue, 1.0 / gammaValue);
-    }
+    [color getRed:&red green:&green blue:&blue alpha:&alpha];
     return [NSString stringWithFormat:@"#%02x%02x%02x", ((int)rint(red * 255.0f)),  ((int)rint(green * 255.0f)), ((int)rint(blue * 255.0f))];
 }
 
-+ (NSString *)stringForColor:(NSColor *)color colorSpace:(NSColorSpace *)space;
++ (NSString *)stringForColor:(OA_PLATFORM_COLOR_CLASS *)color;
 {
-    if ([space colorSpaceModel] != NSRGBColorSpaceModel) {
-        OBRejectInvalidCall(self, _cmd, @"Color space for creating hex strings must be an RGB color space");
-    }
-    
-    return stringForColor([color colorUsingColorSpace:space], 1.0f);
+#if !TARGET_OS_IOS
+    // Note that colorUsingColorSpaceName: may fail, returning nil
+    color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+#endif
+
+    return _stringForColor(color);
 }
 
 @end

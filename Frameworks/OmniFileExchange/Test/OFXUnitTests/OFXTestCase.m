@@ -46,7 +46,7 @@ RCS_ID("$Id$")
 {
     OBINITIALIZE;
     
-    OBFinishPortingLater("Make this configurable so that these tests can be run against the real class too");
+    OBFinishPortingLater("<bug:///147836> (iOS-OmniOutliner Engineering: OFXTestCase.m:49 - Make this configurable so that these tests can be run against the real class too)");
     [OFNetStateNotifierMock install];
     
     OFXTraceEnabled = YES;

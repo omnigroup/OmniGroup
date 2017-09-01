@@ -47,9 +47,6 @@ static void _replacement_setContentOffsetAnimated(UIScrollView *self, SEL _cmd, 
         
     }
 #endif
-#if defined(DEBUG_lizard)
-    NSLog(@"%s: {%f, %f}", __func__, contentOffset.x, contentOffset.y);
-#endif
     _original_setContentOffsetAnimated(self, _cmd, contentOffset, animated);
 }
 

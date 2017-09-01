@@ -28,7 +28,7 @@ extern NSString *OUIAttentionSeekingNotification;
 /// The key for when attention is sought for new "News" from Omni.
 extern NSString *OUIAttentionSeekingForNewsKey;
 
-@protocol DisabledDemoFeatureAlerter
+@protocol OUIDisabledDemoFeatureAlerter
 - (NSString *)featureDisabledForDemoAlertTitle;
 @optional
 - (NSString *)featureDisabledForDemoAlertMessage;
@@ -118,15 +118,18 @@ extern NSString *const OUIAboutScreenBindingsDictionaryCopyrightStringKey; // @"
 extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"feedbackAddress"
 
 - (NSString *)feedbackMenuTitle;
+- (NSString *)appSpecificDebugInfo;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+- (MFMailComposeViewController * _Nullable)mailComposeController;
+- (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController;
 
 /// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated navigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString * _Nullable)title withModalPresentationStyle:(UIModalPresentationStyle)presentationStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle  animated:(BOOL)animated navigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
@@ -152,7 +155,7 @@ extern BOOL OUIShouldLogPerformanceMetrics;
 extern NSTimeInterval OUIElapsedTimeSinceProcessCreation(void); // For timing startup work before main() is entered
 extern NSTimeInterval OUIElapsedTimeSinceApplicationStarted(void); // Time since the beginning of -[OUIApplication initialize]
 
-@interface UIViewController (DisabledDemoFeatureAlerter) <DisabledDemoFeatureAlerter>
+@interface UIViewController (OUIDisabledDemoFeatureAlerter) <OUIDisabledDemoFeatureAlerter>
 - (NSString *)featureDisabledForDemoAlertTitle;
 @end
 

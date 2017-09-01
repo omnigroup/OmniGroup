@@ -17,6 +17,7 @@
 typedef enum {
     ODSDocumentTypeNormal,
     ODSDocumentTypeTemplate,
+    ODSDocumentTypeOther,
 } ODSDocumentType;
 
 @interface ODSStore : NSObject

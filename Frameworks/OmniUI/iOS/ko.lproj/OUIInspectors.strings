@@ -50,6 +50,9 @@
 /* Decrement font size button accessibility label */
 "Font smaller" = "서체 작게";
 
+/* hide more rows button title */
+"Hide More Rows" = "추가 행 숨기기";
+
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "다중 선택";
 
@@ -64,6 +67,9 @@
 
 /* Name for the variant of a font with out any special attributes */
 "Regular" = "일반";
+
+/* show more rows button title */
+"Show More Rows" = "추가 행 표시";
 
 /* Label for font size controls */
 "Size" = "크기";

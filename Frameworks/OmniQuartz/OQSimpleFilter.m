@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ static NSMutableDictionary *classToKernel = nil;
 	className, kCIAttributeFilterDisplayName,
 	[NSArray arrayWithObject:@"OmniMagicWand Internal"], kCIAttributeFilterCategories, nil];
     
-    id constructor = (id <CIFilterConstructor>)self; // OBFinishPorting: Can't declare that the class implements CIFilterConstructor (just +filterWithName:).
+    id constructor = (id <CIFilterConstructor>)self; // OBFinishPorting: <bug:///147891> (iOS-OmniOutliner Engineering: +[OQSimpleFilter initialize] - Can't declare that the class implements CIFilterConstructor (just +filterWithName:))
     
     [CIFilter registerFilterName:className  
 		     constructor:constructor

@@ -428,7 +428,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 
 - (void)selectAll:(id)sender showingMenu:(BOOL)show;
 {
-    OBFinishPortingLater("Ignoring the showingMenu argument");
+    OBFinishPortingLater("<bug:///147848> (iOS-OmniOutliner Bug: Obey ‘showingMenu’ argument in -[OUIInspectorTextWell selectAll:showingMenu:])");
     if ([_textField isFirstResponder])
         [_textField selectAll:sender];
 }

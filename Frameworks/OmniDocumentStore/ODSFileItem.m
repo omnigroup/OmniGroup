@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -429,7 +429,7 @@ static void _notifyFileEditAndType(ODSFileItem *self, OFFileEdit *fileEdit, NSSt
 {
     // We get sent -presentedItemDidChange even after -accommodatePresentedItemDeletionWithCompletionHandler:.
     // We don't need to not any content changes and if we try to get our modification date, we'll be unable to read the attributes of our file in the dead zone anyway.
-    OBFinishPortingLater("Deal with items that are getting deleted. May not be an issue now that we aren't a presenter and don't get -presentedItemDidChange");
+    OBFinishPortingLater("<bug:///147937> (iOS-OmniOutliner Bug: Deal with items that are getting deleted. May not be an issue now that we aren't a presenter and don't get -presentedItemDidChange)");
 #if 0
     if (_edits.hasAccommodatedDeletion) {
         DEBUG_FILE_ITEM(@"Deleted: ignoring change");
@@ -441,7 +441,7 @@ static void _notifyFileEditAndType(ODSFileItem *self, OFFileEdit *fileEdit, NSSt
 
     [self.scope performAsynchronousFileAccessUsingBlock:^{
         
-        OBFinishPortingLater("Now that we aren't a file presenter, we might be able to do a coordinated read here. We are running on the scope's action queue also (not the local directory scope's presenter queue)");
+        OBFinishPortingLater("<bug:///147938> (iOS-OmniOutliner Bug: Now that we aren't a file presenter, we might be able to do a coordinated read here. We are running on the scope's action queue also (not the local directory scope's presenter queue))");
         /*
          NOTE: We do NOT use a coordinated read here anymore, though we would like to. If we are getting an incoming sync rename, we could end up deadlocking.
          

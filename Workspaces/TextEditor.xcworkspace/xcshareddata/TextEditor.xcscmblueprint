@@ -1,0 +1,25 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "6b396497-ecfb-0310-845e-a731add4fc35++505",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+    "6b396497-ecfb-0310-845e-a731add4fc35++505" : {
+
+    }
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "6b396497-ecfb-0310-845e-a731add4fc35++505" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "7BC8FBBE-802D-4FDD-8394-D7D407C293A7",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "6b396497-ecfb-0310-845e-a731add4fc35++505" : "Public%20Frameworks\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "TextEditor",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "OmniGroup\/Workspaces\/TextEditor.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "svn+ssh:\/\/source.omnigroup.com\/Source\/svn\/Omni",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Subversion",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6b396497-ecfb-0310-845e-a731add4fc35++505"
+    }
+  ]
+}

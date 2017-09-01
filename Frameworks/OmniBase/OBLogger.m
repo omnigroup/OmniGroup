@@ -178,7 +178,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
     
     const char *env = getenv([name UTF8String]); /* easier for command line tools */
     if (env)
-        level = strtoul(env, NULL, 0);
+        level = strtol(env, NULL, 0);
     else
         level = [[NSUserDefaults standardUserDefaults] integerForKey:name];
     

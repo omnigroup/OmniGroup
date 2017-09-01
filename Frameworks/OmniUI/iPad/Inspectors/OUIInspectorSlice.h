@@ -73,3 +73,5 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 
 @property (nonatomic, weak) NSLayoutConstraint *rightMarginLayoutConstraint;
 @end
+
+static const CGFloat InspectorFontSize = 17;

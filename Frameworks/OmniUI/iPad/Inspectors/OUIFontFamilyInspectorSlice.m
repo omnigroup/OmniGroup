@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,7 +91,6 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIAbstrac
 
     self.textWell.label = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
     self.textWell.labelFont = [[self.textWell class] defaultLabelFont];
-    [(UIImageView *)self.textWell.rightView setHighlightedImage:[OUIInspectorWell navigationArrowImageHighlighted]];
     [self.textWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
 }
 

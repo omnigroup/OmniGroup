@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OFIndexPath : OFObject <NSCopying>
 
@@ -19,7 +20,7 @@
 - (OFIndexPath *)indexPathByRemovingLastIndex;
 
 - (NSUInteger)indexAtPosition:(NSUInteger)position;
-- (NSUInteger)length;
+@property (nonatomic, readonly) NSUInteger length;
 
 - (void)getIndexes:(NSUInteger *)indexes;
 - (void)enumerateIndexesUsingBlock:(void (^)(NSUInteger index, BOOL *stop))block;
@@ -28,3 +29,12 @@
 - (NSComparisonResult)parentsLastCompare:(OFIndexPath *)otherObject;
 
 @end
+
+@interface OFIndexPath (PropertyListSerialization)
+
++ (OFIndexPath *)indexPathWithPropertyListRepresentation:(NSArray<NSNumber *> *)propertyListRepresentation;
+@property (nonatomic, readonly) NSArray<NSNumber *> *propertyListRepresentation;
+
+@end
+
+NS_ASSUME_NONNULL_END

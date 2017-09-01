@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    OUIMenuOptionAction action = ^(UIViewController *presentingViewController){
+    OUIMenuOptionAction action = ^(OUIMenuOption *option, UIViewController *presentingViewController){
         // Try the first responder and then the app delegate.
         UIApplication *app = [UIApplication sharedApplication];
         if ([app sendAction:selector to:nil from:self forEvent:nil])
@@ -85,7 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isEnabled;
 {
     if (self.validator) {
-        return self.validator();
+        return self.validator(self);
     }
     else {
         return YES;

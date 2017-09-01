@@ -15,6 +15,7 @@ extern UIImage *OUITableViewItemSelectionMixedImage(void);
 extern UIImage *OUIStepperMinusImage(void);
 extern UIImage *OUIStepperPlusImage(void);
 extern UIImage *OUIToolbarUndoImage(void);
+extern UIImage *OUIDisclosureIndicatorImage(void);
 
 @interface OUIImageLocation : NSObject
 

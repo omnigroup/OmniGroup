@@ -406,7 +406,7 @@ static void _setFrameYExtent(CALayer *layer, OFExtent yExtent)
         // small overall; just use one layer with no stretching
         CGSize shadowImageSize = bounds.size;
         if (!_shadowImage || (CGSizeEqualToSize(_shadowImageSize, shadowImageSize) == NO)) {
-            OBFinishPortingLater("This path not tested, but hopefully works");
+            OBFinishPortingLater("<bug:///147892> (iOS-OmniOutliner Engineering: -[OQHoleLayer layoutSublayers] - path not tested, but hopefully works)");
             
             CGImageRelease(_shadowImage);
             _shadowImage = _createShadowImageWithSize(shadowImageSize, _shadowEdgeMask);

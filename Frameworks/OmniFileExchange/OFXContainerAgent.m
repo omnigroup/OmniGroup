@@ -666,7 +666,7 @@ tryAgain:
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     
     if (fileItem.hasBeenLocallyDeleted == NO) {
-        OBFinishPortingLater("Add test case");
+        OBFinishPortingLater("<bug:///147877> (iOS-OmniOutliner Engineering: Add test case for -[OFXContainerAgent prepareDeleteTransferForFileItem:error:] when !fileItem.hasBeenLocallyDeleted)");
         // Started a delete and the file was resurrected (maybe a new remote edit?)
         OBUserCancelledError(outError);
         return nil;
@@ -1171,7 +1171,7 @@ tryAgain:
         OFFileMotionResult *result;
         if (OFURLEqualsURL(originalFileURL, updatedFileURL)) {
             // This can happen when we are called from -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:.
-            OBFinishPortingLater("... actually not sure this can be hit any more."); // Tested fixing conflicts between two non-missing files and this is called with the two 'conflict' names.
+            OBFinishPortingLater("<bug:///147947> (iOS-OmniOutliner Engineering: Not sure this can be hit any more - case in -[OFXContainerAgent _moveFileItem:fromURL:toURL:byUser:error:])"); // Tested fixing conflicts between two non-missing files and this is called with the two 'conflict' names.
             OBASSERT(fileItem.localState.autoMoved);
             
             OFXFileMetadata *metadata = [fileItem _makeMetadata]; // A bit heavy handed way to get the info we need, but this path should be pretty rare.
@@ -1466,7 +1466,7 @@ tryAgain:
         OFXFileItem *fileItem = [[OFXFileItem alloc] initWithExistingLocalSnapshotURL:localSnapshotURL container:self filePresenter:filePresenter error:&fileError];
         if (!fileItem) {
             NSLog(@"Error creating file item from local snapshot at %@: %@", localSnapshotURL, fileError);
-            OBFinishPortingLater("Should we just remove the local snapshot in this case and redownload/upload?");
+            OBFinishPortingLater("<bug:///147844> (iOS-OmniOutliner Engineering: Should we just remove the local snapshot in this case and redownload/upload? in -[OFXContainerAgent _scanLocalSnapshots])");
             continue;
         }
         OBASSERT(OFISEQUAL([localSnapshotURL lastPathComponent], fileItem.identifier));

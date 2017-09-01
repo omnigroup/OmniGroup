@@ -10,7 +10,7 @@
 #import <Foundation/NSOperation.h>
 
 /*!
- @summary OFErrorableOperation is a convenience abstract superclass for use with asynchronous code.
+ @summary OFAsynchronousOperation is a convenience abstract superclass for use with asynchronous code.
  
  */
 
@@ -37,7 +37,10 @@
 
 @end
 
+/* A protocol that is useful to compose with NSOperation subclasses. */
 @protocol OFErrorable
-@property (readonly,nullable) NSError *error;
-@end
 
+/** Returns the error state of the operation: if non-nil, the operation has failed with an error. Note that cancellation is not an error; you must check both the isCancelled and the error properties of an OFErrorable operation to determine whether it produced its desired result. */
+@property (readonly,nullable) NSError *error;
+
+@end

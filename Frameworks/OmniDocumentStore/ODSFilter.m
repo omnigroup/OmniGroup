@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,10 +106,23 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
 {
     OBPRECONDITION([NSThread isMainThread]); // We want to fire KVO only on the main thread
 
-    if (_filterPredicate)
-        return [_sourceItems filteredSetUsingPredicate:_filterPredicate];
-    else
-        return _sourceItems;
+    NSPredicate *trashAvoidingPredicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+        ODSItem *item = evaluatedObject;
+        if (item.type == ODSItemTypeFolder) {
+            if ([[item name] isEqualToString:@".Trash"]) {
+                return NO; // Hide Apple's trash folder
+            }
+            return YES;
+        }
+        return YES;
+    }];
+    
+    if (_filterPredicate) {
+        NSCompoundPredicate *fullPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[_filterPredicate, trashAvoidingPredicate]];
+        return [_sourceItems filteredSetUsingPredicate:fullPredicate];
+    } else {
+        return [_sourceItems filteredSetUsingPredicate:trashAvoidingPredicate];
+    }
 }
 
 #pragma mark - Private

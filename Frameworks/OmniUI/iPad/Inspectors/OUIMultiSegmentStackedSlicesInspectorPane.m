@@ -213,13 +213,15 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
             // put the tab bar in its place
             [tabBackground.heightAnchor constraintEqualToConstant:30.0],
             [tabBackground.widthAnchor constraintEqualToAnchor:container.widthAnchor],
+            [tabBackground.leadingAnchor constraintEqualToAnchor: container.leadingAnchor],
+            [tabBackground.topAnchor constraintEqualToAnchor:container.safeAreaLayoutGuide.topAnchor],
+            [tabBackground.bottomAnchor constraintEqualToAnchor:_contentView.topAnchor],
+
             [_titleTabBar.heightAnchor constraintEqualToConstant:30.0],
             [_titleTabBar.widthAnchor constraintEqualToAnchor:container.widthAnchor],
-            [_titleTabBar.centerYAnchor constraintEqualToAnchor: tabBackground.centerYAnchor],
-            // topLayoutGuide gets updated when we get (or lose?) a nav bar.
-            [tabBackground.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor],
-            // constrain the inspector slices to be as big as possible, but below the tabs.
-            [_contentView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor constant:_titleTabBar.frame.size.height],
+            [_titleTabBar.leadingAnchor constraintEqualToAnchor: tabBackground.leadingAnchor],
+            [_titleTabBar.topAnchor constraintEqualToAnchor:tabBackground.topAnchor],
+
             ]];
     } else {
         [tabBackground.heightAnchor constraintEqualToConstant:VERTICAL_SPACING_FOR_NON_TABS];

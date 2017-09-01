@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,19 +37,21 @@ import Foundation
         }
 
         for itemEntry in itemArray {
-            guard let itemDictionary = itemEntry as? [String:Any] else {
+            guard let itemDictionary: [String: Any] = itemEntry as? [String: Any] else {
                 assertionFailure("Registration entry \(itemName) in \(bundle) has non-dictionary item \(itemEntry)")
                 continue
             }
 
-            guard let actionString = itemDictionary["action"] as? String else {
+            guard let actionString: String = itemDictionary["action"] as? String else {
                 assertionFailure("Registration entry \(itemName) in \(bundle) has missing action, or it is not a string.")
                 continue
             }
-            guard let title = itemDictionary["title"] as? String else {
+            
+            guard let title: String = itemDictionary["title"] as? String else {
                 assertionFailure("Registration entry \(itemName) in \(bundle) has missing title, or it is not a string.")
                 continue
             }
+            
             let target: Target
             if let targetEntry = itemDictionary["target"] {
                 guard let targetString = targetEntry as? String else {

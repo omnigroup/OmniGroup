@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIDebugURLCommand.h>
+#import <OmniUI/UIDevice-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -115,6 +116,51 @@ RCS_ID("$Id$");
         BOOL success = command(self, _cmd);
         completionBlock(success);
     }
+}
+
+- (void)command_EmailDebugInfo_completionHandler:(void (^)(BOOL success))completion  NS_EXTENSION_UNAVAILABLE_IOS("sharedApplication is not available in extensions")
+{
+    NSString *address = [[NSBundle mainBundle] infoDictionary][@"OUIFeedbackAddress"];
+    OBASSERT(address != nil);
+    
+    NSMutableString *body;
+    {
+        body = [NSMutableString string];
+        
+        // Only include generic info (not the device's name or uuid), though the user defaults will if they are syncing (since we cache client info).
+        UIDevice *device = [UIDevice currentDevice];
+        [body appendString:@"\n\nHardware:\n"];
+        [body appendFormat:@"\tModel: %@\n", [device hardwareModel]];
+        [body appendFormat:@"\tSystem: %@\n", [device systemName]];
+        [body appendFormat:@"\tVersion: %@\n", [device systemVersion]];
+        // TODO: Available disk space?
+        
+        [body appendFormat:@"\n\nDefaults:\n%@\n\n", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]];
+        NSString *additionalAppInfo = [(OUIAppController *)[[UIApplication sharedApplication] delegate] appSpecificDebugInfo];
+        if (additionalAppInfo.length > 0) {
+            [body appendFormat:@"\n\n%@", additionalAppInfo];
+        }
+    }
+    
+    // TODO: While scanning the filesystem, collect "*.log" and then append them here?  They might be too bid to do in memory, though.
+    NSString *subject;
+    {
+        NSString *appName = [[NSProcessInfo processInfo] processName];
+        
+        // TODO: These versions (and the date below) are approximate.  If the app crashed and the user installed and update, we'll be sending the NEW version for an old crash.
+        NSString *bundleVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleVersionKey];
+        OBASSERT(bundleVersion); // Configure your Info.plist correctly
+        NSString *marketingVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)@"CFBundleShortVersionString"];
+        OBASSERT(marketingVersion); // Configure your Info.plist correctly
+        
+        subject = [NSString stringWithFormat:@"Debug Info for %@ (%@, %@, %s)", appName, marketingVersion, bundleVersion, __DATE__];
+    }
+    
+    MFMailComposeViewController *mailController = [(OUIAppController *)[[UIApplication sharedApplication] delegate] mailComposeController];
+    
+    [mailController setSubject:subject];
+    [mailController setMessageBody:body isHTML:NO];
+    [(OUIAppController *)[[UIApplication sharedApplication] delegate] sendMailTo:@[address] withComposeController:mailController];
 }
 
 @end

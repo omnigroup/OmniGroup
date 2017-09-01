@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,9 @@ typedef enum {
 
 @interface OUIVerticalSplitTransition : OUITransition
 
-@property (nonatomic, assign) CGRect splitExcludingRect; // in the fromView if pushing, in the toView if popping
+@property (nonatomic, copy) CGRect (^splitExcludingRectProvider)(void); // in the fromView if pushing, in the toView if popping
+@property (nonatomic, copy) CGFloat (^destinationRectHeightProvider)(void);
+
 @property (nonatomic, assign) OUIVerticalSplitFadeType fadeType;
 
 - (void)insertToViewIntoContainer:(id<UIViewControllerContextTransitioning>)transitionContext;
