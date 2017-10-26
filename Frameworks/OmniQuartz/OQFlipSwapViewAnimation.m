@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -97,7 +97,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
     // TODO: Actual math re: perepective warp on near edge.
     NSRect windowRect = NSInsetRect(viewScreenRect, -16, -16);
     
-    NSWindow *window = [[NSWindow alloc] initWithContentRect:windowRect styleMask:NSBorderlessWindowMask backing:[parentWindow backingType] defer:NO];
+    NSWindow *window = [[NSWindow alloc] initWithContentRect:windowRect styleMask:NSWindowStyleMaskBorderless backing:[parentWindow backingType] defer:NO];
     [window setReleasedWhenClosed:NO]; // The instance will own it.
     [window setLevel:[parentWindow level] + 1]; // This makes us not participate in spaces/expose and window order by default
     [window setIgnoresMouseEvents:YES];
@@ -115,7 +115,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
     
     [CATransaction begin];
     
-    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)
+    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagShift)
         [CATransaction setAnimationDuration:2.0];
     
     [CATransaction setDisableActions:YES];

@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ static const CGFloat iconBaseline = 36;
     selectedClientRecord = nil;
     
     preferenceTitleCell = [[NSTextFieldCell alloc] init];
-    [preferenceTitleCell setAlignment:NSCenterTextAlignment];
+    [preferenceTitleCell setAlignment:NSTextAlignmentCenter];
     [preferenceTitleCell setFont:[NSFont toolTipsFontOfSize:11.0f]];
     
     return self;
@@ -95,7 +95,7 @@ static const CGFloat iconBaseline = 36;
 
     while (1) {
 
-        NSEvent *nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        NSEvent *nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSEventMaskLeftMouseDragged|NSEventMaskLeftMouseUp untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
 
         NSPoint nextEventLocation = [self convertPoint:[nextEvent locationInWindow] fromView:nil];
         mouseInBounds = NSMouseInRect(nextEventLocation, buttonRect, [self isFlipped]);
@@ -106,7 +106,7 @@ static const CGFloat iconBaseline = 36;
             [self setNeedsDisplay:YES];
         }
         
-        if ([nextEvent type] == NSLeftMouseUp)
+        if ([nextEvent type] == NSEventTypeLeftMouseUp)
             break;
     }
     
@@ -225,14 +225,14 @@ static const CGFloat iconBaseline = 36;
     // Draw dark gray rectangle around currently selected icon (for MultipleIconView)
     if ([self _isIconSelectedAtIndex:index]) {
         [[NSColor colorWithWhite:0.8f alpha:0.75f] set];
-        NSRectFillUsingOperation(buttonRect, NSCompositeSourceOver);
+        NSRectFillUsingOperation(buttonRect, NSCompositingOperationSourceOver);
     }
 
     // Draw icon, dark if it is currently being pressed
     destinationRect = NSIntegralRect(NSMakeRect(NSMidX(buttonRect) - iconSize.width / 2.0f, NSMaxY(buttonRect) - iconBaseline - iconSize.height, iconSize.width, iconSize.height));
     destinationRect.size = iconSize;
     if (index != pressedIconIndex)
-        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0f];
+        [image drawFlippedInRect:destinationRect operation:NSCompositingOperationSourceOver fraction:1.0f];
     else {
         NSImage *darkImage;
         NSSize darkImageSize;
@@ -241,11 +241,11 @@ static const CGFloat iconBaseline = 36;
         darkImageSize = [darkImage size];
         [darkImage lockFocus];
         [[NSColor blackColor] set];
-        NSRectFillUsingOperation(NSMakeRect(0, 0, darkImageSize.width, darkImageSize.height), NSCompositeSourceIn);
+        NSRectFillUsingOperation(NSMakeRect(0, 0, darkImageSize.width, darkImageSize.height), NSCompositingOperationSourceIn);
         [darkImage unlockFocus];
         
-        [darkImage drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0f];
-        [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:0.6666f];
+        [darkImage drawFlippedInRect:destinationRect operation:NSCompositingOperationSourceOver fraction:1.0f];
+        [image drawFlippedInRect:destinationRect operation:NSCompositingOperationSourceOver fraction:0.6666f];
     }
     
     // Draw text

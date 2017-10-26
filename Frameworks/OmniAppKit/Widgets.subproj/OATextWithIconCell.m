@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -164,9 +164,9 @@ NSString * const OATextWithIconCellImageKey = @"image";
     imageRect.size = imageSize;
     imageRect.origin.y += (CGFloat)ceil((NSHeight(aRect) - imageSize.height) / 2.0f);
     if ([controlView isFlipped])
-        [[self icon] drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
+        [[self icon] drawFlippedInRect:imageRect operation:NSCompositingOperationSourceOver];
     else
-        [[self icon] drawInRect:imageRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
+        [[self icon] drawInRect:imageRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f];
 }
 
 - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView untilMouseUp:(BOOL)flag;

@@ -10,11 +10,18 @@
 #import <Foundation/NSError.h>
 #import <OmniBase/NSError-OBUtilities.h>
 
-extern NSString * const ODODetailedErrorsKey; // if multiple validation errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
+extern NSErrorDomain const ODOErrorDomain;
+extern NSErrorDomain const ODOSQLiteErrorDomain; // Underlying errors will be formed with this, using the SQLite return code and error message.
+extern NSErrorUserInfoKey const ODODetailedErrorsKey; // If multiple errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
 
-enum {
+
+extern NSErrorUserInfoKey const ODODetailedErrorsKey; // if multiple validation errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
+
+typedef NS_ENUM(NSInteger, ODOError) {
     ODONoError = 0,
-    
+
+    ODOErrorFoo,
+
     ODOUnableToLoadModel,
     ODOUnableToConnectDatabase,
     ODOErrorDisconnectingFromDatabase,
@@ -45,11 +52,6 @@ enum {
 
 extern BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors);
 extern BOOL ODOMultipleUnableToFindObjectWithIDError(NSError **outError, NSArray<NSError *> *errors);
-
-extern NSString * const ODOErrorDomain;
-extern NSString * const ODOSQLiteErrorDomain; // Underlying errors will be formed with this, using the SQLite return code and error message.
-extern NSString * const ODODetailedErrorsKey; // If multiple errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
-
 
 struct sqlite3;
 extern NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite);

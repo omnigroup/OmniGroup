@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <UIKit/NSTextStorage.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 extern NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat scale) NS_RETURNS_RETAINED;
 
@@ -25,3 +27,5 @@ extern NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, C
 @interface NSAttributedString (OUIScalingTextStorageExtensions)
 + (NSAttributedString *)newScaledAttributedStringWithString:(NSString *)string attributes:(NSDictionary *)attributes scale:(CGFloat)scale;
 @end
+
+NS_ASSUME_NONNULL_END

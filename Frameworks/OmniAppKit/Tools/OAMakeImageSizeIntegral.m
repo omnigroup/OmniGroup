@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
             // -TIFFRepresentation seems to keep the source DPI, which is nice, but we want to write out a new image, killing the original DPI
             NSImage *newImage = [[NSImage alloc] initWithSize:integralSize];
             [newImage lockFocus];
-            [image compositeToPoint:NSZeroPoint operation:NSCompositeCopy];
+            [image compositeToPoint:NSZeroPoint operation:NSCompositingOperationCopy];
             [newImage unlockFocus];
             [image release];
 

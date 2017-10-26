@@ -16,14 +16,6 @@ RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSWindowController (OAExtensionsPrivate)
-+ (void)_longIndicatorThread:(id)arg;
-@end
-
-#define BORDER_WIDTH  (2.0f)
-#define BORDER_GAP    (2.0f)
-#define MAX_ALPHA     (0.85f)
-
 #if 0 && defined(DEBUG)
     #define DEBUG_LONG_OPERATION_INDICATOR(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
@@ -32,158 +24,192 @@ NS_ASSUME_NONNULL_BEGIN
 
 static BOOL LongOperationIndicatorEnabledForWindow(NSWindow * _Nullable window)
 {
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"LongOperationIndicatorDisabled"])
+    if ([NSUserDefaults.standardUserDefaults boolForKey:@"LongOperationIndicatorDisabled"]) {
         return NO;
+    }
 
     // Let the application's delegate check.
-    id controller = [[NSApplication sharedApplication] delegate];
-    if ([controller respondsToSelector:@selector(shouldShowLongOperationIndicatorForWindow:)])
+    id controller = [NSApplication.sharedApplication delegate];
+    if ([controller respondsToSelector:@selector(shouldShowLongOperationIndicatorForWindow:)]) {
         return [controller shouldShowLongOperationIndicatorForWindow:window];
+    }
     
     return YES;
 }
 
-@interface _OALongOperationIndicatorView : NSView
-{
-    NSProgressIndicator *_progressIndicator;
-    NSDictionary *_attributes;
+static void _AutosizeLongOperationWindow(NSWindow *documentWindow);
 
-    NSLock *_titleLock;
-    NSString *_title;
-    NSAttributedString *_attributedTitle;
-    NSPoint _titleLocation;
+static void _DisplayWindow(NSWindow *window)
+{
+    // Seems like the only way to force a screen update when the main thread is blocked is -displayIfNeeded, followed by flushing the results to the screen.
+    
+    if (window.visible) {
+        [window updateConstraintsIfNeeded];
+        [window layoutIfNeeded];
+        [window displayIfNeeded];
+    }
+
+    // We need to get the results on the screen. Use +[CATransaction flush] instead of running the run loop, which may hve the side effect of firing timers.
+    [CATransaction flush];
+//  [NSRunLoop.currentRunLoop runUntilDate:NSDate.distantPast];
+}
+
+#pragma mark -
+
+@interface NSProgressIndicator (OALongOperationIndicatorExtensions_Radar_34468617)
+
+@property (nonatomic, readonly) BOOL omni_threadedAnimationIsBroken;
+@property (nonatomic, readonly) NSImage *omni_imageRepresentation;
+
+@end
+
+#pragma mark -
+
+@interface _OALongOperationIndicatorView : NSView {
+  @private
+    NSProgressIndicator *_progressIndicator;
+    NSImageView *_progressIndicatorImageView;
+    NSTextField *_label;
 }
 
 - (id)initWithFrame:(NSRect)frame controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle;
+
 - (void)setTitle:(NSString *)title documentWindow:(NSWindow *)documentWindow;
-- (NSProgressIndicator *)progressIndicator;
+
+@property (nonatomic, readonly) NSProgressIndicator *progressIndicator;
+@property (nonatomic, readonly) NSProgressIndicatorStyle progressStyle;
+
 @end
+
+#pragma mark -
 
 @implementation _OALongOperationIndicatorView : NSView
 
 - (void)dealloc;
 {
     [_progressIndicator release];
-    [_attributes release];
-    [_titleLock release];
-    [_title release];
-    [_attributedTitle release];
+    [_progressIndicatorImageView release];
+    [_label release];
+
     [super dealloc];
 }
 
 - (id)initWithFrame:(NSRect)frame controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle;
 {
-    if (!(self = [super initWithFrame:frame]))
+    self = [super initWithFrame:frame];
+    if (self == nil) {
         return nil;
-
-    if (progressStyle == NSProgressIndicatorBarStyle) {
-        _progressIndicator = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 200.0f, 16.0f)];
-        [_progressIndicator setIndeterminate:NO];
-        [_progressIndicator setControlSize:controlSize];
-        [_progressIndicator setUsesThreadedAnimation:YES];
-        [_progressIndicator setStyle:NSProgressIndicatorBarStyle];
-        [_progressIndicator sizeToFit];
-        [_progressIndicator setControlTint:NSClearControlTint];
-        [_progressIndicator setMinValue:0.0];
-        [_progressIndicator setMaxValue:1.0];
-        [_progressIndicator setFrameOrigin:(NSPoint){BORDER_WIDTH + BORDER_GAP, BORDER_WIDTH + BORDER_GAP}];
-        [self addSubview:_progressIndicator];
-    } else {
-        OBASSERT(progressStyle == NSProgressIndicatorSpinningStyle); // It's the only other style!
-        _progressIndicator = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(0,0,10,10)];
-        [_progressIndicator setIndeterminate:YES];
-        [_progressIndicator setControlSize:controlSize];
-        [_progressIndicator setUsesThreadedAnimation:YES];
-        [_progressIndicator setStyle:NSProgressIndicatorSpinningStyle];
-        [_progressIndicator sizeToFit];
-        [_progressIndicator setControlTint:NSClearControlTint];
-        [_progressIndicator setFrameOrigin:(NSPoint){BORDER_WIDTH + BORDER_GAP, BORDER_WIDTH + BORDER_GAP}];
-        [self addSubview:_progressIndicator];
     }
 
-    CGFloat fontSize;
-    if (controlSize == NSSmallControlSize)
-        fontSize = [NSFont smallSystemFontSize];
-    else
-        fontSize = [NSFont systemFontSize];
+    _progressIndicator = [[NSProgressIndicator alloc] initWithFrame:NSZeroRect];
+    _progressIndicator.translatesAutoresizingMaskIntoConstraints = NO;
+    _progressIndicator.controlSize = controlSize;
+    _progressIndicator.usesThreadedAnimation = YES;
+    _progressIndicator.style = progressStyle;
+    _progressIndicator.indeterminate = (progressStyle == NSProgressIndicatorSpinningStyle);
+    _progressIndicator.displayedWhenStopped = YES;
     
-    _attributes = [[NSDictionary alloc] initWithObjectsAndKeys:
-        [NSFont boldSystemFontOfSize:fontSize], NSFontAttributeName,
-        [NSColor textColor], NSForegroundColorAttributeName,
-        nil];
+#if 0 && defined(DEBUG_correia)
+    _progressIndicator.wantsLayer = YES;
+    _progressIndicator.layer.backgroundColor = [NSColor.yellowColor colorWithAlphaComponent:0.5].CGColor;
+#endif
+
+    if (!_progressIndicator.indeterminate) {
+        _progressIndicator.minValue = 0.0;
+        _progressIndicator.maxValue = 1.0;
+    }
+
+    [_progressIndicator sizeToFit];
     
-    _titleLock = [[NSLock alloc] init];
+    [self addSubview:_progressIndicator];
+
+    CGFloat fontSize = (controlSize == NSControlSizeSmall) ? NSFont.smallSystemFontSize : NSFont.systemFontSize;
+    
+    _label = [[NSTextField labelWithString:@""] retain];
+    _label.translatesAutoresizingMaskIntoConstraints = NO;
+    _label.controlSize = controlSize;
+    _label.textColor = [NSColor.blackColor colorWithAlphaComponent:0.85];
+    _label.font = [NSFont boldSystemFontOfSize:fontSize];
+    _label.lineBreakMode = NSLineBreakByTruncatingTail;
+
+    [self addSubview:_label];
+    
+    const CGFloat standardSpacing = 10;
+    // Note that we also specify a minimum width for both styles so that the window looks reasonable.
+    
+    if (progressStyle == NSProgressIndicatorSpinningStyle) {
+        NSArray<NSLayoutConstraint *> *constraints = @[
+            // Horizontal
+            [_progressIndicator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:standardSpacing],
+            [_label.leadingAnchor constraintEqualToAnchor:_progressIndicator.trailingAnchor constant:standardSpacing],
+            [self.trailingAnchor constraintEqualToAnchor:_label.trailingAnchor constant:standardSpacing],
+            [self.widthAnchor constraintGreaterThanOrEqualToConstant:208],
+
+            // Vertical
+            [_progressIndicator.topAnchor constraintEqualToAnchor:self.topAnchor constant:standardSpacing],
+            [self.bottomAnchor constraintEqualToAnchor:_progressIndicator.bottomAnchor constant:standardSpacing],
+            [_label.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+            
+            // Sizes
+            [_progressIndicator.widthAnchor constraintGreaterThanOrEqualToConstant:32],
+            [_progressIndicator.heightAnchor constraintGreaterThanOrEqualToConstant:32],
+        ];
+
+        [NSLayoutConstraint activateConstraints:constraints];
+    } else {
+        NSArray<NSLayoutConstraint *> *constraints = @[
+            // Horizontal
+            [_progressIndicator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:standardSpacing],
+            [self.trailingAnchor constraintEqualToAnchor:_progressIndicator.trailingAnchor constant:standardSpacing],
+            [_label.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:standardSpacing],
+            [self.trailingAnchor constraintEqualToAnchor:_label.trailingAnchor constant:standardSpacing],
+            [self.widthAnchor constraintGreaterThanOrEqualToConstant:345],
+
+            // Vertical
+            [_label.topAnchor constraintEqualToAnchor:self.topAnchor constant:standardSpacing],
+            [_progressIndicator.topAnchor constraintEqualToAnchor:_label.bottomAnchor constant:standardSpacing],
+            [self.bottomAnchor constraintEqualToAnchor:_progressIndicator.bottomAnchor constant:standardSpacing],
+
+            // Sizes
+            [_progressIndicator.heightAnchor constraintGreaterThanOrEqualToConstant:_progressIndicator.frame.size.height],
+        ];
+
+        [NSLayoutConstraint activateConstraints:constraints];
+    }
+    
+    // If threaded animation is known to be broken, display a static representation of the progress indicator instead.
+    if (progressStyle == NSProgressIndicatorSpinningStyle && _progressIndicator.omni_threadedAnimationIsBroken) {
+        _progressIndicatorImageView = [[NSImageView alloc] initWithFrame:NSZeroRect];
+        _progressIndicatorImageView.translatesAutoresizingMaskIntoConstraints = NO;
+        _progressIndicatorImageView.image = _progressIndicator.omni_imageRepresentation;
+        
+        _progressIndicator.hidden = YES;
+        
+        [self addSubview:_progressIndicatorImageView];
+
+        NSArray<NSLayoutConstraint *> *constraints = @[
+            [_progressIndicatorImageView.centerXAnchor constraintEqualToAnchor:_progressIndicator.centerXAnchor],
+            [_progressIndicatorImageView.centerYAnchor constraintEqualToAnchor:_progressIndicator.centerYAnchor],
+        ];
+
+        [NSLayoutConstraint activateConstraints:constraints];
+    }
     
     return self;
 }
 
-- (BOOL)isFlipped;
-{
-    // Since we are going to draw text
-    return YES;
-}
-
 - (void)setTitle:(NSString *)title documentWindow:(NSWindow *)documentWindow;
 {
-    OBPRECONDITION(_progressIndicator);
-    OBPRECONDITION(_attributes);
+    OBPRECONDITION(_progressIndicator != nil);
+    OBPRECONDITION(_label != nil);
 
     OBASSERT_NOTNULL(title); // This is the default since we are default-nonnull in this file, but OFISEQUAL checks for nil.
 
-    [_titleLock lock];
-    if (OFISEQUAL(title, _title)) {
-        [_titleLock unlock];
-        
-        // Maybe the title is equal but the document window moved.  Ever think of that, Mr. Smartypants?
-        NSRect documentWindowRect = [documentWindow frame];
-        NSRect indicatorRect = [[self window] frame];
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
-        [[self window] setFrame:indicatorRect display:[[self window] isVisible]];
-
-        return;
+    if (!OFISEQUAL(title, _label.stringValue)) {
+        _label.stringValue = title;
     }
-
-    [_title release];
-    _title = [title copy];
-
-    [_attributedTitle release];
-    _attributedTitle = [[NSAttributedString alloc] initWithString:_title attributes:_attributes];
-
-    // Now, resize our window and reposition the progress indicator and window.
-    NSSize stringSize = [_attributedTitle size];
-    stringSize.width = (CGFloat)ceil(stringSize.width);
-    stringSize.height = (CGFloat)ceil(stringSize.height);
     
-    NSRect indicatorRect;
-    NSRect progressIndicatorFrame = _progressIndicator ? [_progressIndicator frame] : NSZeroRect; // Make clang happy; we know it isn't nil.
-    NSRect documentWindowRect = [documentWindow frame];
-
-    if ([_progressIndicator style] == NSProgressIndicatorBarStyle) {
-        indicatorRect.size.width  = BORDER_WIDTH + BORDER_GAP + MAX(progressIndicatorFrame.size.width, stringSize.width) + BORDER_GAP + 2*BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.size.height = BORDER_WIDTH + BORDER_GAP + progressIndicatorFrame.size.height + BORDER_GAP + stringSize.height + BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
-
-        _titleLocation.x = NSMinX(progressIndicatorFrame);
-        _titleLocation.y = NSMaxY(progressIndicatorFrame) + BORDER_GAP;
-    } else {
-        indicatorRect.size.width  = BORDER_WIDTH + BORDER_GAP + progressIndicatorFrame.size.width + BORDER_GAP + stringSize.width + 2*BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.size.height = BORDER_WIDTH + BORDER_GAP + MAX(progressIndicatorFrame.size.height, stringSize.height) + BORDER_GAP + BORDER_WIDTH;
-        indicatorRect.origin.x = NSMinX(documentWindowRect) + (CGFloat)floor((NSWidth(documentWindowRect) - indicatorRect.size.width) / 2.0f);
-        indicatorRect.origin.y = NSMinY(documentWindowRect) + (CGFloat)floor((NSHeight(documentWindowRect) - indicatorRect.size.height) / 2.0f);
-
-        _titleLocation.x = NSMaxX(progressIndicatorFrame) + BORDER_GAP;
-        _titleLocation.y = (CGFloat)floor((NSHeight(indicatorRect) - stringSize.height) / 2.0f);
-    }
-          
-    [_titleLock unlock]; // Must do this before the call to -setFrame:display: since it will call -drawRect:.  Must also do it before -setFrameSize: below since that can take the AppKit lock, draw, and then cause the title lock to be taken (and we'd hold the locks in th opposite order here resulting in deadlock).
-
-    [self setFrameSize:indicatorRect.size];
-
-    // ???: I'm a bit worried that this could cause drawing glitches since the drawing is happening in another thread
-    [[self window] setFrame:indicatorRect display:[[self window] isVisible]];
-    
+    _AutosizeLongOperationWindow(documentWindow);
 }
 
 - (NSProgressIndicator *)progressIndicator;
@@ -191,78 +217,168 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow * _Nullable window)
     return _progressIndicator;
 }
 
+- (NSProgressIndicatorStyle)progressStyle;
+{
+    return _progressIndicator.style;
+}
+
+- (BOOL)isOpaque;
+{
+    return NO;
+}
+
 - (void)drawRect:(NSRect)dirtyRect;
 {
-    NSRect bounds = [self bounds];
+    NSRect bounds = self.bounds;
 
-    [[NSColor clearColor] set];
-    NSRectFillUsingOperation(bounds, NSCompositeCopy);
-    
-    {
-        // We are going to stroke aw well as fill.  That means that the rect we are going to stroke needs to be on a pixel center.
-        NSRect rect = NSInsetRect(bounds, 0.5f, 0.5f);
-        
-        CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
+    [NSColor.clearColor set];
+    NSRectFillUsingOperation(bounds, NSCompositingOperationCopy);
 
-        // Append rounded rect
-        float radius = 7.0f;
-        {
-            NSPoint topMid      = NSMakePoint(NSMidX(rect), NSMaxY(rect));
-            NSPoint topLeft     = NSMakePoint(NSMinX(rect), NSMaxY(rect));
-            NSPoint topRight    = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
-            NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect));
-            
-            CGContextMoveToPoint(ctx, topMid.x, topMid.y);
-            CGContextAddArcToPoint(ctx, topLeft.x, topLeft.y, rect.origin.x, rect.origin.y, radius);
-            CGContextAddArcToPoint(ctx, rect.origin.x, rect.origin.y, bottomRight.x, bottomRight.y, radius);
-            CGContextAddArcToPoint(ctx, bottomRight.x, bottomRight.y, topRight.x, topRight.y, radius);
-            CGContextAddArcToPoint(ctx, topRight.x, topRight.y, topLeft.x, topLeft.y, radius);
-            CGContextClosePath(ctx);
-        }
-        
-        [[NSColor colorWithWhite:1.0f alpha:0.9f] setFill];
-        [[NSColor colorWithWhite:0.0f alpha:0.9f] setStroke];
-        
-        CGContextDrawPath(ctx, kCGPathFillStroke);
-    }
+    NSRect rect = NSInsetRect(bounds, 0.5f, 0.5f);
+    CGFloat radius = 7.0f;
+    NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:radius yRadius:radius];
     
-    [_titleLock lock];
-    [_attributedTitle drawAtPoint:_titleLocation];
-    [_titleLock unlock];
+    [[NSColor colorWithCalibratedWhite:0.95 alpha:1.0] setFill];
+    [[NSColor colorWithWhite:0.0 alpha:0.05] setStroke];
+    
+    [path fill];
+    [path stroke];
+    
+#if 0 && defined(DEBUG_correia)
+    [NSColor.redColor set];
+    NSFrameRect(_progressIndicator.frame);
+#endif
 }
 
 @end
 
-// We assume that only one document can be saving at a time.
-static BOOL indicatorThreadStarted = NO;
-static NSWindow *operationWindow = nil;
-static _OALongOperationIndicatorView *indicatorView = nil;
-static NSConditionLock *indicatorLock = nil;
-
-enum {
-    IndicatorStarting,
-    IndicatorStarted,
-    IndicatorStopping,
-    IndicatorStopped,
-};
-
-@interface NSWindowController (LongOperationIndicatorPrivate)
-+ (void)_longIndicatorThread:(id)arg;
-@end
+#pragma mark -
 
 @interface _OATransparentFillView : NSView
 @end
+
+#pragma mark -
+
 @implementation _OATransparentFillView
-- (void)drawRect:(NSRect)r;
+
+- (void)drawRect:(NSRect)dirtyRect;
 {
-    [[NSColor clearColor] set];
-    NSRectFillUsingOperation(r, NSCompositeCopy);
+    [NSColor.clearColor set];
+    NSRectFillUsingOperation(dirtyRect, NSCompositingOperationCopy);
 }
+
 @end
 
-@implementation NSWindowController (OAExtensions)
+#pragma mark -
 
-static NSWindow * _Nullable RootlessProgressWindow = nil;
+// We assume that only one document can be saving at a time.
+
+static const NSTimeInterval FadeInDelay = 0.50;
+static const NSTimeInterval FadeInTime = 0.25;
+
+static NSWindow * _Nullable _RootlessProgressWindow = nil;
+
+static NSWindow * _Nullable _LongOperationWindow = nil;
+static _OALongOperationIndicatorView * _Nullable _IndicatorView = nil;
+
+static NSAnimation * _Nullable _DelayAnimation = nil;
+static NSAnimation * _Nullable _FadeInAnimation = nil;
+
+static void _BeginFadeInAnimation(void);
+static void _CancelFadeInAnimation(void);
+
+static void _BeginFadeInAnimation(void)
+{
+    OBPRECONDITION(_DelayAnimation == nil);
+    OBPRECONDITION(_FadeInAnimation == nil);
+    OBPRECONDITION(_LongOperationWindow != nil);
+
+    _CancelFadeInAnimation();
+    
+    _DelayAnimation = [[NSAnimation alloc] init];
+    _DelayAnimation.animationBlockingMode = NSAnimationNonblockingThreaded;
+    _DelayAnimation.duration = FadeInDelay;
+    
+    NSArray *animations = @[
+        @{
+            NSViewAnimationTargetKey: _LongOperationWindow,
+            NSViewAnimationEffectKey: NSViewAnimationFadeInEffect,
+        },
+    ];
+    
+    _FadeInAnimation = [[NSViewAnimation alloc] initWithViewAnimations:animations];
+    _FadeInAnimation.duration = FadeInTime;
+    _FadeInAnimation.animationBlockingMode = NSAnimationNonblockingThreaded;
+
+    [_FadeInAnimation startWhenAnimation:_DelayAnimation reachesProgress:1.0];
+
+    [_IndicatorView.progressIndicator startAnimation:nil];
+
+    // Make sure the window has been "displayed" and layed out once before we start the animation.
+    _DisplayWindow(_LongOperationWindow);
+    [_DelayAnimation startAnimation];
+}
+
+static void _CancelFadeInAnimation(void)
+{
+    [_IndicatorView.progressIndicator stopAnimation:nil];
+    
+    [_FadeInAnimation stopAnimation];
+    [_FadeInAnimation release];
+    _FadeInAnimation = nil;
+
+    [_DelayAnimation stopAnimation];
+    [_DelayAnimation release];
+    _DelayAnimation = nil;
+}
+
+static BOOL _IsFadeAnimationInProgress(void)
+{
+    return _FadeInAnimation.animating || _DelayAnimation.animating;
+}
+
+static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
+{
+    OBPRECONDITION(_LongOperationWindow != nil);
+    OBPRECONDITION(_IndicatorView != nil);
+
+    NSWindow *window = _LongOperationWindow;
+    NSView *indicatorView = _IndicatorView;
+
+    // We can't resize the operation window if the face in animation is in progress because NSViewAnimation repeatedly sets the frame on the window during the fade-in, and this will cause the autolayout engine to become dirty, then be accessed from a background thread.
+    //
+    // It is fairly uncommon to change the string during progress, and if we do, trunctation plus the minimum window size will cover us there.
+    
+    if (_IsFadeAnimationInProgress()) {
+        _DisplayWindow(window);
+    } else {
+        NSSize fittingSize = indicatorView.fittingSize;
+        indicatorView.frameSize = fittingSize;
+        
+        NSRect windowFrame = documentWindow.frame;
+        windowFrame.origin.x = NSMinX(windowFrame) + (CGFloat)floor((NSWidth(windowFrame) - fittingSize.width) / 2.0f);
+        if (NSHeight(documentWindow.frame) < 300) {
+            // Center on small windows
+            windowFrame.origin.y = NSMinY(windowFrame) + (CGFloat)floor((NSHeight(windowFrame) - fittingSize.height) / 2.0f);
+        } else {
+            // Alert position (1/3 of the way down) over the content area of the window
+            windowFrame.origin.y = NSMaxY(windowFrame) - (CGFloat)floor((NSHeight(windowFrame) + fittingSize.height) / 3.0f);
+            windowFrame.origin.y -= (CGFloat)floor((NSHeight(windowFrame) - NSHeight(documentWindow.contentView.frame)) / 2.0f);
+        }
+        windowFrame.size = fittingSize;
+        
+    #if 0 && defined(DEBUG_correia)
+        NSLog(@"Setting window frame to: %@", NSStringFromRect(windowFrame));
+    #endif
+        
+        [indicatorView setNeedsDisplay:YES];
+        [window setFrame:windowFrame display:window.visible];
+        
+        _DisplayWindow(window);
+    }
+}
+
+@implementation NSWindowController (OAExtensions)
 
 + (void)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle inWindow:(NSWindow *)documentWindow automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
@@ -270,105 +386,113 @@ static NSWindow * _Nullable RootlessProgressWindow = nil;
 
     DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow=%p operationDescription=%@", __PRETTY_FUNCTION__, documentWindow, operationDescription);
 
-    if (!LongOperationIndicatorEnabledForWindow(documentWindow))
+    if (!LongOperationIndicatorEnabledForWindow(documentWindow)) {
         return;
+    }
     
-    if (![documentWindow isVisible])
+    if (!documentWindow.visible) {
         // If we're hidden, window ordering operations will unhide us.
         return;
+    }
 
-    if ([operationWindow parentWindow] == documentWindow) {
+    if (_LongOperationWindow.parentWindow == documentWindow) {
         // This can happen if you hit cmd-s twice really fast.
         [self continuingLongOperation:operationDescription];
         return;
-    } else if ([operationWindow parentWindow]) {
+    } else if (_LongOperationWindow.parentWindow != nil) {
         // There is an operation on a *different* window; cancel it
         [self finishedLongOperation];
     }
 
-    OBASSERT(!operationWindow || [operationWindow parentWindow] == nil || [operationWindow parentWindow] == documentWindow);
+    OBASSERT(_LongOperationWindow == nil || _LongOperationWindow.parentWindow == nil || _LongOperationWindow.parentWindow == documentWindow);
 
-    if (!operationWindow) {
-        indicatorView = [[_OALongOperationIndicatorView alloc] initWithFrame:NSZeroRect controlSize:controlSize progressStyle:progressStyle];
-        operationWindow = [[NSPanel alloc] initWithContentRect:NSZeroRect styleMask:NSBorderlessWindowMask backing:[documentWindow backingType] defer:NO];
-        [operationWindow setReleasedWhenClosed:NO]; // We'll manage this manually
+    if (_LongOperationWindow != nil && _IndicatorView.progressStyle != progressStyle) {
+        [_LongOperationWindow release];
+        _LongOperationWindow = nil;
+        
+        [_IndicatorView release];
+        _IndicatorView = nil;
+    }
+    
+    if (_LongOperationWindow == nil) {
+        NSRect frame = NSMakeRect(0, 0, 500, 500); // Some non-zero size large enough that constraints are satisfiable.
+        _IndicatorView = [[_OALongOperationIndicatorView alloc] initWithFrame:frame controlSize:controlSize progressStyle:progressStyle];
+        _IndicatorView.autoresizingMask = NSViewNotSizable;
+        
+        _LongOperationWindow = [[NSPanel alloc] initWithContentRect:frame styleMask:NSWindowStyleMaskBorderless backing:documentWindow.backingType defer:NO];
+        _LongOperationWindow.releasedWhenClosed = NO; // We'll manage this manually
 
-        if ([operationWindow respondsToSelector:@selector(setCollectionBehavior:)])
-            [operationWindow setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
+        if ([_LongOperationWindow respondsToSelector:@selector(setCollectionBehavior:)]) {
+            [_LongOperationWindow setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
+        }
 
-        [[operationWindow contentView] addSubview:indicatorView];
-        [operationWindow setIgnoresMouseEvents:YES];
+        [_LongOperationWindow.contentView addSubview:_IndicatorView];
+        [_LongOperationWindow setIgnoresMouseEvents:YES];
+        
         DEBUG_LONG_OPERATION_INDICATOR(@"%s: operationWindow=%@", __PRETTY_FUNCTION__, [operationWindow shortDescription]);
     }
 
-    [indicatorView setTitle:operationDescription documentWindow:documentWindow];
-    [operationWindow setOpaque:NO]; // If we do this before the line above, the window thinks it is opaque for some reason and draws as if composited against black.
-    [operationWindow setAlphaValue:0.0f]; // Might be running again, so we need to start at zero alpha each time we run.
-    [operationWindow displayIfNeeded]; // Make sure the window backing store is clear before we put it on screen, so it doesn't flicker up and then get redrawn clear.
+    [_IndicatorView setTitle:operationDescription documentWindow:documentWindow];
+    _LongOperationWindow.backgroundColor = NSColor.clearColor;
+    _LongOperationWindow.opaque = NO; // If we do this before the line above, the window thinks it is opaque for some reason and draws as if composited against black.
+    _LongOperationWindow.alphaValue = 0; // Might be running again, so we need to start at zero alpha each time we run.
+    [_LongOperationWindow displayIfNeeded]; // Make sure the window backing store is clear before we put it on screen, so it doesn't flicker up and then get redrawn clear.
     
     // Group it
-    [documentWindow addChildWindow:operationWindow ordered:NSWindowAbove];
+    [documentWindow addChildWindow:_LongOperationWindow ordered:NSWindowAbove];
 
     // Ensure the ordering is right if someone was clicking around really fast
-    [operationWindow orderWindow:NSWindowAbove relativeTo:[documentWindow windowNumber]];
+    [_LongOperationWindow orderWindow:NSWindowAbove relativeTo:documentWindow.windowNumber];
 
-    if (!indicatorThreadStarted) {
-        indicatorThreadStarted = YES;
-        indicatorLock = [[NSConditionLock alloc] initWithCondition:IndicatorStarting];
-        if (![OFVersionNumber isOperatingSystemSierraOrLater]) {
-            // 10.11 can hang in MTLCopyAllDevices() when -[NSProgressIndicator startAnimation:] is first called from a background thread, so on 10.11 let's start and stop it from the main thread before spinning off our background thread to avoid that hang
-            NSProgressIndicator *progressIndicator = [indicatorView progressIndicator];
-            [progressIndicator startAnimation:nil];
-            [progressIndicator stopAnimation:nil];
-
-        }
-        [NSThread detachNewThreadSelector:@selector(_longIndicatorThread:) toTarget:self withObject:nil];
-    } else {
-        // Reset the state on the indicator lock to wake up the background thread.
-        [indicatorLock lock];
-        [indicatorLock unlockWithCondition:IndicatorStarting];
-    }
+    _DisplayWindow(_LongOperationWindow);
+    _BeginFadeInAnimation();
 
     // Schedule an automatic shutdown of the long operation when we get back to the event loop.  Queue this in both the main and modal modes since otherwise quitting when there are two documents to save (and you select to save both) will never process the finish event from the first.
-    if (shouldAutomaticallyEnd)
+    if (shouldAutomaticallyEnd) {
         [self performSelector:@selector(finishedLongOperation) withObject:nil afterDelay:0.0f inModes:[NSArray arrayWithObjects:NSDefaultRunLoopMode, NSModalPanelRunLoopMode, nil]];
+    }
 }
 
 + (nullable NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
-    if (!LongOperationIndicatorEnabledForWindow(nil))
+    OBPRECONDITION([NSThread isMainThread]);
+
+    if (!LongOperationIndicatorEnabledForWindow(nil)) {
         return nil;
+    }
         
     // This is to work around <bug://bugs/33685>.  Otherwise we unhide a hidden app. 
-    if ([[NSApplication sharedApplication] isHidden])
+    if ([NSApplication.sharedApplication isHidden]) {
 	return nil;
+    }
     
-    if (RootlessProgressWindow == nil) {
+    if (_RootlessProgressWindow == nil) {
         // We don't know how long of a message the caller will want to put in our fake document window...
         NSRect contentRect = NSMakeRect(0, 0, 200, 100);
-        NSWindow *window = [[[NSPanel alloc] initWithContentRect:contentRect styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
+        NSWindow *window = [[[NSPanel alloc] initWithContentRect:contentRect styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO] autorelease];
         [window setReleasedWhenClosed:NO]; // We'll manage this manually
         [window setLevel:NSFloatingWindowLevel]; // Float above normal windows. This also triggers NSWindowCollectionBehaviorTransient on 10.6.
         
-        if ([window respondsToSelector:@selector(setCollectionBehavior:)])
+        if ([window respondsToSelector:@selector(setCollectionBehavior:)]) {
             [window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
+        }
 
         _OATransparentFillView *view = [[_OATransparentFillView alloc] initWithFrame:contentRect];
-        [[window contentView] addSubview:view];
+        [window.contentView addSubview:view];
         [view release];
         
         [window setIgnoresMouseEvents:YES];
         [window setOpaque:NO]; // If we do this before the line above, the window thinks it is opaque for some reason and draws as if composited against black.
 
-        RootlessProgressWindow = [window retain];
+        _RootlessProgressWindow = [window retain];
     }
          
-    [RootlessProgressWindow center];
-    [RootlessProgressWindow displayIfNeeded]; // Make sure the window backing store is clear before we put it on screen, so it doesn't flicker up (or get stuck) and then get redrawn clear.
-    [RootlessProgressWindow orderFront:nil];
+    [_RootlessProgressWindow center];
+    [_RootlessProgressWindow displayIfNeeded]; // Make sure the window backing store is clear before we put it on screen, so it doesn't flicker up (or get stuck) and then get redrawn clear.
+    [_RootlessProgressWindow orderFront:nil];
 
-    [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:progressStyle inWindow:RootlessProgressWindow automaticallyEnds:shouldAutomaticallyEnd];
-    return RootlessProgressWindow;
+    [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:progressStyle inWindow:_RootlessProgressWindow automaticallyEnds:shouldAutomaticallyEnd];
+    return _RootlessProgressWindow;
 }
 
 // Public API is unchanged for now, we haven't spent enough time testing the progress bar style and what happens when someone tries to switch between the two in the same window
@@ -385,18 +509,19 @@ static NSWindow * _Nullable RootlessProgressWindow = nil;
 
 + (void)continuingLongOperation:(NSString *)operationStatus;
 {
-    DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow:%p operationStatus=%@", __PRETTY_FUNCTION__, [operationWindow parentWindow], operationStatus);
+    DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow:%p operationStatus=%@", __PRETTY_FUNCTION__, operationWindow.parentWindow, operationStatus);
     OBPRECONDITION([NSThread isMainThread]);
 
-    if (!LongOperationIndicatorEnabledForWindow([operationWindow parentWindow]))
+    if (!LongOperationIndicatorEnabledForWindow(_LongOperationWindow.parentWindow)) {
         return;
+    }
 
-    if (![operationWindow parentWindow]) {
+    if (_LongOperationWindow.parentWindow == nil) {
         // Nothing going on, supposedly.  Maybe the document window isn't visible or we're hidden.
         return;
     }
     
-    [indicatorView setTitle:operationStatus documentWindow:[operationWindow parentWindow]];
+    [_IndicatorView setTitle:operationStatus documentWindow:_LongOperationWindow.parentWindow];
 }
 
 + (void)continuingLongOperationWithProgress:(double)progress;
@@ -404,130 +529,98 @@ static NSWindow * _Nullable RootlessProgressWindow = nil;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    if (!LongOperationIndicatorEnabledForWindow([operationWindow parentWindow]))
+    if (!LongOperationIndicatorEnabledForWindow(_LongOperationWindow.parentWindow)) {
         return;
+    }
 
-    if (![operationWindow parentWindow]) {
+    if (_LongOperationWindow.parentWindow == nil) {
         // Nothing going on, supposedly.  Maybe the document window isn't visible or we're hidden.
         return;
     }
     
-    [[indicatorView progressIndicator] setDoubleValue:progress];
+    [_IndicatorView.progressIndicator setDoubleValue:progress];
+    _DisplayWindow(_LongOperationWindow);
 }
 
 // This should be called when closing a window that might have a long operation indicator on it.  Consider the case of a quick cmd-s/cmd-w (<bug://bugs/17833> - Crash saving & closing default document template) where the timer might not fire before the parent window is deallocated.  This would also be fixed if Apple would break the parent/child window association on deallocation of the parent window...
 + (void)finishedLongOperationForWindow:(NSWindow *)window;
 {
-    if ([operationWindow parentWindow] != window)
+    if (_LongOperationWindow.parentWindow != window) {
         return;
+    }
     
-    if (!LongOperationIndicatorEnabledForWindow(window))
+    if (!LongOperationIndicatorEnabledForWindow(window)) {
         return;
+    }
     
     [self finishedLongOperation];
 }
 
 + (void)finishedLongOperation;
 {
-    DEBUG_LONG_OPERATION_INDICATOR(@"%s documentWindow=%p", __PRETTY_FUNCTION__, [operationWindow parentWindow]);
+    DEBUG_LONG_OPERATION_INDICATOR(@"%s documentWindow=%p", __PRETTY_FUNCTION__, operationWindow.parentWindow);
     OBPRECONDITION([NSThread isMainThread]);
 
-    if (!LongOperationIndicatorEnabledForWindow(nil))
+    if (!LongOperationIndicatorEnabledForWindow(nil)) {
         return;
+    }
 
     // Cancel any pending automatic cancellation
     [NSRunLoop cancelPreviousPerformRequestsWithTarget:self];
-    
-    // Tell the background thread to bail
-    [indicatorLock lock];
-    if ([indicatorLock condition] == IndicatorStarted) {
-        // Tell the background thread to stop
-        [indicatorLock unlockWithCondition:IndicatorStopping];
 
-        // Wait for it to do so, so that we can access the window it was mucking with before
-        [indicatorLock lockWhenCondition:IndicatorStopped];
-        [indicatorLock unlock];
-    } else {
-        // The background thread never started; revert to the stopped state
-        [indicatorLock unlockWithCondition:IndicatorStopped];
+    // Cancel the show animation and hide the window if needed
+    _CancelFadeInAnimation();
+    
+    // Order out, Rootless window managment
+    NSWindow *parentWindow = _LongOperationWindow.parentWindow;
+    if (parentWindow != nil) {
+        [parentWindow removeChildWindow:_LongOperationWindow];
     }
 
-    // Might be doing a global long operation (operation window not tied to another window, just floating)
-    NSWindow *parentWindow = [operationWindow parentWindow];
-    if (parentWindow)
-        [parentWindow removeChildWindow:operationWindow];
-    [operationWindow orderOut:nil];
-    if (parentWindow == RootlessProgressWindow) {
-        [RootlessProgressWindow release];
-        RootlessProgressWindow = nil;
+    [_LongOperationWindow orderOut:nil];
+    
+    if (parentWindow == _RootlessProgressWindow) {
+        [_RootlessProgressWindow release];
+        _RootlessProgressWindow = nil;
     }
 }
 
 - (void)startingLongOperation:(NSString *)operationDescription;
 {
-    if (!LongOperationIndicatorEnabledForWindow(nil))
+    if (!LongOperationIndicatorEnabledForWindow(nil)) {
         return;
+    }
 
-    [[self class] startingLongOperation:operationDescription controlSize:NSSmallControlSize inWindow:[self window] automaticallyEnds:YES];
+    [[self class] startingLongOperation:operationDescription controlSize:NSControlSizeSmall inWindow:[self window] automaticallyEnds:YES];
 }
 
 @end
 
-@implementation NSWindowController (OAExtensionsPrivate)
+#pragma mark -
 
-+ (void)_longIndicatorThread:(id)arg;
+@implementation NSProgressIndicator (OALongOperationIndicatorExtensions_Radar_34468617)
+
+- (BOOL)omni_threadedAnimationIsBroken;
 {
-    // This thread lives forever once started.  This avoids creating per-thread graphics contexts over and over (since NSProgressIndicator seemed to be leaking them!)
-    while (YES) {
-        [indicatorLock lockWhenCondition:IndicatorStarting];
-        [indicatorLock unlockWithCondition:IndicatorStarted];
+    // Threaded animation appears to be broken on High Sierra, and prevents the spinner from showing up at all.
+    // If this returns YES, we subtitute a static image instead.
+    //
+    // rdar://problem/34468617
 
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        BOOL didLock = NO;
+    return [OFVersionNumber isOperatingSystemHighSierraOrLater];
+}
+
+- (NSImage *)omni_imageRepresentation;
+{
+    NSRect rect = self.bounds;
+
+    NSBitmapImageRep *imageRep = [self bitmapImageRepForCachingDisplayInRect:rect];
+    [self cacheDisplayInRect:rect toBitmapImageRep:imageRep];
     
-        if ([indicatorLock lockWhenCondition:IndicatorStopping beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.5]]) {
-            // Cancelled
-            didLock = YES;
-        } else {
-            // Fade the window in, checking for cancellation
-#define FADE_IN_TIME (0.25f)
-#define FADE_IN_FRAMES (10)
-#define TIME_PER_FRAME (FADE_IN_TIME/FADE_IN_FRAMES)
-
-            // This means that there is *another* thread drawing into the window.  We modify the alpha from this thread which should be save since the animation thread isn't poking that and the alpha value is entirely processed on the window server.
-            [[indicatorView progressIndicator] startAnimation:nil];
-
-            float elapsedTime = 0.0f;
-            while (YES) {
-                // Don't build up a ton of autoreleased dates
-                [pool release];
-                pool = [[NSAutoreleasePool alloc] init];
-
-                [operationWindow setAlphaValue:MIN(MAX_ALPHA, MAX_ALPHA*(elapsedTime/FADE_IN_TIME))];
-                
-                // Per feedback from Apple Engineering in <bug:///126185>
-                // -setAlphaValue: makes an implicit layer modification (on modern OS releases which have more pervasive use of CALayer.
-                // Since we did this on a background thread, we opened an implicit transaction, and it is our job to flush it.
-                [CATransaction flush];
-
-                // Check the lock to see if we've been told to buzz off
-                if ([indicatorLock lockWhenCondition:IndicatorStopping beforeDate:[NSDate dateWithTimeIntervalSinceNow:TIME_PER_FRAME]]) {
-                    // Bummer, cancelled
-                    didLock = YES;
-                    break;
-                }
-                elapsedTime += TIME_PER_FRAME;
-            }
-
-            [[indicatorView progressIndicator] stopAnimation:nil];
-            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantPast]];
-        }
-
-        if (!didLock)
-            [indicatorLock lock];
-        [indicatorLock unlockWithCondition:IndicatorStopped];
-        [pool release];
-    }
+    NSImage *image = [[NSImage alloc] initWithSize:imageRep.size];
+    [image addRepresentation:imageRep];
+    
+    return [image autorelease];
 }
 
 @end

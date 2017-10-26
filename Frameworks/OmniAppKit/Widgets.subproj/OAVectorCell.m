@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,8 +127,8 @@ static inline CGFloat _scaling(NSRect frame)
             // We are ignoring -sendActionOn: and -setContinuous: right now.
             [(NSControl *)controlView sendAction:[self action] to:[self target]];
         }
-        theEvent = [[controlView window] nextEventMatchingMask:(NSLeftMouseDraggedMask | NSLeftMouseUpMask)];
-    } while ([theEvent type] != NSLeftMouseUp);
+        theEvent = [[controlView window] nextEventMatchingMask:(NSEventMaskLeftMouseDragged | NSEventMaskLeftMouseUp)];
+    } while ([theEvent type] != NSEventTypeLeftMouseUp);
 
     // We don't abort the value change if we leave the frame.
     return YES;

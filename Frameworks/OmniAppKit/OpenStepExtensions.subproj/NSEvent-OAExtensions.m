@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ RCS_ID("$Id$");
 
 - (BOOL)isUserCancel;
 {
-    if ([self type] != NSKeyDown) {
+    if ([self type] != NSEventTypeKeyDown) {
         return NO;
     }
     
@@ -32,12 +32,12 @@ RCS_ID("$Id$");
     }
     
     // Test for unmodified Escape
-    if ((modifierFlags & (NSShiftKeyMask | NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask)) == 0) {
+    if ((modifierFlags & (NSEventModifierFlagShift | NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagCommand)) == 0) {
         return [characters characterAtIndex:0] == 0x1B;
     }
 
     // Test for Command-Period
-    if ((modifierFlags & (NSShiftKeyMask | NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask)) == NSCommandKeyMask) {
+    if ((modifierFlags & (NSEventModifierFlagShift | NSEventModifierFlagControl | NSEventModifierFlagOption | NSEventModifierFlagCommand)) == NSEventModifierFlagCommand) {
         return [characters isEqualToString:@"."];
     }
 
@@ -47,15 +47,15 @@ RCS_ID("$Id$");
 - (NSString *)charactersWithModifiers:(NSUInteger)modifierFlags;
 {
     UInt32 eventModifiers = 0;
-    if (modifierFlags & NSShiftKeyMask)
+    if (modifierFlags & NSEventModifierFlagShift)
         eventModifiers |= shiftKey;
-    if (modifierFlags & NSControlKeyMask)
+    if (modifierFlags & NSEventModifierFlagControl)
         eventModifiers |= controlKey;
-    if (modifierFlags & NSAlphaShiftKeyMask)
+    if (modifierFlags & NSEventModifierFlagCapsLock)
         eventModifiers |= alphaLock;
-    if (modifierFlags & NSAlternateKeyMask)
+    if (modifierFlags & NSEventModifierFlagOption)
         eventModifiers |= optionKey;
-    if (modifierFlags & NSCommandKeyMask)
+    if (modifierFlags & NSEventModifierFlagCommand)
         eventModifiers |= cmdKey;
 
     // Check to see what character we would have gotten with the specified modifier flags.  (For example, would the Shift key have turned "=" into "+" for this key?)
@@ -77,7 +77,7 @@ RCS_ID("$Id$");
 
 - (BOOL)isKeyDownWithUnmodifiedCharacter:(unichar)c;
 {
-    if ([self type] != NSKeyDown)
+    if ([self type] != NSEventTypeKeyDown)
         return NO;
     
     NSString *string = [self charactersIgnoringModifiers];
@@ -88,7 +88,7 @@ static BOOL _checkModifierFlags(NSUInteger current, NSUInteger desired, NSUInteg
 {
     OBPRECONDITION((desired & prohibited) == 0);
     
-    current = current & NSDeviceIndependentModifierFlagsMask; // Mask off extra info that gets stuffed into the modifier flags
+    current = current & NSEventModifierFlagDeviceIndependentFlagsMask; // Mask off extra info that gets stuffed into the modifier flags
     
     if (current & prohibited)
         return NO;

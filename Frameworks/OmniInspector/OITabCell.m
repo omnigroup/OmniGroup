@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -90,7 +90,7 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
         NSImage *image = [NSImage imageNamed:@"OITabLock.pdf" inBundle:OMNI_BUNDLE];
         NSSize imageSize = image.size;
         NSPoint point = NSMakePoint(NSMaxX(cellFrame) - imageSize.width - 3.0f, NSMaxY(cellFrame) - imageSize.height - 2.0f);
-        [image drawFlippedInRect:(NSRect){point, imageSize} operation:NSCompositeSourceOver];
+        [image drawFlippedInRect:(NSRect){point, imageSize} operation:NSCompositingOperationSourceOver];
     }
     
     return;
@@ -119,11 +119,11 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
         imageRect.origin.y = cellFrame.origin.y + rint((cellFrame.size.height - [image size].height)/2);
     }
     if ([self state]) {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabOnStateTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabOnStateTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
     } else if ([self isHighlighted]) {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabHighlightedTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabHighlightedTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
     } else {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabNormalTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabNormalTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
     }
 }
 

@@ -124,4 +124,17 @@ RCS_ID("$Id$");
     return !handledScheme;
 }
 
+- (BOOL)isProbablyPreviewable;
+{
+    if (self.isProbablyAppScheme) {
+        return NO;
+    }
+    
+    if ([self.scheme isEqualToString:@"message"]) {
+        return NO;
+    }
+    
+    return YES;
+}
+
 @end

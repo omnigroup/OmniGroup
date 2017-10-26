@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,11 +23,11 @@ RCS_ID("$Id$")
 {
     NSString *fullString = [NSString commandKeyIndicatorString];
 
-    if (mask & NSControlKeyMask)
+    if (mask & NSEventModifierFlagControl)
         fullString = [[NSString controlKeyIndicatorString] stringByAppendingString:fullString];
-    if (mask & NSAlternateKeyMask)
+    if (mask & NSEventModifierFlagOption)
         fullString = [[NSString alternateKeyIndicatorString] stringByAppendingString:fullString];
-    if (mask & NSShiftKeyMask)
+    if (mask & NSEventModifierFlagShift)
         fullString = [[NSString shiftKeyIndicatorString] stringByAppendingString:fullString];
 
     fullString = [fullString stringByAppendingString:[equivalent uppercaseString]];

@@ -533,7 +533,8 @@ RCS_ID("$Id$")
         [controller setMessageBody:messageBody isHTML:isHTML];
     if (attachmentData != nil) {
         NSString *mimeType = (NSString *)CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassMIMEType));
-        OBASSERT(mimeType != nil); // The UTI's mime type should be registered in the Info.plist under UTExportedTypeDeclarations:UTTypeTagSpecification
+        // Restore this assertion and add unique mime types for file formats like gstencil and gtemplate if mail recipients report issues with files opening in the wrong app?
+//        OBASSERT(mimeType != nil); // The UTI's mime type should be registered in the Info.plist under UTExportedTypeDeclarations:UTTypeTagSpecification
         if (mimeType == nil)
             mimeType = @"application/octet-stream";
         

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -90,6 +90,13 @@ RCS_ID("$Id$");
 }
 
 #pragma mark - NSDocument subclass
+
+// <bug:///148149> (Frameworks-Mac Regression: [10.13] Omni document-based apps hang when accessing iCloud Drive on macOS High Sierra 10.13 beta 7 (17A352a))
+// document reading must be thread safe when this return YES
++ (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName;
+{
+    return YES;
+}
 
 - (void)setFileURL:(NSURL *)fileURL;
 {

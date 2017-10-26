@@ -222,6 +222,9 @@ static NSMutableDictionary *sharedViewerCache = nil;
 
     if ([url isFileURL]) {
         NSString *path = [[[url path] stringByStandardizingPath] stringByResolvingSymlinksInPath];
+        
+        if ([path hasPrefix:NSTemporaryDirectory()])
+            return YES;
         return [path hasPrefix:[[[[NSBundle mainBundle] bundlePath] stringByStandardizingPath] stringByResolvingSymlinksInPath]];
     }
 
@@ -236,7 +239,7 @@ static NSMutableDictionary *sharedViewerCache = nil;
         [listener ignore];
         return;
     }
-
+    
     if ([url.scheme hasPrefix:@"omni"]) {
         [[OAController sharedController] openURL:url];
         [listener ignore];

@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns YES if the scheme of the receiver is likely to be registered by another app (and not an assigned scheme listed by IANA).
 @property (nonatomic, readonly, getter = isProbablyAppScheme) BOOL probablyAppScheme;
 
+/// Returns YES if the receiver is likely to be previewable during a 3D Touch.
+@property (nonatomic, readonly, getter = isProbablyPreviewable) BOOL probablyPreviewable;
+
 @end
 
 NS_ASSUME_NONNULL_END

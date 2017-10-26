@@ -190,7 +190,7 @@ static unsigned ConfigurationValueContext;
     cellView.valueTextField.stringValue = [NSString stringWithFormat:@"%g", configurationValue.currentValue];
     
     BOOL hasNonDefaultValue = configurationValue.currentValue != configurationValue.defaultValue;
-    CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSRegularControlSize];
+    CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSControlSizeRegular];
     NSFont *font;
     if (hasNonDefaultValue)
         font = [NSFont boldSystemFontOfSize:fontSize];

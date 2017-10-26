@@ -111,7 +111,7 @@ RCS_ID("$Id$");
         image = [self _highlightedImageForImage:image];
     }
 
-    [image drawInRect:imageRect fromRect:sourceRect operation:NSCompositeSourceOver fraction:alpha respectFlipped:YES hints:nil];
+    [image drawInRect:imageRect fromRect:sourceRect operation:NSCompositingOperationSourceOver fraction:alpha respectFlipped:YES hints:nil];
 }
 
 #pragma mark Private
@@ -125,10 +125,10 @@ RCS_ID("$Id$");
             .size = image.size
         };
         
-        [image drawInRect:dstRect fromRect:srcRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+        [image drawInRect:dstRect fromRect:srcRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:YES hints:nil];
         
         [[[NSColor blackColor] colorWithAlphaComponent:0.50] set];
-        NSRectFillUsingOperation(dstRect, NSCompositeSourceAtop);
+        NSRectFillUsingOperation(dstRect, NSCompositingOperationSourceAtop);
         
         return YES;
     }];

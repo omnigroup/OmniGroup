@@ -250,7 +250,7 @@ static NSSize calendarImageSize;
 - (void)setWindow:(NSWindow *)window;
 {
     NSView *contentView = [window contentView];
-    NSWindow *newWindow = [[[OAPopupDatePickerWindow alloc] initWithContentRect:[contentView frame] styleMask:NSBorderlessWindowMask|NSUnifiedTitleAndToolbarWindowMask backing:NSBackingStoreBuffered defer:NO] autorelease];
+    NSWindow *newWindow = [[[OAPopupDatePickerWindow alloc] initWithContentRect:[contentView frame] styleMask:NSWindowStyleMaskBorderless|NSWindowStyleMaskUnifiedTitleAndToolbar backing:NSBackingStoreBuffered defer:NO] autorelease];
     [newWindow setContentView:contentView];
     [newWindow setLevel:NSPopUpMenuWindowLevel];
     [newWindow setDelegate:self];
@@ -308,8 +308,8 @@ static NSSize calendarImageSize;
     NSEvent *currentEvent = [[NSApplication sharedApplication] currentEvent];
     
     BOOL isCancel = [currentEvent isUserCancel];
-    unichar character = (([currentEvent type] == NSKeyDown) && ([[currentEvent characters] length] == 1)) ? [[currentEvent characters] characterAtIndex:0] : 0;
-    BOOL isCommit = ([currentEvent type] == NSKeyDown && (character == 0x1b || character == 0x03 || character == 0x0d));
+    unichar character = (([currentEvent type] == NSEventTypeKeyDown) && ([[currentEvent characters] length] == 1)) ? [[currentEvent characters] characterAtIndex:0] : 0;
+    BOOL isCommit = ([currentEvent type] == NSEventTypeKeyDown && (character == 0x1b || character == 0x03 || character == 0x0d));
     
     if (isCancel) {
         closeReason = OAPopupDatePickerCloseReasonCancel;
@@ -514,7 +514,7 @@ static NSSize calendarImageSize;
     
     switch (character) {
         case '.':
-            if ([theEvent modifierFlags] & NSCommandKeyMask) {
+            if ([theEvent modifierFlags] & NSEventModifierFlagCommand) {
                 [self resignKeyWindow];
                 return YES;
             } else {
@@ -542,10 +542,10 @@ static NSSize calendarImageSize;
     [parentWindow removeChildWindow:self];
     [self close];
     
-    // It looks like this code would never fire since it should have been using NSKeyDown instead of NSKeyDownMask
+    // It looks like this code would never fire since it should have been using NSEventTypeKeyDown instead of NSEventMaskKeyDown
     // <bug:///104045> (Unassigned: 10.10: OAPopupDatePickerWindow -resignKeyWindow has bad test of event type)
 #if 0
-    if ([[[NSApplication sharedApplication] currentEvent] type] == NSKeyDownMask) {
+    if ([[[NSApplication sharedApplication] currentEvent] type] == NSEventMaskKeyDown) {
         // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
         [parentWindow makeKeyAndOrderFront:nil];
     }

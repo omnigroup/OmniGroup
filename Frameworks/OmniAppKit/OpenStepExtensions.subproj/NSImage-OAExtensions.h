@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,7 @@ extern NSString * const OAInfoTemplateImageName;
 
 + (NSImage *)draggingIconWithTitle:(NSString *)title andImage:(NSImage *)image;
 
-/** Returns an image tinted with the passed in color, using NSCompositeSourceIn (R = S*Da), where S is the tintColor and Da is the alpha values in the image represented by self. This allows the tintColor to have an alpha value that survives into the result.
+/** Returns an image tinted with the passed in color, using NSCompositingOperationSourceIn (R = S*Da), where S is the tintColor and Da is the alpha values in the image represented by self. This allows the tintColor to have an alpha value that survives into the result.
  */
 - (NSImage *)imageByTintingWithColor:(NSColor *)tintColor;
 

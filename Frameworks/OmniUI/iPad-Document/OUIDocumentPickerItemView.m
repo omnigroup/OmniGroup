@@ -488,13 +488,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
                              [self.contentView.bottomAnchor constraintEqualToAnchor:self.contentView.superview.bottomAnchor],
                              [self.contentView.leftAnchor constraintEqualToAnchor:self.contentView.superview.leftAnchor],
                              
-                             [NSLayoutConstraint constraintWithItem:self.statusImageView
-                                                          attribute:NSLayoutAttributeWidth
-                                                          relatedBy:NSLayoutRelationEqual
-                                                             toItem:self.contentView
-                                                          attribute:NSLayoutAttributeWidth
-                                                         multiplier:0.20f
-                                                           constant:0.0f],
+                             [self.statusImageView.widthAnchor constraintEqualToAnchor:self.contentView.widthAnchor multiplier:0.2 constant:0.0],
+                             [self.statusImageView.heightAnchor constraintEqualToAnchor:self.statusImageView.widthAnchor multiplier:1.0 constant:0.0],
                              [self.statusImageView.centerXAnchor constraintEqualToAnchor:self.contentView.rightAnchor],
                              [self.statusImageView.centerYAnchor constraintEqualToAnchor:self.contentView.topAnchor]
                              ];

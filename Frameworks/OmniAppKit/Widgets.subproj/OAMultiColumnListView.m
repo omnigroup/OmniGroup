@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -450,7 +450,7 @@ enum { IndicatorNormal, IndicatorOver, IndicatorDown };
         NSImage *image = indicatorImages[indicatorIndex][selected][indicatorIndex == mouseIndicator ? indicatorState : IndicatorNormal];
         NSSize imageSize = [image size];
         
-        [image compositeToPoint:NSMakePoint(xPosition, NSMaxY(rect) - (NSHeight(rect) - imageSize.height) / 2.0) operation:NSCompositeSourceOver];
+        [image compositeToPoint:NSMakePoint(xPosition, NSMaxY(rect) - (NSHeight(rect) - imageSize.height) / 2.0) operation:NSCompositingOperationSourceOver];
         xPosition += imageSize.width + INDICATOR_SPACING;
     }
     

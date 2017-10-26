@@ -1,4 +1,4 @@
-// Copyright 2011-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,7 +63,7 @@ RCS_ID("$Id$");
         imageRect.origin.x = floor((bounds.size.width - imageSize.width)/2);
         imageRect.origin.y = /*bounds.size.height - imageSize.height - */ TINY_TRIANGLE_BOTTOM_PADDING;
         
-        [dropDownImage drawFlippedInRect:imageRect operation:NSCompositeSourceOver];
+        [dropDownImage drawFlippedInRect:imageRect operation:NSCompositingOperationSourceOver];
     }
 }
 

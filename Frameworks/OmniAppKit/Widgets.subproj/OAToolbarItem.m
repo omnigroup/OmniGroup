@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,7 +125,7 @@ RCS_ID("$Id$");
 
 - (void)modifierFlagsChanged:(NSNotification *)note;
 {
-    BOOL optionDown = ([[note object] modifierFlags] & NSAlternateKeyMask) ? YES : NO;
+    BOOL optionDown = ([[note object] modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
 
     if (optionDown != inOptionKeyState) {
         if ([self optionKeyImage])

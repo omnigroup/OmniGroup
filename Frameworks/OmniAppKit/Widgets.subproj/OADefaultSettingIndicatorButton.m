@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -170,7 +170,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
         NSControl *snuggleUpToRightSideOfControl = (id)snuggleUpToRightSideOfView;
         NSCell *cell = [snuggleUpToRightSideOfControl cell];
 
-        if (allowResize && [cell alignment] == NSLeftTextAlignment &&
+        if (allowResize && [cell alignment] == NSTextAlignmentLeft &&
             ![snuggleUpToRightSideOfControl isKindOfClass:[NSSlider class]] && ![snuggleUpToRightSideOfControl isKindOfClass:[NSPopUpButton class]] && 
             !([snuggleUpToRightSideOfControl isKindOfClass:[NSTextField class]] && [(NSTextField *)snuggleUpToRightSideOfControl isEditable]) &&
             ![snuggleUpToRightSideOfControl isKindOfClass:[NSImageView class]]) {

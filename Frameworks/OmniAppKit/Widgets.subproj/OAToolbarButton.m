@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$");
 {
     NSSize newSize;
     
-    if (size == NSSmallControlSize)
+    if (size == NSControlSizeSmall)
         newSize = NSMakeSize(24.0f, 24.0f);
     else
         newSize = NSMakeSize(32.0f, 32.0f);
@@ -116,7 +116,7 @@ RCS_ID("$Id$");
     // Send fake mouseDown to popup button
     isShowingMenu = YES;
     NSRect popUpBounds = [popUp bounds];
-    NSEvent *fakeEvent = [NSEvent mouseEventWithType:NSLeftMouseDown location:[popUp convertPoint:NSMakePoint(NSMidX(popUpBounds), NSMidY(popUpBounds)) toView:nil] modifierFlags:0 timestamp:0 windowNumber:[[popUp window] windowNumber] context:nil eventNumber:0 clickCount:1 pressure:1.0f];
+    NSEvent *fakeEvent = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:[popUp convertPoint:NSMakePoint(NSMidX(popUpBounds), NSMidY(popUpBounds)) toView:nil] modifierFlags:0 timestamp:0 windowNumber:[[popUp window] windowNumber] context:nil eventNumber:0 clickCount:1 pressure:1.0f];
     [popUp mouseDown:fakeEvent];
     isShowingMenu = NO;
 }

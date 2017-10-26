@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -148,7 +148,7 @@ RCS_ID("$Id$");
             id object = [defaults objectForKey: @"com.apple.mouse.doubleClickThreshold"];
             if (object && [object floatValue] < 0.25f)
                 doubleClickTime = [object floatValue];
-            NSEvent *nextEvent = [[self window] nextEventMatchingMask:NSLeftMouseDownMask untilDate:[NSDate dateWithTimeIntervalSinceNow:doubleClickTime] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+            NSEvent *nextEvent = [[self window] nextEventMatchingMask:NSEventMaskLeftMouseDown untilDate:[NSDate dateWithTimeIntervalSinceNow:doubleClickTime] inMode:NSEventTrackingRunLoopMode dequeue:YES];
             if (nextEvent)
                 event = nextEvent;
         }
@@ -229,7 +229,7 @@ RCS_ID("$Id$");
 
 - (BOOL)performKeyEquivalent:(NSEvent *)theEvent;
 {
-    if ([theEvent type] != NSKeyDown)
+    if ([theEvent type] != NSEventTypeKeyDown)
         return NO;
     
     NSString *fullString = [NSString stringForKeyEquivalent:[theEvent charactersIgnoringModifiers] andModifierMask:[theEvent modifierFlags]];

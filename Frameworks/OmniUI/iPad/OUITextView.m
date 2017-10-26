@@ -207,12 +207,6 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     return CGSizeMake(layoutManager.widthOfLongestLine, layoutManager.totalHeightUsed);
 }
 
-- (CGFloat)firstLineAscent;
-{
-    OBFinishPortingLater("<bug:///147846> (iOS-OmniOutliner Bug: Return actual firstLineAscent instead of bogus value)");
-    return 0;
-}
-
 - (NSDictionary *)typingAttributesWithAllAttributes;
 {
     return self.typingAttributes;
@@ -1432,6 +1426,38 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     // We might be able to save some time by keeping this around, but we also want to reset the inspector to its base state if it comes up again. ALSO, this is the easiest hack to get rid of lingering OSTextSelectionStyle objects which have problematic reference behavior. ARC will fix it all, of course.
     _textInspector.delegate = nil;
     _textInspector = nil;
+}
+#pragma mark - UITextDragDelegate
+// <rdar://34420183> UITextView does not automatically include attributed strings in its drags
+// Register our attributed text so that we can drop it both within our app and in other apps
+- (nullable id<UITextDragDelegate>)textDragDelegate
+{
+    return self;
+}
+
+- (NSArray<UIDragItem *> *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView itemsForDrag:(id<UITextDragRequest>)dragRequest;
+{
+    if (self.shouldDragAttributedText) {
+        NSAttributedString *selectedString = [self.attributedText attributedSubstringFromRange:self.selectedRange];
+        NSItemProvider *provider = [[NSItemProvider alloc] initWithObject:selectedString];
+        return @[[[UIDragItem alloc] initWithItemProvider:provider]];
+    } else {
+        NSString *selectedString = [[self.attributedText attributedSubstringFromRange:self.selectedRange] string];
+        NSItemProvider *provider = [[NSItemProvider alloc] initWithObject:selectedString];
+        return @[[[UIDragItem alloc] initWithItemProvider:provider]];
+    }
+    
+}
+
+- (nullable UITargetedDragPreview *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView dragPreviewForLiftingItem:(UIDragItem *)item session:(id<UIDragSession>)session
+{
+    NSArray *rects = [self selectionRectsForRange:self.selectedTextRange];
+    NSMutableArray *values = [NSMutableArray array];
+    for (UITextSelectionRect *rect in rects) {
+        [values addObject:[NSValue valueWithCGRect:rect.rect]];
+    }
+    UIDragPreviewParameters *parameters = [[UIDragPreviewParameters alloc] initWithTextLineRects:values];
+    return [[UITargetedDragPreview alloc] initWithView:self parameters:parameters];
 }
 
 #pragma mark - Private

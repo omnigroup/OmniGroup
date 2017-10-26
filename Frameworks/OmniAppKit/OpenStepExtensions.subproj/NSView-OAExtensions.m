@@ -615,12 +615,12 @@ static NSMutableArray *scrollEntries = nil;
     NSPoint eventLocation;
     NSRect slopRect;
 
-    OBPRECONDITION([event type] == NSLeftMouseDown);
+    OBPRECONDITION([event type] == NSEventTypeLeftMouseDown);
 
     currentEvent = [[NSApplication sharedApplication] currentEvent];
     if (currentEvent != event) {
         // We've already processed this once, let's try to return the same answer as before.  (This lets you call this method more than once for the same event without it pausing to wait for a whole new set of drag / mouse up events.)
-        return [currentEvent type] == NSLeftMouseDragged;
+        return [currentEvent type] == NSEventTypeLeftMouseDragged;
     }
 
     eventLocation = [event locationInWindow];
@@ -629,12 +629,12 @@ static NSMutableArray *scrollEntries = nil;
     while (1) {
         NSEvent *nextEvent;
 
-        nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask | NSLeftMouseUpMask untilDate:timeoutDate inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSEventMaskLeftMouseDragged | NSEventMaskLeftMouseUp untilDate:timeoutDate inMode:NSEventTrackingRunLoopMode dequeue:YES];
         if (finalEventPointer != NULL)
             *finalEventPointer = nextEvent;
         if (nextEvent == nil) { // Timeout date reached
             return NO;
-        } else if ([nextEvent type] == NSLeftMouseUp) {
+        } else if ([nextEvent type] == NSEventTypeLeftMouseUp) {
             return NO;
         } else if (!NSMouseInRect([nextEvent locationInWindow], slopRect, NO)) {
             return YES;

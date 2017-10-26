@@ -101,7 +101,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     // It's possible for the actions triggered by sending `willTransition(to:, multiPaneController:)` to our layout delegate to prompt a recursive call to `displayMode:` with the same argument. For example, this happens in OmniFocus when a call to `CATransaction.flush()` triggers a `traitCollectionDidChange` notification. Rather than requiring that delegate code be reëntrant, we avoid posting the redundant `willTransition` message.
     private var displayModeForCurrentWillTransitionNotification: MultiPaneDisplayMode? = nil
     
-    fileprivate(set) public var displayMode: MultiPaneDisplayMode = .multi {
+    @objc fileprivate(set) public var displayMode: MultiPaneDisplayMode = .multi {
         willSet {
             if newValue != displayMode && newValue != displayModeForCurrentWillTransitionNotification {
                 displayModeForCurrentWillTransitionNotification = newValue
@@ -145,8 +145,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return panes.sorted { $0.location.rawValue < $1.location.rawValue }
     }
     
-    open weak var layoutDelegate: MultiPaneLayoutDelegate? = LayoutDelegate()
-    open weak var navigationDelegate: MultiPaneNavigationDelegate?
+    @objc open weak var layoutDelegate: MultiPaneLayoutDelegate? = LayoutDelegate()
+    @objc open weak var navigationDelegate: MultiPaneNavigationDelegate?
     open weak var appearanceDelegate: MultiPaneAppearanceDelegate?
     
     lazy var multiPanePresenter: MultiPanePresenter = {
@@ -162,7 +162,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Backing property so we can force re-creation of leftEdgePanGesture.
     private var _leftEdgePanGesture: UIScreenEdgePanGestureRecognizer? = nil
-    open var leftEdgePanGesture: UIScreenEdgePanGestureRecognizer {
+    @objc open var leftEdgePanGesture: UIScreenEdgePanGestureRecognizer {
         get {
             if let existing = _leftEdgePanGesture {
                 return existing
@@ -177,13 +177,13 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
     }
     
-    open lazy var leftPaneDisplayButton: UIBarButtonItem = {
+    @objc open lazy var leftPaneDisplayButton: UIBarButtonItem = {
         let image = UIImage(named: "OUIMultiPaneLeftSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleLeftPaneDisplayButton))
         return button
     }()
     
-    open lazy var rightPaneDisplayButton: UIBarButtonItem = {
+    @objc open lazy var rightPaneDisplayButton: UIBarButtonItem = {
         let image = UIImage(named: "OUIMultiPaneRightSidebarButton", in: OmniUIBundle, compatibleWith: self.traitCollection)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleRightPaneDisplayButton))
         return button
@@ -340,14 +340,14 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     /// Removes the pane, if it exists, at the given location. Returns nil if the pane doesn't exist, otherwise returns the removed pane.
     /// The view controller associated with this pane will no longer be managed by the MultiPaneController and will be completely be rmoved from the view controller and view hierarchy.
-    open func removePane(at location: MultiPaneLocation) -> Pane? {
+    @objc open func removePane(at location: MultiPaneLocation) -> Pane? {
         guard let pane = self.pane(withLocation: location) else { return nil }
         self.removePane(pane: pane)
         self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
         return pane
     }
     
-    open func viewController(atLocation location: MultiPaneLocation) -> UIViewController? {
+    @objc open func viewController(atLocation location: MultiPaneLocation) -> UIViewController? {
         return pane(withLocation: location)?.viewController
     }
     
@@ -356,7 +356,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     /// Show a pane for the given location in the style that MultiPaneController is acustomed. Calls showPane(at:animated:) with animation set to true.
-    open func showPane(atLocation location: MultiPaneLocation) {
+    @objc open func showPane(atLocation location: MultiPaneLocation) {
         self.showPane(at: location, animated: true)
     }
     
@@ -369,7 +369,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     /// Does nothing unless display mode is multi and the location is left or right
-    open func showSidebar(atLocation location: MultiPaneLocation) {
+    @objc open func showSidebar(atLocation location: MultiPaneLocation) {
         guard (displayMode == .multi && (location == .right || location == .left)) else { return }
         
         guard let thePane = pane(withLocation: location) else { return }
@@ -379,7 +379,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     /// Does nothing unless display mode is multi and the location is left or right
-    open func hideSidebar(atLocation location: MultiPaneLocation) {
+    @objc open func hideSidebar(atLocation location: MultiPaneLocation) {
         guard ((location == .right || location == .left)) else { return }
         guard let pane = pane(withLocation: location) else { return }
         guard pane.isVisible else { return }
@@ -398,7 +398,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     /// Dismisses the overlay sidebar if necessary; otherwise a no-op
-    open func dismissSidebarIfNecessary(sidebar location: MultiPaneLocation) {
+    @objc open func dismissSidebarIfNecessary(sidebar location: MultiPaneLocation) {
         if let pane = pane(withLocation: location), pane.presentationMode == .overlaid && pane.isVisible {
             hideSidebar(atLocation: location)
         }
@@ -840,10 +840,10 @@ extension MultiPaneController: MultiPanePresenterDelegate {
 
 typealias MultiPaneControllerPaneVisibility = MultiPaneController
 extension MultiPaneControllerPaneVisibility {
-    public func paneIsVisible(at location: MultiPaneLocation) -> Bool {
+    @objc public func paneIsVisible(at location: MultiPaneLocation) -> Bool {
         return pane(withLocation: location)?.isVisible ?? false
     }
-    public func paneIsOverlaid(at location: MultiPaneLocation) -> Bool {
+    @objc public func paneIsOverlaid(at location: MultiPaneLocation) -> Bool {
         if (self.paneIsVisible(at: location) == false) {
             return false;
         }

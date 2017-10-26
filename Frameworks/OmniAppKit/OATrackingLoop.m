@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,9 +147,9 @@ static BOOL OATrackingLoopDebug = YES;
     _insideVisibleRect = [_view mouse:_initialMouseDownPointInView inRect:[_view visibleRect]];
     
     switch ([_mouseDownEvent type]) {
-        case NSLeftMouseDown:
-            _upEventType = NSLeftMouseUp;
-            _draggedEventType = NSLeftMouseDragged;
+        case NSEventTypeLeftMouseDown:
+            _upEventType = NSEventTypeLeftMouseUp;
+            _draggedEventType = NSEventTypeLeftMouseDragged;
             break;
         default:
             OBASSERT_NOT_REACHED("Need to record which mouse button went down and only signal up when *that* button goes up.");
@@ -190,16 +190,16 @@ static BOOL OATrackingLoopDebug = YES;
     while (!_stopped) {
         // If you want to do a tracking loop w/o consuming the mouseUp, you can call -stop in one of the other callbacks and then start a *new* tracking loop.  At least, that's the theory.
         [_currentEvent autorelease];
-        _currentEvent = [[window nextEventMatchingMask:NSAnyEventMask untilDate:_limitDate inMode:_runLoopMode dequeue:YES] retain];
+        _currentEvent = [[window nextEventMatchingMask:NSEventMaskAny untilDate:_limitDate inMode:_runLoopMode dequeue:YES] retain];
         DEBUG_LOOP(@"event: %@", _currentEvent);
         
         NSUInteger oldFlags = _modifierFlags;
         _modifierFlags = [_currentEvent modifierFlags];
         
         NSEventType eventType = [_currentEvent type];
-        // It looks as though we can't get an actual notification that Mission Control, Expose, or Dashboard is coming up. If invoke them with a key and mouse up while they're in front, we actually seem to get the mouse up when we come back. Mouse buttons invoking them appear to be a problem.  NSSystemDefined events of subtype 7 seem to be "mouse button state change events". data1 is the mouse/mice that changed state, and data2 is the current state of all mouse buttons. CGEventTaps cause us to get what appears to be "mouse button 1 changed state and mouse button 1 is down, which we already know, because we're here.  Exit for any other mouse button changing state.
+        // It looks as though we can't get an actual notification that Mission Control, Expose, or Dashboard is coming up. If invoke them with a key and mouse up while they're in front, we actually seem to get the mouse up when we come back. Mouse buttons invoking them appear to be a problem.  NSEventTypeSystemDefined events of subtype 7 seem to be "mouse button state change events". data1 is the mouse/mice that changed state, and data2 is the current state of all mouse buttons. CGEventTaps cause us to get what appears to be "mouse button 1 changed state and mouse button 1 is down, which we already know, because we're here.  Exit for any other mouse button changing state.
         if (eventType == _upEventType ||
-            ((eventType == NSSystemDefined && [_currentEvent subtype] == 7) && ([_currentEvent data1] != 1 || [_currentEvent data2] != 1))) {
+            ((eventType == NSEventTypeSystemDefined && [_currentEvent subtype] == 7) && ([_currentEvent data1] != 1 || [_currentEvent data2] != 1))) {
             DEBUG_LOOP(@"  up!");
             if (_up)
                 _up(self);
@@ -261,10 +261,10 @@ static BOOL OATrackingLoopDebug = YES;
                     lastMouseEvent = [_currentEvent retain];
                 }
             }
-        } else if (eventType == NSFlagsChanged) {
+        } else if (eventType == NSEventTypeFlagsChanged) {
             if (_modifierFlagsChanged)
                 _modifierFlagsChanged(self, oldFlags);
-        } else if (eventType == NSPeriodic) {
+        } else if (eventType == NSEventTypePeriodic) {
             OBASSERT(_shouldAutoscroll);
             OBASSERT_NOTNULL(lastMouseEvent);
             if (lastMouseEvent != nil && [_view autoscroll:lastMouseEvent]) {

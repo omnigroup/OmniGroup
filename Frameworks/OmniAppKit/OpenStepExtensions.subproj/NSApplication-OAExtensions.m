@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,13 +28,13 @@ RCS_ID("$Id$")
         mode = NSDefaultRunLoopMode;
 
     // We get system-defined events quite frequently, so ignore them.
-    return [self nextEventMatchingMask:(NSAnyEventMask & ~NSSystemDefinedMask) untilDate:[NSDate distantPast] inMode:mode dequeue:NO];
+    return [self nextEventMatchingMask:(~NSEventTypeSystemDefined) untilDate:[NSDate distantPast] inMode:mode dequeue:NO];
 }
 
 - (void)wakeEventLoop;
 {
     // Post a user defined event to wake up the event loop (which then will automatically close the top level undo groups if necessary, etc.)
-    NSEvent *event = [NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint modifierFlags:0 timestamp:[NSDate timeIntervalSinceReferenceDate] windowNumber:0 context:NULL subtype:-1 data1:0 data2:0];
+    NSEvent *event = [NSEvent otherEventWithType:NSEventTypeApplicationDefined location:NSZeroPoint modifierFlags:0 timestamp:[NSDate timeIntervalSinceReferenceDate] windowNumber:0 context:NULL subtype:-1 data1:0 data2:0];
     [[NSApplication sharedApplication] postEvent:event atStart:NO];
 }
 

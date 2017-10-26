@@ -237,15 +237,6 @@ RCS_ID("$Id$");
     [self drawInContext:ctx bounds:bounds options:0/*flipped, background and glyphs*/];
 }
 
-- (CGFloat)firstLineAscent;
-{
-    // <bug:///94079> (Remove -[OUITextLayout firstLineAscent]?)
-    return 0;
-#if 0
-    return OUIFirstLineAscent(_frame);
-#endif
-}
-
 - (CGRect)firstRectForRange:(NSRange)range;
 {
     NSRange glyphRange = [_layoutManager glyphRangeForCharacterRange:range actualCharacterRange:NULL];

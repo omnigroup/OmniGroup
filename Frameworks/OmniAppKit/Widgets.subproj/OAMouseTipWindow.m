@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 
 - (id)init;
 {
-    if (!(self = [super initWithContentRect:NSMakeRect(0.0f, 0.0f, 100.0f, 20.0f) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
+    if (!(self = [super initWithContentRect:NSMakeRect(0.0f, 0.0f, 100.0f, 20.0f) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO]))
         return nil;
     
     [self setFloatingPanel:YES];

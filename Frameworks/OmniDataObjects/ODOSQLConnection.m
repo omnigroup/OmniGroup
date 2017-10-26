@@ -105,21 +105,24 @@ RCS_ID("$Id$");
     __block BOOL success = YES;
     __block NSError *localError = nil;
     
-    block = [block copy];
-    
-    NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-        OBPRECONDITION(_sqlite != NULL);
-        NSError *blockError = nil;
+    @autoreleasepool {
+        block = [block copy];
         
-        if (!block(_sqlite, &blockError)) {
-            localError = [blockError retain]; // retain to get the error out of the block
-            success = NO;
-        }
-    }];
-    [self.operationQueue addOperation:operation];
-    [operation waitUntilFinished];
-    
-    [block release];
+        NSOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
+            OBPRECONDITION(_sqlite != NULL);
+            NSError *blockError = nil;
+            
+            if (!block(_sqlite, &blockError)) {
+                localError = [blockError retain]; // retain to get the error out of the block
+                success = NO;
+            }
+        }];
+        
+        [self.operationQueue addOperation:operation];
+        [operation waitUntilFinished];
+        
+        [block release];
+    }
     
     if (!success) {
         if (outError != NULL) {

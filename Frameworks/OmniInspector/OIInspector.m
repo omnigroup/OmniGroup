@@ -40,13 +40,13 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     ModifierMaskNameTable = [[OFEnumNameTable alloc] initWithDefaultEnumValue:0];
     [ModifierMaskNameTable setName:@"none" forEnumValue:0];
-    [ModifierMaskNameTable setName:@"alpha-lock" forEnumValue:NSAlphaShiftKeyMask];
-    [ModifierMaskNameTable setName:@"shift" forEnumValue:NSShiftKeyMask];
-    [ModifierMaskNameTable setName:@"control" forEnumValue:NSControlKeyMask];
-    [ModifierMaskNameTable setName:@"option" forEnumValue:NSAlternateKeyMask];
-    [ModifierMaskNameTable setName:@"command" forEnumValue:NSCommandKeyMask];
-    [ModifierMaskNameTable setName:@"num-lock" forEnumValue:NSNumericPadKeyMask];
-    [ModifierMaskNameTable setName:@"function" forEnumValue:NSFunctionKeyMask];
+    [ModifierMaskNameTable setName:@"alpha-lock" forEnumValue:NSEventModifierFlagCapsLock];
+    [ModifierMaskNameTable setName:@"shift" forEnumValue:NSEventModifierFlagShift];
+    [ModifierMaskNameTable setName:@"control" forEnumValue:NSEventModifierFlagControl];
+    [ModifierMaskNameTable setName:@"option" forEnumValue:NSEventModifierFlagOption];
+    [ModifierMaskNameTable setName:@"command" forEnumValue:NSEventModifierFlagCommand];
+    [ModifierMaskNameTable setName:@"num-lock" forEnumValue:NSEventModifierFlagNumericPad];
+    [ModifierMaskNameTable setName:@"function" forEnumValue:NSEventModifierFlagFunction];
 
     OIVisibilityStateNameTable = [[OFEnumNameTable alloc] initWithDefaultEnumValue:OIVisibleVisibilityState];
     [OIVisibilityStateNameTable setName:@"hidden" forEnumValue:OIHiddenVisibilityState];

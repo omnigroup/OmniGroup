@@ -73,21 +73,33 @@ RCS_ID("$Id$");
 
 - (void)startingLongOperation:(NSString *)operationName automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
-    NSWindowController *windowController = [self frontWindowController];
-    if (windowController)
-        [NSWindowController startingLongOperation:operationName controlSize:NSSmallControlSize inWindow:[windowController window] automaticallyEnds:shouldAutomaticallyEnd];
-    else
-        [NSWindowController startingLongOperation:operationName controlSize:NSSmallControlSize];
+    NSWindowController *windowController = self.frontWindowController;
+    NSWindow *window = [windowController isWindowLoaded] ? windowController.window : nil;
+    
+    // NSDocumentController may initialize us on a seconday thread, particularly during window restoration.
+    OFMainThreadPerformBlock(^{
+        if (window != nil && window.visible) {
+            [NSWindowController startingLongOperation:operationName controlSize:NSControlSizeSmall inWindow:[windowController window] automaticallyEnds:shouldAutomaticallyEnd];
+        } else {
+            [NSWindowController startingLongOperation:operationName controlSize:NSControlSizeSmall];
+        }
+    });
 }
 
 - (void)continuingLongOperation:(NSString *)operationStatus;
 {
-    [NSWindowController continuingLongOperation:operationStatus];
+    // NSDocumentController may initialize us on a seconday thread, particularly during window restoration.
+    OFMainThreadPerformBlock(^{
+        [NSWindowController continuingLongOperation:operationStatus];
+    });
 }
 
 - (void)finishedLongOperation;
 {
-    [NSWindowController finishedLongOperation];
+    // NSDocumentController may initialize us on a seconday thread, particularly during window restoration.
+    OFMainThreadPerformBlock(^{
+        [NSWindowController finishedLongOperation];
+    });
 }
 
 @end

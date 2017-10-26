@@ -505,7 +505,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (OIInspectorWindow *)buildWindow;
 {
-    return [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), inspector.defaultHeaderHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    return [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), inspector.defaultHeaderHeight + OIInspectorSpaceBetweenButtons) styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO];
 }
 
 - (NSView *)containerView;

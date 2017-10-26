@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
     NSMutableParagraphStyle *mutableParaStyle;
     
     mutableParaStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-    [mutableParaStyle setAlignment:NSCenterTextAlignment];
+    [mutableParaStyle setAlignment:NSTextAlignmentCenter];
     mousetipParagrphStyle = [mutableParaStyle copy];
 }
 
@@ -256,7 +256,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
         NSDictionary *dictionary = [contents attributesAtIndex:charIndex effectiveRange:&foo];
         NSParagraphStyle *paragraphStyle = [dictionary objectForKey:NSParagraphStyleAttributeName];
         
-        if (paragraphStyle && [paragraphStyle alignment] == NSCenterTextAlignment) {
+        if (paragraphStyle && [paragraphStyle alignment] == NSTextAlignmentCenter) {
             maxLineWidth = MAX(maxLineWidth, lineFrag.size.width);
         } else {
             if (lineFrag.size.width > maxLineWidth)

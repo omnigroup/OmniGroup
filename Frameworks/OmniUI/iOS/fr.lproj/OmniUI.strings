@@ -3,7 +3,7 @@
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
-"About %@" = "À propos d’%@";
+"About %@" = "À propos de %@";
 
 /* MultiPane Back button title, when system is compact */
 "Back" = "Précédent";

@@ -210,16 +210,18 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
         } else {
             [buf appendString:path];
         }
-        
-        if (![path hasPrefix:@"/System/"] && // System or locally installed vendor framework
-            ![path hasPrefix:@"/Library/"] &&
-            ![path hasPrefix:@"/usr/lib/"] &&
-            ([path rangeOfString:@"/Developer/Platforms/"].location == NSNotFound) && // iPhone simulator
-            ![path hasSuffix:@"FBAccess"] && // Special case for FrontBase framework
-            ![path hasSuffix:@"Growl"] && // Special case for Growl framework
-            ![path hasSuffix:@"libswiftCore.dylib"] &&
-            ![path hasSuffix:@"libswiftFoundation.dylib"]) // Special case for embedded Swift runtime
+
+        if ([path hasPrefix:@"/System/"] || [path hasPrefix:@"/Library/"] || [path hasPrefix:@"/usr/lib/"]) {
+            // System or locally installed vendor framework
+        } else if ([path containsString:@"/Developer/Platforms/"]) {
+            // iPhone simulator
+        } else if ([path hasSuffix:@"libswiftCore.dylib"] || [path hasSuffix:@"libswiftFoundation.dylib"]) {
+            // Special case for embedded Swift runtime
+        } else if ([path hasSuffix:@"/XCTest"]) {
+            // When testing an app with an injected test bundle, the XCTest framework gets embedded in the app.
+        } else {
             *nonSystem = YES;
+        }
     }
     
     return buf;

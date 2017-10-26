@@ -11,7 +11,7 @@
 import Foundation
 
 extension ProcessInfo {
-    public var isRunningUnitTests: Bool {
+    @objc public var isRunningUnitTests: Bool {
         let env = self.environment
         // Xcode 7.3 and greater doesn't include XCInjectBundle key, but does have the XCTestConfigurationFilePath key. Prefer the newer key, but have XCInjectBundle as a fallback.
         let path = env["XCTestConfigurationFilePath"] ?? env["XCInjectBundle"]

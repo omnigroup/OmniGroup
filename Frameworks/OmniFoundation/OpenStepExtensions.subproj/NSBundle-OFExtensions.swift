@@ -10,14 +10,14 @@
 import Foundation
 
 extension Bundle {
-    public var displayName:String {
+    @objc public var displayName:String {
         if let name = localizedInfoDictionary?["CFBundleName"] as? String {
             return name
         }
         return FileManager.default.displayName(atPath: self.bundlePath)
     }
     
-    public func contains(_ bundle: Bundle) -> Bool {
+    @objc public func contains(_ bundle: Bundle) -> Bool {
         do {
             let otherURL = bundle.bundleURL
             let fileManager = FileManager.default

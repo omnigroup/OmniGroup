@@ -33,7 +33,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 
 - (void)willBecomeCurrentPreferenceClient;
 {
-    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask)
+    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagOption)
         [self queueSelector:@selector(checkNow:) withObject:nil];
 }
 

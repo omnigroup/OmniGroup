@@ -258,7 +258,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Trasladar...";
+"Move…" = "Trasladar…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";

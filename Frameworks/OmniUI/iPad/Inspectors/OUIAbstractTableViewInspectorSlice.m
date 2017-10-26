@@ -23,6 +23,44 @@ RCS_ID("$Id$");
     UITableView *_tableView;
 }
 
+static NSString *_editActionButtonTitle;
+static NSString *_doneActionButtonTitle;
+
++ (NSString *)editActionButtonTitle;
+{
+    if (!_editActionButtonTitle) {
+        _editActionButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit", @"OUIInspectors", OMNI_BUNDLE, @"edit action title");
+    }
+    return _editActionButtonTitle;
+}
+
++ (NSString *)doneActionButtonTitle;
+{
+    if (!_doneActionButtonTitle) {
+        _doneActionButtonTitle = NSLocalizedStringFromTableInBundle(@"Done", @"OUIInspectors", OMNI_BUNDLE, @"done action title");
+    }
+    return _doneActionButtonTitle;
+}
+
++ (void)updateHeaderButton:(UIButton *)button withTitle:(NSString *)title;
+{
+#if UPPERCASE_LABELS
+    title = [title uppercaseStringWithLocale:[NSLocale currentLocale]];
+#endif
+    [button setTitle:title forState:UIControlStateNormal];
+    [button sizeToFit];
+}
+
++ (UIButton *)headerActionButtonWithTitle:(NSString *)title section:(NSInteger)section;
+{
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIFont *textFont = [UIFont systemFontOfSize:[UIFont systemFontSize]];
+    button.font = textFont;
+    button.tag = section;
+    [self updateHeaderButton:button withTitle:title];
+    return button;
+}
+
 + (UILabel *)headerLabelWiithText:(NSString *)labelString;
 {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -38,24 +76,59 @@ RCS_ID("$Id$");
     return label;
 }
 
-+ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString forTableView:(UITableView *)tableView;
++ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString actionTitle:(NSString *)actionTitle actionTarget:(id)actionTraget action:(SEL)action section:(NSInteger)section forTableView:(UITableView *)tableView;
 {
     UILabel *label = [self headerLabelWiithText:labelString];
+    UIButton *actionButton = nil;
+
+    if (actionTitle) {
+        OBASSERT_NOTNULL(action, @"Please provde an action if you want to use a buton in the headerView");
+        actionButton = [OUIAbstractTableViewInspectorSlice headerActionButtonWithTitle:actionTitle section:section];
+        [actionButton addTarget:actionTraget action:action forControlEvents:UIControlEventTouchUpInside];
+    }
 
     UIEdgeInsets separatorInset = tableView.separatorInset;
+    CGRect headerFrame = CGRectMake(0, 0, separatorInset.left + separatorInset.right, 0);
+    UIView *headerView = [[UIView alloc] initWithFrame:headerFrame];
+
+    UIEdgeInsets edgeInsets = OUIInspectorSlice.sliceAlignmentInsets;
     CGRect labelFrame = label.frame;
     labelFrame.origin.x = separatorInset.left;
     labelFrame.origin.y = -8 - labelFrame.size.height;
     labelFrame.size.width = 0;
     label.frame = labelFrame;
-    label.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-    
-    CGRect headerFrame = CGRectMake(0, 0, separatorInset.left + separatorInset.right, 0);
-    UIView *headerView = [[UIView alloc] initWithFrame:headerFrame];
-    headerView.autoresizingMask = headerView.autoresizingMask & ~UIViewAutoresizingFlexibleHeight;
+    label.translatesAutoresizingMaskIntoConstraints = NO;
     [headerView addSubview:label];
-    
+    [label.leadingAnchor constraintEqualToAnchor:headerView.leadingAnchor constant:edgeInsets.right].active = YES;
+    [label.topAnchor constraintEqualToSystemSpacingBelowAnchor:headerView.topAnchor multiplier:1.0f].active = YES;
+    [headerView.bottomAnchor constraintEqualToSystemSpacingBelowAnchor:label.bottomAnchor multiplier:1.0f].active = YES;
+
+    if (actionButton) {
+        [headerView addSubview:actionButton];
+        actionButton.translatesAutoresizingMaskIntoConstraints = NO;
+        [actionButton.topAnchor constraintEqualToSystemSpacingBelowAnchor:headerView.topAnchor multiplier:1.0f].active = YES;
+        [headerView.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor constant:edgeInsets.right].active = YES;
+        [actionButton.leadingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:8.0f].active = YES;
+
+    } else {
+        [headerView.trailingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:edgeInsets.right].active = YES;
+    }
+
     return headerView;
+}
+
++ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString useDefaultActionButton:(BOOL)useDefaultActionButton target:(id)target section:(NSInteger)section forTableView:(UITableView *)tableView;
+{
+    if (useDefaultActionButton) {
+        return [self sectionHeaderViewWithLabelText:labelString actionTitle:OUIAbstractTableViewInspectorSlice.editActionButtonTitle actionTarget:target action:@selector(toggleEditingForSection:) section:section forTableView:tableView];
+    } else {
+        return [self sectionHeaderViewWithLabelText:labelString forTableView:tableView];
+    }
+}
+
++ (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString forTableView:(UITableView *)tableView;
+{
+    return [self sectionHeaderViewWithLabelText:labelString actionTitle:nil actionTarget:nil action:nil section:0 forTableView:tableView];
 }
 
 - (void)dealloc;
@@ -93,6 +166,21 @@ RCS_ID("$Id$");
     if (_tableView.window != nil)
         [_tableView layoutIfNeeded];
     [self _resizeTable];
+}
+
+- (void)toggleEditingForSection:(id)sender;
+{
+    UITableView *tableView = self.tableView;
+    UIButton *button = nil;
+    if ([sender isKindOfClass:UIButton.class]) {
+        button = (UIButton *)sender;
+    }
+    BOOL isEditing = !tableView.isEditing;
+    if (button) {
+        NSString *buttonTitle = isEditing ? OUIAbstractTableViewInspectorSlice.doneActionButtonTitle : OUIAbstractTableViewInspectorSlice.editActionButtonTitle;
+        [OUIAbstractTableViewInspectorSlice updateHeaderButton:button withTitle:buttonTitle];
+    }
+    tableView.editing = isEditing;
 }
 
 #pragma mark - OUIInspectorSlice subclass

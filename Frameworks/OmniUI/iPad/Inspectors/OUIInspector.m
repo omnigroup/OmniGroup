@@ -246,6 +246,12 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         
         if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
             [self.navigationController popToRootViewControllerAnimated:NO];
+        } else {
+            // If we're going to keep showing a pane, we need to make sure to update its inspected objects as well as the main pane's inspected objects
+            OUIInspectorPane *topPane = OB_CHECKED_CAST_OR_NIL(OUIInspectorPane, self.navigationController.topViewController);
+            if (topPane != self.mainPane) {
+                topPane.inspectedObjects = objects;
+            }
         }
     }
 }

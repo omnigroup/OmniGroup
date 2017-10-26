@@ -43,7 +43,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @end
 
-@interface OUITextView : UITextView <OUIInspectorDelegate, OUIKeyCommandProvider>
+@interface OUITextView : UITextView <OUIInspectorDelegate, OUIKeyCommandProvider, UITextDragDelegate>
 
 + (OUITextView *)activeFirstResponderTextView;
 
@@ -54,8 +54,6 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @property(nonatomic,readonly) CGFloat textHeight;
 @property(nonatomic,readonly) CGSize textUsedSize;
-
-@property(nonatomic,readonly) CGFloat firstLineAscent;
 
 @property(nonatomic) BOOL keepContextualMenuHidden;
 
@@ -99,6 +97,7 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (void)performUndoableReplacementOnSelectedRange:(NSAttributedString *)replacement;
 
 @property (nonatomic, assign) BOOL alwaysHighlightSelectedText;
+@property (nonatomic, assign) BOOL shouldDragAttributedText;
 
 @end
 

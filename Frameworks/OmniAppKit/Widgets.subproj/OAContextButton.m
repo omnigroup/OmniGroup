@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,7 +76,7 @@ RCS_ID("$Id$");
     
     NSImage *image = [self image];
     if (image == nil) {
-        if ([[self cell] controlSize] == NSSmallControlSize)
+        if ([[self cell] controlSize] == NSControlSizeSmall)
             [self setImage:[OAContextButton miniActionImage]];
         else
             [self setImage:[OAContextButton actionImage]];
@@ -84,7 +84,7 @@ RCS_ID("$Id$");
 	// IB will disable the size control if you use a flat image in the nib.  Sigh.
 	// Need to have the control size set on the cell correctly for font calculation in -_popUpContextMenu
 	if ([[image name] isEqualToString:@"OAMiniAction"])
-	    [[self cell] setControlSize:NSSmallControlSize];
+	    [[self cell] setControlSize:NSControlSizeSmall];
     }
     
     if ([NSString isEmptyString:[self toolTip]])
@@ -224,7 +224,7 @@ RCS_ID("$Id$");
     NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
     
     // If we post a matching up, the menu hides immediately.
-    [[NSApplication sharedApplication] postEvent:[NSEvent mouseEventWithType:NSLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
+    [[NSApplication sharedApplication] postEvent:[NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
     
     return YES;
 }

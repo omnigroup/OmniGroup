@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,7 +61,7 @@ RCS_ID("$Id$");
 {
     if (_scrollerBackgroundColor != nil) {
         [_scrollerBackgroundColor setFill];
-        NSRectFillUsingOperation(slotRect, NSCompositeSourceOver);
+        NSRectFillUsingOperation(slotRect, NSCompositingOperationSourceOver);
     }
 
     static NSColor *edgeColor;
@@ -78,7 +78,7 @@ RCS_ID("$Id$");
     if (self.scrollerStyle == NSScrollerStyleOverlay) {
         // N.B. This method is only called for overlay scrollers if the user initiated a scrollwheel event while the cursor was in the scroller track. In that case, an additional line helps to separate the overlaid scroller from the content beneath it.
         [edgeColor setFill];
-        NSRectFillUsingOperation(edgeRect, NSCompositeSourceOver);
+        NSRectFillUsingOperation(edgeRect, NSCompositingOperationSourceOver);
     }
 }
 

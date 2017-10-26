@@ -16,7 +16,7 @@ import UIKit
 //
 @objc(OUIMultiPane) open class Pane: NSObject {
     public let viewController: UIViewController
-    public var preferredMinimumWidth: CGFloat {
+    @objc public var preferredMinimumWidth: CGFloat {
         get {
             return configuration.preferredMinimumWidth
         }
@@ -224,7 +224,7 @@ struct CompactEnvironment: PaneEnvironment {
 }
 
 extension UIViewController {
-    var isVisible: Bool {
+    @objc var isVisible: Bool {
         guard self.isViewLoaded && self.view.window != nil else { return false }
         
         if let superView = self.view.superview {
@@ -235,7 +235,7 @@ extension UIViewController {
         return false
     }
     
-    var isVisibleAndAncestorsAreVisible: Bool {
+    @objc var isVisibleAndAncestorsAreVisible: Bool {
         if let parent = parent {
             guard parent.isVisibleAndAncestorsAreVisible else { return false }
         }

@@ -468,6 +468,7 @@
 		423DFE201C24B526006BB12B /* OUIFontSizeInspectorSlice.h in Headers */ = {isa = PBXBuildFile; fileRef = 423DFE1A1C24B526006BB12B /* OUIFontSizeInspectorSlice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423DFE211C24B526006BB12B /* OUIFontSizeInspectorSlice.m in Sources */ = {isa = PBXBuildFile; fileRef = 423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */; };
 		4240B0181F1D616900D72C02 /* DisclosableInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */; };
+		425ED6ED1F61C04F008D7515 /* ToggleInspectorSlice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425ED6EC1F61C04F008D7515 /* ToggleInspectorSlice.swift */; };
 		429585D91C4964BE009ED770 /* OUIToolbarUndo-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */; };
 		429585DA1C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */; };
 		429585DB1C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */; };
@@ -1001,6 +1002,7 @@
 		423DFE1B1C24B526006BB12B /* OUIFontSizeInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFontSizeInspectorSlice.m; sourceTree = "<group>"; };
 		4240B0171F1D616900D72C02 /* DisclosableInspectorPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosableInspectorPane.swift; sourceTree = "<group>"; };
 		4256FAFA1A081AFB0085A680 /* OUIToolbarUndo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarUndo.png; sourceTree = "<group>"; };
+		425ED6EC1F61C04F008D7515 /* ToggleInspectorSlice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleInspectorSlice.swift; sourceTree = "<group>"; };
 		429585D61C4964BE009ED770 /* OUIToolbarUndo-Compact.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact.png"; sourceTree = "<group>"; };
 		429585D71C4964BE009ED770 /* OUIToolbarUndo-Compact@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact@2x.png"; sourceTree = "<group>"; };
 		429585D81C4964BE009ED770 /* OUIToolbarUndo-Compact@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo-Compact@3x.png"; sourceTree = "<group>"; };
@@ -1576,6 +1578,7 @@
 				3470CE601561718600B84909 /* OUIAbstractTableViewInspectorSlice.m */,
 				3438607C12F778ED00A461B8 /* OUIActionInspectorSlice.h */,
 				3438607D12F778ED00A461B8 /* OUIActionInspectorSlice.m */,
+				425ED6EC1F61C04F008D7515 /* ToggleInspectorSlice.swift */,
 				342F97F512F72BA200C09A4A /* OUIDetailInspectorSlice.h */,
 				342F97F612F72BA200C09A4A /* OUIDetailInspectorSlice.m */,
 				345D7252130339BB00A9D55F /* OUIEditableTextWellInspectorSlice.h */,
@@ -2593,6 +2596,7 @@
 				235D67421EB00E06007FCF56 /* OUIMultiPaneNotifications.m in Sources */,
 				348A7A911B584BAE0082D55D /* OUIInspectorSearchWell.m in Sources */,
 				23105FDE1EAFD9AE008E0647 /* MultiPaneSlidingOverlayPresentationController.swift in Sources */,
+				425ED6ED1F61C04F008D7515 /* ToggleInspectorSlice.swift in Sources */,
 				348A7ABA1B584C3B0082D55D /* OUITextLayout.m in Sources */,
 				348A7B001B584CC30082D55D /* OUIActionViewController.m in Sources */,
 				348A7A5A1B584B590082D55D /* OUIInspectorSliceView.m in Sources */,

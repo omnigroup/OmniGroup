@@ -1,4 +1,4 @@
-// Copyright 2000-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -122,7 +122,7 @@ static NSImage *ChasingArrows = nil;
 
     NSImageInterpolation imageInterpolation = [currentContext imageInterpolation];
     [currentContext setImageInterpolation:NSImageInterpolationHigh];
-    [ChasingArrows drawInRect:bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:opacity];
+    [ChasingArrows drawInRect:bounds fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:opacity];
     [currentContext setImageInterpolation:imageInterpolation];
 }
 

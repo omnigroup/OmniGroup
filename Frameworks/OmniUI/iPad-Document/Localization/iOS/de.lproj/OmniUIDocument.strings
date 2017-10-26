@@ -255,7 +255,7 @@
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Share menu title */
-"Move to..." = "Bewegen nach …";
+"Move to..." = "Bewegen …";
 
 /* Move document preview action title. */
 "Move…" = "Bewegen …";
@@ -355,7 +355,7 @@
 "Report Error" = "Fehler melden";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Beispieldok. wiederherstellen";
+"Restore Sample Documents" = "Beisp.-Dok. wiederherst.";
 
 /* Share menu title */
 "Restore to..." = "Wiederherstellen in …";

@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ RCS_ID("$Id$");
 {
     [super mouseDown:theEvent];
     
-    if (!self.sentAction && [theEvent type] == NSLeftMouseDown && [theEvent clickCount] > 1) {
+    if (!self.sentAction && [theEvent type] == NSEventTypeLeftMouseDown && [theEvent clickCount] > 1) {
         [[self window] resignKeyWindow];
     }
 

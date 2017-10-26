@@ -513,7 +513,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (IBAction)restoreDefaults:(id)sender;
 {
-    if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) && ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)) {
+    if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagOption) && ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagShift)) {
         // warn & wipe the entire defaults domain
         NSBundle *bundle = [OAPreferenceClient bundle];
         NSAlert *alert = [[NSAlert alloc] init];
@@ -528,7 +528,7 @@ static NSString *windowFrameSaveName = @"Preferences";
             [[NSUserDefaults standardUserDefaults] synchronize];
             [_currentClient valuesHaveChanged];
         }];
-    } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) {
+    } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagOption) {
         // warn & wipe all prefs shown in the panel
         NSBundle *bundle = [OAPreferenceClient bundle];
         NSAlert *alert = [[NSAlert alloc] init];
@@ -784,7 +784,7 @@ static NSString *windowFrameSaveName = @"Preferences";
         [categoryHeaderTextField setSelectable:NO];
         [categoryHeaderTextField setTextColor:[NSColor controlTextColor]];
         [categoryHeaderTextField setFont:[NSFont boldSystemFontOfSize:[NSFont systemFontSize]]];
-        [categoryHeaderTextField setAlignment:NSLeftTextAlignment];
+        [categoryHeaderTextField setAlignment:NSTextAlignmentLeft];
         [categoryHeaderTextField setStringValue:[[self class] _localizedCategoryNameForCategoryName:categoryName]];
         [categoryHeaderTextField sizeToFit];
         [showAllIconsView addSubview:categoryHeaderTextField];
@@ -975,7 +975,7 @@ static NSString * const IdealWidthConstraintIdentifier = @"OAPreferenceControlle
 
 - (void)_modifierFlagsChanged:(NSNotification *)note;
 {
-    BOOL optionDown = ([[note object] modifierFlags] & NSAlternateKeyMask) ? YES : NO;
+    BOOL optionDown = ([[note object] modifierFlags] & NSEventModifierFlagOption) ? YES : NO;
     NSButton *returnToOriginalValuesButton = self.returnToOriginalValuesButton;
 
     if (optionDown) {

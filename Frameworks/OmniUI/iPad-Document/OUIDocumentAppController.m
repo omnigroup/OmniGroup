@@ -431,49 +431,80 @@ static unsigned SyncAgentRunningAccountsContext;
 - (void)importDocumentFromURL:(NSURL *)url;
 {
     // Instantiate a new document with a temporary fileURL and read it from the file to be imported
-    Class cls = [self documentClassForURL:url];
-    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+    OUIActivityIndicator *activityIndicator = nil;
+    ODSFileItem *importItem = [_documentPicker.selectedScopeViewController.selectedScope fileItemWithURL:url];
+    OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:importItem];
+    if (fileItemView) {
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
+    } else {
+        UIView *view = _documentPicker.navigationController.topViewController.view;
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
+    }
+
     NSURL *temporaryURL = [_documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
-
-    BOOL startedAccess = [url startAccessingSecurityScopedResource];
-    NSError *error;
-    OUIDocument *document = [[cls alloc] initWithContentsOfImportableFileAtURL:url toBeSavedToURL:temporaryURL error:&error];
-    if (startedAccess) {
-        [url stopAccessingSecurityScopedResource];
-    }
-
-    if (document == nil) {
-        OUI_PRESENT_ERROR(error);
-    }
-    
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        // Save the document to our temporary location
-        [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
-            // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [document closeWithCompletionHandler:^(BOOL closeSuccess){
-                    [document didClose];
-                    
-                    if (!saveSuccess) {
-                        return;
-                    }
-                    
-                    NSString *documentType = [_documentStore documentTypeForNewFiles];
-                    NSString *baseName = [self documentStore:_documentStore baseNameForFileImportedFromURL:url];
-                    
-                    // If the import document is in local scope, add the result to the same folderItem, otherwise add it to the top of the local scope
-                    ODSFolderItem *folderItem = nil;
-                    ODSFileItem *fileItem = [_localScope fileItemWithURL:url];
-                    if (fileItem)
-                        folderItem = [_localScope folderItemContainingItem:fileItem];
-                    
-                    __weak OUIDocumentAppController *weakSelf = self;
-                    [_localScope addDocumentInFolder:folderItem baseName:baseName fileType:documentType fromURL:temporaryURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:^(ODSFileItem *createdFileItem, NSError *moveError) {
-                        OUIDocumentAppController *strongSelf = weakSelf;
-                        [strongSelf openDocument:createdFileItem];
+    void (^finish)(OUIDocument *document) = [^(OUIDocument *document) {
+        OBASSERT([NSThread isMainThread], "We need to be on the main thread to hide the activity indicator");
+        [activityIndicator hide];
+        
+        if (document) {
+            // Save the document to our temporary location
+            [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
+                // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    [document closeWithCompletionHandler:^(BOOL closeSuccess){
+                        [document didClose];
+                        
+                        if (!saveSuccess) {
+                            return;
+                        }
+                        
+                        NSString *documentType = [_documentStore documentTypeForNewFiles];
+                        NSString *baseName = [self documentStore:_documentStore baseNameForFileImportedFromURL:url];
+                        
+                        // If the import document is in local scope, add the result to the same folderItem, otherwise add it to the top of the local scope
+                        ODSFolderItem *folderItem = nil;
+                        ODSFileItem *fileItem = [_localScope fileItemWithURL:url];
+                        if (fileItem)
+                            folderItem = [_localScope folderItemContainingItem:fileItem];
+                        
+                        __weak OUIDocumentAppController *weakSelf = self;
+                        [_localScope addDocumentInFolder:folderItem baseName:baseName fileType:documentType fromURL:temporaryURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:^(ODSFileItem *createdFileItem, NSError *moveError) {
+                            OUIDocumentAppController *strongSelf = weakSelf;
+                            [strongSelf openDocument:createdFileItem];
+                        }];
                     }];
                 }];
             }];
+        }
+    } copy];
+    
+    OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    [queue addOperationWithBlock:^{
+        Class cls = [self documentClassForURL:url];
+        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+        
+        // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
+        
+        __autoreleasing NSError *readError;
+        __block OUIDocument *document;
+        
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        [coordinator readItemAtURL:url withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
+            BOOL startedAccess = [newURL startAccessingSecurityScopedResource];
+            document = [[cls alloc] initWithContentsOfImportableFileAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
+            if (startedAccess)
+                [newURL stopAccessingSecurityScopedResource];
+            return (document != nil);
+        }];
+        
+        if (document == nil) {
+            OUI_PRESENT_ERROR(readError);
+        }
+        
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [lock unlock];
+            finish(document);
         }];
     }];
 }
@@ -644,6 +675,8 @@ static unsigned SyncAgentRunningAccountsContext;
         BOOL fileWillBeImported = [[self importableFileTypes] containsObject:fileType];
         if (fileWillBeImported) {
             [self importDocumentFromURL:fileItemToOpen.fileURL];
+            
+            [activityIndicator hide];
             return;
         }
 
@@ -2142,11 +2175,11 @@ static NSDictionary *RoleByFileType()
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options;
 {
     // NOTE: If we are suspending launch actions (possibly due to handling a crash), _didFinishLaunching will be NO and we'd drop this on the ground. So, we add this as launch action as well. We could try to preflight the URL to see if it is certain we can't open it, but we'd have a hard time getting an accurate answer (many of the actions are async anyway).
-
+    
     // If this is NO, we must copy the document to maintain access to it
     BOOL openInPlaceAccessOkay = [options boolForKey:UIApplicationOpenURLOptionsOpenInPlaceKey];
     NSString *fileType = OFUTIForFileExtensionPreferringNative([url pathExtension], nil);
-
+    
     // If we can't actually edit the file we should copy it to our local scope so that we can save it to a new URL without destroying the original. (i.e., this is an import)
     BOOL fileWillBeImported = NO;
     if (openInPlaceAccessOkay) {
@@ -2155,14 +2188,14 @@ static NSDictionary *RoleByFileType()
     }
     
     void (^launchAction)(void) = ^{
-
+        
 #if defined(DEBUG_lizard)
         // We'll always finish launching first, but if I'm wrong, I'd like to know.
         if (!_didFinishLaunching) {
             OBStopInDebugger("openURL before didFinishLaunching?");
         }
 #endif
-
+        
         DEBUG_LAUNCH(1, @"Did openURL:%@ options:%@", url, options);
         
         if ([self isSpecialURL:url]) {
@@ -2186,20 +2219,19 @@ static NSDictionary *RoleByFileType()
             _isOpeningURL = YES;
             // Have to wait for the document store to awake again (if we were backgrounded), initiated by -applicationWillEnterForeground:. <bug:///79297> (Bad animation closing file opened from another app)
             
-            void (^handleInbox)(void) = ^(void){ // This block is misnamed, handles more than just inbox these days...
+            void (^handleIncomingFiles)(void) = ^(void){
                 OBASSERT(_documentStore);
                 
                 void (^scanAction)(void) = ^{
                     if (fileWillBeImported) {
                         [self importDocumentFromURL:url];
-                    } else if (ODSIsZipFileType(fileType) || ODSIsInInbox(url)) { // copy file for sure
+                    } else if (ODSIsInInbox(url)) { // move file for sure
                         OBASSERT(_localScope);
                         
-                        // This is a misnomer now and I should rename it
                         [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
                             __autoreleasing NSError *deleteInboxError = nil;
                             
-                            if (ODSIsInInbox(url) && ![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
+                            if (![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
                                 NSLog(@"Failed to delete the inbox item with error: %@", [deleteInboxError toPropertyList]);
                             }
                             
@@ -2242,6 +2274,10 @@ static NSDictionary *RoleByFileType()
                                 });
                             });
                         }];
+                    } else if (ODSIsZipFileType(fileType)) {
+                        // Similar to the inbox code above, but with proper security rituals and without deleting the original
+                        // Can't just be opened in place, because we want persistent access to the file(s), not the zip they currently live in.
+                        [_externalScopeManager importExternalDocumentFromURL:url];
                     } else if (openInPlaceAccessOkay) {
                         [self openDocumentInPlace:url];
                         return;
@@ -2257,11 +2293,11 @@ static NSDictionary *RoleByFileType()
             };
             
             if (_documentStore && _localScope) {
-                handleInbox();
+                handleIncomingFiles();
             }
             else {
                 OBASSERT(_syncAgent);
-                [_syncAgent afterAsynchronousOperationsFinish:handleInbox];
+                [_syncAgent afterAsynchronousOperationsFinish:handleIncomingFiles];
             }
         }
     };

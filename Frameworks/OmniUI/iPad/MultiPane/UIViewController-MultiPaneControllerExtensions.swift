@@ -43,7 +43,7 @@ extension UIViewController: MultiPaneContentController {
 }
 
 public extension UIViewController {
-    public var multiPaneController: MultiPaneController? {
+    @objc public var multiPaneController: MultiPaneController? {
         if let mulitPane = self as? MultiPaneController {
             return mulitPane
         }

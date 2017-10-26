@@ -1,4 +1,4 @@
-// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,13 +181,13 @@ NS_ASSUME_NONNULL_BEGIN
     
     switch (character) {
         case NSLeftArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask) {
+            if (modifierFlags & NSEventModifierFlagOption) {
                 [self _collapseItems:[self selectedItems] andChildren:YES];
                 return YES;
             }
             break;
         case NSRightArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask) {
+            if (modifierFlags & NSEventModifierFlagOption) {
                 [self _expandItems:[self selectedItems] andChildren:YES];
                 return YES;
             }

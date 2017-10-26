@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,19 +86,19 @@ static NSFont *smallSystemFont;
     Class horizontalScrollerClass = hasHorizontalScroller ? [NSScroller class] : Nil;
     Class verticleScrollerClass = hasVerticalScroller ? [NSScroller class] : Nil;
     
-    contentSize = [[self class] contentSizeForFrameSize:frameSize horizontalScrollerClass:horizontalScrollerClass verticalScrollerClass:verticleScrollerClass borderType:[self borderType] controlSize:NSRegularControlSize scrollerStyle:[NSScroller preferredScrollerStyle]];
+    contentSize = [[self class] contentSizeForFrameSize:frameSize horizontalScrollerClass:horizontalScrollerClass verticalScrollerClass:verticleScrollerClass borderType:[self borderType] controlSize:NSControlSizeRegular scrollerStyle:[NSScroller preferredScrollerStyle]];
 
     if (hasVerticalScroller) {
         NSScroller *verticalScroller = self.verticalScroller;
         NSScrollerStyle scrollerStyle = [[verticalScroller class] preferredScrollerStyle];
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[verticalScroller controlSize] scrollerStyle:scrollerStyle];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSControlSizeRegular scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[verticalScroller controlSize] scrollerStyle:scrollerStyle];
         contentSize.width += scrollerWidthDifference;
     }
 
     if (hasHorizontalScroller) {
         NSScroller *horizontalScroller = self.horizontalScroller;
         NSScrollerStyle scrollerStyle = [[horizontalScroller class] preferredScrollerStyle];
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[horizontalScroller controlSize] scrollerStyle:scrollerStyle];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSControlSizeRegular scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[horizontalScroller controlSize] scrollerStyle:scrollerStyle];
         contentSize.height += scrollerWidthDifference;
     }
 
@@ -160,7 +160,7 @@ static NSFont *smallSystemFont;
         pagePromptTextField = [[NSTextField alloc] initWithFrame:textRect];
 	[pagePromptTextField setFont:smallSystemFont];
 	[pagePromptTextField setStringValue:NSLocalizedStringFromTableInBundle(@"Page", @"OmniAppKit", [OAScrollView bundle], "page prompt for multipage documents in scrollview")];
-	[pagePromptTextField setAlignment:NSRightTextAlignment];
+	[pagePromptTextField setAlignment:NSTextAlignmentRight];
 	[pagePromptTextField setBackgroundColor:[NSColor controlColor]];
         [pagePromptTextField setBezeled:NO];
 	[pagePromptTextField setEditable:NO];
@@ -169,7 +169,7 @@ static NSFont *smallSystemFont;
 	
         pageNumberTextField = [[NSTextField alloc] initWithFrame:textRect];
 	[pageNumberTextField setFont:smallSystemFont];
-	[pageNumberTextField setAlignment:NSCenterTextAlignment];
+	[pageNumberTextField setAlignment:NSTextAlignmentCenter];
         [pageNumberTextField setBezeled:NO];
         [pageNumberTextField setBordered:YES];
 	[pageNumberTextField setTarget:self];
@@ -181,7 +181,7 @@ static NSFont *smallSystemFont;
 
         pagesCountTextField = [[NSTextField alloc] initWithFrame:textRect];
 	[pagesCountTextField setFont:smallSystemFont];
-	[pagesCountTextField setAlignment:NSLeftTextAlignment];
+	[pagesCountTextField setAlignment:NSTextAlignmentLeft];
         [pagesCountTextField setBackgroundColor:[NSColor controlColor]];
 	[pagesCountTextField setBezeled:NO];
 	[pagesCountTextField setEditable:NO];
@@ -252,25 +252,25 @@ static NSFont *smallSystemFont;
     [NSCursor setHiddenUntilMouseMoves:YES];
     switch (character) {
         case NSUpArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask)
+            if (modifierFlags & NSEventModifierFlagOption)
                 [self scrollDownByPages:-1.0f];
             else
                 [self scrollDownByLines:-3.0f];
             return YES;
         case NSDownArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask)
+            if (modifierFlags & NSEventModifierFlagOption)
                 [self scrollDownByPages:1.0f];
             else
                 [self scrollDownByLines:3.0f];
             return YES;
         case NSLeftArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask)
+            if (modifierFlags & NSEventModifierFlagOption)
                 [self scrollRightByPages:-1.0f];
             else
                 [self scrollRightByLines:-3.0f];
             return YES;
         case NSRightArrowFunctionKey:
-            if (modifierFlags & NSAlternateKeyMask)
+            if (modifierFlags & NSEventModifierFlagOption)
                 [self scrollRightByPages:1.0f];
             else
                 [self scrollRightByLines:3.0f];
@@ -282,7 +282,7 @@ static NSFont *smallSystemFont;
             [self scrollDownByPages:1.0f];
             return YES;
         case NSHomeFunctionKey:
-            if (modifierFlags & NSShiftKeyMask)
+            if (modifierFlags & NSEventModifierFlagShift)
                 [self scrollToEnd];
             else
                 [self scrollToTop];
@@ -295,7 +295,7 @@ static NSFont *smallSystemFont;
             [self scrollDownByPages:-1.0f];
             return YES;
         case ' ':
-            if (modifierFlags & NSShiftKeyMask)
+            if (modifierFlags & NSEventModifierFlagShift)
                 [self scrollDownByPages:-1.0f];
             else
                 [self scrollDownByPages:1.0f];
@@ -588,18 +588,18 @@ static NSFont *smallSystemFont;
 
     while (YES) {
         // Peek at the next event
-        theEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+        theEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSEventMaskAny untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
         // Break the loop if there is no next event
         if (!theEvent)
             break;
         // Skip over key-up events
-        else if ([theEvent type] == NSKeyUp) {
-            [super keyUp:[[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
+        else if ([theEvent type] == NSEventTypeKeyUp) {
+            [super keyUp:[[NSApplication sharedApplication] nextEventMatchingMask:NSEventMaskAny untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
             continue;
         }
         // Respond only to key-down events
-        else if ([theEvent type] == NSKeyDown) {
-            [self processKeyDownEvent:[[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
+        else if ([theEvent type] == NSEventTypeKeyDown) {
+            [self processKeyDownEvent:[[NSApplication sharedApplication] nextEventMatchingMask:NSEventMaskAny untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
         }
         // Break the loop on all other event types
         else

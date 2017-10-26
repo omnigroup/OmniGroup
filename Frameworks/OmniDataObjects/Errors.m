@@ -11,11 +11,11 @@
 
 RCS_ID("$Id$")
 
-NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain"; // could be building for iOS, where OMNI_BUNDLE is unavailable
-NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
-NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
+NSErrorDomain const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain"; // could be building for iOS, where OMNI_BUNDLE is unavailable
+NSErrorDomain const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
+NSErrorUserInfoKey const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
 
-static BOOL ODOWrapMultipleErrors(NSError **outError, NSArray<NSError *> *errors, NSString *errorDomain, NSInteger errorCode)
+static BOOL ODOWrapMultipleErrors(NSError **outError, NSArray<NSError *> *errors, NSErrorDomain errorDomain, NSInteger errorCode)
 {
     OBPRECONDITION(outError != NULL);
     

@@ -84,9 +84,6 @@ RCS_ID("$Id$");
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    OBPRECONDITION(nibNameOrNil);
-    OBPRECONDITION(nibBundleOrNil);
-    
     if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
         return nil;
     
