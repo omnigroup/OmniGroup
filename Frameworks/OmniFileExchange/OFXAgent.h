@@ -20,6 +20,7 @@
 
 + (NSArray *)wildcardSyncPathExtensions;
 + (BOOL)hasDefaultSyncPathExtensions;
++ (NSArray *)defaultSyncPathExtensions;
 + (OFXAccountClientParameters *)defaultClientParameters;
 
 + (ODAVConnectionConfiguration *)makeConnectionConfiguration;

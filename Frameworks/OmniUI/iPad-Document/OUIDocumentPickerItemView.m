@@ -849,6 +849,13 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (NSArray<UIDragItem *> *)dragInteraction:(UIDragInteraction *)interaction itemsForAddingToSession:(id<UIDragSession>)session withTouchAtPoint:(CGPoint)point;
 {
+    // Only add to the drag session when it contains other files and when it does not already contain our file
+    for (UIDragItem *dragItem in session.items) {
+        if (![dragItem.localObject isKindOfClass:[ODSItem class]] || dragItem.localObject == self.item) {
+            return @[];
+        }
+    }
+
     return [self _itemsForDragSession:session];
 }
 

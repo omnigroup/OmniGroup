@@ -385,13 +385,13 @@
 "Send Settings via Email" = "通过电子邮件发送设置";
 
 /* Menu option in the document picker view */
-"Send to App" = "发送到应用程序";
+"Send to App" = "发送至 App";
 
 /* Menu option in the document picker view */
 "Send to Files" = "发送至“文件";
 
 /* Menu option in the document picker view */
-"Send to Photos" = "发送至照片";
+"Send to Photos" = "发送至“照片”";
 
 /* export options title
    Menu option in the document picker view */

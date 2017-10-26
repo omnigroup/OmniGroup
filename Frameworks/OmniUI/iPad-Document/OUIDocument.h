@@ -115,6 +115,8 @@
 // UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).
 - (void)saveToURL:(NSURL *)url forSaveOperation:(UIDocumentSaveOperation)saveOperation completionHandler:(void (^)(BOOL success))completionHandler NS_REQUIRES_SUPER;
 
+- (void)accessSecurityScopedResourcesForBlock:(void (^ NS_NOESCAPE)(void))block;
+
 @end
 
 extern OFSaveType OFSaveTypeForUIDocumentSaveOperation(UIDocumentSaveOperation saveOperation);

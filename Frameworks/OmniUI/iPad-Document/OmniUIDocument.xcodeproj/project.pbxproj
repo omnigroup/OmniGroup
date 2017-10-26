@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10EFC3BA1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EFC3B91F5DCDCF00E3C3ED /* OUIMenuItemSendToFiles.png */; };
+		10EFC3BB1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EFC3B81F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@2x.png */; };
+		10EFC3BC1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EFC3B71F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@3x.png */; };
 		15632E511E527ADF003EB174 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E501E527ADF003EB174 /* pt-BR.lproj */; };
 		15632E571E527AE9003EB174 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15632E561E527AE8003EB174 /* ko.lproj */; };
 		15D93DDF1B5ED67400D3D355 /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15D93DD71B5ED67400D3D355 /* de.lproj */; };
@@ -415,6 +418,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		10EFC3B71F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSendToFiles@3x.png"; sourceTree = "<group>"; };
+		10EFC3B81F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSendToFiles@2x.png"; sourceTree = "<group>"; };
+		10EFC3B91F5DCDCF00E3C3ED /* OUIMenuItemSendToFiles.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIMenuItemSendToFiles.png; sourceTree = "<group>"; };
 		15632E501E527ADF003EB174 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		15632E561E527AE8003EB174 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
 		15D93DD71B5ED67400D3D355 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
@@ -847,6 +853,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		10EFC3AD1F5DCDAC00E3C3ED /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				10EFC3B91F5DCDCF00E3C3ED /* OUIMenuItemSendToFiles.png */,
+				10EFC3B81F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@2x.png */,
+				10EFC3B71F5DCDCE00E3C3ED /* OUIMenuItemSendToFiles@3x.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
 		15001B6A1B5ED19A00C67A6E /* Localization */ = {
 			isa = PBXGroup;
 			children = (
@@ -1082,6 +1098,7 @@
 				15001B6A1B5ED19A00C67A6E /* Localization */,
 				342F48DC16779A46007C5FFB /* Configurations */,
 				342F48C6167799AC007C5FFB /* Source */,
+				10EFC3AD1F5DCDAC00E3C3ED /* Images */,
 				342F48C3167799AC007C5FFB /* Frameworks */,
 				342F48C2167799AC007C5FFB /* Products */,
 			);
@@ -1597,6 +1614,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10EFC3BA1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles.png in Resources */,
+				10EFC3BB1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles@2x.png in Resources */,
+				10EFC3BC1F5DCDE200E3C3ED /* OUIMenuItemSendToFiles@3x.png in Resources */,
 				2357BEBF1B68105B00BE9DAD /* OUIBetaBadge@3x.png in Resources */,
 				15632E571E527AE9003EB174 /* ko.lproj in Resources */,
 				2357BEC11B68106000BE9DAD /* OUIBetaBadge@2x.png in Resources */,

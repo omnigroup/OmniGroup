@@ -101,6 +101,8 @@ OB_HIDDEN
     ODSFileItem *_transientFileItem;
     
     OFFileEdit *_lastWrittenFileEdit;
+
+    NSURL *_securityScopedURL;
 }
 
 #if DEBUG_DOCUMENT_DEFINED
@@ -150,14 +152,19 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 {
     OBPRECONDITION(![NSThread isMainThread], "Subclassers are supposed to read the template, so this should be on a background queue.");
     
-    return [self initWithFileItem:nil url:saveURL error:outError];
+    self = [self initWithFileItem:nil url:saveURL error:outError];
+
+    if (self != nil && [templateURLOrNil startAccessingSecurityScopedResource]) {
+        [templateURLOrNil stopAccessingSecurityScopedResource];
+        _securityScopedURL = templateURLOrNil;
+    }
+
+    return self;
 }
 
 - initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
 {
-    if ([NSThread isMainThread]) {
-        OBFinishPortingLater("<bug:///147561> Subclassers are supposed to read the contents at importableURL, so this should be on a background queue.");
-    }
+    OBPRECONDITION(![NSThread isMainThread], "Subclassers are supposed to read the contents at importableURL, so this should be on a background queue.");
 
     return [self initWithFileItem:nil url:saveURL error:outError];
 }
@@ -261,26 +268,13 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     if (_transientFileItem && OFURLEqualsURL(_transientFileItem.fileURL, fileURL))
         return _transientFileItem;
     
-    // This is most likely being hit since we are creating a new document and we are about to set the file item's edit in -saveToURL:forSaveOperation:completionHandler:. So, leave the fileEdit nil on this transient item instead of hitting the assertion in ODSFileItem that it should only be created from a URL on a background thread.
-#if 1
-    OFFileEdit *fileEdit = nil;
     __autoreleasing NSNumber *isDirectoryNumber = nil;
     __autoreleasing NSError *resourceError = nil;
     if (![fileURL getResourceValue:&isDirectoryNumber forKey:NSURLIsDirectoryKey error:&resourceError]) {
-#ifdef DEBUG
-        // One way to get here is closing a document that was deleted by a cloud provider while our app was backgrounded. Not sure if we should handle that differently.
-        NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
-#endif
+        // One way to get here is closing a document that was deleted by a cloud provider while our app was backgrounded. We're just trying to close, so don't try to make a wonky transient file item.
+        return nil;
     }
     BOOL isDirectory = [isDirectoryNumber boolValue];
-#else
-    __autoreleasing NSError *error;
-    OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:fileURL error:&error];
-    BOOL isDirectory = fileEdit.directory;
-    if (!fileEdit) {
-        [error log:@"Cannot create file edit for file at %@", fileURL];
-    }
-#endif
     
     NSDate *userModificationDate = self.fileModificationDate;
     if (!userModificationDate) {
@@ -288,7 +282,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         userModificationDate = [NSDate date];
     }
     
-    _transientFileItem = [_documentScope makeFileItemForURL:fileURL isDirectory:isDirectory fileEdit:fileEdit userModificationDate:userModificationDate];
+    _transientFileItem = [_documentScope makeFileItemForURL:fileURL isDirectory:isDirectory fileEdit:nil userModificationDate:userModificationDate];
     return _transientFileItem;
 }
 
@@ -928,6 +922,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         saveBlock(nil);
 }
 
+- (void)accessSecurityScopedResourcesForBlock:(void (^ NS_NOESCAPE)(void))block;
+{
+    @autoreleasepool {
+        if (_securityScopedURL != nil && ![_securityScopedURL startAccessingSecurityScopedResource])
+            _securityScopedURL = nil;
+        @try {
+            block();
+        } @finally {
+            [_securityScopedURL stopAccessingSecurityScopedResource];
+        }
+    }
+}
+
 - (void)disableEditing;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -1038,10 +1045,11 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
     
     // The document may not exist (deletions while we were backgrounded, which don't go through -accommodatePresentedItemDeletionWithCompletionHandler:, but at any rate we can't read it.
-        OUIDocumentAppController *controller = [OUIDocumentAppController controller];
-        [controller closeDocumentWithCompletionHandler:^{
-            [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
-        }];
+    
+    OUIDocumentAppController *controller = [OUIDocumentAppController controller];
+    [controller closeDocumentWithCompletionHandler:^{
+        [self _cleanupAndSignalFailedRevertWithCompletionHandler:completionHandler];
+    }];
 }
 
 - (void)_cleanupAndSignalFailedRevertWithCompletionHandler:(void (^)(BOOL success))completionHandler;

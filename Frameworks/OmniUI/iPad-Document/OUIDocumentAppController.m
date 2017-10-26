@@ -324,7 +324,7 @@ static unsigned SyncAgentRunningAccountsContext;
     [_documentPicker navigateToBestEffortContainerForItem:_document.fileItem];
     
     OBStrongRetain(_document);
-    [_document closeWithCompletionHandler:^(BOOL success){
+    [_document closeWithCompletionHandler:^(BOOL success) {
         [closingDocumentIndicatorView removeFromSuperview];
         
         // Give the document a chance to break retain cycles.
@@ -436,13 +436,14 @@ static unsigned SyncAgentRunningAccountsContext;
     NSURL *temporaryURL = [_documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
 
     BOOL startedAccess = [url startAccessingSecurityScopedResource];
-    OUIDocument *document = [[cls alloc] initWithContentsOfImportableFileAtURL:url toBeSavedToURL:temporaryURL error:NULL];
+    NSError *error;
+    OUIDocument *document = [[cls alloc] initWithContentsOfImportableFileAtURL:url toBeSavedToURL:temporaryURL error:&error];
     if (startedAccess) {
         [url stopAccessingSecurityScopedResource];
     }
 
     if (document == nil) {
-        OBFinishPortingLater("<bug:///147561> We failed to import the document and we didn't bother to set up a pointer to catch the error.");
+        OUI_PRESENT_ERROR(error);
     }
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -574,6 +575,15 @@ static unsigned SyncAgentRunningAccountsContext;
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(fileItemToOpen);
     OBPRECONDITION(fileItemToOpen.isDownloaded);
+
+    if (_document != nil && _document.fileItem == fileItemToOpen) {
+        // The document we're supposed to open is already open. Let's not do anything, eh?
+        if (completionHandler) {
+            completionHandler();
+        }
+        return;
+    }
+
     
     if (!isOpeningFromPeek) {
         [_documentPicker navigateToContainerForItem:fileItemToOpen dismissingAnyOpenDocument:YES animated:NO];
@@ -749,24 +759,28 @@ static unsigned SyncAgentRunningAccountsContext;
     };
     
     if (_document) {
-        // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail.
+        // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail or Files.
+
         doOpen = [doOpen copy];
-        
+
+        OBASSERT(_document.applicationLock == nil);
         _document.applicationLock = [OUIInteractionLock applicationLock];
         
         [_document closeWithCompletionHandler:^(BOOL success) {
-            [self _setDocument:nil];
+            OUIDocument *localDoc = _document;
             UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
-            if ([topLevelNavController presentedViewController]) {
+            [self _setDocument:nil];
+
+            if ([topLevelNavController presentedViewController] && [[topLevelNavController presentedViewController] isBeingDismissed] == NO) {
                 [topLevelNavController dismissViewControllerAnimated:NO completion:^{
                     doOpen();
-                    [_document.applicationLock unlock];
-                    _document.applicationLock = nil;
+                    [localDoc.applicationLock unlock];
+                    localDoc.applicationLock = nil;
                 }];
             } else {
                 doOpen();
-                [_document.applicationLock unlock];
-                _document.applicationLock = nil;
+                [localDoc.applicationLock unlock];
+                localDoc.applicationLock = nil;
             }
         }];
     } else {
@@ -1626,8 +1640,8 @@ static NSDictionary *RoleByFileType()
 
     if (launchFileItem != nil) {
         DEBUG_LAUNCH(1, @"Opening document %@", [launchFileItem shortDescription]);
-        // LMTODO: Consider letting application:openURL:options: do the opening?
-        [self openDocument:launchFileItem];
+        // We used to actually open the document here, but that fights with application:openURL:options:
+//        [self openDocument:launchFileItem];
         startedOpeningDocument = YES;
     } else if (launchDocumentURL.isFileURL && !OFISEQUAL(launchDocumentURL.pathExtension, @"omnipresence-config")) {
         // application:openURL: will take care of opening the document...
@@ -2141,9 +2155,14 @@ static NSDictionary *RoleByFileType()
     }
     
     void (^launchAction)(void) = ^{
-        if (!_didFinishLaunching)  // if the app is launched by an open request from another app, then this is called and then application:didFinishLaunchingWithOptions: is called
-            return;            // and application:didFinishLaunchingWithOptions: handles opening the doc
-        
+
+#if defined(DEBUG_lizard)
+        // We'll always finish launching first, but if I'm wrong, I'd like to know.
+        if (!_didFinishLaunching) {
+            OBStopInDebugger("openURL before didFinishLaunching?");
+        }
+#endif
+
         DEBUG_LAUNCH(1, @"Did openURL:%@ options:%@", url, options);
         
         if ([self isSpecialURL:url]) {

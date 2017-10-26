@@ -60,7 +60,7 @@ static NSString * const kActionSheetDeleteIdentifier = @"com.omnigroup.OmniUI.OU
 
 static NSString * const FilteredItemsBinding = @"filteredItems";
 
-@interface OUIDocumentPickerViewController () <OUIDocumentTitleViewDelegate, UIViewControllerPreviewingDelegate>
+@interface OUIDocumentPickerViewController () <OUIDocumentTitleViewDelegate, UIViewControllerPreviewingDelegate, UIDropInteractionDelegate>
 
 @property(nonatomic,readonly) ODSFileItem *singleSelectedFileItem;
 
@@ -84,7 +84,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 @property (nonatomic, strong) id <UIViewControllerPreviewing>previewingContext;
 
-@property(nonatomic,readonly) UIActivityIndicatorView *activityIndicator;
+@property (nonatomic,readonly) UIActivityIndicatorView *activityIndicator;
+@property (nonatomic, strong) UIDropProposal *latestDropProposal;
 
 @end
 
@@ -195,7 +196,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                                                      destinationPoint:OFBindingPointMake(self, FilteredItemsBinding)];
     [_filteredItemsBinding propagateCurrentValue];
 #endif
-    
+
     return self;
 }
 
@@ -1420,6 +1421,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [center postNotificationName:@"DocumentPickerViewControllerViewDidLoadNotification"  object:nil];
     
     [self setUpActivityIndicator];
+
+    [self.mainScrollView addInteraction:[[UIDropInteraction alloc] initWithDelegate:self]];
 }
 
 @synthesize activityIndicator = _activityIndicator;
@@ -2143,6 +2146,112 @@ static UIImage *ImageForScope(ODSScope *scope) {
     return NO;
 }
 
+#pragma mark - UIDropInteractionDelegate protocol
+
+- (BOOL)dropInteraction:(UIDropInteraction *)interaction canHandleSession:(id<UIDropSession>)session;
+{
+    OUIDocumentAppController *appController = [OUIDocumentAppController controller];
+    for (UIDragItem *item in session.items) {
+        NSItemProvider *itemProvider = item.itemProvider;
+        for (NSString *registeredTypeIdentifier in itemProvider.registeredTypeIdentifiers) {
+            if ([appController canViewFileTypeWithIdentifier:registeredTypeIdentifier])
+                return YES;
+        }
+    }
+
+    return NO;
+}
+
+- (UIDropProposal *)dropInteraction:(UIDropInteraction *)interaction sessionDidUpdate:(id<UIDropSession>)session;
+{
+    UIDropOperation dropOperation = UIDropOperationCopy;
+    for (UIDragItem *dragItem in session.localDragSession.items) {
+        if ([dragItem.localObject isKindOfClass:[ODSItem class]]) {
+            dropOperation = UIDropOperationMove;
+            break;
+        }
+    }
+
+    if (self.selectedScope.isExternal) {
+        dropOperation = UIDropOperationForbidden;
+    }
+
+    _latestDropProposal = [[UIDropProposal alloc] initWithDropOperation:dropOperation];
+    return _latestDropProposal;
+}
+
+- (void)dropInteraction:(UIDropInteraction *)interaction performDrop:(id<UIDropSession>)session;
+{
+    switch (_latestDropProposal.operation) {
+        case UIDropOperationMove:
+            [self _performMoveForDragItems:session.items];
+            break;
+        case UIDropOperationCopy:
+            [self _performCopyForDragItems:session.items];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)_performMoveForDragItems:(NSArray <UIDragItem *> *)dragItems;
+{
+    ODSScope *targetScope = self.selectedScope;
+    ODSFolderItem *targetFolder = self.folderItem;
+
+    OFMultiValueDictionary <ODSScope *, ODSItem *> *itemsByScope = [[OFMultiValueDictionary alloc] init];
+    for (UIDragItem *dragItem in dragItems) {
+        ODSItem *item = dragItem.localObject;
+        if (![item isKindOfClass:[ODSItem class]])
+            continue; // Ignore items which aren't local file drags
+
+        ODSScope *itemScope = item.scope;
+        ODSFolderItem *itemFolder = item.parentFolder;
+        if (OFNOTEQUAL(itemScope, targetScope) || OFNOTEQUAL(itemFolder, targetFolder)) {
+            [itemsByScope addObject:item forKey:item.scope];
+        }
+    }
+
+    for (ODSScope *scope in itemsByScope.allKeys) {
+        NSArray <ODSItem *> *items = [itemsByScope arrayForKey:scope];
+        [_documentStore moveItems:[NSSet setWithArray:items] fromScope:scope toScope:targetScope inFolder:targetFolder completionHandler:NULL];
+    }
+}
+
+- (void)_performCopyForDragItems:(NSArray <UIDragItem *> *)dragItems;
+{
+    OUIDocumentAppController *appController = [OUIDocumentAppController controller];
+    NSSet *syncExtensionSet = [NSSet setWithArray:[OFXAgent defaultSyncPathExtensions]];
+    for (UIDragItem *dragItem in dragItems) {
+        NSItemProvider *itemProvider = dragItem.itemProvider;
+        for (NSString *registeredTypeIdentifier in itemProvider.registeredTypeIdentifiers) {
+            if ([appController canViewFileTypeWithIdentifier:registeredTypeIdentifier]) {
+                [itemProvider loadFileRepresentationForTypeIdentifier:registeredTypeIdentifier completionHandler:^(NSURL *url, NSError *error) {
+                    if (![syncExtensionSet containsObject:[url pathExtension]]) {
+                        return; // Don't copy in any files we wouldn't sync
+                    }
+
+                    // The file is in a temporary URL that will be removed when we return, but we're not ready to move it to its final location until we've coordinated with some other work queues. So we'll move the file to a temporary location for now, and move it to its final location later.
+                    NSURL *temporaryURL = [_documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
+                    NSError *moveError = nil;
+                    if (![[NSFileManager defaultManager] moveItemAtURL:url toURL:temporaryURL error:&moveError]) {
+                        NSLog(@"Unable to move %@ to temporary file %@: %@", url, temporaryURL, [moveError toPropertyList]);
+                        return;
+                    }
+
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.selectedScope addDocumentInFolder:self.folderItem baseName:[url.lastPathComponent stringByDeletingPathExtension] fileType:registeredTypeIdentifier fromURL:temporaryURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:^(ODSFileItem *duplicateFileItem, NSError *addDocumentError) {
+                            if (duplicateFileItem == nil) {
+                                NSLog(@"Unable to add %@ (temporary file %@): %@", url, temporaryURL, [addDocumentError toPropertyList]);
+                            }
+                        }];
+                    });
+                }];
+                break;
+            }
+        }
+    }
+}
 
 #pragma mark - Internal
 
