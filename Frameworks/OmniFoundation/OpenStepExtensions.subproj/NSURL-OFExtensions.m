@@ -329,7 +329,7 @@ BOOL OFURLIsStandardized(NSURL *url)
 }
 
 
-NSURL *OFURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
+NSURL * _Nullable OFURLRelativeToDirectoryURL(NSURL * _Nullable baseURL, NSString *quotedFileName)
 {
     if (!baseURL || !quotedFileName)
         return nil;

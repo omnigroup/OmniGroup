@@ -22,7 +22,6 @@
 #import <OmniDAV/ODAVFileInfo.h>
 #import <dispatch/dispatch.h>
 #import <stdatomic.h>
-#import <libkern/OSAtomic.h>
 
 RCS_ID("$Id$");
 

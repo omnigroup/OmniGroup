@@ -1517,6 +1517,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         [self _setupTitleLabelToUseInCompactWidth];
         [self setupTopControls];
     }
+    [self _adjustTopControlsAlphaForScrollViewYOffset:_mainScrollView.contentOffset.y];
     
     _mainScrollView.shouldHideTopControlsOnNextLayout = YES;
     
@@ -1776,6 +1777,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller;
 {
     NSLog(@"%s", __PRETTY_FUNCTION__);
+    OBAnalyzerNotReached(); // this resolves a clang static analyzer error. we should presumably always be subclassing this to actually return a non-nil value.
     return nil;
 }
 
@@ -2043,17 +2045,19 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 #pragma mark - UIScrollView delegate
 
+- (void)_adjustTopControlsAlphaForScrollViewYOffset:(CGFloat)yOffset
+{
+    if (_topControls.subviews.count == 0) { return; }
+    CGFloat contentYOffsetForFullAlpha = [_mainScrollView contentOffsetYForTopControlsFullAlpha];
+    CGFloat contentYOffsetForZeroAlpha = [_mainScrollView contentOffsetYToHideTopControls];
+    _topControls.alpha = CLAMP((yOffset - contentYOffsetForZeroAlpha) / (contentYOffsetForFullAlpha - contentYOffsetForZeroAlpha), 0, 1);
+    _titleLabelToUseInCompactWidth.alpha = 1 - _topControls.alpha;
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView;
 {
-    if (_freezeTopControlAlpha) {
-        return;
-    }
-    if (_topControls.subviews.count > 0) {
-        CGFloat contentYOffset = scrollView.contentOffset.y;
-        CGFloat contentYOffsetForFullAlpha = [_mainScrollView contentOffsetYForTopControlsFullAlpha];
-        CGFloat contentYOffsetForZeroAlpha = [_mainScrollView contentOffsetYToHideTopControls];
-        _topControls.alpha = CLAMP((contentYOffset - contentYOffsetForZeroAlpha) / (contentYOffsetForFullAlpha - contentYOffsetForZeroAlpha), 0, 1);
-        _titleLabelToUseInCompactWidth.alpha = 1 - _topControls.alpha;        
+    if (!_freezeTopControlAlpha) {
+        [self _adjustTopControlsAlphaForScrollViewYOffset:scrollView.contentOffset.y];
     }
 }
 
@@ -2154,7 +2158,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     for (UIDragItem *item in session.items) {
         NSItemProvider *itemProvider = item.itemProvider;
         for (NSString *registeredTypeIdentifier in itemProvider.registeredTypeIdentifiers) {
-            if ([appController canViewFileTypeWithIdentifier:registeredTypeIdentifier])
+            if ([appController canViewFileTypeWithIdentifier:[registeredTypeIdentifier lowercaseString]])
                 return YES;
         }
     }

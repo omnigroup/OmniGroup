@@ -29,7 +29,7 @@ static NSString *_doneActionButtonTitle;
 + (NSString *)editActionButtonTitle;
 {
     if (!_editActionButtonTitle) {
-        _editActionButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit", @"OUIInspectors", OMNI_BUNDLE, @"edit action title");
+        _editActionButtonTitle = [self tableViewLabelForLabel:NSLocalizedStringFromTableInBundle(@"Edit", @"OUIInspectors", OMNI_BUNDLE, @"edit action title")];
     }
     return _editActionButtonTitle;
 }
@@ -37,16 +37,22 @@ static NSString *_doneActionButtonTitle;
 + (NSString *)doneActionButtonTitle;
 {
     if (!_doneActionButtonTitle) {
-        _doneActionButtonTitle = NSLocalizedStringFromTableInBundle(@"Done", @"OUIInspectors", OMNI_BUNDLE, @"done action title");
+        _doneActionButtonTitle = [self tableViewLabelForLabel:NSLocalizedStringFromTableInBundle(@"Done", @"OUIInspectors", OMNI_BUNDLE, @"done action title")];
     }
     return _doneActionButtonTitle;
 }
 
-+ (void)updateHeaderButton:(UIButton *)button withTitle:(NSString *)title;
++ (NSString *)tableViewLabelForLabel:(NSString *)label;
 {
 #if UPPERCASE_LABELS
-    title = [title uppercaseStringWithLocale:[NSLocale currentLocale]];
+    label = [label uppercaseStringWithLocale:[NSLocale currentLocale]];
 #endif
+    return label;
+}
+
++ (void)updateHeaderButton:(UIButton *)button withTitle:(NSString *)title;
+{
+    title = [self tableViewLabelForLabel:title];
     [button setTitle:title forState:UIControlStateNormal];
     [button sizeToFit];
 }
@@ -61,15 +67,18 @@ static NSString *_doneActionButtonTitle;
     return button;
 }
 
-+ (UILabel *)headerLabelWiithText:(NSString *)labelString;
++ (UIColor *)headerTextColor;
+{
+    return [UIColor colorWithWhite:0.42f alpha:1];
+}
+
++ (UILabel *)headerLabelWithText:(NSString *)labelString;
 {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
     UIFont *textFont = [UIFont systemFontOfSize:[UIFont systemFontSize]];
     label.font = textFont;
-    label.textColor = [UIColor colorWithWhite:0.42f alpha:1];
-#if UPPERCASE_LABELS
-    labelString = [labelString uppercaseStringWithLocale:[NSLocale currentLocale]];
-#endif
+    label.textColor = self.headerTextColor;
+    labelString = [self tableViewLabelForLabel:labelString];
     label.text = labelString;
     [label sizeToFit];
 
@@ -78,7 +87,7 @@ static NSString *_doneActionButtonTitle;
 
 + (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString actionTitle:(NSString *)actionTitle actionTarget:(id)actionTraget action:(SEL)action section:(NSInteger)section forTableView:(UITableView *)tableView;
 {
-    UILabel *label = [self headerLabelWiithText:labelString];
+    UILabel *label = [self headerLabelWithText:labelString];
     UIButton *actionButton = nil;
 
     if (actionTitle) {
@@ -111,7 +120,7 @@ static NSString *_doneActionButtonTitle;
         [actionButton.leadingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:8.0f].active = YES;
 
     } else {
-        [headerView.trailingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:edgeInsets.right].active = YES;
+        [headerView.trailingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:edgeInsets.left].active = YES;
     }
 
     return headerView;

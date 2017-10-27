@@ -321,8 +321,9 @@ static unsigned SyncAgentRunningAccountsContext;
     [closingDocumentIndicatorView startAnimating];
 
     _document.applicationLock = [OUIInteractionLock applicationLock];
+    [_documentPicker dismissViewControllerAnimated:YES completion:nil];
     [_documentPicker navigateToBestEffortContainerForItem:_document.fileItem];
-    
+
     OBStrongRetain(_document);
     [_document closeWithCompletionHandler:^(BOOL success) {
         [closingDocumentIndicatorView removeFromSuperview];

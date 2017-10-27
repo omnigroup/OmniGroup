@@ -223,7 +223,7 @@ class DiscloseGroupHeaderSlice: OUIInspectorSlice {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        guard let titleLabel = OUIAbstractTableViewInspectorSlice.headerLabelWiithText(self.headerTitle) else {
+        guard let titleLabel = OUIAbstractTableViewInspectorSlice.headerLabel(withText: self.headerTitle) else {
             return
         }
 

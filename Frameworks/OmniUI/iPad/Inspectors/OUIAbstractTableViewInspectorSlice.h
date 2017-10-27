@@ -16,9 +16,11 @@
 @interface OUIAbstractTableViewInspectorSlice : OUIInspectorSlice
 + (NSString *)editActionButtonTitle;
 + (NSString *)doneActionButtonTitle;
++ (NSString *)tableViewLabelForLabel:(NSString *)label;
 + (void)updateHeaderButton:(UIButton *)button withTitle:(NSString *)title;
 + (UIButton *)headerActionButtonWithTitle:(NSString *)title section:(NSInteger)section;
-+ (UILabel *)headerLabelWiithText:(NSString *)labelString;
++ (UIColor *)headerTextColor;
++ (UILabel *)headerLabelWithText:(NSString *)labelString;
 + (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString forTableView:(UITableView *)tableView;
 + (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString useDefaultActionButton:(BOOL)useDefaultActionButton target:(id)target section:(NSInteger)section forTableView:(UITableView *)tableView;
 @property(strong,readonly,nonatomic) UITableView *tableView;

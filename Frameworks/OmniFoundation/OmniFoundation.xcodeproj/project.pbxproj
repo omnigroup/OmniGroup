@@ -1164,6 +1164,7 @@
 		420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
 		42DB7D6F1C8F8BC0008100E4 /* OFBundledClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C6FFE8AAEA611C9CC38 /* OFBundledClass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		42DB7D751C8F8BCB008100E4 /* OFBundledClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C5FFE8AAEA611C9CC38 /* OFBundledClass.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3184A81DADE35D0022430C /* OFDocumentEncryption-Inspection.swift */; };
 		49C39BFE18109E8A005B4248 /* OFNumberFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 49C39BFC18109E8A005B4248 /* OFNumberFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49C39BFF18109E8A005B4248 /* OFNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 49C39BFD18109E8A005B4248 /* OFNumberFormatter.m */; };
 		4A33C8D31CB1DE3F00E2EB57 /* OFSimpleLock-pthreads.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D03FE8AAEA611C9CC38 /* OFSimpleLock-pthreads.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -5714,6 +5715,7 @@
 				34F16C09194F774F00AD9C4D /* NSString-OFSimpleMatching.m in Sources */,
 				1E7E362C19D0F29400A3E540 /* OFSecurityUtilities.m in Sources */,
 				34F16B59194F6E4900AD9C4D /* OFErrorRecovery.m in Sources */,
+				42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */,
 				34D07D491C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
 				34F16B61194F6E6B00AD9C4D /* OFRelativeDateParser-Internal.m in Sources */,
 				34F16B55194F6E3700AD9C4D /* OFNetStateNotifier.m in Sources */,

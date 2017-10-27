@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1178,7 +1178,10 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
     
     if (positionIndex == NSNotFound) {
         OBASSERT([_items member:item] == nil); // If we didn't find the positionIndex it should mean that the item isn't in _items or _sortedItems. If the item is in _items but not _sortedItems, its probably becase we havn't yet called -sortItems.
-        OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
+        if (![[item scope] isExternal]) {
+            // We probably shouldn't have asked for the frame of an external item either, but it's less shocking that there's no index for an external item.
+            OBASSERT_NOT_REACHED("Asking for the frame of an item that is unknown/ignored");
+        }
         return CGRectZero;
     }
     

@@ -96,8 +96,9 @@ class OFDocumentEncryptionSettings : NSObject {
     @objc
     public var passwordHint : String?;
     
-    @objc /**REVIEW**/ internal var recipients : [CMSRecipient];
-    @objc /**REVIEW**/ internal var unreadableRecipientCount : UInt;
+    // Information about recipients. These are only non-private so that they can be used by the -Inspection category.
+    @nonobjc internal var recipients : [CMSRecipient];
+    @nonobjc internal var unreadableRecipientCount : UInt;
     
     private
     init(from wrapper: OFCMSFileWrapper) {

@@ -8,7 +8,7 @@
 // $Id$
 
 #import <Foundation/NSFileHandle.h>
-#import <dispatch/dispatch.h>
+#import <dispatch/data.h>
 
 @interface NSFileHandle (OFExtensions)
 

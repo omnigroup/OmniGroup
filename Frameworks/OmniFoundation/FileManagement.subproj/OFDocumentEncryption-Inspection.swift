@@ -42,9 +42,11 @@ extension OFDocumentEncryptionSettings {
         var dns = [String]();
         
         func addCertInfo(_ cert: SecCertificate) {
+            #if os(OSX)
             if let description = SecCertificateCopyLongDescription(kCFAllocatorDefault, cert, nil) {
                 dns.append(description as String);
             }
+            #endif
             
             var certEmails : CFArray? = nil;
             if SecCertificateCopyEmailAddresses(cert, &certEmails) == 0 {
@@ -69,6 +71,7 @@ extension OFDocumentEncryptionSettings {
             }
         }
         
+        #if os(OSX)
         if (passwords) {
             into[kMDItemSecurityMethod] = "Password Encrypted"; // Magic string from MDItem.h
         } else if (pki) {
@@ -76,6 +79,7 @@ extension OFDocumentEncryptionSettings {
         } else {
             into[kMDItemSecurityMethod] = "Encrypted";
         }
+        #endif
 
         into[OFMDItemEncryptionRecipientCount] = UInt(recipients.count) + unreadableRecipientCount;
     }

@@ -519,11 +519,14 @@ OBPerformPosing(^{
 {
     BOOL result = original_validateUserInterfaceItem(self, _cmd, item);
     
-    if (item.action == @selector(toggleTabBar:)) {
+    // AppKit puts a checkmark on the menu item title, rather than toggling between Show/Hide as is the convention for other AppKit provided menu items.
+    // rdar://problem/28569216
+    //
+    // This is fixed on 10.13 and later
+    BOOL isHighSierraOrLater = [OFVersionNumber isOperatingSystemHighSierraOrLater];
+    if (!isHighSierraOrLater && item.action == @selector(toggleTabBar:)) {
         // Why doesn't NSValidatedUserInterfaceItem conform to NSObject?
         if ([(id)item isKindOfClass:[NSMenuItem class]]) {
-            // AppKit puts a checkmark on the menu item title, rather than toggling between Show/Hide as is the convention for other AppKit provided menu items.
-            // rdar://problem/28569216
             NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, item);
             NSString *title = nil;
             

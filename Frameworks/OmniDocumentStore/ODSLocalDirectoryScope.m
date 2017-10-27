@@ -458,24 +458,8 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
                     NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], @(fileEdit.directory));
 
                     if (![self.documentStore canViewFileTypeWithIdentifier:fileType]) {
-                        [self performAsynchronousFileAccessUsingBlock:^{
-                            // Passing nil for the presenter so that we get our normal deletion notification via file coordination.
-                            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-                            __autoreleasing NSError *error = nil;
-                            [coordinator removeItemAtURL:fileURL error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError){
-                                DEBUG_STORE(@"  coordinator issued URL to delete %@", newURL);
-
-                                __autoreleasing NSError *deleteError = nil;
-                                if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
-                                    NSLog(@"Error deleting %@: %@", [newURL absoluteString], [deleteError toPropertyList]);
-                                    if (outError)
-                                        *outError = deleteError;
-                                    return NO;
-                                }
-
-                                return YES;
-                            }];
-                        }];
+                        // Can't open a file of this type, so don't make a fileItem for it.
+                        // We used to outright delete it, but that seems poor form in the age of iOS 11 Files access.
                         return;
                     }
 

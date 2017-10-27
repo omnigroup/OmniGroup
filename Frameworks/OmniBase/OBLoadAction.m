@@ -61,10 +61,12 @@ static void _InitializeLoadActions(void)
         ExecutableActions = [[NSMutableArray alloc] init];
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-        // Note: adding this observation block on iOS causes a hang in CoreAnimation when initializing a UIWebView
-        [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note){
+        // Note: referencing +[NSOperationQueue mainQueue] here is a bad idea, because our queue is not well-defined before calling NSApplicationMain() or dispatch_main(). Referencing it here caused a hang on iOS in CoreAnimation when initializing a UIWebView, and also caused a hang in file coordination in the NSDocument system on Mac. Instead of asking the notification to be posted on the main queue, we'll just receive the notification on the posting thread and dispatch our block back to the main queue.
+        [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification *note){
             LOADACTION_DEBUG(@"Bundle loaded %@", note.object);
-            OBInvokeRegisteredLoadActions();
+            dispatch_async(dispatch_get_main_queue(), ^{
+                OBInvokeRegisteredLoadActions();
+            });
         }];
 #endif
     });
