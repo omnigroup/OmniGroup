@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSPredicate *ODOCompareSelfToValuePredicate(NSPredicateOperatorType op, id value);
 
 extern NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id _Nullable value);
+extern NSPredicate *ODOKeyPathNotEqualToValuePredicate(NSString *keyPath, id _Nullable value);
 extern NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredicateOperatorType op, id _Nullable value);
 extern NSPredicate *ODOKeyPathTruePredicate(NSString *keyPath);
 extern NSPredicate *ODOKeyPathFalsePredicate(NSString *keyPath);

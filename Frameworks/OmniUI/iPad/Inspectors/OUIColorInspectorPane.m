@@ -26,7 +26,6 @@ RCS_ID("$Id$");
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
         self.title = NSLocalizedStringFromTableInBundle(@"Color", @"OUIInspectors", OMNI_BUNDLE, @"color inspector title");
     }
     return self;

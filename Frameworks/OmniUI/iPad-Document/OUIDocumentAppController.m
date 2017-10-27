@@ -844,7 +844,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (NSString *)sampleDocumentsDirectoryTitle;
 {
-    return NSLocalizedStringFromTableInBundle(@"Restore Sample Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Restore Sample Documents Title");
+    return NSLocalizedStringFromTableInBundle(@"Restore From Sample Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Restore From Sample Documents Title");
 }
 
 - (NSURL *)sampleDocumentsDirectoryURL;
@@ -2764,9 +2764,12 @@ static NSMutableDictionary *spotlightToFileURL;
     [self.window.rootViewController presentViewController:externalDocumentPicker animated:YES completion:nil];
 }
 
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url;
+-(void)documentPicker:(UIDocumentPickerViewController *)picker didPickDocumentsAtURLs:(nonnull NSArray<NSURL *> *)urls;
 {
-    _externalPickerCompletionBlock(url);
+    for (NSURL *url in urls) {
+        _externalPickerCompletionBlock(url);
+    }
+
     [self.window.rootViewController dismissViewControllerAnimated:NO completion:nil];
 }
 

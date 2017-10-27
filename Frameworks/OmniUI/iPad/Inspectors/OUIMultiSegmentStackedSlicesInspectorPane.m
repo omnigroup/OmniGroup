@@ -226,7 +226,7 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     } else {
         [tabBackground.heightAnchor constraintEqualToConstant:VERTICAL_SPACING_FOR_NON_TABS];
         [tabBackground.widthAnchor constraintEqualToAnchor:container.widthAnchor];
-        [constraints addObject:[_contentView.topAnchor constraintEqualToAnchor:self.topLayoutGuide.bottomAnchor constant:VERTICAL_SPACING_FOR_NON_TABS]];
+        [constraints addObject:[_contentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:VERTICAL_SPACING_FOR_NON_TABS]];
     }
 
     [constraints addObjectsFromArray:@[

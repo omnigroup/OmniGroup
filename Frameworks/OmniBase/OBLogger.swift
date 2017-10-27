@@ -113,7 +113,7 @@ private class OBLogLevelMaintainer: NSObject {
     private let updater: (OBLogger?) -> Void
     private let observerContext = UnsafeMutableRawPointer.allocate(bytes: 4, alignedTo: 4)
     
-    init(key: String, updater: @escaping (OBLogger?) -> Void) {
+    @objc /**REVIEW**/ init(key: String, updater: @escaping (OBLogger?) -> Void) {
         self.key = key
         self.updater = updater
         

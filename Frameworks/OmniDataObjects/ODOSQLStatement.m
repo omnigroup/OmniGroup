@@ -510,7 +510,7 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
     
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     NSUInteger rowCount = 0;
-    if (ODOLogSQL)
+    if (ODOSQLDebugLogLevel > 0)
         ODOSQLStatementLogSQL(@"%@;\n", statement->_sql); // ';' not included when we build the SQL.  Of course, this will still have bind '?' placeholders
     
     int rc;
@@ -536,7 +536,7 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
         return NO;
     }
     
-    if (ODOLogSQL) {
+    if (ODOSQLDebugLogLevel > 0) {
         CFAbsoluteTime delta = CFAbsoluteTimeGetCurrent() - start;
         
         totalTime += delta;

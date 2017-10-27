@@ -36,6 +36,12 @@ NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id _Nullable val
     return ODOKeyPathCompareToValuePredicate(keyPath, NSEqualToPredicateOperatorType, value);
 }
 
+// Same as '%K != %@'
+NSPredicate *ODOKeyPathNotEqualToValuePredicate(NSString *keyPath, id _Nullable value)
+{
+    return ODOKeyPathCompareToValuePredicate(keyPath, NSNotEqualToPredicateOperatorType, value);
+}
+
 // Same as '%K = YES'
 NSPredicate *ODOKeyPathTruePredicate(NSString *keyPath)
 {

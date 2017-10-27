@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,25 +9,28 @@
 
 RCS_ID("$Id$");
 
+static OUIUndoIndicator *_sharedIndicator;
+
 @interface OUIUndoIndicatorView : UIView
 - (void)bounce;
 @end
 
 @implementation OUIUndoIndicator
 {
-    UIView *_parentView;
     CALayer *_indicatorDot;
+    CALayer *_accumulatingDot;
 }
 
-- initWithParentView:(UIView *)parentView;
-{
-    OBPRECONDITION(parentView);
-    
++ (OUIUndoIndicator *)sharedIndicator {
+    if (!_sharedIndicator) {
+        _sharedIndicator = [[OUIUndoIndicator alloc] init];
+    }
+    return _sharedIndicator;
+}
+
+- (instancetype)init {
     if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
-    
-    _parentView = parentView;
-
     return self;
 }
 
@@ -56,6 +59,15 @@ RCS_ID("$Id$");
     }
     
     _undoIsEnabled = undoIsEnabled;
+    [self _update];
+}
+
+- (void)setAccumulatingGraphicsChanges:(BOOL)isAccumulating {
+    if (_accumulatingGraphicsChanges == isAccumulating) {
+        return;
+    }
+    
+    _accumulatingGraphicsChanges = isAccumulating;
     [self _update];
 }
 
@@ -90,6 +102,12 @@ RCS_ID("$Id$");
     } else {
         view.backgroundColor = [UIColor darkGrayColor];
     }
+    
+    if (_accumulatingGraphicsChanges) {
+        _accumulatingDot.backgroundColor = [UIColor redColor].CGColor;
+    } else {
+        _accumulatingDot.backgroundColor = [UIColor greenColor].CGColor;
+    }
 }
 
 #pragma mark - UIViewController
@@ -100,7 +118,11 @@ RCS_ID("$Id$");
     view.layer.zPosition = FLT_MAX;
     self.view = view;
     _indicatorDot = [CALayer layer];
+    _accumulatingDot = [CALayer layer];
+    _accumulatingDot.frame = CGRectMake(0, 0, 15, 15);
+    _accumulatingDot.cornerRadius = 15.0/2.0;
     [self.view.layer addSublayer:_indicatorDot];
+    [self.view.layer addSublayer:_accumulatingDot];
 }
 
 @end

@@ -133,7 +133,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 + (BOOL)shouldShowAutosaveIndicator;
 {
-#if 1 && defined(DEBUG_shannon)
+#if 1 && defined(DEBUG)
     return YES;
 #endif
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
@@ -1559,7 +1559,8 @@ static OFPreference *LastEditsPreference;
 - (void)_updateUndoIndicator;
 {
     if (!_undoIndicator && [[self class] shouldShowAutosaveIndicator] && [_documentViewController isViewLoaded]) {
-        _undoIndicator = [[OUIUndoIndicator alloc] initWithParentView:_documentViewController.view];
+        _undoIndicator = [OUIUndoIndicator sharedIndicator];
+        _undoIndicator.parentView = _documentViewController.view;
         if (_documentViewController.navigationController.isNavigationBarHidden == NO) {
             _undoIndicator.frameYOffset = CGRectGetMaxY([_documentViewController.navigationController.navigationBar frame]);
         }

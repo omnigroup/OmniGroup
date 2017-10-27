@@ -82,8 +82,8 @@ RCS_ID("$Id$")
     
     CGFloat topSpaceAdjustment = 0.0f;
     switch(self.operation) {
-        case UINavigationControllerOperationPush: topSpaceAdjustment = [self.fromViewController.topLayoutGuide length]; break;
-        case UINavigationControllerOperationPop: topSpaceAdjustment = [self.toViewController.topLayoutGuide length]; break;
+        case UINavigationControllerOperationPush: topSpaceAdjustment = self.fromViewController.view.safeAreaInsets.top; break;
+        case UINavigationControllerOperationPop: topSpaceAdjustment = self.toViewController.view.safeAreaInsets.top; break;
         default: OBASSERT_NOT_REACHED("Unexpected navigation operation"); break;
     }
     

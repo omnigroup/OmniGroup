@@ -55,7 +55,7 @@ static NSString *_doneActionButtonTitle;
 {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
     UIFont *textFont = [UIFont systemFontOfSize:[UIFont systemFontSize]];
-    button.font = textFont;
+    button.titleLabel.font = textFont;
     button.tag = section;
     [self updateHeaderButton:button withTitle:title];
     return button;

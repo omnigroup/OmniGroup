@@ -123,6 +123,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+- (IBAction)signUpForOmniNewsletter:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 - (MFMailComposeViewController * _Nullable)mailComposeController;
 - (void)sendMailTo:(NSArray<NSString *> *)recipients withComposeController:(MFMailComposeViewController *)mailComposeController;
 

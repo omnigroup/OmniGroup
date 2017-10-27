@@ -1,9 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="8164.2" systemVersion="14E46" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="ipad9_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8135.1"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIExportOptionsController">
@@ -23,16 +27,16 @@
             <rect key="frame" x="0.0" y="0.0" width="540" height="620"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" misplaced="YES" text="Export diagram as: label" lineBreakMode="tailTruncation" numberOfLines="3" minimumScaleFactor="0.80000001192092896" translatesAutoresizingMaskIntoConstraints="NO" id="ab6-3Q-P81">
-                    <rect key="frame" x="20" y="8" width="500" height="19.5"/>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Export diagram as: label" lineBreakMode="tailTruncation" numberOfLines="3" minimumScaleFactor="0.80000001192092896" translatesAutoresizingMaskIntoConstraints="NO" id="ab6-3Q-P81">
+                    <rect key="frame" x="20" y="32" width="500" height="20.5"/>
                     <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
-                    <color key="textColor" red="0.1944827288" green="0.2252457887" blue="0.28919735549999998" alpha="1" colorSpace="calibratedRGB"/>
-                    <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <color key="shadowColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="calibratedRGB"/>
+                    <color key="textColor" red="0.1944827288" green="0.2252457887" blue="0.28919735549999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="shadowColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
                     <size key="shadowOffset" width="0.0" height="1"/>
                 </label>
-                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="7aj-CZ-4yw">
-                    <rect key="frame" x="0.0" y="39" width="540" height="496.5"/>
+                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="7aj-CZ-4yw">
+                    <rect key="frame" x="0.0" y="64.5" width="540" height="471"/>
                     <collectionViewLayout key="collectionViewLayout" id="Tnn-jF-5uz" customClass="OUIExportOptionsCollectionViewLayout"/>
                     <cells/>
                     <connections>
@@ -43,23 +47,23 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="UKy-Rt-LJi">
                     <rect key="frame" x="0.0" y="535" width="540" height="85"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XaS-Ua-Qfy" userLabel="In-app purchase button">
-                            <rect key="frame" x="20" y="8" width="100" height="30"/>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="XaS-Ua-Qfy" userLabel="In-app purchase button">
+                            <rect key="frame" x="20" y="8" width="99" height="30"/>
                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
                             <state key="normal" title="Purchase Now">
-                                <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </state>
                             <state key="highlighted">
-                                <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </state>
                         </button>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Export to here label" lineBreakMode="wordWrap" numberOfLines="2" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="O8H-hZ-FU6">
                             <rect key="frame" x="20" y="46" width="500" height="19"/>
                             <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                            <color key="textColor" red="0.1420471817" green="0.17062419649999999" blue="0.22614604229999999" alpha="1" colorSpace="calibratedRGB"/>
-                            <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <color key="shadowColor" red="0.99989897009999995" green="1" blue="0.9998418093" alpha="0.5" colorSpace="calibratedRGB"/>
+                            <color key="textColor" red="0.1420471817" green="0.17062419649999999" blue="0.22614604229999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.99989897009999995" green="1" blue="0.9998418093" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
                             <size key="shadowOffset" width="0.0" height="1"/>
                         </label>
                     </subviews>
@@ -74,20 +78,21 @@
                     </constraints>
                 </view>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="7aj-CZ-4yw" secondAttribute="trailing" id="3q3-ty-iPp"/>
                 <constraint firstItem="7aj-CZ-4yw" firstAttribute="top" secondItem="ab6-3Q-P81" secondAttribute="bottom" constant="12" id="Fly-rf-kj7"/>
                 <constraint firstAttribute="trailing" secondItem="ab6-3Q-P81" secondAttribute="trailing" constant="20" id="WT1-al-UFl"/>
+                <constraint firstItem="nKu-RI-UpS" firstAttribute="top" secondItem="ab6-3Q-P81" secondAttribute="top" constant="-12" id="Y8Z-aa-KzR"/>
                 <constraint firstItem="UKy-Rt-LJi" firstAttribute="top" secondItem="7aj-CZ-4yw" secondAttribute="bottom" id="a6h-JA-svu"/>
                 <constraint firstItem="7aj-CZ-4yw" firstAttribute="leading" secondItem="WlQ-m4-Gye" secondAttribute="leading" id="dCn-ak-L2r"/>
                 <constraint firstItem="UKy-Rt-LJi" firstAttribute="leading" secondItem="WlQ-m4-Gye" secondAttribute="leading" id="eTp-b7-7kC"/>
                 <constraint firstAttribute="trailing" secondItem="UKy-Rt-LJi" secondAttribute="trailing" id="gqT-ow-gV8"/>
                 <constraint firstAttribute="bottom" secondItem="UKy-Rt-LJi" secondAttribute="bottom" id="jMG-8g-QKN"/>
-                <constraint firstItem="ab6-3Q-P81" firstAttribute="top" secondItem="WlQ-m4-Gye" secondAttribute="topMargin" placeholder="YES" id="mPk-W9-szu"/>
                 <constraint firstItem="ab6-3Q-P81" firstAttribute="leading" secondItem="WlQ-m4-Gye" secondAttribute="leading" constant="20" id="veJ-aq-Rzj"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="nKu-RI-UpS"/>
             <point key="canvasLocation" x="-13" y="231"/>
         </view>
     </objects>

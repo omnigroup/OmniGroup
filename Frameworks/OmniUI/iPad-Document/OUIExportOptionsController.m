@@ -88,7 +88,6 @@ RCS_ID("$Id$")
     if (!(self = [super initWithNibName:@"OUIExportOptions" bundle:OMNI_BUNDLE]))
         return nil;
     
-    self.automaticallyAdjustsScrollViewInsets = YES;
     _serverAccount = serverAccount;
     _fileItem = fileItem;
     _exportType = exportType;
@@ -109,9 +108,6 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor colorWithWhite:0.94 alpha:1.0];
-
-    // Need to constrain this manually because we're not in a storyboard and so don't have a for-real topLayoutGuide
-    [NSLayoutConstraint constraintWithItem:self.exportDescriptionLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1.0 constant:20.0].active = YES;
 
     UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
@@ -613,8 +609,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 }
 
 #pragma mark - UIDocumentPickerDelegate
-
-- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url;
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentsAtURLs:(nonnull NSArray<NSURL *> *)urls
 {
     [self dismissViewControllerAnimated:NO completion:nil];
 }

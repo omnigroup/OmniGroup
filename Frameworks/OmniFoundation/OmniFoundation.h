@@ -199,6 +199,7 @@
     #import <OmniFoundation/NSComparisonPredicate-OFExtensions.h>
     #import <OmniFoundation/NSData-OFFileIO.h>
     #import <OmniFoundation/NSException-OFExtensions.h>
+    #import <OmniFoundation/NSFileHandle-OFExtensions.h>
     #import <OmniFoundation/NSFileManager-OFExtensions.h>
     #import <OmniFoundation/NSMutableData-OFExtensions.h>
     #import <OmniFoundation/NSNotificationCenter-OFExtensions.h>

@@ -43,6 +43,11 @@ NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
 NSString *OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
 NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
 
+@interface UIApplication (NewsletterExtensions)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *signUpForOmniNewsletterQueryItems;
+@end
+
+
 @interface OUIAppController ()
 @property(strong, nonatomic) NSTimer *timerForSnapshots;
 @property(strong, nonatomic) NSMapTable *appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems;
@@ -646,8 +651,8 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
         _appMenuController = [[OUIMenuController alloc] init];
     
     _appMenuController.topOptions = [self _appMenuTopOptions];
-    _appMenuController.tintColor = self.window.tintColor;
-    
+    _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
+
     UIBarButtonItem *appropriatePresenter = nil;
     if ([sender isKindOfClass:[UIBarButtonItem class]])
     {
@@ -664,6 +669,23 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self sendFeedbackWithSubject:[self _defaultFeedbackSubject] body:nil];
+}
+
+- (IBAction)signUpForOmniNewsletter:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    NSArray *queryItems = nil;
+    
+    // Omni apps provide additional parameters
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(signUpForOmniNewsletterQueryItems)]) {
+        queryItems = [UIApplication sharedApplication].signUpForOmniNewsletterQueryItems;
+    }
+    
+    NSString *urlString = @"https://www.omnigroup.com/forward/letters/";
+    NSURLComponents *urlComponents = [NSURLComponents componentsWithString:urlString];
+    urlComponents.queryItems = queryItems;
+    
+    NSURL *signUpURL = urlComponents.URL;
+    [[UIApplication sharedApplication] openURL:signUpURL options:@{} completionHandler:nil];
 }
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("")
@@ -927,6 +949,14 @@ static UIImage *menuImage(NSString *name)
                                                            title:feedbackMenuTitle
                                                            image:menuImage(@"OUIMenuItemSendFeedback.png")];
         [options addObject:option];
+    }
+
+    {   // Sign up for the Omni Newsletter
+        NSString *newsletterTitle = NSLocalizedStringFromTableInBundle(@"Omni Newsletter Signup", @"OmniUI", OMNI_BUNDLE, @"Menu item to subscribe to Omni's newsletter");
+        OUIMenuOption *newsletterOption = [OUIMenuOption optionWithFirstResponderSelector:@selector(signUpForOmniNewsletter:)
+                                                                                    title:newsletterTitle
+                                                                                    image:menuImage(@"OUIMenuItemNewsletter.png")];
+        [options addObject:newsletterOption];
     }
 
     if ([self mostRecentNewsURLString]){

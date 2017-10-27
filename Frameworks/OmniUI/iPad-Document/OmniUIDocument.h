@@ -29,7 +29,6 @@
 #import <OmniUIDocument/OUIDocumentTitleView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIExportOptionsType.h>
-#import <OmniUIDocument/OUIReplaceDocumentAlert.h>
 #import <OmniUIDocument/OUIReplaceRenameDocumentAlertController.h>
 #import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniUIDocument/OUIServerAccountSetupViewController-Subclass.h>

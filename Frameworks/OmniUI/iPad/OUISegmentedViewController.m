@@ -54,9 +54,8 @@ RCS_ID("$Id$")
     
     NSDictionary *views = NSDictionaryOfVariableBindings(_navigationBar);
     [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_navigationBar]|" options:0 metrics:nil views:views]];
-    
-    
-    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
+
+    [self.view addConstraint:[self.navigationBar.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor]];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;

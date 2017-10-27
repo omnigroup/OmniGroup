@@ -969,7 +969,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     menu.topOptions = topLevelMenuOptions;
     if (topLevelMenuTitle)
         menu.title = topLevelMenuTitle;
-    menu.tintColor = self.navigationController.navigationBar.tintColor;
+    menu.tintColor = UIColor.blackColor; // icons are colorful, untinted menu is most harmonious
     menu.popoverPresentationController.barButtonItem = _moveBarButtonItem;
     menu.didFinish = didFinishHandler;
     

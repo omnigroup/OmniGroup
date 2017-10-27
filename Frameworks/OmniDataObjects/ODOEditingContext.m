@@ -1320,7 +1320,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     // Even if we aren't connected, we can still do in-memory operations.  If the database is totally fresh (no saves have been done since the schema was created) doing a fetch is pointless.  This is an optimization for the import case where we fill caches prior to saving for the first time
     if ([_database connection] && ![_database isFreshlyCreated]) {
         //NSLog(@"fetch: %@, predicate = %@, sort = %@", [[fetch entity] name], [fetch predicate], [fetch sortDescriptors]);
-        if (ODOLogSQL) {
+        if (ODOSQLDebugLogLevel > 0) {
             NSString *reason = [fetch reason];
             if ([reason length] == 0)
                 reason = @"UNKNOWN";
@@ -1364,7 +1364,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
         ODOUpdateResultSetForInMemoryChanges(self, ctx.results, rootEntity, predicate);
         CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
 
-        if (ODOLogSQL) {
+        if (ODOSQLDebugLogLevel > 0) {
             NSString *reason = [fetch reason];
             if ([reason length] == 0)
                 reason = @"UNKNOWN";

@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,12 +54,6 @@ RCS_ID("$Id$");
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    // Need to be pinned to the topLayoutGude so we get the automatic 64pt high nav bar that goes under the status bar.
-    [NSLayoutConstraint constraintWithItem:self.navBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual
-                                    toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom
-                                multiplier:1.0
-                                  constant:0.0].active = YES;
     
     self.navBar.delegate = self;
     self.navBarHeightConstraint.constant = 0.0;

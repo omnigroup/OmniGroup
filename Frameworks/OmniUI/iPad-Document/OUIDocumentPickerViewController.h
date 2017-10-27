@@ -9,7 +9,6 @@
 
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
-#import <OmniUIDocument/OUIReplaceDocumentAlert.h>
 #import <OmniUIDocument/OUIExportOptionsType.h>
 #import <OmniUIDocument/OUIDocumentExporter.h>
 

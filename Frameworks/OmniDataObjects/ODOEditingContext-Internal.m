@@ -569,7 +569,7 @@ void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object)
     OBPRECONDITION(![object isUpdated]);
     OBPRECONDITION(![object isDeleted]);
     
-    if (ODOLogSQL)
+    if (ODOSQLDebugLogLevel > 0)
         ODOSQLStatementLogSQL(@"/* object fault %@ */ ", [object shortDescription]);
 
     ODORowFetchContext ctx;
@@ -663,7 +663,7 @@ NSMutableSet * ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORe
         return [NSMutableSet set];
     }
     
-    if (ODOLogSQL)
+    if (ODOSQLDebugLogLevel > 0)
         ODOSQLStatementLogSQL(@"/* to-many fault %@.%@ */ ", [owner shortDescription], [rel name]);
     
     

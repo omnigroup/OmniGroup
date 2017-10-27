@@ -1523,6 +1523,10 @@
 		A2DF1E3B0F782CAA0093FEFA /* OFXMLMaker.h in Headers */ = {isa = PBXBuildFile; fileRef = A2DF1E390F782CAA0093FEFA /* OFXMLMaker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2DF1E3C0F782CAA0093FEFA /* OFXMLMaker.m in Sources */ = {isa = PBXBuildFile; fileRef = A2DF1E3A0F782CAA0093FEFA /* OFXMLMaker.m */; };
 		A2FE46650E50C35300977722 /* OFLowerCaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 06DB16D9FF5DCC3BC697A12F /* OFLowerCaseTest.m */; };
+		A2FF79651F71ECE20054DA38 /* NSFileHandle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A2FF79661F71ECE20054DA38 /* NSFileHandle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A2FF79671F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		A2FF79681F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		E22C340514577CBA0036797A /* OFCompletionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = E218273A145605170097BBFE /* OFCompletionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E22C35AE14587A780036797A /* OFIndexPath.h in Headers */ = {isa = PBXBuildFile; fileRef = E2182735145604D60097BBFE /* OFIndexPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E22C35B014587A7D0036797A /* OFIndexPath.m in Sources */ = {isa = PBXBuildFile; fileRef = E218272F1456049B0097BBFE /* OFIndexPath.m */; };
@@ -2584,6 +2588,8 @@
 		A2DF1E3A0F782CAA0093FEFA /* OFXMLMaker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLMaker.m; sourceTree = "<group>"; };
 		A2EFB0C3140C2CF000B932C0 /* OFXZUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXZUtilities.h; sourceTree = "<group>"; };
 		A2EFB0C4140C2CF000B932C0 /* OFXZUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXZUtilities.m; sourceTree = "<group>"; };
+		A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSFileHandle-OFExtensions.h"; sourceTree = "<group>"; };
+		A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSFileHandle-OFExtensions.m"; sourceTree = "<group>"; };
 		B52ADE9A06138D530097A154 /* OFStringScannerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFStringScannerTest.m; sourceTree = "<group>"; };
 		B58A47670662B2E30097A154 /* OFXMLIdentifierRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifierRegistry.h; sourceTree = "<group>"; };
 		B58A47680662B2E30097A154 /* OFXMLIdentifierRegistry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLIdentifierRegistry.m; sourceTree = "<group>"; };
@@ -2999,6 +3005,8 @@
 				00E51D13FE8AAEA611C9CC38 /* NSException-OFExtensions.m */,
 				34BED7D116E124C300FCE296 /* NSFileCoordinator-OFExtensions.h */,
 				34BED7D216E124C300FCE296 /* NSFileCoordinator-OFExtensions.m */,
+				A2FF79631F71ECE20054DA38 /* NSFileHandle-OFExtensions.h */,
+				A2FF79641F71ECE20054DA38 /* NSFileHandle-OFExtensions.m */,
 				00E51D31FE8AAEA611C9CC38 /* NSFileManager-OFExtensions.h */,
 				00E51D14FE8AAEA611C9CC38 /* NSFileManager-OFExtensions.m */,
 				3455B52E11116CCA00074705 /* NSFileManager-OFSimpleExtensions.h */,
@@ -4177,6 +4185,7 @@
 				34A061A81EC110A60099028D /* OFScheduler.h in Headers */,
 				34A061A91EC110A60099028D /* OFXMLBuffer.h in Headers */,
 				34A061AA1EC110A60099028D /* OFXMLElementParser.h in Headers */,
+				A2FF79661F71ECE20054DA38 /* NSFileHandle-OFExtensions.h in Headers */,
 				34A061AB1EC110A60099028D /* OFXMLCursor.h in Headers */,
 				34A061AC1EC110A60099028D /* OFAEADCryptor.h in Headers */,
 				34A061AD1EC110A60099028D /* OFXMLDocument.h in Headers */,
@@ -4593,6 +4602,7 @@
 				4A4E069C08AA72B10098FF0F /* OFScheduler.h in Headers */,
 				4A4E069E08AA72B10098FF0F /* OFXMLBuffer.h in Headers */,
 				34DC24AD1E9D41CB001F7A57 /* OFXMLElementParser.h in Headers */,
+				A2FF79651F71ECE20054DA38 /* NSFileHandle-OFExtensions.h in Headers */,
 				4A4E069F08AA72B10098FF0F /* OFXMLCursor.h in Headers */,
 				1EBFA4221D344A3500771F02 /* OFAEADCryptor.h in Headers */,
 				4A4E06A008AA72B10098FF0F /* OFXMLDocument.h in Headers */,
@@ -5427,6 +5437,7 @@
 				34A0623E1EC110A60099028D /* OFEnumNameTable.m in Sources */,
 				34A0623F1EC110A60099028D /* OFHeap.m in Sources */,
 				34A062401EC110A60099028D /* OFASN1Utilities.m in Sources */,
+				A2FF79681F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */,
 				34A062411EC110A60099028D /* OFKnownKeyDictionaryTemplate.m in Sources */,
 				34A062421EC110A60099028D /* OFMatrix.m in Sources */,
 				34A062431EC110A60099028D /* OFMultiValueDictionary.m in Sources */,
@@ -5875,6 +5886,7 @@
 				4A4E06C408AA72B10098FF0F /* OFEnumNameTable.m in Sources */,
 				4A4E06C608AA72B10098FF0F /* OFHeap.m in Sources */,
 				1E1B93AC19D232A700693752 /* OFASN1Utilities.m in Sources */,
+				A2FF79671F71ECE20054DA38 /* NSFileHandle-OFExtensions.m in Sources */,
 				4A4E06C708AA72B10098FF0F /* OFKnownKeyDictionaryTemplate.m in Sources */,
 				4A4E06C908AA72B10098FF0F /* OFMatrix.m in Sources */,
 				4A4E06CA08AA72B10098FF0F /* OFMultiValueDictionary.m in Sources */,

@@ -98,6 +98,80 @@
       "name": "iPhone 7 Plus",
       "platform": "iPhone9,4"
   },
+  "D20AP": {
+      "name": "iPhone 8",
+      "platform": "iPhone10,1"
+  },
+  "D201AP": {
+      "name": "iPhone 8",
+      "platform": "iPhone10,4"
+  },
+  "D21AP": {
+      "name": "iPhone 8 Plus",
+      "platform": "iPhone10,2"
+  },
+  "D211AP": {
+      "name": "iPhone 8 Plus",
+      "platform": "iPhone10,5"
+  },
+  "D22AP": {
+      "name": "iPhone X",
+      "platform": "iPhone10,3"
+  },
+  "D221AP": {
+      "name": "iPhone X",
+      "platform": "iPhone10,6"
+  },
+  "N27aAP": {
+    "name": "Apple Watch (1st generation)",
+    "platform": "Watch1,1",
+    "comment": "38mm"
+  },
+  "N28aAP": {
+    "name": "Apple Watch (1st generation)",
+    "platform": "Watch1,2",
+    "comment": "42mm"
+  },
+  "N27dAP": {
+    "name": "Apple Watch Series 1",
+    "platform": "Watch2,6",
+    "comment": "38mm"
+  },
+  "N28dAP": {
+    "name": "Apple Watch Series 1",
+    "platform": "Watch2,7",
+    "comment": "42mm"
+  },
+  "N74AP": {
+    "name": "Apple Watch Series 2",
+    "platform": "Watch2,3",
+    "comment": "38mm"
+  },
+  "N75AP": {
+    "name": "Apple Watch Series 2",
+    "platform": "Watch2,4",
+    "comment": "42mm"
+  },
+  "N111sAP": {
+    "name": "Apple Watch Series 3",
+    "platform": "Watch3,1",
+    "comment": "38mm cellular"
+  },
+  "N111bAP": {
+    "name": "Apple Watch Series 3",
+    "platform": "Watch3,2",
+    "comment": "42mm cellular"
+  },
+  "N121sAP": {
+    "name": "Apple Watch Series 3",
+    "platform": "Watch3,3",
+    "comment": "38mm"
+  },
+  "N121bAP": {
+    "name": "Apple Watch Series 3",
+    "platform": "Watch3,4",
+    "comment": "42mm"
+  },
   "K48AP": {
     "name": "iPad 1"
   },
@@ -286,6 +360,10 @@
   "J42dAP": {
     "name": "Apple TV 4",
     "platform": "AppleTV5,3"
+  },
+  "J105aAP": {
+    "name": "Apple TV 4K",
+    "platform": "AppleTV6,2"
   },
   "iMac,1": {
     "name": "iMac G3"

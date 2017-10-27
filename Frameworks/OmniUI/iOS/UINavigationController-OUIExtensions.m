@@ -26,8 +26,8 @@ RCS_ID("$Id$")
     CGPoint topLeft = CGPointZero;
     CGPoint topRight = CGPointZero;
     if (self.navigationBarHidden) {
-        CGPoint topLeftInMyCoords = CGPointMake(CGRectGetMinX(self.view.bounds), self.view.bounds.origin.y + self.topLayoutGuide.length);
-        CGPoint topRightInMyCoords = CGPointMake(CGRectGetMaxX(self.view.bounds), self.view.bounds.origin.y + self.topLayoutGuide.length);
+        CGPoint topLeftInMyCoords = CGPointMake(CGRectGetMinX(self.view.bounds), self.view.bounds.origin.y + self.view.safeAreaInsets.top);
+        CGPoint topRightInMyCoords = CGPointMake(CGRectGetMaxX(self.view.bounds), self.view.bounds.origin.y + self.view.safeAreaInsets.top);
         topLeft = [self.view convertPoint:topLeftInMyCoords toView:view];
         topRight = [self.view convertPoint:topRightInMyCoords toView:view];
     } else {

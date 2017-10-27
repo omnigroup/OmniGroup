@@ -8,13 +8,14 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFPreference.h>
 
 @class NSPredicate, NSURL, NSError, NSString, NSArray;
 @class ODOModel, ODOEntity, ODOAttribute, ODOObjectID, ODOSQLConnection, ODOSQLStatement;
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern BOOL ODOLogSQL; // Not set until +[ODODatabase initialize]
+extern NSInteger ODOSQLDebugLogLevel;
 
 @interface ODODatabase : OFObject
 

@@ -96,8 +96,8 @@ class OFDocumentEncryptionSettings : NSObject {
     @objc
     public var passwordHint : String?;
     
-    internal var recipients : [CMSRecipient];
-    internal var unreadableRecipientCount : UInt;
+    @objc /**REVIEW**/ internal var recipients : [CMSRecipient];
+    @objc /**REVIEW**/ internal var unreadableRecipientCount : UInt;
     
     private
     init(from wrapper: OFCMSFileWrapper) {

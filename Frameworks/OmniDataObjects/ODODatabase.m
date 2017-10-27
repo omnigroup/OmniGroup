@@ -114,7 +114,8 @@ static void ODOComparisonPredicateContainsFunction(sqlite3_context *ctx, int nAr
     ODOComparisonPredicateContainsStringGeneric(ctx, nArgs, values, ODOComparisonPredicateContainsAnywhereLocation);
 }
 
-BOOL ODOLogSQL = NO;
+OFDeclareDebugLogLevel(ODOSQLDebugLogLevel);
+
 static BOOL ODOAsynchronousWrites = NO;
 static BOOL ODOKeepTemporaryStoreInMemory = NO;
 static BOOL ODOVacuumOnDisconnect = NO;
@@ -147,7 +148,6 @@ static BOOL ODOVacuumOnDisconnect = NO;
 + (void)initialize;
 {
     OBINITIALIZE;
-    ODOLogSQL = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOLogSQL"];
     ODOAsynchronousWrites = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOAsynchronousWrites"];
     ODOKeepTemporaryStoreInMemory = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOKeepTemporaryStoreInMemory"];
     ODOVacuumOnDisconnect = [[NSUserDefaults standardUserDefaults] boolForKey:@"ODOVacuumOnDisconnect"];
@@ -209,7 +209,7 @@ static BOOL ODOVacuumOnDisconnect = NO;
 
 - (BOOL)connectToURL:(NSURL *)fileURL error:(NSError **)outError;
 {
-    if (ODOLogSQL)
+    if (ODOSQLDebugLogLevel > 0)
         NSLog(@"Connecting to %@", [fileURL absoluteURL]);
     
     if (_connection) {
@@ -600,7 +600,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
         return NO;
     }
     
-    if (ODOLogSQL)
+    if (ODOSQLDebugLogLevel > 0)
         NSLog(@"Disconnecting from %@", [_connection.URL absoluteURL]);
     
     [_beginTransactionStatement invalidate];

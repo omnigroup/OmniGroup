@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,6 @@ RCS_ID("$Id$")
 #pragma mark -
 
 @interface OUIDocumentPickerAdaptableContainerViewController () <UINavigationControllerDelegate>
-@property (weak, nonatomic) IBOutlet UIView *outerContainerView; // for alignment under the topLayoutGuide
 @property (weak, readwrite, nonatomic) IBOutlet UIImageView *backgroundView;
 @end
 
@@ -45,9 +44,6 @@ RCS_ID("$Id$")
 
 - (void)viewDidLoad;
 {
-    // Since XIBs don't support topLayoutGuide, we need to construct it manually.
-    [NSLayoutConstraint constraintWithItem:_outerContainerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1 constant:0].active = YES;
-    
     // Clip the corners of the container view
     CALayer *layer = self.containerView.layer;
     layer.cornerRadius = 8.0f;
