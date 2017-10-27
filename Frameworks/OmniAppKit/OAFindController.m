@@ -296,8 +296,10 @@ RCS_ID("$Id$")
     NSResponder *responder = firstResponder;
     do {
         target = [responder omniFindControllerTarget];
-        if (target != nil)
+        if (target != nil) {
+            OBASSERT([target conformsToProtocol:@protocol(OAFindControllerTarget)]);
             return target;
+        }
         responder = [responder nextResponder];
     } while (responder != nil && responder != firstResponder);
     return nil;

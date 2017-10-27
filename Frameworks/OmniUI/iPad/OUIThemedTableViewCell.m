@@ -51,7 +51,7 @@ RCS_ID("$Id$");
 
     if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
         [self applyDefaultLabelColors];
-        UITableView *tableView = [self containingViewOfClass:[UITableView class]];
+        UITableView *tableView = [self enclosingViewOfClass:[UITableView class]];
         [self applyBackgroundColorsForTableView:tableView];
     }
 }
@@ -96,7 +96,7 @@ RCS_ID("$Id$");
 - (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
 {
     [super themedAppearanceDidChange:changedAppearance];
-    UITableView *tableView = [self containingViewOfClass:[UITableView class]];
+    UITableView *tableView = [self enclosingViewOfClass:[UITableView class]];
     [self applyBackgroundColorsForTableView:tableView];
     [self applyDefaultLabelColors];
 }

@@ -68,7 +68,7 @@
 		3479A3A91AB8DCC20077BB01 /* OSUOpenGLExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A2E31DE510279DEA00FE04CC /* OSUOpenGLExtensions.m */; };
 		3479A3AC1AB8DDFC0077BB01 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3479A3AA1AB8DDF10077BB01 /* CoreGraphics.framework */; };
 		3479A3AD1AB8DE0D0077BB01 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F160634086B0097A113 /* IOKit.framework */; };
-		3479A3AE1AB8DE260077BB01 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A5F505184E474C00E8BA9A /* Cocoa.framework */; };
+		3479A3AE1AB8DE260077BB01 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		348A78891B583D280082D55D /* InfoPlist.h in Headers */ = {isa = PBXBuildFile; fileRef = 34775A231266672800FCDD2D /* InfoPlist.h */; };
 		348A788A1B583D2C0082D55D /* OSUFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F559184E62E500E8BA9A /* OSUFeatures.h */; };
 		348A788B1B583D340082D55D /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
@@ -120,7 +120,7 @@
 		34A2E0E8184F9363009E0D9F /* OSUPreferences-Items.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2E0E6184F9363009E0D9F /* OSUPreferences-Items.h */; };
 		34A2E0E9184F9363009E0D9F /* OSUPreferences-Items.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0E7184F9363009E0D9F /* OSUPreferences-Items.m */; };
 		34A2E0EB184F9375009E0D9F /* OSUPreferences-Items.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0E7184F9363009E0D9F /* OSUPreferences-Items.m */; };
-		34A5F506184E474C00E8BA9A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A5F505184E474C00E8BA9A /* Cocoa.framework */; };
+		34A5F506184E474C00E8BA9A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		34A5F510184E474C00E8BA9A /* Preferences.strings in Resources */ = {isa = PBXBuildFile; fileRef = 34A5F50E184E474C00E8BA9A /* Preferences.strings */; };
 		34A5F53F184E519C00E8BA9A /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		34A5F540184E519C00E8BA9A /* OSUPreferences.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FE701264F09D00FDFEBB /* OSUPreferences.m */; };
@@ -128,7 +128,7 @@
 		34A5F542184E519C00E8BA9A /* OSUCheckOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416044B0C6913CC002839DF /* OSUCheckOperation.m */; };
 		34A5F545184E519C00E8BA9A /* OSURunTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 3456AED10C1201300066F5F4 /* OSURunTime.m */; };
 		34A5F549184E522400E8BA9A /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F5380E516F8DA1C00E7A8EC /* OmniBase.framework */; };
-		34A5F54A184E522A00E8BA9A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		34A5F54A184E522A00E8BA9A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277A1ECA122D00181154 /* OmniFoundation.framework */; };
 		34A5F54B184E522F00E8BA9A /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E3E2717166EA87700BFFA4C /* OmniAppKit.framework */; };
 		34A5F550184E554100E8BA9A /* InfoPlist.h in Headers */ = {isa = PBXBuildFile; fileRef = 34775A231266672800FCDD2D /* InfoPlist.h */; };
 		34A5F551184E554A00E8BA9A /* OSUErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EDDEC80C6127FD009E2E27 /* OSUErrors.h */; };
@@ -157,8 +157,8 @@
 		34CEC66818565B530030515C /* OSULinkButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CEC66518565B530030515C /* OSULinkButton.h */; };
 		34CEC66918565B530030515C /* OSULinkButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CEC66618565B530030515C /* OSULinkButton.m */; };
 		34CEC66A18565B530030515C /* OSULinkButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CEC66618565B530030515C /* OSULinkButton.m */; };
-		34CECFF21B59A07F0075705C /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CECFF11B59A07F0075705C /* OmniUI.framework */; };
-		34CECFFD1B59A0A10075705C /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CECFFC1B59A0A10075705C /* OmniFoundation.framework */; };
+		34CECFF21B59A07F0075705C /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 345C36AE1ECA07B300D44897 /* OmniUI.framework */; };
+		34CECFFD1B59A0A10075705C /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277C1ECA122D00181154 /* OmniFoundation.framework */; };
 		34CECFFF1B59A0A60075705C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CECFFE1B59A0A60075705C /* UIKit.framework */; };
 		34CED0021B59A0C10075705C /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34825EE219509B150026EABC /* OmniBase.framework */; };
 		34CED0031B59A0FB0075705C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3479A3AA1AB8DDF10077BB01 /* CoreGraphics.framework */; };
@@ -198,8 +198,8 @@
 		4912144809D4B6EF003DC19F /* OSUTestApp.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4912144609D4B6EF003DC19F /* OSUTestApp.xib */; };
 		4912145709D4BDD9003DC19F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		4912145809D4BDDD003DC19F /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E3E2717166EA87700BFFA4C /* OmniAppKit.framework */; };
-		4912145909D4BDDE003DC19F /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
-		4912145A09D4BDDF003DC19F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		4912145909D4BDDE003DC19F /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F5380E516F8DA1C00E7A8EC /* OmniBase.framework */; };
+		4912145A09D4BDDF003DC19F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277A1ECA122D00181154 /* OmniFoundation.framework */; };
 		4912145C09D4BE36003DC19F /* OmniSoftwareUpdate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */; };
 		4912150409D8B1DB003DC19F /* OSUTAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4912150309D8B1DB003DC19F /* OSUTAController.m */; };
 		4951AEBC1B82941500AAF366 /* OSUSystemConfiguration.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4951AEBB1B82941500AAF366 /* OSUSystemConfiguration.xib */; };
@@ -218,8 +218,8 @@
 		4A40EBFE08AB009A00E1769D /* NSApplication-OSUSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */; };
 		4A40EC0008AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		4A40EC0108AB009A00E1769D /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E3E2717166EA87700BFFA4C /* OmniAppKit.framework */; };
-		4A40EC0208AB009A00E1769D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
-		4A40EC0308AB009A00E1769D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		4A40EC0208AB009A00E1769D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F5380E516F8DA1C00E7A8EC /* OmniBase.framework */; };
+		4A40EC0308AB009A00E1769D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277A1ECA122D00181154 /* OmniFoundation.framework */; };
 		4A40EC1008AB009A00E1769D /* OSUCheckTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F010634074F0097A113 /* OSUCheckTool.m */; };
 		4A40EC1208AB009A00E1769D /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F140634086B0097A113 /* CoreFoundation.framework */; };
 		4A40EC1908AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
@@ -232,20 +232,20 @@
 		5F1C023A16DC8D82006F9D51 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
 		5F1C024316DC8D82006F9D51 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1C024216DC8D82006F9D51 /* main.m */; };
 		5F1C024F16DC8FC2006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 5F1C023716DC8D82006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		5F1C025716DD2F45006F9D51 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
+		5F1C025716DD2F45006F9D51 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F5380E516F8DA1C00E7A8EC /* OmniBase.framework */; };
 		5F234E8216E9607D000E2C0E /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F234E8116E9607D000E2C0E /* ServiceManagement.framework */; };
-		5F234E8316E9608E000E2C0E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F6DF84D16DFD1D300C524A6 /* Security.framework */; };
+		5F234E8316E9608E000E2C0E /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
 		5F234F4916EAAF4B000E2C0E /* OSUInstallerPrivilegedHelperRights.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F234F4816EAAF4B000E2C0E /* OSUInstallerPrivilegedHelperRights.h */; };
 		5F234F5116EAAFDA000E2C0E /* OSUInstallerPrivilegedHelperRights.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F234F5016EAAFDA000E2C0E /* OSUInstallerPrivilegedHelperRights.m */; };
 		5F53811916F9010000E7A8EC /* OSUInstallerPrivilegedHelperRights.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F234F5016EAAFDA000E2C0E /* OSUInstallerPrivilegedHelperRights.m */; };
 		5F6DF84B16DFC97D00C524A6 /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
-		5F6DF84C16DFD11800C524A6 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2E063409180097A113 /* OmniFoundation.framework */; };
+		5F6DF84C16DFD11800C524A6 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3456277A1ECA122D00181154 /* OmniFoundation.framework */; };
 		5F6DF85016DFD1E000C524A6 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F6DF84F16DFD1E000C524A6 /* CoreServices.framework */; };
 		5F6DF87B16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F6DF87A16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m */; };
 		5F6DF87C16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F6DF87A16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m */; };
 		5F7DE65816EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7DE65716EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m */; };
 		5F7DE65916EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7DE65716EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m */; };
-		5F7DE66016F0EFEC0072E86C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F6DF84D16DFD1D300C524A6 /* Security.framework */; };
+		5F7DE66016F0EFEC0072E86C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
 		5F7DE66116F0EFF60072E86C /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F234E8116E9607D000E2C0E /* ServiceManagement.framework */; };
 		5F7DE66216F0FE610072E86C /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
 		5FAF8F6816F2916100BFFE55 /* OSUInstallerScript.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */; };
@@ -301,7 +301,7 @@
 		};
 		345299AF1ECA151B005E71F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
+			containerPortal = 1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = 4AA1E67A08AA764600E2FF6B;
 			remoteInfo = OmniAppKit;
@@ -315,7 +315,7 @@
 		};
 		345299D41ECA1529005E71F5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
+			containerPortal = 1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = 4AA1E67A08AA764600E2FF6B;
 			remoteInfo = OmniAppKit;
@@ -523,48 +523,6 @@
 			remoteGlobalIDString = 348D92E11AB798A30093AD35;
 			remoteInfo = OSUCheckService;
 		};
-		34C7A0701ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E7F908AA764600E2FF6B;
-			remoteInfo = OmniAppKit;
-		};
-		34C7A0721ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340D86FF1EC12FCC00261434;
-			remoteInfo = "OmniAppKit-server";
-		};
-		34C7A0741ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 34C12AFC194FF90F005CB70B;
-			remoteInfo = "OmniAppKit-iOS";
-		};
-		34C7A0761ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E81108AA764700E2FF6B;
-			remoteInfo = OAUnitTests;
-		};
-		34C7A0781ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 34C12B06194FF90F005CB70B;
-			remoteInfo = "OAUnitTests-iOS";
-		};
-		34C7A07A1ECA07FE00D1C745 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
-			remoteInfo = OAMakeImageSizeIntegral;
-		};
 		34F02DCA1AC4BAA300EADE1D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -697,8 +655,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		151FB8601DEF8ABE003E84F5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Preferences.strings; sourceTree = "<group>"; };
 		151FB8611DEF8AD3003E84F5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Preferences.strings; sourceTree = "<group>"; };
@@ -779,13 +735,11 @@
 		3440A0291D28721700298619 /* CheckVersionNumber */ = {isa = PBXFileReference; lastKnownFileType = text; path = CheckVersionNumber; sourceTree = "<group>"; };
 		34469266186284E200FBDD73 /* OSUPrivacyAlertWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPrivacyAlertWindowController.h; sourceTree = "<group>"; };
 		34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPrivacyAlertWindowController.m; sourceTree = "<group>"; };
-		345478850635F5FD0097A113 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		3456AED00C1201300066F5F4 /* OSURunTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = OSURunTime.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3456AED10C1201300066F5F4 /* OSURunTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSURunTime.m; sourceTree = "<group>"; };
 		34591B860A751FAD00BA6CCA /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		3467B1BE1EC52851005DA568 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		3467B1FC1EC52876005DA568 /* OmniUI.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUI.xcodeproj; path = ../OmniUI/iPad/OmniUI.xcodeproj; sourceTree = "<group>"; };
-		3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = "<group>"; };
 		346F34BF0C627E4600AAEE4D /* OSUInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstaller.h; sourceTree = "<group>"; };
 		346F34C00C627E4600AAEE4D /* OSUInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstaller.m; sourceTree = "<group>"; };
 		34775A231266672800FCDD2D /* InfoPlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoPlist.h; sourceTree = "<group>"; };
@@ -810,11 +764,7 @@
 		34821EFF0634074F0097A113 /* OSUChecker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUChecker.m; sourceTree = "<group>"; };
 		34821F010634074F0097A113 /* OSUCheckTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUCheckTool.m; sourceTree = "<group>"; };
 		34821F140634086B0097A113 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
-		34821F150634086B0097A113 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		34821F160634086B0097A113 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
-		34821F180634086B0097A113 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		34821F2D063409180097A113 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		34821F2E063409180097A113 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34821F3D06340B750097A113 /* NSApplication-OSUSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSApplication-OSUSupport.h"; sourceTree = "<group>"; };
 		34821F3E06340B750097A113 /* NSApplication-OSUSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication-OSUSupport.m"; sourceTree = "<group>"; };
 		348A78681B583C390082D55D /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -849,9 +799,6 @@
 		34A2E0F1184F9B80009E0D9F /* OSUPreferencesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPreferencesViewController.h; sourceTree = "<group>"; };
 		34A2E0F2184F9B80009E0D9F /* OSUPreferencesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUPreferencesViewController.m; sourceTree = "<group>"; };
 		34A5F504184E474C00E8BA9A /* OmniSystemInfo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSystemInfo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		34A5F505184E474C00E8BA9A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
-		34A5F508184E474C00E8BA9A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		34A5F50A184E474C00E8BA9A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		34A5F50D184E474C00E8BA9A /* OmniSystemInfo-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = "OmniSystemInfo-Info.plist"; sourceTree = "<group>"; };
 		34A5F50F184E474C00E8BA9A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Preferences.strings; sourceTree = "<group>"; };
 		34A5F511184E474C00E8BA9A /* OmniSystemInfo-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OmniSystemInfo-Prefix.pch"; sourceTree = "<group>"; };
@@ -868,8 +815,6 @@
 		34BC77800C6BAEBF006EFE2E /* OSUItemTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUItemTableView.m; sourceTree = "<group>"; };
 		34CEC66518565B530030515C /* OSULinkButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSULinkButton.h; sourceTree = "<group>"; };
 		34CEC66618565B530030515C /* OSULinkButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSULinkButton.m; sourceTree = "<group>"; };
-		34CECFF11B59A07F0075705C /* OmniUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		34CECFFC1B59A0A10075705C /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34CECFFE1B59A0A60075705C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		34D0FD7A184D04C800453075 /* OmniSoftwareUpdate.defaults */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = OmniSoftwareUpdate.defaults; sourceTree = "<group>"; };
 		34D5FE6F1264F09D00FDFEBB /* OSUPreferences.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUPreferences.h; sourceTree = "<group>"; };
@@ -931,7 +876,6 @@
 		5F234F5016EAAFDA000E2C0E /* OSUInstallerPrivilegedHelperRights.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OSUInstallerPrivilegedHelperRights.m; path = ../Common/OSUInstallerPrivilegedHelperRights.m; sourceTree = "<group>"; };
 		5F39F6FA16DD404D002387C7 /* OSUInstallerServiceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUInstallerServiceProtocol.h; sourceTree = "<group>"; };
 		5F39F6FB16DD404D002387C7 /* OSUInstallerPrivilegedHelperProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUInstallerPrivilegedHelperProtocol.h; sourceTree = "<group>"; };
-		5F6DF84D16DFD1D300C524A6 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		5F6DF84F16DFD1E000C524A6 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		5F6DF87A16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstallerServiceProtocol.m; sourceTree = "<group>"; };
 		5F6DF88116E0115F00C524A6 /* OSUInstaller.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = OSUInstaller.sh; path = ../Common/OSUInstaller.sh; sourceTree = "<group>"; };
@@ -962,7 +906,6 @@
 		A2E26F160FD5D887008F0B93 /* OSUTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUTextField.m; sourceTree = "<group>"; };
 		A2E31DE510279DEA00FE04CC /* OSUOpenGLExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUOpenGLExtensions.m; sourceTree = "<group>"; };
 		A2FC6055100C19C200F3990C /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
-		BF04952B0A75EC56000E2C2C /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		BF04952C0A75EC56000E2C2C /* WebCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebCore.framework; path = System/Library/Frameworks/WebKit.framework/Frameworks/WebCore.framework; sourceTree = SDKROOT; };
 		BF3171DE062F410E0097A147 /* OSUController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUController.h; sourceTree = "<group>"; };
 		BF3171DF062F410E0097A147 /* OSUController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUController.m; sourceTree = "<group>"; };
@@ -1111,23 +1054,12 @@
 				5FF0FACC16E7E83D00F87CB7 /* Privileged Helper Tool */,
 				5F049AEE16DE74C5004F398B /* Launch Trampoline Tool */,
 				4912140D09D3A198003DC19F /* Test Application */,
-				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				348D92E31AB798A40093AD35 /* Check XPC Service */,
-				5F1C023816DC8D82006F9D51 /* Frameworks */,
+				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 				15AFEAFA18A069F800AC19A2 /* Localization */,
 			);
 			name = OmniSoftwareUpdate;
-			sourceTree = "<group>";
-		};
-		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
-			isa = PBXGroup;
-			children = (
-				1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */,
-				BF04955B0A75EC70000E2C2C /* WebKit */,
-				1058C7B2FEA5585E11CA2CBB /* Other Frameworks */,
-			);
-			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
 		};
 		089C1665FE841158C02AAC07 /* Resources */ = {
@@ -1193,31 +1125,10 @@
 		1058C7B0FEA5585E11CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */,
-				1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */,
-				345478850635F5FD0097A113 /* ApplicationServices.framework */,
-				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
-				34821F140634086B0097A113 /* CoreFoundation.framework */,
-				34821F150634086B0097A113 /* CoreServices.framework */,
-				34821F160634086B0097A113 /* IOKit.framework */,
-				34821F2D063409180097A113 /* OmniBase.framework */,
-				34821F2E063409180097A113 /* OmniFoundation.framework */,
-				A28D5D6A107AD82100BB6865 /* OpenCL.framework */,
-				3424B2230636F5DB0097A113 /* OpenGL.framework */,
-				34E6552B0C95C85D0005A12E /* Security.framework */,
-				34821F180634086B0097A113 /* SystemConfiguration.framework */,
-				A2FC6055100C19C200F3990C /* libxml2.dylib */,
+				34CED0041B59A1000075705C /* Omni */,
+				34A5F507184E474C00E8BA9A /* Apple */,
 			);
 			name = "Linked Frameworks";
-			sourceTree = "<group>";
-		};
-		1058C7B2FEA5585E11CA2CBB /* Other Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
-				0867D6A5FE840307C02AAC07 /* AppKit.framework */,
-			);
-			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
 		15AFEAFA18A069F800AC19A2 /* Localization */ = {
@@ -1357,16 +1268,21 @@
 		34A5F507184E474C00E8BA9A /* Apple */ = {
 			isa = PBXGroup;
 			children = (
-				34CECFFE1B59A0A60075705C /* UIKit.framework */,
+				1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */,
+				34821F140634086B0097A113 /* CoreFoundation.framework */,
 				3479A3AA1AB8DDF10077BB01 /* CoreGraphics.framework */,
 				5F6DF84F16DFD1E000C524A6 /* CoreServices.framework */,
 				5F1C023916DC8D82006F9D51 /* Foundation.framework */,
-				5F6DF84D16DFD1D300C524A6 /* Security.framework */,
+				34821F160634086B0097A113 /* IOKit.framework */,
+				A28D5D6A107AD82100BB6865 /* OpenCL.framework */,
+				3424B2230636F5DB0097A113 /* OpenGL.framework */,
+				34E6552B0C95C85D0005A12E /* Security.framework */,
 				5F234E8116E9607D000E2C0E /* ServiceManagement.framework */,
-				34A5F505184E474C00E8BA9A /* Cocoa.framework */,
+				34CECFFE1B59A0A60075705C /* UIKit.framework */,
+				BF04952C0A75EC56000E2C2C /* WebCore.framework */,
+				34591B860A751FAD00BA6CCA /* WebKit.framework */,
 				34A5F51A184E474C00E8BA9A /* XCTest.framework */,
-				34A5F508184E474C00E8BA9A /* Foundation.framework */,
-				34A5F50A184E474C00E8BA9A /* AppKit.framework */,
+				A2FC6055100C19C200F3990C /* libxml2.dylib */,
 			);
 			name = Apple;
 			sourceTree = "<group>";
@@ -1408,27 +1324,13 @@
 			name = Preferences;
 			sourceTree = "<group>";
 		};
-		34C7A0261ECA07FE00D1C745 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				34C7A0711ECA07FE00D1C745 /* OmniAppKit.framework */,
-				34C7A0751ECA07FE00D1C745 /* OmniAppKit.framework */,
-				34C7A0731ECA07FE00D1C745 /* OmniAppKit.framework */,
-				34C7A0771ECA07FE00D1C745 /* OAUnitTests.xctest */,
-				34C7A0791ECA07FE00D1C745 /* OAUnitTests.xctest */,
-				34C7A07B1ECA07FE00D1C745 /* OAMakeImageSizeIntegral */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		34CED0041B59A1000075705C /* Omni */ = {
 			isa = PBXGroup;
 			children = (
-				3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */,
+				5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */,
 				3467B1BE1EC52851005DA568 /* OmniFoundation.xcodeproj */,
+				1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */,
 				3467B1FC1EC52876005DA568 /* OmniUI.xcodeproj */,
-				34CECFFC1B59A0A10075705C /* OmniFoundation.framework */,
-				34CECFF11B59A07F0075705C /* OmniUI.framework */,
 			);
 			name = Omni;
 			sourceTree = "<group>";
@@ -1521,15 +1423,6 @@
 			path = OSULaunchTrampoline;
 			sourceTree = "<group>";
 		};
-		5F1C023816DC8D82006F9D51 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				34CED0041B59A1000075705C /* Omni */,
-				34A5F507184E474C00E8BA9A /* Apple */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		5F1C023B16DC8D82006F9D51 /* Installer XPC Service */ = {
 			isa = PBXGroup;
 			children = (
@@ -1607,16 +1500,6 @@
 				5FF0FB1816E80DFD00F87CB7 /* OSUInstaller-Prefix.pch */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		BF04955B0A75EC70000E2C2C /* WebKit */ = {
-			isa = PBXGroup;
-			children = (
-				34591B860A751FAD00BA6CCA /* WebKit.framework */,
-				BF04952C0A75EC56000E2C2C /* WebCore.framework */,
-				BF04952B0A75EC56000E2C2C /* JavaScriptCore.framework */,
-			);
-			name = WebKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1959,10 +1842,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 34C7A0261ECA07FE00D1C745 /* Products */;
-					ProjectRef = 3467B27A1EC52985005DA568 /* OmniAppKit.xcodeproj */;
-				},
-				{
 					ProductGroup = 1E3E270E166EA87700BFFA4C /* Products */;
 					ProjectRef = 1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */;
 				},
@@ -2162,48 +2041,6 @@
 			fileType = wrapper.cfbundle;
 			path = OBUnitTests.xctest;
 			remoteRef = 34825EE319509B150026EABC /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A0711ECA07FE00D1C745 /* OmniAppKit.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniAppKit.framework;
-			remoteRef = 34C7A0701ECA07FE00D1C745 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A0731ECA07FE00D1C745 /* OmniAppKit.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniAppKit.framework;
-			remoteRef = 34C7A0721ECA07FE00D1C745 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A0751ECA07FE00D1C745 /* OmniAppKit.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniAppKit.framework;
-			remoteRef = 34C7A0741ECA07FE00D1C745 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A0771ECA07FE00D1C745 /* OAUnitTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = OAUnitTests.xctest;
-			remoteRef = 34C7A0761ECA07FE00D1C745 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A0791ECA07FE00D1C745 /* OAUnitTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = OAUnitTests.xctest;
-			remoteRef = 34C7A0781ECA07FE00D1C745 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C7A07B1ECA07FE00D1C745 /* OAMakeImageSizeIntegral */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OAMakeImageSizeIntegral;
-			remoteRef = 34C7A07A1ECA07FE00D1C745 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		503D71F61B66FA9500EF5899 /* OmniBase.framework */ = {

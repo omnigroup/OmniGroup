@@ -77,14 +77,19 @@ static NSImage *CautionIcon = nil;
 + (instancetype)sharedApplication;
 {
     static OAApplication *omniApplication = nil;
-
-    if (omniApplication) {
-        OBASSERT([omniApplication isKindOfClass:self]);
-        return omniApplication;
+    if (omniApplication == nil) {
+        Class principalClass = [[NSBundle mainBundle] principalClass];
+        if (principalClass != self) {
+            assert(OBClassIsSubclassOfClass(principalClass, self));
+            return [principalClass sharedApplication]; // Let our intended principal class allocate its shared application
+        } else {
+            __kindof NSApplication *sharedApplication = [super sharedApplication];
+            assert([sharedApplication isKindOfClass:principalClass]); // Someone called +[NSApplication sharedApplication] directly before calling NSApplicationMain() and accidentally allocated the wrong class. Fix by deferring the early call or changing it to +[OAApplication sharedApplication].
+            omniApplication = OB_CHECKED_CAST(OAApplication, sharedApplication);
+            [self _setupOmniApplication]; // We don't call this in -init so because we want to be able to call +sharedApplication
+        }
     }
 
-    omniApplication = OB_CHECKED_CAST(OAApplication, [super sharedApplication]);
-    [self _setupOmniApplication];
     return omniApplication;
 }
 

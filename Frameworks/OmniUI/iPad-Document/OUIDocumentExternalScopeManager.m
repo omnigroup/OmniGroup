@@ -163,6 +163,8 @@ RCS_ID("$Id$")
                     [securedURL stopAccessingSecurityScopedResource];
                     fileItem.fileEdit = fileEdit;
                     fileItem.userModificationDate = fileEdit.fileModificationDate;
+                    // Saving bookmark data for files fails before they're downloaded, so we need to do it again now.
+                    [self _queueSaveExternalScopes];
                     [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:_documentStore userInfo:@{ODSFileItemInfoKey:fileItem}];
                 }];
             }];
@@ -324,6 +326,7 @@ RCS_ID("$Id$")
                 [newBookmarks addObject:bookmarkData];
             } else {
 #ifdef DEBUG
+                // This failure is expected if the item isn't downloaded yet. When it finishes downloading, this method should get called again.
                 NSLog(@"Unable to create bookmark for %@: %@", url, [bookmarkError toPropertyList]);
 #endif
             }

@@ -327,42 +327,51 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 #pragma mark - Helpers
 
+- (void)_finishUpdateItemsForRenaming;
+{
+    // Prevent rotation while in rename mode.
+    self.renamingRotationLock = [OUIRotationLock rotationLock];
+
+    // Make sure we're prepared to switch into rename mode.
+    OBASSERT(self.usersLeftBarButtonItems == nil);
+    OBASSERT(self.usersRightBarButtonItems == nil);
+
+    // Cache user's items.
+    self.usersLeftBarButtonItems = self.leftBarButtonItems;
+    self.usersRightBarButtonItems = self.rightBarButtonItems;
+
+    // Remove user's item.
+    self.leftBarButtonItems = nil;
+    self.rightBarButtonItems = nil;
+
+    // Set our textField as the titleView and give it focus.
+    self.titleView = _documentTitleTextFieldView;
+    _documentTitleTextField.returnKeyType = UIReturnKeyDone;
+    [_documentTitleTextField becomeFirstResponder];
+
+    // Add Shild View
+    UIWindow *window = [OUIAppController controller].window;
+    UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];
+    NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];
+    self.shieldView = [OUIShieldView shieldViewWithView:window];
+    [self.shieldView addGestureRecognizer:shieldViewTapRecognizer];
+    self.shieldView.passthroughViews = passthroughViews;
+    [window addSubview:self.shieldView];
+    [window bringSubviewToFront:self.shieldView];
+}
+
 - (void)_updateItemsForRenaming;
 {
     if (_renaming) {
         DEBUG_EDIT_MODE(@"Switching to rename mode.");
-        // save the document
-        [self.document saveToURL:self.document.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {           
-            // Prevent rotation while in rename mode.
-            self.renamingRotationLock = [OUIRotationLock rotationLock];
-            
-            // Make sure we're prepared to switch into rename mode.
-            OBASSERT(self.usersLeftBarButtonItems == nil);
-            OBASSERT(self.usersRightBarButtonItems == nil);
-            
-            // Cache user's items.
-            self.usersLeftBarButtonItems = self.leftBarButtonItems;
-            self.usersRightBarButtonItems = self.rightBarButtonItems;
-            
-            // Remove user's item.
-            self.leftBarButtonItems = nil;
-            self.rightBarButtonItems = nil;
-            
-            // Set our textField as the titleView and give it focus.
-            self.titleView = _documentTitleTextFieldView;
-            _documentTitleTextField.returnKeyType = UIReturnKeyDone;
-            [_documentTitleTextField becomeFirstResponder];
-            
-            // Add Shild View
-            UIWindow *window = [OUIAppController controller].window;
-            UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];
-            NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];
-            self.shieldView = [OUIShieldView shieldViewWithView:window];
-            [self.shieldView addGestureRecognizer:shieldViewTapRecognizer];
-            self.shieldView.passthroughViews = passthroughViews;
-            [window addSubview:self.shieldView];
-            [window bringSubviewToFront:self.shieldView];
-        }];
+        // only save the document if there are changes
+        if (self.document.hasUnsavedChanges) {
+            [self.document saveToURL:self.document.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
+                [self _finishUpdateItemsForRenaming];
+            }];
+        } else {
+            [self _finishUpdateItemsForRenaming];
+        }
         
     }
     else {

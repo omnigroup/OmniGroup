@@ -898,7 +898,7 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 	// To work around bug:///138525 (iOS-OmniGraffle Bug: Deleting text causes the canvas to move [jump])
     BOOL willBeEmpty = self.textStorage.length == 1 || self.textStorage.length == selectedRange.length;
     BOOL scrollEnabled = YES;
-    UIScrollView *containingScrollview = [self.superview containingViewOfClass:[UIScrollView class]];
+    UIScrollView *containingScrollview = [self.superview enclosingViewOfClass:[UIScrollView class]];
     CGPoint offsetToRestore;
     if (willBeEmpty) {
         if (containingScrollview) {
@@ -1502,7 +1502,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 - (void)drawRect:(CGRect)rect;
 {
-    UITextView *textView = [self containingViewOfClass:[UITextView class]];
+    UITextView *textView = [self enclosingViewOfClass:[UITextView class]];
     [self.selectionColor setFill];
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     NSArray *selectionRects = [textView selectionRectsForRange:textView.selectedTextRange];

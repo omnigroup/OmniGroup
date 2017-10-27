@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -204,7 +204,7 @@ RCS_ID("$Id$");
 
 - (UITableView *)containingTableView;
 {
-    UITableView *tableView = (UITableView *)[self containingViewMatching:^BOOL(id object) {
+    UITableView *tableView = (UITableView *)[self enclosingViewMatching:^BOOL(id object) {
         return [object isKindOfClass:[UITableView class]];
     }];
     OBASSERT(tableView);
@@ -214,7 +214,7 @@ RCS_ID("$Id$");
 
 - (UITableViewCell *)containingTableViewCell;
 {
-    UITableViewCell *cell = (UITableViewCell *)[self containingViewMatching:^BOOL(id object) {
+    UITableViewCell *cell = (UITableViewCell *)[self enclosingViewMatching:^BOOL(id object) {
         return [object isKindOfClass:[UITableViewCell class]];
     }];
     OBASSERT(cell);

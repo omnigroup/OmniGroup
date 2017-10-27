@@ -653,6 +653,8 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     _appMenuController.topOptions = [self _appMenuTopOptions];
     _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
 
+    [_appMenuController setSizesToOptionWidth:YES];
+    
     UIBarButtonItem *appropriatePresenter = nil;
     if ([sender isKindOfClass:[UIBarButtonItem class]])
     {

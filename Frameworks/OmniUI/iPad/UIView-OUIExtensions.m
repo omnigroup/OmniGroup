@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -403,14 +403,24 @@ static void OUIViewPerformPosingForThreading(void)
     [self addMotionEffect:[self tiltMotionEffectWithMaxTilt:maxTilt]];
 }
 
-- (id)containingViewOfClass:(Class)cls; // can return self
+- (id)containingViewOfClass:(Class)cls;
 {
-    return [self containingViewMatching:^(id view){
+    return [self enclosingViewOfClass:cls];
+}
+
+- (id)enclosingViewOfClass:(Class)cls; // can return self
+{
+    return [self enclosingViewMatching:^(id view){
         return [view isKindOfClass:cls];
     }];
 }
 
 - (id)containingViewMatching:(OFPredicateBlock)predicate;
+{
+    return [self enclosingViewMatching:predicate];
+}
+
+- (id)enclosingViewMatching:(OFPredicateBlock)predicate;
 {
     if (!predicate) {
         OBASSERT_NOT_REACHED("Treating nil predicate as true... probably not that useful");

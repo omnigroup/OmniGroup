@@ -1240,8 +1240,6 @@
 		34765FB61EC52EA600515F67 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		34765FE41EC52EAA00515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		348293E91B1F842C00812D27 /* NSTextStorage-OAFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTextStorage-OAFixes.m"; sourceTree = "<group>"; };
-		348934C41EC2858E00CFB933 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		348934C61EC2859D00CFB933 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		348934C81EC285F300CFB933 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		348934E01EC285F800CFB933 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		348A50790571430C0097A113 /* OAVectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAVectorView.h; sourceTree = "<group>"; };
@@ -1962,8 +1960,6 @@
 			children = (
 				348934C81EC285F300CFB933 /* OmniBase.xcodeproj */,
 				348934E01EC285F800CFB933 /* OmniFoundation.xcodeproj */,
-				348934C61EC2859D00CFB933 /* OmniFoundation.framework */,
-				348934C41EC2858E00CFB933 /* OmniBase.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

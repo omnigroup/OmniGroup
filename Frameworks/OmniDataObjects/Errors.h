@@ -19,6 +19,7 @@ extern NSErrorUserInfoKey const ODODetailedErrorsKey; // if multiple validation 
 
 typedef NS_ENUM(NSInteger, ODOError) {
     ODONoError = 0,
+
     ODOUnableToLoadModel,
     ODOUnableToConnectDatabase,
     ODOErrorDisconnectingFromDatabase,

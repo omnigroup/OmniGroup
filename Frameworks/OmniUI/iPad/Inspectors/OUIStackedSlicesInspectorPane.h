@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateContentInsetsForKeyboard;
 
+- (void)setShouldShowDismissButton:(BOOL)shouldShow;
+
 @property (nonatomic, assign) BOOL isAnimating;
 @end
 

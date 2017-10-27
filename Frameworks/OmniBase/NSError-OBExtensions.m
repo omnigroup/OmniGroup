@@ -297,7 +297,7 @@ static NSString * const OFSuppressedErrorStack = @"com.omnigroup.OmniFoundation.
 static NSString * const OFSuppressedErrorDomain = @"domain";
 static NSString * const OFSuppressedErrorCode = @"code";
 
-+ (void)suppressingLogsWithUnderlyingDomain:(NSString *)domain code:(NSInteger)code action:(void (^)(void))action;
++ (void)suppressingLogsWithUnderlyingDomain:(NSString *)domain code:(NSInteger)code action:(void (^ NS_NOESCAPE)(void))action;
 {
     NSMutableDictionary *threadInfo = [[NSThread currentThread] threadDictionary];
     NSMutableArray *suppressionStack = threadInfo[OFSuppressedErrorStack];

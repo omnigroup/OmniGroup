@@ -1127,7 +1127,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
 - (void)documentPickerItemNameStartedEditing:(id)sender;
 {
     UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
-    OUIDocumentPickerItemView *itemView = [view containingViewOfClass:[OUIDocumentPickerItemView class]];
+    OUIDocumentPickerItemView *itemView = [view enclosingViewOfClass:[OUIDocumentPickerItemView class]];
     
     // should be one of ours, not some other temporary animating item view
     OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
@@ -1138,7 +1138,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
 - (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
 {
     UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
-    OUIDocumentPickerItemView *itemView = [view containingViewOfClass:[OUIDocumentPickerItemView class]];
+    OUIDocumentPickerItemView *itemView = [view enclosingViewOfClass:[OUIDocumentPickerItemView class]];
     
     // should be one of ours, not some other temporary animating item view
     OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);

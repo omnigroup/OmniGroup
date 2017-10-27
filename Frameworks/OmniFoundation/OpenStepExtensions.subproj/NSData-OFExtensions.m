@@ -1,4 +1,4 @@
-// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 #import <OmniFoundation/NSData-OFExtensions.h>
 
 #import <CoreFoundation/CoreFoundation.h>
-#import <Foundation/NSStream.h>
 #import <CommonCrypto/CommonCrypto.h>
 #import <CommonCrypto/CommonRandom.h>
 
@@ -18,12 +17,9 @@
 #import <OmniFoundation/NSMutableData-OFExtensions.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
-#import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFRandom.h>
 
-#import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniBase/NSError-OBExtensions.h>
-#import <poll.h>
 
 RCS_ID("$Id$")
 

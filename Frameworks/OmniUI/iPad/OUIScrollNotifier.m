@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,11 +43,11 @@ BOOL OUIRegisterForScrollNotificationsAboveView(UIView<OUIScrollNotifierDelegate
     OUIUnregisterForScrollNotifications(view);
 
     BOOL foundAnAncestorScrollView = NO;
-    UIScrollView *ancestorScrollView = [view.superview containingViewOfClass:[UIScrollView class]];
+    UIScrollView *ancestorScrollView = [view.superview enclosingViewOfClass:[UIScrollView class]];
     while (ancestorScrollView) {
         foundAnAncestorScrollView = YES;
         _OUIRegisterForScrollNotifications(view, ancestorScrollView);
-        ancestorScrollView = [ancestorScrollView.superview containingViewOfClass:[UIScrollView class]];
+        ancestorScrollView = [ancestorScrollView.superview enclosingViewOfClass:[UIScrollView class]];
     }
     
     return foundAnAncestorScrollView;

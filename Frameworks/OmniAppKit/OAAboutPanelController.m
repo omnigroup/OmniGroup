@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,8 +70,8 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     [creditsTextView setSelectable:YES];
     [[creditsTextView enclosingScrollView] setDrawsBackground:NO];
     
-    NSString *copyright = [[[NSBundle mainBundle] localizedInfoDictionary] objectForKey:@"NSHumanReadableCopyright"];
-    if (!copyright) {
+    NSString *copyright = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"NSHumanReadableCopyright"];
+    if (copyright == nil) {
         OBASSERT_NOT_REACHED("No entry specified for Info.plist NSHumanReadableCopyright key");
         copyright = OBUnlocalized(@"NSHumanReadableCopyright not set!");
     }
@@ -104,6 +104,8 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     if (!variantFileNames)
 	variantFileNames = [[OMNI_BUNDLE infoDictionary] objectForKey:OAAboutPanelMainBundleContentVariants];
     
+    [contentVariants removeAllObjects];
+    currentContentVariantIndex = -1;
     for (NSString *fileName in variantFileNames)
 	[self addContentVariantFromMainBundleFile:[fileName stringByDeletingPathExtension] ofType:[fileName pathExtension]];
     
@@ -124,11 +126,6 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     }
 
     [panel center];
-}
-
-- (void)awakeFromNib;
-{
-    [self _updateFieldsAndWindowSize];
 }
 
 - (NSArray *)contentVariants;
@@ -234,8 +231,8 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
     [[creditsTextView enclosingScrollView] setHasVerticalScroller:(currentContentVariantIndex != 0)];
     
     NSAttributedString *variant = [contentVariants objectAtIndex:currentContentVariantIndex];
-    [[creditsTextView textStorage] setAttributedString:variant];
-    
+    [creditsTextView.textStorage setAttributedString:variant];
+
     // We assume the whole attributed string has the same background color
     BOOL drawBackground = NO;
     if ([variant length]) {
@@ -243,6 +240,7 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
 	drawBackground = (background != nil) && ![background isEqual:[NSColor clearColor]]; // not really correct since we could be (1,0,0,0)
     }
     [creditsTextView setDrawsBackground:drawBackground];
+    [creditsTextView setNeedsDisplay:YES];
 }
 
 #pragma mark - NSTextViewDelegate protocol

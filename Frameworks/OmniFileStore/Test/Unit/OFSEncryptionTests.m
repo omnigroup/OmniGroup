@@ -927,7 +927,7 @@ static ODAVTestServer *srv;
     XCTAssertEqualObjects(testData1, roundtrip);
     
     OFSEncryptingFileManager *rfm = [self openedWrapper:fm];
-    XCTAssertEqualObjects(efm.keyStore.keySlots, rfm.keyStore.keySlots);
+    XCTAssertEqualObjects(efm.keyStore.keySlots.keySlots, rfm.keyStore.keySlots.keySlots);
     
     OBShouldNotError(roundtrip = [rfm dataWithContentsOfURL:[efm.baseURL URLByAppendingPathComponent:@"test1"] error:&error]);
     XCTAssertEqualObjects(testData1, roundtrip);
@@ -1056,6 +1056,13 @@ static ODAVTestServer *srv;
             XCTAssertEqual(op.keySlot, expectedKeySlot);
         }
     }
+}
+
+#pragma mark OFSFileManagerDelegate
+
+- (NSOperation<OFCredentialChallengeDisposition> *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    return nil;
 }
 
 @end

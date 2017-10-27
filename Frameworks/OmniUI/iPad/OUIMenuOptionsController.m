@@ -497,7 +497,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_showSubmenu:(UIButton *)sender;
 {
     UITableView *tableView = (UITableView *)self.view;
-    UITableViewCell *cell = [sender containingViewOfClass:[UITableViewCell class]];
+    UITableViewCell *cell = [sender enclosingViewOfClass:[UITableViewCell class]];
     NSIndexPath *indexPath = [tableView indexPathForCell:cell];
 
     NSInteger section = indexPath.section;

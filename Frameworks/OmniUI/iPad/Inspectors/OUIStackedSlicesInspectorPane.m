@@ -38,6 +38,12 @@ NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUI
 @property (nonatomic, strong) OUIInspectorBackgroundView *backgroundView;
 @end
 
+@interface OUIStackedSlicesInspectorPane ()
+
+@property (nonatomic) BOOL shouldShowDismissButton;
+
+@end
+
 @implementation OUIStackedSlicesInspectorPaneContentView
 
 static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
@@ -408,6 +414,24 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         @autoreleasepool {
             [slice updateInterfaceFromInspectedObjects:reason];
         }
+    }
+}
+
+#pragma mark - Dismissing
+
+- (void)_dismiss:(id)sender;
+{
+    [self dismissViewControllerAnimated:YES completion:NULL];
+}
+
+- (void)setShouldShowDismissButton:(BOOL)shouldShow;
+{
+    _shouldShowDismissButton = shouldShow;
+    if (_shouldShowDismissButton) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismiss:)];
+    }
+    else {
+        self.navigationItem.rightBarButtonItem = nil;
     }
 }
 
