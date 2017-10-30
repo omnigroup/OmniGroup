@@ -40,10 +40,6 @@ typedef enum {
 
 - (void)addAfterInitialDocumentScanAction:(void (^)(void))action;
 
-// Allow external objects to synchronize with our operations.
-- (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
-- (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
-
 - (void)moveItems:(NSSet *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
 
 - (void)makeFolderFromItems:(NSSet *)items inParentFolder:(ODSFolderItem *)parentFolder ofScope:(ODSScope *)scope completionHandler:(void (^)(ODSFolderItem *createdFolder, NSArray *errorsOrNil))completionHandler;

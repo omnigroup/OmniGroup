@@ -95,8 +95,8 @@ OBDidLoad(^{
             if (subviewFrame.size.width == 0 || subviewFrame.size.height == 0)
                 continue;
             
-            BOOL isIntegral = NSEqualRects(subviewFrame, NSIntegralRect(subviewFrame));
-            if (!isIntegral) {
+            BOOL isPixelAligned = NSEqualRects(subviewFrame, [subview backingAlignedRect:subviewFrame options:NSAlignAllEdgesNearest]);
+            if (!isPixelAligned) {
                 static NSString *const AlreadyWarnedKey = @"OASplitViewIntegralWarning";
                 id alreadyWarned = objc_getAssociatedObject(splitView, AlreadyWarnedKey);
                 if (!alreadyWarned) {                    

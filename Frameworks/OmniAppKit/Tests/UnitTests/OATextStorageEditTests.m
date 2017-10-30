@@ -188,12 +188,7 @@ typedef struct {
 {
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:@"value", @"name", nil];
     [_textStorage addAttributes:attributes range:NSMakeRange(0, 1)];
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // Radar 21551117: -[NSTextStorage addAttributes:range:] incorrectly sends two NSTextStorageDidProcessEditingNotification notifications
-    XCTAssertEqual(_processEditingCalls, 2);
-#else
     XCTAssertEqual(_processEditingCalls, 1);
-#endif
 }
 
 - (void)testUnwrappedRemoveAttributeRange;

@@ -51,6 +51,8 @@
 @property(nonatomic) BOOL isDocumentEncrypted; // If it is encrypted, it will be unreadable.
 @property(nonatomic, strong) OUIInteractionLock *applicationLock;
 
+@property(nonatomic,readonly) BOOL isClosing;
+
 @property(nonatomic,readonly) UIResponder *defaultFirstResponder; // Defaults to the documentViewController, or if that view controller implements -defaultFirstResponder, returns the result of that.
 
 - (void)finishUndoGroup;

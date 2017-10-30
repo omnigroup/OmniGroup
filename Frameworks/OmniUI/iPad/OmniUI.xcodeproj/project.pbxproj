@@ -483,6 +483,10 @@
 		4DBBFC671ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DBBFC661ECBA9BA0085FC24 /* UIFont-OUIExtensions.swift */; };
 		4DD560C61ED39D5B00F9A088 /* OUIButtonGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD560C51ED39D5B00F9A088 /* OUIButtonGridView.swift */; };
 		50F8ECBB1ED5184500416076 /* OmniUnzip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34A733771B32090B008E2A38 /* OmniUnzip.framework */; };
+		5F31A2431F9678F700F409CE /* UIResponder-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F31A2371F9678F200F409CE /* UIResponder-OUIExtensions.m */; };
+		5F31A25C1F96794800F409CE /* UIResponder-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F31A2421F9678F600F409CE /* UIResponder-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F31A2611F968A9B00F409CE /* UIApplication-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F31A25F1F968A9B00F409CE /* UIApplication-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F31A2621F968A9B00F409CE /* UIApplication-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F31A2601F968A9B00F409CE /* UIApplication-OUIExtensions.m */; };
 		5FA8639A1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FA8639B1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */; };
 		6C1709201C2372BA00350F40 /* OUISliceSeparatorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C17091E1C2372BA00350F40 /* OUISliceSeparatorView.h */; };
@@ -1053,6 +1057,10 @@
 		50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUINoteFullScreenZoom.png; sourceTree = "<group>"; };
 		5F1A5AE815ADF7C3003FD79D /* OUIPasswordAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIPasswordAlert.h; sourceTree = "<group>"; };
 		5F1A5AE915ADF7C3003FD79D /* OUIPasswordAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIPasswordAlert.m; sourceTree = "<group>"; };
+		5F31A2371F9678F200F409CE /* UIResponder-OUIExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIResponder-OUIExtensions.m"; sourceTree = "<group>"; };
+		5F31A2421F9678F600F409CE /* UIResponder-OUIExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIResponder-OUIExtensions.h"; sourceTree = "<group>"; };
+		5F31A25F1F968A9B00F409CE /* UIApplication-OUIExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIApplication-OUIExtensions.h"; sourceTree = "<group>"; };
+		5F31A2601F968A9B00F409CE /* UIApplication-OUIExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIApplication-OUIExtensions.m"; sourceTree = "<group>"; };
 		5F40876F179FA18400D5D27D /* OUITabBarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITabBarButton.h; sourceTree = "<group>"; };
 		5F408770179FA18400D5D27D /* OUITabBarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUITabBarButton.m; sourceTree = "<group>"; };
 		5F4AB93919AD235B00202116 /* NSUndoManager-OUIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUndoManager-OUIExtensions.h"; sourceTree = "<group>"; };
@@ -1749,6 +1757,8 @@
 				345A398E121C992900ABA3F0 /* OUIToolbarButton.m */,
 				346C4B121193273600BE8C49 /* OUIUndoIndicator.h */,
 				346C4B131193273600BE8C49 /* OUIUndoIndicator.m */,
+				5F31A25F1F968A9B00F409CE /* UIApplication-OUIExtensions.h */,
+				5F31A2601F968A9B00F409CE /* UIApplication-OUIExtensions.m */,
 				342C5F791B5D935400B5A80D /* UIImage-OUIExtensions.h */,
 				342C5F7A1B5D935400B5A80D /* UIImage-OUIExtensions.m */,
 				5F85377D17CBC03600AEB4A1 /* UIFont-OUIExtensions.h */,
@@ -1762,6 +1772,8 @@
 				23BA68F515702F3C00876964 /* UILabel-OUITheming.m */,
 				5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */,
 				5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */,
+				5F31A2421F9678F600F409CE /* UIResponder-OUIExtensions.h */,
+				5F31A2371F9678F200F409CE /* UIResponder-OUIExtensions.m */,
 				34A5F1DC13841E980025353B /* UIScrollView-OUIExtensions.h */,
 				34A5F1DD13841E990025353B /* UIScrollView-OUIExtensions.m */,
 				344B6DCE12A4CC9E00D876CD /* UITableView-OUIExtensions.h */,
@@ -2181,6 +2193,7 @@
 				348A7AF61B584CAD0082D55D /* OUITapGestureRecognizer.h in Headers */,
 				348A7AB51B584C240082D55D /* OUINavigationController.h in Headers */,
 				348A7B331B584D050082D55D /* OUIFullScreenNoteTransition.h in Headers */,
+				5F31A25C1F96794800F409CE /* UIResponder-OUIExtensions.h in Headers */,
 				348A7B241B584CF10082D55D /* OUIInteractionLock.h in Headers */,
 				348A7A541B584B590082D55D /* OUIInspectorSelectionValue.h in Headers */,
 				348A7A9D1B584BAE0082D55D /* OUITabBar.h in Headers */,
@@ -2227,6 +2240,7 @@
 				348A7AF01B584CAD0082D55D /* OUIDragGestureRecognizer.h in Headers */,
 				348A7B461B584D130082D55D /* UIFontDescriptor-OUIExtensions.h in Headers */,
 				348A7AF81B584CB90082D55D /* NSUndoManager-OUIExtensions.h in Headers */,
+				5F31A2611F968A9B00F409CE /* UIApplication-OUIExtensions.h in Headers */,
 				348A7AE41B584C980082D55D /* OUIEditableLabeledValueCell.h in Headers */,
 				348A7A4F1B584B590082D55D /* OUIInspectorPresentationController.h in Headers */,
 				FB11AB3B1C51A7930050F4EF /* OUIAttentionSeekingButton.h in Headers */,
@@ -2593,6 +2607,7 @@
 			files = (
 				348A7B451B584D130082D55D /* UIFont-OUIExtensions.m in Sources */,
 				348A7AF91B584CB90082D55D /* NSUndoManager-OUIExtensions.m in Sources */,
+				5F31A2621F968A9B00F409CE /* UIApplication-OUIExtensions.m in Sources */,
 				348A7A6B1B584B590082D55D /* OUIStackedSlicesInspectorPane.m in Sources */,
 				4240B0181F1D616900D72C02 /* DisclosableInspectorPane.swift in Sources */,
 				348A7B321B584D050082D55D /* OUIFullScreenNoteTextViewController.m in Sources */,
@@ -2687,6 +2702,7 @@
 				348A79FB1B584AE10082D55D /* OUIColorAttributeInspectorSlice.m in Sources */,
 				348A7A421B584B430082D55D /* OUIFontUtilities.m in Sources */,
 				23105FE01EAFD9AE008E0647 /* Pane.swift in Sources */,
+				5F31A2431F9678F700F409CE /* UIResponder-OUIExtensions.m in Sources */,
 				348A7A311B584AFC0082D55D /* OUITextColorAttributeInspectorSlice.m in Sources */,
 				348A7A691B584B590082D55D /* OUISingleViewInspectorPane.m in Sources */,
 				4DD560C61ED39D5B00F9A088 /* OUIButtonGridView.swift in Sources */,

@@ -148,6 +148,7 @@
 #import <OmniUI/OUIVerticalSplitTransition.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/OUIWrappingViewController.h>
+#import <OmniUI/UIApplication-OUIExtensions.h>
 #import <OmniUI/UIDevice-OUIExtensions.h>
 #import <OmniUI/UIFont-OUIExtensions.h>
 #import <OmniUI/UIFontDescriptor-OUIExtensions.h>
@@ -155,6 +156,7 @@
 #import <OmniUI/UILabel-OUITheming.h>
 #import <OmniUI/UINavigationController-OUIExtensions.h>
 #import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
+#import <OmniUI/UIResponder-OUIExtensions.h>
 #import <OmniUI/UIScrollView-OUIExtensions.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>

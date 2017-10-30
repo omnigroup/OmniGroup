@@ -84,8 +84,6 @@ NSString *ODSPathExtensionForFileType(NSString *fileType, BOOL *outIsPackage)
     BOOL _isScanningItems;
     NSUInteger _deferScanRequestCount;
     NSMutableArray *_deferredScanCompletionHandlers;
-    
-    NSOperationQueue *_actionOperationQueue;
 }
 
 + (void)initialize;
@@ -120,9 +118,6 @@ static unsigned ScopeContext;
     
     _scopes = [[NSArray alloc] init];
     
-    _actionOperationQueue = [[NSOperationQueue alloc] init];
-    [_actionOperationQueue setName:@"ODSStore file actions"];
-    [_actionOperationQueue setMaxConcurrentOperationCount:1];
 #ifdef OMNI_ASSERTIONS_ON
 #define BadDelegate(sel) OBASSERT_NOT_IMPLEMENTED(_weak_delegate, sel)
     BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createdNewDocument:templateURL:completionHandler: instead
@@ -140,8 +135,6 @@ static unsigned ScopeContext;
         [scope removeObserver:self forKeyPath:OFValidateKeyPath(scope, hasFinishedInitialScan) context:&ScopeContext];
         [scope removeObserver:self forKeyPath:OFValidateKeyPath(scope, fileItems) context:&ScopeContext];
     }
-    
-    OBASSERT([_actionOperationQueue operationCount] == 0);
 }
 
 - (void)addScope:(ODSScope *)scope;
@@ -245,29 +238,6 @@ static unsigned ScopeContext;
     [self _flushAfterInitialDocumentScanActions];
 }
 
-// Allow external objects to synchronize with our operations.
-- (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
-{
-    OBPRECONDITION(_actionOperationQueue);
-    
-    OBFinishPortingLater("<bug:///147878> (iOS-OmniOutliner Engineering: ODSStore.m, performAsynchronousFileAccessUsingBlock: Get rid of the queue in this class now that scopes have queues?)");
-    [_actionOperationQueue addOperationWithBlock:block];
-}
-
-// Calls the specified block on the current queue after all the currently enqueued asynchronous accesses finish. Useful when some action needs to happen after a sequence of other file accesses operations.
-- (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
-{
-    block = [block copy];
-
-    NSOperationQueue *queue = [NSOperationQueue currentQueue];
-    OBASSERT(queue);
-    OBASSERT(queue != _actionOperationQueue);
-    
-    [self performAsynchronousFileAccessUsingBlock:^{
-        [queue addOperationWithBlock:block];
-    }];
-}
-
 - (void)moveItems:(NSSet *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
@@ -350,12 +320,10 @@ static unsigned ScopeContext;
     
     _isScanningItems = YES;
         
-    [self performAsynchronousFileAccessUsingBlock:^{
-        OBFinishPortingLater("<bug:///147936> (iOS-OmniOutliner Bug: Not scanning here... - in -[ODSStore scanItemsWithCompletionHandler:])");
-        
-        if (completionHandler)
-            [[NSOperationQueue mainQueue] addOperationWithBlock:completionHandler];
-    }];
+    OBFinishPortingLater("<bug:///147936> (iOS-OmniOutliner Bug: Not scanning here... - in -[ODSStore scanItemsWithCompletionHandler:])");
+    if (completionHandler) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:completionHandler];
+    }
 }
 
 - (void)startDeferringScanRequests;
@@ -587,12 +555,10 @@ static unsigned ScopeContext;
 
 - (void)_performActions:(NSArray *)actions;
 {
-    // The initial scan may have been *started* due to the metadata query finishing, but we do the scan of the filesystem on a background thread now. So, synchronize with that and then invoke these actions on the main thread.
-    [_actionOperationQueue addOperationWithBlock:^{
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            for (void (^action)(void) in actions)
-                action();
-        }];
+    // The initial scan may have been *started* due to the metadata query finishing, but we do the scan of the filesystem on a background thread now. Invoke these actions on the main thread.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        for (void (^action)(void) in actions)
+            action();
     }];
 }
 

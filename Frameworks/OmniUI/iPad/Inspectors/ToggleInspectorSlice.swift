@@ -14,7 +14,7 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
     private static let kWidth : CGFloat = 200
     private static let kLabelToTogglePadding : CGFloat = 8
 
-    /// MARK: UIViewController
+    // MARK: UIViewController
     open override func loadView() {
 
         let contentView = UIView()

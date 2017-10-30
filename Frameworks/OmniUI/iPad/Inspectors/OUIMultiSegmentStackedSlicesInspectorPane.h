@@ -10,6 +10,7 @@
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/OUITabBarAppearanceDelegate.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @class OUITabBar;
 
 @interface OUIInspectorSegment : NSObject
@@ -23,13 +24,15 @@
 @interface OUIMultiSegmentStackedSlicesInspectorPane : OUIStackedSlicesInspectorPane <OUITabBarAppearanceDelegate>
 
 @property(nonatomic,readonly) OUITabBar *titleTabBar;
-@property(nonatomic,strong) NSArray *segments;
+@property(nonatomic,strong) NSArray<OUIInspectorSegment *> *segments;
 @property(nonatomic,strong) OUIInspectorSegment *selectedSegment;
 
 - (void)reloadAvailableSegments; // this will end up calling makeAvailableSegments
 
 // For subclasses
 @property (nonatomic,readonly) BOOL wantsEmbeddedTitleTabBar; // return NO if you want a segmented control in the navigation items instead of tabs in the content.
-- (NSArray *)makeAvailableSegments;
+- (NSArray<OUIInspectorSegment *> *)makeAvailableSegments;
 
 @end
+
+NS_ASSUME_NONNULL_END

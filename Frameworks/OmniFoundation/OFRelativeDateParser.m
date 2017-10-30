@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -502,13 +502,21 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
         dateFormatter.dateFormat = shortFormat;
         if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:outError]) {
             dateFormatter.dateFormat = mediumFormat;
-            if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:NULL]) {
+            if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:outError]) {
                 dateFormatter.dateFormat = longFormat;
-                if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:NULL]) {
+                if (![dateFormatter getObjectValue:&returnDate forString:string range:&range error:outError]) {
                     return NO;
                 }
             }
         }
+    }
+    
+    // Be paranoid. If the date formatter returned YES, but didn't fill in the date, we return OFRelativeDateParserUnknownError instead of proceeding.
+    // Proceeding would result in an exception since the fromDate argument below must be non-nil.
+    OBASSERT(returnDate != nil);
+    if (returnDate == nil) {
+	OFError(outError, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+        return NO;
     }
 
     if (outUsedStringRange != NULL)
@@ -543,8 +551,16 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     if (![dateFormatter getObjectValue:&date forString:timeString range:&range error:outError])
         return nil;
 
+    // Be paranoid. If the date formatter returned YES, but didn't fill in the date, we return OFRelativeDateParserUnknownError instead of proceeding.
+    // Proceeding would result in an exception since the fromDate argument below must be non-nil.
+    if (date == nil) {
+        OFError(outError, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+        return nil;
+    }
+    
     if (outUsedStringRange != NULL)
         *outUsedStringRange = range;
+    
     NSDateComponents *dateComponents = [calendar components:NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:date];
     return dateComponents;
 }
@@ -683,12 +699,18 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
                 absoluteDateString = [dateString substringWithRange:matchRange];
             }
             date = [self _parseFormattedDate:absoluteDateString withDate:startingDate withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withseparator:separator calendar:calendar];
-            OBASSERT(date != nil);
 
-            if (remainingString.length != 0) {
+            if (date != nil && remainingString.length != 0) {
                 NSDate *relativeDate = [self _parseDateNaturalLanguage:remainingString withDate:date timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
                 if (relativeDate != nil)
                     date = relativeDate;
+            }
+
+            if (date == nil) {
+                if (outDate != NULL)
+                    *outDate = nil;
+                OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+                return NO;
             }
         } else {
             if (stringWithDotSpace)
@@ -698,6 +720,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
             if (date == nil) {
                 if (outDate != NULL)
                     *outDate = nil;
+                OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
                 return NO;
             }
         }
@@ -747,18 +770,29 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 	    date = [self _dateWithDate:date timeComponents:defaultTimeDateComponents calendar:calendar];
 	}
     }
+    
     DEBUG_DATE(@"Return date: %@", date);
-    //if (!*date) {
-    //OBErrorWithInfo(&*error, "date parse error", @"GAH");  
-    //return NO;
-    //}
+    
+    if (date == nil) {
+        // We should have returned early above, and filled in the error.
+        OBASSERT_NOT_REACHED("Bad code path above which should have returned early.");
+
+        if (outDate != NULL)
+            *outDate = nil;
+        
+        OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+        return NO;
+    }
+
     if (outDate != NULL)
         *outDate = date;
+
     return YES;
 }
 
 - (NSDate *)_dateWithDate:(NSDate *)date timeComponents:(NSDateComponents *)timeComponents calendar:(NSCalendar *)calendar;
 {
+    OBPRECONDITION(date != nil);
     NSDateComponents *dateComponents = [calendar components:NSCalendarUnitDay|NSCalendarUnitMonth|NSCalendarUnitYear|NSCalendarUnitEra fromDate:date];
     [dateComponents setHour:[timeComponents hour]];
     [dateComponents setMinute:[timeComponents minute]];
@@ -775,8 +809,13 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 
 - (NSString *)stringForDate:(NSDate *)date withDateFormat:(NSString *)dateFormat withTimeFormat:(NSString *)timeFormat calendar:(NSCalendar *)calendar;
 {
-    if (!calendar)
+    OBPRECONDITION(date != nil);
+    
+    if (calendar == nil)
         calendar = _defaultCalendar();
+    
+    if (date == nil)
+        return nil;
 
     NSDateComponents *components = [calendar components:unitFlags fromDate:date];
 
@@ -1006,7 +1045,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     if (hours == -1)
 	return nil;
     
-    OBASSERT(date);
+    OBASSERT(date != nil);
     NSDateComponents *components = [calendar components:unitFlags fromDate:date];
     if (seconds != -1)
 	[components setSecond:seconds];
@@ -1026,8 +1065,9 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 
 - (NSDate *)_parseFormattedDate:(NSString *)dateString withDate:(NSDate *)date withShortDateFormat:(NSString *)shortFormat withMediumDateFormat:(NSString *)mediumFormat withLongDateFormat:(NSString *)longFormat withseparator:(NSString *)separator calendar:(NSCalendar *)calendar;
 {
-    OBPRECONDITION(calendar);
-    
+    OBPRECONDITION(date != nil);
+    OBPRECONDITION(calendar != nil);
+
     DEBUG_DATE(@"parsing formatted dateString: %@", dateString );
     NSDateComponents *currentComponents = [calendar components:unitFlags fromDate:date]; // the given date as components
     
@@ -1393,6 +1433,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 
 - (NSDate *)_parseDateNaturalLanguage:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar relativeDateNames:(NSDictionary *)relativeDateNames error:(NSError **)outError;
 {
+    OBPRECONDITION(date != nil);
+    
     DEBUG_DATE(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
     
     dateString = [dateString stringByNormalizingWithOptions:OFRelativeDateParserNormalizeOptionsDefault locale:[self locale]];
@@ -1928,8 +1970,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 
 - (NSDate *)_modifyDate:(NSDate *)date withWeekday:(NSUInteger)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier calendar:(NSCalendar *)calendar;
 {
-    OBPRECONDITION(date);
-    OBPRECONDITION(calendar);
+    OBPRECONDITION(date != nil);
+    OBPRECONDITION(calendar != nil);
     
     requestedWeekday+=1; // add one to the index since weekdays are 1 based, but we detect them zero-based
     NSDateComponents *weekdayComp = [calendar components:NSCalendarUnitWeekday fromDate:date];

@@ -78,7 +78,6 @@ OB_HIDDEN
     void (^_savedCloseCompletionBlock)(BOOL success);
     
     BOOL _hasUndoGroupOpen;
-    BOOL _isClosing;
     BOOL _forPreviewGeneration;
     BOOL _editingDisabled;
     BOOL _hasDisabledUserInteraction;
@@ -880,31 +879,30 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             OBASSERT_NOTNULL(_currentSaveURL);
             _currentSaveURL = nil;
 
-            // Subclasses must call -didWriteToURL: from their file saving path.
-            OBASSERT_NOTNULL(_lastWrittenFileEdit);
-            
-            // This means that our view state rolls forward in version with us (and our old view state will be hanging out). So, we remove the old edit state at this point too.
-            if (originalFileEdit) // New document?
-                [OUIDocumentAppController setDocumentState:nil forFileEdit:originalFileEdit];
-            [OUIDocumentAppController setDocumentState:viewState forFileEdit:_lastWrittenFileEdit];
-            
-            self.fileItem.fileEdit = _lastWrittenFileEdit;
-            _lastWrittenFileEdit = nil;
+            if (success) {
+                // Subclasses must call -didWriteToURL: from their file saving path.
+                OBASSERT_NOTNULL(_lastWrittenFileEdit);
 
-            [self _recordLastEdit];
+                // This means that our view state rolls forward in version with us (and our old view state will be hanging out). So, we remove the old edit state at this point too.
+                if (originalFileEdit) // New document?
+                    [OUIDocumentAppController setDocumentState:nil forFileEdit:originalFileEdit];
+                [OUIDocumentAppController setDocumentState:viewState forFileEdit:_lastWrittenFileEdit];
 
-            if (shouldRemoveCachedResourceValue) {
-                OBASSERT(url);
-                
-                // NSURL caches resource values that it has retrieved and OFUTIForFileURLPreferringNative() uses the resource values to determine the UTI. If we're going to change the file from flat to package (most likely case this is happening) then we need to clear the cache for the 'is directory' flag so that OFUTIForFileURLPreferringNative() returns the correct UTI next time we try to open the document. By the way, the NSURL documentation states that it's resource value cache is cleared at the turn of each runloop, but clearly it's not. Will try to repro and file a radar.
-                [url removeCachedResourceValueForKey:NSURLIsDirectoryKey];
+                self.fileItem.fileEdit = _lastWrittenFileEdit;
+                _lastWrittenFileEdit = nil;
+
+                [self _recordLastEdit];
+
+                if (shouldRemoveCachedResourceValue) {
+                    OBASSERT(url);
+                    
+                    // NSURL caches resource values that it has retrieved and OFUTIForFileURLPreferringNative() uses the resource values to determine the UTI. If we're going to change the file from flat to package (most likely case this is happening) then we need to clear the cache for the 'is directory' flag so that OFUTIForFileURLPreferringNative() returns the correct UTI next time we try to open the document. By the way, the NSURL documentation states that it's resource value cache is cleared at the turn of each runloop, but clearly it's not. Will try to repro and file a radar.
+                    [url removeCachedResourceValueForKey:NSURLIsDirectoryKey];
+                }
+                BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] removeExcludedFromBackupAttributeToItemAtURL:url error:NULL];
+                OBPOSTCONDITION(skipBackupAttributeSuccess);
+                OB_UNUSED_VALUE(skipBackupAttributeSuccess);
             }
-            BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] removeExcludedFromBackupAttributeToItemAtURL:url error:NULL];
-#ifdef OMNI_ASSERTIONS_ON
-            OBPOSTCONDITION(skipBackupAttributeSuccess);
-#else
-            (void)skipBackupAttributeSuccess;
-#endif
 
             if (updateCompletionHandler)
                 updateCompletionHandler(success, url, nil);

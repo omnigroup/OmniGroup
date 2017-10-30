@@ -387,16 +387,22 @@ static NSString *ClientComputerName(void)
     // Build the Info.plist
     NSMutableDictionary *infoDictionary = [NSMutableDictionary dictionary];
     infoDictionary[kOFXInfo_ArchiveVersionKey] = @(kOFXInfo_ArchiveVersion);
-    
-    // Get the date from the file so that if we created the document a long time ago and are just now turning on syncing it will have an accurate date.
-    OBFinishPortingLater("<bug:///147842> (iOS-OmniOutliner Bug: Get file creation date from the versionContents dictionary we just read using file coordination instead of looking it up again, or at least look it up in the same call with file coordination)");
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[localDocumentURL path] error:outError];
-    if (!attributes)
-        return nil;
-    NSDate *creationDate = attributes.fileCreationDate;
+
+    NSDate *creationDate = nil;
+    NSNumber *creationTimeNumber = versionContents[kOFXContents_FileCreationTime];
+    if (creationTimeNumber) {
+        NSTimeInterval creationTimestamp = creationTimeNumber.doubleValue;
+        creationDate = [NSDate dateWithTimeIntervalSinceReferenceDate:creationTimestamp];
+    }
     if (!creationDate) {
-        OBASSERT_NOT_REACHED("No creation date in attributes");
-        creationDate = [NSDate date];
+        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[localDocumentURL path] error:outError];
+        if (!attributes)
+            return nil;
+        creationDate = attributes.fileCreationDate;
+        if (!creationDate) {
+            OBASSERT_NOT_REACHED("No creation date in attributes");
+            creationDate = [NSDate date];
+        }
     }
     
     if (intendedLocalRelativePath) {

@@ -681,19 +681,17 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                     overlayView.alpha = 0.20
                     self.view.insertSubview(overlayView, belowSubview: divider)
                     
-                    break
                 case .Changed(let xOffset):
                     let left = self.pane(withLocation: .left)!
                     
                      let width = left.width + xOffset
                      left.preferredWidth = width
-                    break
+
                 case .Ended:
                     // cleanup the overlay view.
                     if let view = self.view.viewWithTag(20) {
                         view.removeFromSuperview()
                     }
-                    break
                 }
             }
             
@@ -760,18 +758,70 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         }
     }
     
+    private func reassignFirstResponderIfNeededAfterHidingPane(at location: MultiPaneLocation) {
+        guard displayMode != .compact else { return }
+        guard isViewLoaded else { return }
+        let disappearingViewController: UIViewController
+        
+        switch location {
+        case .right, .left:
+            guard let vc = viewController(atLocation: location) else { return }
+            disappearingViewController = vc
+            
+        case .center:
+            assertionFailure("Why is the center pane being hidden in a non-compact environment?")
+            return
+        }
+        
+        guard let firstResponder = UIResponder.firstResponder else { return }
+        guard firstResponder.isInActiveResponderChain(preceding: disappearingViewController) else { return }
+        
+        if let firstResponder = firstResponder as? UIView {
+            firstResponder.endEditing(true)
+        }
+        
+        // When hiding either the left or the right pane, but keyboard focus center view, if possible.
+        // Otherwise we'll just have to move it to the multipane controller.
+        
+        var candidateFirstResponder: UIResponder? = nil
+        
+        if let centerViewController = viewController(atLocation: .center) {
+            if let navigationController = centerViewController as? UINavigationController, let topView = navigationController.topViewController?.viewIfLoaded {
+                candidateFirstResponder = topView
+            } else if let centerView = centerViewController.viewIfLoaded {
+                candidateFirstResponder = centerView
+            } else {
+                candidateFirstResponder = viewIfLoaded
+            }
+        } else {
+            candidateFirstResponder = viewIfLoaded ?? self
+        }
+        
+        while let possibleFirstResponder = candidateFirstResponder {
+            if possibleFirstResponder.canBecomeFirstResponder {
+                possibleFirstResponder.becomeFirstResponder()
+                return
+            }
+            
+            candidateFirstResponder = possibleFirstResponder.next
+        }
+        
+        assertionFailure("Didn't find a new candidate first responder.")
+    }
+    
     func willPerform(operation: MultiPanePresenterOperation, withPane pane: Pane) {
        
         switch operation {
         case .push, .pop:
             visibleCompactPane = pane.location
             navigationDelegate?.willNavigate?(toPane: visibleCompactPane, with: self)
+
         case .overlay:
             // TODO: decide if we want a shadow on an overlaid controller.
             if pane.location == .left || pane.location == .right {
                 pane.apply(decorations: [AddShadow()])
             }
-            break
+
         case .expand:
             layoutDelegate?.willShowPane?(at: pane.location, multiPaneController: self)
             NotificationCenter.default.post(name: .OUIMultiPaneControllerWillShowPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
@@ -780,11 +830,13 @@ extension MultiPaneController: MultiPanePresenterDelegate {
             if pane.location == .left || pane.location == .right {
                 pane.apply(decorations: [ShowDivider()])
             }
-            break
+
         case .collapse:
             layoutDelegate?.willHidePane?(at: pane.location, multiPaneController: self)
             NotificationCenter.default.post(name: .OUIMultiPaneControllerWillHidePane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
-            break
+            
+            // If the delegate hasn't ensured that the first responder is somewhere reasonable (not in a chain that includes the view controller that was just hidden), put it someplace reasonble by default.
+            reassignFirstResponderIfNeededAfterHidingPane(at: pane.location)
             
         default:
             break
@@ -802,17 +854,18 @@ extension MultiPaneController: MultiPanePresenterDelegate {
 
             // re-run our layout so that the panes and the layout are lined up.
             preparePanesForLayout(toMode: displayMode, withSize: currentSize)
-            break
+
         case .collapse:
             if pane.location == .left || pane.location == .right {
                pane.apply(decorations: [HideDivider()])
             }
             layoutDelegate?.didHidePane?(at: pane.location, multiPaneController: self)
             NotificationCenter.default.post(name: .OUIMultiPaneControllerDidHidePane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
-            break
+
         case .expand:
             layoutDelegate?.didShowPane?(at: pane.location, multiPaneController: self)
             NotificationCenter.default.post(name: .OUIMultiPaneControllerDidShowPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
+        
         default:
             break
         }

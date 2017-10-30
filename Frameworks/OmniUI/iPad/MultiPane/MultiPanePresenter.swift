@@ -149,9 +149,12 @@ class MultiPanePresenter: NSObject {
         }
     }
     
+    private var panesInOverlayTransition: Set<Pane> = []
     private func overlay(pane: Pane, presentingController: UIViewController, gesture: UIScreenEdgePanGestureRecognizer?, animated: Bool = true) {
+        guard !panesInOverlayTransition.contains(pane) else { return } // already animating this one
         
         self.delegate?.willPerform(operation: .overlay, withPane: pane)
+        panesInOverlayTransition.insert(pane)
         
         // If the pane has a presented view controller when we try to present it with our custom presentation, we get into an infinite loop trying to find the firstResponder. The solution is to dismiss any presented view controller from the pane, and then re-present it after we get the pane back in the view hierarchy.
         let presentedController = pane.viewController.presentedViewController
@@ -172,6 +175,7 @@ class MultiPanePresenter: NSObject {
             assert(pane.viewController.presentedViewController == nil, "We hit an infinite loop if we try to present a view controller with a presented view controller")
             presentingController.present(pane.viewController, animated: animated, completion: {
                 self.removeSnapshotIfNeeded(pane: pane)
+                self.panesInOverlayTransition.remove(pane)
                 self.delegate?.didPerform(operation: .overlay, withPane: pane)
             })
             if let presentedController = presentedController {

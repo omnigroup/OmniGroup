@@ -115,7 +115,8 @@ RCS_ID("$Id$");
 
 - (NSArray *)makeAvailableSegments; // For subclasses
 {
-    return [NSArray array];
+    OBRequestConcreteImplementation(self, _cmd);
+    return @[]; 
 }
 
 #pragma mark -

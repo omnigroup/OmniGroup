@@ -72,6 +72,9 @@ enum {
 
     // AppleScript
     OFUnableToConvertScriptHandlerArgumentToAppleEventDescriptor,
+    
+    // OFRelativeDateParser
+    OFRelativeDateParserUnknownError,
 };
 
 

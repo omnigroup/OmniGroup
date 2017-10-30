@@ -421,8 +421,11 @@ static NSMutableDictionary *sharedViewerCache = nil;
 {
     if (self.loadCompletion) {
         self.loadCompletion(success, url, error);
-        // nil out the completion handler so subsequent load attempts to incorrectly call.
-        self.loadCompletion = nil;
+        if (success) {
+            // nil out the completion handler so subsequent load attempts to incorrectly call.
+            // we don't do this if we have not gotten success because it is possible to get an unsuccessful message followed by a successful one.
+            self.loadCompletion = nil;
+        }
     }
 
     if (success && [_delegate respondsToSelector:@selector(viewer:didLoadURL:)]) {

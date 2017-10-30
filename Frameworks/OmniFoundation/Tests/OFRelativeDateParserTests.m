@@ -1,4 +1,4 @@
-// Copyright 2006-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1362,6 +1362,26 @@ do { \
     parseDate(@"4. August 2014", expectedDate, baseDate, nil, nil);
 
     [[OFRelativeDateParser sharedParser] setLocale:savedLocale];
+}
+
+- (void)testSevenDigitHeuristicDate;
+{
+    OFRelativeDateParser *parser = [OFRelativeDateParser sharedParser];
+    
+    // <bug:///136930> (Mac-OmniFocus Crasher: Crash entering date? (-[__NSCFCalendar components:fromDate:]: date cannot be nil))
+    // Ensure that this fails (without raising an exception)
+
+    @try {
+        NSDate *date = nil;
+        NSError *error = nil;
+        BOOL result = [parser getDateValue:&date forString:@"2017011 +1d" error:&error];
+        
+        XCTAssertFalse(result);
+        XCTAssertNil(date);
+        XCTAssertNotNil(error);
+    } @catch (id exception) {
+        XCTFail("Parsing date threw an exception.");
+    }
 }
 
 @end
