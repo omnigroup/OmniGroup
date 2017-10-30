@@ -142,6 +142,22 @@ static NSMutableDictionary *_AppearanceInstancesByTheme = nil;
 
 #pragma mark -
 
+@implementation UINavigationController (OUIThemedAppearanceClient)
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    return [[super themedAppearanceChildClients] arrayByAddingObject:self.navigationBar];
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)appearance;
+{
+    [super themedAppearanceDidChange:appearance];
+}
+
+@end
+
+#pragma mark -
+
 @implementation UIPresentationController (OUIThemedAppearanceClient)
 
 - (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;

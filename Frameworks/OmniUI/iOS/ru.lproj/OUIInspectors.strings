@@ -36,6 +36,12 @@
 /* color inspector title */
 "Color" = "Цвет";
 
+/* done action title */
+"Done" = "Готово";
+
+/* edit action title */
+"Edit" = "Изменить";
+
 /* Inspector slice title for font family
    Title for the font family list in the inspector */
 

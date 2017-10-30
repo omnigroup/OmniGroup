@@ -258,7 +258,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Trasladar…";
+"Move…" = "Trasladar...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Comunicar error";
 
-/* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar docs. de ejemplo";
+/* Restore From Sample Documents Title */
+"Restore From Sample Documents" = "Restaurar desde ejemplos";
 
 /* Share menu title */
 "Restore to..." = "Restaurar a…";

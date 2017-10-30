@@ -255,7 +255,7 @@
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Share menu title */
-"Move to..." = "Bewegen …";
+"Move to..." = "Bewegen nach …";
 
 /* Move document preview action title. */
 "Move…" = "Bewegen …";
@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Fehler melden";
 
-/* Restore Sample Documents Title */
-"Restore Sample Documents" = "Beisp.-Dok. wiederherst.";
+/* Restore From Sample Documents Title */
+"Restore From Sample Documents" = "Aus Beispieldok. wiederherst.";
 
 /* Share menu title */
 "Restore to..." = "Wiederherstellen in …";

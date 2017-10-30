@@ -9,12 +9,13 @@
 
 #import <OmniUI/OUISegmentedViewController.h>
 #import <OmniUI/OUIThemedAppearance.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 
 RCS_ID("$Id$")
 
 @interface OUINavigationController ()
 
-@property (nonatomic, strong) NSArray *permanentConstraints;
+@property (nonatomic, strong) NSLayoutConstraint *accessoryAndBackgroundBarTopConstraint;
 @property (nonatomic, strong) NSArray *topAndBottomConstraints;
 
 @end
@@ -26,14 +27,42 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
+    self.accessoryAndBackgroundBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
+    self.accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_accessoryAndBackgroundBar];
+    [self _constrainAccessoryAndBackgroundView];
+    self.accessoryAndBackgroundBar.hidden = YES;
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+
+    if (self.navigationBar.superview == self.view && !self.isNavigationBarHidden)
+        self.accessoryAndBackgroundBarTopConstraint.constant = CGRectGetMaxY(self.navigationBar.frame);
+    else
+        self.accessoryAndBackgroundBarTopConstraint.constant = 0;
+}
+
 #define BOTTOM_SPACING_BELOW_ACCESSORY 7.0
 
 - (void)_constrainAccessoryAndBackgroundView
 {
-    self.accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.accessoryAndBackgroundBar.trailingAnchor constraintEqualToAnchor:self.navigationBar.trailingAnchor].active = YES;
-    [self.accessoryAndBackgroundBar.leadingAnchor constraintEqualToAnchor:self.navigationBar.leadingAnchor].active = YES;
-    [self.accessoryAndBackgroundBar.topAnchor constraintEqualToAnchor:self.navigationBar.bottomAnchor].active = YES;
+    self.accessoryAndBackgroundBarTopConstraint = [self.accessoryAndBackgroundBar.topAnchor constraintEqualToAnchor:self.view.topAnchor];
+
+    NSArray *constraints = @[
+         [self.accessoryAndBackgroundBar.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+         [self.accessoryAndBackgroundBar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+         self.accessoryAndBackgroundBarTopConstraint,
+     ];
+    
+    [NSLayoutConstraint activateConstraints:constraints];
 }
 
 - (void)_constrainNewAccessoryView:(UIView *)newAccessory
@@ -44,32 +73,6 @@ RCS_ID("$Id$")
     [NSLayoutConstraint deactivateConstraints:self.topAndBottomConstraints];
     self.topAndBottomConstraints = @[topConstraint, bottomConstraint];
     [NSLayoutConstraint activateConstraints:self.topAndBottomConstraints];
-}
-
-- (void)_addNewAccessoryView:(UIView *)newAccessory animated:(BOOL)animated
-{
-    if (self.accessory != newAccessory) {
-        if (newAccessory) {
-            newAccessory.translatesAutoresizingMaskIntoConstraints = NO;
-            
-            [self.accessoryAndBackgroundBar addSubview:newAccessory];
-            [self _constrainNewAccessoryView:newAccessory];
-            
-            [self.accessoryAndBackgroundBar layoutIfNeeded];
-        } else {
-            [self.accessory removeFromSuperview];
-            self.accessoryAndBackgroundBar.hidden = YES;
-        }
-        
-        UIView *oldAccessory = self.accessory;
-        self.accessory = newAccessory;
-        
-        if (animated) {
-            [self _animateSwitchFromOldAccessory:oldAccessory toNewAccessory:newAccessory];
-        } else {
-            [oldAccessory removeFromSuperview];
-        }
-    }
 }
 
 - (void)_animateSwitchFromOldAccessory:(UIView *)oldOne toNewAccessory:(UIView *)newOne {
@@ -83,67 +86,83 @@ RCS_ID("$Id$")
     }];
 }
 
-- (void)_updateAccessory:(UIViewController *)viewController operation:(UINavigationControllerOperation)operation animated:(BOOL)animated;
+#ifdef DEBUG_tom
+- (void)setAdditionalSafeAreaInsets:(UIEdgeInsets)insets;
 {
-    // For now, this is where all constraints get set (it's where we used to calculate and set frames).  Seems to be working fine.
-    if ([viewController wantsHiddenNavigationBar]) {
-        [self.accessory removeFromSuperview];
-        self.accessoryAndBackgroundBar.hidden = YES;
-        return;
+    NSLog(@"edgeInsets: %@", NSStringFromUIEdgeInsets(insets));
+    [super setAdditionalSafeAreaInsets:insets];
+}
+#endif
+    
+- (void)_updateAccessory:(UIViewController *)viewController animated:(BOOL)animated;
+{
+    UIView *newAccessory = nil;
+    if ([viewController respondsToSelector:@selector(navigationBarAccessoryView)]) {
+        newAccessory = [viewController navigationBarAccessoryView];
     }
- 
-    if (![viewController respondsToSelector:@selector(navigationBarAccessoryView)]) {
-        [self.accessory removeFromSuperview];
-        self.accessory = nil;
-        self.accessoryAndBackgroundBar.hidden = YES;
-    } else {
-        if (!self.navigationBar.superview)
-            return;
-        
-        UIView *newAccessory = [viewController navigationBarAccessoryView];
-        
-        if (!_accessoryAndBackgroundBar) {
-            self.accessoryAndBackgroundBar = [[UINavigationBar alloc] initWithFrame:self.navigationBar.frame];
-            [self.navigationBar.superview addSubview:_accessoryAndBackgroundBar];
-            [self _constrainAccessoryAndBackgroundView];
-        } else {
-            self.accessoryAndBackgroundBar.hidden = NO;
+    
+    if (self.accessory == newAccessory) {
+        UIEdgeInsets insets = UIEdgeInsetsZero;
+        if (newAccessory) {
+            CGFloat height = [self.accessoryAndBackgroundBar systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+            insets.top += height + 3;
         }
         
-        [self _addNewAccessoryView:newAccessory animated:animated];
-    }
-}
+        // It would really be better to set self.additionalSafeAreaInsets here, but if we do that the inset for the navigationBar doesn't get propogated down to safeAreaInset of viewController.view (?!) in OmniPlan. This seems to work as expected in Jake's text project. In the mean time this works for OmniPlan and OmniGraffle.
+        viewController.additionalSafeAreaInsets = insets;
+//        self.additionalSafeAreaInsets = insets;
 
-- (CGFloat)heightOfAccessoryBar {
-    if (self.accessory) {
-        return self.accessoryAndBackgroundBar.frame.size.height;
+        return;
     }
-    return 0.0f;
-}
+    
+    UIEdgeInsets insets = UIEdgeInsetsZero;
+    if (newAccessory) {
+        newAccessory.translatesAutoresizingMaskIntoConstraints = NO;
+        
+        [self.accessoryAndBackgroundBar addSubview:newAccessory];
+        [self _constrainNewAccessoryView:newAccessory];
+        self.accessoryAndBackgroundBar.hidden = NO;
 
-- (void)setNavigationBarHidden:(BOOL)hidden animated:(BOOL)animated;
-{
-    [super setNavigationBarHidden:hidden animated:animated];
-    [self _updateAccessory:self.topViewController operation:UINavigationControllerOperationPush animated:animated];
+        CGFloat height = [self.accessoryAndBackgroundBar systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
+        insets.top += height + 3;
+    } else {
+        self.accessoryAndBackgroundBar.hidden = YES;
+    }
+    
+    UIView *oldAccessory = self.accessory;
+
+    self.accessory = newAccessory;
+    
+    if (animated) {
+        [self _animateSwitchFromOldAccessory:oldAccessory toNewAccessory:newAccessory];
+    } else if (oldAccessory) {
+        [oldAccessory removeFromSuperview];
+    }
+
+    viewController.additionalSafeAreaInsets = insets;
+//    self.additionalSafeAreaInsets = insets;
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
+#ifdef DEBUG_tom
+    NSLog(@"-[%@ pushViewController]", OBShortObjectDescription(self));
+#endif
     [super pushViewController:viewController animated:animated];
-    [self _updateAccessory:viewController operation:UINavigationControllerOperationPush animated:animated];
+    [self _updateAccessory:viewController animated:animated];
 }
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated;
 {
     UIViewController *result = [super popViewControllerAnimated:animated];
-    [self _updateAccessory:[self.viewControllers lastObject] operation:UINavigationControllerOperationPop animated:animated];
+    [self _updateAccessory:[self.viewControllers lastObject] animated:animated];
     return result;
 }
 
 - (NSArray *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
     NSArray *result = [super popToViewController:viewController animated:animated];
-    [self _updateAccessory:viewController operation:UINavigationControllerOperationPop animated:animated];
+    [self _updateAccessory:viewController animated:animated];
     return result;
 }
 
@@ -153,14 +172,14 @@ RCS_ID("$Id$")
         return [NSArray array];
     
     NSArray *result = [super popToRootViewControllerAnimated:animated];
-    [self _updateAccessory:[self.viewControllers objectAtIndex:0] operation:UINavigationControllerOperationPop animated:animated];
+    [self _updateAccessory:[self.viewControllers objectAtIndex:0] animated:animated];
     return result;
 }
 
 - (void)setViewControllers:(NSArray *)viewControllers;
 {
     [super setViewControllers:viewControllers];
-    [self _updateAccessory:[viewControllers lastObject] operation:UINavigationControllerOperationPush animated:NO];
+    [self _updateAccessory:[viewControllers lastObject]  animated:NO];
 }
 
 #pragma mark - OUIThemedAppearanceClient
@@ -168,8 +187,22 @@ RCS_ID("$Id$")
 - (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
 {
     NSArray <id<OUIThemedAppearanceClient>> *clients = [super themedAppearanceChildClients];
+    clients = [clients arrayByAddingObject:_accessoryAndBackgroundBar];
     clients = [clients arrayByAddingObjectsFromArray:self.viewControllers];
     return clients;
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.navigationBar.barStyle = appearance.InspectorBarStyle;
+    self.navigationBar.backgroundColor = appearance.InspectorBackgroundColor;
+
+    _accessoryAndBackgroundBar.barStyle = appearance.InspectorBarStyle;
+    _accessoryAndBackgroundBar.backgroundColor = appearance.InspectorBackgroundColor;
 }
 
 @end

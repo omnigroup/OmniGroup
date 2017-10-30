@@ -24,7 +24,10 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
+    UIView *view = [[UIView alloc] initWithFrame:CGRectZero];
+    
     OUIInspectorLabel *label = [[OUIInspectorLabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 5)];
+    label.translatesAutoresizingMaskIntoConstraints = NO;
     label.text = NSLocalizedStringFromTableInBundle(@"No color selected", @"OUIInspectors", OMNI_BUNDLE, @"Descriptive text on the no color pane of the color picker");
     
     label.textAlignment = NSTextAlignmentCenter;
@@ -35,7 +38,13 @@ RCS_ID("$Id$");
     
     [label sizeToFit];
     
-    self.view = label;
+    [view addSubview:label];
+    [NSLayoutConstraint activateConstraints:
+     @[[view.centerXAnchor constraintEqualToAnchor:label.centerXAnchor],
+       [view.centerYAnchor constraintEqualToAnchor:label.centerYAnchor]
+       ]];
+    
+    self.view = view;
 }
 
 #pragma mark -

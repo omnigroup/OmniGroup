@@ -36,6 +36,12 @@
 /* color inspector title */
 "Color" = "Farbe";
 
+/* done action title */
+"Done" = "Fertig";
+
+/* edit action title */
+"Edit" = "Bearbeiten";
+
 /* Inspector slice title for font family
    Title for the font family list in the inspector */
 

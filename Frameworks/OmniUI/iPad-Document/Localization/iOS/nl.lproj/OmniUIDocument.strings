@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Meld fout";
 
-/* Restore Sample Documents Title */
-"Restore Sample Documents" = "Herstel voorbeelddocumenten";
+/* Restore From Sample Documents Title */
+"Restore From Sample Documents" = "Herstel vanaf voorbeeld";
 
 /* Share menu title */
 "Restore to..." = "Herstel naar…";

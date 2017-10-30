@@ -3,7 +3,7 @@
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
-"About %@" = "À propos de %@";
+"About %@" = "À propos d’%@";
 
 /* MultiPane Back button title, when system is compact */
 "Back" = "Précédent";
@@ -101,6 +101,9 @@
 
 
 "OK" = "OK";
+
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Abonnement au bulletin Omni";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "mot de passe";

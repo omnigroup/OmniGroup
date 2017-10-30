@@ -52,6 +52,15 @@ RCS_ID("$Id$");
 
 @synthesize disableAutoPickingPanes;
 
+#ifdef DEBUG_tom
+- (void)viewSafeAreaInsetsDidChange
+{
+    [super viewSafeAreaInsetsDidChange];
+    
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+}
+#endif
+
 - (void)_setSelectedColorTypeIndex:(NSInteger)colorTypeIndex;
 {
     if (colorTypeIndex != (NSInteger)_colorTypeIndex) {
@@ -83,9 +92,18 @@ RCS_ID("$Id$");
                         
         // Keep only the height of the picker's view
         pickerView = _currentColorPicker.view;
-        pickerView.frame = self.view.bounds;
+        pickerView.translatesAutoresizingMaskIntoConstraints = NO;
         pickerView.alpha = 0.0;
         [self.view addSubview:pickerView];
+        
+        [NSLayoutConstraint activateConstraints:
+         @[
+           // set up constraints so that the stackView is as big as the scrollview.
+           [self.view.leftAnchor constraintEqualToAnchor:pickerView.leftAnchor],
+           [self.view.rightAnchor constraintEqualToAnchor: pickerView.rightAnchor],
+           [pickerView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+           [self.view.bottomAnchor constraintEqualToAnchor:pickerView.bottomAnchor],
+           ]];
     }
 
     void (^viewChangeAnimation)(void) = ^{
@@ -265,23 +283,5 @@ RCS_ID("$Id$");
 {
     [self.parentSlice endChangingColor];
 }
-
-#pragma mark - OUIInspectorAppearance
-
-- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
-{
-    [super themedAppearanceDidChange:changedAppearance];
-    
-    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
-    
-    OUINavigationController *navigationController = OB_CHECKED_CAST(OUINavigationController, self.navigationController);
-    navigationController.navigationBar.barStyle = appearance.InspectorBarStyle;
-    navigationController.navigationBar.backgroundColor = appearance.InspectorBackgroundColor;
-    navigationController.accessoryAndBackgroundBar.barStyle = appearance.InspectorBarStyle;
-    navigationController.accessoryAndBackgroundBar.backgroundColor = appearance.InspectorBackgroundColor;
-    navigationController.accessoryAndBackgroundBar.barTintColor = appearance.InspectorBackgroundColor;
-    navigationController.accessoryAndBackgroundBar.translucent = NO;
-}
-
 
 @end

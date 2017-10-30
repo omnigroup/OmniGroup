@@ -13,7 +13,6 @@
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
-#import <OmniUI/OUINavigationController.h>
 
 @class OUIInspectorPane;
 

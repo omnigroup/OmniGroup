@@ -308,6 +308,9 @@ RCS_ID("$Id$")
         [self.originalNavDelegate navigationController:navigationController willShowViewController:viewController animated:animated];
     }
     
+#ifdef DEBUG_tom
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+#endif
     [viewController.navigationController setNavigationBarHidden:viewController.wantsHiddenNavigationBar animated:YES];
 }
 

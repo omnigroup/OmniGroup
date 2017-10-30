@@ -102,6 +102,9 @@
 
 "OK" = "양호";
 
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Omni 뉴스레터 등록";
+
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "암호";
 

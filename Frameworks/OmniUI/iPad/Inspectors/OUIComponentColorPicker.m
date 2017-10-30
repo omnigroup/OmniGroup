@@ -85,46 +85,70 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    UIScrollView *view = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    UIScrollView *view = [[UIScrollView alloc] initWithFrame:CGRectZero];
     view.alwaysBounceVertical = YES;
-    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    CGRect bounds = view.bounds;
+    view.translatesAutoresizingMaskIntoConstraints = NO;
     
     OBASSERT(_componentSliders == nil);
     _componentSliders = [[self makeComponentSliders] copy];
     OBASSERT([_componentSliders count] > 0);
     
-    const CGFloat kNavBarOverhang = 0.0f; // OUIColorInspectorPane handles this for us since we're a scrollview
-    const CGFloat kSpaceBeforeFirstSlider = 8;
-    const CGFloat kSpaceBetweenSliders = 27;
-    const CGFloat kEdgePadding = 8;
-    const CGFloat kSpaceAfterLastSlider = 8;
-    
-    CGFloat yOffset = CGRectGetMinY(bounds) + kSpaceBeforeFirstSlider + kNavBarOverhang;
     for (OUIColorComponentSlider *slider in _componentSliders) {
-        CGSize sliderSize = [slider sizeThatFits:CGSizeMake(bounds.size.width - 2*kEdgePadding, 0)];
-        CGRect sliderFrame = CGRectMake(CGRectGetMinX(bounds) + kEdgePadding, yOffset, sliderSize.width, sliderSize.height);
-        slider.frame = sliderFrame;
-
-        [view addSubview:slider];
-        yOffset = CGRectGetMaxY(sliderFrame) + kSpaceBetweenSliders;
-        
         // Need the up/cancel variants so we find out about the end of the tracking and manage undo grouping
         [slider addTarget:self action:@selector(_componentSliderValueChanged:) forControlEvents:UIControlEventValueChanged];
         [slider addTarget:self action:@selector(_beginChangingSliderValue:) forControlEvents:UIControlEventTouchDown];
         [slider addTarget:self action:@selector(_endChangingSliderValue:) forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchUpOutside|UIControlEventTouchCancel];
     }
     
-    CGRect viewFrame = view.frame;
-    viewFrame.size.height = CGRectGetMaxY([[_componentSliders lastObject] frame]) - CGRectGetMinY(bounds) + kSpaceAfterLastSlider;
-    view.frame = viewFrame;
-
-    // We need to let the scrollview know what its contentSize is, so that it will let you scroll everything to visible.
-    CGRect viewBounds = view.bounds;
-    view.contentSize = CGSizeMake(viewBounds.size.width, yOffset);
-    
     [self _updateSliderValuesFromColor];
     [self setView:view];
+}
+
+#ifdef DEBUG_tom
+- (void)viewSafeAreaInsetsDidChange
+{
+    [super viewSafeAreaInsetsDidChange];
+    
+    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+}
+#endif
+
+- (void)viewWillLayoutSubviews
+{
+    [super viewWillLayoutSubviews];
+    
+    const CGFloat kSpaceBeforeFirstSlider = 8;
+    const CGFloat kSpaceBetweenSliders = 27;
+    const CGFloat kEdgePadding = 8;
+    const CGFloat kSpaceAfterLastSlider = 8;
+    
+    UIScrollView *scrollView = OB_CHECKED_CAST(UIScrollView, self.view);
+
+    OUIColorComponentSlider *priorSlider = nil;
+    for (OUIColorComponentSlider *slider in _componentSliders) {
+        slider.translatesAutoresizingMaskIntoConstraints = NO;
+        [scrollView addSubview:slider];
+
+        CGSize sliderSize = [slider sizeThatFits:CGSizeMake(scrollView.bounds.size.width - 2*kEdgePadding, 0)];
+        NSArray *constraints = @[
+             [slider.leftAnchor constraintEqualToAnchor:scrollView.leftAnchor constant:kEdgePadding],
+             [slider.widthAnchor constraintEqualToConstant:sliderSize.width],
+             [slider.rightAnchor constraintEqualToAnchor:scrollView.rightAnchor constant:-kEdgePadding],
+             [slider.heightAnchor constraintEqualToConstant:sliderSize.height],
+        ];
+        
+        if (priorSlider)
+            constraints = [constraints arrayByAddingObject:[slider.topAnchor constraintEqualToAnchor:priorSlider.bottomAnchor constant:kSpaceBetweenSliders]];
+        else
+            constraints = [constraints arrayByAddingObject:[slider.topAnchor constraintEqualToAnchor:scrollView.safeAreaLayoutGuide.topAnchor constant:kSpaceBeforeFirstSlider]];
+        
+        [NSLayoutConstraint activateConstraints:constraints];
+        
+        priorSlider = slider;
+    }
+    
+    OUIColorComponentSlider *lastSlider = [_componentSliders lastObject];
+    [lastSlider.bottomAnchor constraintEqualToAnchor:scrollView.bottomAnchor constant:kSpaceAfterLastSlider].active = YES;
 }
 
 #pragma mark -

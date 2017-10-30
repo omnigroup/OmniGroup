@@ -689,8 +689,17 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     }
 
     NSColorSpace *sRGBColorSpace = _preferredInternalRGBColorSpace();
-    if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace] && OFNOTEQUAL(self.colorSpace, sRGBColorSpace)) {
-        return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
+    if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace]) {
+        NSColorSpace *myColorSpace = self.colorSpace;
+        if (OFNOTEQUAL(myColorSpace, sRGBColorSpace)) {
+            BOOL colorSpaceIsSafeSubset = NO;
+            if ([OFVersionNumber isOperatingSystemSierraOrLater]) {
+                colorSpaceIsSafeSubset = OFISEQUAL(myColorSpace, [NSColorSpace sRGBColorSpace]) && OFISEQUAL(sRGBColorSpace, [NSColorSpace extendedSRGBColorSpace]);
+            }
+            if (!colorSpaceIsSafeSubset) {
+                return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
+            }
+        }
     }
 
     NSUInteger entryCount;

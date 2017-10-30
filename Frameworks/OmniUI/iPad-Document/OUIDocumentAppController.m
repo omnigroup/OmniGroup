@@ -845,7 +845,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (NSString *)sampleDocumentsDirectoryTitle;
 {
-    return NSLocalizedStringFromTableInBundle(@"Restore From Sample Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Restore From Sample Documents Title");
+    return NSLocalizedStringFromTableInBundle(@"Restore Sample Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Restore Sample Documents Title");
 }
 
 - (NSURL *)sampleDocumentsDirectoryURL;

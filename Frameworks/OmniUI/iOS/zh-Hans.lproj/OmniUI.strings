@@ -102,6 +102,9 @@
 
 "OK" = "好";
 
+/* Menu item to subscribe to Omni's newsletter */
+"Omni Newsletter Signup" = "Omni 新闻稿注册";
+
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "密码";
 

@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "エラーを報告";
 
-/* Restore Sample Documents Title */
-"Restore Sample Documents" = "サンプル書類を復元";
+/* Restore From Sample Documents Title */
+"Restore From Sample Documents" = "サンプル書類から復元";
 
 /* Share menu title */
 "Restore to..." = "復元先...";

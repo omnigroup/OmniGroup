@@ -36,6 +36,12 @@
 /* color inspector title */
 "Color" = "色";
 
+/* done action title */
+"Done" = "完了";
+
+/* edit action title */
+"Edit" = "編集";
+
 /* Inspector slice title for font family
    Title for the font family list in the inspector */
 

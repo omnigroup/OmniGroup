@@ -18,5 +18,4 @@
 
 @interface UIViewController (NavBarExtras)
 - (UIView *)navigationBarAccessoryView;
-- (CGFloat)heightOfAccessoryBar;
 @end

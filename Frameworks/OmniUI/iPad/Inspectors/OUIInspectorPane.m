@@ -53,15 +53,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return _weak_inspector != nil;
 }
 
-- (UIEdgeInsets)additionalSafeAreaInsets
-{
-    UIEdgeInsets edgeInsets = UIEdgeInsetsZero;
-    if (self.navigationController) {
-        edgeInsets.top = [self.navigationController heightOfAccessoryBar];
-    }
-    return edgeInsets;
-}
-
 @synthesize inspector = _weak_inspector;
 - (OUIInspector *)inspector;
 {

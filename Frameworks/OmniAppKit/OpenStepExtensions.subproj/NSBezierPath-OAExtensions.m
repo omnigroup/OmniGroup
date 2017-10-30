@@ -1051,6 +1051,13 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
     [self appendBezierPath: bezierPath];
 }
 
+- (void)applyTransform:(CGAffineTransform)transform;
+{
+    NSAffineTransform *nsTransform = [[[NSAffineTransform alloc] init] autorelease];
+    nsTransform.transformStruct = NSAffineTransformFromCG(transform);
+    [self transformUsingAffineTransform:nsTransform];
+}
+
 //
 
 - (struct pointInfo)_getPointInfoForPosition:(CGFloat)position {
