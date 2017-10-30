@@ -32,8 +32,6 @@ RCS_ID("$Id$")
 NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
 
-static __kindof NSApplication * _NSApp(void);
-
 static NSEventModifierFlags launchModifierFlags;
 static BOOL OATargetSelection;
 
@@ -80,18 +78,17 @@ static NSImage *CautionIcon = nil;
 {
     static OAApplication *omniApplication = nil;
     if (omniApplication == nil) {
+        if (OFIsRunningUnitTests()) {
+            // If we are running tests, xctest will look at the test bundle's princial class and create one. If we set the test bundle's class to OAApplication, that means we'll get two instances of OAApplication, one from the xctest and one from NSApplicationMain. If xctest is running standalone w/o a host app, it's fine to have it create an OAApplication since there isn't one otherwise.
+            return [super sharedApplication];
+        }
+
         Class principalClass = [OFControllingBundle() principalClass];
         if (principalClass != self) {
             assert(OBClassIsSubclassOfClass(principalClass, self));
             return [principalClass sharedApplication]; // Let our intended principal class allocate its shared application
         } else {
-            __kindof NSApplication *sharedApplication;
-            if (OFIsRunningUnitTests()) {
-                // xctest creates the app instance itself and if we call -sharedApplication here, will make a second app instance and hit assertions. Our xcconfig files #define this to disallow using the global most of the time.
-                sharedApplication = _NSApp();
-            } else {
-                sharedApplication = [super sharedApplication];
-            }
+            __kindof NSApplication *sharedApplication = [super sharedApplication];
             assert([sharedApplication isKindOfClass:principalClass]); // Someone called +[NSApplication sharedApplication] directly before calling NSApplicationMain() and accidentally allocated the wrong class. Fix by deferring the early call or changing it to +[OAApplication sharedApplication].
             omniApplication = OB_CHECKED_CAST(OAApplication, sharedApplication);
             [self _setupOmniApplication]; // We don't call this in -init so because we want to be able to call +sharedApplication
@@ -1369,13 +1366,3 @@ static BOOL _overridesNSObjectCategoryMethod(id self, SEL validateSelector)
 }
 
 @end
-
-#undef NSApp
-
-extern __kindof NSApplication * __null_unspecified NSApp;
-
-static __kindof NSApplication * _NSApp(void)
-{
-    return NSApp;
-}
-

@@ -109,7 +109,23 @@ static const CFDictionaryValueCallBacks CFTypeDictionaryValueCallbacks = {
         PreviewPlaceholderOperationQueue = [[NSOperationQueue alloc] init];
         PreviewPlaceholderOperationQueue.name = @"com.omnigroup.OmniUI.OUIDocumentPreview.placeholders";
         PreviewPlaceholderOperationQueue.maxConcurrentOperationCount = 1;
+
+        PreviewTemplateImageTintColor = [UIColor blackColor];
     });
+}
+
+static UIColor *PreviewTemplateImageTintColor;
+
++ (UIColor *)previewTemplateImageTintColor;
+{
+    return PreviewTemplateImageTintColor;
+}
+
++ (void)setPreviewTemplateImageTintColor:(UIColor *)previewTemplateImageTintColor;
+{
+    if (previewTemplateImageTintColor == nil)
+        previewTemplateImageTintColor = [UIColor blackColor];
+    PreviewTemplateImageTintColor = previewTemplateImageTintColor;
 }
 
 static NSURL *_normalizeURL(NSURL *url)
@@ -696,37 +712,37 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
                 // Badge the placeholder image onto a white sheet of paper and cache that image.
                 CGFloat edgeSize = [self previewSizeForArea:area];
                 CGSize size = CGSizeMake(edgeSize, edgeSize);
-                CGFloat scale = [OUIDocumentPreview previewImageScale];
-                size.width = floor(size.width * scale);
-                size.height = floor(size.height * scale);
-                
+
                 UIGraphicsBeginImageContextWithOptions(size, YES/*opaque*/, 0);
                 {
                     CGRect paperRect = CGRectMake(0, 0, size.width, size.height);
                     
                     [[UIColor whiteColor] set];
                     UIRectFill(paperRect);
-                    
-                    CGImageRef previewImage = [placeholderImage.image CGImage];
+
+                    UIImage *previewImage = placeholderImage.image;
 
                     if (!previewImage) {
                         // We'll just end up with a white rectangle in this case
                         OBASSERT_NOT_REACHED("No image found for default image name returned");
                     } else {
-                        CGSize imageSize = CGSizeMake(CGImageGetWidth(previewImage), CGImageGetHeight(previewImage));
-                        imageSize.width = floor(imageSize.width * scale);
-                        imageSize.height = floor(imageSize.height * scale);
-                        
+                        CGSize imageSize = previewImage.size;
+
                         CGRect targetImageRect = OQCenterAndFitIntegralRectInRectWithSameAspectRatioAsSize(paperRect, imageSize);
                         
                         CGContextRef ctx = UIGraphicsGetCurrentContext();
                         CGContextTranslateCTM(ctx, targetImageRect.origin.x, targetImageRect.origin.y);
                         targetImageRect.origin = CGPointZero;
-                        
-                        OQFlipVerticallyInRect(ctx, targetImageRect);
-                        
+
+                        // If the image is set to be a template, it will use the current color to blend against.
+                        // We currently only hit this for 'always template', but could (in theory) need it for 'automatic' mode too.
+                        if (previewImage.renderingMode == UIImageRenderingModeAlwaysTemplate) {
+                            // A possible bit of thread-unsafety here if the main queue is setting this? Expect this to be set once during app setup.
+                            [PreviewTemplateImageTintColor set];
+                        }
+
                         CGContextSetInterpolationQuality(ctx, kCGInterpolationHigh);
-                        CGContextDrawImage(ctx, targetImageRect, previewImage);
+                        [previewImage drawInRect:targetImageRect];
                     }
                     
 #ifdef DEBUG

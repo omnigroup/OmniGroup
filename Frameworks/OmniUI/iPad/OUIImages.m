@@ -153,10 +153,16 @@ UIImage *OUIDisclosureIndicatorImage(void)
 
 - initWithName:(NSString *)name bundle:(NSBundle *)bundle;
 {
+    return [self initWithName:name bundle:bundle renderingMode:UIImageRenderingModeAutomatic];
+}
+
+- initWithName:(NSString *)name bundle:(NSBundle *)bundle renderingMode:(UIImageRenderingMode)renderingMode;
+{
     if (!(self = [super init]))
         return nil;
     _bundle = bundle;
     _name = [name copy];
+    _renderingMode = renderingMode;
     return self;
 }
 
@@ -167,6 +173,10 @@ UIImage *OUIDisclosureIndicatorImage(void)
     UIImage *image = [UIImage imageNamed:_name inBundle:mainBundle compatibleWithTraitCollection:nil];
     if (!image && _bundle != mainBundle) {
         image = [UIImage imageNamed:_name inBundle:_bundle compatibleWithTraitCollection:nil];
+    }
+
+    if (_renderingMode != UIImageRenderingModeAutomatic) {
+        image = [image imageWithRenderingMode:_renderingMode];
     }
 
     OBASSERT_NOTNULL(image);

@@ -135,7 +135,7 @@ static inline void _ODOObjectSetValuesToNull(ODOObject *self)
     }
 }
 
-static inline id _ODOObjectValueAtIndex(ODOObject *self, NSUInteger snapshotIndex)
+static inline id _Nullable _ODOObjectValueAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);
@@ -144,7 +144,7 @@ static inline id _ODOObjectValueAtIndex(ODOObject *self, NSUInteger snapshotInde
     return self->_valueStorage[snapshotIndex];
 }
 
-static inline void _ODOObjectSetValueAtIndex(ODOObject *self, NSUInteger snapshotIndex, id value)
+static inline void _ODOObjectSetValueAtIndex(ODOObject *self, NSUInteger snapshotIndex, id _Nullable value)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);

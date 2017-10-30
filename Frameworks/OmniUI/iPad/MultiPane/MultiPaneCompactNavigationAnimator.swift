@@ -13,27 +13,27 @@ import UIKit
 // Providing a custom UIViewControllerContextTransitioning is what allows for proper child controller containment before and after transitions, while still keeping a consistent interface for custom vc transitions to MultiPaneController clients.
 //
 class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTransitioning {
-    let operation: UINavigationControllerOperation
-    let toViewController: UIViewController
-    let fromViewController: UIViewController
-    let animator: UIViewControllerAnimatedTransitioning
-    let containerView: UIView
+    @objc /**REVIEW**/ let operation: UINavigationControllerOperation
+    @objc /**REVIEW**/ let toViewController: UIViewController
+    @objc /**REVIEW**/ let fromViewController: UIViewController
+    @objc /**REVIEW**/ let animator: UIViewControllerAnimatedTransitioning
+    @objc /**REVIEW**/ let containerView: UIView
     
     var isAnimated: Bool = true
     var isInteractive: Bool = false
     var transitionWasCancelled: Bool = false // TODO: this should be dependent on the actual animation state.
-    var completedTransition: (Bool) -> Void = { _ in }
+    @objc /**REVIEW**/ var completedTransition: (Bool) -> Void = { _ in }
     
     fileprivate var interactionChangedBlocks: [() -> ()] = []
     fileprivate var animationCompletionBlocks: [() -> ()] = []
     
-    var propertyAnimator: UIViewPropertyAnimator?
+    @objc /**REVIEW**/ var propertyAnimator: UIViewPropertyAnimator?
     
     var presentationStyle: UIModalPresentationStyle {
         return .custom
     }
     
-    init(fromViewController: UIViewController, toViewController: UIViewController, operation: UINavigationControllerOperation, animator: UIViewControllerAnimatedTransitioning?) {
+    @objc /**REVIEW**/ init(fromViewController: UIViewController, toViewController: UIViewController, operation: UINavigationControllerOperation, animator: UIViewControllerAnimatedTransitioning?) {
         self.toViewController = toViewController
         self.fromViewController = fromViewController
         self.operation = operation
@@ -45,7 +45,7 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
         self.prepareForTransition()
     }
     
-    func startTransition() {
+    @objc /**REVIEW**/ func startTransition() {
         // note, that this should check for interactivity first.
         if self.isInteractive {
             if let propertyAnimator = self.animator.interruptibleAnimator?(using: self) as? UIViewPropertyAnimator {
@@ -248,12 +248,12 @@ extension UINavigationControllerOperation {
 }
 
 class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
-    let operation: UINavigationControllerOperation
+    @objc /**REVIEW**/ let operation: UINavigationControllerOperation
     
     // Default animation setup to mimic the push/pop style that UINavigationController uses.
-    var animator: UIViewPropertyAnimator = UIViewPropertyAnimator(duration: 0.0, timingParameters: UISpringTimingParameters())
+    @objc /**REVIEW**/ var animator: UIViewPropertyAnimator = UIViewPropertyAnimator(duration: 0.0, timingParameters: UISpringTimingParameters())
     
-    init(with operation: UINavigationControllerOperation, animator: UIViewPropertyAnimator?) {
+    @objc /**REVIEW**/ init(with operation: UINavigationControllerOperation, animator: UIViewPropertyAnimator?) {
         self.operation = operation
         if let animator = animator {
             self.animator = animator
@@ -348,7 +348,7 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
         return self.animator
     }
     
-    func applyShadow(toView view: UIView) -> UIView {
+    @objc /**REVIEW**/ func applyShadow(toView view: UIView) -> UIView {
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 1, height: view.bounds.height - 64))
         let shadowView = UIView(frame: frame)
         shadowView.alpha = 1.0
@@ -372,7 +372,7 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
         return shadowView
     }
     
-    func removeShadow(fromView view: UIView) {
+    @objc /**REVIEW**/ func removeShadow(fromView view: UIView) {
         if let shadow = view.viewWithTag(5000) {
             shadow.removeFromSuperview()
         }
@@ -383,17 +383,17 @@ class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTran
 }
 
 class MultiPaneInteractivePushPopAnimator: NSObject, UIViewControllerInteractiveTransitioning {
-    let gesture: UIScreenEdgePanGestureRecognizer
-    var transitionContext: MultiPaneNavigationTransitionContext?
-    var shouldFinish = false
+    @objc /**REVIEW**/ let gesture: UIScreenEdgePanGestureRecognizer
+    @objc /**REVIEW**/ var transitionContext: MultiPaneNavigationTransitionContext?
+    @objc /**REVIEW**/ var shouldFinish = false
     
     // points per second, and when exceeded and the user lifts the finger on the gesture, the transition will be completed (even if the gesture travel distance would have otherwise cancelled the transition). Set to a higher value if a swipe is becomes to sensitive.
-    let velocityThreshold: CGFloat = 200.0
+    @objc /**REVIEW**/ let velocityThreshold: CGFloat = 200.0
     
     // the percentage of translation change that must happen before the transition will be completed when the gesture ends. If not exceeded, the transition will be cancelled.
-    let completionThreshold: CGFloat = 0.45
+    @objc /**REVIEW**/ let completionThreshold: CGFloat = 0.45
     
-    init(with gesture: UIScreenEdgePanGestureRecognizer) {
+    @objc /**REVIEW**/ init(with gesture: UIScreenEdgePanGestureRecognizer) {
         self.gesture = gesture
         super.init()
         self.gesture.addTarget(self, action: #selector(MultiPaneInteractivePushPopAnimator.screenEdgeGesture(gesture:)))

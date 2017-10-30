@@ -41,8 +41,6 @@ RCS_ID("$Id$")
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    
-    NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 
     if (self.navigationBar.superview == self.view && !self.isNavigationBarHidden)
         self.accessoryAndBackgroundBarTopConstraint.constant = CGRectGetMaxY(self.navigationBar.frame);
@@ -108,10 +106,7 @@ RCS_ID("$Id$")
             insets.top += height + 3;
         }
         
-        // It would really be better to set self.additionalSafeAreaInsets here, but if we do that the inset for the navigationBar doesn't get propogated down to safeAreaInset of viewController.view (?!) in OmniPlan. This seems to work as expected in Jake's text project. In the mean time this works for OmniPlan and OmniGraffle.
-        viewController.additionalSafeAreaInsets = insets;
-//        self.additionalSafeAreaInsets = insets;
-
+        self.additionalSafeAreaInsets = insets;
         return;
     }
     
@@ -139,8 +134,7 @@ RCS_ID("$Id$")
         [oldAccessory removeFromSuperview];
     }
 
-    viewController.additionalSafeAreaInsets = insets;
-//    self.additionalSafeAreaInsets = insets;
+    self.additionalSafeAreaInsets = insets;
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;

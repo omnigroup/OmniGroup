@@ -54,6 +54,7 @@ RCS_ID("$Id$");
     return documentDirectoryURL;
 }
 
+// This is for the trash scope for the OmniDocumentStore-based document picker. Note that Files.app on iOS 11 will create a .Trash directory inside the ~/Documents container for an app and move files there (which every application then needs to know to not look at).
 + (NSURL *)trashDirectoryURL;
 {
     static NSURL *trashDirectoryURL = nil; // Avoid trying the creation on each call.
@@ -394,7 +395,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
     };
     OFScanErrorHandler errorHandler = nil;
     
-    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemHandler, errorHandler);
+    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
     
     return usedFileNames;
 }
@@ -505,7 +506,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
             return YES; // Keep trying to get as many as we can...
         };
         
-        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemBlock, errorHandler);
+        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemBlock, errorHandler);
         
         if (scanFinished)
             [[NSOperationQueue mainQueue] addOperationWithBlock:scanFinished];

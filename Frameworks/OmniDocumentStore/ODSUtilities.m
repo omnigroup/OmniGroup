@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 RCS_ID("$Id$")
 
+#import <OmniDocumentStore/ODSLocalDirectoryScope.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
 NSString * const ODSDocumentInteractionInboxFolderName = @"Inbox";
@@ -44,11 +45,23 @@ BOOL ODSIsZipFileType(NSString *uti)
     OFTypeConformsTo(uti, CFSTR("com.omnigroup.zip"));
 }
 
-OFScanDirectoryFilter ODSScanDirectoryExcludeInboxItemsFilter(void)
+OFScanDirectoryFilter ODSScanDirectoryExcludeSytemFolderItemsFilter(void)
 {
     return [^BOOL(NSURL *fileURL){
         // We never want to acknowledge files in the inbox directly. Instead they'll be dealt with when they're handed to us via document interaction and moved.
-        return ODSIsInInbox(fileURL) == NO;
+        if (ODSIsInInbox(fileURL)) {
+            return NO;
+        }
+
+        // iOS 11's Files app will create a .Trash folder in ~/Documents.
+        if ([[fileURL lastPathComponent] isEqual:@".Trash"]) {
+            // If we start calling this for OmniPresence-based scopes, we'd possibly stop syncing files in .Trash directories that were created by the user. This is pretty edge-case, but let's not do that unless needed.
+            OBASSERT([[fileURL URLByDeletingLastPathComponent] isEqual:ODSLocalDirectoryScope.userDocumentsDirectoryURL]);
+
+            return NO;
+        }
+
+        return YES;
     } copy];
 };
 

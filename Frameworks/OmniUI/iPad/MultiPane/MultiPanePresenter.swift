@@ -43,23 +43,23 @@ enum MultiPanePresentationMode {
 class MultiPanePresenter: NSObject {
    
     private var overlayPresenter: MultiPaneSlidingOverlayPresenter? // keep this around until the presentation has completed, otherwise the overlaid panes will get generic dismiss animation.
-    weak var delegate: MultiPanePresenterDelegate?
+    @objc /**REVIEW**/ weak var delegate: MultiPanePresenterDelegate?
     
-    lazy var rightPinButton: UIBarButtonItem = {
+    @objc /**REVIEW**/ lazy var rightPinButton: UIBarButtonItem = {
         let image = UIImage(named: "OUIMultiPaneRightPinButton", in: OmniUIBundle, compatibleWith: nil)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "RightPinButton"
         return button
     }()
     
-    lazy var leftPinButton: UIBarButtonItem = {
+    @objc /**REVIEW**/ lazy var leftPinButton: UIBarButtonItem = {
         let image = UIImage(named: "OUIMultiPaneLeftPinButton", in: OmniUIBundle, compatibleWith: nil)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "LeftPinButton"
         return button
     }()
     
-    func present(pane: Pane, fromViewController presentingController: UIViewController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true) {
+    @objc /**REVIEW**/ func present(pane: Pane, fromViewController presentingController: UIViewController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true) {
         
         switch (pane.presentationMode, displayMode) {
         case (.overlaid, _):
@@ -116,7 +116,7 @@ class MultiPanePresenter: NSObject {
 
     }
     
-    func dismiss(fromViewController presentingController: UIViewController, animated: Bool, completion: (()->Void)?) {
+    @objc /**REVIEW**/ func dismiss(fromViewController presentingController: UIViewController, animated: Bool, completion: (()->Void)?) {
         if presentingController.presentedViewController != nil {
             presentingController.dismiss(animated: animated, completion: completion )
         } else {
@@ -128,7 +128,7 @@ class MultiPanePresenter: NSObject {
     
     private var snapShotView: UIView?
     
-    func addSnapshot(to containingView: UIView, for pane: Pane) {
+    @objc /**REVIEW**/ func addSnapshot(to containingView: UIView, for pane: Pane) {
         
         if self.snapShotView != nil {
             self.snapShotView?.removeFromSuperview()
@@ -142,7 +142,7 @@ class MultiPanePresenter: NSObject {
         self.snapShotView = snapshot
     }
     
-    func removeSnapshotIfNeeded(pane: Pane) {
+    @objc /**REVIEW**/ func removeSnapshotIfNeeded(pane: Pane) {
         if let snapshot = self.snapShotView {
             snapshot.removeFromSuperview()
             snapShotView = nil
@@ -210,7 +210,7 @@ class MultiPanePresenter: NSObject {
         })
     }
     
-    internal private(set) var transitionContext: MultiPaneNavigationTransitionContext?
+    @objc /**REVIEW**/ internal private(set) var transitionContext: MultiPaneNavigationTransitionContext?
     private var interactiveTransition: MultiPaneInteractivePushPopAnimator?
     
     private func navigate(to pane: Pane, presentingController: UIViewController, gesture: UIScreenEdgePanGestureRecognizer?, animated: Bool) {
@@ -305,7 +305,7 @@ class MultiPanePresenter: NSObject {
 typealias MultiPaneAnimator = Pane
 extension MultiPaneAnimator {
     
-    var defaultAnimator: UIViewPropertyAnimator {
+    @objc /**REVIEW**/ var defaultAnimator: UIViewPropertyAnimator {
         return UIViewPropertyAnimator(duration: 0.35, timingParameters: UISpringTimingParameters())
     }
     
@@ -324,7 +324,7 @@ extension MultiPaneAnimator {
         return CGAffineTransform.identity
     }
     
-    func slidebarOverlayAnimator(forOperation operation: MultiPanePresenterOperation, interactive: Bool) -> UIViewPropertyAnimator {
+    @objc /**REVIEW**/ func slidebarOverlayAnimator(forOperation operation: MultiPanePresenterOperation, interactive: Bool) -> UIViewPropertyAnimator {
         var animator = self.defaultAnimator
         guard operation == .overlay || operation == .dismiss else {
             assertionFailure("expected a expand/collapse operation type, not \(operation)")
@@ -345,7 +345,7 @@ extension MultiPaneAnimator {
         return animator
     }
     
-    func sidebarAnimator(forOperation operation: MultiPanePresenterOperation) -> UIViewPropertyAnimator {
+    @objc /**REVIEW**/ func sidebarAnimator(forOperation operation: MultiPanePresenterOperation) -> UIViewPropertyAnimator {
         let animator = self.defaultAnimator
         guard operation == .expand || operation == .collapse else {
             assertionFailure("expected a expand/collapse operation type, not \(operation)")

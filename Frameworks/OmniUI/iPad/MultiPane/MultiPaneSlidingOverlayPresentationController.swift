@@ -8,11 +8,11 @@
 // $Id$
 
 class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningDelegate {
-    let pinBarButton: UIBarButtonItem
-    let presentingPane: Pane
-    var isInteractive: Bool = false
+    @objc /**REVIEW**/ let pinBarButton: UIBarButtonItem
+    @objc /**REVIEW**/ let presentingPane: Pane
+    @objc /**REVIEW**/ var isInteractive: Bool = false
     
-    var edgeGesture: UIScreenEdgePanGestureRecognizer? {
+    @objc /**REVIEW**/ var edgeGesture: UIScreenEdgePanGestureRecognizer? {
         didSet {
             if self.edgeGesture != nil {
                 self.isInteractive = true
@@ -22,7 +22,7 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
         }
     }
     
-    init(pane: Pane, pinBarButtonItem item: UIBarButtonItem) {
+    @objc /**REVIEW**/ init(pane: Pane, pinBarButtonItem item: UIBarButtonItem) {
         self.presentingPane = pane
         self.pinBarButton = item
         super.init()
@@ -60,10 +60,10 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
 
 
 class SldingOverlayPresentationController: UIPresentationController {
-    let shieldingView = UIView()
-    var pane: Pane
+    @objc /**REVIEW**/ let shieldingView = UIView()
+    @objc /**REVIEW**/ var pane: Pane
     
-    init(withPane pane: Pane, presentingController: UIViewController?) {
+    @objc /**REVIEW**/ init(withPane pane: Pane, presentingController: UIViewController?) {
         self.pane = pane
         super.init(presentedViewController: self.pane.viewController, presenting: presentingController)
         self.overrideTraitCollection = UITraitCollection(horizontalSizeClass: .compact)
@@ -137,7 +137,7 @@ class SldingOverlayPresentationController: UIPresentationController {
         self.dismiss(animated: false)
     }
     
-    func handleTap(gesture: UITapGestureRecognizer) {
+    @objc /**REVIEW**/ func handleTap(gesture: UITapGestureRecognizer) {
         self.dismiss(animated: true)
     }
     
@@ -149,10 +149,10 @@ class SldingOverlayPresentationController: UIPresentationController {
 class SlidingOverlayAnimator: NSObject, UIViewControllerAnimatedTransitioning {
     // need to know what side we are presenting from
     // need to know what the transform is for the presentation
-    let presentingPane: Pane
-    let isPresenting: Bool
+    @objc /**REVIEW**/ let presentingPane: Pane
+    @objc /**REVIEW**/ let isPresenting: Bool
     
-    init(withPane pane: Pane, presenting: Bool) {
+    @objc /**REVIEW**/ init(withPane pane: Pane, presenting: Bool) {
         self.presentingPane = pane
         self.isPresenting = presenting
     }
@@ -189,12 +189,12 @@ class SlidingOverlayAnimator: NSObject, UIViewControllerAnimatedTransitioning {
 }
 
 class SlidingOverlayInteractiveAnimator: UIPercentDrivenInteractiveTransition {
-    let edgeSwipeGesture: UIScreenEdgePanGestureRecognizer
-    let direction: UIRectEdge
-    var containerView: UIView = UIView()
-    var shouldFinish: Bool = false
+    @objc /**REVIEW**/ let edgeSwipeGesture: UIScreenEdgePanGestureRecognizer
+    @objc /**REVIEW**/ let direction: UIRectEdge
+    @objc /**REVIEW**/ var containerView: UIView = UIView()
+    @objc /**REVIEW**/ var shouldFinish: Bool = false
     
-    init(gesture: UIScreenEdgePanGestureRecognizer) {
+    @objc /**REVIEW**/ init(gesture: UIScreenEdgePanGestureRecognizer) {
         self.edgeSwipeGesture = gesture
         self.direction = gesture.edges // left or right edge
         super.init()
@@ -208,7 +208,7 @@ class SlidingOverlayInteractiveAnimator: UIPercentDrivenInteractiveTransition {
         super.startInteractiveTransition(transitionContext)
     }
     
-    func handleGestureEdgePan(gesture: UIScreenEdgePanGestureRecognizer) {
+    @objc /**REVIEW**/ func handleGestureEdgePan(gesture: UIScreenEdgePanGestureRecognizer) {
         let currentView = self.containerView
         let panLocation = gesture.location(in: currentView)
         var percentage:CGFloat = 0.0

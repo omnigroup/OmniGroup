@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,3 +15,10 @@
 #import <OmniBase/rcsid.h>
 #import <XCTest/XCTest.h>
 
+// NSTextStorage does NOT reset the length of its editedRange in processEditing. Only the location gets reset to NSNotFound.
+#define OAAssertNoPendingTextStorageEdits(ts) do { \
+    XCTAssertEqual([ts editedMask], 0UL); \
+    XCTAssertEqual([ts changeInLength], 0L); \
+    NSRange editedRange = [ts editedRange]; \
+    XCTAssertEqual(editedRange.location, (NSUInteger)NSNotFound); \
+} while(0)

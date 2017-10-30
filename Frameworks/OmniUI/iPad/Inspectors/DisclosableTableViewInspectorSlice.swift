@@ -10,35 +10,35 @@
 open class DisclosableTableViewInspectorSlice: OUIAbstractTableViewInspectorSlice, UITableViewDataSource, UITableViewDelegate {
 
     // MARK: For Subclasses
-    open func numberOfStaticRows() -> Int {
+    @objc /**REVIEW**/ open func numberOfStaticRows() -> Int {
         return 3
     }
 
-    open func disclosableStatePreferenceIdentifier() -> String? {
+    @objc /**REVIEW**/ open func disclosableStatePreferenceIdentifier() -> String? {
         return nil
     }
 
-    open func numberOfRowsInSection(_ tableView: UITableView, section: Int) -> Int {
+    @objc /**REVIEW**/ open func numberOfRowsInSection(_ tableView: UITableView, section: Int) -> Int {
         return 1
     }
 
-    open func cellForRowAt(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
+    @objc /**REVIEW**/ open func cellForRowAt(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
         return UITableViewCell()
     }
 
-    open func didSelectRowAt(_ tableView: UITableView, indexPath: IndexPath) {
+    @objc /**REVIEW**/ open func didSelectRowAt(_ tableView: UITableView, indexPath: IndexPath) {
 
     }
 
-    open func titleForHeader(_ tableView: UITableView, section: Int) -> String? {
+    @objc /**REVIEW**/ open func titleForHeader(_ tableView: UITableView, section: Int) -> String? {
         return nil
     }
 
-    open func titleForHideMoreButton() -> String {
+    @objc /**REVIEW**/ open func titleForHideMoreButton() -> String {
         return NSLocalizedString("Hide More Rows", tableName: "OUIInspectors", bundle: Bundle.main, value: "Hide More Rows", comment: "hide more rows button title")
     }
 
-    open func titleForShowMoreButton() -> String {
+    @objc /**REVIEW**/ open func titleForShowMoreButton() -> String {
         return NSLocalizedString("Show More Rows", tableName: "OUIInspectors", bundle: Bundle.main, value: "Show More Rows", comment: "show more rows button title")
     }
 
@@ -47,7 +47,7 @@ open class DisclosableTableViewInspectorSlice: OUIAbstractTableViewInspectorSlic
     /// Backing preference for persistent disclosed slices. Callers should not access this directly; instead, use one of the conveniences later.
     private static var disclosedSlicesPreference = OFPreference(forKey: "OUIInspectorDisclosedTableSlicesPreference", defaultValue: [:])
 
-    public func isSectionDisclosed(_ section: Int) -> Bool {
+    @objc /**REVIEW**/ public func isSectionDisclosed(_ section: Int) -> Bool {
         guard let dict = DisclosableTableViewInspectorSlice.disclosedSlicesPreference.dictionaryValue as? [String:Bool] else {
             return false
         }

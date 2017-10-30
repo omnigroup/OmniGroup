@@ -141,21 +141,21 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     fileprivate var pinningLayoutPass: Bool = false
     
     // ordered array of panes from Left to Right
-    open var orderedPanes: [Pane] {
+    @objc /**REVIEW**/ open var orderedPanes: [Pane] {
         return panes.sorted { $0.location.rawValue < $1.location.rawValue }
     }
     
     @objc open weak var layoutDelegate: MultiPaneLayoutDelegate? = LayoutDelegate()
     @objc open weak var navigationDelegate: MultiPaneNavigationDelegate?
-    open weak var appearanceDelegate: MultiPaneAppearanceDelegate?
+    @objc /**REVIEW**/ open weak var appearanceDelegate: MultiPaneAppearanceDelegate?
     
-    lazy var multiPanePresenter: MultiPanePresenter = {
+    @objc /**REVIEW**/ lazy var multiPanePresenter: MultiPanePresenter = {
         let presenter = MultiPanePresenter()
         presenter.delegate = self
         return presenter
     }()
     
-    open weak var keyCommandProvider: OUIKeyCommandProvider?
+    @objc /**REVIEW**/ open weak var keyCommandProvider: OUIKeyCommandProvider?
     open override var keyCommands: [UIKeyCommand]? {
         return keyCommandProvider?.keyCommands
     }
@@ -189,11 +189,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return button
     }()
     
-    public var leftPanePinButton: UIBarButtonItem {
+    @objc /**REVIEW**/ public var leftPanePinButton: UIBarButtonItem {
         return multiPanePresenter.leftPinButton
     }
     
-    public var rightPanePinButton: UIBarButtonItem {
+    @objc /**REVIEW**/ public var rightPanePinButton: UIBarButtonItem {
         return multiPanePresenter.rightPinButton
     }
 
@@ -351,7 +351,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return pane(withLocation: location)?.viewController
     }
     
-    open func pane(withLocation location: MultiPaneLocation) -> Pane? {
+    @objc /**REVIEW**/ open func pane(withLocation location: MultiPaneLocation) -> Pane? {
         return panes.first { $0.location.rawValue == location.rawValue }
     }
     
@@ -361,7 +361,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     /// Show a pane for a given location, supplying an animation option, in the style that MultiPaneController is acustomed.
-    open func showPane(at location: MultiPaneLocation, animated: Bool) {
+    @objc /**REVIEW**/ open func showPane(at location: MultiPaneLocation, animated: Bool) {
         guard let pane = pane(withLocation: location) else { return }
         guard pane.isVisible == false else { return }
         
@@ -406,7 +406,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 
 //MARK: - Private api
 //MARK: - Pane containment and layout
-    internal func pane(forViewController controller: UIViewController) -> Pane? {
+    @objc /**REVIEW**/ internal func pane(forViewController controller: UIViewController) -> Pane? {
         return orderedPanes.first { $0.viewController == controller }
     }
     
@@ -506,13 +506,15 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         var leftIsVisible = false
         var rightIsVisible = false
         
-        orderedPanes.forEach { (pane) in
-            leftIsVisible = pane.location == .left && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
-            rightIsVisible = pane.location == .right && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
-            
-            removePane(pane: pane)
-            // Make a pass and update all panes based on the default environment, we adjust for pinning below
-            pane.environment = environment(for: pane, displayMode: mode, size: size)
+        UIView.performWithoutAnimation {
+            orderedPanes.forEach { (pane) in
+                leftIsVisible = pane.location == .left && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
+                rightIsVisible = pane.location == .right && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
+                
+                removePane(pane: pane)
+                // Make a pass and update all panes based on the default environment, we adjust for pinning below
+                pane.environment = environment(for: pane, displayMode: mode, size: size)
+            }
         }
         
         if displayMode == .multi {
@@ -734,7 +736,7 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         }
     }
     
-    func presenterWantsToPin(pane: Pane) {
+    @objc /**REVIEW**/ func presenterWantsToPin(pane: Pane) {
         self.pinningLayoutPass = true
         self.pinState = .pin(pane)
         multiPanePresenter.dismiss(fromViewController: self, animated: false, completion: { [unowned self] in
@@ -743,7 +745,7 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         })
     }
     
-    func presenterWantsToUnpin(pane: Pane) {
+    @objc /**REVIEW**/ func presenterWantsToUnpin(pane: Pane) {
         // the presenter can't pass us the pinned pane, so we need to try to find it for ourseleves.
         self.pinningLayoutPass = true
         self.pinState = .unpin(pane)
@@ -751,7 +753,7 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
     
         DispatchQueue.main.async {
-            // For this case we need to manually push appearnace transistions so pane's viewcontroller lays out correctly.
+            // For this case we need to manually push appearance transistions so pane's view controller lays out correctly.
             pane.viewController.beginAppearanceTransition(true, animated: false)
             self.multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: self.displayMode, animated: false)
             pane.viewController.endAppearanceTransition()
@@ -976,10 +978,10 @@ extension MultiPaneLocation: CustomStringConvertible {
 
 /// Represents the the displayMode and size of the MPC to the managed view controllers of each Pane.
 public final class MultiPaneConfiguration: NSObject {
-    public let displayMode: MultiPaneDisplayMode
-    public let currentSize: CGSize
+    @objc /**REVIEW**/ public let displayMode: MultiPaneDisplayMode
+    @objc /**REVIEW**/ public let currentSize: CGSize
     
-    init(displayMode: MultiPaneDisplayMode, size: CGSize) {
+    @objc /**REVIEW**/ init(displayMode: MultiPaneDisplayMode, size: CGSize) {
         self.displayMode = displayMode
         currentSize = size
     }
@@ -993,11 +995,11 @@ fileprivate enum PinState {
 
 /// convenience helpers for the MPC
 extension Pane {
-    var location: MultiPaneLocation {
+    @objc /**REVIEW**/ var location: MultiPaneLocation {
         return configuration.location
     }
     
-    var isVisible: Bool {
+    @objc /**REVIEW**/ var isVisible: Bool {
         return viewController.isVisible
     }
     
@@ -1008,7 +1010,7 @@ extension Pane {
 
 // TODO: this is tempoarary so we get a different layout on the 12.9" iPad Pro. It should be removed/moved to the application at some point.
 class LayoutDelegate: NSObject, MultiPaneLayoutDelegate {
-    func multiPaneController(controller: MultiPaneController, willTransitionToDisplayMode mode: MultiPaneDisplayMode, currentSize size: CGSize) -> MultiPaneDisplayMode {
+    @objc /**REVIEW**/ func multiPaneController(controller: MultiPaneController, willTransitionToDisplayMode mode: MultiPaneDisplayMode, currentSize size: CGSize) -> MultiPaneDisplayMode {
         if size.width - 320 > 600 {
             return .multi
         }

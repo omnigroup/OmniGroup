@@ -131,9 +131,9 @@ RCS_ID("$Id$");
 
         CGSize sliderSize = [slider sizeThatFits:CGSizeMake(scrollView.bounds.size.width - 2*kEdgePadding, 0)];
         NSArray *constraints = @[
-             [slider.leftAnchor constraintEqualToAnchor:scrollView.leftAnchor constant:kEdgePadding],
-             [slider.widthAnchor constraintEqualToConstant:sliderSize.width],
-             [slider.rightAnchor constraintEqualToAnchor:scrollView.rightAnchor constant:-kEdgePadding],
+             [slider.leftAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leftAnchor constant:kEdgePadding],
+             [slider.widthAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.widthAnchor constant:-2 * kEdgePadding],
+             [slider.rightAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.rightAnchor constant:-kEdgePadding],
              [slider.heightAnchor constraintEqualToConstant:sliderSize.height],
         ];
         

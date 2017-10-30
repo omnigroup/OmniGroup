@@ -65,14 +65,22 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark UIViewController
 
-- (void)loadView;
+- (NSString *)nibName;
 {
+    return nil;
+}
+
+- (NSBundle *)nibBundle;
+{
+    return nil;
+}
+
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
     CGRect textWellFrame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
-    
-    
-    self.contentView = [[UIView alloc] init];
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    
+
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
     _textWell.translatesAutoresizingMaskIntoConstraints = NO;
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
@@ -93,28 +101,16 @@ RCS_ID("$Id$");
     else
         _textWell.text = self.title;
 
-    [self.contentView addSubview:_textWell];
+    [self.view addSubview:_textWell];
         
-    UIView *view = [[UIView alloc] init];
-    
-    [view addSubview:self.contentView];
-    
-    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
-    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
-    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
-    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
-    
-    self.view = view;
-    
-    CGFloat buffer = [OUIInspectorSlice sliceAlignmentInsets].left;
-    
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[_textWell.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leadingAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leadingAnchor constant:0]];
-    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:buffer * -1];
+    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leftAnchor]];
+    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.rightAnchor];
     [constraintsToActivate addObject:self.rightMarginLayoutConstraint];
-    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.contentView.topAnchor]];
-    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]];
+    self.rightMarginLayoutConstraint = nil;
+    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.view.topAnchor]];
+    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]];
     [NSLayoutConstraint activateConstraints:constraintsToActivate];
 }
 

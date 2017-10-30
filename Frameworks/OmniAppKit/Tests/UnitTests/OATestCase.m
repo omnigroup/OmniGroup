@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,26 +17,18 @@ RCS_ID("$Id$");
 
 @implementation OATestCase
 
-+ (void) initialize;
-{
-    OBINITIALIZE;
-    
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    NSApplication *app = [OAApplication sharedApplication];
-    
-    OATestController *controller = [OATestController sharedController];
-    
-    // Set up your Info.plist in your unit test bundle appropriately.  OFController will look there when running unit tests.
-    OBASSERT([controller isKindOfClass:[OATestController class]]);
-    
-    [app setDelegate:controller];
-#endif
-}
-
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @implementation OATestController
+
+- (void)becameSharedController;
+{
+    [super becameSharedController];
+
+    NSApplication *app = [OAApplication sharedApplication];
+    [app setDelegate:self];
+}
 
 - (BOOL)exceptionHandler:(NSExceptionHandler *)sender shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 {

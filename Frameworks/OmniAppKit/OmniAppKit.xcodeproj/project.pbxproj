@@ -517,6 +517,8 @@
 		5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png */; };
 		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
 		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
+		792FD7181FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 792FD7161FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h */; };
+		792FD7191FA28F44003E0F82 /* NSPrintPanel-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 792FD7171FA28F44003E0F82 /* NSPrintPanel-OAExtensions.m */; };
 		843878731AB20BD80069E467 /* OADefaultSettingIndicatorOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorOff.png */; };
 		843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */; };
 		843878751AB20BD80069E467 /* OADefaultSettingIndicatorOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */; };
@@ -1414,6 +1416,8 @@
 		6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage-ColorSyncExtensions.m"; sourceTree = "<group>"; };
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
+		792FD7161FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSPrintPanel-OAExtensions.h"; sourceTree = "<group>"; };
+		792FD7171FA28F44003E0F82 /* NSPrintPanel-OAExtensions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPrintPanel-OAExtensions.m"; sourceTree = "<group>"; };
 		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
 		8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOff.png; sourceTree = "<group>"; };
 		843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorOff@2x.png"; sourceTree = "<group>"; };
@@ -1674,6 +1678,7 @@
 				3FDA4156020975210297A14E /* NSImage */,
 				3FDA4157020975210297A14E /* NSMenu */,
 				49AFC65405F01E340097A137 /* NSPasteboard */,
+				792FD6EC1FA28EE6003E0F82 /* NSPrintPanel */,
 				349F65E40EBBA2B300AB6E36 /* NSResponder */,
 				493FE0D71C224FBF00C029B5 /* NSStackView */,
 				34ED275A11DBBD1C006C33FF /* NSText */,
@@ -2860,6 +2865,15 @@
 			path = ColorSync;
 			sourceTree = "<group>";
 		};
+		792FD6EC1FA28EE6003E0F82 /* NSPrintPanel */ = {
+			isa = PBXGroup;
+			children = (
+				792FD7161FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h */,
+				792FD7171FA28F44003E0F82 /* NSPrintPanel-OAExtensions.m */,
+			);
+			name = NSPrintPanel;
+			sourceTree = "<group>";
+		};
 		A25653B20ADDBF7600A2A25B /* Bindings Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -3177,6 +3191,7 @@
 				34471AC109D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h in Headers */,
 				342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */,
 				A216D1350AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h in Headers */,
+				792FD7181FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h in Headers */,
 				A25653B80ADDBFB400A2A25B /* OAControlTextColorTransformer.h in Headers */,
 				4A785F590B040C3A00B513F3 /* OAPopupDatePicker.h in Headers */,
 				4A785F630B040CF500B513F3 /* OADatePickerTextField.h in Headers */,
@@ -4067,6 +4082,7 @@
 				4AA1E79508AA764600E2FF6B /* NSFileManager-OAExtensions.m in Sources */,
 				4AA1E79608AA764600E2FF6B /* NSFont-OAExtensions.m in Sources */,
 				4AA1E79708AA764600E2FF6B /* NSFontManager-OAExtensions.m in Sources */,
+				792FD7191FA28F44003E0F82 /* NSPrintPanel-OAExtensions.m in Sources */,
 				4AA1E79808AA764600E2FF6B /* NSImage-OAExtensions.m in Sources */,
 				4AA1E79908AA764600E2FF6B /* NSMenu-OAExtensions.m in Sources */,
 				4AA1E79A08AA764600E2FF6B /* NSObject-NSDraggingInfo-OAExtensions.m in Sources */,

@@ -391,20 +391,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 #pragma mark OUIInspectorPane subclass
 
-- (void)inspectorWillShow:(OUIInspector *)inspector;
-{
-    [super inspectorWillShow:inspector];
-    
-    // This gets called earlier than -updateInterfaceFromInspectedObjects:. Might want to switch to just calling -updateInterfaceFromInspectedObjects: here instead of in -viewWillAppear:
-    [self updateSlices];
-    
-    for (OUIInspectorSlice *slice in _slices) {
-        @autoreleasepool {
-            [slice inspectorWillShow:inspector];
-        }
-    }
-}
-
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
@@ -531,10 +517,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     [super viewDidAppear:animated];
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     [view flashScrollIndicators];
-    
-    UIEdgeInsets margins = UIEdgeInsetsMake(0.0, self.view.layoutMargins.left, 0.0, self.view.layoutMargins.right);
-    for (OUIInspectorSlice *slice in _slices)
-        slice.view.layoutMargins = margins;
 }
 
 #pragma mark -

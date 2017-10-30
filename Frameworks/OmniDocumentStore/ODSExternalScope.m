@@ -1,4 +1,4 @@
-// Copyright 2015 The Omni Group. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -135,7 +135,7 @@ RCS_ID("$Id$")
     };
     OFScanErrorHandler errorHandler = nil;
     
-    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemHandler, errorHandler);
+    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeSytemFolderItemsFilter(), isPackage, itemHandler, errorHandler);
     
     return usedFileNames;
 }

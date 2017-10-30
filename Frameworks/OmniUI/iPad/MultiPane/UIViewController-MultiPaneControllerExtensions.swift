@@ -16,7 +16,7 @@ extension UIViewController: MultiPaneContentController {
     @nonobjc private static var ConfigKey = "ConfigKey"
     
     /// returns the stored MultiPaneConfiguration, walking the parent controller heirarchy trying to find a controller with a value.
-    public internal (set) var multiPaneConfiguration: MultiPaneConfiguration? {
+    @objc /**REVIEW**/ public internal (set) var multiPaneConfiguration: MultiPaneConfiguration? {
         set (newValue) {
             objc_setAssociatedObject(self, &UIViewController.ConfigKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             if let config = newValue {
@@ -35,7 +35,7 @@ extension UIViewController: MultiPaneContentController {
     
     /// Informs controllers that the displayMode of the MultiPaneController has changed. This messages is sent to the UIViewControllers managed by Panes of the MultiPaneController regardless of the Pane's presentation mode. View Controllers that implement this method should not assume that they are embedded (child view controllers) in the MultiPaneController when called.
     /// clients that override should call super.
-    open func multiPaneConfigurationDidChange(to configuration: MultiPaneConfiguration) {
+    @objc /**REVIEW**/ open func multiPaneConfigurationDidChange(to configuration: MultiPaneConfiguration) {
         for child in self.childViewControllers {
             child.multiPaneConfigurationDidChange(to: configuration)
         }

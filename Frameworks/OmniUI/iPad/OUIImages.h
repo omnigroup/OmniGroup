@@ -7,7 +7,7 @@
 //
 // $Id$
 
-@class UIImage;
+#import <UIKit/UIImage.h>
 
 extern UIImage *OUITableViewItemSelectionImage(UIControlState state);
 extern UIImage *OUITableViewItemSelectionMixedImage(void);
@@ -20,9 +20,11 @@ extern UIImage *OUIDisclosureIndicatorImage(void);
 @interface OUIImageLocation : NSObject
 
 - initWithName:(NSString *)name bundle:(NSBundle *)bundle;
+- initWithName:(NSString *)name bundle:(NSBundle *)bundle renderingMode:(UIImageRenderingMode)renderingMode;
 
 @property(nonatomic,readonly) NSBundle *bundle;
 @property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) UIImageRenderingMode renderingMode;
 
 @property(nonatomic,readonly) UIImage *image;
 

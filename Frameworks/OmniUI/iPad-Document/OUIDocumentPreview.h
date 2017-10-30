@@ -27,6 +27,9 @@ This class maintains an in memory and disk cache of decoded preview images for u
 */
 @interface OUIDocumentPreview : NSObject
 
+// Used while rendering previews when the UIImage for the preview is a template. Defaults to +blackColor;
+@property(class,copy) UIColor *previewTemplateImageTintColor;
+
 + (void)populateCacheForFileItems:(id <NSFastEnumeration>)fileItems completionHandler:(void (^)(void))completionHandler;
 
 + (void)discardHiddenPreviews;

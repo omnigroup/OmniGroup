@@ -29,9 +29,56 @@ RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSliceTableViewCell
 
+// default text label and detail text label font are UICTFontTextStyleBody
+static id _commonInit(OUIDetailInspectorSliceTableViewCell *self)
+{
+//    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+//    self.textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+//    self.detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    return self;
+}
+
+- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(nullable NSString *)reuseIdentifier
+{
+    if (!(self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]))
+        return nil;
+    
+    return _commonInit(self);
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    if (!(self = [super initWithCoder:aDecoder]))
+        return nil;
+    
+    return _commonInit(self);
+}
+
 - (void)setValueImage:(UIImage *)valueImage;
 {
     _valueImage = valueImage;
+    [self setNeedsLayout];
+}
+
+- (void)didMoveToSuperview;
+{
+    [super didMoveToSuperview];
+    
+    if (self.superview) {
+//        [self.textLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor].active = YES;
+//        [self.detailTextLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor].active = YES;
+    }
+}
+
+- (void)updateConstraints
+{
+    [super updateConstraints];
+}
+
+- (void)safeAreaInsetsDidChange
+{
+    [super safeAreaInsetsDidChange];
     [self setNeedsLayout];
 }
 
@@ -59,12 +106,12 @@ RCS_ID("$Id$");
     CGRect detailFrame = self.detailTextLabel.frame;
     detailFrame.size = self.detailTextLabel.intrinsicContentSize;
     // The detail label should start where it will fit the whole label in front of the arrow
-    detailFrame.origin.x = CGRectGetMaxX(self.contentView.frame) - detailFrame.size.width;
+    detailFrame.origin.x = CGRectGetMaxX(self.contentView.bounds) - detailFrame.size.width;
     self.detailTextLabel.frame = detailFrame;
     CGRect textFrame = self.textLabel.frame;
     CGSize contentSize = self.textLabel.intrinsicContentSize;
-    if (textFrame.origin.x + contentSize.width > self.detailTextLabel.frame.origin.x) {
-        textFrame.size.width = self.detailTextLabel.frame.origin.x - textFrame.origin.x;
+    if (textFrame.origin.x + contentSize.width > detailFrame.origin.x) {
+        textFrame.size.width = detailFrame.origin.x - textFrame.origin.x;
         self.textLabel.frame = textFrame;
     }
 }

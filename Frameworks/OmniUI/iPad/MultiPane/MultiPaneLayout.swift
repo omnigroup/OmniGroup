@@ -92,7 +92,7 @@ struct MultiPaneLayout {
 
 typealias UIViewLayoutConstraintHelper = UIView
 extension UIViewLayoutConstraintHelper {
-    func constraintWithIdentifier(identifier: String) -> NSLayoutConstraint? {
+    @objc /**REVIEW**/ func constraintWithIdentifier(identifier: String) -> NSLayoutConstraint? {
         return self.constraints.first { $0.identifier == identifier }
     }
 }

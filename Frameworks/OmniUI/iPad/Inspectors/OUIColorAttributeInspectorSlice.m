@@ -38,11 +38,20 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark UIViewController subclass
 
-- (void)loadView;
+- (NSString *)nibName
 {
-    self.contentView = [[UIView alloc] init];
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    return nil;
+}
 
+- (NSBundle *)nibBundle
+{
+    return nil;
+}
+
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
     _textWell = [[OUIColorAttributeInspectorWell alloc] init];
     _textWell.translatesAutoresizingMaskIntoConstraints = NO;
     _textWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
@@ -53,32 +62,25 @@ RCS_ID("$Id$")
     
     [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
 
-    [self.contentView addSubview:_textWell];
-
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_textWell];
 
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
-    [constraintsToActivate addObject:[self.contentView.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor]];
-    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
+    [constraintsToActivate addObject:[self.view.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
+    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.leftAnchor]];
+    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.view.layoutMarginsGuide.rightAnchor];
     [constraintsToActivate addObject:self.rightMarginLayoutConstraint];
-    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.contentView.topAnchor]];
-    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]];
+    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.view.topAnchor]];
+    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]];
     [NSLayoutConstraint activateConstraints:constraintsToActivate];
-
-    UIView *view = [[UIView alloc] init];
-    [view addSubview:self.contentView];
-    
-    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
-    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
-    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
-    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
-    
-    self.view = view;
 }
 
 #pragma mark -
 #pragma mark OUIInspectorSlice subclass
+
+- (UIView *)contentView;
+{
+    return self.view;
+}
 
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {

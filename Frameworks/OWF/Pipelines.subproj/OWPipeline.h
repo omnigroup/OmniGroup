@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,7 +80,9 @@ typedef enum {
 - (void)fetch;
 
 // Target
-- (id <OWTarget, NSObject>)target;
+
+@property (readonly, weak) id <OWTarget, NSObject> target;
+
 - (void)invalidate;
     // Called in +invalidatePipelinesForTarget:, if the pipeline was pointing at the target that wants to be invalidated.
     // Also called in -pipelineBuilt if our target rejects the content we offer and didn't suggest a new target, and in +_target:acceptedContentFromPipeline: on all pipelines created before the parameter that point at the same target (eg, some other pipeline beat you to the punch, sorry, guys).

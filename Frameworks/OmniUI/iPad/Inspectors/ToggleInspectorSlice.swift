@@ -9,8 +9,8 @@
 
 open class ToggleInspectorSlice : OUIInspectorSlice {
 
-    public var toggleSwitch : UISwitch?
-    public var action : Selector?
+    @objc /**REVIEW**/ public var toggleSwitch : UISwitch?
+    @objc /**REVIEW**/ public var action : Selector?
     private static let kWidth : CGFloat = 200
     private static let kLabelToTogglePadding : CGFloat = 8
 

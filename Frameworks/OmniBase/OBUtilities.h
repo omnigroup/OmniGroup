@@ -129,6 +129,7 @@ extern void _OBFinishPortingLater(const char *text);
 extern BOOL OBIsBeingDebugged(void);
 extern void OBTrap(void) NORETURN;
 
+extern void _OBStopInDebuggerWithoutMessage(void);
 extern void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message);
 #define OBStopInDebugger(message) _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, (message))
 #define OBStepThroughAndVerify() _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, "Step through and verify.")

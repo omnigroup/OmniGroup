@@ -1008,7 +1008,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     if (_forPreviewGeneration) {
         // Just log it instead of popping up an alert for something the user didn't actually poke to open anyway.
-        NSLog(@"Error while generating preview for %@: %@", [self.fileURL absoluteString], [error toPropertyList]);
+        [error log: @"Error while generating preview for %@", [self.fileURL absoluteString]];
     } else if (userInteractionPermitted) {
         if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
             [error hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]) {
@@ -1020,8 +1020,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                                       nil];
             error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError userInfo:userInfo];
         }
-        
-        OUI_PRESENT_ALERT(error);
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            OUI_PRESENT_ALERT(error);
+        }];
     } else {
         [error log:@"Error encountered by document"];
     }

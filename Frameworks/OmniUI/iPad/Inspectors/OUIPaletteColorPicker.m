@@ -28,7 +28,7 @@ RCS_ID("$Id$");
     _themes = [themes copy];
     
     if (self.isViewLoaded)
-        [self _rebuildThemesViews];
+        [self.view setNeedsLayout];
 }
 
 #pragma mark - OUIColorPicker subclass
@@ -98,6 +98,12 @@ RCS_ID("$Id$");
     [self _rebuildThemesViews];
 }
 
+- (void)viewSafeAreaInsetsDidChange
+{
+    [super viewSafeAreaInsetsDidChange];
+    [self _rebuildThemesViews];
+}
+
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
@@ -143,8 +149,9 @@ RCS_ID("$Id$");
     CGRect viewBounds = view.bounds;
     viewBounds.size.width = 320;
     
-    CGFloat xOffset = 8;
-    CGFloat yOffset = CGRectGetMinY(view.bounds) + kInterThemeSpacing;
+    CGFloat xOffset = view.safeAreaInsets.left;
+    // This should be view.safeAreaInsets.top + kInterThemeSpacing, but when I get here bounds.origin.y is negative view.safeAreaInsets.top, and setting y to that value doubles the required top margin
+    CGFloat yOffset = kInterThemeSpacing;
     NSMutableArray *themeViews = [NSMutableArray array];
     for (OUIPaletteTheme *theme in _themes) {
         {

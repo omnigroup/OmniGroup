@@ -12,7 +12,7 @@ public protocol MultiPaneChildViewController {
 }
 
 extension UIViewController: MultiPaneChildViewController {
-    open var backButtonTitle: String? { return self.title }
+    @objc /**REVIEW**/ open var backButtonTitle: String? { return self.title }
 }
 
 extension UINavigationController {

@@ -33,7 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSUInteger)indexOfFirstNonZeroByte;
     // Returns the index of the first non-zero byte in the receiver, or NSNotFound if if all the bytes in the data are zero.
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;
+#endif
 
 - (NSData *)dataByAppendingData:(NSData *)anotherData;
     // Returns the catenation of this NSData and the argument

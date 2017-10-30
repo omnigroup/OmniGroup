@@ -15,7 +15,7 @@ import UIKit
 //       Properties and functions currently marked private probably don't make sense to change externally and should be left that way.
 //
 @objc(OUIMultiPane) open class Pane: NSObject {
-    public let viewController: UIViewController
+    @objc /**REVIEW**/ public let viewController: UIViewController
     @objc public var preferredMinimumWidth: CGFloat {
         get {
             return configuration.preferredMinimumWidth
@@ -26,7 +26,7 @@ import UIKit
     }
     
     /// Does this pane style support pinning
-    public var isPinnable: Bool {
+    @objc /**REVIEW**/ public var isPinnable: Bool {
         return configuration.canBePinned
     }
     
@@ -34,12 +34,12 @@ import UIKit
     /// If pinning a pane would cause this threshold to be exceeded, then the pinning system will push the other sidebar pane out of the way.
     /// Otherwise, it will try to pin in place without changing the other pane.
     /// (Note, better to use this than the preferredMinimumWidth of the center pane so that other layout can happen regardless of whether you are opting into pinning or not.)
-    public var centerPanePinWidthThreshold: CGFloat = 320
+    @objc /**REVIEW**/ public var centerPanePinWidthThreshold: CGFloat = 320
     
     /// Signal that this pane wants to participate in Pinning.
     /// No-op if pane doesn't support pinning (.center panes don't support pinning)
     /// Note: This only lets the system know that this pane wants to be part of pinning.
-    public var wantsToBePinnable: Bool {
+    @objc /**REVIEW**/ public var wantsToBePinnable: Bool {
         set (newValue) {
             guard configuration is Sidebar else {
                 // Trying to pin the Center Pane isn't supported.
@@ -56,7 +56,7 @@ import UIKit
     }
     
     /// Is this Pane currently pinned.
-    public var isPinned: Bool {
+    @objc /**REVIEW**/ public var isPinned: Bool {
         return environment?.presentationMode == .embedded && configuration.isPinned
     }
     
@@ -79,17 +79,17 @@ import UIKit
     }
     
     // embedded width
-    var width: CGFloat {
+    @objc /**REVIEW**/ var width: CGFloat {
         return self.widthConstraint?.constant ?? 0.0
     }
     
-    var preferredWidth: CGFloat = 0.0 {
+    @objc /**REVIEW**/ var preferredWidth: CGFloat = 0.0 {
         didSet {
             self.widthConstraint?.constant = preferredWidth
         }
     }
     
-    var visibleWhenEmbedded = true
+    @objc /**REVIEW**/ var visibleWhenEmbedded = true
     
     init(withViewController viewController: UIViewController, configuration: PaneConfiguration) {
         self.viewController = viewController
@@ -97,13 +97,13 @@ import UIKit
     }
     
     /// initialize a pane using the default Configuration for the location type
-    convenience init(withViewController viewController: UIViewController, location: MultiPaneLocation) {
+    @objc /**REVIEW**/ convenience init(withViewController viewController: UIViewController, location: MultiPaneLocation) {
         let config = location.defaultConfiguration
         self.init(withViewController: viewController, configuration: config)
     }
     
     /// called prior to displaying the view controller
-    func prepareForDisplay() {
+    @objc /**REVIEW**/ func prepareForDisplay() {
         guard let env = self.environment else {
             assertionFailure("expected to have an environment before display time")
             return

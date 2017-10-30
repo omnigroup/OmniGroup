@@ -12,21 +12,21 @@ import UIKit
 // MARK: - DisclosableSliceGroup
 open class DisclosableSliceGroup: NSObject {
     /// Identifier to use when saving to preferences
-    let identifier: String
+    @objc /**REVIEW**/ let identifier: String
 
     /// Header title to display if defined
-    let headerSlice: DiscloseGroupHeaderSlice?
+    @objc /**REVIEW**/ let headerSlice: DiscloseGroupHeaderSlice?
 
     /// Slices that should always be shown.
-    let staticSlices: [OUIInspectorSlice]
+    @objc /**REVIEW**/ let staticSlices: [OUIInspectorSlice]
 
 
     /// Slices that will be hidden/shown when the buttonSlice's button is tapped.
-    let disclosableSlices: [OUIInspectorSlice]
+    @objc /**REVIEW**/ let disclosableSlices: [OUIInspectorSlice]
 
 
     /// Computed property that returns groupSeparatorSlice, staticSlices, buttonSlice, and disclosableSlices.
-    public var allSlices: [OUIInspectorSlice] {
+    @objc /**REVIEW**/ public var allSlices: [OUIInspectorSlice] {
         var all = [OUIInspectorSlice]()
         all.append(groupSeparatorSlice)
         if (headerSlice != nil) {
@@ -38,18 +38,18 @@ open class DisclosableSliceGroup: NSObject {
         return all
     }
 
-    let groupSeparatorSlice: DiscloseGroupSeparatorSlice
+    @objc /**REVIEW**/ let groupSeparatorSlice: DiscloseGroupSeparatorSlice
     /// Slice that vends a button whos action will alert the DisclosableSliceGroup.delegate via the didTapSliceGroupButton(_:) method.
-    let buttonSlice: DiscloseButtonSlice
-    public weak var delegate: DisclosableSliceGroupDelegate?
+    @objc /**REVIEW**/ let buttonSlice: DiscloseButtonSlice
+    @objc /**REVIEW**/ public weak var delegate: DisclosableSliceGroupDelegate?
 
     /// Title to show while in the undisclosed state. (Ex: "Show ...")
-    public var undisclosedTitle: String?
+    @objc /**REVIEW**/ public var undisclosedTitle: String?
 
     /// Title to show while in the disclosed state. (Ex: "Hide ...")
-    public var disclosedTitle: String?
+    @objc /**REVIEW**/ public var disclosedTitle: String?
 
-    public init(identifier: String, headerTitle: String?, staticSlices: [OUIInspectorSlice], disclosableSlices: [OUIInspectorSlice]) {
+    @objc /**REVIEW**/ public init(identifier: String, headerTitle: String?, staticSlices: [OUIInspectorSlice], disclosableSlices: [OUIInspectorSlice]) {
         self.identifier = identifier
         groupSeparatorSlice = DiscloseGroupSeparatorSlice(nibName: nil, bundle: nil)
 
@@ -71,7 +71,7 @@ open class DisclosableSliceGroup: NSObject {
         buttonSlice.button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
     }
 
-    public convenience init(identifier: String, staticSlices: [OUIInspectorSlice], disclosableSlices: [OUIInspectorSlice]) {
+    @objc /**REVIEW**/ public convenience init(identifier: String, staticSlices: [OUIInspectorSlice], disclosableSlices: [OUIInspectorSlice]) {
         self.init(identifier: identifier, headerTitle: nil, staticSlices: staticSlices, disclosableSlices: disclosableSlices)
     }
 
@@ -142,7 +142,7 @@ extension DisclosableSliceGroup : DiscloseHeaderSliceDelegate {
 }
 
 extension DisclosableSliceGroup : DiscloseGroupSeparatorSliceDelegate {
-    func isSliceAppropriate(_ slice: OUIInspectorSlice, inspectedObject: Any!) -> Bool {
+    @objc /**REVIEW**/ func isSliceAppropriate(_ slice: OUIInspectorSlice, inspectedObject: Any!) -> Bool {
         var isAppropriate = false
         for staticSlice in staticSlices {
             if staticSlice.isAppropriate(forInspectedObject: inspectedObject) {
@@ -164,8 +164,8 @@ extension DisclosableSliceGroup : DiscloseGroupSeparatorSliceDelegate {
 
 /// This was designed and created to work with DisclosableSliceGroup. It has only been tested in that context. If you need a generic button in a slice, this may or may not work for you. It's certainly an odd pattern compared to how the other slices work.
 class DiscloseButtonSlice: OUIInspectorSlice {
-    let button = UIButton(type: .system)
-    weak var delegate: DiscloseButtonSliceDelegate?
+    @objc /**REVIEW**/ let button = UIButton(type: .system)
+    @objc /**REVIEW**/ weak var delegate: DiscloseButtonSliceDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -207,10 +207,10 @@ class DiscloseButtonSlice: OUIInspectorSlice {
 
 // MARK: - DiscloseGroupHeaderSlice
 class DiscloseGroupHeaderSlice: OUIInspectorSlice {
-    let headerTitle: String
-    weak var delegate: DiscloseHeaderSliceDelegate?
+    @objc /**REVIEW**/ let headerTitle: String
+    @objc /**REVIEW**/ weak var delegate: DiscloseHeaderSliceDelegate?
 
-    public init(headerTitle: String) {
+    @objc /**REVIEW**/ public init(headerTitle: String) {
         self.headerTitle = headerTitle
         super.init(nibName: nil, bundle: nil)
     }
@@ -271,7 +271,7 @@ class DiscloseGroupHeaderSlice: OUIInspectorSlice {
 
 class DiscloseGroupSeparatorSlice: OUIInspectorSlice {
     weak var delegate: DiscloseGroupSeparatorSliceDelegate?
-    public var separatorHeight: CGFloat = 16.0
+    @objc /**REVIEW**/ public var separatorHeight: CGFloat = 16.0
 
     override func viewDidLoad() {
         super.viewDidLoad()

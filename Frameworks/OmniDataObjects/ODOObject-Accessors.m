@@ -262,14 +262,18 @@ id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *p
             // TODO: Use something like __builtin_expect to tell the inline that rel != nil?  This is the slow path, so I'm not sure it matters...
             value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, snapshotIndex, rel);
         }
-    } else if (value == nil && flags.transient && flags.calculated && ((options & ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues) != 0) && ![self _isCalculatingValueForKey:prop.name]) {
-        value = [self calculateValueForKey:prop.name];
-        if (value != nil) {
-            if ([value conformsToProtocol:@protocol(NSCopying)]) {
-                value = [[value copy] autorelease];
+    } else if (value == nil && flags.transient && flags.calculated && ((options & ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues) != 0)) {
+        BOOL isAlreadyCalculatingValue = [self _isCalculatingValueForKey:prop.name];
+        OBASSERT(!isAlreadyCalculatingValue);
+        if (!isAlreadyCalculatingValue) {
+            value = [self calculateValueForKey:prop.name];
+            if (value != nil) {
+                if ([value conformsToProtocol:@protocol(NSCopying)]) {
+                    value = [[value copy] autorelease];
+                }
+                
+                _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
             }
-
-            _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
         }
     }
     

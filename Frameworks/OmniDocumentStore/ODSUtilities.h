@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,5 +14,5 @@ extern BOOL ODSIsInInbox(NSURL *url);
 extern BOOL ODSIsZipFileType(NSString *uti);
 extern NSString * const ODSDocumentInteractionInboxFolderName;
 
-extern OFScanDirectoryFilter ODSScanDirectoryExcludeInboxItemsFilter(void);
+extern OFScanDirectoryFilter ODSScanDirectoryExcludeSytemFolderItemsFilter(void);
 

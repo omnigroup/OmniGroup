@@ -17,24 +17,24 @@ class PaneDividerView: UIView {
     }
     
     // non-editing divider width
-    var width: CGFloat = 0.5 {
+    @objc /**REVIEW**/ var width: CGFloat = 0.5 {
         didSet {
             self.widthConstraint?.constant = width
         }
     }
     
     // divider width when editing, chanages take effect when editing state changes
-    var editingWidth: CGFloat = 6.0
+    @objc /**REVIEW**/ var editingWidth: CGFloat = 6.0
     
     // non-editing divider color
-    var color: UIColor = UIColor.lightGray {
+    @objc /**REVIEW**/ var color: UIColor = UIColor.lightGray {
         didSet {
             self.backgroundColor = color
         }
     }
     
     // divider color when editing, changes take effect when editing state changes
-    var editingColor: UIColor = UIColor.darkGray
+    @objc /**REVIEW**/ var editingColor: UIColor = UIColor.darkGray
     
     var editStateChanged: (EditState) -> () = { _ in } {
         didSet {
@@ -49,7 +49,7 @@ class PaneDividerView: UIView {
     private var longPressGesture: UILongPressGestureRecognizer?
     private var widthConstraint: NSLayoutConstraint?
     
-    private(set) var isEditing = false {
+    @objc /**REVIEW**/ private(set) var isEditing = false {
         didSet {
             self.editStateChanged((isEditing ? .Started : .Ended))
         }

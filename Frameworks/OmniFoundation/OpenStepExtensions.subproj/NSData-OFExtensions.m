@@ -13,8 +13,10 @@
 
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 #import <OmniFoundation/NSMutableData-OFExtensions.h>
+#endif
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFRandom.h>
@@ -151,6 +153,7 @@ RCS_ID("$Id$")
     return nil;
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (BOOL)writeToFile:(NSString *)path atomically:(BOOL)atomically createDirectories:(BOOL)shouldCreateDirectories error:(NSError **)outError;
 {
     if (shouldCreateDirectories && ![[NSFileManager defaultManager] createPathToFile:path attributes:nil error:outError])
@@ -158,6 +161,7 @@ RCS_ID("$Id$")
 
     return [self writeToFile:path options:atomically ? NSDataWritingAtomic : 0 error:outError];
 }
+#endif
 
 - (NSData *)dataByAppendingData:(NSData *)anotherData;
 {

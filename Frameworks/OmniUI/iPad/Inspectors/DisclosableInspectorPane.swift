@@ -10,13 +10,13 @@
 import UIKit
 
 open class DisclosableInspectorPane: OUIStackedSlicesInspectorPane {
-    public var allDisclosableSliceGroups = [DisclosableSliceGroup]()
-    public var excludedDisclosableSliceGroups = [DisclosableSliceGroup]()
+    @objc /**REVIEW**/ public var allDisclosableSliceGroups = [DisclosableSliceGroup]()
+    @objc /**REVIEW**/ public var excludedDisclosableSliceGroups = [DisclosableSliceGroup]()
 
     /// Backing preference for persistent disclosed slices. Callers should not access this directly; instead, use one of the conveniences later.
     private static var disclosedSlicesPreference = OFPreference(forKey: "OUIInspectorDisclosedSlicesPreference", defaultValue: [:])
 
-    public func isGroupDisclosed(_ group: DisclosableSliceGroup) -> Bool {
+    @objc /**REVIEW**/ public func isGroupDisclosed(_ group: DisclosableSliceGroup) -> Bool {
         guard let dict = DisclosableInspectorPane.disclosedSlicesPreference.dictionaryValue as? [String:Bool] else {
             return false
         }

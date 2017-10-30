@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,8 +93,6 @@ static NSNumber *OWZeroNumber = nil;
 {
     // Unless otherwise noted, instance variables are protected by the global pipeline lock.
 
-    __weak id <OWTarget, NSObject> _weakTarget; // protected by displayablesSimpleLock
-
     struct {
         unsigned int pipelineDidBegin: 1;
         unsigned int pipelineDidEnd: 1;
@@ -150,6 +148,8 @@ static NSNumber *OWZeroNumber = nil;
     NSString *errorReasonString;
     NSDate *errorDelayDate;
 }
+
+@synthesize target = _weakTarget;
 
 enum {
     PipelineProcessorConditionNoProcessors, PipelineProcessorConditionSomeProcessors,
@@ -666,7 +666,7 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
 
     /* Convert our strong retain of the target into a weak retain, but make sure it doesn't go away before we're done with this method */
 
-    NS_DURING {
+    @try {
         [[self class] _addPipeline:self forTarget:_weakTarget];
         [self setParentContentInfo:[_weakTarget parentContentInfo]];
         OBASSERT(parentContentInfo != nil);
@@ -678,10 +678,10 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
             [(id <OWOptionalTarget>)_weakTarget pipelineDidBegin:self];
 
         [self _notifyTargetOfTreeActivation:_weakTarget];
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         NSLog(@"%@: exception during init: %@", [self shortDescription], localException);
         [self invalidate];
-    } NS_ENDHANDLER;
+    }
 
     return self;
 }
@@ -978,18 +978,6 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
 }
 
 // Target
-
-- (id <OWTarget, NSObject>)target;
-{
-    id <OWTarget, NSObject> retainedTarget;
-
-    OFSimpleLock(&displayablesSimpleLock);
-    retainedTarget = _weakTarget;
-    OFSimpleUnlock(&displayablesSimpleLock);
-    
-    return retainedTarget;
-}
-
 
 - (void)invalidate;
 {

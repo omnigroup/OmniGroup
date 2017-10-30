@@ -298,7 +298,7 @@ static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self, NSDictio
     }
     else {
         newFrame.origin.x = 0;
-        newFrame.origin.y = superview.frame.size.height - self.accessoryToolbarView.frame.size.height;
+        newFrame.origin.y = superview.frame.size.height - self.accessoryToolbarView.frame.size.height - superview.safeAreaInsets.bottom;
     }
 
     DEBUG_KEYBOARD("accessory: current frame %@, new frame %@", NSStringFromCGRect(self.accessoryToolbarView.frame), NSStringFromCGRect(newFrame));

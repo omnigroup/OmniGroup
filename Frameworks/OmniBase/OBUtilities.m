@@ -401,16 +401,20 @@ void OBTrap(void)
     abort();
 }
 
-void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message)
+void _OBStopInDebuggerWithoutMessage(void)
 {
-    NSLog(@"OBStopInDebugger at %s:%d in %s -- %s", file, line, function, message);
-    
     BOOL isBeingDebugged = OBIsBeingDebugged();
     OBASSERT(isBeingDebugged);
     if (isBeingDebugged) {
         // N.B. This should not use OBTrap. The intent here is to stop in the debugger if we are being debugged, but in non-fatally, such that you can to continue and debug the application in it's current state.
         kill(getpid(), SIGTRAP);
     }
+}
+
+void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message)
+{
+    NSLog(@"OBStopInDebugger at %s:%d in %s -- %s", file, line, function, message);
+    _OBStopInDebuggerWithoutMessage();
 }
 
 DEFINE_NSSTRING(OBAbstractImplementation);

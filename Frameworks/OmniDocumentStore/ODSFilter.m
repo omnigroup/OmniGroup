@@ -106,23 +106,10 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
 {
     OBPRECONDITION([NSThread isMainThread]); // We want to fire KVO only on the main thread
 
-    NSPredicate *trashAvoidingPredicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        ODSItem *item = evaluatedObject;
-        if (item.type == ODSItemTypeFolder) {
-            if ([[item name] isEqualToString:@".Trash"]) {
-                return NO; // Hide Apple's trash folder
-            }
-            return YES;
-        }
-        return YES;
-    }];
-    
-    if (_filterPredicate) {
-        NSCompoundPredicate *fullPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:@[_filterPredicate, trashAvoidingPredicate]];
-        return [_sourceItems filteredSetUsingPredicate:fullPredicate];
-    } else {
-        return [_sourceItems filteredSetUsingPredicate:trashAvoidingPredicate];
-    }
+    if (_filterPredicate)
+        return [_sourceItems filteredSetUsingPredicate:_filterPredicate];
+    else
+        return _sourceItems;
 }
 
 #pragma mark - Private

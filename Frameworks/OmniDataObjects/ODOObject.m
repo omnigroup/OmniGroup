@@ -357,6 +357,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Adding an observer when changeProcessingDisabled. willChangeValueForKey:/didChangeValueForKey: may not fire.");
 
     // If this is a leaf key path associated with a transient + calculated property, calculate it now if needed.
+    // This needs to be calculated now so that we have the correct prior value when it does change. Waiting until -willChangeValueForKey: time to compute the prior value will result in the wrong answer.
     
     ODOEntity *entity = self.entity; // TODO: Disallow subclassing -entity via setup check.  Then inline it here.
     if ([entity.calculatedTransientPropertyNameSet containsObject:keyPath]) {
@@ -404,28 +405,49 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 {
-    OBPRECONDITION(![self isDeleted]);
-    if ([self isDeleted]) {
+    OBPRECONDITION(![self isDeleted] && ![self isInvalid]);
+    if ([self isDeleted] || [self isInvalid]) {
         return;
     }
     
     ODOProperty *prop = [[_objectID entity] propertyNamed:key];
+    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
 
 #ifdef OMNI_ASSERTIONS_ON
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     OBASSERT(!flags.relationship && flags.transient && flags.calculated);
 #endif
     
-    id value = [self calculateValueForKey:key];
-    if (value != nil) {
-        [self _setIsCalculatingValueForKey:key];
-
-        [self willChangeValueForKey:key];
-        ODOObjectSetPrimitiveValueForProperty(self, value, prop);
-        [self didChangeValueForKey:key];
-        
-        [self _clearIsCalculatingValueForKey:key];
+    // If this value has never been computed, we don't need to compute it now.
+    OBASSERT(self->_valueStorage != NULL);
+    id oldValue = _ODOObjectValueAtIndex(self, snapshotIndex);
+    if (oldValue == nil) {
+        return;
     }
+
+    // Inside of the pair of KVO notifications, set the snapshot value to nil.
+    //
+    // If there *are* observers, the value will be calculated in the
+    // -didChangeValueForKey as KVO accesses the value for the building
+    // notification, or as any observer accesses the value as a side effect
+    // receiving the notification.
+    //
+    // If there are no observers, we avoid the work.
+    // 
+    // There is possibly an edge case here that if there *are* observers,
+    // but the value isn't lazy calculated as part of sending the KVO
+    // notification, we'll get the wrong value for the prior value on the
+    // next change (for the same reasons that we pre-calculate the value
+    // when adding an observer.)
+    // 
+    // To avoid this, we'd have to separately track whether anyone was
+    // observing the property, because that information isn't available to
+    // use through the KVO API.
+
+    OBASSERT(!_flags.changeProcessingDisabled);
+    [self willChangeValueForKey:key];
+    _ODOObjectSetValueAtIndex(self, snapshotIndex, nil);
+    [self didChangeValueForKey:key];
 }
 
 - (nullable id)valueForKey:(NSString *)key;

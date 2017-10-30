@@ -1915,7 +1915,7 @@ static NSDictionary *RoleByFileType()
             // resize xib window to the current screen size
             [_window setFrame:[[UIScreen mainScreen] bounds]];
         }
-        
+
         _documentStore = [[ODSStore alloc] initWithDelegate:self];
 
         _documentPicker = [[OUIDocumentPicker alloc] initWithDocumentStore:_documentStore];
@@ -2010,7 +2010,10 @@ static NSDictionary *RoleByFileType()
         }];
         
         _didFinishLaunching = YES;
-        
+
+        // Possibly want to allow finer control over this, but it does the right thing for now.
+        OUIDocumentPreview.previewTemplateImageTintColor = _window.tintColor;
+
         // Start real preview generation any time we are missing one.
         [[NSNotificationCenter defaultCenter] addObserverForName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification *note){
             OUIDocumentPickerItemView *itemView = [note object];
@@ -2173,6 +2176,75 @@ static NSDictionary *RoleByFileType()
     return YES;
 }
 
+- (void)_handleOpenURL:(NSURL *)url fileType:(NSString *)fileType fileWillBeImported:(BOOL)fileWillBeImported openInPlaceAccessOkay:(BOOL)openInPlaceAccessOkay;
+{
+    if (fileWillBeImported) {
+        [self importDocumentFromURL:url];
+    } else if (ODSIsInInbox(url)) { // move file for sure
+        OBASSERT(_localScope);
+
+        [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
+            __autoreleasing NSError *deleteInboxError = nil;
+
+            if (![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
+                NSLog(@"Failed to delete the inbox item with error: %@", [deleteInboxError toPropertyList]);
+            }
+
+            main_async(^{
+                if (!newFileItem) {
+                    // Display Error and return.
+                    OUI_PRESENT_ERROR_FROM(errorOrNil, self.window.rootViewController);
+                    return;
+                }
+
+                if (_document != nil && [_documentPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [_documentPicker.delegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
+                    // If we already have an open document and we would accept but not display anything for this file type, then just do nothing and keep the current doc open. (For OmniJS plugin installation, for instance.)
+                    return;
+                }
+
+                if (self.pendingImportedFileItems)
+                    self.pendingImportedFileItems = [self.pendingImportedFileItems arrayByAddingObject:newFileItem];
+                else
+                    self.pendingImportedFileItems = @[newFileItem];
+
+                // Wait half a second to see if any other documents are coming in at the same time. If we get only one, open it, but
+                // if there are more than one we want to stay in the doc picker with them all selected.
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC / 2)), dispatch_get_main_queue(), ^{
+                    if (self.pendingImportedFileItems.lastObject != newFileItem)
+                        return; // only perform the delayed actions once, not per item
+
+                    [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:NO];
+                    if (self.pendingImportedFileItems.count == 1) {
+                        [self openDocument:newFileItem];
+                    } else {
+                        [_documentPicker.selectedScopeViewController loadViewIfNeeded];
+                        [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
+                        [_documentPicker.selectedScopeViewController setEditing:YES animated:NO];
+                        for (ODSFileItem *item in self.pendingImportedFileItems)
+                            item.selected = YES;
+                        _isOpeningURL = NO; // Turn this off so that we'll start generating previews right away.
+                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:self.pendingImportedFileItems];
+                    }
+                    self.pendingImportedFileItems = nil;
+                });
+            });
+        }];
+    } else if (ODSIsZipFileType(fileType)) {
+        // Similar to the inbox code above, but with proper security rituals and without deleting the original
+        // Can't just be opened in place, because we want persistent access to the file(s), not the zip they currently live in.
+        [_externalScopeManager importExternalDocumentFromURL:url];
+    } else if (openInPlaceAccessOkay) {
+        [self openDocumentInPlace:url];
+        return;
+    } else {
+        OBASSERT_NOT_REACHED("Will the system ever give us a non-inbox item that we can't open in place?");
+        ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
+        OBASSERT(fileItem);
+        if (fileItem)
+            [self openDocument:fileItem];
+    }
+}
+
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options;
 {
     // NOTE: If we are suspending launch actions (possibly due to handling a crash), _didFinishLaunching will be NO and we'd drop this on the ground. So, we add this as launch action as well. We could try to preflight the URL to see if it is certain we can't open it, but we'd have a hard time getting an accurate answer (many of the actions are async anyway).
@@ -2222,75 +2294,10 @@ static NSDictionary *RoleByFileType()
             
             void (^handleIncomingFiles)(void) = ^(void){
                 OBASSERT(_documentStore);
-                
-                void (^scanAction)(void) = ^{
-                    if (fileWillBeImported) {
-                        [self importDocumentFromURL:url];
-                    } else if (ODSIsInInbox(url)) { // move file for sure
-                        OBASSERT(_localScope);
-                        
-                        [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
-                            __autoreleasing NSError *deleteInboxError = nil;
-                            
-                            if (![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
-                                NSLog(@"Failed to delete the inbox item with error: %@", [deleteInboxError toPropertyList]);
-                            }
-                            
-                            main_async(^{
-                                if (!newFileItem) {
-                                    // Display Error and return.
-                                    OUI_PRESENT_ERROR_FROM(errorOrNil, self.window.rootViewController);
-                                    return;
-                                }
-                                
-                                if (_document != nil && [_documentPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [_documentPicker.delegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
-                                    // If we already have an open document and we would accept but not display anything for this file type, then just do nothing and keep the current doc open. (For OmniJS plugin installation, for instance.)
-                                    return;
-                                }
-                                
-                                if (self.pendingImportedFileItems)
-                                    self.pendingImportedFileItems = [self.pendingImportedFileItems arrayByAddingObject:newFileItem];
-                                else
-                                    self.pendingImportedFileItems = @[newFileItem];
-                                
-                                // Wait half a second to see if any other documents are coming in at the same time. If we get only one, open it, but
-                                // if there are more than one we want to stay in the doc picker with them all selected.
-                                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC / 2)), dispatch_get_main_queue(), ^{
-                                    if (self.pendingImportedFileItems.lastObject != newFileItem)
-                                        return; // only perform the delayed actions once, not per item
-                                    
-                                    [_documentPicker navigateToContainerForItem:newFileItem dismissingAnyOpenDocument:YES animated:NO];
-                                    if (self.pendingImportedFileItems.count == 1) {
-                                        [self openDocument:newFileItem];
-                                    } else {
-                                        [_documentPicker.selectedScopeViewController loadViewIfNeeded];
-                                        [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:newFileItem];
-                                        [_documentPicker.selectedScopeViewController setEditing:YES animated:NO];
-                                        for (ODSFileItem *item in self.pendingImportedFileItems)
-                                            item.selected = YES;
-                                        _isOpeningURL = NO; // Turn this off so that we'll start generating previews right away.
-                                        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:self.pendingImportedFileItems];
-                                    }
-                                    self.pendingImportedFileItems = nil;
-                                });
-                            });
-                        }];
-                    } else if (ODSIsZipFileType(fileType)) {
-                        // Similar to the inbox code above, but with proper security rituals and without deleting the original
-                        // Can't just be opened in place, because we want persistent access to the file(s), not the zip they currently live in.
-                        [_externalScopeManager importExternalDocumentFromURL:url];
-                    } else if (openInPlaceAccessOkay) {
-                        [self openDocumentInPlace:url];
-                        return;
-                    } else {
-                        OBASSERT_NOT_REACHED("Will the system ever give us a non-inbox item that we can't open in place?");
-                        ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
-                        OBASSERT(fileItem);
-                        if (fileItem)
-                            [self openDocument:fileItem];
-                    }
-                };
-                [_documentStore addAfterInitialDocumentScanAction:scanAction];
+                OUIDocumentAppController *strongSelf = self; // We'll never be deallocated anyway, so not going through weak dance.
+                [_documentStore addAfterInitialDocumentScanAction:^{
+                    [strongSelf _handleOpenURL:url fileType:fileType fileWillBeImported:fileWillBeImported openInPlaceAccessOkay:openInPlaceAccessOkay];
+                }];
             };
             
             if (_documentStore && _localScope) {
