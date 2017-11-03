@@ -62,7 +62,7 @@ public class MemoryUseHistory {
         timer.setEventHandler() {
             self._sample()
         }
-        timer.scheduleRepeating(deadline: DispatchTime.now(), interval: 1.0)
+        timer.schedule(deadline: DispatchTime.now(), repeating: 1.0)
         timer.resume()
     }
 

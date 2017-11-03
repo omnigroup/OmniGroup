@@ -72,6 +72,18 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     return alignmentInsets;
 }
 
++ (NSDirectionalEdgeInsets)sliceDirectionalLayoutMargins;
+{
+    // Try to match the default UITableView insets for our default insets.
+    static dispatch_once_t predicate;
+    static NSDirectionalEdgeInsets directionalEdgeInsets = (NSDirectionalEdgeInsets){0,0,0,0};
+    dispatch_once(&predicate, ^{
+        UIEdgeInsets sliceAlignmentInsets = [self sliceAlignmentInsets];
+        directionalEdgeInsets = NSDirectionalEdgeInsetsMake(sliceAlignmentInsets.top, sliceAlignmentInsets.left, sliceAlignmentInsets.bottom, sliceAlignmentInsets.right);
+    });
+    return directionalEdgeInsets;
+}
+
 - (UIColor *)sliceBackgroundColor;
 {
     return [UIColor whiteColor];
@@ -192,7 +204,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     _groupPosition = newValue;
     
     if (self.isViewLoaded) {
-        UIView *view = self.view;
+        UIView *view = self.contentView;
         if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
             [(id)view setInspectorSliceGroupPosition:_groupPosition];
         }
@@ -336,7 +348,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 - (NSArray *)appropriateObjectsForInspection;
 {
-    OBPRECONDITION(self.containingPane);
+    OBPRECONDITION(self.containingPane, "<bug:///150992> (iOS-OmniPlan Unassigned: OPBaselinesInspectorSlice looks for appropriateObjectsForInspection too early and fails assertion)");
     
     NSMutableArray *objects = nil;
     

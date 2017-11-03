@@ -54,7 +54,7 @@ NSString * _OFRelativeDateParserLocalizedStringFromTableInBundle(NSString *key, 
             if ([[[mainBundle localizations] firstObject] isEqualToString:@"Base"]) {
                 OBASSERT([[[mainBundle localizations] objectAtIndex:1] isEqualToString:@"en"], "App not localized for date parsing. bug://139999"); // bug:///139999 (Frameworks-iOS Unassigned: Provide mechanism to avoid assertion about bundle localization in apps that aren't localized yet but will be)
             } else {
-                OBASSERT([[[mainBundle localizations] firstObject] isEqualToString:@"en"]);
+                OBASSERT([[[mainBundle localizations] firstObject] isEqualToString:@"en"], "<bug:///150988> (iOS-OmniPlan Unassigned: OFRelativeDateParser has a mysterious assertion)");
             }
         }
 #endif

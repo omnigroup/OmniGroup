@@ -316,8 +316,8 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         [self.sliceStackView addArrangedSubview:slice.view];
         
         if (![slice isKindOfClass:[OUIAbstractTableViewInspectorSlice class]]) {
-            UIEdgeInsets sliceEdgeInsets = [OUIInspectorSlice sliceAlignmentInsets];
-            slice.contentView.layoutMargins = sliceEdgeInsets;
+            NSDirectionalEdgeInsets directionalLayoutMargins = [OUIInspectorSlice sliceDirectionalLayoutMargins];
+            slice.contentView.directionalLayoutMargins = directionalLayoutMargins;
         }
     }
     for (NSUInteger index = 0; index < slices.count; index++) {

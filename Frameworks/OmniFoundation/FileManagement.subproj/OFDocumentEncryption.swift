@@ -811,8 +811,9 @@ class OFCMSFileWrapper {
             
             func splitStoredName() -> (String, Data?) {
                 if let sep = storedName.range(of: "#") {
-                    return ( storedName.substring(to: sep.lowerBound),
-                             storedName.substring(from: sep.upperBound).data(using: String.Encoding.ascii) );
+                    let first = String(storedName[..<sep.lowerBound])
+                    let second = String(storedName[sep.upperBound...])
+                    return (first, second.data(using: String.Encoding.ascii));
                 } else {
                     return (storedName, nil);
                 }

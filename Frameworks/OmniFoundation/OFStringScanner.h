@@ -9,15 +9,18 @@
 
 #import <OmniFoundation/OFCharacterScanner.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OFStringScanner : OFCharacterScanner
 
-- initWithString:(NSString *)aString;
-    // Scan the specified string.  Retains string, rather than copying it, for efficiency, so don't change it.
+/// Scan the specified string. Retains string, rather than copying it, for efficiency, so don't change it.
+- (id)initWithString:(NSString *)aString;
 
-@property(nonatomic,readonly) NSString *string;
+@property(nonatomic, readonly) NSString *string;
 
-@property(nonatomic,readonly) NSRange remainingRange;
-@property(nonatomic,readonly) NSString *remainingString;
+@property(nonatomic, readonly) NSRange remainingRange;
+@property(nonatomic, readonly) NSString *remainingString;
 
 @end
 
+NS_ASSUME_NONNULL_END

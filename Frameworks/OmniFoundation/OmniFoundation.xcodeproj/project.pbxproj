@@ -5041,7 +5041,7 @@
 						TestTargetID = 34F16B19194F6C3200AD9C4D;
 					};
 					4A4E05FE08AA72B10098FF0F = {
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0920;
 					};
 					4A4E07A808AA72B10098FF0F = {
 						TestTargetID = 4A4E05FE08AA72B10098FF0F;
@@ -6450,6 +6450,7 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -6474,6 +6475,7 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -6511,6 +6513,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation;
 				PRODUCT_NAME = OmniFoundation;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -6528,6 +6531,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation;
 				PRODUCT_NAME = OmniFoundation;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -6586,6 +6590,7 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -6610,6 +6615,7 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};

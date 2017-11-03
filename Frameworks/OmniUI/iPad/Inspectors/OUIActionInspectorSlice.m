@@ -79,6 +79,9 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
     
+    self.contentView = [[UIView alloc] init];
+    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
+
     CGRect textWellFrame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
 
     _textWell = [[[[self class] textWellClass] alloc] initWithFrame:textWellFrame];
@@ -101,16 +104,24 @@ RCS_ID("$Id$");
     else
         _textWell.text = self.title;
 
-    [self.view addSubview:_textWell];
-        
+    [self.contentView addSubview:_textWell];
+    
+    UIView *view = self.view;
+    [view addSubview:self.contentView];
+    
+    [self.contentView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [self.contentView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [self.contentView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [self.contentView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
     NSMutableArray *constraintsToActivate = [NSMutableArray array];
     [constraintsToActivate addObject:[_textWell.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
-    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leftAnchor]];
-    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.rightAnchor];
+    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor]];
+    self.rightMarginLayoutConstraint = [_textWell.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
     [constraintsToActivate addObject:self.rightMarginLayoutConstraint];
     self.rightMarginLayoutConstraint = nil;
-    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.view.topAnchor]];
-    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]];
+    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:self.contentView.topAnchor]];
+    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor]];
     [NSLayoutConstraint activateConstraints:constraintsToActivate];
 }
 

@@ -82,9 +82,9 @@
 }
 
 @objc(OUIMultiPaneDisplayMode) public enum MultiPaneDisplayMode: Int {
-    case compact // compact width environment
-    case single  // regular width environment, sidebars are overlaid
-    case multi   // regular width environment, one or more sidebars will be embedded
+    case compact // compact width environment, individual apps can customize "sidebar" presentation (presented modally by default)
+    case single  // regular width environment, sidebars are overlaid when shown
+    case multi   // regular width environment, one or more sidebars will be embedded, one sidebar may be overlaid when shown
 }
 
 extension MultiPaneDisplayMode: CustomStringConvertible {

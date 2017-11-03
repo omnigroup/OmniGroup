@@ -150,10 +150,6 @@ NSString *OFOSStatusDescription(OSStatus err)
 // We'll guess that this is wildly larger than the maximum number of interfaces on the machine.  I don't see that there is a way to get the number of interfaces so that you don't have to have a hard-coded value here.  Sucks.
 #define MAX_INTERFACES 100
 
-#define IFR_NEXT(ifr)	\
-    ((struct ifreq *) ((char *) (ifr) + sizeof(*(ifr)) + \
-                   MAX(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
-
 static NSDictionary *InterfaceAddresses = nil;
 
 static NSDictionary *OFLinkLayerInterfaceAddresses(void)
@@ -175,10 +171,19 @@ static NSDictionary *OFLinkLayerInterfaceAddresses(void)
     }
 
     NSMutableDictionary *interfaceAddresses = [NSMutableDictionary dictionary];
-    
-    struct ifreq *linkInterface = (struct ifreq *) ifc.ifc_buf;
-    while ((char *) linkInterface < &ifc.ifc_buf[ifc.ifc_len]) {
+
+    char * interfaceBuffer = ifc.ifc_buf;
+    while (interfaceBuffer < &ifc.ifc_buf[ifc.ifc_len]) {
         // The ioctl returns both the entries having the address (AF_INET) and the link layer entries (AF_LINK).  The AF_LINK entry has the link layer address which contains the interface type.  This is the only way I can see to get this information.  We cannot assume that we will get both an AF_LINK and AF_INET entry since the interface may not be configured.  For example, if you have a 10Mb port on the motherboard and a 100Mb card, you may not configure the motherboard port.
+
+        // The buffer is packed together such that accessing it by stepping a pointer along will produced undefined behavior by accessing things misalignedly. We'll copy out the header, which at least has a basic sockaddr with a sa_len (and is always at least of length sizeof(struct ifreq) according to _SIZEOF_ADDR_IFREQ.
+        struct ifreq linkInterfaceHeader;
+        memcpy(&linkInterfaceHeader, interfaceBuffer, sizeof(linkInterfaceHeader));
+
+        // Now copy out the full link interface
+        size_t linkInterfaceSize = _SIZEOF_ADDR_IFREQ(linkInterfaceHeader);
+        struct ifreq *linkInterface = (struct ifreq *)alloca(linkInterfaceSize);
+        memcpy(linkInterface, interfaceBuffer, linkInterfaceSize);
 
         // For each AF_LINK entry...
         if (linkInterface->ifr_addr.sa_family == AF_LINK) {
@@ -206,7 +211,7 @@ static NSDictionary *OFLinkLayerInterfaceAddresses(void)
                 [interfaceAddresses setObject:addressString forKey:ifname];
             }
         }
-        linkInterface = IFR_NEXT(linkInterface);
+        interfaceBuffer += linkInterfaceSize;
     }
 
     close(interfaceSocket);

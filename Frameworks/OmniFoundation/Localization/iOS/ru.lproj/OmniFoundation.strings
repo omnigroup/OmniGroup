@@ -31,6 +31,15 @@
 /* abbreviated string for hertz format */
 "%u Hz" = "%u Гц";
 
+/* summary text - document is encrypted using a password */
+"<Encryption: A password is set>" = "Пароль";
+
+/* summary text - document is not encrypted */
+"<Encryption: None>" = "Отсутствует";
+
+/* summary text - document is encrypted using one or more public keys */
+"<Encryption: using %u key(s)>" = "Ключи %u";
+
 /* approximate time interval: more than one hour */
 "about %.1f hours" = "около %.1f часов";
 

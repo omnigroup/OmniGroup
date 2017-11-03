@@ -515,7 +515,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     // Proceeding would result in an exception since the fromDate argument below must be non-nil.
     OBASSERT(returnDate != nil);
     if (returnDate == nil) {
-	OFError(outError, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+	OFError(outError, OFRelativeDateParserUnknownError, @"date parser error", @"unknown error");
         return NO;
     }
 
@@ -554,7 +554,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     // Be paranoid. If the date formatter returned YES, but didn't fill in the date, we return OFRelativeDateParserUnknownError instead of proceeding.
     // Proceeding would result in an exception since the fromDate argument below must be non-nil.
     if (date == nil) {
-        OFError(outError, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+        OFError(outError, OFRelativeDateParserUnknownError, @"date parser error", @"unknown error");
         return nil;
     }
     
@@ -709,7 +709,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
             if (date == nil) {
                 if (outDate != NULL)
                     *outDate = nil;
-                OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+                OFError(error, OFRelativeDateParserUnknownError, @"date parser error", @"unknown error");
                 return NO;
             }
         } else {
@@ -720,7 +720,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
             if (date == nil) {
                 if (outDate != NULL)
                     *outDate = nil;
-                OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+                OFError(error, OFRelativeDateParserUnknownError, @"date parser error", @"unknown error");
                 return NO;
             }
         }
@@ -780,7 +780,7 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
         if (outDate != NULL)
             *outDate = nil;
         
-        OFError(error, OFRelativeDateParserUnknownError, "date parser error", "unknown error");
+        OFError(error, OFRelativeDateParserUnknownError, @"date parser error", @"unknown error");
         return NO;
     }
 

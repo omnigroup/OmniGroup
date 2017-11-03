@@ -31,6 +31,15 @@
 /* abbreviated string for hertz format */
 "%u Hz" = "%u Hz";
 
+/* summary text - document is encrypted using a password */
+"<Encryption: A password is set>" = "パスワード";
+
+/* summary text - document is not encrypted */
+"<Encryption: None>" = "なし";
+
+/* summary text - document is encrypted using one or more public keys */
+"<Encryption: using %u key(s)>" = "%u 個のキー";
+
 /* approximate time interval: more than one hour */
 "about %.1f hours" = "およそ %.1f 時間";
 

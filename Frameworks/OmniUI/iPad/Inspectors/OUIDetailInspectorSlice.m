@@ -29,46 +29,10 @@ RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSliceTableViewCell
 
-// default text label and detail text label font are UICTFontTextStyleBody
-static id _commonInit(OUIDetailInspectorSliceTableViewCell *self)
-{
-//    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-//    self.textLabel.translatesAutoresizingMaskIntoConstraints = NO;
-//    self.detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    return self;
-}
-
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(nullable NSString *)reuseIdentifier
-{
-    if (!(self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]))
-        return nil;
-    
-    return _commonInit(self);
-}
-
-- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder
-{
-    if (!(self = [super initWithCoder:aDecoder]))
-        return nil;
-    
-    return _commonInit(self);
-}
-
 - (void)setValueImage:(UIImage *)valueImage;
 {
     _valueImage = valueImage;
     [self setNeedsLayout];
-}
-
-- (void)didMoveToSuperview;
-{
-    [super didMoveToSuperview];
-    
-    if (self.superview) {
-//        [self.textLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor].active = YES;
-//        [self.detailTextLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor].active = YES;
-    }
 }
 
 - (void)updateConstraints
@@ -208,6 +172,10 @@ static id _commonInit(OUIDetailInspectorSliceTableViewCell *self)
 - (void)loadView;
 {
     [super loadView];
+    
+    // Work around radar 35175843
+    self.view.frame = [UIScreen mainScreen].bounds;
+    
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
     self.tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
 }

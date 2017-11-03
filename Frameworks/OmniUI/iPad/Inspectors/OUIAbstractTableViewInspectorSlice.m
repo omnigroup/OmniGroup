@@ -301,6 +301,9 @@ static NSString *_doneActionButtonTitle;
 
 - (void)_updateAppearance;
 {
+    if (!self.isViewLoaded)
+        return;
+    
     OUIInspectorAppearance *appearance = [OUIInspectorAppearance appearance];
     
     switch (self.tableViewStyle) {

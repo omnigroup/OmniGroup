@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "보고서 오류";
 
-/* Restore From Sample Documents Title */
-"Restore From Sample Documents" = "샘플 도큐멘트에서 복원";
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "샘플 도큐멘트 복원";
 
 /* Share menu title */
 "Restore to..." = "복원 대상...";

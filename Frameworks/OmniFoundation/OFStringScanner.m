@@ -14,7 +14,7 @@ RCS_ID("$Id$")
     NSString *_string;
 }
 
-- initWithString:(NSString *)aString;
+- (id)initWithString:(NSString *)aString;
 {
     if (!(self = [super init]))
         return nil;

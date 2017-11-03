@@ -10,6 +10,8 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 NSString *const OUINumericFieldTableCellValueKey = @"value";
 
 @interface OUINumericFieldTableCell () <UITextFieldDelegate>
@@ -47,7 +49,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
     return self;
 }
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(nullable NSString *)reuseIdentifier;
 {
     if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) == nil) {
         return nil;
@@ -153,7 +155,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
     }
 }
 
-- (void)setLabelText:(NSString *)labelText;
+- (void)setLabelText:(nullable NSString *)labelText;
 {
     if ([labelText isEqualToString:_labelText])
         return;
@@ -163,7 +165,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
     [self _updateDisplay];
 }
 
-- (void)setUnitsSuffixStringSingular:(NSString *)unitsSuffixStringSingular;
+- (void)setUnitsSuffixStringSingular:(nullable NSString *)unitsSuffixStringSingular;
 {
     if ([unitsSuffixStringSingular isEqualToString:_unitsSuffixStringSingular])
         return;
@@ -173,7 +175,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
     [self _updateDisplay];
 }
 
-- (void)setUnitsSuffixStringPlural:(NSString *)unitsSuffixStringPlural;
+- (void)setUnitsSuffixStringPlural:(nullable NSString *)unitsSuffixStringPlural;
 {
     if ([unitsSuffixStringPlural isEqualToString:_unitsSuffixStringPlural])
         return;
@@ -294,3 +296,6 @@ static id _commonInit(OUINumericFieldTableCell *self)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

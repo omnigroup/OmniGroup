@@ -9,23 +9,25 @@
 
 #import <UIKit/UITableViewCell.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString *const OUINumericFieldTableCellValueKey;
 
 
 @interface OUINumericFieldTableCell : UITableViewCell
 
-+ (instancetype)numericFieldTableCell;
++ (instancetype)numericFieldTableCell NS_SWIFT_NAME(numericFieldTableCell());
 
 /// Opt-in support for dynamic type. (Defaults to NO until all/most of the places we use this want to opt in.)
 @property (nonatomic) BOOL supportsDynamicType;
 
-@property (nonatomic, copy) NSString *labelText;
+@property (nullable, nonatomic, copy) NSString *labelText;
 @property (nonatomic) NSInteger value; // KVO enabled
 @property (nonatomic) NSInteger minimumValue;
 @property (nonatomic) NSInteger maximumValue;
 @property (nonatomic) NSUInteger stepValue; // Increment/decrement by this amount. Default is 1; 0 is not allowed.
-@property (nonatomic, copy) NSString *unitsSuffixStringSingular; // like @"day"
-@property (nonatomic, copy) NSString *unitsSuffixStringPlural; // like @"days"
+@property (nullable, nonatomic, copy) NSString *unitsSuffixStringSingular; // like @"day"
+@property (nullable, nonatomic, copy) NSString *unitsSuffixStringPlural; // like @"days"
 
 // Exposed for adjusting font, color, etc. Should generally manipulate values using labelText and value properties
 @property (retain, nonatomic) IBOutlet UILabel *label;
@@ -33,3 +35,5 @@ extern NSString *const OUINumericFieldTableCellValueKey;
 @property (retain, nonatomic, readonly) IBOutlet UILabel *editingUnitsLabel;
 
 @end
+
+NS_ASSUME_NONNULL_END

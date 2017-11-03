@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Сообщить об ошибке";
 
-/* Restore From Sample Documents Title */
-"Restore From Sample Documents" = "Восстановить образцы";
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "Восстановить образцы документов";
 
 /* Share menu title */
 "Restore to..." = "Восстановить в…";

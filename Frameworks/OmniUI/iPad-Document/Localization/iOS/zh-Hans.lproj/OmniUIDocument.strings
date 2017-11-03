@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "报告错误";
 
-/* Restore From Sample Documents Title */
-"Restore From Sample Documents" = "从样本文稿恢复";
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "恢复样本文稿";
 
 /* Share menu title */
 "Restore to..." = "恢复至…";

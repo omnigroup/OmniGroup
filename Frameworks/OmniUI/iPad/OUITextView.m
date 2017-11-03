@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUITextView.h>
 
+@import OmniFoundation;
+
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
@@ -20,8 +22,6 @@
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/OUITextSelectionSpan.h>
 #import <OmniUI/OUIFontUtilities.h>
-#import <OmniFoundation/NSUndoManager-OFExtensions.h>
-#import <OmniFoundation/OFGeometry.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
@@ -1432,7 +1432,13 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 // Register our attributed text so that we can drop it both within our app and in other apps
 - (nullable id<UITextDragDelegate>)textDragDelegate
 {
-    return self;
+    if ([OFVersionNumber isOperatingSystem111OrLater])
+        return nil; // This issue was fixed in iOS 11.1: it provides com.apple.uikit.attributedstring, com.apple.rtfd, com.apple.flat-rtfd, and public.utf8-plain-text
+
+    if (self.shouldDragAttributedText)
+        return self;
+    else
+        return nil;
 }
 
 - (NSArray<UIDragItem *> *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView itemsForDrag:(id<UITextDragRequest>)dragRequest;
@@ -1451,6 +1457,9 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 - (nullable UITargetedDragPreview *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView dragPreviewForLiftingItem:(UIDragItem *)item session:(id<UIDragSession>)session
 {
+    if (self.selectedTextRange.empty)
+        return nil;
+
     NSArray *rects = [self selectionRectsForRange:self.selectedTextRange];
     NSMutableArray *values = [NSMutableArray array];
     for (UITextSelectionRect *rect in rects) {

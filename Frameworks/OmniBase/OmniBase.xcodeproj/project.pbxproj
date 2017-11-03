@@ -1096,7 +1096,7 @@
 						TestTargetID = 4A33D40608A0191B003A3FA5;
 					};
 					4A33D40608A0191B003A3FA5 = {
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0920;
 					};
 					5FE81E161B62AE980056756C = {
 						CreatedOnToolsVersion = 7.0;
@@ -1467,6 +1467,7 @@
 				MODULEMAP_FILE = OmniBase.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1480,6 +1481,7 @@
 				MODULEMAP_FILE = OmniBase.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -1550,6 +1552,7 @@
 					__text,
 					OmniBase.order,
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1569,6 +1572,7 @@
 					__text,
 					OmniBase.order,
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -1623,6 +1627,7 @@
 					__text,
 					OmniBase.order,
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1642,6 +1647,7 @@
 					__text,
 					OmniBase.order,
 				);
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -1670,6 +1676,7 @@
 				MODULEMAP_FILE = OmniBase.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
 			name = Debug;
@@ -1685,6 +1692,7 @@
 				MODULEMAP_FILE = OmniBase.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
 				PRODUCT_NAME = OmniBase;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
 			name = Release;

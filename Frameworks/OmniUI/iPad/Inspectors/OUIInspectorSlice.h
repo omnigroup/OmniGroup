@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 + (instancetype)slice;
 
 + (UIEdgeInsets)sliceAlignmentInsets; // Default alignment insets for a slice
++ (NSDirectionalEdgeInsets)sliceDirectionalLayoutMargins;
 + (UIColor *)sliceSeparatorColor; // Default color for slice separators
 + (CGFloat)paddingBetweenSliceGroups; // The space to leave between groups of inspector slices.
 

@@ -354,8 +354,8 @@
 /* When displaying a sync error, this is the option to report the error. */
 "Report Error" = "Relatar Erro";
 
-/* Restore From Sample Documents Title */
-"Restore From Sample Documents" = "Restaurar dos Docs. Amostra";
+/* Restore Sample Documents Title */
+"Restore Sample Documents" = "Restaurar Documentos de Amostra";
 
 /* Share menu title */
 "Restore to..." = "Restaurar para…";
