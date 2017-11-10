@@ -1,7 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="6154.21" systemVersion="13D65" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="13770" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="ipad9_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6153.13"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13770"/>
+        <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIFullScreenNoteTextViewController">
@@ -19,28 +27,30 @@
                 <navigationBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="VPs-Gs-aVF">
                     <rect key="frame" x="0.0" y="0.0" width="400" height="44"/>
                     <items>
-                        <navigationItem title="NOTE &lt;DO NOTE LOCALIZE>" id="Yb9-Xa-B6j"/>
+                        <navigationItem title="NOTE &lt;DO NOTE LOCALIZE&gt;" id="Yb9-Xa-B6j"/>
                     </items>
                 </navigationBar>
-                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" showsHorizontalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" text="Lorem ipsum dolor sit er elit lamet." translatesAutoresizingMaskIntoConstraints="NO" id="ZaA-tU-rcP" customClass="OUINoteTextView">
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" delaysContentTouches="NO" canCancelContentTouches="NO" bouncesZoom="NO" text="Lorem ipsum dolor sit er elit lamet." translatesAutoresizingMaskIntoConstraints="NO" id="ZaA-tU-rcP" customClass="OUINoteTextView">
                     <rect key="frame" x="0.0" y="44" width="400" height="356"/>
-                    <color key="backgroundColor" name="alternateSelectedControlTextColor" catalog="System" colorSpace="catalog"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <inset key="scrollIndicatorInsets" minX="0.0" minY="10" maxX="0.0" maxY="10"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                 </textView>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="0.0" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="VPs-Gs-aVF" secondAttribute="trailing" id="0xz-Kr-Oyr"/>
-                <constraint firstAttribute="bottom" secondItem="ZaA-tU-rcP" secondAttribute="bottom" id="35h-LM-lUo"/>
+                <constraint firstAttribute="bottomMargin" secondItem="ZaA-tU-rcP" secondAttribute="bottom" id="35h-LM-lUo"/>
                 <constraint firstItem="VPs-Gs-aVF" firstAttribute="top" secondItem="MnO-Xg-zU9" secondAttribute="top" id="JaB-6m-HHt"/>
-                <constraint firstItem="ZaA-tU-rcP" firstAttribute="leading" secondItem="VPs-Gs-aVF" secondAttribute="leading" id="Zz6-rb-Rf2"/>
+                <constraint firstItem="ZaA-tU-rcP" firstAttribute="leading" secondItem="VPs-Gs-aVF" secondAttribute="leadingMargin" constant="-8" id="Zz6-rb-Rf2"/>
                 <constraint firstItem="ZaA-tU-rcP" firstAttribute="top" secondItem="VPs-Gs-aVF" secondAttribute="bottom" id="a84-6G-PCy"/>
-                <constraint firstItem="ZaA-tU-rcP" firstAttribute="trailing" secondItem="VPs-Gs-aVF" secondAttribute="trailing" id="jmd-sN-4pg"/>
+                <constraint firstItem="ZaA-tU-rcP" firstAttribute="trailing" secondItem="VPs-Gs-aVF" secondAttribute="trailingMargin" constant="8" id="jmd-sN-4pg"/>
                 <constraint firstItem="VPs-Gs-aVF" firstAttribute="leading" secondItem="MnO-Xg-zU9" secondAttribute="leading" id="oVI-cf-zWn"/>
             </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="l7k-OO-LbZ"/>
         </view>
     </objects>
 </document>

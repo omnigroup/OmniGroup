@@ -75,7 +75,12 @@ extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsaf
 // ARC doesn't allow casting between 'void **' and '__unsafe_unretained id *' for some reason.
 extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer);
 
-    
+// ARC doesn't allow NSAllocateObject
+extern id OBAllocateObject(Class cls, NSUInteger extraBytes) NS_RETURNS_RETAINED;
+
+// ARC doesn't allow object_getIndexedIvars
+extern void *OBGetIndexedIvars(id object);
+
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...)

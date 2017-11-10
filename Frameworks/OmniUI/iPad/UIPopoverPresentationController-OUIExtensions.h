@@ -1,4 +1,4 @@
-// Copyright 2015 The Omni Group. All rights reserved.
+// Copyright 2015-2017 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <UIKit/UIPopoverPresentationController.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
   When presenting a popover form a bar button item, UIPopoverPresentationController implicitly adds all the views associated with UIBarButtonItem instances in the originating bar as passthrough views.
@@ -33,8 +35,10 @@
 
 // Convenience Methods
 
-- (void)addManagedBarButtonItemsFromNavigationController:(UINavigationController *)navigationController;
-- (void)addManagedBarButtonItemsFromNavigationItem:(UINavigationItem *)navigationItem;
-- (void)addManagedBarButtonItemsFromToolbar:(UIToolbar *)toolbar;
+- (void)addManagedBarButtonItemsFromNavigationController:(nullable UINavigationController *)navigationController;
+- (void)addManagedBarButtonItemsFromNavigationItem:(nullable UINavigationItem *)navigationItem;
+- (void)addManagedBarButtonItemsFromToolbar:(nullable UIToolbar *)toolbar;
 
 @end
+
+NS_ASSUME_NONNULL_END

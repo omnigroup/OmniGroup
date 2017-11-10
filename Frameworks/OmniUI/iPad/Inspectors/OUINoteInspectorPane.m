@@ -118,6 +118,8 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 {
     OUIFullScreenNoteTransition *transition = [[OUIFullScreenNoteTransition alloc] init];
     transition.fromTextView = self.textView;
+    self.navigationController.navigationBar.hidden = YES;
+    self.inspector.mainPane.navigationController.navigationBar.hidden = YES;
     
     return transition;
 }
@@ -126,7 +128,9 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 {
     OUIFullScreenNoteTransition *transition = [[OUIFullScreenNoteTransition alloc] init];
     transition.fromTextView = self.textView;
-    
+    self.navigationController.navigationBar.hidden = NO;
+    self.inspector.mainPane.navigationController.navigationBar.hidden = NO;
+
     return transition;
 }
 

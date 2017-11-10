@@ -24,3 +24,13 @@ __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer)
     return (__unsafe_unretained id *)buffer;
 }
 
+id OBAllocateObject(Class cls, NSUInteger extraBytes)
+{
+    return NSAllocateObject(cls, extraBytes, NULL);
+}
+
+void *OBGetIndexedIvars(id object)
+{
+    return object_getIndexedIvars(object);
+}
+

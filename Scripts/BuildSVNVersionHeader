@@ -108,6 +108,7 @@ mkdir -p "$BUILD_DIR/include"
     echo "#define SVNREVISION $SVNREVISION"
     echo "#define SVNURL $SVNURL"
     echo "#define BUILD_DATE @\"$BUILD_DATE\""
+    echo "#define INFO_PLIST_BUILD_DATE $BUILD_DATE"
 ) > "$OUTPUT_HEADER"
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then

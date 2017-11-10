@@ -104,11 +104,11 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self->_stackView.topAnchor constraintEqualToAnchor:self.topAnchor].active = YES;
     [self->_stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor].active = YES;
 
+    [self->_stackView addArrangedSubview:self->_syncButton];
     [self->_stackView addArrangedSubview:self->_closeDocumentButton];
     [self->_stackView addArrangedSubview:self->_documentTitleButton];
     [self->_stackView addArrangedSubview:self->_documentTitleLabel];
-    [self->_stackView addArrangedSubview:self->_syncButton];
-    
+
     self.frame = (CGRect) {
         .origin = CGPointZero,
         .size = (CGSize) {

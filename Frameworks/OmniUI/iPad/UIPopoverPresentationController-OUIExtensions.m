@@ -1,4 +1,4 @@
-// Copyright 2015 The Omni Group. All rights reserved.
+// Copyright 2015-2017 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,14 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 static unsigned int _DisabledManagedBarButtonItemsKey;
 
 @interface UIPopoverPresentationController (OUIPrivateExtensions)
 
 @property (nonatomic) BOOL OUI_isPresented;
-@property (nonatomic, copy) NSSet *disabledManagedBarButtonItems;
+@property (nonatomic, nullable, copy) NSSet *disabledManagedBarButtonItems;
 
 @end
 
@@ -80,26 +82,32 @@ static unsigned int _ManagedBarButtonItemsKey;
 
 #pragma mark Convenience Methods
 
-- (void)addManagedBarButtonItemsFromNavigationController:(UINavigationController *)navigationController;
+- (void)addManagedBarButtonItemsFromNavigationController:(nullable UINavigationController *)navigationController;
 {
-    [self addManagedBarButtonItemsFromNavigationItem:navigationController.navigationBar.topItem];
+    if (navigationController != nil) {
+        [self addManagedBarButtonItemsFromNavigationItem:navigationController.navigationBar.topItem];
+    }
 }
 
-- (void)addManagedBarButtonItemsFromNavigationItem:(UINavigationItem *)navigationItem;
+- (void)addManagedBarButtonItemsFromNavigationItem:(nullable UINavigationItem *)navigationItem;
 {
-    NSMutableSet *managedBarButtonItems = [NSMutableSet set];
+    if (navigationItem != nil) {
+        NSMutableSet *managedBarButtonItems = [NSMutableSet set];
 
-    [managedBarButtonItems addObjectsFromArray:navigationItem.leftBarButtonItems];
-    [managedBarButtonItems addObjectsFromArray:navigationItem.rightBarButtonItems];
+        [managedBarButtonItems addObjectsFromArray:navigationItem.leftBarButtonItems];
+        [managedBarButtonItems addObjectsFromArray:navigationItem.rightBarButtonItems];
 
-    [self addManagedBarButtonItems:managedBarButtonItems];
+        [self addManagedBarButtonItems:managedBarButtonItems];
+    }
 }
 
-- (void)addManagedBarButtonItemsFromToolbar:(UIToolbar *)toolbar;
+- (void)addManagedBarButtonItemsFromToolbar:(nullable UIToolbar *)toolbar;
 {
-    NSSet *managedBarButtonItems = [NSSet setWithArray:toolbar.items];
+    if (toolbar != nil) {
+        NSSet *managedBarButtonItems = [NSSet setWithArray:toolbar.items];
 
-    [self addManagedBarButtonItems:managedBarButtonItems];
+        [self addManagedBarButtonItems:managedBarButtonItems];
+    }
 }
 
 @end
@@ -140,7 +148,7 @@ static void _PerformPosing(void)
     objc_setAssociatedObject(self, &_OUIIsPresentedKey, [NSNumber numberWithBool:isBeingPresented], OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
-- (NSSet *)disabledManagedBarButtonItems;
+- (nullable NSSet *)disabledManagedBarButtonItems;
 {
     NSSet *disabledManagedBarButtonItems = objc_getAssociatedObject(self, &_DisabledManagedBarButtonItemsKey);
     if (disabledManagedBarButtonItems == nil) {
@@ -150,7 +158,7 @@ static void _PerformPosing(void)
     return disabledManagedBarButtonItems;
 }
 
-- (void)setDisabledManagedBarButtonItems:(NSSet *)disabledManagedBarButtonItems;
+- (void)setDisabledManagedBarButtonItems:(nullable NSSet *)disabledManagedBarButtonItems;
 {
     objc_setAssociatedObject(self, &_DisabledManagedBarButtonItemsKey, disabledManagedBarButtonItems, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
@@ -192,3 +200,6 @@ static void _PerformPosing(void)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

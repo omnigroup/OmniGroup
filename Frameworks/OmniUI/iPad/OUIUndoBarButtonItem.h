@@ -34,6 +34,7 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 
 @property(nonatomic,readonly) OUIToolbarButton *button;
 @property(nonatomic) BOOL disabledTemporarily;
+@property(nonatomic) BOOL useImageForNonCompact; // Otherwise it's @"Undo"
 
 + (BOOL)dismissUndoMenu;
 

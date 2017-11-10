@@ -49,7 +49,8 @@ RCS_ID("$Id$")
 
     CGFloat itemWidth = 128.0; // magic number. you should change
     CGFloat itemHeight = 136.0; // magic number you should change
-    CGFloat maxWidth = self.collectionView.frame.size.width;
+    CGRect layoutFrame = self.collectionView.layoutMarginsGuide.layoutFrame;
+    CGFloat maxWidth = layoutFrame.size.width;
     CGFloat currentWidth = self.minimumInterItemSpacing; // lets add leading space to start with
     CGFloat widthToAdd = itemWidth + self.minimumInterItemSpacing;
 
@@ -66,8 +67,8 @@ RCS_ID("$Id$")
     NSUInteger numberOfItems = [self.collectionView numberOfItemsInSection:0];
     NSUInteger currentColumn = 0;
 
-    CGFloat currentYPosition = actualInterItemSpacing; // upper left of first row
-    CGFloat currentXPosition = actualInterItemSpacing; // upper left of the first column
+    CGFloat currentYPosition = CGRectGetMinY(layoutFrame); // upper left of first row
+    CGFloat currentXPosition = CGRectGetMinX(layoutFrame); // upper left of the first column
 
     for (NSUInteger index = 0; index < numberOfItems; index++) {
         UICollectionViewLayoutAttributes *newAttributes = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:[[NSIndexPath indexPathWithIndex:0] indexPathByAddingIndex:index]];
@@ -78,7 +79,7 @@ RCS_ID("$Id$")
             currentXPosition += actualInterItemSpacing + itemWidth;
         } else {
             currentColumn = 0;
-            currentXPosition = actualInterItemSpacing; // left edge of the first column
+            currentXPosition = CGRectGetMinX(layoutFrame); // left edge of the first column
             currentYPosition += actualInterItemSpacing + itemHeight;
         }
 

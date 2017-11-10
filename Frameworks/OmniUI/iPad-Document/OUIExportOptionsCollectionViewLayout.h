@@ -11,7 +11,7 @@
 
 // assumptions:
 // 1. all the icons are the same size.
-// 2. exterior spacing to the left and right of the outside icons should exist. Lets space these icons evenly in the space we have, like so: |--|<one>|--|<two>|--|<three>|--|. Padding should result in extra space on the sides, and icons should not be snugged up to the edges of the collection view.
+// 2. exterior spacing to the left and right of the outside icons should exist. Lets space these icons evenly in the space we have, like so: |<one>|--|<two>|--|<three>. Padding to the top, left, and right comes from the safe area insets.
 // 3. incomplete rows should have icons aligned in columns still, with trailing space at the end.
 
 @interface OUIExportOptionsCollectionViewLayout : UICollectionViewLayout

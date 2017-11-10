@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,14 +53,14 @@ static id _commonInit(OUIGradientView *self)
     return self;
 }
 
-- initWithFrame:(CGRect)frame;
+- (id)initWithFrame:(CGRect)frame;
 {
     if (!(self = [super initWithFrame:frame]))
         return nil;
     return _commonInit(self);
 }
 
-- initWithCoder:(NSCoder *)coder;
+- (id)initWithCoder:(NSCoder *)coder;
 {
     if (!(self = [super initWithCoder:coder]))
         return nil;

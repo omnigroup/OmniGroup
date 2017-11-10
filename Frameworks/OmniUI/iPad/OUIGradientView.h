@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,17 @@
 
 #import <UIKit/UIView.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIGradientView : UIView
 
 + (CGFloat)dropShadowThickness;
-+ (OUIGradientView *)horizontalShadow:(BOOL)bottomToTop NS_RETURNS_RETAINED;
-+ (OUIGradientView *)verticalShadow:(BOOL)leftToRight NS_RETURNS_RETAINED;
++ (instancetype)horizontalShadow:(BOOL)bottomToTop NS_RETURNS_RETAINED;
++ (instancetype)verticalShadow:(BOOL)leftToRight NS_RETURNS_RETAINED;
 
 - (void)fadeHorizontallyFromColor:(UIColor *)leftColor toColor:(UIColor *)rightColor;
 - (void)fadeVerticallyFromColor:(UIColor *)bottomColor toColor:(UIColor *)topColor; // where 'bottom' == min y
 
 @end
+
+NS_ASSUME_NONNULL_END

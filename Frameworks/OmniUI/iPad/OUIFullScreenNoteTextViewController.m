@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 
 RCS_ID("$Id$")
 
@@ -20,6 +21,7 @@ RCS_ID("$Id$")
     if (self) {
         self.modalPresentationStyle = UIModalPresentationFullScreen;
         self.selectedRange = NSMakeRange(NSNotFound, 0);
+        self.viewRespectsSystemMinimumLayoutMargins = NO;
     }
     return self;
 }
@@ -68,6 +70,17 @@ RCS_ID("$Id$")
         if (self.dismissedCompletionHandler)
             self.dismissedCompletionHandler(self);
     }];
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.view.backgroundColor = appearance.InspectorBackgroundColor;
+    self.textView.backgroundColor = appearance.InspectorBackgroundColor;
+    self.textView.textColor = appearance.InspectorTextColor;
 }
 
 @end

@@ -190,12 +190,17 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     if (isCompact) {
         [_undoButton setImage:[UIImage imageNamed:@"OUIToolbarUndo-Compact" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
         [_undoButton setTitle:nil forState:UIControlStateNormal];
-        [_undoButton sizeToFit];
     } else {
-        [_undoButton setImage:nil forState:UIControlStateNormal];
-        [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
-        [_undoButton sizeToFit];
+        if (self.useImageForNonCompact) {
+            [_undoButton setImage:[UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
+            [_undoButton setTitle:nil forState:UIControlStateNormal];
+        } else {
+            [_undoButton setImage:nil forState:UIControlStateNormal];
+            [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
+        }
     }
+    
+    [_undoButton sizeToFit];
 }
 
 #pragma mark - Appearance
