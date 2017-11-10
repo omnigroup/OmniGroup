@@ -10,14 +10,14 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 9 beta 6 for all platforms. You'll probably have the best results if you do too.
+- We currently use Xcode 9.1 and 9.2 beta 2 for all platforms. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
 Supported Targets
 ----------------------
 
-- We require iOS 11 and Mac OS X 10.11.
+- We require iOS 11 and Mac OS X 10.12.
 
 Configuring the Source
 ----------------------
