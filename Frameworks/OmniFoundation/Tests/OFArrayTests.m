@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -269,7 +269,7 @@ RCS_ID("$Id$");
                 break;
             }
         }
-        objs[ix] = n? n : [NSNumber numberWithInt:nums[ix]];
+        objs[ix] = (n != nil) ? n : [NSNumber numberWithInt:nums[ix]];
         [a insertObject:objs[ix] inArraySortedUsingSelector:@selector(compare:)];
         XCTAssertTrue([a isSortedUsingSelector:@selector(compare:)], @"Array: %@", a);
         

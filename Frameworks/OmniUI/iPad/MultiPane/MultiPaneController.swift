@@ -36,6 +36,9 @@
     
     /// called before showing a pane if the pane is .embeded and the displayMode is .multi. Called before willShowPane, as a false return value can preempt showing the pane.
     @objc optional func shouldShowPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController) -> Bool
+
+    /// called after updating button items.
+    @objc optional func didUpdateDisplayButtonItems(_ multiPaneController: MultiPaneController)
 }
 
 @objc (OUIMultiPaneNavigationDelegate) public protocol MultiPaneNavigationDelegate {
@@ -658,6 +661,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             leftPaneDisplayButton.image = image
             leftPaneDisplayButton.title = nil
         }
+        layoutDelegate?.didUpdateDisplayButtonItems?(self)
     }
     
     private func setupDividerIfNeeded(onPane pane: Pane) {

@@ -149,7 +149,7 @@ RCS_ID("$Id$");
     CGRect viewBounds = view.bounds;
     viewBounds.size.width = 320;
     
-    CGFloat xOffset = view.safeAreaInsets.left;
+    CGFloat xOffset = view.safeAreaInsets.left + kInterThemeSpacing;
     // This should be view.safeAreaInsets.top + kInterThemeSpacing, but when I get here bounds.origin.y is negative view.safeAreaInsets.top, and setting y to that value doubles the required top margin
     CGFloat yOffset = kInterThemeSpacing;
     NSMutableArray *themeViews = [NSMutableArray array];

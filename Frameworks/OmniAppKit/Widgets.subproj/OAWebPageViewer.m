@@ -115,6 +115,17 @@ static NSMutableDictionary *sharedViewerCache = nil;
     [self loadRequest:request];
 }
 
+- (void)loadCachedHTML:(NSURL *)cachedFileURL forWebURL:(NSURL *)webURL;
+{
+    NSURL *baseURL = [[webURL URLByDeletingLastPathComponent] URLByDeletingLastPathComponent];
+    NSString *htmlString = [NSString stringWithContentsOfURL:cachedFileURL encoding:kCFStringEncodingUTF8 error:nil];
+    if (htmlString) {
+        [[_webView mainFrame] loadHTMLString:htmlString baseURL:baseURL];
+    } else {
+        [self loadRequest:[NSURLRequest requestWithURL:webURL]];
+    }
+}
+
 #pragma mark -
 #pragma mark Accessors
 
@@ -253,6 +264,13 @@ static NSMutableDictionary *sharedViewerCache = nil;
             [listener use];
             return;
         }
+    }
+    
+    // Cached news urls are in the user's Library folder
+    NSURL *userLibrary = [[NSFileManager defaultManager] URLForDirectory:NSLibraryDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+    if ([[url path] hasPrefix:[userLibrary path]]) {
+        [listener use];
+        return;
     }
     
     // Initial content

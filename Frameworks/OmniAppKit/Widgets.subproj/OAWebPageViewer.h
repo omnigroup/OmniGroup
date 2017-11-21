@@ -30,6 +30,7 @@
 
 - (void)loadPath:(NSString *)path;
 - (void)loadRequest:(NSURLRequest *)request;
+- (void)loadCachedHTML:(NSURL *)cachedFileURL forWebURL:(NSURL *)webURL;  // will use the cached html but still attempt to retrieve relative path linked css and images from the web.
 
 /// on a successful load, success will be true, and error will be nil. If a failure, success will be false and error set. URL is set in all cases and points to the original request's url.
 - (void)loadRequest:(NSURLRequest *)request onCompletion:(void (^)(BOOL success, NSURL *url, NSError *error))completionBlock;

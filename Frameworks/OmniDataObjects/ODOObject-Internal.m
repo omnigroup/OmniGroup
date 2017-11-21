@@ -482,6 +482,10 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
             continue;
         }
         
+        if (flags.transient && flags.calculated && ![[entity instanceClass] shouldIncludeSnapshotForTransientCalculatedProperty:prop]) {
+            continue;
+        }
+        
         id oldValue = (id)CFArrayGetValueAtIndex(snapshot, propertyIndex);
         id newValue = _ODOObjectValueAtIndex(self, propertyIndex);
 

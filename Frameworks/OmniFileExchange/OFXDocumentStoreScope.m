@@ -261,7 +261,7 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
 {
     BOOL value;
     NSNumber *attributeValue = [metadata valueForKey:attributeKey];
-    if (!attributeValue) {
+    if (attributeValue == nil) {
         OBASSERT(metadata == nil); // OK if we don't have a metadata item at all
         value = defaultValue;
     } else {

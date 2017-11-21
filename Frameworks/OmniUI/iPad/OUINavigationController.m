@@ -65,7 +65,9 @@ RCS_ID("$Id$")
 
 - (void)_constrainNewAccessoryView:(UIView *)newAccessory
 {
-    [newAccessory.centerXAnchor constraintEqualToAnchor:self.accessoryAndBackgroundBar.centerXAnchor].active = YES;
+    [newAccessory.trailingAnchor constraintEqualToAnchor:self.accessoryAndBackgroundBar.safeAreaLayoutGuide.trailingAnchor].active = YES;
+    [newAccessory.leadingAnchor constraintEqualToAnchor:self.accessoryAndBackgroundBar.safeAreaLayoutGuide.leadingAnchor].active = YES;
+    
     NSLayoutConstraint *topConstraint = [newAccessory.topAnchor constraintEqualToAnchor:self.accessoryAndBackgroundBar.topAnchor constant:BOTTOM_SPACING_BELOW_ACCESSORY];
     NSLayoutConstraint *bottomConstraint = [newAccessory.bottomAnchor constraintEqualToAnchor:self.accessoryAndBackgroundBar.bottomAnchor constant:-BOTTOM_SPACING_BELOW_ACCESSORY];
     [NSLayoutConstraint deactivateConstraints:self.topAndBottomConstraints];

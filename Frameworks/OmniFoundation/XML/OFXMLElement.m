@@ -501,7 +501,11 @@ static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
         }
     } else if (self->_child.single) {
         id child = self->_child.single;
-        block(child);
+        if ([child isKindOfClass:[OFXMLElement class]]) {
+            ApplyBlock(child, block);
+        } else {
+            block(child);
+        }
     }
 }
 
@@ -531,7 +535,7 @@ static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
     return 0;
 }
 
-- (nullable NSArray *)attributeNames;
+- (nullable NSArray<NSString *> *)attributeNames;
 {
     if (_multipleAttributes) {
         return _attribute.multiple.order;

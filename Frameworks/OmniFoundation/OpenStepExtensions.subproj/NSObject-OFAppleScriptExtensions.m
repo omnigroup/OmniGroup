@@ -193,7 +193,7 @@ RCS_ID("$Id$")
             code = [typeInfo objectForKey:value];
             NSString *nameForCode = [[terminology objectForKey:value] objectForKey:@"Name"];
             NSNumber *numberForCode = [NSNumber numberWithLong:[code fourCharCodeValue]];
-            if (!nameForCode || !numberForCode) {
+            if (nameForCode == nil || numberForCode == nil) {
                 NSLog(@"warning: name is '%@' for code '%@' (%@) in enumeration %@ of %@", nameForCode, code, value, type, path);
                 continue;
             }

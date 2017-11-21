@@ -183,8 +183,8 @@ OBPerformPosing(^{
     NSString *domain = [propertyList objectForKey:@"domain"];
     NSNumber *code = [propertyList objectForKey:@"code"];
     
-    OBASSERT(domain);
-    OBASSERT(code);
+    OBASSERT(domain != nil);
+    OBASSERT(code != nil);
     
     NSDictionary *userInfo = [propertyList objectForKey:@"userInfo"];
     if (userInfo) {

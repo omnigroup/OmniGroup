@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,43 +9,30 @@
 
 #import <UIKit/UIView.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class OUIDocumentNameTextField;
 
 // Flatten the view hierarchy for the name/date and possible iCloud status icon for fewer composited layers while scrolling.
 @interface OUIDocumentPickerItemMetadataView : UIView
-+ (UIColor *)defaultBackgroundColor;
 
-@property(nonatomic,copy) NSString *name;
-@property(nonatomic,strong) UIImage *nameBadgeImage;
-@property(nonatomic) BOOL showsImage;
-@property(nonatomic,copy) NSString *dateString;
-@property(nonatomic,assign) BOOL showsProgress;
-@property(nonatomic,assign) double progress;
-@property(nonatomic,assign) BOOL isSmallSize;
+@property (class, nonatomic, readonly) UIColor *defaultBackgroundColor;
+
+@property (nullable, nonatomic, copy) NSString *name;
+@property (nullable, nonatomic, copy) NSString *dateString;
+@property (nullable, nonatomic, strong) UIImage *nameBadgeImage;
+@property (nonatomic) BOOL showsImage;
+@property (nonatomic) BOOL showsProgress;
+@property (nonatomic) float progress;
+@property (nonatomic) BOOL isSmallSize;
+@property (nonatomic) BOOL doubleSizeFonts;
+@property (nonatomic, readonly) BOOL isEditing;
 
 // OUIDocumentRenameSession becomes the delegate of this while renaming
-@property(nonatomic,retain) IBOutlet OUIDocumentNameTextField *nameTextField;
-@property(nonatomic,retain) IBOutlet UILabel *dateLabel;
-@property(nonatomic,readonly) UIImageView *nameBadgeImageView;
-@property(nonatomic, retain) IBOutlet UIProgressView *transferProgressView;
-@property (nonatomic, retain) IBOutlet UIView *topHairlineView;
-@property(nonatomic, retain) UIView *startSnap; // for animating to/from large size when renaming
-@property(nonatomic, retain) UIView *endSnap; // for animating to/from large size when renaming
+@property (nonatomic, readonly) OUIDocumentNameTextField *nameTextField;
+@property (nullable, nonatomic, readonly) UIProgressView *transferProgressView;
 
-// constraints
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *leadingHorizPadding;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *trailingHorizPadding;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *nameToDatePadding;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *nameHeightConstraint;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *dateHeightConstraint;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *imageAspectRatioConstraint;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *topPadding;
-@property (nonatomic,retain) IBOutlet NSLayoutConstraint *bottomPadding;
-
-@property (nonatomic) BOOL doubleSizeFonts;
-
-- (BOOL)isEditing;
-- (UIView*)viewForScalingStartFrame:(CGRect)startFrame endFrame:(CGRect)endFrame;
+- (UIView *)viewForScalingStartFrame:(CGRect)startFrame endFrame:(CGRect)endFrame;
 - (void)animationsToPerformAlongsideScalingToHeight:(CGFloat)height;
 
 @end
@@ -60,4 +47,6 @@
 @property (nonatomic) BOOL useLargerClearButton;
 
 @end
+
+NS_ASSUME_NONNULL_END
 

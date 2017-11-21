@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,17 @@
 
 #import <OmniFoundation/OFBijection.h>
 
-@interface OFMutableBijection : OFBijection
+NS_ASSUME_NONNULL_BEGIN
 
-- (void)setObject:(id)anObject forKey:(id)aKey;
-- (void)setKey:(id)aKey forObject:(id)anObject;
+@interface OFMutableBijection<__covariant KeyType, __covariant ObjectType> : OFBijection
 
-- (void)setObject:(id)anObject forKeyedSubscript:(id)aKey;
+- (void)setObject:(nullable ObjectType)anObject forKey:(KeyType)aKey;
+- (void)setKey:(nullable KeyType)aKey forObject:(ObjectType)anObject;
+
+- (void)setObject:(nullable ObjectType)anObject forKeyedSubscript:(KeyType)aKey;
 
 - (void)invert;
 
 @end
+
+NS_ASSUME_NONNULL_END

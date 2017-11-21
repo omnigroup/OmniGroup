@@ -174,10 +174,13 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
         _contentView.translatesAutoresizingMaskIntoConstraints = NO;
         [self.view addSubview:_contentView];
         
-        [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor];
-        [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor];
-        [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor];
-        [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor];
+        // These constraints were created but never activated. Many inspector slices (if not all) are adding their parts to self.view instead of self.contentView, and they wind up occluded by contentView and unable to receive touches. Let's see if we can get by without this view, but we may need to do some cleanup later (remove this view, or fix all the slices to use it properly).
+//        NSArray *constraints = @[
+//             [_contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+//             [_contentView.rightAnchor constraintEqualToAnchor:self.view.rightAnchor],
+//             [_contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+//             [_contentView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor]];
+//        [NSLayoutConstraint activateConstraints:constraints];
     }
     
     return _contentView;
@@ -204,7 +207,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
     _groupPosition = newValue;
     
     if (self.isViewLoaded) {
-        UIView *view = self.contentView;
+        UIView *view = self.view;
         if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
             [(id)view setInspectorSliceGroupPosition:_groupPosition];
         }

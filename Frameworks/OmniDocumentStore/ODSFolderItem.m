@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -216,9 +216,9 @@ NSString * const ODSFolderItemChildItemsBinding = @"childItems";
                 self.userModificationDate = date;
         } else if ([keyPath isEqualToString:ODSItemIsDownloadingBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             if ([oldValue boolValue] == NO && [newValue boolValue])
                 self.isDownloading = YES;
@@ -226,9 +226,9 @@ NSString * const ODSFolderItemChildItemsBinding = @"childItems";
                 self.isDownloading = [_childItems any:^BOOL(ODSItem *child) { return child.isDownloading; }] != nil;
         } else if ([keyPath isEqualToString:ODSItemIsDownloadedBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             if ([oldValue boolValue] == NO && [newValue boolValue])
                 self.isDownloaded = YES;
@@ -236,9 +236,9 @@ NSString * const ODSFolderItemChildItemsBinding = @"childItems";
                 self.isDownloaded = [_childItems all:^BOOL(ODSItem *child) { return child.isDownloaded; }];
         } else if ([keyPath isEqualToString:ODSItemIsUploadingBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             if ([oldValue boolValue] == NO && [newValue boolValue])
                 self.isUploading = YES;
@@ -246,9 +246,9 @@ NSString * const ODSFolderItemChildItemsBinding = @"childItems";
                 self.isUploading = [_childItems any:^BOOL(ODSItem *child) { return child.isUploading; }] != nil;
         } else if ([keyPath isEqualToString:ODSItemIsUploadedBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             if ([oldValue boolValue] == NO && [newValue boolValue])
                 self.isUploaded = YES;
@@ -256,16 +256,16 @@ NSString * const ODSFolderItemChildItemsBinding = @"childItems";
                 self.isUploaded = [_childItems all:^BOOL(ODSItem *child) { return child.isUploaded; }];
         } else if ([keyPath isEqualToString:ODSItemUploadedSizeBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             self.uploadedSize = self.uploadedSize + [newValue unsignedLongLongValue] - [oldValue unsignedLongLongValue];
         } else if ([keyPath isEqualToString:ODSItemDownloadedSizeBinding]) {
             NSNumber *oldValue = change[NSKeyValueChangeOldKey];
-            OBASSERT(oldValue);
+            OBASSERT_NOTNULL(oldValue);
             NSNumber *newValue = change[NSKeyValueChangeNewKey];
-            OBASSERT(newValue);
+            OBASSERT_NOTNULL(newValue);
             
             self.downloadedSize = self.downloadedSize + [newValue unsignedLongLongValue] - [oldValue unsignedLongLongValue];
         } else {

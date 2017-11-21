@@ -127,6 +127,7 @@ void OUITableViewAdjustHeightToFitContents(UITableView *tableView)
     OBPRECONDITION(tableView);
     OBPRECONDITION(tableView.autoresizingMask == 0);
     
+    [tableView layoutIfNeeded];
     CGSize contentSize = tableView.contentSize;
     
     UIEdgeInsets contentInsets = tableView.contentInset;

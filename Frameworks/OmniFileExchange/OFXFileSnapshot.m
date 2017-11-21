@@ -390,7 +390,7 @@ static NSString *ClientComputerName(void)
 
     NSDate *creationDate = nil;
     NSNumber *creationTimeNumber = versionContents[kOFXContents_FileCreationTime];
-    if (creationTimeNumber) {
+    if (creationTimeNumber != nil) {
         NSTimeInterval creationTimestamp = creationTimeNumber.doubleValue;
         creationDate = [NSDate dateWithTimeIntervalSinceReferenceDate:creationTimestamp];
     }
@@ -608,7 +608,7 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
     OBPRECONDITION([self _checkInvariants]);
     
     NSNumber *versionNumber = _versionDictionary[kOFXVersion_NumberKey];
-    OBASSERT(versionNumber);
+    OBASSERT_NOTNULL(versionNumber);
     return [versionNumber unsignedLongValue];
 }
 

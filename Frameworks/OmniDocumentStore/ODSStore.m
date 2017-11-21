@@ -48,6 +48,8 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 OBDEPRECATED_METHOD(-createNewDocument:);
 OBDEPRECATED_METHOD(-createdNewDocument:templateURL:completionHandler:);
 OBDEPRECATED_METHOD(-urlForNewDocumentOfType:); // could write a wrapper that asks the scope, but it has this now.
@@ -219,7 +221,7 @@ static unsigned ScopeContext;
     return [delegate documentStore:self canViewFileTypeWithIdentifier:fileType];
 }
 
-- (ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+- (nullable ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet <__kindof ODSFileItem *> *)fileItems;
 {
     id <ODSStoreDelegate> delegate = _weak_delegate;
 
@@ -238,7 +240,7 @@ static unsigned ScopeContext;
     [self _flushAfterInitialDocumentScanActions];
 }
 
-- (void)moveItems:(NSSet *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
+- (void)moveItems:(NSSet <__kindof ODSFileItem *> *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^ _Nullable)(NSSet <__kindof ODSFileItem *> * _Nullable movedFileItems, NSArray <NSError *> * _Nullable errorsOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
     OBPRECONDITION(fromScope);
@@ -263,14 +265,14 @@ static unsigned ScopeContext;
             return;
         }
 
-        [toScope takeItems:items toFolder:parentFolder ignoringFileItems:nil completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
+        [toScope takeItems:items toFolder:parentFolder ignoringFileItems:nil completionHandler:^(NSSet <__kindof ODSFileItem *> * _Nullable movedFileItems, NSArray <NSError *> * _Nullable errorsOrNil) {
             OBASSERT([NSThread isMainThread]);
             [fromScope finishRelinquishingMovedItems:movedFileItems];
             if (completionHandler)
                 completionHandler(movedFileItems, errorsOrNil);
         }];
     } else {
-        [toScope moveItems:items toFolder:parentFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil){
+        [toScope moveItems:items toFolder:parentFolder completionHandler:^(NSSet <__kindof ODSFileItem *> * _Nullable movedFileItems, NSArray <NSError *> * _Nullable errorsOrNil){
             OBASSERT([NSThread isMainThread]);
             if (completionHandler)
                 completionHandler(movedFileItems, errorsOrNil);
@@ -278,7 +280,7 @@ static unsigned ScopeContext;
     }
 }
 
-- (void)makeFolderFromItems:(NSSet *)items inParentFolder:(ODSFolderItem *)parentFolder ofScope:(ODSScope *)scope completionHandler:(void (^)(ODSFolderItem *createdFolder, NSArray *errorsOrNil))completionHandler;
+- (void)makeFolderFromItems:(NSSet <__kindof ODSFileItem *> *)items inParentFolder:(ODSFolderItem *)parentFolder ofScope:(ODSScope *)scope completionHandler:(void (^)(ODSFolderItem * _Nullable createdFolder, NSArray <NSError *> * _Nullable errorsOrNil))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
     OBPRECONDITION(scope);
@@ -287,14 +289,14 @@ static unsigned ScopeContext;
 
     completionHandler = [completionHandler copy];
 
-    [scope makeFolderFromItems:items inParentFolder:parentFolder completionHandler:^(ODSFolderItem *createdFolder, NSArray *errorsOrNil){
+    [scope makeFolderFromItems:items inParentFolder:parentFolder completionHandler:^(ODSFolderItem * _Nullable createdFolder, NSArray <NSError *> * _Nullable errorsOrNil){
         OBASSERT([NSThread isMainThread]);
         if (completionHandler)
             completionHandler(createdFolder, errorsOrNil);
     }];
 }
 
-- (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
+- (void)scanItemsWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
@@ -334,7 +336,7 @@ static unsigned ScopeContext;
     DEBUG_STORE(@"_deferScanRequestCount = %ld", _deferScanRequestCount);
 }
 
-- (void)stopDeferringScanRequests:(void (^)(void))completionHandler;
+- (void)stopDeferringScanRequests:(void (^ _Nullable)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_deferScanRequestCount > 0);
@@ -353,7 +355,7 @@ static unsigned ScopeContext;
     }
 }
 
-- (ODSFileItem *)fileItemWithURL:(NSURL *)url;
+- (nullable ODSFileItem *)fileItemWithURL:(NSURL *)url;
 {
     // We have a union of the scanned items, but it is better to let the scopes handle this than to have the logic in two spots.
     for (ODSScope *scope in _scopes) {
@@ -364,7 +366,7 @@ static unsigned ScopeContext;
     return nil;
 }
 
-- (NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
+- (nullable NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
 {
     id <ODSStoreDelegate> delegate = _weak_delegate;
 
@@ -432,41 +434,48 @@ static unsigned ScopeContext;
     return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:temporaryFilename] isDirectory:isDirectory];
 }
 
-- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type documentName:(nullable)documentName completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 {
     NSString *documentType = [self documentTypeForNewFilesOfType:type];
 
     id <ODSStoreDelegate> delegate = _weak_delegate;
-    NSString *baseName = nil;
-    // LMTODO: incorporate "other"
-    switch (type) {
-        case ODSDocumentTypeTemplate:
-            baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
-            break;
-        case ODSDocumentTypeNormal:
-            baseName = [delegate documentStoreBaseNameForNewFiles:self];
-            break;
-        case ODSDocumentTypeOther:
-            if ([delegate respondsToSelector:@selector(documentStoreBaseNameForNewOtherFiles:)]) {
-                baseName = [delegate documentStoreBaseNameForNewOtherFiles:self];
-            } else {
+    NSString *baseName = documentName;
+    if (baseName == nil) {
+        // LMTODO: incorporate "other"
+        switch (type) {
+            case ODSDocumentTypeTemplate:
+                baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
+                break;
+            case ODSDocumentTypeNormal:
                 baseName = [delegate documentStoreBaseNameForNewFiles:self];
-            }
-            break;
-        default:
-            break;
-    }
-    if (!baseName) {
-        OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
-        baseName = @"My Document";
+                break;
+            case ODSDocumentTypeOther:
+                if ([delegate respondsToSelector:@selector(documentStoreBaseNameForNewOtherFiles:)]) {
+                    baseName = [delegate documentStoreBaseNameForNewOtherFiles:self];
+                } else {
+                    baseName = [delegate documentStoreBaseNameForNewFiles:self];
+                }
+                break;
+            default:
+                break;
+        }
+        if (!baseName) {
+            OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
+            baseName = @"My Document";
+        }
     }
     
     [scope addDocumentInFolder:folder baseName:baseName fileType:documentType fromURL:fileURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:handler];
 }
 
+- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+{
+    [self moveNewTemporaryDocumentAtURL:fileURL toScope:scope folder:folder documentType:type documentName:nil completionHandler:handler];
+}
+
 #pragma mark - NSObject (NSKeyValueObserving)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+- (void)observeValueForKeyPath:(nullable NSString *)keyPath ofObject:(nullable id)object change:(nullable NSDictionary *)change context:(void * _Nullable)context;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
@@ -602,5 +611,7 @@ static unsigned ScopeContext;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 

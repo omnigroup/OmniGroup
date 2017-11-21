@@ -76,6 +76,33 @@ public struct UTI {
         self.rawFileType = fileType
     }
 
+    public static func fileTypePreperringNative(_ fileExtension: String) -> String? {
+        if let uti = try? fileType(forPathExtension: fileExtension, isDirectory: nil, preferringNative: true) {
+            return uti.rawFileType
+        }
+
+        return nil
+    }
+
+    public static func conforms(_ fileType: String?, to uti: String) -> Bool {
+        guard let fileType = fileType else { return false }
+
+        return UTTypeConformsTo(fileType as NSString, uti as NSString)
+    }
+
+    public static func conforms(_ fileType: String?, toAnyOf types: [String]) -> Bool {
+        guard let fileType = fileType else { return false }
+
+        if types.contains(fileType) {
+            return true // Avoid eventually calling UTTypeConformsTo when possible.
+        }
+        for uti in types {
+            if conforms(fileType, to: uti) {
+                return true
+            }
+        }
+        return false
+    }
     // NOTE: We could define the typical '~=' pattern comparison operator, but have chosen not to, since the two types passed in are the same. This would make it too easy to swap the order of the arguments to the operator and not be checking the desire condition.
 
 

@@ -449,7 +449,9 @@ BOOL OFTypeConformsToOneOfTypesInArray(NSString *type, NSArray<NSString *> *type
     if (type == nil) {
         return NO;
     }
-    
+    if ([types containsObject:type]) {
+        return YES; // Avoid eventually calling UTTypeConformsTo when possible.
+    }
     for (NSString *checkType in types) {
         if (_TypeConformsToType(type, checkType)) {
             return YES;

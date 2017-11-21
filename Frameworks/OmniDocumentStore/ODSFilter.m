@@ -18,6 +18,7 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
 
 @interface ODSFilter ()
 @property(nonatomic,copy) NSSet *unfilteredSourceItems;
+@property (nonatomic, readwrite) NSSet *filteredItems;
 @end
 
 @implementation ODSFilter
@@ -25,8 +26,6 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
     // The incoming items from the document store
     OFSetBinding *_sourceItemsBinding;
     NSSet *_sourceItems;
-    
-    NSPredicate *_filterPredicate;
 }
 
 - (instancetype)_initWithBindingSourcePoint:(OFBindingPoint *)sourceBindingPoint;
@@ -89,27 +88,17 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
     
     if (filterPredicate == _filterPredicate)
         return;
-    
-    [self willChangeValueForKey:OFValidateKeyPath(self, filteredItems)];
-    
     _filterPredicate = filterPredicate;
-    
-    [self didChangeValueForKey:OFValidateKeyPath(self, filteredItems)];
+    [self _updateFilteredItems];
 }
 
-+ (NSSet *)keyPathsForValuesAffectingFilteredItems;
-{
-    return [NSSet setWithObject:UnfilteredSourceItems];
-}
-
-- (NSSet *)filteredItems;
+- (void)_updateFilteredItems
 {
     OBPRECONDITION([NSThread isMainThread]); // We want to fire KVO only on the main thread
-
     if (_filterPredicate)
-        return [_sourceItems filteredSetUsingPredicate:_filterPredicate];
+        self.filteredItems = [_sourceItems filteredSetUsingPredicate:_filterPredicate];
     else
-        return _sourceItems;
+        self.filteredItems = _sourceItems;
 }
 
 #pragma mark - Private
@@ -130,6 +119,7 @@ static NSString * const UnfilteredSourceItems = @"unfilteredSourceItems";
     [self willChangeValueForKey:UnfilteredSourceItems];
     _sourceItems = [newItems copy];
     [self didChangeValueForKey:UnfilteredSourceItems];
+    [self _updateFilteredItems];
 }
 
 @end

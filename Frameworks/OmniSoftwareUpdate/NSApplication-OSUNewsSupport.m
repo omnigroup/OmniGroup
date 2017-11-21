@@ -37,12 +37,13 @@ OBDidLoad(^{
 
 - (IBAction)showNews:(id)sender;
 {
-    NSURL *newsURL = [OSUChecker sharedUpdateChecker].currentNewsURL;
-    OBASSERT(newsURL != nil);
-    if (! newsURL) {
+    NSURL *cacheURL = [OSUChecker sharedUpdateChecker].cachedNewsURL;
+    OBASSERT(cacheURL != nil);
+    if (!cacheURL) {
         // don't open to an empty URL.
         return;
     }
+    NSURL *webURL = [OSUChecker sharedUpdateChecker].currentNewsURL;
     
     OAWebPageViewer *webViewer = [OAWebPageViewer sharedViewerNamed:@"News"];
     
@@ -53,34 +54,31 @@ OBDidLoad(^{
     [[webViewer window] setMinSize:NSMakeSize(800, 400)];
     [[webViewer window] setMaxSize:NSMakeSize(800, FLT_MAX)];
     
-    webViewer.usesWebPageTitleForWindowTitle = YES;
+    webViewer.usesWebPageTitleForWindowTitle = NO;
     webViewer.mediaStyle = @"release-notes";
-    [webViewer loadRequest:[NSURLRequest requestWithURL:newsURL] onCompletion:^(BOOL success, NSURL *url, NSError *error) {
-       if (success) {
-           [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
-       } else {
-           
-#if 0 && defined(DEUB_kilodelta)
-           NSLog(@"failed to NEWS URL: %@", url);
-#endif
-           // include the newsURL as the baseURL so that the URL is considered "approved" by OAWebPageViewer. Otherwise, OAWebPageViewer won't be displayed.
-           [webViewer.webView.mainFrame loadAlternateHTMLString:[self _displayableNewsHTMLForError:error] baseURL:nil forUnreachableURL:newsURL];
-           [webViewer showWindow:nil];
+    [webViewer loadRequest:[NSURLRequest requestWithURL:webURL] onCompletion:^(BOOL success, NSURL *url, NSError *error) {
+        if (success
+            || ![error.userInfo[NSURLErrorFailingURLStringErrorKey] isEqualToString:[webURL path]]) {  // probably just failed to load an asset
+            [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
+            [[NSFileManager defaultManager] removeItemAtURL:cacheURL error:nil]; // now that we've actually shown the real thing, don't want to keep the ugly cached thing around
+        } else {
+            // do not attempt to show error messages for urls other than the main url, because that will prevent anything being seen when only some small detail may be missing
+            [webViewer loadCachedHTML:cacheURL forWebURL:webURL];
+            [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
         }
-   }];
+    }];
 }
 
 - (BOOL)replacement_validateMenuItem:(NSMenuItem *)menuItem
 {
-    // Validate the News menu item to only show when there is a currentNewsURL.
+    // Validate the News menu item to only show when there is a currentNewsURL and a cached file to show.
     if (menuItem.action == @selector(showNews:)) {
-        NSString *newsURLString = [[[OSUChecker sharedUpdateChecker] currentNewsURL] absoluteString];
-        if ([NSString isEmptyString:newsURLString]) {
-            menuItem.hidden = YES;
-            return NO;
-        } else {
+        if ([OSUChecker sharedUpdateChecker].currentNewsIsCached) {
             menuItem.hidden = NO;
             return YES;
+        } else {
+            menuItem.hidden = YES;
+            return NO;
         }
     }
     

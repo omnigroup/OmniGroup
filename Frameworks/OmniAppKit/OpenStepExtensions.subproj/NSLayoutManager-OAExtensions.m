@@ -166,8 +166,9 @@ RCS_ID("$Id$");
     }
 
     NSNumber *heightNumber = [HeightForAttributesCache objectForKey:attributes];
-    if (heightNumber)
+    if (heightNumber != nil) {
         return [heightNumber cgFloatValue];
+    }
     
     // NOTE: This doesn't account for custom layout done by subclasses
     OBASSERT(self == [NSLayoutManager class]);

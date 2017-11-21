@@ -1,10 +1,11 @@
 #!/bin/zsh -f
+#
+# $Id$
 
-# Die on any error
-set -e
+setopt ERR_EXIT
 
 echo "args: $*"
-id
+/usr/bin/id || true
 
 SOURCE=$1
 DEST=$2

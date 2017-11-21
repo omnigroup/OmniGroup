@@ -30,7 +30,7 @@ class OFDocumentEncryptionSettings : NSObject {
             do {
                 unwrapped = try helper.unwrap(input: wrapper);
             } catch let e as NSError {
-                if e.domain == OFErrorDomain && (e.code == OFKeyNotAvailable || e.code == OFKeyNotApplicable) {
+                if e.domain == OFErrorDomain && (e.code == OFError.OFKeyNotAvailable.rawValue || e.code == OFError.OFKeyNotApplicable.rawValue) {
                     info.pointee = OFDocumentEncryptionSettings(from: helper);
                 }
                 throw e;
@@ -784,10 +784,9 @@ class OFCMSFileWrapper {
     }
     
     /// Convenience for generating an error when we don't recognize or expect a given content-type.
-    private func unexpectedContentTypeError(_ ct: OFCMSContentType) -> NSError {
-        return NSError(domain: OFErrorDomain,
-                       code: OFUnsupportedCMSFeature,
-                       userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object")]);
+    private func unexpectedContentTypeError(_ ct: OFCMSContentType) -> Error {
+        return OFError(.OFUnsupportedCMSFeature,
+                       userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object")])
     }
     
     /// PackageIndex represents the table-of-contents object of an encrypted file wrapper.
@@ -880,7 +879,7 @@ class OFCMSFileWrapper {
         static func unserialize(_ input: Data) throws -> PackageIndex {
             let reader = try OFXMLReader(data: input);
             guard let rtelt = reader.elementQName() else {
-                throw NSError(domain: OFErrorDomain, code: OFXMLDocumentNoRootElementError, userInfo: nil);
+                throw OFError(.OFXMLDocumentNoRootElementError)
             }
             guard rtelt.name == "index", rtelt.namespace == encryptedContentIndexNamespaceURI else {
                 throw miscFormatError(reason: "Incorrect root element: \(rtelt.shortDescription()!)");
@@ -920,9 +919,9 @@ class OFCMSFileWrapper {
                 if elementName.name == "file" && elementName.namespace == encryptedContentIndexNamespaceURI {
                     guard let memberName = try reader.getAttributeValue(fileNameAttr),
                           let memberLocation = try reader.getAttributeValue(fileLocationAttr) else {
-                            throw NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [
+                            throw OFError(.OFEncryptedDocumentFormatError, userInfo: [
                                 NSLocalizedFailureReasonErrorKey: "Missing <file> attribute"
-                                ]);
+                                ])
                     }
                     var memberOptions : OFCMSOptions = [];
                     if let optionality = try reader.getAttributeValue(fileOptionalAttr), (optionality as NSString).boolValue {
@@ -932,9 +931,9 @@ class OFCMSFileWrapper {
                     try reader.skipCurrentElement();
                 } else if elementName.name == "key" && elementName.namespace == encryptedContentIndexNamespaceURI {
                     guard let keyName = try reader.getAttributeValue(keyIdAttr) else {
-                        throw NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [
+                        throw OFError(.OFEncryptedDocumentFormatError, userInfo: [
                             NSLocalizedFailureReasonErrorKey: "Missing <key> attribute"
-                        ]);
+                        ])
                     }
                     do {
                         try reader.openElement();
@@ -944,13 +943,13 @@ class OFCMSFileWrapper {
 
                         keys[ try NSData(hexString:keyName) as Data ] = keyValueData as Data;
                     } catch let e as NSError {
-                        throw NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [NSUnderlyingErrorKey: e]);
+                        throw OFError(.OFEncryptedDocumentFormatError, userInfo: [NSUnderlyingErrorKey: e])
                     }
                 } else if elementName.name == "directory" && elementName.namespace == encryptedContentIndexNamespaceURI {
                     guard let dirName = try reader.getAttributeValue(fileNameAttr) else {
-                        throw NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [
+                        throw OFError(.OFEncryptedDocumentFormatError, userInfo: [
                             NSLocalizedFailureReasonErrorKey: "Missing <directory> attribute"
-                            ]);
+                            ])
                     }
                     
                     directoryStack.append(DirectoryEntry(realName: dirName, files: files, directories: directories));
@@ -971,7 +970,7 @@ class OFCMSFileWrapper {
 private let NSFileExtendedAttributes = "NSFileExtendedAttributes";
 
 private
-func missingFileError(filename: String) -> NSError {
+func missingFileError(filename: String) -> Error {
     let msg = NSString(format: NSLocalizedString("The encrypted item \"%@\" is missing or unreadable.", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error message - a file within the encrypted file wrapper can't be read") as NSString,
                        filename) as String;
     return miscFormatError(reason: msg);
@@ -991,11 +990,11 @@ func uglyHexify(_ cid: Data) -> String {
 }
 
 private
-func miscFormatError(reason: String? = nil, underlying: NSError? = nil) -> NSError {
+func miscFormatError(reason: String? = nil, underlying: NSError? = nil) -> Error {
     var userInfo: [String: AnyObject] = [:];
     
     if let underlyingError = underlying {
-        if underlyingError.domain == OFErrorDomain && underlyingError.code == OFEncryptedDocumentFormatError && reason == nil {
+        if underlyingError.domain == OFErrorDomain && underlyingError.code == OFError.OFEncryptedDocumentFormatError.rawValue && reason == nil {
             return underlyingError;
         }
         userInfo[NSUnderlyingErrorKey] = underlyingError;
@@ -1005,7 +1004,7 @@ func miscFormatError(reason: String? = nil, underlying: NSError? = nil) -> NSErr
         userInfo[NSLocalizedFailureReasonErrorKey] = message as NSString;
     }
     
-    return NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: userInfo.isEmpty ? nil : userInfo);
+    return OFError(.OFEncryptedDocumentFormatError, userInfo: userInfo)
 }
 
 private extension OFXMLReader {

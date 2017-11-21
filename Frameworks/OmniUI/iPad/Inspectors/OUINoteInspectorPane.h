@@ -1,4 +1,4 @@
-// Copyright 2011-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 
 @property (readwrite, retain) IBOutlet OUINoteTextView *textView;
 @property (nonatomic, retain) IBOutlet UIButton *enterFullScreenButton;
+@property (nonatomic, retain) IBOutlet UIImageView *enterFullScreenButtonBackground;
 
 - (IBAction)enterFullScreen:(id)sender;
 

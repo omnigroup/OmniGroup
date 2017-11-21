@@ -37,7 +37,9 @@ RCS_ID("$Id$");
 static void _commonInit(OUIDocumentTitleView *self)
 {
     self.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-    
+
+    NSBundle *bundle = OMNI_BUNDLE;
+
     self->_documentTitleLabel = [[UILabel alloc] init];
     self->_documentTitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self->_documentTitleLabel.textAlignment = NSTextAlignmentCenter;
@@ -51,36 +53,36 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self->_documentTitleButton setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [self->_documentTitleButton addTarget:self action:@selector(_documentTitleButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     self->_documentTitleButton.hidden = YES;
-    self->_documentTitleButton.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Edits the document's title.", @"OmniUIDocument", OMNI_BUNDLE, @"title view edit button item accessibility hint.");
+    self->_documentTitleButton.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Edits the document's title.", @"OmniUIDocument", bundle, @"title view edit button item accessibility hint.");
     
     self->_titleColor = [UIColor blackColor];
     [self _updateTitles];
     
-    UIImage *syncImage = [UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *syncImage = [UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:bundle compatibleWithTraitCollection:nil];
     self->_syncButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [self->_syncButton setImage:syncImage forState:UIControlStateNormal];
     self->_syncButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self->_syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self->_syncButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
-    self->_syncButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Sync Now", @"OmniUIDocument", OMNI_BUNDLE, @"Presence toolbar item accessibility label.");
+    self->_syncButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Sync Now", @"OmniUIDocument", bundle, @"Presence toolbar item accessibility label.");
     [self->_syncButton addTarget:self action:@selector(_syncButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     self->_syncButton.hidden = YES;
     
-    UIImage *closeDocumentImage = [UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    UIImage *closeDocumentImage = [UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:bundle compatibleWithTraitCollection:nil];
     self->_closeDocumentButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [self->_closeDocumentButton setImage:closeDocumentImage forState:UIControlStateNormal];
     self->_closeDocumentButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self->_closeDocumentButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self->_closeDocumentButton setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
-    self->_closeDocumentButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Close Document", @"OmniUIDocument", OMNI_BUNDLE, @"Close Document toolbar item accessibility label.");
+    self->_closeDocumentButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Close Document", @"OmniUIDocument", bundle, @"Close Document toolbar item accessibility label.");
     [self->_closeDocumentButton addTarget:self action:@selector(_closeDocument:) forControlEvents:UIControlEventTouchUpInside];
     self->_closeDocumentButton.hidden = YES;
 
-    self.closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
+    self.closeDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:bundle compatibleWithTraitCollection:nil]
                                      style:UIBarButtonItemStylePlain target:self action:@selector(_closeDocument:)];
     self.closeDocumentBarButtonItem.accessibilityIdentifier = @"BackToDocuments";
     
-    self.syncBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(_syncButtonTapped:)];
+    self.syncBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon" inBundle:bundle compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(_syncButtonTapped:)];
 
     self->_hideTitle = YES;
     

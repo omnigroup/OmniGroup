@@ -594,6 +594,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         [view setAutoresizingMask:NSViewNotSizable];
         [[self containerView] addSubview:view positioned:NSWindowBelow relativeTo:headingButton];
         [window setFrame:windowFrame display:YES animate:animate];
+        [window layoutIfNeeded];
         [view setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
 
         [[NSNotificationCenter defaultCenter] postNotificationName:OIWorkspaceWillChangeNotification object:self];

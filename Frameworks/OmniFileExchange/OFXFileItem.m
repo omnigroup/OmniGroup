@@ -1105,7 +1105,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             // We *do* want to force autosave on other presenters here since we are trying to do conflict detection.
             __autoreleasing NSError *sameError;
             NSNumber *same = [_snapshot hasSameContentsAsLocalDocumentAtURL:newReadingURL coordinator:coordinator withChanges:YES error:&sameError];
-            if (!same) {
+            if (same == nil) {
                 if ([sameError causedByMissingFile]) {
                     // The file has been deleted locally or possibly moved just as we are committing. In the case of deletion, this will act as a resurrection. In the case of a move, we'll end up with a new file.
                     return YES;

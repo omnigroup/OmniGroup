@@ -537,7 +537,7 @@ tryAgain:
                 BOOL hasBeenEdited = NO;
                 __autoreleasing NSError *sameContentsError;
                 NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileItem.localDocumentURL error:&sameContentsError];
-                if (!same) {
+                if (same == nil) {
                     if ([sameContentsError causedByMissingFile]) {
                         // Race between uploading and a local deletion. We should have a scan queued now or soon that will set fileItem.hasBeenLocallyDeleted.
                     } else
@@ -813,7 +813,7 @@ tryAgain:
         __autoreleasing NSError *error;
         NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[fileURL path] error:&error];
         NSNumber *inode = attributes[NSFileSystemFileNumber];
-        if (!inode) {
+        if (inode == nil) {
             // Something was moved/deleted while we were scanning -- try again.
             if ([error causedByMissingFile]) {
                 DEBUG_SCAN(2, @"   ... file missing at %@, must rescan", fileURL);
@@ -836,7 +836,7 @@ tryAgain:
         
         [[_documentIndex copyLocalRelativePathToFileItem] enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
             NSNumber *inode = fileItem.inode;
-            if (!inode)
+            if (inode == nil)
                 return; // Locally missing
             NSURL *updatedURL = inodeToScannedURL[inode];
             if (!updatedURL)
@@ -878,7 +878,7 @@ tryAgain:
             if (!fileItem.remoteState.missing && fileItem.isValidToUpload && !fileItem.isUploading && !fileItem.isDownloading) {
                 __autoreleasing NSError *hasSameContentsError;
                 NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&hasSameContentsError];
-                if (!same) {
+                if (same == nil) {
                     // The file might have been renamed or deleted and we need to rescan. Or, there might be a sandbox-induced permission error, in which case we should hopefully pause on the next rescan due to the error.
                     [hasSameContentsError log:@"While scanning, error checking for changes in contents for %@", fileURL];
 

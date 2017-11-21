@@ -770,7 +770,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
         return nil;
 
     NSNumber *version = propertyList[@"version"];
-    if (!version) {
+    if (version == nil) {
         OFXError(outError, OFXServerAccountCannotLoad, @"Info.plist has no \"version\".", nil);
         return nil;
     }

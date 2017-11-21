@@ -19,10 +19,10 @@ extern "C" {
 
 @class NSString, NSError;
 
-extern NSString * const OBErrorDomain;
-extern NSString * const OBFileNameAndNumberErrorKey;
+extern NSErrorDomain const OBErrorDomain;
+extern NSErrorUserInfoKey const OBFileNameAndNumberErrorKey;
 
-enum {
+typedef NS_ERROR_ENUM(OBErrorDomain, OBError) {
     OBErrorChained = 1,  /* skip code zero since that is often defined to be 'no error' */
 };
 

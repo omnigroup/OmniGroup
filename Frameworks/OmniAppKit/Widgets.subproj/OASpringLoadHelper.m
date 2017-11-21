@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,7 +83,7 @@ RCS_ID("$Id$");
 
     // As of 10.5, Finder's spring-loaded folder preference is in the global domain under com.apple.springing.delay, as seconds.
     NSNumber *springLoadedFolderDelayNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"com.apple.springing.delay"];
-    if (springLoadedFolderDelayNumber) {
+    if (springLoadedFolderDelayNumber != nil) {
         // Might be a different type than we expect; be careful.
         if ([springLoadedFolderDelayNumber respondsToSelector:@selector(doubleValue)])
             springingDelaySeconds = [springLoadedFolderDelayNumber doubleValue];

@@ -69,6 +69,7 @@
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
 
 - (IBAction)newDocument:(id)sender;
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 - (IBAction)duplicateDocument:(id)sender;

@@ -11,7 +11,9 @@
 
 @class NSString;
 
-enum {
+extern NSErrorDomain const OFErrorDomain;
+
+typedef NS_ERROR_ENUM(OFErrorDomain, OFError) {
     // Zero typically means no error
     OFCacheFileUnableToWriteError = 1,
     OFFilterDataCommandReturnedErrorCodeError,
@@ -79,10 +81,8 @@ enum {
 
 
 // This key holds the exit status of a process which has exited
-#define OFProcessExitStatusErrorKey (@"OFExitStatus")
-#define OFProcessExitSignalErrorKey (@"OFExitSignal")
-
-extern NSString * const OFErrorDomain;
+extern NSErrorUserInfoKey const OFProcessExitStatusErrorKey;
+extern NSErrorUserInfoKey const OFProcessExitSignalErrorKey;
 
 #define OFErrorWithInfoAndDomain(error, domain, code, description, suggestion, ...) _OBError(error, domain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
 #define OFErrorWithInfo(error, code, description, suggestion, ...) OFErrorWithInfoAndDomain(error, OFErrorDomain, code, description, (suggestion), ## __VA_ARGS__)

@@ -41,6 +41,8 @@
 
 - (IBAction)makeNewDocument:(id)sender;
 - (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
+// this will create a new document from the existing document and preserve the filename, documentStore, scope, and parentFolder for the newly created document.
+- (void)makeNewDocumentWithFileItem:(ODSFileItem *)fileItem;
 - (IBAction)closeDocument:(id)sender;
 - (void)closeAndDismissDocumentWithCompletionHandler:(void(^)(void))completionHandler;
 - (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;

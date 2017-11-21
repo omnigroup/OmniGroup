@@ -67,7 +67,7 @@ enum CMSRecipientIdentifier {
         case OFCMSRIDSubjectKeyIdentifier:
             return .keyIdentifier(ski: blob1! as Data);
         default:
-            throw NSError(domain: OFErrorDomain, code: OFCMSFormatError, userInfo: nil);
+            throw OFError(.OFCMSFormatError)
         }
     }
     
@@ -236,7 +236,7 @@ struct CertificateIdentifiers {
                 self.ski = nil
             }
         } else {
-            throw NSError(domain: OFErrorDomain, code: OFASN1Error, userInfo: ["function": "OFSecCertificateGetIdentifiers"])
+            throw OFError(.OFASN1Error, userInfo: ["function": "OFSecCertificateGetIdentifiers"])
         }
     }
     
@@ -283,7 +283,7 @@ class CMSPasswordRecipient : CMSRecipient {
         if let kek = kek, let info = info, let recip = OFProduceRIForCMSPWRI(kek, cek, info, []) {
             return recip;
         } else {
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
     }
     
@@ -298,7 +298,7 @@ class CMSPasswordRecipient : CMSRecipient {
     func unwrap(password: String, data: Data) throws -> Data {
         guard let info = info else {
             // Shouldn't happen in normal operation
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
 
         var error : NSError?;
@@ -380,13 +380,13 @@ class CMSKEKRecipient : CMSRecipient {
     func recipientInfo(wrapping cek: Data) throws -> Data {
         
         guard let key = kek else {
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
         
         if let rinfo = OFProduceRIForCMSKEK(key, cek, keyIdentifier, []) {
             return rinfo;
         } else {
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
     }
 
@@ -447,7 +447,7 @@ class CMSPKRecipient : CMSRecipient {
     func recipientInfo(wrapping cek: Data) throws -> Data {
         
         guard let encryptionKey = try cert?.publicKey() else {
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
         
         var errbuf : NSError? = nil;
@@ -466,7 +466,7 @@ class CMSPKRecipient : CMSRecipient {
         var issuer, serial, ski: NSData?;
         
         if !OFSecCertificateGetIdentifiers(certificate, &issuer, &serial, &ski) {
-            throw NSError(domain: OFErrorDomain, code: OFASN1Error, userInfo: [ NSLocalizedDescriptionKey: "Could not parse X.509 certificate" ]);
+            throw OFError(.OFASN1Error, userInfo: [ NSLocalizedDescriptionKey: "Could not parse X.509 certificate" ])
         }
         
         if let ski : Data = ski as Data? {
@@ -766,7 +766,7 @@ class OFCMSUnwrapper {
             if let err = keyAccessError {
                 throw err;
             }
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         }
     }
     
@@ -787,34 +787,32 @@ class OFCMSUnwrapper {
         
         var failureCount : Int = 0;
         
-        prompting: while true {
-            let password = try keySource.promptForPassword(withCount: failureCount, hint: passwordHint);
+        while true {
+            let password = try keySource.promptForPassword(withCount: failureCount, hint: passwordHint)
             
             // Probably only one password recipient, but potentially several
-            var passwordUseError : NSError? = nil;
-            var anyNotApplicable : Bool = false;
+            var passwordUseError: Error? = nil
+            var anyNotApplicable: Bool = false
             for (passwordRecipient, wrappedKey) in passwordRecipients {
                 do {
-                    let aCek = try passwordRecipient.unwrap(password: password, data:wrappedKey);
-                    return (aCek, passwordRecipient);
-                } catch let err as NSError {
-                    if err.domain == OFErrorDomain && err.code == OFKeyNotApplicable {
-                        // Incorrect password. Re-prompt unless another recipient matches.
-                        anyNotApplicable = true;
-                    } else {
-                        passwordUseError = err;
-                    }
+                    let aCek = try passwordRecipient.unwrap(password: password, data: wrappedKey)
+                    return (aCek, passwordRecipient)
+                } catch OFError.OFKeyNotApplicable {
+                    // Incorrect password. Re-prompt unless another recipient matches.
+                    anyNotApplicable = true
+                } catch let err {
+                    passwordUseError = err
                 }
             }
             
             if anyNotApplicable {
                 // Incorrect password. Re-prompt.
-                failureCount += 1;
+                failureCount += 1
             } else {
                 // We failed for a reason other than an incorrect password.
-                throw passwordUseError!; // (This could only be nil if we have no passwordRecipients, but we check for that.)
+                throw passwordUseError! // (This could only be nil if we have no passwordRecipients, but we check for that.)
             }
-        };
+        }
     }
     
     /** The workhorse function: repeatedly unwraps the content contained in the receiver, stopping when we reach a content-type that we can't unwrap. */
@@ -832,7 +830,7 @@ class OFCMSUnwrapper {
             case OFCMSContentType_compressedData:
                 try decompress();
             case OFCMSContentType_Unknown:
-                throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object")]);
+                throw OFError(.OFUnsupportedCMSFeature, userInfo: [NSLocalizedFailureReasonErrorKey: NSLocalizedString("Unexpected CMS content-type", tableName: "OmniFoundation", bundle: OFBundle, comment: "Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object")])
             default:
                 return;
             }
@@ -901,7 +899,7 @@ class OFCMSUnwrapper {
         
         // Check that authenticated attributes includes the inner content type (see RFC 5083). For security reasons the content type attribute is only allowed to be missing if the content type is 'data'.
         if !attrs.sawMatchingContentType && innerType != OFCMSContentType_data {
-            throw NSError(domain: OFErrorDomain, code: OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Content-Type missing" ]);
+            throw OFError(.OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Content-Type missing" ])
         }
         
         let (contentKey, usedRecipient, allRecipients) = try self.recoverContentKey(recipientBlobs: recipientBlobs);
@@ -949,7 +947,7 @@ class OFCMSUnwrapper {
         if innerContentLocation.length != 0 {
             cms = OFASN1UnwrapOctetString(cms!, innerContentLocation);
             if cms == nil {
-                throw NSError(domain: OFErrorDomain, code: OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Problem with SignedData.encapsulatedContent" ]);
+                throw OFError(.OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Problem with SignedData.encapsulatedContent" ])
             }
             contentRange = NSRange(location: 0, length: cms!.count);
         } else {
@@ -1083,12 +1081,12 @@ class OFCMSUnwrapper {
 }
 
 private func unexpectedNullContent() -> Error {
-    return NSError(domain: OFErrorDomain, code: OFEncryptedDocumentFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unexpected null content" ]);
+    return OFError(.OFEncryptedDocumentFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unexpected null content" ])
 }
 
 private
 func checkVersion(_ version: Int32, _ location: String, min: Int32, max: Int32) throws {
     if (version < min || version > max) {
-        throw NSError(domain: OFErrorDomain, code: OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unsupported \(location) version (expected \(min)-\(max), found \(version))" ]);
+        throw OFError(.OFUnsupportedCMSFeature, userInfo: [ NSLocalizedFailureReasonErrorKey: "Unsupported \(location) version (expected \(min)-\(max), found \(version))" ])
     }
 }

@@ -139,13 +139,13 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
 
     // Scalar-taking variants that also do the test at compile time to just signal clang attributes.  The input must be a scalar l-value to avoid evaluation of code.  This will mark the value as referenced, though, so we don't get unused variable warnings.
     #define OBASSERT_NULL(pointer, ...) do { \
-        if (pointer) { \
+        if ((pointer) != NULL) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBInvokeAssertionFailureHandler("OBASSERT_NULL", #pointer, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } \
     } while(NO);
     #define OBASSERT_NOTNULL(pointer, ...) do { \
-        if (!pointer) { \
+        if ((pointer) == NULL) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBInvokeAssertionFailureHandler("OBASSERT_NOTNULL", #pointer, __FILE__, __LINE__, @"" __VA_ARGS__); \
         } \

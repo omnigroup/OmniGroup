@@ -26,7 +26,7 @@ class keysource : OFCMSKeySource {
         var buf = Array(repeating: Int8(0), count: 128);
         let rv = readpassphrase("foo", &buf, buf.count, 0);
         if rv == nil {
-            throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+            throw OFError(.OFKeyNotAvailable)
         } else {
             guard let str = NSString(bytes: buf, length: Int(strlen(buf)), encoding: String.Encoding.utf8.rawValue) else {
                 throw NSError(domain: NSCocoaErrorDomain, code: NSFileReadUnknownStringEncodingError, userInfo: nil);
@@ -57,7 +57,7 @@ class keysource : OFCMSKeySource {
             }
         }
         
-        throw NSError(domain: OFErrorDomain, code: OFKeyNotAvailable, userInfo: nil);
+        throw OFError(.OFKeyNotAvailable)
     }
     #endif
 }

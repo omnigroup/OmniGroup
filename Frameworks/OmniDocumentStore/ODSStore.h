@@ -14,17 +14,19 @@
 @protocol ODSStoreDelegate;
 @class ODSFileItem, ODSFolderItem, ODSScope, ODSLocalDirectoryScope;
 
-typedef enum {
+NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSInteger, ODSDocumentType) {
     ODSDocumentTypeNormal,
     ODSDocumentTypeTemplate,
     ODSDocumentTypeOther,
-} ODSDocumentType;
+};
 
 @interface ODSStore : NSObject
 
 - initWithDelegate:(id <ODSStoreDelegate>)delegate;
 
-@property(nonatomic,readonly) NSArray *scopes;
+@property(nonatomic,readonly) NSArray <__kindof ODSScope *> *scopes;
 - (void)addScope:(ODSScope *)scope;
 - (void)removeScope:(ODSScope *)scope;
 
@@ -32,29 +34,33 @@ typedef enum {
 @property(nonatomic,readonly) ODSScope *trashScope;
 @property(nonatomic,readonly) ODSScope *templateScope;
 
-@property(nonatomic,readonly) NSSet *mergedFileItems; // All the file items from all scopes.
+@property(nonatomic,readonly) NSSet <__kindof ODSFileItem *> *mergedFileItems; // All the file items from all scopes.
 
 - (Class)fileItemClassForURL:(NSURL *)fileURL; // Defaults to asking the delegate. The URL may not exist yet!
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)fileType;
-- (ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+- (nullable ODSFileItem *)preferredFileItemForNextAutomaticDownload:(NSSet <__kindof ODSFileItem *> *)fileItems;
 
 - (void)addAfterInitialDocumentScanAction:(void (^)(void))action;
 
-- (void)moveItems:(NSSet *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
+- (void)moveItems:(NSSet <__kindof ODSFileItem *> *)items fromScope:(ODSScope *)fromScope toScope:(ODSScope *)toScope inFolder:(ODSFolderItem *)parentFolder completionHandler:(void (^ _Nullable)(NSSet <__kindof ODSFileItem *> * _Nullable movedFileItems, NSArray <NSError *> * _Nullable errorsOrNil))completionHandler;
 
-- (void)makeFolderFromItems:(NSSet *)items inParentFolder:(ODSFolderItem *)parentFolder ofScope:(ODSScope *)scope completionHandler:(void (^)(ODSFolderItem *createdFolder, NSArray *errorsOrNil))completionHandler;
+- (void)makeFolderFromItems:(NSSet <__kindof ODSFileItem *> *)items inParentFolder:(ODSFolderItem *)parentFolder ofScope:(ODSScope *)scope completionHandler:(void (^)(ODSFolderItem * _Nullable createdFolder, NSArray <NSError *> * _Nullable errorsOrNil))completionHandler;
 
-- (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
+- (void)scanItemsWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 - (void)startDeferringScanRequests;
-- (void)stopDeferringScanRequests:(void (^)(void))completionHandler;
+- (void)stopDeferringScanRequests:(void (^ _Nullable)(void))completionHandler;
 
-- (ODSFileItem *)fileItemWithURL:(NSURL *)url;
+- (nullable ODSFileItem *)fileItemWithURL:(NSURL *)url;
 
 @property(readonly,nonatomic) NSString *documentTypeForNewFiles;
-- (NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
+- (nullable NSString *)documentTypeForNewFilesOfType:(ODSDocumentType)type;
 - (NSString *)defaultFilenameForDocumentType:(ODSDocumentType)type isDirectory:(BOOL *)outIsDirectory;
 - (NSURL *)temporaryURLForCreatingNewDocumentOfType:(ODSDocumentType)type;
-- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+// IF the provided documentName is nil, then we will use the default name for that new document type.
+- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type documentName:(nullable)documentName completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(nullable ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 
 @end
+
+NS_ASSUME_NONNULL_END
 

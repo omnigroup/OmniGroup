@@ -987,7 +987,7 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
             NSLog(@"Error checking if source URL %@ is a directory: %@", [sourceURL absoluteString], [resourceError toPropertyList]);
             // not fatal...
         }
-        OBASSERT(sourceIsDirectory);
+        OBASSERT_NOTNULL(sourceIsDirectory);
         
         NSString *fileName = [sourceURL lastPathComponent];
         __autoreleasing NSString *baseName = nil;
@@ -1264,7 +1264,7 @@ static ODSScope *_templateScope = nil;
     [self _moveItems:items toFolder:folderItem ignoringFileItems:ignoredFileItems completionHandler:completionHandler];
 }
 
-- (void)moveItems:(NSSet *)items toFolder:(ODSFolderItem *)folderItem completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
+- (void)moveItems:(NSSet *)items toFolder:(ODSFolderItem *)folderItem completionHandler:(void (^ _Nullable)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
 {
     OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == self; }], "All the items should belong to this scope already");
     

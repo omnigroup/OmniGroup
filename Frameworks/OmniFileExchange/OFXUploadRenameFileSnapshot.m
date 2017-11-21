@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ RCS_ID("$Id$")
     NSMutableDictionary *versionDictionary = [self.versionDictionary mutableCopy];
     
     NSNumber *oldVersion = versionDictionary[kOFXVersion_NumberKey];
-    OBASSERT(oldVersion);
+    OBASSERT_NOTNULL(oldVersion);
     versionDictionary[kOFXVersion_NumberKey] = @([oldVersion unsignedLongValue] + 1);
     
     return [self _updateVersionDictionary:versionDictionary reason:@"init upload rename" error:outError];

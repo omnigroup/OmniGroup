@@ -465,7 +465,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
 {
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
 
@@ -480,8 +480,12 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
     }
 
+    ODSScope *documentScope = preserveDocumentName ? templateFileItem.scope : _documentScope;
+    ODSStore *documentStore = preserveDocumentName ? templateFileItem.scope.documentStore : _documentStore;
+    ODSFolderItem *folderItem = preserveDocumentName ? templateFileItem.parentFolder : _folderItem;
+
     // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
-    NSURL *temporaryURL = [_documentStore temporaryURLForCreatingNewDocumentOfType:type];
+    NSURL *temporaryURL = [documentStore temporaryURLForCreatingNewDocumentOfType:type];
 
     completion = [completion copy];
     void (^cleanup)(void) = ^{
@@ -498,29 +502,29 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 cleanup();
                 return;
             }
-            
+
             ODSFileItem *fileItemToRevealFrom;
             if (templateFileItem != nil && ![[templateFileItem scope] isExternal]) {
                 fileItemToRevealFrom = templateFileItem;
             } else {
                 fileItemToRevealFrom = createdFileItem;
             }
-            
+
             // We want the file item to have a new date, but this is the wrong place to do it. Want to do it in the document picker before it creates the item.
             // [[NSFileManager defaultManager] touchItemAtURL:createdItem.fileURL error:NULL];
-            
+
             [self _revealAndActivateNewDocumentFileItem:createdFileItem fileItemToRevealFrom:fileItemToRevealFrom completionHandler:^{
                 cleanup();
             }];
         }];
     } copy];
-    
+
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
         Class cls = [[OUIDocumentAppController controller] documentClassForURL:temporaryURL];
-        
+
         // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
-        
+
         __block OUIDocument *document;
         __autoreleasing NSError *readError;
 
@@ -538,12 +542,12 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         } else {
             document = [[cls alloc] initWithContentsOfTemplateAtURL:nil toBeSavedToURL:temporaryURL error:&readError];
         }
-        
+
         if (!document) {
             finish(nil, readError);
             return;
         }
-        
+
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             // Save the document to our temporary location
             [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
@@ -551,7 +555,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                     [document closeWithCompletionHandler:^(BOOL closeSuccess){
                         [document didClose];
-                        
+
                         if (!saveSuccess) {
                             // The document instance should have gotten the real error presented some other way
                             NSError *cancelledError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
@@ -559,7 +563,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                             return;
                         }
 
-                        [_documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:_documentScope folder:_folderItem documentType:type completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
+                        NSString *documentName = preserveDocumentName ? templateFileItem.name : nil;
+                        [_documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:documentScope folder:folderItem documentType:type documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
                             finish(createdFileItem, error);
                         }];
                     }];
@@ -567,6 +572,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             }];
         }];
     }];
+}
+
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
+{
+    [self newDocumentWithTemplateFileItem:templateFileItem documentType:type preserveDocumentName:NO completion:completion];
 }
 
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;

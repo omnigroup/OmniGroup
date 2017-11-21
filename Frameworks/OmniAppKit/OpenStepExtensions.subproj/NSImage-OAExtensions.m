@@ -68,8 +68,7 @@ OBPerformPosing(^{
     if (size.width != rint(size.width) || size.height != rint(size.height))
         NSLog(@"Image %@ has non-integral size %@", fileName, NSStringFromSize(size));
 
-    OBPOSTCONDITION(size.width == rint(size.width));
-    OBPOSTCONDITION(size.height == rint(size.height));
+    OBASSERT_IF(OFURLContainsURL([[NSBundle mainBundle] bundleURL], [NSURL fileURLWithPath:fileName]), size.width == rint(size.width) && size.height == rint(size.height), "Our resources should be integral-sized");
     return self;
 }
 

@@ -108,7 +108,7 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
         [newScope setObject:version forKey:OSUVersionKey];
     
     // Run time
-    if (startClockTimeNumber) {
+    if (startClockTimeNumber != nil) {
         unsigned startClockTime = [startClockTimeNumber doubleValue];
 
         // The clock can go "backwards" if the machine is restarted between runs of the app (possibly if the last run crashed) since OSUGetCurrentClockTime() returns the system clock.
@@ -122,7 +122,7 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
                 totalRunTimeNumber = nil;
             }
 
-            NSTimeInterval totalRunTime = totalRunTimeNumber ? [totalRunTimeNumber doubleValue] : 0.0;
+            NSTimeInterval totalRunTime = (totalRunTimeNumber != nil) ? [totalRunTimeNumber doubleValue] : 0.0;
             
             totalRunTime += (currentClockTime - startClockTime);
             
@@ -230,7 +230,7 @@ static void _OSURunTimeAddStatisticsToInfo(NSMutableDictionary *info, NSDictiona
     
     // We'll report integral minutes instead of seconds.  We can go more than 8000 years with this w/o overflowing 32 bits.
     NSNumber *runTimeNumber = [scope objectForKey:OSUTotalRunTimeKey];
-    NSTimeInterval runTime = runTimeNumber ? [runTimeNumber doubleValue] : 0.0;
+    NSTimeInterval runTime = (runTimeNumber != nil) ? [runTimeNumber doubleValue] : 0.0;
     
     unsigned long runMinutes = (unsigned long)floor(runTime / 60.0);
     [info setObject:[NSString stringWithFormat:@"%lu", runMinutes] forKey:[NSString stringWithFormat:@"%@runmin", prefix]];

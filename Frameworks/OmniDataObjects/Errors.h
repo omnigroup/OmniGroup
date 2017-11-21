@@ -17,7 +17,7 @@ extern NSErrorUserInfoKey const ODODetailedErrorsKey; // If multiple errors occu
 
 extern NSErrorUserInfoKey const ODODetailedErrorsKey; // if multiple validation errors occur in one operation, they are collected in an array and added with this key to the "top-level error" of the operation
 
-typedef NS_ENUM(NSInteger, ODOError) {
+typedef NS_ERROR_ENUM(ODOErrorDomain, ODOError) {
     ODONoError = 0,
 
     ODOUnableToLoadModel,

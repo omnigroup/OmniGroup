@@ -816,8 +816,8 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
         // Eat more whitespace
         [scanner scanCharactersFromSet:whitespaceCharacterSet intoString:NULL];
 
-	NSNumber *numberValue;
-	if (!(numberValue = [self _scanNumberFromScanner:scanner])) {
+        NSNumber *numberValue = [self _scanNumberFromScanner:scanner];
+	if (numberValue == nil) {
             if (gotAnythingValid)
                 break;
 	    // if we get a ., we may still have a valid partial string.
@@ -835,7 +835,6 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
 	number = [numberValue floatValue];
 	
 	if ([scanner scanString:@"/" intoString:NULL]) {
-	    NSNumber *denominator;
             if ([scanner isAtEnd]) {
 		if (gotAnythingValid)
 		    break;
@@ -845,7 +844,9 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                     return YES; 
                 }
             }
-	    if (!(denominator = [self _scanNumberFromScanner:scanner])) {
+
+            NSNumber *denominator = [self _scanNumberFromScanner:scanner];
+	    if (denominator == nil) {
 		if (gotAnythingValid)
 		    break;
 		if (error)

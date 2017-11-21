@@ -622,7 +622,7 @@ static void _OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
             }
             
             // NSFileManager hands back non-standardized URLs even if the input is standardized.
-            OBASSERT(isDirectoryValue);
+            OBASSERT(isDirectoryValue != nil);
             BOOL isDirectory = [isDirectoryValue boolValue];
             fileURL = [scanDirectoryURL URLByAppendingPathComponent:[fileURL lastPathComponent] isDirectory:isDirectory];
             
@@ -698,8 +698,9 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet * _Null
             return YES;
         
         NSNumber *cachedValue = extensionToIsPackage[pathExtension];
-        if (cachedValue)
+        if (cachedValue != nil) {
             return [cachedValue boolValue];
+        }
 
         __block BOOL foundPackage = NO;
         OFUTIEnumerateKnownTypesForTagPreferringNative((NSString *)kUTTagClassFilenameExtension, pathExtension, nil/*conformingToUTIOrNil*/, ^(NSString *typeIdentifier, BOOL *stop){

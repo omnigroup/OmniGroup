@@ -510,25 +510,37 @@ static unsigned SyncAgentRunningAccountsContext;
     }];
 }
 
-- (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem
+- (void)_makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem preserveFileName:(BOOL)preserveFileName;
 {
     __block OUIDocumentPicker *docPicker = [self documentPicker];
     [self _closeAllDocumentsBeforePerformingBlock:^{
-        [docPicker navigateToScope:[docPicker localDocumentsScope] animated:NO];
+        if (!preserveFileName) {
+            [docPicker navigateToScope:[docPicker localDocumentsScope] animated:NO];
+        }
         if (docPicker.selectedScopeViewController != nil) {
-            [docPicker.selectedScopeViewController newDocumentWithTemplateFileItem:templateFileItem documentType:ODSDocumentTypeNormal completion:nil];
+            [docPicker.selectedScopeViewController newDocumentWithTemplateFileItem:templateFileItem documentType:ODSDocumentTypeNormal preserveDocumentName:preserveFileName completion:nil];
         } else {
-            [self _enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:templateFileItem];
+            [self _enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:templateFileItem preserveFileName:preserveFileName];
         }
     }];
 }
 
+- (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem
+{
+    [self _makeNewDocumentWithTemplateFileItem:templateFileItem preserveFileName:NO];
+}
+
+- (void)makeNewDocumentWithFileItem:(ODSFileItem *)fileItem;
+{
+    [self _makeNewDocumentWithTemplateFileItem:fileItem preserveFileName:YES];
+}
+
 // LMTODO: Stolen from OUIDocumentPickerViewController newDocumentWithTemplateFileItem:documentType:completion:
 // We should maybe refactor so that code calls this code?
-- (void)_enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem
+- (void)_enqueueBackgroundMakingOfNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem preserveFileName:(BOOL)preserveFileName;
 {
     // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
-    ODSStore *documentStore = self.documentPicker.documentStore;
+    ODSStore *documentStore = preserveFileName && templateFileItem ? templateFileItem.scope.documentStore : self.documentPicker.documentStore;
     NSURL *temporaryURL = [documentStore temporaryURLForCreatingNewDocumentOfType:ODSDocumentTypeNormal];
 
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
@@ -575,8 +587,10 @@ static unsigned SyncAgentRunningAccountsContext;
                             return;
                         }
 
-                        ODSScope *localScope = [documentStore defaultUsableScope];
-                        [documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:localScope folder:nil documentType:ODSDocumentTypeNormal completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
+                        ODSScope *localScope = preserveFileName && templateFileItem ? templateFileItem.scope : [documentStore defaultUsableScope];
+                        ODSFolderItem *folderItem = preserveFileName && templateFileItem ? templateFileItem.parentFolder : nil;
+                        NSString *documentName = preserveFileName && templateFileItem ? templateFileItem.name : nil;
+                        [documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:localScope folder:folderItem documentType:ODSDocumentTypeNormal documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
                             if (createdFileItem != nil) {
                                 [self openDocument:createdFileItem];
                             } else {
@@ -1364,18 +1378,36 @@ static NSDictionary *RoleByFileType()
     return roleByFileType;
 }
 
+static NSSet *ViewableFileTypes()
+{
+    static dispatch_once_t onceToken;
+    static NSSet *viewableFileTypes = nil;
+
+    dispatch_once(&onceToken, ^{
+        // Make a set all our declared UTIs, for fast contains-checking in canViewFileTypeWithIdentifier.
+        NSDictionary *roleByFileType = RoleByFileType();
+        viewableFileTypes = [NSSet setWithArray:roleByFileType.allKeys];
+    });
+
+    return viewableFileTypes;
+}
+
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 {
     OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
     
     if (uti == nil)
         return NO;
-    
-    for (NSString *candidateUTI in RoleByFileType()) {
+
+    NSSet *viewableFileTypes = ViewableFileTypes();
+    if ([viewableFileTypes containsObject:uti]) {
+        return YES; // Performance fix: avoid calling OFTypeConformsTo, which calls UTTypeConformsTo, which is slow, when possible.
+    }
+
+    for (NSString *candidateUTI in viewableFileTypes) {
         if (OFTypeConformsTo(uti, candidateUTI))
             return YES;
     }
-    
     return NO;
 }
 

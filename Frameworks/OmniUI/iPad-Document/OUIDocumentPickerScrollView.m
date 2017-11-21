@@ -865,7 +865,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
 
 - (void)layoutSubviews;
 {
-    if (_renameSession) {
+    if (_renameSession || !self.window) {
         return;
     }
     LayoutInfo layoutInfo = _updateLayout(self);
@@ -904,7 +904,9 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
             frame.origin.x = (CGRectGetWidth(contentRect) / 2) - (frame.size.width / 2);
             frame.origin.y = fmax((CGRectGetHeight(_topControls.frame) / 2) - (frame.size.height / 2), [self _verticalPadding]);
             frame = CGRectIntegral(frame);
-            _topControls.frame = frame;
+            if (!CGRectEqualToRect(_topControls.frame, frame)) {
+                _topControls.frame = frame;
+            }
         }
         
         if (_titleViewForCompactWidth) {
@@ -922,7 +924,10 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
             _titleViewForCompactWidth.frame = frame;
             
             if (CGRectGetMaxY(_topControls.frame) < CGRectGetMaxY(_titleViewForCompactWidth.frame)) {
-                _topControls.frame = CGRectUnion(_topControls.frame, _titleViewForCompactWidth.frame);
+                frame = CGRectUnion(_topControls.frame, _titleViewForCompactWidth.frame);
+                if (!CGRectEqualToRect(_topControls.frame, frame)) {
+                    _topControls.frame = frame;
+                }
             }
         }
         
@@ -1028,7 +1033,9 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
                     OBASSERT([unusedFileItemViews containsObjectIdenticalTo:itemView] ^ [unusedGroupItemViews containsObjectIdenticalTo:itemView]);
                     [unusedFileItemViews removeObjectIdenticalTo:itemView];
                     [unusedGroupItemViews removeObjectIdenticalTo:itemView];
-                    itemView.frame = frame;
+                    if (!CGRectEqualToRect(itemView.frame, frame)) {
+                        itemView.frame = frame;
+                    }
                     DEBUG_LAYOUT(@"  kept view %@", [itemView shortDescription]);
                 } else {
                     // This item needs a view!
@@ -1051,6 +1058,7 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
         }];
         
         // Now, assign views to visibile or nearly visible items that don't have them. First, union the two lists.
+        BOOL delegateRespondsToSelectorWillDisplayItemView = [self.delegate respondsToSelector:@selector(documentPickerScrollView:willDisplayItemView:)];
         for (ODSItem *item in visibleItemsWithoutView) {            
             
             NSMutableArray *itemViews = nil;
@@ -1067,13 +1075,16 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
                 // Make the view start out at the "original" position instead of flying from where ever it was last left.
                 [UIView performWithoutAnimation:^{
                     itemView.hidden = NO;
-                    itemView.frame = [self _frameForItem:item layoutInfo:layoutInfo];
+                    CGRect frame = [self _frameForItem:item layoutInfo:layoutInfo];
+                    if (!CGRectEqualToRect(itemView.frame, frame)) {
+                        itemView.frame = frame;
+                    }
                     itemView.shrunken = ([_itemsBeingAdded member:item] != nil);
                     [itemView setEditing:_flags.isEditing animated:NO];
                     itemView.item = item;
                 }];
                 
-                if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willDisplayItemView:)])
+                if (delegateRespondsToSelectorWillDisplayItemView)
                     [self.delegate documentPickerScrollView:self willDisplayItemView:itemView];
 
                 [itemViews removeLastObject];
@@ -1103,19 +1114,20 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
             else
                 fileItemView.draggingState = OUIDocumentPickerItemViewNoneDraggingState;        
         }
-        
+
         // Any remaining unused item views should have no item and be hidden.
+        BOOL delegateRespondsToSelectorWillEndDisplayingItemView = [self.delegate respondsToSelector:@selector(documentPickerScrollView:willEndDisplayingItemView:)];
         for (OUIDocumentPickerFileItemView *view in unusedFileItemViews) {
             view.hidden = YES;
             [view prepareForReuse];
-            if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willEndDisplayingItemView:)])
+            if (delegateRespondsToSelectorWillEndDisplayingItemView)
                 [self.delegate documentPickerScrollView:self willEndDisplayingItemView:view];
             
         }
         for (OUIDocumentPickerGroupItemView *view in unusedGroupItemViews) {
             view.hidden = YES;
             [view prepareForReuse];
-            if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willEndDisplayingItemView:)])
+            if (delegateRespondsToSelectorWillEndDisplayingItemView)
                 [self.delegate documentPickerScrollView:self willEndDisplayingItemView:view];
         }
     });

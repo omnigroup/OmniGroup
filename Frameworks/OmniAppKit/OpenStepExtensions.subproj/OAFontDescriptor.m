@@ -523,7 +523,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     }
 
     NSNumber *fontSize = [_attributes objectForKey:(id)kCTFontSizeAttribute];
-    if (fontSize)
+    if (fontSize != nil)
         return [fontSize cgFloatValue];
     
     
@@ -557,7 +557,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 
     NSNumber *weightNumber = [self _coreTextFontWeight];
         
-    if (weightNumber) {
+    if (weightNumber != nil) {
         CGFloat weight = [weightNumber cgFloatValue];
         return _weightToFontManagerWeight(weight);
     }
@@ -584,7 +584,7 @@ static CTFontSymbolicTraits _lookupSymbolicTraits(OAFontDescriptor *self)
 
     NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
     NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
-    if (symbolicTraitsNumber) {
+    if (symbolicTraitsNumber != nil) {
         OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(unsigned int));
         CTFontSymbolicTraits result = [symbolicTraitsNumber unsignedIntValue];
         return _clearClassMask(result);

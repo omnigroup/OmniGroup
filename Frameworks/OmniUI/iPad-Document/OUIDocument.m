@@ -547,7 +547,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBASSERT([changeCountToken count] == 2); // the two keys we put in
     
     NSNumber *editorStateCount = [(NSDictionary *)changeCountToken objectForKey:ViewStateChangeTokenKey];
-    OBASSERT(editorStateCount);
+    OBASSERT_NOTNULL(editorStateCount);
     _savedViewStateChangeCount = [editorStateCount unsignedIntegerValue];
     
     id originalToken = [(NSDictionary *)changeCountToken objectForKey:OriginalChangeTokenKey];

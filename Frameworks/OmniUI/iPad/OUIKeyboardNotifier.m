@@ -310,7 +310,7 @@ static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self, NSDictio
     NSNumber *durationNumber = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     NSNumber *curveNumber = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
 
-    if (!durationNumber || !curveNumber) {
+    if (durationNumber == nil || curveNumber == nil) {
         OBASSERT((durationNumber == nil) == (curveNumber == nil));
         durationNumber = [NSNumber numberWithDouble:0.25];
         curveNumber = [NSNumber numberWithInt:UIViewAnimationCurveEaseInOut];

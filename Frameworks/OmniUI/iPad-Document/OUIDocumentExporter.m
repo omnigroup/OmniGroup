@@ -456,7 +456,7 @@ RCS_ID("$Id$")
 - (BOOL)_canUseOpenInWithExportType:(NSString *)exportType;
 {
     NSNumber *value = [[OUIDocumentExporter openInMapCache] objectForKey:exportType];
-    if (value) {
+    if (value != nil) {
         // We have a cached value, so immediately return it.
         return [value boolValue];
     }

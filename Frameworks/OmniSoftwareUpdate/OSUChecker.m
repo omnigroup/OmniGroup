@@ -129,6 +129,7 @@ NSString * const OSULicenseTypeAppStore = @"appstore";
 @interface OSUChecker ()
 @property(nonatomic,retain) id <OSUCheckerTarget> target;
 @property(nonatomic,retain) NSDateFormatter *dateFormatter;
+@property(nonatomic,weak) NSURLSessionTask *newsCacheTask;
 @end
 
 @implementation OSUChecker
@@ -501,6 +502,26 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return [[OSUPreferences unreadNews] boolValue];
 }
 
+- (void)_cacheCurrentNews
+{
+    if (self.newsCacheTask) {
+        return;
+    }
+    __weak OSUChecker *weakSelf = self;
+    self.newsCacheTask = [[NSURLSession sharedSession] dataTaskWithURL:[self currentNewsURL] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        OSUChecker *strongSelf = weakSelf;
+        if (!data) {
+            return;
+        }
+        [data writeToURL:[strongSelf cachedNewsURL] atomically:YES];
+        [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementNotification
+                                                            object:strongSelf
+                                                          userInfo:@{@"OSUNewsAnnouncementURL":[strongSelf cachedNewsURL]}];
+        strongSelf.newsCacheTask = nil;
+    }];
+    [self.newsCacheTask resume];
+}
+
 - (void)setUnreadNewsAvailable:(BOOL)unreadNewsAvailable
 {
     BOOL originalUnreadValue = self.unreadNewsAvailable;
@@ -512,6 +533,23 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
             [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementHasBeenReadNotification object:nil];
         }
     }
+}
+
+- (BOOL)currentNewsIsCached
+{
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[self cachedNewsURL].path];
+    if (!fileExists) {
+        [self _cacheCurrentNews];
+        return NO;
+    }
+    return YES;
+}
+
+- (NSURL *)cachedNewsURL
+{
+    NSURL *cacheURL = [[NSFileManager defaultManager] URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:nil];
+    cacheURL = [cacheURL URLByAppendingPathComponent:@"GraffleNewsAnnouncement.html"];
+    return cacheURL;
 }
 
 - (NSURL *)currentNewsURL
@@ -528,9 +566,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (currentNewsURL != self.currentNewsURL) {
         [[OSUPreferences currentNewsURL] setStringValue:[currentNewsURL absoluteString]];
         self.unreadNewsAvailable = YES;
-        [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementNotification
-                                                            object:self
-                                                          userInfo:@{@"OSUNewsAnnouncementURL":currentNewsURL}];
+        [self _cacheCurrentNews];
     }
 }
 
@@ -785,6 +821,9 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 {    
     if (_currentCheckOperation)
         return;
+    
+    // clear cached news url to avoid using stale data
+    [[NSFileManager defaultManager] removeItemAtURL:[self cachedNewsURL] error:nil];
     
     [self _beginLoadingURLInitiatedByUser:NO];
 }
