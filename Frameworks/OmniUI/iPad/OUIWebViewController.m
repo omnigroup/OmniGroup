@@ -334,7 +334,10 @@ RCS_ID("$Id$")
 
 - (void)loadView
 {
-    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    WKWebViewConfiguration *configuration = [WKWebViewConfiguration new];
+    configuration.suppressesIncrementalRendering = YES;
+    configuration.allowsInlineMediaPlayback = YES;
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
     webView.navigationDelegate = self;
     
     self.view = webView;

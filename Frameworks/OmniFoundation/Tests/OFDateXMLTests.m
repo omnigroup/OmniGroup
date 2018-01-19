@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,12 +43,12 @@ RCS_ID("$Id$")
     
     NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:date];
     
-    XCTAssertTrue([components year] == 2004);
-    XCTAssertTrue([components month] == 6);
-    XCTAssertTrue([components day] == 7);
-    XCTAssertTrue([components hour] == 14);
-    XCTAssertTrue([components minute] == 15);
-    XCTAssertTrue([components second] == 34); // Not float (Radar 4867971).  Choice of floating portion ensures we are checking that they truncate.
+    XCTAssertEqual([components year], 2004);
+    XCTAssertEqual([components month], 6);
+    XCTAssertEqual([components day], 7);
+    XCTAssertEqual([components hour], 14);
+    XCTAssertEqual([components minute], 15);
+    XCTAssertEqual([components second], 34); // Not float (Radar 4867971).  Choice of floating portion ensures we are checking that they truncate.
     
     NSTimeInterval interval = [date timeIntervalSinceReferenceDate];
     NSTimeInterval milliseconds = interval - floor(interval);
@@ -278,6 +278,16 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
     NSTimeInterval OffsetInterval = [[calendar dateFromComponents:components] timeIntervalSinceReferenceDate];
     
     XCTAssertEqualWithAccuracy(UTCInterval - OffsetInterval, 3600, 0.01);
+}
+
+- (void)testOutOfRangeComponent;
+{
+    // Our current implementation uses a path that wraps out-of-range components. This isn't ideal, but we should get a reasonable result.
+    NSDate *date = [[NSDate alloc] initWithXMLString:@"2001-01-01T25:00:00Z"];
+
+    NSString *dateString = [date xmlString];
+
+    XCTAssertEqualObjects(dateString, @"2001-01-02T01:00:00.000Z");
 }
 
 @end

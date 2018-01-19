@@ -85,18 +85,13 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIAbstrac
 
 #pragma mark - UIViewController subclass
 
-- (void)loadView;
+- (void)viewDidLoad;
 {
-    [super loadView];
+    [super viewDidLoad];
 
     self.textWell.label = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
     self.textWell.labelFont = [[self.textWell class] defaultLabelFont];
     [self.textWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
-}
-
-- (void)viewDidLoad;
-{
-    [super viewDidLoad];
 
     // Setup detail pane
     OUIFontInspectorPane *familiesPane = [[OUIFontInspectorPane alloc] init];

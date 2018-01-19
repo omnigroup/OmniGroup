@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -140,7 +140,7 @@ static NSMutableDictionary *helpersByExtension = nil;
     return _isCreatingToolbar;
 }
 
-- (NSDictionary *)toolbarInfoForItem:(NSString *)identifier;
+- (NSDictionary *)toolbarInfoForItem:(NSToolbarItemIdentifier)identifier;
 {
     NSDictionary *toolbarItemInfo = [ToolbarItemInfo objectForKey:[self toolbarConfigurationName]];
     OBASSERT(toolbarItemInfo);
@@ -149,7 +149,7 @@ static NSMutableDictionary *helpersByExtension = nil;
     return itemInfo;
 }
 
-- (NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
+- (NSDictionary *)localizedToolbarInfoForItem:(NSToolbarItemIdentifier)identifier;
 {
     NSDictionary *toolbarItemInfo = [self toolbarInfoForItem:identifier];
     if (toolbarItemInfo == nil) {
@@ -212,7 +212,7 @@ static NSMutableDictionary *helpersByExtension = nil;
     return @"Toolbar";
 }
 
-- (NSString *)toolbarIdentifier;
+- (NSToolbarIdentifier)toolbarIdentifier;
 {
     return [self toolbarConfigurationName];
 }
@@ -249,7 +249,7 @@ static NSMutableDictionary *helpersByExtension = nil;
  3: item dictionary with key "<identifier>"; this is only for backwards compatibility and will hit an assertion
  
  */
-static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSString *identifier, NSString *displayKey, NSDictionary *itemInfo, BOOL preferNilToFallback)
+static NSString *_displayName(NSBundle *bundle, NSString *stringsFileName, NSToolbarItemIdentifier identifier, NSString *displayKey, NSDictionary *itemInfo, BOOL preferNilToFallback)
 {
     NSString *key, *value;
     NSString *novalue = @" -NO VALUE- ";  // Hopefully no one will actually want to localize something to this value.
@@ -278,7 +278,7 @@ static void copyProperty(NSToolbarItem *anItem,
                          NSString *propertyName,
                          NSBundle *bundle,
                          NSString *stringsFileName,
-                         NSString *itemIdentifier,
+                         NSToolbarItemIdentifier itemIdentifier,
                          NSDictionary *itemInfo,
                          NSString *specificItemDisplayName,
                          BOOL preferNilToFallback)
@@ -294,7 +294,7 @@ static void copyProperty(NSToolbarItem *anItem,
     [anItem setValue:value forKey:propertyName];
 }
 
-- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSToolbarItemIdentifier)itemIdentifier willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
     OAToolbarItem *newItem;
     NSDictionary *itemInfo;
@@ -302,7 +302,7 @@ static void copyProperty(NSToolbarItem *anItem,
     NSObject <OAToolbarHelper> *helper = nil;
     NSString *extension, *value;
     NSImage *itemImage = nil;
-    NSString *effectiveItemIdentifier;
+    NSToolbarItemIdentifier effectiveItemIdentifier;
     NSString *nameWithoutExtension;
     
     // Always use OAToolbarItem since we can't know up front whether we'll need a delegate or not.
@@ -413,11 +413,11 @@ static void copyProperty(NSToolbarItem *anItem,
         return newItem;
 }
 
-- (NSArray<NSString *> *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar;
+- (NSArray<NSToolbarItemIdentifier> *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar;
 {
     NSEnumerator *enumerator;
     NSObject <OAToolbarHelper> *helper;
-    NSMutableArray <NSString *> *results;
+    NSMutableArray <NSToolbarItemIdentifier> *results;
     
     results = [NSMutableArray arrayWithArray:[allowedToolbarItems objectForKey:[self toolbarConfigurationName]]];
     enumerator = [helpersByExtension objectEnumerator];

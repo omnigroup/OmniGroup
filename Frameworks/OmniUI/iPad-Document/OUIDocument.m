@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,21 +7,14 @@
 
 #import <OmniUIDocument/OUIDocument.h>
 
-#import <OmniFoundation/OmniFoundation.h>
-#import <OmniDocumentStore/ODSStore.h>
-#import <OmniDocumentStore/ODSScope.h>
-#import <OmniDocumentStore/ODSFileItem.h>
-#import <OmniDocumentStore/ODSUtilities.h>
-#import <OmniFileExchange/OmniFileExchange.h>
+@import OmniFoundation;
+@import OmniDocumentStore;
+@import OmniFileExchange;
+@import OmniUI;
+
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
-#import <OmniUI/OUIInspector.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUI/OUIUndoIndicator.h>
-#import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUI/OUIShieldView.h>
-#import <OmniUI/OUIPasswordAlert.h>
-#import <OmniUI/OUIInteractionLock.h>
 
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -66,6 +59,7 @@ OB_HIDDEN
 @property (weak) OUIDocument *document;
 @property (readonly, strong) NSError *error;
 @property (readonly, copy) NSString *password;
+@property (nonatomic, strong) NSString *hint;
 @end
 
 @implementation OUIDocument
@@ -128,6 +122,11 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 + (void)_privateUndoModeTimerFired:(NSTimer *)timer
 {
+}
+
++ (NSURL *)builtInBlankTemplateURL;
+{
+    return nil;
 }
 
 + (BOOL)shouldShowAutosaveIndicator;
@@ -196,7 +195,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     
     if (!(self = [super initWithFileURL:url]))
         return nil;
-    
+
     _documentScope = (OFXDocumentStoreScope *)[fileItem scope];
     
     // When groups fall off the end of this limit and deallocate objects inside them, those objects come back and try to remove themselves from the undo manager.  This asplodes.
@@ -249,6 +248,12 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
         OBStrongRelease(viewController);
         OBStrongRelease(undoIndicator);
     });
+}
+
+- (void)transientFileItemForPreviewGeneration:(ODSFileItem *)fileItem;
+{
+    _transientFileItem = fileItem;
+    _forPreviewGeneration = YES;
 }
 
 - (ODSFileItem *)fileItem;
@@ -1424,6 +1429,7 @@ static OFPreference *LastEditsPreference;
     [_documentViewController.view removeFromSuperview];
     [_documentViewController removeFromParentViewController];
     _documentViewController = nil;
+
     return state;
 }
 
@@ -1487,8 +1493,6 @@ static OFPreference *LastEditsPreference;
 
 + (OUIImageLocation *)placeholderPreviewImageForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 {
-//    OBFinishPortingLater("bug:///138402 (iOS-OmniGraffle Crasher: Crash when closing a document)");
-//    return nil;
     OBRequestConcreteImplementation(self, _cmd);
 }
 
@@ -1662,7 +1666,7 @@ typedef NSString * (^MessageProvider)(void);
         self.lastQueuedUpdateMessage = message;
         
         // Only displays new message if we aren't in the middle of -relinquishPresentedItemToWriter:. We'll try again in -enableEditing
-        if (self.editingDisabled == NO && self.viewControllerToPresent.isViewLoaded) {
+        if (!self.editingDisabled && self.documentViewController != nil && self.viewControllerToPresent.isViewLoaded) {
             [self displayLastQueuedUpdateMessage];
         }
     }];
@@ -1713,7 +1717,7 @@ typedef NSString * (^MessageProvider)(void);
     
     OUIDocumentEncryptionPassphrasePromptOperation *prompt = [[OUIDocumentEncryptionPassphrasePromptOperation alloc] init];
     prompt.document = self;
-    // TOOD: Password hint.
+    prompt.hint = passwordHint;
     
     [[[OUIAppController controller] backgroundPromptQueue] addOperation:prompt];
     
@@ -1738,14 +1742,12 @@ typedef NSString * (^MessageProvider)(void);
 
 @implementation OUIDocumentEncryptionPassphrasePromptOperation
 {
-    OUIDocument * __weak document;
-    NSString *enteredPassword;
-    NSError *enteredError;
+    OUIDocument * __weak _document;
+    NSString *_enteredPassword;
+    NSError *_enteredError;
 }
 
-@synthesize document = document,
-error = enteredError,
-password = enteredPassword;
+@synthesize document = _document, error = _enteredError, password = _enteredPassword;
 
 - (void)start;
 {
@@ -1759,7 +1761,7 @@ password = enteredPassword;
             OUIDocument *strongDoc = self.document;
 
             if (!strongDoc || self.cancelled) {
-                enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                _enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
                 [self finish];
                 return;
             }
@@ -1793,17 +1795,14 @@ password = enteredPassword;
         NSString *promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened"),
                                    fileItem.name];
         
-        OUIPasswordAlert *dialog = [[OUIPasswordAlert alloc] initWithTitle:promptMessage options:0];
-
-        dialog.finished = ^(OUIPasswordAlert *a, OUIPasswordAlertAction action){
-            switch (action) {
-                default:
-                case OUIPasswordAlertActionCancel:
-                    enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
-                    break;
-                case OUIPasswordAlertActionLogIn:
-                    enteredPassword = a.password;
-                    break;
+        OUIPasswordPromptViewController *dialog = [[OUIPasswordPromptViewController alloc] init];
+        dialog.title = promptMessage;
+        dialog.hintText = _hint;
+        dialog.handler = ^(BOOL shouldContinue, NSString *password) {
+            if (!shouldContinue) {
+                _enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+            } else {
+                _enteredPassword = password;
             }
             if (needToChangeUserInteractionEnabled) {
                 UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
@@ -1814,7 +1813,7 @@ password = enteredPassword;
 
         [self.document.applicationLock unlock];
         self.document.applicationLock = nil;
-        [dialog showFromController:presenter];
+        [presenter presentViewController:dialog animated:YES completion:nil];
     });
 }
 

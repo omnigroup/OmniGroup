@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,13 +15,11 @@
 
 #import <Foundation/NSGeometry.h> // For NSPoint, NSRect
 
-@interface OAWindowCascade : OFObject
-{
-    NSRect lastStartingFrame;
-    NSPoint lastWindowOrigin;
-}
+NS_ASSUME_NONNULL_BEGIN
 
-+ (id)sharedInstance;
+@interface OAWindowCascade : OFObject
+
++ (instancetype)sharedInstance;
 + (void)addDataSource:(id <OAWindowCascadeDataSource>)newValue;
 + (void)removeDataSource:(id <OAWindowCascadeDataSource>)oldValue;
 + (void)avoidFontPanel;
@@ -29,14 +27,16 @@
 
 + (NSScreen *)screenForPoint:(NSPoint)aPoint;
 
-+ (NSRect)unobscuredWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(NSArray *)windowsToAvoid;
++ (NSRect)unobscuredWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(nullable NSArray <NSWindow *> *)windowsToAvoid;
 
-- (NSRect)nextWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(NSArray *)windowsToAvoid;
+- (NSRect)nextWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(nullable NSArray <NSWindow *> *)windowsToAvoid;
 - (void)reset;
 
 @end
 
 
 @protocol OAWindowCascadeDataSource
-- (NSArray *)windowsThatShouldBeAvoided;
+- (NSArray <NSWindow *> *)windowsThatShouldBeAvoided;
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,12 @@
 
 #import <OmniFoundation/OFNoFreeDebugZone.h>
 
-#import <OmniFoundation/OFSimpleLock.h>
-
 #import <unistd.h>
 #import <pthread.h>
 
 RCS_ID("$Id$")
 
+#error If this is resurrected, it should use os_unfair_lock, most likely.
 
 #define USE_MUTEX
 
@@ -72,7 +71,7 @@ typedef struct _OFNoFreeDebugZone {
 #ifdef USE_MUTEX
     pthread_mutex_t  lock;
 #else
-    OFSimpleLockType lock;
+    os_unfair_lock lock;
 #endif
 
     OFNoFreeDebugRegion **regions;
@@ -89,8 +88,8 @@ static malloc_zone_t *_OFNoFreeDebugZoneCreate();
 #define ZLOCK(zone) pthread_mutex_lock(&zone->lock)
 #define ZUNLOCK(zone) pthread_mutex_unlock(&zone->lock)
 #else
-#define ZLOCK(zone) OFSimpleLock(&zone->lock)
-#define ZUNLOCK(zone) OFSimpleUnlock(&zone->lock)
+#define ZLOCK(zone) os_unfair_lock_lock(&zone->lock)
+#define ZUNLOCK(zone) os_unfair_lock_unlock(&zone->lock)
 #endif
 
 static BOOL _OFNoFreeDebugZoneLogEnabled = NO;
@@ -253,7 +252,7 @@ static malloc_zone_t *_OFNoFreeDebugZoneCreate()
 #ifdef USE_MUTEX
     pthread_mutex_init(&zone->lock, NULL);
 #else
-    OFSimpleLockInit(&zone->lock);
+    zone->lock = OS_UNFAIR_LOCK_INIT;
 #endif
     
     zone->regionsSize = vm_page_size / sizeof(*zone->regions);

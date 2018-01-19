@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,7 @@
 #import <OmniUIDocument/OmniUIDocumentAppearance.h>
 #import <OmniUIDocument/OUIDocumentPreviewingViewController.h>
 #import <OmniUIDocument/OUIReplaceRenameDocumentAlertController.h>
+#import <OmniUIDocument/OmniUIDocument-Swift.h>
 #import "OUIDocumentOpenAnimator.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocument-Internal.h"
@@ -135,12 +136,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     OBPRECONDITION(scope);
     OBPRECONDITION(folderItem);
 
-#if defined(DEBUG_lizard)
-    if ([scope isExternal]) {
-        OBStopInDebugger("<bug:///147708> (Frameworks-iOS Bug: Remove Other Documents)");
-    }
-#endif
-    
     // Need to provide nib name explicitly, since template picker is a subclass but should use the same nib
     if (!(self = [super initWithNibName:@"OUIDocumentPickerViewController" bundle:OMNI_BUNDLE]))
         return nil;
@@ -185,7 +180,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     // The delegate likely wants to update the title displayed in the document picker toolbar.
     [self updateTitle];
-        
+    
     // --- _setupFilteredItemsBinding:
     
     // We might want to bind _documentStore.fileItems to us and then mirror that property to the scroll view, or force feed it. This would allow us to stage animations or whatnot.
@@ -451,9 +446,24 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     if (![self canPerformAction:_cmd withSender:sender])
         return;
 
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    ODSDocumentType type = [self _documentTypeForCurrentFilter];
+    ODSDocumentType type = [self documentTypeForCurrentFilter];
 
+    // Use the new template picker if the internalTemplateDelegate is set
+    if (_documentPicker.internalTemplateDelegate != nil) {
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"OUITemplatePicker" bundle:OUIDocumentPickerViewController.bundle];
+        OUITemplatePicker *viewController = (OUITemplatePicker *)[storyboard instantiateViewControllerWithIdentifier:@"templatePicker"];
+        viewController.documentPicker = _documentPicker;
+        viewController.folderItem = _folderItem;
+        viewController.navigationTitle = NSLocalizedStringWithDefaultValue(@"ouiTemplatePicker.navigationTitle", @"OmniUIDocument", OMNI_BUNDLE, @"Choose a Template", @"Navigation bar title: Choose a Template");
+        viewController.internalTemplateDelegate = _documentPicker.internalTemplateDelegate;
+        viewController.templateDelegate = self;
+        // TODO: fix to support animations
+        [self.navigationController pushViewController:viewController animated:NO];
+        return;
+    }
+
+    // Use old style template picker if delegate implements documentPickerTemplateDocumentFilter:
+    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
     if ([delegate respondsToSelector:@selector(documentPickerTemplateDocumentFilter:)]) {
         OBASSERT([delegate documentPickerTemplateDocumentFilter:_documentPicker], @"Need to provide an actual filter for templates if you expect to use the template picker for new documents");
 
@@ -465,24 +475,25 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
+- (void)newDocumentWithContext:(OUINewDocumentCreationContext *)context completion:(void (^)(void))completion;
 {
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
 
+    ODSScope *documentScope = context.scope;
+    ODSStore *documentStore = context.store;
+    ODSFolderItem *folderItem = context.folderItem;
+    ODSDocumentType type = context.documentType;
+    NSURL *templateURL = context.templateURL;
+    NSString *documentName = context.documentName;
+    UIView *animateFromView = context.animateFromView;
+
     OUIActivityIndicator *activityIndicator = nil;
-
-    if (templateFileItem) {
-        OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:templateFileItem];
+    if (animateFromView) {
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:animateFromView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
+    } else {
         UIView *view = _documentPicker.navigationController.topViewController.view;
-        if (fileItemView)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
-        else
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:view withColor:UIColor.whiteColor];
     }
-
-    ODSScope *documentScope = preserveDocumentName ? templateFileItem.scope : _documentScope;
-    ODSStore *documentStore = preserveDocumentName ? templateFileItem.scope.documentStore : _documentStore;
-    ODSFolderItem *folderItem = preserveDocumentName ? templateFileItem.parentFolder : _folderItem;
 
     // Instead of duplicating the template file item's URL (if we have one), we always read it into a OUIDocument and save it out, letting the document know that this is for the purposes of instantiating a new document. The OUIDocument may do extra work in this case that wouldn't get done if we just cloned the file (and this lets the work be done atomically by saving the new file to a temporary location before moving to a visible location).
     NSURL *temporaryURL = [documentStore temporaryURLForCreatingNewDocumentOfType:type];
@@ -503,17 +514,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 return;
             }
 
-            ODSFileItem *fileItemToRevealFrom;
-            if (templateFileItem != nil && ![[templateFileItem scope] isExternal]) {
-                fileItemToRevealFrom = templateFileItem;
-            } else {
-                fileItemToRevealFrom = createdFileItem;
-            }
-
             // We want the file item to have a new date, but this is the wrong place to do it. Want to do it in the document picker before it creates the item.
             // [[NSFileManager defaultManager] touchItemAtURL:createdItem.fileURL error:NULL];
 
-            [self _revealAndActivateNewDocumentFileItem:createdFileItem fileItemToRevealFrom:fileItemToRevealFrom completionHandler:^{
+            // _revealAndActivateNewDocumentFileItem:... will dismiss any open template pickers, so we want to reveal from the createdFileItem which should be visible in the document browser.
+            [self _revealAndActivateNewDocumentFileItem:createdFileItem fileItemToRevealFrom:createdFileItem completionHandler:^{
                 cleanup();
             }];
         }];
@@ -528,9 +533,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         __block OUIDocument *document;
         __autoreleasing NSError *readError;
 
-        if (templateFileItem != nil) {
+        if (templateURL != nil) {
             NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-            NSURL *templateURL = templateFileItem.fileURL;
             [coordinator readItemAtURL:templateURL withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
                 NSURL *securedURL = nil;
                 if ([newURL startAccessingSecurityScopedResource])
@@ -540,7 +544,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 return (document != nil);
             }];
         } else {
-            document = [[cls alloc] initWithContentsOfTemplateAtURL:nil toBeSavedToURL:temporaryURL error:&readError];
+            NSURL *blankURL = [cls builtInBlankTemplateURL]; // No coordination here since if this is non-nil it should be in the app wrapper.
+            OBASSERT_IF(blankURL != nil, OFURLContainsURL([[NSBundle mainBundle] bundleURL], blankURL));
+            document = [[cls alloc] initWithContentsOfTemplateAtURL:blankURL toBeSavedToURL:temporaryURL error:&readError];
         }
 
         if (!document) {
@@ -563,7 +569,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                             return;
                         }
 
-                        NSString *documentName = preserveDocumentName ? templateFileItem.name : nil;
                         [_documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:documentScope folder:folderItem documentType:type documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
                             finish(createdFileItem, error);
                         }];
@@ -572,6 +577,20 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             }];
         }];
     }];
+}
+
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
+{
+    ODSScope *documentScope = preserveDocumentName ? templateFileItem.scope : _documentScope;
+    ODSStore *documentStore = preserveDocumentName ? templateFileItem.scope.documentStore : _documentStore;
+    ODSFolderItem *folderItem = preserveDocumentName ? templateFileItem.parentFolder : _folderItem;
+    NSString *documentName = preserveDocumentName ? templateFileItem.name : nil;
+    NSURL *templateURL = templateFileItem.fileURL;
+    OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:templateFileItem];
+
+    OUINewDocumentCreationContext *context = [[OUINewDocumentCreationContext alloc] initWith:documentScope store:documentStore folderItem:folderItem documentType:type templateURL:templateURL documentName:documentName animateFromView:fileItemView];
+
+    [self newDocumentWithContext:context completion:completion];
 }
 
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
@@ -885,8 +904,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Delete %ld Documents", @"OmniUIDocument", OMNI_BUNDLE, @"delete button title"), count];
     } else if (self.selectedScope.isExternal) {
         if (count == 1)
-            return NSLocalizedStringFromTableInBundle(@"Remove Document", @"OmniUIDocument", OMNI_BUNDLE, @"remove button title");
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Remove %ld Documents", @"OmniUIDocument", OMNI_BUNDLE, @"remove button title"), count];
+            return NSLocalizedStringFromTableInBundle(@"Clear Document", @"OmniUIDocument", OMNI_BUNDLE, @"remove button title");
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Clear %ld Documents", @"OmniUIDocument", OMNI_BUNDLE, @"clear button title"), count];
     } else {
         if (count == 1)
             return NSLocalizedStringFromTableInBundle(@"Move to Trash", @"OmniUIDocument", OMNI_BUNDLE, @"move to trash button title");
@@ -969,7 +988,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // New folder
     OUIMenuOption *newFolderOption = nil;
     if (willAddNewFolder) {
-        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
             [self _makeFolderFromSelectedDocuments];
         }];
         [topLevelMenuOptions addObject:newFolderOption];
@@ -1021,7 +1040,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
     } else {
         // This is a valid destination. Great!
-        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^(OUIMenuOption *_option, UIViewController *presentingViewController){
+        option = [[OUIMenuOption alloc] initWithTitle:candidateParentFolder.name image:folderImage action:^(OUIMenuInvocation *invocation){
             [self _moveSelectedDocumentsToFolder:candidateParentFolder];
         }];
     }
@@ -1259,9 +1278,14 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     // For now our filters are exclusive, but if they stop being so someday, we could filter our selection instead of clearing it entirely.
     [self clearSelection:NO];
-    
+
+    // Our overlay view message probably needs to change. Remove the old one and generate a new one.
+    [self _setEmptyOverlayView:nil];
+    [self _updateEmptyViewControlVisibility];
+
     // The delegate likely wants to update the title displayed in the document picker toolbar.
     [self updateTitle];
+
     [_mainScrollView previewedItemsChangedForGroups];
 }
 
@@ -1341,7 +1365,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     NSString *nameLabel = nil;
     if ([self.documentPicker.delegate respondsToSelector:@selector(documentPicker:nameLabelForItem:)]) {
         nameLabel = [self.documentPicker.delegate documentPicker:self.documentPicker nameLabelForItem:item];
-    } else if ([self _documentTypeForCurrentFilter] == ODSDocumentTypeTemplate) {
+    } else if ([self documentTypeForCurrentFilter] == ODSDocumentTypeTemplate) {
         nameLabel =  NSLocalizedStringFromTableInBundle(@"Template:", @"OmniUIDocument", OMNI_BUNDLE, @"file name label for template filte types");
     }
     if (!nameLabel)
@@ -1404,7 +1428,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     if (!_backgroundView.image)
         _backgroundView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1.0];
     else
-        _backgroundView.contentMode = UIViewContentModeTop;
+        _backgroundView.contentMode = UIViewContentModeScaleAspectFill;
     
     OFPreference *sortPreference = [[self class] sortPreference];
     [OFPreference addObserver:self selector:@selector(selectedSortChanged) forPreference:sortPreference];
@@ -1524,7 +1548,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [super viewWillAppear:animated];
     
     if (!_topControls) {
-        [self _setupTitleLabelToUseInCompactWidth];
         [self setupTopControls];
     }
     [self _adjustTopControlsAlphaForScrollViewYOffset:_mainScrollView.contentOffset.y];
@@ -1835,10 +1858,10 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
 {
     if (!_isReadOnly)
-        [self _startedRenamingInItemView:itemView];
+        [self _startedRenamingInItemView:itemView nameTextField:nameTextField];
 }
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemView:(OUIDocumentPickerItemView *)itemView finishedEditingName:(NSString *)name;
@@ -1871,9 +1894,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return self.isReadOnly;
 }
 
-- (ODSDocumentType)_documentTypeForCurrentFilter;
++ (ODSDocumentType)documentTypeForCurrentFilterWith:(OUIDocumentPicker *)documentPicker;
 {
-    OUIDocumentPickerFilter *currentFilter = [self.class selectedFilterForPicker:_documentPicker];
+    OUIDocumentPickerFilter *currentFilter = [self.class selectedFilterForPicker:documentPicker];
     if (currentFilter == nil || [currentFilter.identifier isEqualToString:ODSDocumentPickerFilterDocumentIdentifier]) {
         return ODSDocumentTypeNormal;
     } else if ([currentFilter.identifier isEqualToString:ODSDocumentPickerFilterTemplateIdentifier]) {
@@ -1881,6 +1904,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     } else {
         return ODSDocumentTypeOther;
     }
+}
+
+- (ODSDocumentType)documentTypeForCurrentFilter;
+{
+    return [self.class documentTypeForCurrentFilterWith:_documentPicker];
 }
 
 static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self, OUIDocumentPickerItemView *itemView, BOOL selected)
@@ -2011,16 +2039,19 @@ static UIImage *ImageForScope(ODSScope *scope) {
     else
         menuTitle = NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Share menu title");
     
+    BOOL shouldShowExternalScope = OUIDocumentPicker.shouldShowExternalScope;
     for (ODSScope *scope in destinationScopes) {
         NSMutableArray *folderOptions = [NSMutableArray array];
         if (scope.isExternal) {
-            // bug:///147708
-            continue;
+            ODSExternalScope *externalScope = OB_CHECKED_CAST(ODSExternalScope, scope);
+            if (!shouldShowExternalScope || !externalScope.allowTransfers) {
+                continue;
+            }
         }
 
         [self _addMoveToFolderOptions:folderOptions candidateParentFolder:scope.rootFolder currentFolder:currentFolder excludedTreeFolders:selectedFolders];
         
-        OUIMenuOptionAction moveToScopeRootAction = ^(OUIMenuOption *option, UIViewController *presentingViewController){
+        OUIMenuOptionAction moveToScopeRootAction = ^(OUIMenuInvocation *invocation){
             [self _moveSelectedDocumentsToFolder:scope.rootFolder];
         };
         
@@ -2187,7 +2218,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     }
 
     if (self.selectedScope.isExternal) {
-        dropOperation = UIDropOperationForbidden;
+        dropOperation = UIDropOperationCopy;
     }
 
     _latestDropProposal = [[UIDropProposal alloc] initWithDropOperation:dropOperation];
@@ -2196,6 +2227,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)dropInteraction:(UIDropInteraction *)interaction performDrop:(id<UIDropSession>)session;
 {
+    if (self.selectedScope.isExternal) {
+        [self _performLinkForDragItems:session.items];
+        return;
+    }
     switch (_latestDropProposal.operation) {
         case UIDropOperationMove:
             [self _performMoveForDragItems:session.items];
@@ -2205,6 +2240,26 @@ static UIImage *ImageForScope(ODSScope *scope) {
             break;
         default:
             break;
+    }
+}
+
+- (void)_performLinkForDragItems:(NSArray <UIDragItem *> *)dragItems;
+{
+    OUIDocumentAppController *appController = [OUIDocumentAppController controller];
+    for (UIDragItem *dragItem in dragItems) {
+        NSItemProvider *itemProvider = dragItem.itemProvider;
+        for (NSString *registeredTypeIdentifier in itemProvider.registeredTypeIdentifiers) {
+            if ([appController canViewFileTypeWithIdentifier:registeredTypeIdentifier]) {
+                [itemProvider loadInPlaceFileRepresentationForTypeIdentifier:registeredTypeIdentifier completionHandler:^(NSURL *url, BOOL isInPlace, NSError *error) {
+                    if (url != nil && isInPlace) {
+                        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                            [appController addRecentlyOpenedDocumentURL:url];
+                        }];
+                    }
+                }];
+                break;
+            }
+        }
     }
 }
 
@@ -2375,7 +2430,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             deleteLabel = NSLocalizedStringFromTableInBundle(@"Delete", @"OmniUIDocument", OMNI_BUNDLE, @"Delete toolbar item accessibility label.");
             deleteImageName = @"OUIDeleteFromTrash";
         } else if (self.selectedScope.isExternal) {
-            deleteLabel = NSLocalizedStringFromTableInBundle(@"Remove", @"OmniUIDocument", OMNI_BUNDLE, @"Remove from external container toolbar item accessibility label.");
+            deleteLabel = NSLocalizedStringFromTableInBundle(@"Clear", @"OmniUIDocument", OMNI_BUNDLE, @"Clear from Recent Documents container toolbar item accessibility label.");
             deleteImageName = @"OUIDocumentRemoveFromExternal";
         } else {
             deleteLabel = NSLocalizedStringFromTableInBundle(@"Move to Trash", @"OmniUIDocument", OMNI_BUNDLE, @"Move to Trash toolbar item accessibility label.");
@@ -2542,10 +2597,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
         
         if ((_documentStore.documentTypeForNewFiles != nil) && !self.selectedScope.isTrash && [_documentStore.scopes containsObjectIdenticalTo:_documentScope]) {
             if (self.selectedScope.isExternal) {
-                UIImage *addImage = [UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-                OUIBarButtonItem *linkItem = [[OUIBarButtonItem alloc] initWithImage:addImage style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(linkDocumentFromExternalContainer:)];
-                linkItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Link External Document", @"OmniUIDocument", OMNI_BUNDLE, @"Link External Document toolbar item accessibility label.");
-                [rightItems addObject:linkItem];
+                UIImage *openImage = [UIImage imageNamed:@"OUIToolbarButtonImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                OUIBarButtonItem *openItem = [[OUIBarButtonItem alloc] initWithImage:openImage style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(openDocumentFromExternalContainer:)];
+                openItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Open External Document", @"OmniUIDocument", OMNI_BUNDLE, @"Open External Document toolbar item accessibility label.");
+                [rightItems addObject:openItem];
             } else {
                 if (!self.addDocumentButtonItem) {
                     UIImage *addImage = [UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
@@ -2611,7 +2666,14 @@ static UIImage *ImageForScope(ODSScope *scope) {
     }
     
     // Disable adding new documents if we are not licensed
-    self.addDocumentButtonItem.enabled = [[OUIAppController sharedController] canCreateNewDocument];
+    self.addDocumentButtonItem.enabled = [self _canCreateNewDocument];
+}
+
+- (BOOL)_canCreateNewDocument;
+{
+    if (![[OUIAppController sharedController] canCreateNewDocument])
+        return NO;
+    return YES;
 }
 
 - (void)_ensureLegibilityOfSegmentedControl:(UISegmentedControl*)control{
@@ -2631,6 +2693,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)setupTopControls;
 {
+    [self _setupTitleLabelToUseInCompactWidth];
+
     NSArray *availableFilters = [self availableFilters];
     BOOL willDisplayFilter = ([availableFilters count] > 1);
 
@@ -2714,7 +2778,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
     [_mainScrollView addSubview:_topControls];
     _mainScrollView.topControls = _topControls;
-    
+
+    [self _adjustTopControlsAlphaForScrollViewYOffset:_mainScrollView.contentOffset.y];
+
     [self _updateToolbarItemsEnabledness];
 }
 
@@ -2722,6 +2788,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)_setupTitleLabelToUseInCompactWidth;
 {
+    if (_titleLabelToUseInCompactWidth != nil)
+        return;
+
     _titleLabelToUseInCompactWidth = [[UILabel alloc] initWithFrame:CGRectZero];
     
     UIFont *titleFont = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
@@ -3087,7 +3156,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     [_mainScrollView previewsUpdatedForFileItem:fileItem];
 }
 
-- (void)_startedRenamingInItemView:(OUIDocumentPickerItemView *)itemView;
+- (void)_startedRenamingInItemView:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
 {
     if (self.renameSession) {
         return;  // because this will get called on any size change
@@ -3096,7 +3165,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     OBPRECONDITION(_renameSession == nil);
     OBPRECONDITION(itemView);
 
-    self.renameSession = [[OUIDocumentRenameSession alloc] initWithDocumentPicker:self itemView:itemView];
+    self.renameSession = [[OUIDocumentRenameSession alloc] initWithDocumentPicker:self itemView:itemView nameTextField:nameTextField];
     
     [self _updateToolbarItemsForTraitCollection:self.traitCollection animated:YES];
     _topControls.userInteractionEnabled = NO;
@@ -3251,34 +3320,45 @@ static UIImage *ImageForScope(ODSScope *scope) {
     if (_filteredItems.count > 0)
         return nil; // Not empty
     
-    if (!_emptyOverlayView) {
+    if (_emptyOverlayView == nil)
         _emptyOverlayView = [self newEmptyOverlayView];
-    }
+
     return _emptyOverlayView;
 }
 
 - (OUIEmptyOverlayView *)newEmptyOverlayView;
 {
-    OUIEmptyOverlayView *newEmptyOverlayView = nil;
-    
+    NSString *buttonTitle;
+    NSString *buttonMessage;
+    void (^buttonAction)(void) = NULL;
+
     if (![_documentStore.scopes containsObjectIdenticalTo:_documentScope]) {
-        NSString *message = NSLocalizedStringFromTableInBundle(@"This Cloud Account no longer exists.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker because of removed account text");
-        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:message buttonTitle:nil customFontColor:[[OUIDocumentAppController controller] emptyOverlayViewTextColor] action:nil];
-    } else if (!_emptyOverlayView) {
-        NSString *buttonTitle;
-        if (_documentScope.isExternal) {
-            buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker text for Other Documents");
+        buttonMessage = NSLocalizedStringFromTableInBundle(@"This Cloud Account no longer exists.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker because of removed account text");
+    } else {
+
+        BOOL isExternalScope = _documentScope.isExternal;
+        if (isExternalScope) {
+            buttonTitle = NSLocalizedStringFromTableInBundle(@"Open a document to add it to this view.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker text for Recent Documents");
+            buttonAction = ^{
+                [[OUIDocumentAppController controller] openDocumentFromExternalContainer:nil];
+            };
         } else {
-            buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a document.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
+            __weak OUIDocumentPickerViewController *weakSelf = self;
+            buttonAction = ^{
+                [weakSelf newDocument:nil];
+            };
+
+            OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
+            if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterTemplateIdentifier)) {
+                buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a custom template.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
+            } else {
+                buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a document.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
+            }
         }
 
-        __weak OUIDocumentPickerViewController *weakSelf = self;
-        newEmptyOverlayView = [OUIEmptyOverlayView overlayViewWithMessage:nil buttonTitle:buttonTitle customFontColor:[[OUIDocumentAppController controller] emptyOverlayViewTextColor] action:^{
-            [weakSelf newDocument:nil];
-        }];
     }
-    
-    return newEmptyOverlayView;
+    UIColor *fontColor = buttonAction != NULL ? [[OUIDocumentAppController controller] emptyOverlayViewTextColor] : [UIColor colorWithWhite:0.0 alpha:0.6667];
+    return [OUIEmptyOverlayView overlayViewWithMessage:buttonMessage buttonTitle:buttonTitle customFontColor:fontColor action:buttonAction];
 }
 
 - (void)_updateEmptyViewControlVisibility;
@@ -3287,8 +3367,16 @@ static UIImage *ImageForScope(ODSScope *scope) {
         return;  // in this situation, our constraints would be wrong
     }
     OUIEmptyOverlayView *emptyOverlayView = [self emptyOverlayView];
-    
-    if (!emptyOverlayView) {
+    [self _setEmptyOverlayView:emptyOverlayView];
+}
+
+- (void)_setEmptyOverlayView:(OUIEmptyOverlayView *)emptyOverlayView;
+{
+    if (!self.viewIfLoaded.window) {
+        return;  // in this situation, our constraints would be wrong
+    }
+
+    if (emptyOverlayView == nil) {
         // We shouldn't be displaying one now, let's make sure to remove one if we have one already.
         if (_emptyOverlayView && _emptyOverlayView.superview) {
             _removeEmptyOverlayViewAndConstraints(self);

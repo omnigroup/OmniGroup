@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
 
-    OFSimpleLockInit(&displayablesSimpleLock);
+    displayablesLock = OS_UNFAIR_LOCK_INIT;
     _contentInfoLock = [[NSLock alloc] init];
     parentContentInfoLock = [[NSRecursiveLock alloc] init];
     taskFlags.wasActiveOnLastCheck = NO;
@@ -59,8 +59,6 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(parentContentInfo == nil);
     OBPRECONDITION(_contentInfo == nil);
-
-    OFSimpleLockFree(&displayablesSimpleLock);
 }
 
 
@@ -100,9 +98,9 @@ RCS_ID("$Id$")
     NSTimeInterval activationTimeInterval;
 
     activationTimeInterval = [NSDate timeIntervalSinceReferenceDate];
-    OFSimpleLock(&displayablesSimpleLock); {
+    os_unfair_lock_lock(&displayablesLock); {
         lastActivationTimeInterval = activationTimeInterval;
-    } OFSimpleUnlock(&displayablesSimpleLock);
+    } os_unfair_lock_unlock(&displayablesLock);
     [parentContentInfoLock lock]; {
         taskFlags.wasActiveOnLastCheck = YES;
         [parentContentInfo addActiveChildTask:self];
@@ -140,10 +138,10 @@ RCS_ID("$Id$")
     BOOL isActive;
     NSTimeInterval activationTimeInterval;
 
-    OFSimpleLock(&displayablesSimpleLock); {
+    os_unfair_lock_lock(&displayablesLock); {
         isActive = taskFlags.wasActiveOnLastCheck;
         activationTimeInterval = lastActivationTimeInterval;
-    } OFSimpleUnlock(&displayablesSimpleLock);
+    } os_unfair_lock_unlock(&displayablesLock);
     if (isActive)
         return [NSDate timeIntervalSinceReferenceDate] - activationTimeInterval;
     else

@@ -284,10 +284,11 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     [super themedAppearanceDidChange:changedAppearance];
     
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    self.view.backgroundColor = appearance.InspectorBackgroundColor;
     self.selectedTabTintColor = appearance.InspectorTextColor;
     self.horizontalTabBottomStrokeColor = appearance.HorizontalTabBottomStrokeColor;
     self.horizontalTabSeparatorTopColor = appearance.HorizontalTabSeparatorTopColor;
-    
+
     [_titleTabBar appearanceDidChange];
 }
 

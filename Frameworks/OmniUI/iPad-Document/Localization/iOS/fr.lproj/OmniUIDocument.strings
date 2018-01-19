@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ ne peut pas ouvrir ce type de fichier.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ documents";
-
 /* gigabytes */
 "%@ GB" = "%@ Go";
 
@@ -44,7 +41,7 @@
 "1 Item Selected" = "1 élément sélectionné";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Un document nommé “%@” existe déjà. Voulez-vous le remplacer ? Cette action ne peut pas être annulée.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Un document nommé “%@” existe déjà. Voulez-vous le remplacer ? Cette action ne peut pas être annulée.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Infos sur le compte";
@@ -83,7 +80,7 @@
 "Cannot Export Item" = "Impossible d’exporter l’élément";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Choisissez un format pour l’envoi de “%@” par e-mail :";
+"Choose a format for emailing \"%@\":" = "Choisissez un format pour l’envoi de “%@” par e-mail :";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Choisir un modèle";
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Choisir un format";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Effacer";
+
+/* clear button title */
+"Clear %ld Documents" = "Effacer %ld documents";
+
+/* remove button title */
+"Clear Document" = "Effacer le document";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Effacer le champ de nom";
@@ -131,7 +137,7 @@
 "Delete" = "Supprimer";
 
 /* Server account setup confirmation action label format */
-"Delete \"%@\"" = "Supprimer « %@ »";
+"Delete \"%@\"" = "Supprimer “%@”";
 
 /* delete button title */
 "Delete %ld Documents" = "Supprimer %ld documents";
@@ -197,7 +203,7 @@
 "Export \"%@\" as:" = "Exporter “%@” comme :";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "Exporter “%1$@” vers %2$@ comme :";
+"Export \"%@\" to %@ as:" = "Exporter “%1$@” vers %2$@ comme :";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exporter vers WebDAV";
@@ -228,9 +234,6 @@
 
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Dernière modification : %@ sur cet appareil";
-
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Créer un lien vers document externe";
 
 /* Server Account Setup label: location */
 "Location" = "Emplacement";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence est désactivé dans cette version de démonstration.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Ouvrez un document pour l’ajouter à cette présentation.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Ouvrir document externe";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Ouvrez ce fichier sur un autre appareil pour y configurer OmniPresence.";
 
-/* Generic name for location of external documents */
-"Other" = "Autres";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Autre…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Langue";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Personnalisé";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Choisir un modèle";
 
 /* Server Account Setup label: password */
 "Password" = "Mot de passe";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Achetez maintenant.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Supprimer";
-
-/* remove button title */
-"Remove %ld Documents" = "Supprimer %ld documents";
-
-/* remove button title */
-"Remove Document" = "Supprimer un document";
+/* Generic name for location of external documents */
+"Recent Documents" = "Documents récents";
 
 /* rename button title */
 "Rename" = "Renommer";
@@ -379,7 +391,7 @@
 "Select a Document" = "Sélectionner un document";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Envoyer “%@” vers l’app comme :";
+"Send \"%@\" to app as:" = "Envoyer “%@” vers l’app comme :";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Envoyer les réglages par e-mail";
@@ -402,7 +414,7 @@
 "Server address: %@" = "Adresse du serveur : %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Configuration de « %@ »";
+"Setting up \"%@\"" = "Configuration de “%@”";
 
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "S’abonner à un nouveau compte";
@@ -417,22 +429,22 @@
 "Tap here to add a document without a template." = "Touchez ici pour ajouter un document sans modèle.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Pour ajouter un document, touchez ici ou le + dans la barre d’outils.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Touchez ceci ou le signe + dans la barre d’outils pour ajouter un modèle personnalisé.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Cliquez sur le signe + dans la barre d'outils pour ajouter un document stocké sur iCloud Drive ou fourni par une autre application.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Pour ajouter un document, touchez ici ou le + dans la barre d’outils.";
 
 /* file name label for template filte types */
 "Template:" = "Modèle :";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%1$@” possède %2$ld documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications ?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%1$@” possède %2$ld documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications ?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%@” possède un document modifié qui n’a pas encore été synchronisé sur le cloud. Souhaitez-vous ignorer ces modifications ?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%@” possède un document modifié qui n’a pas encore été synchronisé sur le cloud. Souhaitez-vous ignorer ces modifications ?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "Le compte « %@ » possède peut-être des documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications locales ?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "Le compte “%@” possède peut-être des documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications locales ?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "Un mot de passe est nécessaire pour ouvrir le document “%@”.";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Validation du compte…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Les modules installés apparaissent ici.";

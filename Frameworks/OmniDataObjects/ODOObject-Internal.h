@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,12 +15,13 @@
 #import <Foundation/NSUndoManager.h>
 
 #import "ODOEntity-Internal.h"
+#import "ODOObjectSnapshot.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ODOObject () // Internal initializers
 - (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(ODOObjectSnapshot *)snapshot NS_DESIGNATED_INITIALIZER;
 @end
 
 @interface ODOObject (Internal)
@@ -32,9 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_turnIntoFault:(BOOL)deleting;
 - (void)_invalidate;
 
-- (BOOL)_isCalculatingValueForKey:(NSString *)key;
-- (void)_setIsCalculatingValueForKey:(NSString *)key;
-- (void)_clearIsCalculatingValueForKey:(NSString *)key;
+- (BOOL)_isCalculatingValueForProperty:(ODOProperty *)property;
+- (void)_setIsCalculatingValueForProperty:(ODOProperty *)property;
+- (void)_clearIsCalculatingValueForProperty:(ODOProperty *)property;
 
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_odo_checkInvariants;
@@ -42,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self) OB_HIDDEN;
+extern ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self) OB_HIDDEN;
 
 // Make it more clear what we mean when we compare to nil.
 #define ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER (nil)
@@ -52,7 +53,7 @@ static inline BOOL ODOObjectValueIsLazyToManyFault(id value)
 }
 
 #ifdef OMNI_ASSERTIONS_ON
-BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
+BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snapshot) OB_HIDDEN;
 #endif
 
 static inline void _ODOObjectCreateNullValues(ODOObject *self)
@@ -71,7 +72,7 @@ static inline void _ODOObjectCreateNullValues(ODOObject *self)
     self->_valueStorage = (id *)calloc(sizeof(id), snapshotPropertyCount);
 }
 
-static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, CFArrayRef snapshot)
+static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, ODOObjectSnapshot *snapshot)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(self->_objectID); // Must be at least this initialized
@@ -79,18 +80,16 @@ static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, CFArrayRe
     OBPRECONDITION(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
     NSUInteger snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
-    OBASSERT((CFIndex)snapshotPropertyCount == CFArrayGetCount(snapshot));
+    OBASSERT(snapshotPropertyCount == ODOObjectSnapshotValueCount(snapshot));
     
     // Not clearing the array via calloc; will fill it w/o releasing the old values here.
     self->_valueStorage = (id *)malloc(sizeof(id) * snapshotPropertyCount);
-    
-    // Extract the snapshot into the value storage; this doesn't retain or copy the values!
-    CFArrayGetValues(snapshot, CFRangeMake(0, snapshotPropertyCount), (const void **)self->_valueStorage);
-    
-    // Now, retain them all.  We expect that the values in the snapshot are already immutable copies.  Otherwise we'd have to do "x = copy(x)" for each slot (which'd be slightly slower).
+        
+    // Extract and retain the values.  We expect that the values in the snapshot are already immutable copies.  Otherwise we'd have to do "x = copy(x)" for each slot (which'd be slightly slower).
     NSUInteger propertyIndex = snapshotPropertyCount;
-    while (propertyIndex--)
-        [self->_valueStorage[propertyIndex] retain];
+    while (propertyIndex--) {
+        self->_valueStorage[propertyIndex] = [ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex) retain];
+    }
 }
 
 static inline BOOL _ODOObjectHasValues(ODOObject *self)
@@ -179,7 +178,10 @@ NSMutableSet * _Nullable ODOObjectToManyRelationshipIfNotFault(ODOObject *self, 
 void ODOObjectSetChangeProcessingEnabled(ODOObject *self, BOOL enabled) OB_HIDDEN;
 BOOL ODOObjectChangeProcessingEnabled(ODOObject *self) OB_HIDDEN;
 
-_Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
+_Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, ODOObjectSnapshot *snapshot) OB_HIDDEN;
 void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff) OB_HIDDEN;
+
+extern void ODOObjectWillChangeValueForProperty(ODOObject *object, ODOProperty *property) OB_HIDDEN;
+extern void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property) OB_HIDDEN;
 
 NS_ASSUME_NONNULL_END

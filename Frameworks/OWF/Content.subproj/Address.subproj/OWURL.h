@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 @class OWContentType, OWNetLocation;
 
 #import <CoreFoundation/CFString.h> // For CFStringEncoding
-#import <OmniFoundation/OFSimpleLock.h> // For OFSimpleLockType
+#import <os/lock.h>
 
 @interface OWURL : OFObject <NSCopying>
 {
@@ -31,7 +31,7 @@
     NSString *schemeSpecificPart;
 
     // Derived attributes
-    OFSimpleLockType derivedAttributesSimpleLock;
+    os_unfair_lock derivedAttributesLock;
     NSString *_cachedCompositeString;
     NSString *_cachedShortDisplayString;
     OWNetLocation *_cachedParsedNetLocation;

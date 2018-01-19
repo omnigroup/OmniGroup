@@ -212,7 +212,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
             [(id)view setInspectorSliceGroupPosition:_groupPosition];
         }
         
-        if ([self wantsAutoConfiguredBottomSeparator]) {
+        if (self.wantsAutoConfiguredBottomSeparator) {
             if (!_bottomSeparator) {
                 _bottomSeparator = [[OUISliceSeparatorView alloc] initWithFrame:view.bounds];
                 _bottomSeparator.translatesAutoresizingMaskIntoConstraints = NO;

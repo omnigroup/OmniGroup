@@ -98,8 +98,8 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
     UIView *_selectionBorderView;
 
     OUIDocumentPickerItemViewDraggingState _draggingState;
-    
-    BOOL _isEditingName;
+
+    UITextField *_editingNameTextField;
     BOOL _deleting;
     BOOL _selected;
     BOOL _deferLoadingPreviews;
@@ -129,9 +129,7 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     OUIDocumentPreviewViewSetNormalBorder(self->_hairlineBorderView);
     self->_hairlineBorderView.userInteractionEnabled = NO;
     
-    [self->_metadataView.nameTextField addTarget:self action:@selector(_nameTextFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
-    [self->_metadataView.nameTextField addTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
 
     [self _updateRasterizesLayer];
     
@@ -145,14 +143,7 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 
 - (void)metaDataTapped:(id)sender
 {
-    if ([self.metadataView isEditing]) {
-        return;
-    } else {
-        [self detachMetaDataView];
-        [self.superview setNeedsLayout];
-        [self.superview layoutIfNeeded];  // without forcing layout, the becomeFirstResponder call will crash
-        [self.metadataView.nameTextField becomeFirstResponder];
-    }
+    [self startRenaming];
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -444,20 +435,28 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     OUIDocumentPickerItemMetadataView *metaData = self.metadataView;
     CGRect frame = metaData.frame;
     frame = [metaData.superview convertRect:frame toView:self.superview];
+
+    // Removing the view from the view hierarchy has the side effect of deactivating all constraints on it.
     [metaData removeFromSuperview];
     metaData.translatesAutoresizingMaskIntoConstraints = YES;
     metaData.frame = frame;
     [self.superview addSubview:metaData];
-    [NSLayoutConstraint deactivateConstraints:@[self.metaDataBigHeight, self.metaDataSmallHeight]];
+
+    OBASSERT(self.metaDataBigHeight.active == NO);
+    OBASSERT(self.metaDataSmallHeight.active == NO);
 }
 
 - (void)reattachMetaDataView
 {
     self.metadataView.translatesAutoresizingMaskIntoConstraints = NO;
+
     // and reset constraints
     [self insertSubview:self.metadataView aboveSubview:self.contentView];
     [self _nameChanged];
     [NSLayoutConstraint activateConstraints:[self constraintsToPositionMetaDataView]];
+
+    // Get our built-in height constraint re-added.
+    [self.metadataView invalidateIntrinsicContentSize];
 }
 
 - (NSArray *)constraintsForBasicLayout
@@ -540,12 +539,40 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)startRenaming;
 {
-    if (self.metadataView.superview != self.superview) {
-        [self detachMetaDataView];
+    if ([self.metadataView isEditing]) {
+        return;
     }
-    if ([_metadataView.nameTextField becomeFirstResponder]) {
-        [_metadataView.nameTextField selectAll:nil];
-    }
+
+    [self detachMetaDataView];
+    [self.superview setNeedsLayout];
+    [self.superview layoutIfNeeded];  // without forcing layout, the becomeFirstResponder call will crash
+
+    OBASSERT(_editingNameTextField == nil);
+    _editingNameTextField = [self.metadataView startEditingName];
+
+    [_editingNameTextField addTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
+
+    [self _updateRasterizesLayer];
+
+    _metadataView.showsImage = NO;
+
+    [UIView performWithoutAnimation:^{
+        [_metadataView setNeedsLayout];
+        [_metadataView layoutIfNeeded];
+    }];
+
+    self.hackyTimerToGetRenamingToWorkWithProKeyboard = [NSTimer timerWithTimeInterval:0.1
+                                                                                target:self
+                                                                              selector:@selector(hackyTimerForProKeyboardFired)
+                                                                              userInfo:nil
+                                                                               repeats:NO];
+
+    [[NSRunLoop mainRunLoop] addTimer:self.hackyTimerToGetRenamingToWorkWithProKeyboard forMode:NSRunLoopCommonModes];
+}
+
+- (UITextField *)editingNameTextField;
+{
+    return _editingNameTextField;
 }
 
 - (NSSet *)previewedItems;
@@ -733,12 +760,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     // return the text field value so VO will speak the latest value regardless of editing state.
     
-    return _metadataView.nameTextField.text;
+    return _metadataView.name;
 }
 
 - (NSString *)accessibilityValue
 {
-    if (_isEditingName) {
+    if (_editingNameTextField) {
         return NSLocalizedStringFromTableInBundle(@"Is editing", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker title label editing accessibility value");
     }
     
@@ -787,7 +814,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 - (NSArray *)accessibilityCustomActions
 {
     // return the correct editing action based on the nameTextFields editing state.
-    if (! _isEditingName) {
+    if (! _editingNameTextField) {
         return @[[self.cachedCustomAccessibilityActions firstObject]];
     }
     
@@ -807,10 +834,10 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (BOOL)_accessibilityHandleNameEditAction:(UIAccessibilityCustomAction *)action;
 {
-    if (! _isEditingName) {
+    if (! _editingNameTextField) {
         [self startRenaming];
     } else {
-        _metadataView.nameTextField.text = nil;
+        _metadataView.name = nil;
     }
     
     return YES;
@@ -859,33 +886,10 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 - (void)_updateRasterizesLayer;
 {
     // Turn off rasterization while editing ... later we'll probably want to turn it off when we have a progress bar too.
-    BOOL shouldRasterize = (_isEditingName == NO);
+    BOOL shouldRasterize = (_editingNameTextField == nil);
     
     self.layer.shouldRasterize = shouldRasterize;
     self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
-}
-
-- (void)_nameTextFieldEditingDidBegin:(id)sender;
-{
-    OBPRECONDITION(_isEditingName == NO);
-    _isEditingName = YES;
-    [self _updateRasterizesLayer];
-
-    _metadataView.showsImage = NO;
-    
-    [UIView performWithoutAnimation:^{
-        [_metadataView setNeedsLayout];
-        [_metadataView layoutIfNeeded];
-    }];
-    
-    self.hackyTimerToGetRenamingToWorkWithProKeyboard = [NSTimer timerWithTimeInterval:0.1
-                                                                                target:self
-                                                                              selector:@selector(hackyTimerForProKeyboardFired)
-                                                                              userInfo:nil
-                                                                               repeats:NO];
-    
-    [[NSRunLoop mainRunLoop] addTimer:self.hackyTimerToGetRenamingToWorkWithProKeyboard forMode:NSRunLoopCommonModes];
-    
 }
 
 - (void)hackyTimerForProKeyboardFired
@@ -897,7 +901,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)_keyboardWillShow
 {
-    if (_isEditingName) {
+    if (_editingNameTextField) {
         [self.hackyTimerToGetRenamingToWorkWithProKeyboard invalidate];
         self.hackyTimerToGetRenamingToWorkWithProKeyboard = nil;
         id target = [self targetForAction:@selector(documentPickerItemNameStartedEditing:) withSender:self];
@@ -906,22 +910,28 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     }
 }
 
-- (void)_nameTextFieldEndedEditing:(id)sender;
+- (void)_nameTextFieldEndedEditing:(UITextField *)sender;
 {
-    OBPRECONDITION(_isEditingName == YES);
-    _isEditingName = NO;
+    OBPRECONDITION(_editingNameTextField != nil);
+
+    [_editingNameTextField removeTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
+    _editingNameTextField = nil;
+
     [self _updateRasterizesLayer];
     
     _metadataView.showsImage = YES;
     
     [UIView performWithoutAnimation:^{
+        [_metadataView didEndEditing];
+        [_metadataView.superview.superview setNeedsLayout];
+        [_metadataView.superview setNeedsLayout];
         [_metadataView setNeedsLayout];
         [_metadataView layoutIfNeeded];
     }];
 
     id target = [self targetForAction:@selector(documentPickerItemNameEndedEditing:withName:) withSender:self];
     OBASSERT(target);
-    [target documentPickerItemNameEndedEditing:self withName:_metadataView.nameTextField.text];
+    [target documentPickerItemNameEndedEditing:self withName:sender.text];
 }
 
 - (void)_nameChanged;
@@ -988,8 +998,6 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     } else if (_item.isUploaded == NO) {
         statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotUploaded" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         OBASSERT(statusImage);
-    } else if (_item.scope.isExternal) {
-        statusImage = [UIImage imageNamed:@"OUIDocumentStatusLinked" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     }
     self.statusImage = statusImage;
     

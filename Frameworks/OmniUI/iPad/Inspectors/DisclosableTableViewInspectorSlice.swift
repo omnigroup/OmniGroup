@@ -101,7 +101,7 @@ open class DisclosableTableViewInspectorSlice: OUIAbstractTableViewInspectorSlic
         if (indexPath.row == numberOfStaticRows) {
 //            let button = UIButton(type: .system)
             // return disclosure button row
-            let cell = UITableViewCell.init(style: .default, reuseIdentifier: "disclose")
+            let cell = OUIThemedTableViewCell.init(style: .default, reuseIdentifier: "disclose")
             if (self.isSectionDisclosed(indexPath.section)) {
                 cell.textLabel?.text = self.titleForShowMoreButton()
             } else {
@@ -145,13 +145,12 @@ open class DisclosableTableViewInspectorSlice: OUIAbstractTableViewInspectorSlic
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if let title = self.titleForHeader(tableView, section: section) {
             let headerView = OUIAbstractTableViewInspectorSlice.sectionHeaderView(withLabelText: title, for: tableView)
-            headerView?.backgroundColor = UIColor.groupTableViewBackground
             return headerView;
         }
         return nil
     }
 
-    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 44.0
     }
 

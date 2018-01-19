@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007, 2010-2011 Omni Development, Inc.All rights reserved.
+// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,21 +14,20 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 // #define DEBUG_CASCADE
 #define WINDOW_TILE_STEP (20.0f)
 #define AVOID_INSET (8.0f)
 #define MAXIMUM_TRIES (200)
 
-@interface OAWindowCascade (Private)
-+ (NSRect)_adjustWindowRect:(NSRect)windowRect forScreenRect:(NSRect)screenRect;
-+ (NSRect)_screen:(NSScreen *)screen closestRectTo:(NSRect)originalRect avoidingWindows:(NSArray *)windows;
-+ (NSScreen *)_screenForPoint:(NSPoint)aPoint;
-+ (NSArray *)_windowsToAvoidIncluding:(NSArray *)additionalWindows;
-@end
-
 @implementation OAWindowCascade
+{
+    NSRect lastStartingFrame;
+    NSPoint lastWindowOrigin;
+}
 
-+ (id)sharedInstance;
++ (instancetype)sharedInstance;
 {
     static OAWindowCascade *sharedInstance = nil;
 
@@ -73,7 +72,7 @@ static BOOL avoidColorPanel = NO;
     return [self _screenForPoint:aPoint];
 }
 
-+ (NSRect)unobscuredWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(NSArray *)windowsToAvoid;
++ (NSRect)unobscuredWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(nullable NSArray <NSWindow *> *)windowsToAvoid;
 {
     windowsToAvoid = [self _windowsToAvoidIncluding:windowsToAvoid];
     NSRect availableRect = [self _screen:[self _screenForPoint:startingFrame.origin] closestRectTo:startingFrame avoidingWindows:windowsToAvoid];
@@ -132,7 +131,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 }
 
 
-- (NSRect)nextWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(NSArray *)windowsToAvoid;
+- (NSRect)nextWindowFrameFromStartingFrame:(NSRect)startingFrame avoidingWindows:(nullable NSArray <NSWindow *> *)windowsToAvoid;
 {
     NSScreen *screen;
     NSRect screenRect;
@@ -253,9 +252,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     lastStartingFrame = NSZeroRect;
 }
 
-@end
-
-@implementation OAWindowCascade (Private)
+#pragma mark - Private
 
 + (NSRect)_adjustWindowRect:(NSRect)windowRect forScreenRect:(NSRect)screenRect;
 {
@@ -275,7 +272,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     return windowRect;
 }
 
-+ (NSRect)_screen:(NSScreen *)screen closestRectTo:(NSRect)originalRect avoidingWindows:(NSArray *)windows;
++ (NSRect)_screen:(NSScreen *)screen closestRectTo:(NSRect)originalRect avoidingWindows:(NSArray <NSWindow *> *)windows;
 {
     NSRect visibleRect = [screen visibleFrame];
     BOOL needsToMove = NO;
@@ -303,7 +300,7 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
     return [NSScreen mainScreen];
 }
 
-+ (NSArray *)_windowsToAvoidIncluding:(NSArray *)additionalWindows;
++ (NSArray <NSWindow *> *)_windowsToAvoidIncluding:(nullable NSArray <NSWindow *> *)additionalWindows;
 {
     NSMutableArray *windows = [NSMutableArray array];
     if (additionalWindows != nil)
@@ -321,3 +318,5 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

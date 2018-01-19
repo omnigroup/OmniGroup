@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ не может открыть файл этого типа.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ документов";
-
 /* gigabytes */
 "%@ GB" = "%@ ГБ";
 
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Выберите формат";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Очистить";
+
+/* clear button title */
+"Clear %ld Documents" = "Очистить документы: %ld";
+
+/* remove button title */
+"Clear Document" = "Очистить документ";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Очистить поле имени";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Последняя правка: %@ на этом устройстве";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Связь с внешним документом";
-
 /* Server Account Setup label: location */
 "Location" = "Место";
 
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "Служба OmniPresence отключена в этой демо-версии.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Откройте документ, чтобы добавить его в это представление.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Открыть внешний документ";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Откройте этот файл на другом устройстве, чтобы настроить там OmniPresence.";
 
-/* Generic name for location of external documents */
-"Other" = "Прочее";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Другое…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Язык";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Пользовательский";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Выбор шаблона";
 
 /* Server Account Setup label: password */
 "Password" = "Пароль";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Купить сейчас.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Удалить";
-
-/* remove button title */
-"Remove %ld Documents" = "Удалить документы: %ld";
-
-/* remove button title */
-"Remove Document" = "Удалить документ";
+/* Generic name for location of external documents */
+"Recent Documents" = "Последние документы";
 
 /* rename button title */
 "Rename" = "Переименовать";
@@ -379,7 +391,7 @@
 "Select a Document" = "Выбрать документ";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Отправить «%@» в приложение в виде:";
+"Send \"%@\" to app as:" = "Отправить «%@» в программу в виде:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Отправка настроек по эл. почте";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "Нажмите здесь, чтобы добавить документ без шаблона.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Нажмите здесь или нажмите кнопку + на панели, чтобы добавить документ.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Нажмите здесь или нажмите кнопку «+» на панели, чтобы добавить пользовательский шаблон.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Нажмите значок + на панели, чтобы добавить документ из iCloud Drive или другой программы.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Нажмите здесь или нажмите кнопку + на панели, чтобы добавить документ.";
 
 /* file name label for template filte types */
 "Template:" = "Шаблон:";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Проверка учетной записи…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Если установлены подключаемые модули, они отображаются здесь.";

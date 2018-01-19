@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniDataObjects/ODOEditingContext.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class ODOObjectSnapshot;
 
 @interface ODOEditingContext () {
   @private
@@ -33,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
     // This value is filled in only for the window of time that we are sending the ODOEditingContextObjectsWillBeDeletedNotification notification.
     NSSet *_objectsForObjectsWillBeDeletedNotification;
     
-    NSMutableDictionary *_objectIDToCommittedPropertySnapshot; // ODOObjectID -> NSArray of property values for only those objects that have been edited.  The values in the dictionary are the database committed values.
-    NSMutableDictionary *_objectIDToLastProcessedSnapshot; // Like the committed value snapshot, but this has the differences from the last time -processPendingChanges completed.  In particular, this can contain pre-update snapshots for inserted objects, where _objectIDToCommittedPropertySnapshot will never contain snapshots for inserted objects.
+    NSMutableDictionary <ODOObjectID *, ODOObjectSnapshot *> *_objectIDToCommittedPropertySnapshot; // ODOObjectID -> snapshot of property values for only those objects that have been edited.  The values in the dictionary are the database committed values.
+    NSMutableDictionary <ODOObjectID *, ODOObjectSnapshot *> *_objectIDToLastProcessedSnapshot; // Like the committed value snapshot, but this has the differences from the last time -processPendingChanges completed.  In particular, this can contain pre-update snapshots for inserted objects, where _objectIDToCommittedPropertySnapshot will never contain snapshots for inserted objects.
     
     BOOL _isSendingWillSave;
     BOOL _isValidatingAndWritingChanges;
@@ -54,8 +56,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_objectWillBeUpdated:(ODOObject *)object;
 - (void)_registerObject:(ODOObject *)object;
 - (void)_snapshotObjectPropertiesIfNeeded:(ODOObject *)object;
-- (nullable NSArray *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
-- (nullable NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+- (nullable ODOObjectSnapshot *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+- (nullable ODOObjectSnapshot *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_isBeingDeleted:(ODOObject *)object;

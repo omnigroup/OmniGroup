@@ -13,11 +13,12 @@
 #import <CommonCrypto/CommonCrypto.h>
 #import <Security/Security.h>
 
+@import OmniFoundation.Private;
+
 #import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/OFSymmetricKeywrap.h>
-@import OmniFoundation.Private;
 
 RCS_ID("$Id$");
 

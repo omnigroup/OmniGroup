@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,9 @@
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSlice.h>
+#import <OmniUI/OUIThemedTableViewCell.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
@@ -166,6 +168,9 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     [tableView reloadData];
     
     [self _scrollFirstSelectedItemToVisible:NO];
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled])
+        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
 }
 
 #pragma mark - UITableViewDataSource
@@ -214,7 +219,6 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
 {
     NSString *title = [_sectionAtIndex(self, section) objectForKey:ItemDisplayName];
     UIView *headerView = [OUIAbstractTableViewInspectorSlice sectionHeaderViewWithLabelText:(title ? title : @"???") forTableView:tableView];
-    headerView.backgroundColor = [UIColor groupTableViewBackgroundColor];
     return headerView;
 }
 
@@ -234,7 +238,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     // Returning a nil cell will cause UITableView to throw an exception
     NSDictionary *item = _itemAtIndexPath(self, indexPath);
     if (!item) {
-        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        OUIThemedTableViewCell *cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
         cell.backgroundColor = [UIColor whiteColor];
         return cell;
     }
@@ -242,7 +246,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     NSString *identifier = [item objectForKey:ItemIdentifier];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
+        cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         
         cell.backgroundColor = [UIColor whiteColor];
         cell.opaque = YES;
@@ -338,6 +342,19 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     UIFont *font = [item objectForKey:ItemFont];
     
     [(OUIFontFamilyInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
+}
+
+#pragma mark OUIInspectorAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    UITableView *tableView = (UITableView *)self.view;
+    tableView.backgroundColor = appearance.TableCellBackgroundColor;
+    tableView.separatorColor = appearance.TableViewSeparatorColor;
 }
 
 #pragma mark - Private

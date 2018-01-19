@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ non può aprire questo tipo di documento.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ documenti";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -44,7 +41,7 @@
 "1 Item Selected" = "1 elemento selezionato";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato \"%@\". Sostituirlo? L'operazione non potrà essere annullata.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato “%@”. Sostituirlo? L'operazione non potrà essere annullata.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Info account";
@@ -83,7 +80,7 @@
 "Cannot Export Item" = "Impossibile esportare l'elemento";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail \"%@\":";
+"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail “%@”:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Scegli un modello";
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Scegli formato";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Trasparente";
+
+/* clear button title */
+"Clear %ld Documents" = "Cancella %ld documenti";
+
+/* remove button title */
+"Clear Document" = "Cancella documento";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Cancella campo nome";
@@ -181,7 +187,7 @@
 "Edits the document's title." = "Modifica il titolo del documento.";
 
 /* empty trash button title */
-"Empty Trash" = "Svuota Cestino";
+"Empty Trash" = "Svuota cestino";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "Immetti l'indirizzo del tuo spazio WebDAV.";
@@ -197,13 +203,13 @@
 "Export \"%@\" as:" = "Esporta \"%@\" come:";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "Esporta \"%1$@\" in %2$@ come:";
+"Export \"%@\" to %@ as:" = "Esporta “%1$@” in %2$@ come:";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Esporta in WebDAV";
 
 /* Export document preview action title. */
-"Export…" = "Esporta...";
+"Export…" = "Esporta…";
 
 /* finished */
 "Finished" = "Fine";
@@ -228,9 +234,6 @@
 
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Ultima modifica: %@ su questo dispositivo";
-
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Collega documento esterno";
 
 /* Server Account Setup label: location */
 "Location" = "Posizione";
@@ -258,7 +261,7 @@
 "Move to..." = "Sposta in…";
 
 /* Move document preview action title. */
-"Move…" = "Sposta...";
+"Move…" = "Sposta…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Documento personale";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence è disattivata in questa versione demo.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Apri un documento per aggiungerlo a questa visualizzazione.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Apri il documento esterno";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Apri questo documento su un altro dispositivo per configurarvi OmniPresence.";
 
-/* Generic name for location of external documents */
-"Other" = "Altri";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Altro…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Lingua";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Personalizzato";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Scegli un modello";
 
 /* Server Account Setup label: password */
 "Password" = "Password";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Acquista ora.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Rimuovi";
-
-/* remove button title */
-"Remove %ld Documents" = "Rimuovi %ld documenti";
-
-/* remove button title */
-"Remove Document" = "Rimuovi documento";
+/* Generic name for location of external documents */
+"Recent Documents" = "Documenti recenti";
 
 /* rename button title */
 "Rename" = "Rinomina";
@@ -355,7 +367,7 @@
 "Report Error" = "Segnala errore";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Ripristina doc. di esempio";
+"Restore Sample Documents" = "Ripristina doc. esempio";
 
 /* Share menu title */
 "Restore to..." = "Ripristina in…";
@@ -379,7 +391,7 @@
 "Select a Document" = "Seleziona un documento";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Invia \"%@\" all'app come:";
+"Send \"%@\" to app as:" = "Invia “%@” all'app come:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Registra impostazioni tramite e-mail";
@@ -402,7 +414,7 @@
 "Server address: %@" = "Indirizzo server: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Imposto \"%@\"";
+"Setting up \"%@\"" = "Imposto “%@”";
 
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Registra nuovo account";
@@ -417,22 +429,22 @@
 "Tap here to add a document without a template." = "Tocca qui per aggiungere un documento senza un modello.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Tocca qui o su + nella barra degli strumenti per aggiungere un documento.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Tocca qui o su + nella barra degli strumenti per aggiungere un documento personalizzato.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tocca la + nella barra degli strumenti per aggiungere un documento archiviato su iCloud Drive o fornito da un'altra app.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Tocca qui o su + nella barra degli strumenti per aggiungere un documento.";
 
 /* file name label for template filte types */
 "Template:" = "Modello:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%1$@\" sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%1$@” sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%@\" è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%@” è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account \"%@\" può aver modificato documenti non ancora sincronizzati con il cloud. Ignorare le modifiche locali?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account “%@” potrebbe aver modificato documenti non ancora sincronizzati nel cloud. Ignorare eventuali modifiche in locale?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "È necessaria una password per aprire il documento \"%@\".";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Convalido account…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Una volta installati i plug-in, questi verranno visualizzati qui.";

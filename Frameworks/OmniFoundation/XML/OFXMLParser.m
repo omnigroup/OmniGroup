@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,6 @@ RCS_ID("$Id$");
 #error Do not convert this to ARC w/o re-checking performance. Last time it was tried, it was noticably slower.
 #endif
 
-
 typedef struct _OFXMLParserTargetFunctions {
     void (*setSystemID)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSURL *systemID, NSString *publicID);
     void (*addProcessingInstruction)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *piName, NSString *piValue);
@@ -38,6 +37,8 @@ typedef struct _OFXMLParserTargetFunctions {
     
     void (*addWhitespace)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *whitespace);
     void (*addString)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
+    void (*addCharacterBytes)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, const void *bytes, NSUInteger length);
+
     void (*addComment)(id <OFXMLParserTarget> target, SEL _cmd, OFXMLParser *parser, NSString *string);
 } OFXMLParserTargetFunctions;
 
@@ -65,6 +66,7 @@ static void OFXMLParserTargetFunctionsLookup(OFXMLParserTargetFunctions *functio
     GET_IMP(endUnparsedElementWithQName, @selector(parser:endUnparsedElementWithQName:identifier:contents:));
     GET_IMP(addWhitespace, @selector(parser:addWhitespace:));
     GET_IMP(addString, @selector(parser:addString:));
+    GET_IMP(addCharacterBytes, @selector(parser:addCharacterBytes:length:));
     GET_IMP(addComment, @selector(parser:addComment:));
 #undef GET_IMP
 }
@@ -81,7 +83,6 @@ static void OFXMLParserTargetFunctionsLookup(OFXMLParserTargetFunctions *functio
     NSUInteger elementDepth;
     BOOL rootElementFinished;
     
-    NSCharacterSet *nonWhitespaceCharacterSet;
     OFXMLWhitespaceBehavior *whitespaceBehavior;
     NSMutableArray *whitespaceBehaviorStack;
     
@@ -682,9 +683,16 @@ static OFXMLStringClassification _classifyString(const xmlChar *ch, int len)
 
 
 // Slow path...
-static OFXMLStringClassification _classifyNSString(NSString *str, NSCharacterSet *nonWhitespaceCharacterSet)
+static OFXMLStringClassification _classifyNSString(NSString *str)
 {
-    if ([str rangeOfCharacterFromSet:nonWhitespaceCharacterSet].length == 0) {
+    static dispatch_once_t onceToken;
+    static NSCharacterSet *NonWhitespaceCharacterSet = nil;
+
+    dispatch_once(&onceToken, ^{
+        NonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
+    });
+
+    if ([str rangeOfCharacterFromSet:NonWhitespaceCharacterSet].length == 0) {
         return OFXMLStringClassificationAllWhitespace;
     }
     return OFXMLStringClassificationSomeNonWhitespace;
@@ -708,6 +716,10 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
     typeof(state->targetImp.addString) addString = state->targetImp.addString;
 
     if (addWhitespace == NULL && addString == NULL) {
+        typeof(state->targetImp.addCharacterBytes) addCharacterBytes = state->targetImp.addCharacterBytes;
+        if (addCharacterBytes) {
+            addCharacterBytes(state->target, @selector(parser:addCharacterBytes:length:), parser, ch, len);
+        }
         return;
     }
 
@@ -718,10 +730,10 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
 
     if (classification == OFXMLStringClassificationUnknown) {
         str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
-        classification = _classifyNSString(str, state->nonWhitespaceCharacterSet);
+        classification = _classifyNSString(str);
+        //NSLog(@"unclassified characters: '%@'", str);
     }
 
-    //NSLog(@"characters: '%@'", str);
 
 
     switch (classification) {
@@ -735,6 +747,7 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
                 if (addWhitespace) {
                     if (!str) {
                         str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
+                        //NSLog(@"whitespace: '%@'", str);
                     }
                     addWhitespace(state->target, @selector(parser:addWhitespace:), parser, str);
                 }
@@ -743,10 +756,10 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
         }
 
         case OFXMLStringClassificationSomeNonWhitespace:
-            //NSLog(@"_addString:%@", str);
             if (addString) {
                 if (!str) {
                     str = [[NSString alloc] initWithBytes:ch length:len encoding:NSUTF8StringEncoding];
+                    //NSLog(@"non-whitespace: '%@'", str);
                 }
                 addString(state->target, @selector(parser:addString:), parser, str);
             }
@@ -803,7 +816,6 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     OBPRECONDITION(state->error == nil); // the caller should have taken ownership and cleaned this up
     
     [state->whitespaceBehaviorStack release];
-    [state->nonWhitespaceCharacterSet release];
     [state->loadWarnings release];
     
     if (state->ownsNameTable && state->nameTable)
@@ -848,7 +860,6 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     
     _state->parser = self;
     _state->whitespaceBehaviorStack = [[NSMutableArray alloc] init];
-    _state->nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
     _state->loadWarnings = [[NSMutableArray alloc] init];
     _state->whitespaceBehavior = whitespaceBehavior;
 
@@ -869,8 +880,6 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     // Set up default whitespace behavior
     [_state->whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
 
-    _progress = [[NSProgress alloc] init];
-    
     return self;
 }
 
@@ -1097,6 +1106,17 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 - (NSUInteger)elementDepth;
 {
     return _state ? _state->elementDepth : 0;
+}
+
+#pragma mark - NSProgressReporting
+
+- (NSProgress *)progress;
+{
+    // Updating this is not free, so only create it if someone is listening. This does defeat any implicit adding to the current progress tree, but the NSProgress class header recommends this pattern for NSProgressReporting conforming objects anyway.
+    if (!_progress) {
+        _progress = [[NSProgress discreteProgressWithTotalUnitCount:0] retain];
+    }
+    return _progress;
 }
 
 @end

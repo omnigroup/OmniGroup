@@ -1,4 +1,4 @@
-// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -262,6 +262,16 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (CGFloat)additionalHeaderHeight;
 {
     return 0.0f;
+}
+
+- (void)setInspectorController:(nullable OIInspectorController *)inspectorController
+{
+    _inspectorController = inspectorController;
+    [self didSetInspectorController];
+}
+
+- (void)didSetInspectorController;
+{
 }
 
 - (NSMenuItem *)menuItemForTarget:(nullable id)target action:(SEL)action;

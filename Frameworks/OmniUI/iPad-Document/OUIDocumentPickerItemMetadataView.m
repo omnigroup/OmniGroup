@@ -15,7 +15,13 @@
 
 RCS_ID("$Id$");
 
-@implementation OUIDocumentNameTextField
+@interface _OUIDocumentNameTextField : UITextField
+
+@property (nonatomic) BOOL useLargerClearButton;
+
+@end
+
+@implementation _OUIDocumentNameTextField
 
 - (CGRect)clearButtonRectForBounds:(CGRect)bounds;
 {
@@ -35,7 +41,11 @@ RCS_ID("$Id$");
 @end
 
 @interface OUIDocumentPickerItemMetadataView ()
+{
+    _OUIDocumentNameTextField *_nameTextField;
+}
 
+@property (nonatomic, readonly) UILabel *nameLabel;
 @property (nonatomic, readonly) UILabel *dateLabel;
 @property (nonatomic, readonly) UIImageView *nameBadgeImageView;
 @property (nonatomic, readonly) UIView *topHairlineView;
@@ -78,15 +88,11 @@ RCS_ID("$Id$");
     
     _topHairlineView.backgroundColor = [UIColor colorWithWhite:0.85 alpha:1.0];
     _topHairlineView.opaque = NO;
-    
-    _nameTextField.textAlignment = NSTextAlignmentLeft;
-    _nameTextField.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
-    _nameTextField.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
-    _nameTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
-    _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
-    _nameTextField.returnKeyType = UIReturnKeyDone;
-    
+
+    _nameLabel.textAlignment = NSTextAlignmentLeft;
+    _nameLabel.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
+    _nameLabel.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
+
     _dateLabel.font = [UIFont systemFontOfSize:self.detailLabelFontSize];
     _dateLabel.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor);
 
@@ -107,11 +113,10 @@ RCS_ID("$Id$");
 
 - (void)_setFrameIfNeeded:(CGRect)frame view:(UIView *)view
 {
-    if (!CGRectEqualToRect(view.frame, frame)) {
+    if (view && !CGRectEqualToRect(view.frame, frame)) {
         view.frame = frame;
     }
 }
-
 
 - (void)createSubviews
 {
@@ -119,9 +124,9 @@ RCS_ID("$Id$");
     _topHairlineView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_topHairlineView];
 
-    _nameTextField = [[OUIDocumentNameTextField alloc] init];
-    _nameTextField.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_nameTextField];
+    _nameLabel = [[UILabel alloc] init];
+    _nameLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_nameLabel];
 
     _dateLabel = [[UILabel alloc] init];
     _dateLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -154,13 +159,61 @@ RCS_ID("$Id$");
     }
 }
 
+- (UITextField *)startEditingName;
+{
+    OBPRECONDITION(_nameTextField == nil);
+
+    if (_nameTextField) {
+        [_nameTextField removeFromSuperview];
+        _nameTextField = nil;
+    }
+
+    // We lazily create the text field for editing. As of 11.2, at least, navigating between the scope list and the local documents (with four documents) was leaking about 5MB due to UITextField doing odd things during the animation. We don't actually need a full text field until we start editing, though one possible down side to this approach is that it may not be as clear via accessibility attributes that you can tap the metadata view to start editing the document name.
+    _nameTextField = [[_OUIDocumentNameTextField alloc] init];
+    _nameTextField.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [self insertSubview:_nameTextField belowSubview:_nameLabel];
+
+    _nameTextField.textAlignment = NSTextAlignmentLeft;
+    _nameTextField.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
+    _nameTextField.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
+    _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
+    _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
+    _nameTextField.returnKeyType = UIReturnKeyDone;
+
+    _nameTextField.text = _nameLabel.text;
+    _nameTextField.useLargerClearButton = _doubleSizeFonts;
+
+    _nameTextField.frame = _nameLabel.frame;
+
+    _nameLabel.hidden = YES;
+
+    [_nameTextField becomeFirstResponder];
+    
+    return _nameTextField;
+}
+
+- (void)didEndEditing;
+{
+    if (!_nameTextField) {
+        OBASSERT_NOT_REACHED("Don't call unless we are editing");
+        return;
+    }
+
+    [_nameTextField removeFromSuperview];
+    _nameTextField = nil;
+
+    _nameLabel.hidden = NO;
+}
+
 - (NSString *)name;
 {
-    return _nameTextField.text;
+    return _nameLabel.text;
 }
 
 - (void)setName:(NSString *)name;
 {
+    _nameLabel.text = name;
     _nameTextField.text = name;
 }
 
@@ -219,7 +272,7 @@ RCS_ID("$Id$");
         [self _resetLabelFontSizes];
         [self setNeedsLayout];
     }
-    self.nameTextField.useLargerClearButton = doubleSizeFonts;
+    _nameTextField.useLargerClearButton = doubleSizeFonts;
 }
 
 - (NSString *)dateString;
@@ -270,32 +323,46 @@ RCS_ID("$Id$");
 
 - (BOOL)isEditing
 {
-    return self.nameTextField.isFirstResponder;
+    OBASSERT_IF(_nameTextField != nil, _nameTextField.isFirstResponder, "Should only have a name text field if we are editing");
+    return _nameTextField.isFirstResponder;
 }
 
 - (UIView *)viewForScalingStartFrame:(CGRect)startFrame endFrame:(CGRect)endFrame
 {
-    if (!CGRectEqualToRect(startFrame, self.frame)) {
-        self.frame = startFrame;
-    }
-    self.startSnap = [self snapshotViewAfterScreenUpdates:NO];
-    self.startSnap.contentMode = UIViewContentModeScaleAspectFit;
-    
+    CGRect originalFrame = self.frame;
+    BOOL isGrowing = endFrame.size.width > startFrame.size.width;
+
+    // If we are changing size, hide the clear button at the smaller size (in the non-editing state). Otherwise we cross fade a clear button out that was never in the right position.
+    _nameTextField.clearButtonMode = isGrowing ? UITextFieldViewModeNever : UITextFieldViewModeWhileEditing;
+
+    self.frame = startFrame;
+    UIImage *startImage = [self snapshotImageWithSize:startFrame.size];
+    UIImageView *startView = [[UIImageView alloc] initWithImage:startImage];
+    startView.contentMode = UIViewContentModeScaleAspectFit;
+    self.startSnap = startView;
+
+    self.doubleSizeFonts = isGrowing;
+    _nameTextField.useLargerClearButton = _doubleSizeFonts;
+    _nameTextField.clearButtonMode = isGrowing ? UITextFieldViewModeAlways : UITextFieldViewModeNever;
+
     self.frame = endFrame;
-    self.doubleSizeFonts = endFrame.size.width > startFrame.size.width;
-    [self setNeedsLayout];
-    [self layoutIfNeeded];
-    self.endSnap = [self snapshotViewAfterScreenUpdates:YES];
+    UIImage *endImage = [self snapshotImageWithSize:endFrame.size];
+    UIImageView *endView = [[UIImageView alloc] initWithImage:endImage];
+    endView.contentMode = UIViewContentModeScaleAspectFit;
+    self.endSnap = endView;
+
     self.endSnap.alpha = 0.0f;
     self.endSnap.frame = [self rectByScalingRect:self.endSnap.frame toHeight:self.startSnap.frame.size.height];
-    self.endSnap.contentMode = UIViewContentModeScaleAspectFit;
-    
+
     UIView *containingView = [[UIView alloc] initWithFrame:startFrame];
-    
     [containingView addSubview:self.endSnap];
     [containingView addSubview:self.startSnap];
-    
     containingView.clipsToBounds = YES;
+
+    // Go back to our starting state.
+    _nameTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    self.frame = originalFrame;
+
     return containingView;
 }
 
@@ -382,13 +449,14 @@ RCS_ID("$Id$");
 
     // Name
     CGRect nameFrame = CGRectMake(leftPadding, topPadding, textWidth, self.nameHeight);
+    [self _setFrameIfNeeded:nameFrame view:_nameLabel];
     [self _setFrameIfNeeded:nameFrame view:_nameTextField];
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
 {
     UIView *hit = [super hitTest:point withEvent:event];
-    if (!self.nameTextField.isFirstResponder && hit) {
+    if (!_nameTextField.isFirstResponder && hit) {
         // don't pass touches through to subviews unless an editing session is in progress (in which case touches need to be able to reach the clear button and move the cursor position)
         // the tap gesture recognizer will programmatically begin editing on the text field
         hit = self;
@@ -426,6 +494,7 @@ RCS_ID("$Id$");
 
 - (void)_resetLabelFontSizes;
 {
+    _nameLabel.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
     _nameTextField.font = [UIFont systemFontOfSize:self.nameLabelFontSize];
     _dateLabel.font = [UIFont systemFontOfSize:self.detailLabelFontSize];
 }

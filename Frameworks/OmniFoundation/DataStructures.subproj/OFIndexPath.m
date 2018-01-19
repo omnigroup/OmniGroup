@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 //
 // These issues appear to be resolved on OS X 10.8 and later, and iOS 6.0 and later.
 // When our base system requirements allow, we can consider deprecating OFIndexPath.
+// NOTE: Did some performance testing on 10.13.2 and OFIndexPath performs just as well, slightly better maybe, and gives us some fast paths we don't have with NSIndexPath (-enumerateIndexesUsingBlock: and -parentsLastCompare:).
 
 @implementation OFIndexPath {
   @private

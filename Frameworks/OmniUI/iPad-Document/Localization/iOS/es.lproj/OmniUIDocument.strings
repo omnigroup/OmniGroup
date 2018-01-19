@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ no puede abrir este tipo de archivo.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ documentos";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Selecciona un formato";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Borrar";
+
+/* clear button title */
+"Clear %ld Documents" = "Borrar %ld documentos";
+
+/* remove button title */
+"Clear Document" = "Borrar documento";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Borrar campo de nombre";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Última modificación: %@ en este dispositivo";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Enlazar documento externo";
-
 /* Server Account Setup label: location */
 "Location" = "Ubicación";
 
@@ -244,7 +247,7 @@
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
-"Move" = "Trasladar";
+"Move" = "Mover";
 
 /* move to trash button title */
 "Move %ld Items to Trash" = "Mover %ld elementos a la papelera";
@@ -258,7 +261,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Trasladar...";
+"Move…" = "Mover…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -295,7 +298,7 @@
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
 
-"OK" = "Aceptar";
+"OK" = "OK";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence permite usar nuestro servicio de sincronización gratuito (o cualquier servidor WebDAV compatible) para compartir documentos automáticamente entre dispositivos, o bien para guardar copias de los documentos en la nube por si necesitas restaurar tu dispositivo en algún momento.";
@@ -306,17 +309,32 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence está desactivado en esta versión demo.";
 
-/* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "Abre este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Abre un documento para añadirlo a esta vista.";
 
-/* Generic name for location of external documents */
-"Other" = "Otros";
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Abrir documento externo";
+
+/* Omni Presence config email body */
+"Open this file on another device to configure OmniPresence there." = "Abra este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
+
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Otros…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Idioma";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Personalizado";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Elegir una plantilla";
 
 /* Server Account Setup label: password */
 "Password" = "Contraseña";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Permiso denegado a la fototeca.";
+"Photo Library permission denied." = "Permiso denegado a la biblioteca de imágenes.";
 
 /* Menu option in the document picker view */
 "Print" = "Imprimir";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Comprar ahora";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Eliminar";
-
-/* remove button title */
-"Remove %ld Documents" = "Eliminar %ld documentos";
-
-/* remove button title */
-"Remove Document" = "Eliminar documento";
+/* Generic name for location of external documents */
+"Recent Documents" = "Documentos recientes";
 
 /* rename button title */
 "Rename" = "Renombrar";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "Toca aquí para añadir un documento sin plantilla.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Pulsa aquí o el signo + de la barra de herramientas para añadir un documento.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Pulsa aquí o el signo + de la barra de herramientas para añadir una plantilla personalizada.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Toca el símbolo + de la barra de herramientas para añadir un documento de otra app o guardado en iCloud Drive.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Pulsa aquí o el signo + de la barra de herramientas para añadir un documento.";
 
 /* file name label for template filte types */
 "Template:" = "Plantilla:";
@@ -441,7 +453,7 @@
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a su biblioteca de imágenes.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Validando cuenta…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Cuando se instalen módulos, aparecerán aquí.";

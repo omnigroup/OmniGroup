@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,12 +32,16 @@ struct _ODOPropertyFlags {
     struct {
         SEL get;
         SEL set;
+
+        SEL calculate; // For transient/calculated properties
     } _sel;
     
     // IMPs are cached when needed.  Setter might be NULL (someday) if the property is @dynamic and read-only.
     struct {
         IMP get;
         IMP set;
+
+        IMP calculate;
     } _imp;
     
     struct _ODOPropertyFlags _flags;

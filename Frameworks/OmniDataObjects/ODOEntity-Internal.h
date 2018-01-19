@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniDataObjects/ODOEntity.h>
+#import <OmniDataObjects/ODOObject.h> // For ODOObjectSetDefaultAttributeValues
 
 @interface ODOEntity () {
 @private
@@ -19,10 +20,12 @@
     
     // These four arrays must be exactly parallel
     NSArray *_properties;
-    CFArrayRef _propertyNames;
+    NSArray <NSString *> *_propertyNames;
     CFArrayRef _propertyGetSelectors;
     CFArrayRef _propertySetSelectors;
-    
+
+    NSArray <NSString *> *_nonPropertyNames;
+
     NSDictionary *_propertiesByName;
     NSDictionary *_relationshipsByName;
     NSArray *_relationships;
@@ -34,6 +37,7 @@
     ODOAttribute *_primaryKeyAttribute;
     
     NSArray <__kindof ODOProperty *> *_snapshotProperties;
+    NSArray <__kindof ODOProperty *> *_nonDerivedSnapshotProperties;
     NSArray <ODOAttribute *> *_snapshotAttributes;
     
     NSArray *_schemaProperties;
@@ -45,6 +49,8 @@
     NSSet *_derivedPropertyNameSet;
     NSSet *_nonDateModifyingPropertyNameSet;
     NSSet *_calculatedTransientPropertyNameSet;
+
+    NSArray <ODOObjectSetDefaultAttributeValues> *_defaultAttributeValueActions;
 }
 
 @end
@@ -56,8 +62,11 @@
 - (void)finalizeModelLoading;
 
 @property(readonly) NSArray <__kindof ODOProperty *> *snapshotProperties;
+@property(readonly) NSArray <__kindof ODOProperty *> *nonDerivedSnapshotProperties;
 - (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;
 
 @property(readonly) NSArray <__kindof ODOAttribute *> *snapshotAttributes;
+
+@property(readonly) NSArray <ODOObjectSetDefaultAttributeValues> *defaultAttributeValueActions;
 
 @end

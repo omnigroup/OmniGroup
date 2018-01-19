@@ -12,6 +12,7 @@
 #import <OmniUI/OUIDocumentPreviewArea.h>
 
 @class ODSFileItem, OFFileEdit, ODSFileItemEdit;
+@protocol ODSFileItem;
 
 typedef NS_ENUM(NSUInteger, OUIDocumentPreviewType) {
     OUIDocumentPreviewTypeRegular, // Actual image that is based on document contents
@@ -60,7 +61,7 @@ This class maintains an in memory and disk cache of decoded preview images for u
 + (void)writeEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 + (void)writeEncryptedEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit fileURL:(NSURL *)fileURL;
 
-+ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
++ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(id <ODSFileItem>)fileItem withArea:(OUIDocumentPreviewArea)area;
 
 + (CGFloat)previewSizeForArea:(OUIDocumentPreviewArea)area;
 + (CGFloat)previewImageScale;

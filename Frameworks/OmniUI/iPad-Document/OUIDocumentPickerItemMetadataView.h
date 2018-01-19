@@ -11,9 +11,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class OUIDocumentNameTextField;
-
 // Flatten the view hierarchy for the name/date and possible iCloud status icon for fewer composited layers while scrolling.
+// This is a subclass of UIControl so it can 
 @interface OUIDocumentPickerItemMetadataView : UIView
 
 @property (class, nonatomic, readonly) UIColor *defaultBackgroundColor;
@@ -29,7 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL isEditing;
 
 // OUIDocumentRenameSession becomes the delegate of this while renaming
-@property (nonatomic, readonly) OUIDocumentNameTextField *nameTextField;
+- (UITextField *)startEditingName;
+- (void)didEndEditing;
+
 @property (nullable, nonatomic, readonly) UIProgressView *transferProgressView;
 
 - (UIView *)viewForScalingStartFrame:(CGRect)startFrame endFrame:(CGRect)endFrame;
@@ -40,12 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSObject (OUIDocumentPickerItemMetadataView)
 - (void)documentPickerItemNameStartedEditing:(id)sender;
 - (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
-@end
-
-@interface OUIDocumentNameTextField : UITextField
-
-@property (nonatomic) BOOL useLargerClearButton;
-
 @end
 
 NS_ASSUME_NONNULL_END

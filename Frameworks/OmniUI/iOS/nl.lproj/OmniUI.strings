@@ -61,7 +61,7 @@
 "Increment" = "Vermeerdering";
 
 /* default special URL confirm button title */
-"Invoke" = "Aanroepen";
+"Invoke" = "Roep aan";
 
 /* button title */
 "Invoke and Quit" = "Roep aan en stop";
@@ -118,6 +118,9 @@
    release notes html screen title */
 
 "Release Notes" = "Versiegegevens";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "Meld fout";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Tekst rechts uitlijnen";

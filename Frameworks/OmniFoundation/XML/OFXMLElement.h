@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 @property(nonatomic,readonly) BOOL shouldIgnore;
 
 @property(nonatomic,readonly) NSUInteger attributeCount;
-@property(nullable,nonatomic,readonly) NSArray *attributeNames;
+@property(nullable,nonatomic,readonly) NSArray<NSString *> *attributeNames;
 - (nullable NSString *) attributeNamed: (NSString *) name;
 - (void) setAttribute: (NSString *) name string: (nullable NSString *) value;
 - (void) setAttribute: (NSString *) name value: (nullable id) value;
@@ -83,7 +83,8 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 - (void) removeAttributeNamed: (NSString *) name;
 
 - (void)applyFunction:(OFXMLElementApplier)applier context:(void *)context;
-- (void)applyBlock:(OFXMLElementApplierBlock NS_NOESCAPE)applierBlock;
+- (void)applyBlock:(OFXMLElementApplierBlock NS_NOESCAPE)applierBlock; // Only OFXMLElements are passed to the block.
+- (void)applyBlockToAllChildren:(void (^ NS_NOESCAPE)(id child))applierBlock; // All children are passed to the block (strings, frozen/unparsed elements).
 
 - (nullable NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 

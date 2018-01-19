@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,7 @@ _Nullable id ODOGetterForUnknownOffset(ODOObject *self, SEL _cmd) OB_HIDDEN;
 void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, _Nullable id value) OB_HIDDEN;
 
 const char * ODOGetterSignatureForProperty(ODOProperty *prop) OB_HIDDEN;
+const char * ODOObjectGetterSignature(void) OB_HIDDEN;
 const char * ODOSetterSignatureForProperty(ODOProperty *prop) OB_HIDDEN;
 
 const char * ODOPropertyAttributesForProperty(ODOProperty *prop) OB_HIDDEN;

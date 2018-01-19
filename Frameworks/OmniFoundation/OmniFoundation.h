@@ -20,6 +20,7 @@
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFBundleRegistryTarget.h>
 #import <OmniFoundation/OFByteProviderProtocol.h>
+#import <OmniFoundation/OFByteSet.h>
 #import <OmniFoundation/OFCancelErrorRecovery.h>
 #import <OmniFoundation/OFCharacterScanner.h>
 #import <OmniFoundation/OFCharacterSet.h>
@@ -28,6 +29,7 @@
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFCredentialChallengeDispositionProtocol.h>
 #import <OmniFoundation/OFDataBuffer.h>
+#import <OmniFoundation/OFDataCursor.h>
 #import <OmniFoundation/OFDateFormatConversion.h>
 #import <OmniFoundation/OFDocumentEncryption-ObjC.h>
 #import <OmniFoundation/OFEnumNameTable-OFXMLArchiving.h>
@@ -39,6 +41,7 @@
 #import <OmniFoundation/OFFileMotionResult.h>
 #import <OmniFoundation/OFFileTypeDescription.h>
 #import <OmniFoundation/OFGeometry.h>
+#import <OmniFoundation/OFHTTPHeaderDictionary.h>
 #import <OmniFoundation/OFIndexPath.h>
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 #import <OmniFoundation/OFLockFile.h>
@@ -82,12 +85,10 @@
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 	#import <OmniFoundation/OFBTree.h>
 	#import <OmniFoundation/OFBulkBlockPool.h>
-	#import <OmniFoundation/OFByteSet.h>
 	#import <OmniFoundation/OFCDSAUtilities.h>
 	#import <OmniFoundation/OFCacheFile.h>
 	#import <OmniFoundation/OFCharacterScanner-OFTrie.h>
 	#import <OmniFoundation/OFController.h>
-	#import <OmniFoundation/OFDataCursor.h>
 	#import <OmniFoundation/OFDatedMutableDictionary.h>
 	#import <OmniFoundation/OFDedicatedThreadScheduler.h>
 	#import <OmniFoundation/OFDelayedEvent.h>
@@ -95,7 +96,6 @@
 	#import <OmniFoundation/OFDynamicStoreListener.h>
 	#import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
 	#import <OmniFoundation/OFFileUtilities.h>
-	#import <OmniFoundation/OFHTTPHeaderDictionary.h>
 	#import <OmniFoundation/OFHeap.h>
 	#import <OmniFoundation/OFInvocation.h>
 	#import <OmniFoundation/OFMatrix.h>

@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "%@ 정보";
 
 /* MultiPane Back button title, when system is compact */
@@ -94,9 +93,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -118,6 +114,9 @@
    release notes html screen title */
 
 "Release Notes" = "릴리스 노트";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "보고서 오류";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "텍스트 오른쪽 정렬";

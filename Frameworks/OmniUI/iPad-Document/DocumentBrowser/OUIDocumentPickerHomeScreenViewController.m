@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,19 +39,26 @@ RCS_ID("$Id$")
 
 typedef NS_ENUM(NSInteger, HomeScreenSections) {
     AccountsListSection,
-    EditModeSection,
+    OpenSection,
+    SetupSection,
     SectionCount,
 };
 
-typedef NS_ENUM(NSInteger, EditModeSectionRows) {
+typedef NS_ENUM(NSInteger, OpenSectionRows) {
+    OpenDocumentRow,
+    OpenSectionRowCount,
+};
+
+typedef NS_ENUM(NSInteger, SetupSectionRows) {
     AddCloudAccountRow,
-    EditModeSectionRowCount,
+    SetupSectionRowCount,
 };
 
 #pragma mark - Cells
 
 NSString *const HomeScreenCellReuseIdentifier = @"documentPickerHomeScreenCell";
-NSString *const AddCloudAccountReuseIdentifier = @"addCloudAccount";
+NSString *const OpenDocumentReuseIdentifier = @"documentPickerOpenDocument";
+NSString *const AddCloudAccountReuseIdentifier = @"documentPickerAddCloudAccount";
 
 #pragma mark - KVO Contexts
 
@@ -295,9 +302,15 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     ODSStore *documentStore = _documentPicker.documentStore;
     NSMutableArray *scopesToRemove = [_orderedScopes mutableCopy];
     NSMutableArray *scopesToAdd = [[NSMutableArray alloc] init];
+    BOOL shouldShowExternalScope = OUIDocumentPicker.shouldShowExternalScope;
     for (ODSScope *scope in documentStore.scopes) {
-        if (![scope isExternal]) {
-            // bug:///147708
+        BOOL shouldIncludeScope = YES;
+        if (scope.isExternal) {
+            ODSExternalScope *externalScope = OB_CHECKED_CAST(ODSExternalScope, scope);
+            shouldIncludeScope = shouldShowExternalScope && externalScope.allowBrowsing;
+        }
+
+        if (shouldIncludeScope) {
             [scopesToAdd addObject:scope];
         }
     }
@@ -429,12 +442,18 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
     OBPRECONDITION(_finishedLoading, "Asked for the number of rows when we haven't loaded yet!");
-    OBPRECONDITION(section == AccountsListSection || section == EditModeSection);
-    
-    if (section == AccountsListSection)
-        return _orderedScopes.count;
-    
-    return EditModeSectionRowCount;
+
+    switch (section) {
+        case AccountsListSection:
+            return _orderedScopes.count;
+        case OpenSection:
+            return OpenSectionRowCount;
+        case SetupSection:
+            return SetupSectionRowCount;
+    }
+
+    OBASSERT_NOT_REACHED("Unknown section!");
+    return 0;
 }
 
 - (ODSScope <ODSConcreteScope> *)_scopeAtIndex:(NSUInteger)index;
@@ -468,12 +487,13 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 {
     OBASSERT_NOTNULL(cell);
     
-    static UIImage *localImage, *cloudImage, *externalImage, *trashImage;
+    static UIImage *localImage, *cloudImage, *externalImage, *recentsImage, *trashImage;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         cloudImage = [[UIImage imageNamed:@"OUIDocumentPickerCloudLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         externalImage = [[UIImage imageNamed:@"OUIDocumentPickerExternalLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         localImage = [[UIImage imageNamed:@"OUIDocumentPickerLocalDocumentsLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        recentsImage = [[UIImage imageNamed:@"OUIDocumentPickerRecentsLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         trashImage = [[UIImage imageNamed:@"OUIDocumentPickerTrashLocationIcon" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     });
     
@@ -504,8 +524,8 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         cell.textLabel.textColor = nil;
         cell.detailTextLabel.textColor = nil;
     } else if ([scope isKindOfClass:[ODSExternalScope class]]) {
-        OBFinishPorting; // bug:///147708
-        cell.imageView.image = externalImage;
+        ODSExternalScope *externalScope = OB_CHECKED_CAST(ODSExternalScope, scope);
+        cell.imageView.image = externalScope.isRecentDocuments ? recentsImage : externalImage;
         cell.editingAccessoryType = UITableViewCellAccessoryNone;
         cell.textLabel.textColor = self.isEditing ? [UIColor lightGrayColor] : nil;
         cell.detailTextLabel.textColor = self.isEditing ? [UIColor lightGrayColor] : nil;
@@ -524,23 +544,38 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    OBPRECONDITION(indexPath.section == AccountsListSection || indexPath.section == EditModeSection);
-    
-    if (indexPath.section == AccountsListSection) {
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:HomeScreenCellReuseIdentifier];
-        if (!cell)
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:HomeScreenCellReuseIdentifier];
+    switch (indexPath.section) {
+        case AccountsListSection: {
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:HomeScreenCellReuseIdentifier];
+            if (!cell)
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:HomeScreenCellReuseIdentifier];
 
-        [self _updateCell:cell forScope:[self _scopeAtIndex:indexPath.row]];
-        
-        return cell;
-    } else if (indexPath.row == AddCloudAccountRow) {
-        _ButtonishTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:AddCloudAccountReuseIdentifier];
-        if (!cell)
-            cell = [[_ButtonishTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AddCloudAccountReuseIdentifier];
-        cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add OmniPresence Account", @"OmniUIDocument", OMNI_BUNDLE, @"home screen button label");
-        cell.textLabel.textColor = [self.view tintColor];
-        return cell;
+            [self _updateCell:cell forScope:[self _scopeAtIndex:indexPath.row]];
+
+            return cell;
+        }
+
+        case OpenSection: {
+            if (indexPath.row == OpenDocumentRow) {
+                _ButtonishTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:OpenDocumentReuseIdentifier];
+                if (!cell)
+                    cell = [[_ButtonishTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AddCloudAccountReuseIdentifier];
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Open…", @"OmniUIDocument", OMNI_BUNDLE, @"home screen button label");
+                cell.textLabel.textColor = [self.view tintColor];
+                return cell;
+            }
+        }
+
+        case SetupSection: {
+            if (indexPath.row == AddCloudAccountRow) {
+                _ButtonishTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:AddCloudAccountReuseIdentifier];
+                if (!cell)
+                    cell = [[_ButtonishTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AddCloudAccountReuseIdentifier];
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add OmniPresence Account", @"OmniUIDocument", OMNI_BUNDLE, @"home screen button label");
+                cell.textLabel.textColor = [self.view tintColor];
+                return cell;
+            }
+        }
     }
     
     OBASSERT_NOT_REACHED("Unknown row!");
@@ -589,48 +624,56 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 {
     OBPRECONDITION(_finishedLoading);
     
-    if (indexPath.section == AccountsListSection) {
-        if (self.isEditing) {
-            OFXDocumentStoreScope *scope = OB_CHECKED_CAST(OFXDocumentStoreScope, [self _scopeAtIndex:indexPath.row]);
-            OFXServerAccount *account = scope.account;
-            [self _editAccountSettings:account sender:tableView];
-        }else{
-            ODSScope *scope = [self _scopeAtIndex:indexPath.item];
-            
-            OUIDocumentPickerFilter *filter ;
-            OFPreference *filterPreference = [OUIDocumentPickerViewController filterPreference];
-            [filterPreference setStringValue:filter.identifier];
-            
-            OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:_documentPicker scope:scope];
-            [self showUnembeddedViewController:picker sender:self];
-        }
-    } else {
-        OBPRECONDITION(indexPath.section == EditModeSection);
-        OBPRECONDITION(indexPath.row == AddCloudAccountRow);
-        
-        if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
-            // Early out if we are currently in retail demo mode.
+    switch (indexPath.section) {
+        case AccountsListSection:
+            if (self.isEditing) {
+                OFXDocumentStoreScope *scope = OB_CHECKED_CAST(OFXDocumentStoreScope, [self _scopeAtIndex:indexPath.row]);
+                OFXServerAccount *account = scope.account;
+                [self _editAccountSettings:account sender:tableView];
+            } else {
+                ODSScope *scope = [self _scopeAtIndex:indexPath.item];
+
+                OUIDocumentPickerFilter *filter ;
+                OFPreference *filterPreference = [OUIDocumentPickerViewController filterPreference];
+                [filterPreference setStringValue:filter.identifier];
+
+                OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:_documentPicker scope:scope];
+                [self showUnembeddedViewController:picker sender:self];
+            }
+            break;
+
+        case OpenSection:
             [tableView deselectRowAtIndexPath:indexPath animated:YES];
-            return;
-        }
-        
-        OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithUsageMode:OFXServerAccountUsageModeCloudSync];
-        addController.finished = ^(OFXServerAccount *newAccountOrNil) {
-            [self.navigationController popToViewController:self animated:YES];
-        };
-        
-        [self.navigationController pushViewController:addController animated:YES];
+            [OUIDocumentAppController.sharedController openDocumentFromExternalContainer:nil];
+            break;
+
+        case SetupSection:
+            OBPRECONDITION(indexPath.row == AddCloudAccountRow);
+
+            if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
+                // Early out if we are currently in retail demo mode.
+                [tableView deselectRowAtIndexPath:indexPath animated:YES];
+                return;
+            }
+
+            OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithUsageMode:OFXServerAccountUsageModeCloudSync];
+            addController.finished = ^(OFXServerAccount *newAccountOrNil) {
+                [self.navigationController popToViewController:self animated:YES];
+            };
+
+            [self.navigationController pushViewController:addController animated:YES];
+            break;
     }
 }
 
 - (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    return indexPath.section != EditModeSection;
+    return indexPath.section == AccountsListSection;
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    return indexPath.section != EditModeSection && _canEditScope([self _scopeAtIndex:indexPath.row]);
+    return indexPath.section == AccountsListSection && _canEditScope([self _scopeAtIndex:indexPath.row]);
 }
 
 - (void)tableView:(UITableView*)tableView willBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath;
@@ -645,16 +688,16 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 
 - (BOOL)tableView:(UITableView *)tableView shouldHighlightRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (!self.isEditing && indexPath.section == AccountsListSection)
-        return YES;
-    
-    if (indexPath.section == AccountsListSection && !_canEditScope([self _scopeAtIndex:indexPath.row]))
-        return NO;
-    
-    if (indexPath.section == EditModeSection && indexPath.row != AddCloudAccountRow)
-        return NO;
-    
-    return YES;
+    switch (indexPath.section) {
+        case AccountsListSection:
+            if (!self.isEditing)
+                return YES;
+            if (!_canEditScope([self _scopeAtIndex:indexPath.row]))
+                return NO;
+            return YES;
+        default:
+            return YES;
+    }
 }
 
 #pragma mark - OUIDisabledDemoFeatureAlerter
@@ -691,5 +734,3 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 }
 
 @end
-
-

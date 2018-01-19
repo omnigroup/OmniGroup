@@ -13,7 +13,7 @@
 #import <OmniUI/OUIUndoBarButtonItem.h>
 #import <OmniDocumentStore/ODSStoreDelegate.h>
 
-@class ODSFileItem, OFFileEdit, ODSFileItemEdit, ODSScope;
+@class ODSFileItem, OFFileEdit, ODSFileItemEdit, ODSScope, ODSStore;
 @class OFXAgentActivity, OFXServerAccount;
 @class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIDocumentOpenAnimator, OUIBarButtonItem, UIViewController;
 
@@ -47,6 +47,9 @@
 - (void)closeAndDismissDocumentWithCompletionHandler:(void(^)(void))completionHandler;
 - (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;
 
+// Subclassing point for a portion of -application:openURL:options:
+- (void)performOpenURL:(NSURL *)url fileType:(NSString *)fileType fileWillBeImported:(BOOL)fileWillBeImported openInPlaceAccessOkay:(BOOL)openInPlaceAccessOkay;
+
 // Incoming iCloud edit on an open document
 - (void)documentDidDisableEnditing:(OUIDocument *)document;
 - (void)documentWillRebuildViewController:(OUIDocument *)document;
@@ -55,6 +58,10 @@
 
 - (void)openDocument:(ODSFileItem *)fileItem;
 - (void)openDocument:(ODSFileItem *)fileItem fromPeekWithWillPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
+
+// Subclasses only, and should probably write wrapper methods for the few cases that need these.
+@property(nonatomic,readonly) ODSStore *documentStore;
+@property(nonatomic,readonly) ODSScope *localScope;
 
 @property(nonatomic,readonly) OUIDocument *document;
 
@@ -85,6 +92,9 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application;
 - (void)applicationDidEnterBackground:(UIApplication *)application;
 
+// API for caching previews
+- (void)updatePreviewsFor:(id <NSFastEnumeration>)fileItems;
+
 // ODSStoreDelegate methods we implement
 - (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
 - (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
@@ -95,9 +105,12 @@
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
 
-// API for linking to external documents
-- (void)linkDocumentFromExternalContainer:(id)sender;
-- (NSURL *)documentProviderMoreInfoURL;
+// API for opening external documents
+- (void)openDocumentFromExternalContainer:(id)sender;
+- (void)addRecentlyOpenedDocumentURL:(NSURL *)url;
+
+// API for internal templates
+- (NSSet *)internalTemplateFileItems;
 
 // Subclass responsibility
 - (Class)documentExporterClass;

@@ -173,7 +173,7 @@ enum {
 {
     UIImage *settingsImage = [[OUIAppController controller] settingsMenuImage];
     
-    return [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Settings", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings menu title") image:settingsImage action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+    return [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Settings", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings menu title") image:settingsImage action:^(OUIMenuInvocation *invocation){
         UIViewController *settingsViewController = [[self alloc] init];
         
         settingsViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:settingsViewController action:@selector(_dismissStandaloneViewController:)];
@@ -181,7 +181,7 @@ enum {
         navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
         navController.modalPresentationStyle = UIModalPresentationFormSheet;
         
-        [presentingViewController presentViewController:navController animated:YES completion:nil];
+        [invocation.presentingViewController presentViewController:navController animated:YES completion:nil];
     }];
 }
 

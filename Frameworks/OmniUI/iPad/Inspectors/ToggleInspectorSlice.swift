@@ -1,4 +1,4 @@
-// Copyright 2017 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,9 @@
 
 open class ToggleInspectorSlice : OUIInspectorSlice {
 
-    @objc /**REVIEW**/ public var toggleSwitch : UISwitch?
-    @objc /**REVIEW**/ public var action : Selector?
+    @nonobjc public var toggleSwitch : UISwitch?
+    @objc public var action : Selector?
+    private var toggleLabel : UILabel?
     private static let kWidth : CGFloat = 200
     private static let kLabelToTogglePadding : CGFloat = 8
 
@@ -22,7 +23,6 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
         contentView.translatesAutoresizingMaskIntoConstraints = false
 
         let view = UIView()
-        var toggleLabel : UILabel?
 
         view.addSubview(contentView)
         contentView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
@@ -49,7 +49,7 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
             contentView.bottomAnchor.constraintEqualToSystemSpacingBelow(label.bottomAnchor, multiplier: 1).isActive = true
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: insets.left).isActive = true
 
-            toggleLabel = label
+            self.toggleLabel = label
         }
 
         let toggle = UISwitch()
@@ -74,6 +74,17 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
 
         self.view = view
 
+        if OUIInspectorAppearance.inspectorAppearanceEnabled {
+            self.themedAppearanceDidChange(OUIInspectorAppearance.shared())
+        }
+    }
+
+    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
+        super.themedAppearanceDidChange(appearance);
+
+        let changedAppearance = appearance as! OUIInspectorAppearance
+        view.backgroundColor = changedAppearance.tableCellBackgroundColor
+        self.toggleLabel?.textColor = changedAppearance.tableCellTextColor
     }
 
 }

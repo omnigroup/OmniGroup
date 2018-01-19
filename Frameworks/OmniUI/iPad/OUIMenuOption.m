@@ -11,11 +11,24 @@ RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
 
+@implementation OUIMenuInvocation
+
+- initWithMenuOption:(OUIMenuOption *)option presentingViewController:(UIViewController *)presentingViewController presentingBarButtonItem:(UIBarButtonItem *)presentingBarButtonItem;
+{
+    _option = option;
+    _presentingViewController = presentingViewController;
+    _presentingBarButtonItem = presentingBarButtonItem;
+
+    return self;
+}
+
+@end
+
 @implementation OUIMenuOption
 
 + (instancetype)optionWithFirstResponderSelector:(SEL)selector title:(NSString *)title image:(nullable UIImage *)image NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    OUIMenuOptionAction action = ^(OUIMenuOption *option, UIViewController *presentingViewController){
+    OUIMenuOptionAction action = ^(OUIMenuInvocation *invocation){
         // Try the first responder and then the app delegate.
         UIApplication *app = [UIApplication sharedApplication];
         if ([app sendAction:selector to:nil from:self forEvent:nil])

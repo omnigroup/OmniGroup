@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ kan dit type bestand niet openen.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ documenten";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Kies een opmaak";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Wis";
+
+/* clear button title */
+"Clear %ld Documents" = "Wis %ld documenten";
+
+/* remove button title */
+"Clear Document" = "Wis document";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Wis naamveld";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Laatste bewerking: %@ op dit apparaat";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Extern document koppelen";
-
 /* Server Account Setup label: location */
 "Location" = "Locatie";
 
@@ -258,7 +261,7 @@
 "Move to..." = "Verplaats naar…";
 
 /* Move document preview action title. */
-"Move…" = "Verplaats...";
+"Move…" = "Verplaats…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mijn document";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence is uitgeschakeld in deze demoversie.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Open een document om het toe te voegen aan deze weergave.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Open extern document";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Open dit bestand op een ander apparaat om OmniPresence daar te configureren.";
 
-/* Generic name for location of external documents */
-"Other" = "Overige";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Overige…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Taal";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Aangepast";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Kies een sjabloon";
 
 /* Server Account Setup label: password */
 "Password" = "Wachtwoord";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Koop nu.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Verwijder";
-
-/* remove button title */
-"Remove %ld Documents" = "Verwijder %ld documenten";
-
-/* remove button title */
-"Remove Document" = "Verwijder document";
+/* Generic name for location of external documents */
+"Recent Documents" = "Recente documenten";
 
 /* rename button title */
 "Rename" = "Wijzig naam";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "Tik hier om een document zonder sjabloon toe te voegen.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Tik hier of op de + in de werkbalk om een document toe te voegen.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Tik hier of op de + in de werkbalk om een aangepaste sjabloon toe te voegen.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tik op de + in de werkbalk om een document dat op iCloud Drive is opgeslagen of door een andere app is geleverd, toe te voegen.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Tik hier of op de + in de werkbalk om een document toe te voegen.";
 
 /* file name label for template filte types */
 "Template:" = "Sjabloon:";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Bezig met valideren van de account…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Wanneer plugins zijn geïnstalleerd, verschijnen ze hier.";

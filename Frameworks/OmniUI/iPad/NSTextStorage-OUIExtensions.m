@@ -115,6 +115,33 @@ static NSDataDetector *_linkDataDectector;
             }];
             location = NSMaxRange(remainingRange);
         }
+
+        // One more pass to find the message: URLs that the link data detector missed
+        static NSRegularExpression *missedURLExpression;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            missedURLExpression = [[NSRegularExpression alloc] initWithPattern:@"<message:[^ \n>]+>|\\(message:[^ \n)]+\\)" options:0 error:NULL];
+            OBASSERT(missedURLExpression != nil);
+        });
+
+        location = fullRange.location;
+        while (location < end) {
+            NSRange remainingRange = NSMakeRange(location, end - location);
+            [missedURLExpression enumerateMatchesInString:string options:0 range:remainingRange usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
+                NSRange matchRange = result.range;
+                OBASSERT(matchRange.length > 2); // The regular expression won't match anything shorter than this
+                NSRange linkRange = NSMakeRange(matchRange.location + 1, matchRange.length - 2);
+                NSURL *linkURL = [NSURL URLWithString:[string substringWithRange:linkRange]];
+                if (linkURL != nil) {
+                    NSURL *existingLink = [self attribute:NSLinkAttributeName atIndex:linkRange.location effectiveRange:NULL];
+                    if (OFNOTEQUAL(linkURL.scheme, existingLink.scheme)) {
+                        [self removeAttribute:NSLinkAttributeName range:matchRange];
+                        [self addAttribute:NSLinkAttributeName value:linkURL range:linkRange];
+                    }
+                }
+            }];
+            location = NSMaxRange(remainingRange);
+        }
     }
     [self endEditing];
     return didMakeChanges;

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -202,7 +202,7 @@ enum {
         contentInfo = [[OWContentInfo alloc] initWithContent:self typeString:typeString];
     else
         contentInfo = nil;  // For some reason, addresses don't deserve contentinfos
-    OFSimpleLockInit(&lock);
+    lock = OS_UNFAIR_LOCK_INIT;
     metadataCompleteCondition = nil;
     metaData = [[OFMultiValueDictionary alloc] initWithCaseInsensitiveKeys:YES];
     metadataHash = 0;
@@ -275,8 +275,6 @@ static void Thingy(id mememe, SEL wheee)
         [aCache adjustHandle:[containingCaches objectForKey:aCache] reference:-1];
     }
     containingCaches = nil;
-    
-    OFSimpleLockFree(&lock);
 }
 
 - (OWContentInfo *)contentInfo;
@@ -331,31 +329,31 @@ static void Thingy(id mememe, SEL wheee)
     if (concreteContent && [concreteContent respondsToSelector:@selector(fullContentType)])
         return [(id)concreteContent fullContentType];
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     if (cachedContentType != nil) {
         OWParameterizedContentType *parameterizedContentType = cachedContentType;
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
         return parameterizedContentType;
     }
 
     NSString *ctString = [metaData lastObjectForKey:OWContentTypeHeaderString];
     BOOL maybeStash = metadataComplete;
     
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     OWParameterizedContentType *parameterizedContentType = [OWParameterizedContentType contentTypeForString:ctString];
     if (parameterizedContentType == nil)
         parameterizedContentType = [[OWParameterizedContentType alloc] initWithContentType:[OWContentType unknownContentType]];
 
     if (maybeStash) {
-        OFSimpleLock(&lock);
+        os_unfair_lock_lock(&lock);
         // Someone else may have come along and cached a content-type and/or modified the metadata
         if (cachedContentType == nil &&
             [ctString isEqual:[metaData lastObjectForKey:OWContentTypeHeaderString]]) {
             cachedContentType = parameterizedContentType;
         }
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
     }
 
     OBPOSTCONDITION(parameterizedContentType != nil);
@@ -368,10 +366,10 @@ static void Thingy(id mememe, SEL wheee)
     NSMutableArray *codingTokens, *codings;
     BOOL shouldCache;
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     if (metadataComplete && cachedContentEncodings != nil) {
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
         return cachedContentEncodings;
     }
     shouldCache = metadataComplete;
@@ -382,7 +380,7 @@ static void Thingy(id mememe, SEL wheee)
     else
         codingHeadersCopy = nil;
     
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
     
     if (codingHeadersCopy == nil)
         return nil;
@@ -399,10 +397,10 @@ static void Thingy(id mememe, SEL wheee)
     }
 
     if (shouldCache) {
-        OFSimpleLock(&lock);
+        os_unfair_lock_lock(&lock);
         if (cachedContentEncodings == nil)
             cachedContentEncodings = [[NSArray alloc] initWithArray:codings];
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
     }
 
     return codings;
@@ -441,25 +439,25 @@ static void Thingy(id mememe, SEL wheee)
     if (smallConcreteType != ConcreteType_DataStream)
         return [self _invalidContentType:_cmd];
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     OWDataStream *thisDataStream = (OWDataStream *)concreteContent;
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
     NS_DURING {
         cursor = [thisDataStream createCursor];
         if ([thisDataStream endOfData]) {
             BOOL contentIsValid = [thisDataStream contentIsValid];
-            OFSimpleLock(&lock);
+            os_unfair_lock_lock(&lock);
             if (contentIsValid)
                 dataComplete = Data_EndedAndValid;
             else
                 dataComplete = Data_Invalid;
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
         }
     } NS_HANDLER {
         if ([[localException name] isEqualToString:OWDataStreamNoLongerValidException]) {
-            OFSimpleLock(&lock);
+            os_unfair_lock_lock(&lock);
             dataComplete = Data_Invalid;
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
         }
         [localException raise];
         cursor = nil; // compiler pacification
@@ -505,20 +503,20 @@ static void Thingy(id mememe, SEL wheee)
     unsigned char dataStatus;
     BOOL dataEnded;
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     dataStatus = dataComplete;
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     if (dataStatus == Data_NotComplete) {
 
         dataEnded = [concreteContent endOfData];
 
         if (dataEnded) {
-            OFSimpleLock(&lock);
+            os_unfair_lock_lock(&lock);
             if (dataComplete == Data_NotComplete)
                 dataComplete = Data_EndedMaybeInvalid;
             dataStatus = dataComplete;
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
         }
     }
 
@@ -529,13 +527,13 @@ static void Thingy(id mememe, SEL wheee)
 {
     unsigned char dataCompleteCopy;
     
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     if (!metadataComplete) {
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
         return NO;
     }
     dataCompleteCopy = dataComplete;
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
     switch (dataCompleteCopy) {
         case Data_EndedAndValid:
             return YES;
@@ -551,14 +549,14 @@ static void Thingy(id mememe, SEL wheee)
                 [self contentHash];
             } @catch (NSException *exc) {
                 OB_UNUSED_VALUE(exc);
-                OFSimpleLock(&lock);
+                os_unfair_lock_lock(&lock);
                 dataComplete = Data_Invalid;
-                OFSimpleUnlock(&lock);
+                os_unfair_lock_unlock(&lock);
                 return NO;
             }
-            OFSimpleLock(&lock);
+            os_unfair_lock_lock(&lock);
             dataComplete = Data_EndedAndValid;
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
             return YES;
     }
 }
@@ -587,7 +585,7 @@ static void Thingy(id mememe, SEL wheee)
         NSString *validator;
         BOOL validatorSeen = NO;
 
-        OFSimpleLock(&lock);
+        os_unfair_lock_lock(&lock);
 
         validator = [metaData lastObjectForKey:OWEntityTagHeaderString];
         if (validator && [validator isKindOfClass:[NSString class]] && ![NSString isEmptyString:validator])
@@ -601,7 +599,7 @@ static void Thingy(id mememe, SEL wheee)
         if (metadataComplete)
             hasValidator = validatorSeen;
 
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
         
         return validatorSeen;
     }
@@ -621,13 +619,13 @@ static void Thingy(id mememe, SEL wheee)
     OBASSERT(!metadataComplete);
     OBASSERT(headerValue != nil);
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     [self _locked_addHeader:headerName values:nil value:headerValue];
 /*
     if ([self _locked_addHeader:headerName values:nil value:headerValue])
         note = [NSNotification notificationWithName:OWContentHasNewMetadataNotificationName object:self];
 */
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 /*
     if (note)
         [OWPipeline lockAndPostNotification:note];
@@ -642,14 +640,14 @@ static void Thingy(id mememe, SEL wheee)
 
     OBASSERT(!metadataComplete);
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     [self _locked_addHeader:headerName values:values value:nil];
 /*
     if ([self _locked_addHeader:headerName values:values value:nil])
         note = [NSNotification notificationWithName:OWContentHasNewMetadataNotificationName object:self];
 */
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 /*
     if (note)
         [OWPipeline lockAndPostNotification:note];
@@ -668,7 +666,7 @@ static void Thingy(id mememe, SEL wheee)
 
     OBASSERT(!metadataComplete);
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     newHeaders = [headers allKeys];
     newHeaderCount = [newHeaders count];
@@ -684,7 +682,7 @@ static void Thingy(id mememe, SEL wheee)
 */        
     }
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 /*    
     if (note)
         [OWPipeline lockAndPostNotification:note];
@@ -699,7 +697,7 @@ static void Thingy(id mememe, SEL wheee)
 
     OBASSERT(!metadataComplete);
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     if ([metaData lastObjectForKey:headerName] != nil) {
         [metaData setObjects:nil forKey:headerName];
@@ -711,7 +709,7 @@ static void Thingy(id mememe, SEL wheee)
         }
     }
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 /*
     if (note)
         [OWPipeline lockAndPostNotification:note];
@@ -732,7 +730,7 @@ static void Thingy(id mememe, SEL wheee)
 {
     [self setContentTypeString:[aType contentTypeString]];
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     if (cachedContentType == nil) {
         cachedContentType = aType;
@@ -740,7 +738,7 @@ static void Thingy(id mememe, SEL wheee)
         OBASSERT([cachedContentType isEqual:aType]);
     }
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 }
 
 - (void)setCharsetProvenance:(enum OWStringEncodingProvenance)provenance;
@@ -750,14 +748,14 @@ static void Thingy(id mememe, SEL wheee)
 
 - (void)markEndOfHeaders;
 {
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 //    BOOL wasEnded = metadataComplete;
     metadataComplete = YES;
     if (metadataCompleteCondition) {
         [metadataCompleteCondition lock];
         [metadataCompleteCondition unlockWithCondition:metadataComplete];
     }
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
 /*
     if (!wasEnded) {
@@ -769,18 +767,18 @@ static void Thingy(id mememe, SEL wheee)
 - (BOOL)endOfHeaders
 {
     BOOL eoh;
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     eoh = metadataComplete;
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
     return eoh;
 }
 
 - (void)waitForEndOfHeaders
 {
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     if (metadataComplete) {
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
         return;
     }
 
@@ -790,16 +788,16 @@ static void Thingy(id mememe, SEL wheee)
 
     NSConditionLock *waitCondition = metadataCompleteCondition;
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     [waitCondition lockWhenCondition:YES];
     [waitCondition unlock];
     waitCondition = nil;
 
 #ifdef OMNI_ASSERTIONS_ON
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     OBASSERT(metadataComplete);
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 #endif
 }
 
@@ -807,12 +805,12 @@ static void Thingy(id mememe, SEL wheee)
 {
     OFMultiValueDictionary *result;
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     if (metadataComplete)
         result = metaData;
     else
         result = [metaData mutableCopy];
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     return result;
 }
@@ -821,9 +819,9 @@ static void Thingy(id mememe, SEL wheee)
 {
     id result;
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     result = [metaData lastObjectForKey:headerKey];
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
     return result;
 }
 
@@ -836,12 +834,12 @@ static void Thingy(id mememe, SEL wheee)
 {
     NSDictionary *result;
     
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     if (metadataComplete)
         result = [metaData dictionary];
     else
         result = [metaData dictionary];
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     return result;
 }
@@ -960,18 +958,18 @@ static void Thingy(id mememe, SEL wheee)
 
         otherHeaders = [other headers];
     
-        OFSimpleLock(&lock);
+        os_unfair_lock_lock(&lock);
         locked = YES;
     
         if (![metaData isEqual:otherHeaders]) {
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
             return NO;
         }
     
         NSArray *cacheKeys = [containingCaches allKeys];
     
         locked = NO;
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
     
         handleMatch = NO;
         NSUInteger keyCount = [cacheKeys count];
@@ -1010,15 +1008,15 @@ static void Thingy(id mememe, SEL wheee)
         }
     
         // If we reach this point, we've decided we're equivalent to the other content (all our values are equal). Share any cache handles with the other content for efficiency's sake.
-        OFSimpleLock(&lock);
+        os_unfair_lock_lock(&lock);
         locked = YES;
         [other _shareHandles:containingCaches];
         locked = NO;
-        OFSimpleUnlock(&lock);
+        os_unfair_lock_unlock(&lock);
     
     } @catch (NSException *exc) {
         if (locked)
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
         if ([exc name] != OWDataStreamNoLongerValidException)
             NSLog(@"-[%@ %@]: %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [exc description]);
         return NO;
@@ -1061,20 +1059,20 @@ static void Thingy(id mememe, SEL wheee)
 
         valueToHash = nil;
         NS_DURING {
-            OFSimpleLock(&lock);
+            os_unfair_lock_lock(&lock);
     
             if (concreteContent == nil) {
                 cacheEnumerator = [containingCaches keyEnumerator];
                 while( (aCache = [cacheEnumerator nextObject]) != nil) {
                     id handle = [containingCaches objectForKey:aCache];
-                    OFSimpleUnlock(&lock);
+                    os_unfair_lock_unlock(&lock);
                     myContentHash = [aCache contentHashForHandle:handle];
                     handle = nil;
                     if (myContentHash != 0) {
                         contentHash = myContentHash;
                         NS_VALUERETURN(myContentHash, NSUInteger);
                     }
-                    OFSimpleLock(&lock);
+                    os_unfair_lock_lock(&lock);
                 }
     
                 [self _locked_fillContent];
@@ -1100,9 +1098,9 @@ static void Thingy(id mememe, SEL wheee)
     
             valueToHash = concreteContent;
 
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
         } NS_HANDLER {
-            OFSimpleUnlock(&lock);
+            os_unfair_lock_unlock(&lock);
             [localException raise];
         } NS_ENDHANDLER;
 
@@ -1130,7 +1128,7 @@ static void Thingy(id mememe, SEL wheee)
     OBASSERT(newHandle != nil);
     OBASSERT(aCache != nil);
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
 
     CFMutableDictionaryRef handles = (__bridge CFMutableDictionaryRef)containingCaches;
     id incrementHandle = nil;
@@ -1144,7 +1142,7 @@ static void Thingy(id mememe, SEL wheee)
         CFDictionarySetValue(handles, CFBridgingRetain(aCache), CFBridgingRetain(newHandle));
     }
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     if (incrementHandle != nil) {
         [aCache adjustHandle:incrementHandle reference:+1];
@@ -1159,9 +1157,9 @@ static void Thingy(id mememe, SEL wheee)
 {
     id handle;
     
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     handle = [containingCaches objectForKey:aCache];
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     return handle;
 }
@@ -1170,12 +1168,12 @@ static void Thingy(id mememe, SEL wheee)
 {
     OWContent *newContent;
 
-    OFSimpleLock(&lock);
+    os_unfair_lock_lock(&lock);
     newContent = [[[self class] alloc] initWithContent:concreteContent];
     // Direct access is OK here because nobody has a reference to the new content except us.
     newContent->contentHash = contentHash;
     [newContent addHeaders:metaData];
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 
     return newContent;
 }
@@ -1220,7 +1218,7 @@ static void Thingy(id mememe, SEL wheee)
     id aHandle;
 
     // It's possible, though unlikely, for us to be deadlocking here (since the other content's lock will also be held at the moment). So we don't exchange handles if it would cause a block.
-    if (!OFSimpleLockTry(&lock))
+    if (!os_unfair_lock_trylock(&lock))
         return;
 
     cacheEnumerator = [otherContentHandles keyEnumerator];
@@ -1240,7 +1238,7 @@ static void Thingy(id mememe, SEL wheee)
         }
     }
 
-    OFSimpleUnlock(&lock);
+    os_unfair_lock_unlock(&lock);
 }
 
 - (BOOL)_locked_addHeader:(NSString *)headerName values:(NSArray *)several value:(id)one

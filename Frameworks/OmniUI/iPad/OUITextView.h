@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,9 +52,12 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 // UITextView currently has top/bottom padding that we cannot turn off/change
 + (CGFloat)oui_defaultTopAndBottomPadding;
 
+@property (nonatomic, copy) NSString *placeholder;
+
 @property(nonatomic,readonly) CGFloat textHeight;
 @property(nonatomic,readonly) CGSize textUsedSize;
 
+@property (nonatomic) IBInspectable BOOL shouldAutomaticallyUpdateColorsForCurrentTheme;
 @property(nonatomic) BOOL keepContextualMenuHidden;
 
 - (NSDictionary *)typingAttributesWithAllAttributes; // allow subclasses to ensure that the typing attributes contain the extra attributes which are sometimes stripped out by the runtime.

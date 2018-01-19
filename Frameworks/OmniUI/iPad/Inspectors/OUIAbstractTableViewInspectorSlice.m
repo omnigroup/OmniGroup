@@ -18,6 +18,11 @@ RCS_ID("$Id$");
 @interface OUIInspectorTableViewHeaderFooterView : UITableViewHeaderFooterView
 @end
 
+@interface OUIAbstractTableViewSectionHeaderView : UIView
+@property (readwrite,nonatomic,strong) UILabel *label;
+@property (readwrite,nonatomic,strong) UIButton *actionButton;
+@end
+
 @implementation OUIAbstractTableViewInspectorSlice
 {
     UITableView *_tableView;
@@ -87,42 +92,44 @@ static NSString *_doneActionButtonTitle;
 
 + (UIView *)sectionHeaderViewWithLabelText:(NSString *)labelString actionTitle:(NSString *)actionTitle actionTarget:(id)actionTraget action:(SEL)action section:(NSInteger)section forTableView:(UITableView *)tableView;
 {
-    UILabel *label = [self headerLabelWithText:labelString];
-    UIButton *actionButton = nil;
-
-    if (actionTitle) {
-        OBASSERT_NOTNULL(action, @"Please provde an action if you want to use a buton in the headerView");
-        actionButton = [OUIAbstractTableViewInspectorSlice headerActionButtonWithTitle:actionTitle section:section];
-        [actionButton addTarget:actionTraget action:action forControlEvents:UIControlEventTouchUpInside];
-    }
-
     UIEdgeInsets separatorInset = tableView.separatorInset;
     CGRect headerFrame = CGRectMake(0, 0, separatorInset.left + separatorInset.right, 0);
-    UIView *headerView = [[UIView alloc] initWithFrame:headerFrame];
-
-    UIEdgeInsets edgeInsets = OUIInspectorSlice.sliceAlignmentInsets;
-    CGRect labelFrame = label.frame;
-    labelFrame.origin.x = separatorInset.left;
-    labelFrame.origin.y = -8 - labelFrame.size.height;
-    labelFrame.size.width = 0;
-    label.frame = labelFrame;
+    OUIAbstractTableViewSectionHeaderView *headerView = [[OUIAbstractTableViewSectionHeaderView alloc] initWithFrame:headerFrame];
+    
+    UILabel *label = [self headerLabelWithText:labelString];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    [headerView addSubview:label];
-    [label.leadingAnchor constraintEqualToAnchor:headerView.leadingAnchor constant:edgeInsets.right].active = YES;
-    [label.topAnchor constraintEqualToSystemSpacingBelowAnchor:headerView.topAnchor multiplier:1.0f].active = YES;
-    [headerView.bottomAnchor constraintEqualToSystemSpacingBelowAnchor:label.bottomAnchor multiplier:1.0f].active = YES;
+    headerView.label = label;
+    
+    UIEdgeInsets edgeInsets = OUIInspectorSlice.sliceAlignmentInsets;
 
-    if (actionButton) {
-        [headerView addSubview:actionButton];
+    [headerView addSubview:label];
+    CGFloat descender = label.font.descender;
+    [label.leadingAnchor constraintEqualToAnchor:headerView.safeAreaLayoutGuide.leadingAnchor constant:edgeInsets.left].active = YES;
+    [label.firstBaselineAnchor constraintEqualToAnchor:headerView.bottomAnchor constant:-10 + descender].active = YES;
+    [headerView.heightAnchor constraintEqualToConstant:44].active = YES;
+    
+    if (actionTitle) {
+        OBASSERT_NOTNULL(action, @"Please provde an action if you want to use a buton in the headerView");
+        
+        UIButton *actionButton = [OUIAbstractTableViewInspectorSlice headerActionButtonWithTitle:actionTitle section:section];
         actionButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [actionButton.topAnchor constraintEqualToSystemSpacingBelowAnchor:headerView.topAnchor multiplier:1.0f].active = YES;
-        [headerView.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor constant:edgeInsets.right].active = YES;
+
+        headerView.actionButton = actionButton;
+        [actionButton addTarget:actionTraget action:action forControlEvents:UIControlEventTouchUpInside];
+
+        [headerView addSubview:actionButton];
+        [actionButton.firstBaselineAnchor constraintEqualToAnchor:headerView.bottomAnchor constant:-10 + descender].active = YES;
+        [headerView.safeAreaLayoutGuide.trailingAnchor constraintEqualToAnchor:actionButton.trailingAnchor constant:edgeInsets.right].active = YES;
         [actionButton.leadingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:8.0f].active = YES;
 
     } else {
         [headerView.trailingAnchor constraintGreaterThanOrEqualToAnchor:label.trailingAnchor constant:edgeInsets.left].active = YES;
     }
 
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        [headerView themedAppearanceDidChange:OUIInspectorAppearance.appearance];
+    }
+    
     return headerView;
 }
 
@@ -171,6 +178,7 @@ static NSString *_doneActionButtonTitle;
 
 - (void)reloadTableAndResize;
 {
+    _tableView.editing = NO;
     [_tableView reloadData];
     if (_tableView.window != nil)
         [_tableView layoutIfNeeded];
@@ -214,7 +222,8 @@ static NSString *_doneActionButtonTitle;
 {
     OBPRECONDITION(_tableView == nil);
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 420) style:[self tableViewStyle]];
+    // Work around radar 35175843
+    _tableView = [[UITableView alloc] initWithFrame:[UIScreen mainScreen].bounds style:[self tableViewStyle]];
     _tableView.translatesAutoresizingMaskIntoConstraints = NO;
     
     // Subclasses must implement these protocols -- this class just does the UIViewController and OUIInspectorSlice glue code dealing with the view property being a UITableView.
@@ -333,6 +342,18 @@ static NSString *_doneActionButtonTitle;
         clients = [clients arrayByAddingObject:self.tableView];
 
     return clients;
+}
+
+@end
+
+@implementation OUIAbstractTableViewSectionHeaderView
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
+{
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+
+    self.backgroundColor = appearance.InspectorBackgroundColor;
+    self.label.textColor = appearance.TableCellTextColor;
 }
 
 @end

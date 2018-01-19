@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniAppKit/OAParagraphStyle.h>
 
 #import <UIKit/UIView.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUISegmentedControl.h>
 #import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniBase/OmniBase.h>
@@ -104,10 +105,11 @@ RCS_ID("$Id$");
     OBPRECONDITION(alignmentControl == nil);
     
     // We'll be resized by the stack view
-    OUISegmentedControl *alignBar = [[OUISegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {[OUIInspector defaultInspectorContentWidth], [OUISegmentedControl buttonHeight]}}];
+    OUISegmentedControl *alignBar = [[OUISegmentedControl alloc] init];
     alignBar.sizesSegmentsToFit = YES;
     alignBar.allowsEmptySelection = YES;
-    
+    alignBar.translatesAutoresizingMaskIntoConstraints = NO;
+
     OUISegmentedControlButton *button;
         
     button = [alignBar addSegmentWithImage:[UIImage imageNamed:@"OUIParagraphAlignmentLeft.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
@@ -128,23 +130,31 @@ RCS_ID("$Id$");
 
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];
     
-    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 46)];
+    UIView *containerView = [[UIView alloc] init];
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [containerView addSubview:alignBar];
 
-    containerView.translatesAutoresizingMaskIntoConstraints = NO;
-    alignBar.translatesAutoresizingMaskIntoConstraints = NO;
-
     [NSLayoutConstraint activateConstraints:
      @[
-       [alignBar.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor],
-       [alignBar.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor],
+       [alignBar.leftAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.leftAnchor constant:7],
+       [alignBar.rightAnchor constraintEqualToAnchor:containerView.layoutMarginsGuide.rightAnchor constant:-7],
        [alignBar.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
        [containerView.heightAnchor constraintEqualToConstant:46.0],
        ]
      ];
 
-    self.view = containerView;
+    UIView *view = [[UIView alloc] init];
+    
+    [view addSubview:containerView];
+    
+    [containerView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [containerView.rightAnchor constraintEqualToAnchor:view.rightAnchor].active = YES;
+    [containerView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [containerView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    
+    self.view = view;
+
     alignmentControl = alignBar; // Retain moves from our local var to the ivar
 }
 
@@ -154,6 +164,18 @@ RCS_ID("$Id$");
     [self.view setNeedsLayout];
     [self.view layoutIfNeeded];
 }
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.view.backgroundColor = appearance.TableCellBackgroundColor;
+}
+
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$");
     UIViewAnimationCurve _animationCurve;
 }
 
-- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView;
+- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
 {
     OBPRECONDITION(picker);
     OBPRECONDITION(itemView);
@@ -65,16 +65,15 @@ RCS_ID("$Id$");
     OBASSERT([picker.folderItem.childItems member:_item] == _item);
 
     // We temporarily become the delegate.
-    OBASSERT([_itemView.metadataView.nameTextField isKindOfClass:[OUIDocumentNameTextField class]]);
-    _nameTextField = (OUIDocumentNameTextField *)_itemView.metadataView.nameTextField;
+    _nameTextField = nameTextField;
     _nameTextField.delegate = self;
     
     CGRect endingMetadataFrame = [self _frameForMetaDataViewForRenamingItemView:itemView];
-    
+
     // Put up a dimming view and animate the item metadata view to twice its size so the text is easier to read
     self.origMetadataFrame = itemView.metadataView.frame;
     self.origItemFrame = itemView.frame;
-    
+
     UIView *superview = _itemView.superview;
     [UIView performWithoutAnimation:^{
         _animatingView = [_itemView.metadataView viewForScalingStartFrame:self.origMetadataFrame endFrame:endingMetadataFrame];
@@ -96,12 +95,13 @@ RCS_ID("$Id$");
         [itemView.metadataView.superview insertSubview:_opaqueBackingView belowSubview:itemView.metadataView];
         
         [superview insertSubview:_animatingView aboveSubview:_itemView.metadataView];
-        [itemView.superview setNeedsLayout];
-        [itemView.superview layoutIfNeeded];
         itemView.metadataView.alpha = 0.0f;
         itemView.metadataView.frame = endingMetadataFrame;
+
+        [itemView.superview setNeedsLayout];
+        [itemView.superview layoutIfNeeded];
     }];
-    
+
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
 
     // start a scroll if the ending frame will be behind the keyboard
@@ -181,12 +181,12 @@ RCS_ID("$Id$");
     
     CGRect frame = itemView.metadataView.frame;
     frame.size.height *= 2;
-    frame.size.width = itemView.superview.bounds.size.width * .6;
+    frame.size.width = ceil(itemView.superview.bounds.size.width * .6);
     
     CGRect itemFrame = [self _centeredFrameForItemView:itemView];
     CGFloat padding = itemFrame.size.height * 0.2;
-    frame.origin.x = itemFrame.origin.x - (frame.size.width - itemFrame.size.width) / 2.0;;
-    frame.origin.y = CGRectGetMaxY(itemFrame) + padding;
+    frame.origin.x = floor(itemFrame.origin.x - (frame.size.width - itemFrame.size.width) / 2.0);
+    frame.origin.y = floor(CGRectGetMaxY(itemFrame) + padding);
     
     // try to make sure we won't be going below the keyboard
     CGFloat bottomOfLargeFrame = CGRectGetMaxY(frame);

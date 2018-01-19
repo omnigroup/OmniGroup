@@ -15,9 +15,11 @@
     <false/>
     <key>OUIDocumentPickerUseTestCode</key>
     <false/>
-    <key>OUIDocumentPickerShouldEnableDocumentProviders</key>
-    <false/>
-    <key>OUIExternalDocuments</key>
+    <key>OUIDocumentPickerShouldShowRecentDocuments</key>
+    <true/>
+    <key>OUIRecentItemLimit</key>
+    <integer>10</integer>
+    <key>OUIRecentlyOpenedDocuments</key>
     <array/>
     <key>OUIMainWindowClass</key>
     <string/>

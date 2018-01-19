@@ -195,7 +195,6 @@ RCS_ID("$Id$")
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
     
     self.navigationBar.barStyle = appearance.InspectorBarStyle;
-    self.navigationBar.backgroundColor = appearance.InspectorBackgroundColor;
 
     _accessoryAndBackgroundBar.barStyle = appearance.InspectorBarStyle;
     _accessoryAndBackgroundBar.backgroundColor = appearance.InspectorBackgroundColor;

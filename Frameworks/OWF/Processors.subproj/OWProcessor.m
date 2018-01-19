@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ RCS_ID("$Id$")
     __weak id <OWProcessorContext> pipeline;
     
     // For display purposes
-    OFSimpleLockType displayablesSimpleLock;
+    os_unfair_lock displayablesLock;
     OWProcessorStatus status;
     NSString *statusString;
 }
@@ -140,18 +140,13 @@ static BOOL OWProcessorTimeLog = NO;
     if (!(self = [super init]))
 	return nil;
     
-    OFSimpleLockInit(&displayablesSimpleLock);
+    displayablesLock = OS_UNFAIR_LOCK_INIT;
     [self setStatus:OWProcessorStarting];
 
     pipeline = aPipeline;
     originalContent = initialContent;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    OFSimpleLockFree(&displayablesSimpleLock);
 }
 
 //
@@ -206,9 +201,9 @@ static BOOL OWProcessorTimeLog = NO;
 {
     if (statusString == newStatus)
 	return;
-    OFSimpleLock(&displayablesSimpleLock);
+    os_unfair_lock_lock(&displayablesLock);
     statusString = newStatus;
-    OFSimpleUnlock(&displayablesSimpleLock);
+    os_unfair_lock_unlock(&displayablesLock);
     [pipeline processorStatusChanged:self];
 }
 
@@ -233,9 +228,9 @@ static BOOL OWProcessorTimeLog = NO;
 
 - (NSString *)statusString;
 {
-    OFSimpleLock(&displayablesSimpleLock);
+    os_unfair_lock_lock(&displayablesLock);
     NSString *aStatus = statusString;
-    OFSimpleUnlock(&displayablesSimpleLock);
+    os_unfair_lock_unlock(&displayablesLock);
     return aStatus;
 }
 

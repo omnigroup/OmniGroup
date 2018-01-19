@@ -1,4 +1,4 @@
-// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -372,23 +372,30 @@ NSString *OFStringForEntityName(NSString *entityName)
 }
 @end
 
-
-static void _OFCharacterDataFromElement(id element, NSMutableString *str)
-{
-    if ([element isKindOfClass:[NSString class]]) {
-        [str appendString: element];
-    } else if ([element isKindOfClass:[OFXMLElement class]]) {
-        for (id child in [element children])
-            _OFCharacterDataFromElement(child, str);
-    } else if ([element isKindOfClass: [OFXMLString class]]) {
-        [str appendString: [element unquotedString]];
-    }
-}
-
 NSString *OFCharacterDataFromElement(OFXMLElement *element)
 {
-    NSMutableString *str = [NSMutableString string];
-    _OFCharacterDataFromElement(element, str);
-    return str;
+    __block NSString *result = nil;
+    __block BOOL isMutable = NO;
+    
+    [element applyBlockToAllChildren:^(id child) {
+        if ([child isKindOfClass:[NSString class]]) {
+            if (result == nil) {
+                result = [child copy];
+            } else {
+                if (!isMutable) {
+                    NSString *immutable = result;
+                    result = [result mutableCopy];
+                    [immutable release];
+                    isMutable = YES;
+                }
+                [(NSMutableString *)result appendString:child];
+            }
+        }
+    }];
+
+    if (!result) {
+        return @"";
+    }
+    return [result autorelease];
 }
 

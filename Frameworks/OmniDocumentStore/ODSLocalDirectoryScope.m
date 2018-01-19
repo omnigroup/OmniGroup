@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,25 @@ RCS_ID("$Id$");
 
     BOOL _rescanForPresentedItemDidChangeRunning;
     BOOL _presentedItemDidChangeCalledWhileRescanning;
+}
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    ODSLocalDirectoryScope.localDocumentsDisplayName = NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
+}
+
+static NSString *_customLocalDocumentsDisplayName;
+
++ (void)setLocalDocumentsDisplayName:(NSString *)localDocumentsDisplayName;
+{
+    _customLocalDocumentsDisplayName = [localDocumentsDisplayName copy];
+}
+
++ (NSString *)localDocumentsDisplayName;
+{
+    return _customLocalDocumentsDisplayName != nil ? _customLocalDocumentsDisplayName : NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
 }
 
 + (NSURL *)userDocumentsDirectoryURL;
@@ -330,7 +349,7 @@ RCS_ID("$Id$");
     else if (_isTemplate)
         return NSLocalizedStringFromTableInBundle(@"Built-in", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
     else
-        return NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniDocumentStore", OMNI_BUNDLE, @"Document store scope display name");
+        return ODSLocalDirectoryScope.localDocumentsDisplayName;
 }
 
 static void _updateObjectValue(ODSFileItem *fileItem, NSString *bindingKey, id newValue)

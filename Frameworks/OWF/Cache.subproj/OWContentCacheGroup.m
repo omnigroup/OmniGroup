@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ static OWContentCacheGroup *defaultCacheGroup = nil;
 static OFScheduler *cacheActivityScheduler = nil;
 
 static CFMutableArrayRef observers = NULL;
-static OFSimpleLockType observersLock;
+static os_unfair_lock observersLock = OS_UNFAIR_LOCK_INIT;
 
 + (void)initialize;
 {
@@ -33,7 +33,6 @@ static OFSimpleLockType observersLock;
 
     // Allocate the observers array
     observers = CFArrayCreateMutable(NULL, 0, &OFNonOwnedPointerArrayCallbacks);
-    OFSimpleLockInit(&observersLock);
 
     // Set up the enumeration for the cache validity preference before +cacheValidationPreference is called
     {
@@ -89,25 +88,25 @@ static OFSimpleLockType observersLock;
 
 + (void)addObserver:(id)anObject;
 {
-    OFSimpleLock(&observersLock);
+    os_unfair_lock_lock(&observersLock);
     CFArrayAppendValue(observers, (__bridge const void *)(anObject));
-    OFSimpleUnlock(&observersLock);
+    os_unfair_lock_unlock(&observersLock);
 }
 
 + (void)removeObserver:(id)anObject;
 {
-    OFSimpleLock(&observersLock);
+    os_unfair_lock_lock(&observersLock);
     CFIndex where = CFArrayGetLastIndexOfValue(observers, (CFRange){0, CFArrayGetCount(observers)}, (__bridge const void *)(anObject));
     if (where != kCFNotFound)
         CFArrayRemoveValueAtIndex(observers, where);
-    OFSimpleUnlock(&observersLock);
+    os_unfair_lock_unlock(&observersLock);
 }
 
 + (void)invalidateResource:(OWURL *)resource beforeDate:(NSDate *)invalidationDate;
 {
-    OFSimpleLock(&observersLock);
+    os_unfair_lock_lock(&observersLock);
     NSArray *observersSnapshot = [[NSArray alloc] initWithArray:(__bridge NSArray *)observers];
-    OFSimpleUnlock(&observersLock);
+    os_unfair_lock_unlock(&observersLock);
     [observersSnapshot makeObjectsPerformSelector:_cmd withObject:resource withObject:invalidationDate];
 }
 

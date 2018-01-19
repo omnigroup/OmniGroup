@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniFoundation/OFHTTPHeaderDictionary.h>
 
 #import <OmniFoundation/NSScanner-OFExtensions.h>
+#import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFStringScanner.h>
 
@@ -109,7 +110,7 @@ NSString * const OFHTTPContentTypeHeaderKey = @"content-type";
     [super dealloc];
 }
 
-- (NSArray *)stringArrayForKey:(NSString *)aKey;
+- (NSArray <NSString *> *)stringArrayForKey:(NSString *)aKey;
 {
     return [_headerDictionary arrayForKey:aKey];
 }
@@ -202,7 +203,7 @@ NSString * const OFHTTPContentTypeHeaderKey = @"content-type";
 	return;
 
     NSString *key = [aHeader substringToIndex:colonRange.location];
-    NSString *value = [[aHeader substringFromIndex:NSMaxRange(colonRange)] stringByRemovingSurroundingWhitespace];
+    NSString *value = [[aHeader substringFromIndex:NSMaxRange(colonRange)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     [self addString:value forKey:key];
 }
 

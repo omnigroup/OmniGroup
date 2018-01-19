@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ kann diesen Dateityp nicht öffnen.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ Dokumente";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -44,7 +41,7 @@
 "1 Item Selected" = "1 Objekt ausgewählt";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ein Dokument namens „%@“ ist bereits vorhanden. Möchten Sie es ersetzen?Diese Aktion kann nicht widerrufen werden.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ein Dokument namens „%@“ ist bereits vorhanden. Möchten Sie es ersetzen? Diese Aktion kann nicht widerrufen werden.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Accountinformationen";
@@ -83,7 +80,7 @@
 "Cannot Export Item" = "Objekt kann nicht exportiert werden";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail.:";
+"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Vorlagenauswahl";
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Format auswählen";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Löschen";
+
+/* clear button title */
+"Clear %ld Documents" = "%ld Dokumente löschen";
+
+/* remove button title */
+"Clear Document" = "Dokument löschen";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Namensfeld löschen";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Letzte Bearbeitung: %@ auf diesem Gerät";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Externes Dokument verknüpfen";
-
 /* Server Account Setup label: location */
 "Location" = "Ort";
 
@@ -255,7 +258,7 @@
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Share menu title */
-"Move to..." = "Bewegen nach …";
+"Move to..." = "Bewegen …";
 
 /* Move document preview action title. */
 "Move…" = "Bewegen …";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence ist in dieser Demoversion deaktiviert.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Öffnen Sie ein Dokument, um es dieser Ansicht hinzuzufügen.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Externes Dokument öffnen";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Öffnen Sie diese Datei auf einem anderen Gerät, um OmniPresence dort zu konfigurieren.";
 
-/* Generic name for location of external documents */
-"Other" = "Andere";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Andere …";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Sprache";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Eigene";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Vorlagenauswahl";
 
 /* Server Account Setup label: password */
 "Password" = "Kennwort";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Jetzt kaufen";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Entfernen";
-
-/* remove button title */
-"Remove %ld Documents" = "%ld Dokumente entfernen";
-
-/* remove button title */
-"Remove Document" = "Dokument entfernen";
+/* Generic name for location of external documents */
+"Recent Documents" = "Benutzte Dokumente";
 
 /* rename button title */
 "Rename" = "Umbenennen";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "Tippen Sie hier, um ein Dokument ohne Vorlage hinzuzufügen.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Tippen Sie hier oder in der Symbolleiste auf „+“, um ein Dokument hinzuzufügen.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Tippen Sie hier oder in der Symbolleiste auf „+“, um eine eigene Vorlage hinzuzufügen.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tippen Sie in der Symbolleiste auf „+“, um ein Dokument hinzuzufügen, das in iCloud Drive gespeichert ist oder von einer anderen App bereitgestellt wird.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Tippen Sie hier oder in der Symbolleiste auf „+“, um ein Dokument hinzuzufügen.";
 
 /* file name label for template filte types */
 "Template:" = "Vorlage:";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Account überprüfen …";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Wenn Plug-ins installiert sind, werden sie hier angezeigt.";

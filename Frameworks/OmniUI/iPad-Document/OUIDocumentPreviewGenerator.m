@@ -201,7 +201,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
     DEBUG_PREVIEW_GENERATION(1, @"Starting preview update of %@ / %@", [fileURL lastPathComponent], [originalFileEdit.fileModificationDate xmlString]);
 
     // Let the document know that it is only going to be used to generate previews.
-    document.forPreviewGeneration = YES;
+    [document transientFileItemForPreviewGeneration:self->_currentPreviewUpdatingFileItem];
     
     // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
     [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {

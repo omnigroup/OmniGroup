@@ -11,6 +11,7 @@
 #import <OmniUI/OUISegmentedControl.h>
 #import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 
 RCS_ID("$Id$");
@@ -259,6 +260,17 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
             [object setStrikethroughStyle:strikethrough fromInspectorSlice:self];
     }
     [self.inspector didEndChangingInspectedObjects];
+}
+
+#pragma mark OUIInspectorAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.view.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 @end

@@ -51,6 +51,11 @@ open class DisclosableMultiSegmentInspectorPane : OUIMultiSegmentStackedSlicesIn
 
         return filteredSlices
     }
+    
+    override open func themedAppearanceChildClients() -> [OUIThemedAppearanceClient]! {
+        let clients = super.themedAppearanceChildClients()
+        return clients
+    }
 }
 
 extension DisclosableMultiSegmentInspectorPane : DisclosableSliceGroupDelegate {

@@ -23,7 +23,7 @@
 "Cancel" = "Abbrechen";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Text zentriert ausrichten";
+"Center text align" = "Zentriert ausrichten";
 
 /* Certificate trust alert title */
 "Certificate Trust" = "Zertifikatvertrauen";
@@ -118,6 +118,9 @@
    release notes html screen title */
 
 "Release Notes" = "Versionshinweise";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "Fehler melden";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Rechtsbündig ausrichten";

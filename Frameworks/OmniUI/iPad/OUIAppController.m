@@ -60,6 +60,10 @@ NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
     NSOperationQueue *_backgroundPromptQueue;
 }
 
+static NSString *_defaultReportErrorActionTitle;
+static void (^_defaultReportErrorActionBlock)(NSError *error);
+
+
 BOOL OUIShouldLogPerformanceMetrics = NO;
 
 
@@ -177,16 +181,28 @@ static void __iOS7B5CleanConsoleOutput(void)
     return [self controller];
 }
 
++ (void)registerDefaultReportErrorAction NS_EXTENSION_UNAVAILABLE_IOS("Cannot register the default report error action from extensions as it uses API which extensions can't use");
+{
+    _defaultReportErrorActionTitle = NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUI", OMNI_BUNDLE, @"When displaying a generic error, this is the option to report the error.");
+    _defaultReportErrorActionBlock = ^(NSError *error) {
+        NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [OUIAppController.controller fullReleaseString], [error toPropertyList]];
+        [OUIAppController.controller sendFeedbackWithSubject:[NSString stringWithFormat:@"Error encountered: %@", [error localizedDescription]] body:body];
+    };
+}
+
+
 - (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     if (!(self = [super init])) {
         return nil;
     }
     
-    [[self class] registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
-    [[self class] registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
-    [[self class] registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
-    [[self class] registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
+    Class myClass = [self class];
+    [myClass registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
+    [myClass registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
+    [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
+    [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
+    [myClass registerDefaultReportErrorAction];
     
     return self;
 }
@@ -205,6 +221,11 @@ static void __iOS7B5CleanConsoleOutput(void)
 + (nullable NSString *)applicationEdition;
 {
     return nil;
+}
+
++ (nullable NSString *)helpEdition;
+{
+    return [self applicationEdition];
 }
 
 + (BOOL)inSandboxStore;
@@ -237,6 +258,25 @@ static void __iOS7B5CleanConsoleOutput(void)
         }
     }
     return NO;
+}
+
++ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");
+{
+    UIApplication *sharedApplication = [UIApplication sharedApplication];
+    NSString *scheme = [[url scheme] lowercaseString];
+    if ([self canHandleURLScheme:scheme]) {
+        id <UIApplicationDelegate> appDelegate = [sharedApplication delegate];
+        if ([appDelegate respondsToSelector:@selector(application:openURL:options:)]) {
+            BOOL success = [appDelegate application:sharedApplication openURL:url options:@{
+                UIApplicationOpenURLOptionsOpenInPlaceKey: @(NO),
+                UIApplicationOpenURLOptionsSourceApplicationKey: [[NSBundle mainBundle] bundleIdentifier],
+            }];
+            if (completion != NULL)
+                completion(success);
+            return;
+        }
+    }
+    [sharedApplication openURL:url options:options completionHandler:completion];
 }
 
 // Very basic.
@@ -300,7 +340,14 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
 {
-    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:nil optionalAction:NULL];
+    void (^optionalAction)(UIAlertAction *action);
+    if (_defaultReportErrorActionBlock != NULL) {
+        optionalAction = ^(UIAlertAction * __nonnull action) {
+            _defaultReportErrorActionBlock(error);
+        };
+    }
+
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:cancelButtonTitle optionalActionTitle:_defaultReportErrorActionTitle optionalAction:optionalAction];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line optionalActionTitle:(NSString *)optionalActionTitle optionalAction:(void (^ __nullable)(UIAlertAction *action))optionalAction;
@@ -394,7 +441,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     return @"";
 }
 
-- (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
+- (NSArray <OUIMenuOption *> *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
 {
     return @[];
 }
@@ -692,15 +739,28 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("")
 {
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:UIModalPresentationFullScreen modalTransitionStyle:UIModalTransitionStyleCrossDissolve animated:YES navigationController:nil];
+    return [self showWebViewWithURL:url title:title modalPresentationStyle:UIModalPresentationFullScreen modalTransitionStyle:UIModalTransitionStyleCrossDissolve animated:YES navigationBarHidden:NO];
 }
 
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated  NS_EXTENSION_UNAVAILABLE_IOS("")
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("")
 {
-    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:transitionStyle animated:animated navigationController:nil];
+    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:transitionStyle animated:animated navigationBarHidden:NO];
 }
 
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle  animated:(BOOL)animated navigationController:(nullable UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden NS_EXTENSION_UNAVAILABLE_IOS("")
+{
+    UINavigationController *webNavigationController = [[UINavigationController alloc] init];
+    webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
+    webNavigationController.navigationBarHidden = navigationBarHidden;
+    webNavigationController.modalPresentationStyle = presentationStyle;
+    webNavigationController.modalTransitionStyle = transitionStyle;
+
+    OUIWebViewController *webController = [self showWebViewWithURL:url title:title animated:NO /* will animate the presentation of webNavigationController instead */ navigationController:webNavigationController];
+    [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
+    return webController;
+}
+
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil) {
@@ -712,17 +772,8 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webController.title = title;
     webController.URL = url;
     
-    if (navigationController != nil) {
-        [navigationController pushViewController:webController animated:YES];
-    } else {
-        UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
-        webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
-        
-        webNavigationController.modalPresentationStyle = presentationStyle;
-        webNavigationController.modalTransitionStyle = transitionStyle;
-        
-        [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
-    }
+    assert(navigationController != nil); // This is no longer nullable
+    [navigationController pushViewController:webController animated:animated];
     return webController;
 }
 
@@ -814,7 +865,11 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
 {
-    OUIWebViewController *webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES navigationController:navigationController];
+    OUIWebViewController *webViewController;
+    if (navigationController == nil)
+        webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES navigationBarHidden:NO];
+    else
+        webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] animated:YES navigationController:navigationController];
     [webViewController invokeJavaScriptBeforeLoad:[self _aboutPanelJSONBindingsString]];
 }
 
@@ -838,6 +893,10 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
         return nil;
     
     NSString *helpBookFolder = [mainBundle objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
+    if (helpBookFolder == nil) {
+        return [self _helpForwardURL];
+    }
+
     NSURL *helpIndexURL = [mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
     
     if (helpIndexURL == nil) {
@@ -869,7 +928,13 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
         OBASSERT_NOT_REACHED("Action should not have been enabled");
         return;
     }
-    
+
+    if (![helpIndexURL isFileURL]) {
+        // The help URL doesn't refer to built-in documentation files, so let's send this over to Safari
+        [[UIApplication sharedApplication] openURL:helpIndexURL];
+        return;
+    }
+
     NSString *webViewTitle = [self _onlineHelpTitle];
     
     OUIWebViewController *webController = [self showWebViewWithURL:helpIndexURL title:webViewTitle];
@@ -906,6 +971,12 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
     path = [path stringByAppendingPathComponent:[versionNumber cleanVersionString]];
     
     components.path = path;
+    NSString *helpEdition = [[self class] helpEdition];
+    if (helpEdition != nil) {
+        components.queryItems = @[
+            [NSURLQueryItem queryItemWithName:@"edition" value:helpEdition],
+        ];
+    }
     return [components URL];
 }
 
@@ -926,7 +997,7 @@ static UIImage *menuImage(NSString *name)
     return image;
 }
 
-- (NSArray *)_appMenuTopOptions NS_EXTENSION_UNAVAILABLE_IOS("");
+- (NSArray <OUIMenuOption *> *)_appMenuTopOptions NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSMutableArray *options = [NSMutableArray array];
     OUIMenuOption *option;

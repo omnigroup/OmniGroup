@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -263,10 +263,10 @@ id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *p
             value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, snapshotIndex, rel);
         }
     } else if (value == nil && flags.transient && flags.calculated && ((options & ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues) != 0)) {
-        BOOL isAlreadyCalculatingValue = [self _isCalculatingValueForKey:prop.name];
+        BOOL isAlreadyCalculatingValue = [self _isCalculatingValueForProperty:prop];
         OBASSERT(!isAlreadyCalculatingValue);
         if (!isAlreadyCalculatingValue) {
-            value = [self calculateValueForKey:prop.name];
+            value = [self calculateValueForProperty:prop];
             if (value != nil) {
                 if ([value conformsToProtocol:@protocol(NSCopying)]) {
                     value = [[value copy] autorelease];
@@ -608,9 +608,7 @@ id ODODynamicValueForProperty(ODOObject *object, ODOProperty *prop)
 {
     NSString *key = ODOPropertyName(prop);
     [object willAccessValueForKey:key];
-    id value = ODOObjectPrimitiveValueForProperty(object, prop);
-    [object didAccessValueForKey:key];
-    return value;
+    return ODOObjectPrimitiveValueForProperty(object, prop);
 }
 
 void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *prop, id value)
@@ -633,10 +631,9 @@ void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *pro
         }
     }
     
-    NSString *key = prop->_name;
-    [object willChangeValueForKey:key];
+    ODOObjectWillChangeValueForProperty(object, prop);
     ODOObjectSetPrimitiveValueForProperty(object, value, prop);
-    [object didChangeValueForKey:key];
+    ODOObjectDidChangeValueForProperty(object, prop);
 }
 
 id ODOGetScalarValueForProperty(ODOObject *object, ODOProperty *prop)
@@ -899,7 +896,7 @@ static const char * _SignatureForSelector(SEL sel)
     return signature;
 }
 
-const char * ODOGetterSignatureForProperty(ODOProperty *prop)
+static const char * _ODOGetterSignatureForAttributeType(ODOAttributeType attrType)
 {
     static const char * GetterSignatures[ODOAttributeTypeCount];
     static dispatch_once_t onceToken;
@@ -916,6 +913,11 @@ const char * ODOGetterSignatureForProperty(ODOProperty *prop)
         GetterSignatures[ODOAttributeTypeData] = _SignatureForSelector(@selector(_object_getter_signature));
     });
 
+    return GetterSignatures[attrType];
+}
+
+const char * ODOGetterSignatureForProperty(ODOProperty *prop)
+{
     ODOAttributeType attrType = ODOAttributeTypeUndefined;
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
 
@@ -929,8 +931,13 @@ const char * ODOGetterSignatureForProperty(ODOProperty *prop)
             attrType = attr->_type;
         }
     }
-    
-    return GetterSignatures[attrType];
+
+    return _ODOGetterSignatureForAttributeType(attrType);
+}
+
+const char * ODOObjectGetterSignature(void)
+{
+    return _ODOGetterSignatureForAttributeType(ODOAttributeTypeUndefined);
 }
 
 const char * ODOSetterSignatureForProperty(ODOProperty *prop)

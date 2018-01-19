@@ -300,7 +300,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     // Build Options
     OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
-                                                        action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+                                                        action:^(OUIMenuInvocation *invocation){
                                                             if (target) {
                                                                 [target undo:nil];
                                                             }
@@ -310,7 +310,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     
     OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
-                                                        action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+                                                        action:^(OUIMenuInvocation *invocation){
                                                             if (target) {
                                                                 [target redo:nil];
                                                             }

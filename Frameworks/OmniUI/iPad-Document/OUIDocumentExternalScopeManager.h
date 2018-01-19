@@ -14,12 +14,12 @@
 
 @interface OUIDocumentExternalScopeManager : NSObject
 
-- (instancetype)initWithDocumentStore:(ODSStore *)documentStore preferenceKey:(NSString *)preferenceKey NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithDocumentStore:(ODSStore *)store;
+- (instancetype)initWithDocumentStore:(ODSStore *)store NS_DESIGNATED_INITIALIZER;
 
 - (void)importExternalDocumentFromURL:(NSURL *)url;
-- (void)linkExternalDocumentFromURL:(NSURL *)url;
 - (ODSFileItem *)fileItemFromExternalDocumentURL:(NSURL *)url;
 
+- (BOOL)addRecentlyOpenedDocumentURL:(NSURL *)url;
+- (NSArray <ODSFileItem *> *)recentlyOpenedFileItems;
 
 @end

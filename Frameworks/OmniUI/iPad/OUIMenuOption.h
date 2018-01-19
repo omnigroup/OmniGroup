@@ -13,8 +13,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class OUIMenuOption;
 
-// If a menu option wants to present a new view controller of its own, it will likely want to know where the menu was presented from. But, by the time the action is invoked, the menu itself will have been dismissed.
-typedef void (^OUIMenuOptionAction)(OUIMenuOption *option, UIViewController *presentingViewController);
+// If a menu option wants to present a new view controller of its own, it will likely want to know where the menu was presented from. But, by the time the action is invoked, the menu itself will have been dismissed. The invocation passed contains the original presenting view controller and bar button item to help with this.
+@interface OUIMenuInvocation : NSObject
+
+- initWithMenuOption:(OUIMenuOption *)option presentingViewController:(UIViewController *)presentingViewController presentingBarButtonItem:(UIBarButtonItem *)presentingBarButtonItem;
+
+@property(nonatomic, readonly) OUIMenuOption *option;
+@property(nonatomic, readonly) UIViewController *presentingViewController;
+@property(nonatomic, readonly) UIBarButtonItem *presentingBarButtonItem;
+
+@end
+
+typedef void (^OUIMenuOptionAction)(OUIMenuInvocation *invocation);
 typedef BOOL (^OUIMenuOptionValidatorAction)(OUIMenuOption *option);
 
 @interface OUIMenuOption : NSObject

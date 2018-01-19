@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 @protocol OUIDocumentPickerScrollViewDelegate <UIScrollViewDelegate>
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView;
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewLongpressed:(OUIDocumentPickerItemView *)itemView;
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemView:(OUIDocumentPickerItemView *)itemView finishedEditingName:(NSString *)name;
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;

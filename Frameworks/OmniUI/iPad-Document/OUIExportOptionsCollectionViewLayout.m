@@ -10,6 +10,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIExportOptionsCollectionViewLayout ()
 
 @property NSMutableArray *itemAttributes;
@@ -23,14 +25,14 @@ RCS_ID("$Id$")
     return self.contentSize;
 }
 
-- (NSArray *)layoutAttributesForElementsInRect:(CGRect)rect;
+- (nullable NSArray *)layoutAttributesForElementsInRect:(CGRect)rect;
 {
     return [self.itemAttributes filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(UICollectionViewLayoutAttributes *evaluatedObject, NSDictionary *bindings) {
         return CGRectIntersectsRect(rect, [evaluatedObject frame]);
     }]];
 }
 
-- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath;
 {
     return [self.itemAttributes objectAtIndex:[indexPath indexAtPosition:1]];
 }
@@ -67,8 +69,8 @@ RCS_ID("$Id$")
     NSUInteger numberOfItems = [self.collectionView numberOfItemsInSection:0];
     NSUInteger currentColumn = 0;
 
-    CGFloat currentYPosition = CGRectGetMinY(layoutFrame); // upper left of first row
-    CGFloat currentXPosition = CGRectGetMinX(layoutFrame); // upper left of the first column
+    CGFloat currentYPosition = 8;
+    CGFloat currentXPosition = 8;
 
     for (NSUInteger index = 0; index < numberOfItems; index++) {
         UICollectionViewLayoutAttributes *newAttributes = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:[[NSIndexPath indexPathWithIndex:0] indexPathByAddingIndex:index]];
@@ -97,3 +99,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 #import <OmniUI/OUIFontFamilyInspectorSlice.h>
 #import <OmniUI/OUIFontSizeInspectorSlice.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIScalingTextStorage.h>
 #import <OmniUI/OUISingleViewInspectorPane.h>
@@ -50,6 +51,10 @@ NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewI
 
 @interface OUITextViewSelectedTextHighlightView : UIView
 @property (nonatomic, copy) UIColor *selectionColor;
+@end
+
+@interface OUITextView ()
+@property (nonatomic, strong) UILabel *placeholderLabel;
 @end
 
 @implementation OUITextView
@@ -874,6 +879,98 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
         self.selectedTextRange = [self textRangeFromPosition:selectedRange.start toPosition:adjusted]; // This does call the delegate method -textViewDidChangeSelection:
 }
 
+#pragma mark - Custom accessors
+
+- (void)setShouldAutomaticallyUpdateColorsForCurrentTheme:(BOOL)shouldAutomaticallyUpdateColorsForCurrentTheme
+{
+    if (_shouldAutomaticallyUpdateColorsForCurrentTheme == shouldAutomaticallyUpdateColorsForCurrentTheme)
+        return;
+
+    _shouldAutomaticallyUpdateColorsForCurrentTheme = shouldAutomaticallyUpdateColorsForCurrentTheme;
+    if (shouldAutomaticallyUpdateColorsForCurrentTheme) {
+        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    }
+}
+
+- (void)setPlaceholder:(NSString *)string
+{
+    if (_placeholderLabel == nil) {
+        _placeholderLabel = [[UILabel alloc] init];
+        _placeholderLabel.textColor = OUIInspector.disabledLabelTextColor;
+        _placeholderLabel.font = self.font;
+        _placeholderLabel.numberOfLines = 0;
+        _placeholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        _placeholderLabel.text = self.placeholder;
+    
+        [self addSubview:_placeholderLabel];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textChanged:) name:UITextViewTextDidChangeNotification object:self];
+    }
+    
+    _placeholder = [string copy];
+    _placeholderLabel.text = string;
+
+    [self _updatePlaceholderFrame];
+}
+
+- (void)_updatePlaceholderFrame;
+{
+    static UIEdgeInsets placeholderInsets = (UIEdgeInsets) { .left = 8.0f, .right = 8.0f, .top = 0.0f, .bottom = 0.0f };
+    CGRect placeholderFrame = UIEdgeInsetsInsetRect(UIEdgeInsetsInsetRect(UIEdgeInsetsInsetRect(self.bounds, self.adjustedContentInset), self.textContainerInset), placeholderInsets);
+    placeholderFrame.size = [_placeholderLabel sizeThatFits:placeholderFrame.size];
+    _placeholderLabel.frame = placeholderFrame;
+}
+
+- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset
+{
+    [super setTextContainerInset:textContainerInset];
+    [self _updatePlaceholderFrame];
+}
+
+- (void)setFont:(nullable UIFont *)font
+{
+    [super setFont:font];
+    self.placeholderLabel.font = font;
+}
+
+- (void)setTextAlignment:(NSTextAlignment)textAlignment
+{
+    [super setTextAlignment:textAlignment];
+    self.placeholderLabel.textAlignment = textAlignment;
+}
+
+- (id)insertDictationResultPlaceholder
+{
+    id placeholder = [super insertDictationResultPlaceholder];
+    self.placeholderLabel.hidden = YES;
+    return placeholder;
+}
+
+- (void)removeDictationResultPlaceholder:(id)placeholder willInsertResult:(BOOL)willInsertResult {
+    [super removeDictationResultPlaceholder:placeholder willInsertResult:willInsertResult];
+    
+    self.placeholderLabel.hidden = NO;
+    [self updatePlaceholderLabelVisibility];
+}
+
+- (void)updatePlaceholderLabelVisibility
+{
+    _placeholderLabel.hidden = ![NSString isEmptyString:self.text];
+}
+
+- (void)setText:(nullable NSString *)text
+{
+    [super setText:text];
+    
+    [self updatePlaceholderLabelVisibility];
+}
+
+- (void)textChanged:(NSNotification *)notification
+{
+    [self updatePlaceholderLabelVisibility];
+}
+
+
 #pragma mark - UITextView subclass
 
 - (nullable id <OUITextViewDelegate>)delegate;
@@ -1467,6 +1564,31 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     }
     UIDragPreviewParameters *parameters = [[UIDragPreviewParameters alloc] initWithTextLineRects:values];
     return [[UITargetedDragPreview alloc] initWithView:self parameters:parameters];
+}
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (void)willMoveToWindow:(nullable UIWindow *)newWindow;
+{
+    [super willMoveToWindow:newWindow];
+    
+    if (newWindow != nil && OUIInspectorAppearance.inspectorAppearanceEnabled) {
+        [self themedAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    }
+}
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
+{
+    [super themedAppearanceDidChange:changedAppearance];
+
+    if (!_shouldAutomaticallyUpdateColorsForCurrentTheme)
+        return;
+
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+
+    _placeholderLabel.textColor = appearance.PlaceholderTextColor;
+    self.backgroundColor = appearance.TableCellBackgroundColor;
+    self.textColor = appearance.TableCellTextColor;
 }
 
 #pragma mark - Private

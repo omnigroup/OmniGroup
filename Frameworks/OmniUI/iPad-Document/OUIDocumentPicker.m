@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
@@ -41,6 +42,16 @@ RCS_ID("$Id$")
     BOOL _isSetUpForCompact;
     BOOL _receivedShowDocuments;
     NSString *scopeIdentifierToSelect;
+}
+
++ (BOOL)shouldShowExternalScope;
+{
+    static OFPreference *shouldShowExternalScopePreference;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        shouldShowExternalScopePreference = [OFPreference preferenceForKey:@"OUIDocumentPickerShouldShowRecentDocuments"];
+    });
+    return [shouldShowExternalScopePreference boolValue];
 }
 
 - (instancetype)init;
@@ -211,7 +222,7 @@ RCS_ID("$Id$")
     UINavigationController *topLevelNavController = self.topLevelNavigationController;
 
     __block ODSScope *scope = item.scope;
-    if (!scope || [scope isExternal] || ![_documentStore.scopes containsObject:scope]) {
+    if (!scope || (scope.isExternal && !OUIDocumentPicker.shouldShowExternalScope) || ![_documentStore.scopes containsObject:scope]) {
         // The item is external or otherwise unfindable
         return NO;
     }
@@ -259,11 +270,6 @@ RCS_ID("$Id$")
 
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;
 {
-#if defined(DEBUG_lizard)
-    if ([scope isExternal]) {
-        OBStopInDebugger("<bug:///147708> (Frameworks-iOS Bug: Remove Other Documents)");
-    }
-#endif
     [self _endEditingMode];
     
     // dismiss any modals
@@ -306,6 +312,11 @@ RCS_ID("$Id$")
 {
     NSArray *sorted = [_documentStore.scopes sortedArrayUsingSelector:@selector(compareDocumentScope:)];
     return [sorted objectAtIndex:0];
+}
+
+- (ODSFolderItem *)currentFolder;
+{
+    return self.selectedScopeViewController.folderItem;
 }
 
 - (OUIDocumentPickerViewController *)selectedScopeViewController;
@@ -428,6 +439,8 @@ RCS_ID("$Id$")
 
 - (void)viewWillAppear:(BOOL)animated;
 {
+    [OUIInspectorAppearance setCurrentTheme:OUIThemedAppearanceThemeLight];
+
     if (!self.wrappedViewController) {
         UINavigationController *navigationController = [[UINavigationController alloc] init];
         navigationController.delegate = self;

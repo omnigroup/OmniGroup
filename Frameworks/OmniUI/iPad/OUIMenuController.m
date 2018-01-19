@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
         self.view.tintColor = [self _effectiveTintColor];
 }
 
-- (void)setMenuBackgroundColor:(UIColor *)menuBackgroundColor;
+- (void)setMenuBackgroundColor:(nullable UIColor *)menuBackgroundColor;
 {
     if (OFISEQUAL(_menuBackgroundColor, menuBackgroundColor))
         return;
@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)setMenuOptionBackgroundColor:(UIColor *)menuOptionBackgroundColor;
+- (void)setMenuOptionBackgroundColor:(nullable UIColor *)menuOptionBackgroundColor;
 {
     if (OFISEQUAL(_menuOptionBackgroundColor, menuOptionBackgroundColor))
         return;
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
-- (void)setMenuOptionSelectionColor:(UIColor *)menuOptionSelectionColor;
+- (void)setMenuOptionSelectionColor:(nullable UIColor *)menuOptionSelectionColor;
 {
     if (OFISEQUAL(_menuOptionSelectionColor, menuOptionSelectionColor))
         return;
@@ -160,19 +160,31 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 {
     UIViewController *presentingViewController = _menuNavigationController.presentingViewController;
-
+    UIBarButtonItem *presentingBarButtonItem = _menuNavigationController.popoverPresentationController.barButtonItem;
+    
     if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionDismiss) {
         // If the menu option wants to present something of its own, it will likely want to know where the menu was presented from.
         OBASSERT_NOTNULL(presentingViewController);
-
-        [_menuNavigationController dismissViewControllerAnimated:YES completion:^{
+        
+        void (^actionBlock)(void) = ^{
             if (option.action != nil) {
-                option.action(option, presentingViewController);
+                OUIMenuInvocation *invocation = [[OUIMenuInvocation alloc] initWithMenuOption:option presentingViewController:presentingViewController presentingBarButtonItem:presentingBarButtonItem];
+                option.action(invocation);
             }
-        }];
+        };
+
+#if TARGET_IPHONE_SIMULATOR
+        // With Xcode 9.2, the simulator fails to invoke the completion handler most of the time, so we'll just invoke by hand
+        [_menuNavigationController dismissViewControllerAnimated:YES completion:NULL];
+        actionBlock();
+#else
+        [_menuNavigationController dismissViewControllerAnimated:YES completion:actionBlock];
+#endif
+
     } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
         if ((option.action != nil) && option.isEnabled) {
-            option.action(option, presentingViewController);
+            OUIMenuInvocation *invocation = [[OUIMenuInvocation alloc] initWithMenuOption:option presentingViewController:presentingViewController presentingBarButtonItem:presentingBarButtonItem];
+            option.action(invocation);
         }
         
         _menuNavigationController.viewControllers = @[[self _makeTopMenu]];

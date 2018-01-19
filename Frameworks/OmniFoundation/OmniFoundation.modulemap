@@ -4,15 +4,7 @@ framework module OmniFoundation {
     // Exclude headers that import other non-module headers
     exclude header "OFXMLSignature.h"
     exclude header "OFXMLError.h"
-    
-    // Nearly deprecated headers
-    exclude header "OFSimpleLock.h"
-    exclude header "OFSimpleLock-hppa.h"
-    exclude header "OFSimpleLock-i386.h"
-    exclude header "OFSimpleLock-sparc.h"
-    exclude header "OFSimpleLock-ppc.h"
-    exclude header "OFSimpleLock-pthreads.h"
-    
+
     export *
     module * { export * }
 

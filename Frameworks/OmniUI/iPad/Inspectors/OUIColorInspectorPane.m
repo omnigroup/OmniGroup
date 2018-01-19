@@ -264,6 +264,15 @@ RCS_ID("$Id$");
     return supersParentSlice;
 }
 
+#pragma mark - OUIThemedAppearanceClient
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    NSArray *clients = [super themedAppearanceChildClients];
+
+    return [clients arrayByAddingObject:self.view];
+}
+
 #pragma mark -
 #pragma mark NSObject (OUIColorSwatch)
 #pragma mark <OUIColorPickerTarget>

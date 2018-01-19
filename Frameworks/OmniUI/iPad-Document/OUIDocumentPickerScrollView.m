@@ -164,7 +164,7 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     for (ODSItem *item in _items) {
         [self _endObservingSortKeysForItem:item];
     }
-    for (ODSItem *item in _itemsBeingObserved) {
+    for (ODSItem *item in [_itemsBeingObserved copy]) {
         [self _endObservingSortKeysForItem:item];
     }
 }
@@ -1144,7 +1144,10 @@ static LayoutInfo _updateLayoutAndSetContentSize(OUIDocumentPickerScrollView *se
     // should be one of ours, not some other temporary animating item view
     OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
 
-    [self.delegate documentPickerScrollView:self itemViewStartedEditingName:itemView];
+    UITextField *nameTextField = itemView.editingNameTextField;
+    OBASSERT(nameTextField);
+
+    [self.delegate documentPickerScrollView:self itemViewStartedEditingName:itemView nameTextField:nameTextField];
 }
 
 - (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;

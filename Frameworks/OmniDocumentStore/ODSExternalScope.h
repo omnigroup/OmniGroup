@@ -1,4 +1,4 @@
-// Copyright 2015 The Omni Group. All rights reserved.
+// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,9 @@
 @property (nonatomic, copy) void (^addDocumentBlock)(ODSFolderItem *folderItem, NSString *baseName, NSString *fileType, NSURL *fromURL, ODSStoreAddOption option, void (^completionHandler)(ODSFileItem *duplicateFileItem, NSError *error));
 @property (nonatomic, copy) void (^itemsDidChangeBlock)(NSSet *items);
 @property (nonatomic) BOOL allowDeletes;
+@property (nonatomic) BOOL allowBrowsing;
+@property (nonatomic) BOOL allowTransfers;
+@property (nonatomic) BOOL isRecentDocuments;
 
 - (void)addExternalFileItem:(ODSFileItem *)fileItem;
 

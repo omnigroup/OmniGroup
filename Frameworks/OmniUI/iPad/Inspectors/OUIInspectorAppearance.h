@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,8 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 @property (nonatomic, readonly) UIColor *InspectorDisabledTextColor;
 @property (nonatomic, readonly) UIColor *InspectorTextColor;
 
+@property (nonatomic, readonly) UIColor *PlaceholderTextColor;
+
 @property (nonatomic, readonly) UIColor *PopoverBackgroundColor;
 
 @property (nonatomic, readonly) UIColor *SearchBarFieldBackgroundColor;
@@ -38,6 +40,9 @@ extern OUIThemedAppearanceTheme const OUIThemedAppearanceThemeLight;
 @property (nonatomic, readonly) UIColor *TableCellDetailTextLabelColor;
 @property (nonatomic, readonly) UIColor *TableCellDisclosureTint;
 @property (nonatomic, readonly) UIColor *TableViewSeparatorColor;
+
+// Matches the grid border color around UIAlertActions, e.g.
+@property (nonatomic, readonly) UIColor *InterfaceActionItemSeparatorColor;
 
 @end
 

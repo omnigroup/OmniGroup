@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,7 +153,11 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillShowPane:) name:OUIMultiPaneControllerWillShowPaneNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_multiPaneControllerWillPresentPane:) name:OUIMultiPaneControllerWillPresentPaneNotification object:nil];
-    
+
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(themedAppearanceDidChangeWithNotification:) name:OAAppearanceValuesDidChangeNotification object:[OUIInspectorAppearance class]];
+        [self notifyChildrenThatAppearanceDidChange:[OUIInspectorAppearance appearance]];
+    }
     
     return self;
 }
@@ -186,8 +190,13 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     _navigationController.delegate = nil;
 
     // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
-    for (OUIInspectorPane *pane in _navigationController.viewControllers)
-        pane.inspector = nil;
+    for (UIViewController *viewController in _navigationController.viewControllers) {
+        // Not all the view controllers might be inspector panes. <bug:///152890> (iOS-OmniOutliner Crasher: Crash exiting document while theme picker is showing). Should maybe remove this hack and see if there this is still an issue.
+        if ([viewController isKindOfClass:[OUIInspectorPane class]]) {
+            OUIInspectorPane *pane = (OUIInspectorPane *)viewController;
+            pane.inspector = nil;
+        }
+    }
 }
 
 static CGFloat _currentDefaultInspectorContentWidth = 320;
@@ -239,19 +248,21 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     CGRect translatedRect = [window convertRect:inspectorView.bounds fromView:inspectorView];
     BOOL isViewInWindow = CGRectIntersectsRect(translatedRect, window.bounds);
     
-    // We only update the inspectedObjects if we are forcing an update or if the view is visually in the window.
-    if (shouldForce || isViewInWindow) {
-        NSArray *objects = [self.delegate objectsToInspectForInspector:self];
-        self.mainPane.inspectedObjects = objects;
-        
-        if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
-            [self.navigationController popToRootViewControllerAnimated:NO];
-        } else {
-            // If we're going to keep showing a pane, we need to make sure to update its inspected objects as well as the main pane's inspected objects
-            OUIInspectorPane *topPane = OB_CHECKED_CAST_OR_NIL(OUIInspectorPane, self.navigationController.topViewController);
-            if (topPane != self.mainPane) {
-                topPane.inspectedObjects = objects;
-            }
+    if (!shouldForce && !isViewInWindow)
+        return; // We only update the inspectedObjects if we are forcing an update or if the view is visually in the window.
+
+    NSArray *objects = [self.delegate objectsToInspectForInspector:self];
+    if (!shouldForce && OFISEQUAL(self.mainPane.inspectedObjects, objects))
+        return; // We're still inspecting the same objects
+
+    self.mainPane.inspectedObjects = objects;
+    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
+        [self.navigationController popToRootViewControllerAnimated:NO];
+    } else {
+        // If we're going to keep showing a pane, we need to make sure to update its inspected objects as well as the main pane's inspected objects
+        OUIInspectorPane *topPane = OB_CHECKED_CAST_OR_NIL(OUIInspectorPane, self.navigationController.topViewController);
+        if (topPane != self.mainPane) {
+            topPane.inspectedObjects = objects;
         }
     }
 }
@@ -398,7 +409,7 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     else {
         // View controllers seem to cache their presentationController/popoverPresentationController until the next time the presentation has been dismissed. Because of this, we guard the presentationController check until after we know the view controller is being presented.
         
-        // By the time we get here, we know for sure we are currently being presented, so we just need to return wether we are using our custom presentation controller.
+        // By the time we get here, we know for sure we are currently being presented, so we just need to return whether we are using our custom presentation controller.
         BOOL shouldShowDoneButton = NO;
         
         UIViewController *presentingViewController = mostDistantAncestor.presentingViewController;
@@ -492,6 +503,14 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 - (void)_keyboardDidHide:(NSNotification *)note;
 {
     _keyboardShownWhilePopoverVisible = NO;
+}
+
+#pragma mark - OUIThemedAppearanceClient
+
+- (NSArray <id<OUIThemedAppearanceClient>> *)themedAppearanceChildClients;
+{
+    NSArray <id<OUIThemedAppearanceClient>> *clients = @[self.navigationController];
+    return clients;
 }
 
 @end

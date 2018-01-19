@@ -44,9 +44,11 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 
 + (NSString *)applicationName;
 + (nullable NSString *)applicationEdition;
++ (nullable NSString *)helpEdition;
 + (BOOL)inSandboxStore;
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
++ (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");
 
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
@@ -130,7 +132,8 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 /// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
-- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle  animated:(BOOL)animated navigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensions.");
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;

@@ -194,6 +194,8 @@ module OmniDataObjects
         "[[NSNumber alloc] initWithDouble:#{default_value}]"
       when :boolean
         default_value ? "(id)kCFBooleanTrue" : "(id)kCFBooleanFalse"
+      when :string
+        "@\"#{default_value}\""
       else
         fail "Don't know how to generate a default value for type #{type}"
       end

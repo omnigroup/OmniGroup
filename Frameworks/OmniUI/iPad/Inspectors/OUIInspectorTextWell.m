@@ -10,9 +10,11 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIInspector.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUITextLayout.h>
 #import <OmniUI/OUITextView.h>
+#import <OmniUI/OUIThemedAppearance.h>
 
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
@@ -188,12 +190,11 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     return text;
 }
 
-- (NSAttributedString *)_attributedStringForEditingString:(NSString *)aString;
+- (NSAttributedString *)_attributedStringForEditingString:(NSString *)aString textType:(TextType)textType;
 {
     // We don't want to edit the placeholder text, so don't use _getText().
     if (!aString)
         aString = @"";
-    TextType textType = TextTypeValue;
     
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:aString attributes:nil];
     {
@@ -223,7 +224,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 {
     OBPRECONDITION(self.editing);
 
-    _textField.attributedText = [self _attributedStringForEditingString:editingText];
+    _textField.attributedText = [self _attributedStringForEditingString:editingText textType:TextTypeValue];
 }
 
 - (NSTextAlignment)effectiveTextAlignment
@@ -242,7 +243,9 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 
         // Set up the default paragraph alignment for when the editor's text is empty. Also, when we make editing text, this will be used for the alignment.
         _textField.textAlignment = self.effectiveTextAlignment;
-        _textField.attributedPlaceholder = [self _attributedStringForEditingString:_placeholderText];
+        
+        NSAttributedString *placeholder = [self _attributedStringForEditingString:_placeholderText textType:TextTypePlaceholder];
+        _textField.attributedPlaceholder = placeholder;
     }
     return _textField;
 }
@@ -270,7 +273,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     if (self.editing) {
         TextType textType;
         _getText(self, _text, &textType);
-        self.editor.attributedText = [self _attributedStringForEditingString:_text];
+        self.editor.attributedText = [self _attributedStringForEditingString:_text textType:TextTypeValue];
     } else if (self.isFirstResponder) {
         _textChangedWhileEditingOnCustomKeyboard = YES;
     }
@@ -446,6 +449,27 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             [(UIControl *)self.rightView setHighlighted:highlighted];
         }
     }
+}
+
+- (void)willMoveToWindow:(nullable UIWindow *)newWindow;
+{
+    [super willMoveToWindow:newWindow];
+    
+    if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
+        [self themedAppearanceDidChange:OUIInspectorAppearance.appearance];
+    }
+}
+
+#pragma mark - OUIThemedAppearanceClient
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.textColor = appearance.TableCellTextColor;
+    self.labelColor = appearance.TableCellTextColor;
+    self.backgroundColor = appearance.TableCellBackgroundColor;
 }
 
 #pragma mark - UIView subclass
@@ -818,7 +842,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         editor.inputView = self.inputView;
         editor.inputAccessoryView = self.inputAccessoryView;
         
-        editor.attributedText = [self _attributedStringForEditingString:_text];
+        editor.attributedText = [self _attributedStringForEditingString:_text textType:textType];
         [editor sizeToFit];
         
         [self addSubview:editor];

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,9 @@
 //
 // $Id$
 
-#import <UIKit/UIViewController.h>
+#import <Foundation/NSObject.h>
+
+#import <UIKit/UINavigationController.h>
 
 #import <OmniUIDocument/OUIExportOptionsType.h>
 
@@ -16,11 +18,16 @@
 @class ODSFileItem;
 @class OUIDocumentExporter;
 
-@interface OUIExportOptionsController : UIViewController <UIDocumentInteractionControllerDelegate>
+NS_ASSUME_NONNULL_BEGIN
 
-- (id)initWithServerAccount:(OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter*)exporter NS_DESIGNATED_INITIALIZER;
+@interface OUIExportOptionsController : NSObject
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (id)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (id)initWithServerAccount:(nullable OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter*)exporter NS_DESIGNATED_INITIALIZER;
+- (id)init NS_UNAVAILABLE;
+
+- (void)presentInViewController:(UIViewController *)hostViewController barButtonItem:(nullable UIBarButtonItem *)barButtonItem;
 
 @end
+
+NS_ASSUME_NONNULL_END
+

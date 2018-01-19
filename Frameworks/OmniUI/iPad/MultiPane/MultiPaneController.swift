@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
     /// if .Compact is returned, the passed in displayMode will be used.
     @objc optional func wantsTransition(to displayMode: MultiPaneDisplayMode, on multiPaneController: MultiPaneController, using viewSize: CGSize) -> MultiPaneDisplayMode
     
-    /// When the displayMode changes into .multi, we try to fit all 3 panes onto the screen. If we can't, we need to convert one of them into .overlay. By defualt we will convert the right pane into .overlay, but this gives the delegate a chance to change that behavior.
+    /// When the displayMode changes into .multi, we try to fit all 3 panes onto the screen. If we can't, we need to convert one of them into .overlay. By default we will convert the left pane into .overlay, but this gives the delegate a chance to change that behavior.
     @objc optional func locationToBecomeOverlay(displayMode: MultiPaneDisplayMode, multiPaneController: MultiPaneController, viewSize: CGSize) -> MultiPaneLocation
     
     /// called just before the display mode is changed on the MultiPaneController
@@ -39,6 +39,11 @@
 
     /// called after updating button items.
     @objc optional func didUpdateDisplayButtonItems(_ multiPaneController: MultiPaneController)
+    
+    @objc optional func willPinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
+    @objc optional func didPinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
+    @objc optional func willUnpinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
+    @objc optional func didUnpinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
 }
 
 @objc (OUIMultiPaneNavigationDelegate) public protocol MultiPaneNavigationDelegate {
@@ -103,7 +108,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 @objc(OUIMultiPaneController) open class MultiPaneController: UIViewController {
     // It's possible for the actions triggered by sending `willTransition(to:, multiPaneController:)` to our layout delegate to prompt a recursive call to `displayMode:` with the same argument. For example, this happens in OmniFocus when a call to `CATransaction.flush()` triggers a `traitCollectionDidChange` notification. Rather than requiring that delegate code be reëntrant, we avoid posting the redundant `willTransition` message.
     private var displayModeForCurrentWillTransitionNotification: MultiPaneDisplayMode? = nil
-    
+    private var layoutConstraints: [NSLayoutConstraint] = []
+
     @objc fileprivate(set) public var displayMode: MultiPaneDisplayMode = .multi {
         willSet {
             if newValue != displayMode && newValue != displayModeForCurrentWillTransitionNotification {
@@ -259,20 +265,20 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) { 
         super.willTransition(to: newCollection, with: coordinator)
-        coordinator.animate(alongsideTransition: { [unowned self] (context) in
-            self.pinningLayoutPass = false
-            self.updateDisplayMode(forSize: self.currentSize, traitCollection: newCollection)
-            
-            }, completion: nil)
+        coordinator.animate(alongsideTransition: { [weak self] (context) in
+            guard self != nil else { return }
+            self!.pinningLayoutPass = false
+            self!.updateDisplayMode(forSize: self!.currentSize, traitCollection: newCollection)
+        }, completion: nil)
     }
     
     override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        coordinator.animate(alongsideTransition: { [unowned self] (context) in
-            self.pinningLayoutPass = false
-            self.updateDisplayMode(forSize: size, traitCollection: self.traitCollection)
-            
-            }, completion: nil)
+        coordinator.animate(alongsideTransition: { [weak self] (context) in
+            guard self != nil else { return }
+            self!.pinningLayoutPass = false
+            self!.updateDisplayMode(forSize: size, traitCollection: self!.traitCollection)
+        }, completion: nil)
     }
     
     override open func overrideTraitCollection(forChildViewController childViewController: UIViewController) -> UITraitCollection? {
@@ -407,6 +413,24 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
     }
 
+    /// Intented to be called due to a user interface element (like the rightPaneDisplayButton) toggling the visibility of the rightPane.
+    @objc public func toggleRightPane() {
+        guard let rightPane = pane(withLocation: .right) else { return }
+        self.navigationDelegate?.userWillExplicitlyToggleVisibility?(!rightPane.isVisible, at: .right, multiPaneController: self)
+        multiPanePresenter.present(pane: rightPane, fromViewController: self, usingDisplayMode: displayMode)
+    }
+
+    @objc public func toggleLeftPane() {
+        guard let leftPane = pane(withLocation: .left) else { return }
+        let wantVisible = !leftPane.isVisible
+        self.navigationDelegate?.userWillExplicitlyToggleVisibility?(wantVisible, at: .left, multiPaneController: self)
+        if wantVisible || (leftPane.presentationMode == .embedded && displayMode == .multi) {
+            multiPanePresenter.present(pane: leftPane, fromViewController: self, usingDisplayMode: displayMode)
+        } else {
+            self.dismissSidebarIfNecessary(sidebar: .left)
+        }
+    }
+
 //MARK: - Private api
 //MARK: - Pane containment and layout
     @objc /**REVIEW**/ internal func pane(forViewController controller: UIViewController) -> Pane? {
@@ -489,9 +513,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         if let presentedController = presentedViewController {
             if pane(forViewController: presentedController) != nil {
                 if !presentedController.isBeingDismissed {
-                    dismiss(animated: false, completion: { [unowned self] in
+                    dismiss(animated: false, completion: { [weak self] in
                         // call update with the the MPC's stored values for these properties, which will be correct by the time we get the callback.
-                        self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
+                        guard self != nil else { return }
+                        self!.updateDisplayMode(forSize: self!.currentSize, traitCollection: self!.traitCollection)
                     })
                 }
                 // skip doing display updates since we have modal controllers in the way and that takes some time to clear up.
@@ -508,18 +533,28 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         // capture our visibility state for the sidebars prior to teardown.
         var leftIsVisible = false
         var rightIsVisible = false
+        var paneLocationToPin: MultiPaneLocation? = nil
+        var paneLocationToUnpin: MultiPaneLocation? = nil
         
         UIView.performWithoutAnimation {
             orderedPanes.forEach { (pane) in
-                leftIsVisible = pane.location == .left && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
-                rightIsVisible = pane.location == .right && pane.environment?.presentationMode == .embedded && pane.isVisible ? true : false
-                
-                removePane(pane: pane)
+                // print("DEBUG: pane \(pane.location) presentationMode=\(pane.presentationMode) and MultiPaneDisplayMode \(mode)")
+                switch pane.location {
+                case .left:
+                    leftIsVisible = pane.environment?.presentationMode == .embedded
+                case .right:
+                    rightIsVisible = pane.environment?.presentationMode == .embedded
+                case .center:
+                    break
+                }
+
                 // Make a pass and update all panes based on the default environment, we adjust for pinning below
                 pane.environment = environment(for: pane, displayMode: mode, size: size)
+                
+                // Now that we're conditionally removing panes based on their presentationMode, we need to wait until we've adjusted that from the default, which we do below. Pane removal has been moved down to before the layout call.
             }
         }
-        
+
         if displayMode == .multi {
             let left = self.pane(withLocation: .left)
             let center = self.pane(withLocation: .center)
@@ -529,6 +564,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 if let locationToBecomeOverlay = layoutDelegate?.locationToBecomeOverlay?(displayMode: mode, multiPaneController: self, viewSize: size) {
                     let pane = self.pane(withLocation: locationToBecomeOverlay)
                     pane?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                    paneLocationToUnpin = pane?.location
                     
                     if locationToBecomeOverlay == .left {
                         rightIsVisible = true
@@ -537,11 +573,9 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                     }
                 }
                 else {
-                    right?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                    left?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                    paneLocationToUnpin = left?.location
                 }
-
-            } else {
-                
             }
             
             // adjust for pinning changes.
@@ -557,12 +591,14 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                         if (size.width - self.widthOfSidebars) < centerWidth {
                             let oppositePane = pane.location == .left ? right : left
                             oppositePane?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                            paneLocationToUnpin = oppositePane?.location
                         }
                         
                         // we want to pin this pane, so embedded it.
                         pane.environment = RegularEnvironment(withPresentationMode: .embedded, containerSize: size)
                         if pane.location == .left {
                             leftIsVisible = true
+                            paneLocationToPin = pane.location
                         }
                         
                         if pane.location == .right {
@@ -571,6 +607,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                         
                     case .unpin(let pane):
                         pane.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                        paneLocationToUnpin = pane.location
                     }
                 }
                 
@@ -578,15 +615,53 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 right?.configuration.isPinned = right?.environment?.presentationMode == .embedded ? true : false
             }
             
-            self.pinningLayoutPass = false
-            self.pinState = nil
-            
-            // Try to reset the last visibility state. This can be overriden later with the layout delegate.
+            // Try to restore the last visibility state. This can be overriden later with the layout delegate.
             left?.visibleWhenEmbedded = leftIsVisible
             right?.visibleWhenEmbedded = rightIsVisible
         }
         
+        UIView.performWithoutAnimation {
+            for pane in orderedPanes {
+                if pane.presentationMode != .embedded {
+                    removePane(pane: pane)
+                }
+            }
+        }
+        NSLayoutConstraint.deactivate(layoutConstraints)
+        layoutConstraints = []
+        
+        notifyDelegateWillUnpin(location: paneLocationToUnpin)
+        notifyDelegateWillPin(location: paneLocationToPin)
+        
         layout(panes: orderedPanes.filter { $0.presentationMode == MultiPanePresentationMode.embedded })
+        
+        notifyDelegateDidUnpin(location: paneLocationToUnpin)
+        notifyDelegateDidPin(location: paneLocationToPin)
+
+
+        self.pinningLayoutPass = false
+        self.pinState = nil
+    }
+    
+    /// Only notifies the delegate if location is non-nil.
+    private func notifyDelegateWillUnpin(location: MultiPaneLocation?) {
+        guard let location = location else { return }
+        layoutDelegate?.willUnpinPane?(at: location, multiPaneController: self)
+    }
+    /// Only notifies the delegate if location is non-nil.
+    private func notifyDelegateWillPin(location: MultiPaneLocation?) {
+        guard let location = location else { return }
+        layoutDelegate?.willPinPane?(at: location, multiPaneController: self)
+    }
+    /// Only notifies the delegate if location is non-nil.
+    private func notifyDelegateDidUnpin(location: MultiPaneLocation?) {
+        guard let location = location else { return }
+        layoutDelegate?.didUnpinPane?(at: location, multiPaneController: self)
+    }
+    /// Only notifies the delegate if location is non-nil.
+    private func notifyDelegateDidPin(location: MultiPaneLocation?) {
+        guard let location = location else { return }
+        layoutDelegate?.didPinPane?(at: location, multiPaneController: self)
     }
  
  
@@ -603,6 +678,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 if displayMode == .compact {
                     pane.visibleWhenEmbedded = true
                 } else {
+                    if let pinState = pinState, case let .pin(associatedPane) = pinState, associatedPane == pane {
+                        return // Out of this iteration of the `forEach`; This would normally be a `continue`
+                    }
+
                     // only used in non-compact environments.
                     if let showPaneOverride = self.layoutDelegate?.shouldShowPane?(at: pane.location, multiPaneController: self) {
                         pane.visibleWhenEmbedded = showPaneOverride
@@ -619,8 +698,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 
             view.bringSubview(toFront:divider)
         }
-        
-        NSLayoutConstraint.activate(MultiPaneLayout.layout(forPanes: layoutPanes))
+
+        NSLayoutConstraint.deactivate(layoutConstraints)
+        layoutConstraints = MultiPaneLayout.layout(forPanes: layoutPanes)
+        NSLayoutConstraint.activate(layoutConstraints)
+        layoutPanes.first?.viewController.view.superview?.setNeedsLayout() // Without this, the superview won't necessarily lay out using the new constraints
     }
     
     private func environment(for pane: Pane, displayMode: MultiPaneDisplayMode, size: CGSize) -> PaneEnvironment {
@@ -677,25 +759,26 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         mutableSidebar.divider = divider
         
         if sidebar.wantsMoveableDivider {
-            sidebar.divider!.editStateChanged = { [unowned self] (dividerState) in
+            sidebar.divider!.editStateChanged = { [weak self] (dividerState) in
+                guard self != nil else { return }
                 switch dividerState {
                 case .Started:
                     let overlayView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
-                    overlayView.frame = self.view.bounds
+                    overlayView.frame = self!.view.bounds
                     overlayView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                     overlayView.tag = 20
                     overlayView.alpha = 0.20
-                    self.view.insertSubview(overlayView, belowSubview: divider)
+                    self!.view.insertSubview(overlayView, belowSubview: divider)
                     
                 case .Changed(let xOffset):
-                    let left = self.pane(withLocation: .left)!
+                    let left = self!.pane(withLocation: .left)!
                     
                      let width = left.width + xOffset
                      left.preferredWidth = width
 
                 case .Ended:
                     // cleanup the overlay view.
-                    if let view = self.view.viewWithTag(20) {
+                    if let view = self!.view.viewWithTag(20) {
                         view.removeFromSuperview()
                     }
                 }
@@ -743,9 +826,9 @@ extension MultiPaneController: MultiPanePresenterDelegate {
     @objc /**REVIEW**/ func presenterWantsToPin(pane: Pane) {
         self.pinningLayoutPass = true
         self.pinState = .pin(pane)
-        multiPanePresenter.dismiss(fromViewController: self, animated: false, completion: { [unowned self] in
+        multiPanePresenter.dismiss(fromViewController: self, animated: false, completion: { [weak self] in
             // we update the displaymode after the presenter has dismissed, otherwise we will get crazy drawing issues.
-            self.displayMode = .multi
+            self?.displayMode = .multi
         })
     }
     
@@ -920,15 +1003,11 @@ typealias MultiPaneControllerSidebarPresentation = MultiPaneController
 extension MultiPaneControllerSidebarPresentation {
     //MARK: - Actions
     @objc internal func handleLeftPaneDisplayButton(sender: AnyObject?) {
-        guard let leftPane = pane(withLocation: .left) else { return }
-        self.navigationDelegate?.userWillExplicitlyToggleVisibility?(!leftPane.isVisible, at: .left, multiPaneController: self)
-        multiPanePresenter.present(pane: leftPane, fromViewController: self, usingDisplayMode: displayMode)
+        toggleLeftPane()
     }
     
     @objc internal func handleRightPaneDisplayButton(sender: AnyObject?) {
-        guard let rightPane = pane(withLocation: .right) else { return }
-        self.navigationDelegate?.userWillExplicitlyToggleVisibility?(!rightPane.isVisible, at: .right, multiPaneController: self)
-        multiPanePresenter.present(pane: rightPane, fromViewController: self, usingDisplayMode: displayMode)
+        toggleRightPane()
     }
     
     @objc internal func handleScreenEdgePanGesture(gesture: UIScreenEdgePanGestureRecognizer) {

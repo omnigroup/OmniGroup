@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,34 +16,27 @@ RCS_ID("$Id$");
 @interface OIAutoLayoutInspectorController ()
 
 @property (nonatomic, strong) NSView *inspectorContentView;
-
 @property (nonatomic, strong) NSLayoutConstraint *heightConstraint;
 
 @end
 
 @implementation OIAutoLayoutInspectorController
 
-- (OIAutolayoutInspectorHeaderView *)newHeaderView;
+- (OIAutolayoutInspectorHeaderView *)headerView;
 {
-    __autoreleasing NSArray *topLevelObjects = nil;
-    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OIAutolayoutInspectorHeaderView" bundle:OMNI_BUNDLE];
-    if (!nib || ![nib instantiateWithOwner:self topLevelObjects:&topLevelObjects]) {
-        OBASSERT_NOT_REACHED(@"Unable to load OIAutolayoutInspectorHeaderView");
-        return nil;
+    if (!_headerView) {
+        NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OIAutolayoutInspectorHeaderView" bundle:OMNI_BUNDLE];
+        if (!nib || ![nib instantiateWithOwner:self topLevelObjects:NULL]) {
+            OBASSERT_NOT_REACHED(@"Unable to load OIAutolayoutInspectorHeaderView");
+            return nil;
+        }
+        
+        OBASSERT_NOTNULL(_headerView);
+        _headerView.drawsSeparator = self.drawsHeaderSeparator;
+        
     }
-
-    NSArray *views = [topLevelObjects filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject isKindOfClass:[NSView class]];
-    }]];
-    OBASSERT([views count] == 1);
-    if ([views count] != 1)
-        return nil;
     
-    OIAutolayoutInspectorHeaderView *headerView = OB_CHECKED_CAST(OIAutolayoutInspectorHeaderView, views[0]);
-    headerView.drawsSeparator = YES;
-//    CGFloat headerHeight = [OFIInspectorHeaderView contentHeight] + [OFIInspectorHeaderView separatorTopPadding];
-//    [headerView addConstraint:[NSLayoutConstraint constraintWithItem:headerView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:0.0f constant:headerHeight]];
-    return headerView;
+    return _headerView;
 }
 
 - (IBAction)disclosureTriangleClicked:(id)sender;
@@ -60,10 +53,7 @@ RCS_ID("$Id$");
     OBPRECONDITION([[self.containerView subviews] count] == 0);
     OBPRECONDITION([self.inspector conformsToProtocol:@protocol(OIConcreteInspector)]);
     
-    OIAutolayoutInspectorHeaderView *headerView = [self newHeaderView];
-    [self.containerView addSubview:headerView];
-    self.headerView = headerView;
-    headerView.drawsSeparator = self.drawsHeaderSeparator;
+    [self.containerView addSubview:self.headerView];
     
     NSView *inspectorView = [self.inspector view];
     [self.containerView addSubview:inspectorView];
@@ -72,10 +62,10 @@ RCS_ID("$Id$");
     self.headerView.translatesAutoresizingMaskIntoConstraints = NO;
     self.inspectorContentView.translatesAutoresizingMaskIntoConstraints = NO;
     
-    NSDictionary *views = NSDictionaryOfVariableBindings(headerView, inspectorView);
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[headerView]|" options:0 metrics:nil views:views]];
+    NSDictionary *views = NSDictionaryOfVariableBindings(_headerView, inspectorView);
+    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_headerView]|" options:0 metrics:nil views:views]];
     [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[inspectorView]|" options:0 metrics:nil views:views]];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[headerView][inspectorView]" options:0 metrics:nil views:views]];
+    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_headerView][inspectorView]" options:0 metrics:nil views:views]];
     
     [self _updateVisibilityState];
     

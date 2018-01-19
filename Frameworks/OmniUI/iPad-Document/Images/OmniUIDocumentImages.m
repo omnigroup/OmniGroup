@@ -18,7 +18,7 @@ RCS_ID("$Id$");
 
 + (UIImage *)OmniUIDocument_MenuItemTemplate;
 {
-    return [UIImage imageNamed:@"OUIMenuItemTemplate" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    return [UIImage imageNamed:@"OUIMenuItemConvertToTemplate" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIImage *)OmniUIDocument_ServerAccountValidationSuccessImage;

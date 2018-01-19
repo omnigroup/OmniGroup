@@ -16,7 +16,7 @@ RCS_ID("$Id$");
 // Here we assume the caller is either looking at a file that shouldn't be edited by anyone else while we are looking (in a tmp directory), or that the caller is in the midst of file coordination on this fileURL.
 - (instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
 {
-#ifdef DEBUG_bungi
+#ifdef DEBUG_bungi0
     OBPRECONDITION([NSThread isMainThread] == NO, "Are we inside file coordination?");
 #endif
     

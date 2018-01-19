@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -104,10 +104,9 @@ RCS_ID("$Id$")
     #define DEBUG_XML_STRING(format, ...)
 #endif
 
-// plain -release w/o -init will crash on 10.4.11/Intel
 #define BAD_INIT do { \
     self = [self init]; \
-    OB_RELEASE(self); \
+    [self release]; \
     return nil; \
 } while(0)
 
@@ -152,8 +151,9 @@ RCS_ID("$Id$")
 static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t length)
 {
     // Since we read forward, we'll catch a early NUL with digit or specific character checks.
-    NSInteger year, month, day, hour, minute, second, nanosecond = 0;
-    
+    NSInteger year, month, day, hour, minute, second;
+    NSTimeInterval fraction;
+
     unsigned offset = 0;
     READ_4UINT(year);
     READ_CHAR('-');
@@ -192,16 +192,17 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         
         offset += digitIndex;
 
-        // fractionDenominator is a power of ten. Divide 1e9 first to avoid representation errors we'd get if we took 1e9 * (den/num).
-        nanosecond = (NSTimeInterval)((1e9 / fractionDenominator) * fractionNumerator);
+        fraction = (NSTimeInterval)fractionNumerator / (NSTimeInterval)fractionDenominator;
+    } else {
+        fraction = 0.0;
     }
     
-    NSTimeZone *timeZone;
+    CFTimeZoneRef timeZone = NULL;
     if (buf[offset] == 'Z') { // RFC 3339 allows 'z' here too, but we don't right now.
         if (buf[offset + 1] != 0) {
             BAD_INIT; // Crud after the 'Z'.
         }
-        timeZone = nil; // Use the default timeZone in +gregorianUTCCalendar.
+        // Leave NULL to use the UTC in our gregorianUTCCalendar
     } else if (buf[offset] == '-' || buf[offset] == '+') {
         BOOL negate = (buf[offset] == '-');
         offset++;
@@ -216,45 +217,54 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         if (negate)
             tzOffset = -tzOffset;
         
-        timeZone = [NSTimeZone timeZoneForSecondsFromGMT:tzOffset];
+        timeZone = CFTimeZoneCreateWithTimeIntervalFromGMT(kCFAllocatorDefault, tzOffset);
     } else {
         // Unrecognized cruft where the timezone should have been.
         BAD_INIT;
     }
-    
-    // Now that we have read the components, we can allocate the object w/o having to autorelease it to avoid leaks on early exit.
-    NSDateComponents *components = [[NSDateComponents alloc] init];
-    components.year = year;
-    components.month = month;
-    components.day = day;
-    components.hour = hour;
-    components.minute = minute;
-    components.second = second;
-    components.nanosecond = nanosecond;
-    
-    NSCalendar *calendar = [[self class] gregorianUTCCalendar];
-    
-    if (timeZone) { // Otherwise use the info in the passed in calendar. If we se a time zone here too, it'll cause -isValidDateInCalendar: to make a copy of the passed in calendar to set the timezone on it.
-        components.calendar = calendar;
-        components.timeZone = timeZone;
+
+    static CFCalendarRef gregorianUTCCalendar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        CFTimeZoneRef utc = CFTimeZoneCreateWithName(kCFAllocatorDefault, CFSTR("UTC"), true);
+        OBASSERT(utc);
+        gregorianUTCCalendar = CFCalendarCreateWithIdentifier(kCFAllocatorDefault, kCFGregorianCalendar);
+        CFCalendarSetTimeZone(gregorianUTCCalendar, utc);
+        CFRelease(utc);
+    });
+
+    CFCalendarRef calendar;
+    BOOL releaseCalendar = NO;
+    if (timeZone) {
+        releaseCalendar = YES;
+        calendar = CFCalendarCreateWithIdentifier(kCFAllocatorDefault, kCFGregorianCalendar);
+        CFCalendarSetTimeZone(calendar, timeZone);
+        CFRelease(timeZone);
+        timeZone = NULL;
+    } else {
+        calendar = gregorianUTCCalendar;
     }
-    
-    if (![components isValidDateInCalendar:calendar]) {
-        [components release];
+
+    // -dateFromComponents: doesn't return nil for an out-of-range component, it wraps it (even though both it and -isValidDateInCalendar: call down to CFCalendarComposeAbsoluteTime).
+    // CFCalendarComposeAbsoluteTime also doesn't return FALSE for out-of-range components, even though it is documented to (wrapping the components). Radar 36367324. This path is performance sensitive enough to want to avoid the overhead, but perhaps it would be good to have an option to check that the components are in range.
+
+    CFAbsoluteTime timeInterval;
+    Boolean success = CFCalendarComposeAbsoluteTime(calendar, &timeInterval, "yMdHms", year, month, day, hour, minute, second);
+
+    if (releaseCalendar) {
+        CFRelease(calendar);
+    }
+    if (!success) {
         BAD_INIT;
     }
-    
-    // NOTE: CFCalendarComposeAbsoluteTime used to not be thread-safe, but seem to be now. But, they also don't deal with floating-point seconds. Sadly, CFGregorianDate stuff was deprecated in OS X 10.10/iOS 8.0.
-    // TODO: Leap seconds can cause the maximum allowed second value to be 58 or 60 depending on whether the adjustment is +/-1.  RFC 3339 has a table of some leap seconds up to 1998 that we could test with.
-    // NOTE: We depend on -dateFromComponents: using the time zone specified in the components here. We test this in -[OFDateXMLTests testDateComponentsTimeZone].
-    NSDate *result = [calendar dateFromComponents:components];
-    [components release];
-    
+
+    // It looks like 'S' could be included for millisecond, but it is easy enough for us to preserve the full fractional component.
+    timeInterval += fraction;
+
+    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:timeInterval];
     DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
-    
-    [self release];
-    
-    return [result retain];
+
+    return result;
 }
 
 - initWithXMLString:(NSString *)xmlString;

@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,3 +51,8 @@ SEL ODOPropertyGetterSelector(ODOProperty *property) OB_HIDDEN;
 SEL ODOPropertySetterSelector(ODOProperty *property) OB_HIDDEN;
 IMP ODOPropertyGetterImpl(ODOProperty *property) OB_HIDDEN;
 IMP ODOPropertySetterImpl(ODOProperty *property) OB_HIDDEN;
+IMP ODOPropertyCalculateImpl(ODOProperty *property) OB_HIDDEN;
+
+NSArray <ODOObjectPropertyChangeAction> *ODOPropertyWillChangeActions(ODOProperty *property) OB_HIDDEN;
+NSArray <ODOObjectPropertyChangeAction> *ODOPropertyDidChangeActions(ODOProperty *property) OB_HIDDEN;
+

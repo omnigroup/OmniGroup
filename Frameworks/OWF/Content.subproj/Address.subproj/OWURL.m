@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,9 +63,9 @@ static OFCharacterSet *SchemeSpecificPartDelimiterOFCharacterSet;
 static OFCharacterSet *NonWhitespaceOFCharacterSet;
 static OFCharacterSet *TabsAndReturnsOFCharacterSet;
 static NSMutableDictionary *ContentTypeDictionary;
-static OFSimpleLockType ContentTypeDictionarySimpleLock;
+static os_unfair_lock ContentTypeDictionaryLock = OS_UNFAIR_LOCK_INIT;
 static NSMutableSet *SecureSchemes;
-static OFSimpleLockType SecureSchemesSimpleLock;
+static os_unfair_lock SecureSchemesLock = OS_UNFAIR_LOCK_INIT;
 static BOOL NetscapeCompatibleRelativeAddresses;
 
 static NSRegularExpression *backslashThenWhitespaceRegularExpression;
@@ -148,9 +148,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
     TabsAndReturnsOFCharacterSet = [[OFCharacterSet alloc] initWithString:@"\t\r\n"];
 
-    OFSimpleLockInit(&ContentTypeDictionarySimpleLock);
     ContentTypeDictionary = [[NSMutableDictionary alloc] init];
-    OFSimpleLockInit(&SecureSchemesSimpleLock);
     SecureSchemes = [[NSMutableSet alloc] init];
 
     fakeRootURLsLock = [[NSLock alloc] init];
@@ -410,21 +408,21 @@ OBDidLoad(^{
 {
     OWContentType *aContentType;
 
-    OFSimpleLock(&ContentTypeDictionarySimpleLock);
+    os_unfair_lock_lock(&ContentTypeDictionaryLock);
     aContentType = [ContentTypeDictionary objectForKey:aScheme];
     if (aContentType == nil) {
 	aContentType = [OWContentType contentTypeForString:[@"url/" stringByAppendingString:aScheme]];
 	[ContentTypeDictionary setObject:aContentType forKey:aScheme];
     }
-    OFSimpleUnlock(&ContentTypeDictionarySimpleLock);
+    os_unfair_lock_unlock(&ContentTypeDictionaryLock);
     return aContentType;
 }
 
 + (void)registerSecureScheme:(NSString *)aScheme;
 {
-    OFSimpleLock(&SecureSchemesSimpleLock);
+    os_unfair_lock_lock(&SecureSchemesLock);
     [SecureSchemes addObject:aScheme];
-    OFSimpleUnlock(&SecureSchemesSimpleLock);
+    os_unfair_lock_unlock(&SecureSchemesLock);
 }
 
 + (NSArray *)pathComponentsForPath:(NSString *)aPath;
@@ -530,11 +528,6 @@ OBDidLoad(^{
     return domain;
 }
 
-- (void)dealloc;
-{
-    OFSimpleLockFree(&derivedAttributesSimpleLock);
-}
-
 - (NSURL *)NSURL;
 {
     NSMutableString *compositeString = (NSMutableString *)[self _newURLStringWithEncodedHostname:YES];
@@ -608,18 +601,18 @@ OBDidLoad(^{
 
 - (NSString *)compositeString;
 {
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_cachedCompositeString == nil) {
         NSMutableString *compositeString = (NSMutableString *)[self _newURLStringWithEncodedHostname:NO];
         _cachedCompositeString = [compositeString copy];
     }
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
     return _cachedCompositeString;
 }
 
 - (NSString *)cacheKey;
 {
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_cacheKey == nil) {
         NSMutableString *key;
     
@@ -649,7 +642,7 @@ OBDidLoad(^{
         // Make the cacheKey immutable so that others will be able to just retain it rather than making their own immutable copy.
         _cacheKey = [key copy];
     }
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
     return _cacheKey;
 }
 
@@ -738,10 +731,10 @@ OBDidLoad(^{
 
 - (OWNetLocation *)parsedNetLocation;
 {
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_cachedParsedNetLocation == nil)
         [self _locked_parseNetLocation];
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
 
     return _cachedParsedNetLocation;
 }
@@ -755,17 +748,17 @@ OBDidLoad(^{
 {
     OWNetLocation *urlNetLocation = [self parsedNetLocation];
     
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_cachedDomain == nil)
         _cachedDomain = [OWURL domainForHostname:[urlNetLocation hostname]];
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
     
     return _cachedDomain;
 }
 
 - (NSString *)shortDisplayString;
 {
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_cachedShortDisplayString == nil) {
         NSMutableString *shortDisplayString;
     
@@ -800,7 +793,7 @@ OBDidLoad(^{
         // Make the cacheKey immutable so that others will be able to just retain it rather than making their own immutable copy.
         _cachedShortDisplayString = shortDisplayString;
     }
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
     return _cachedShortDisplayString;
 }
 
@@ -862,10 +855,10 @@ OBDidLoad(^{
 
 - (OWContentType *)contentType;
 {
-    OFSimpleLock(&derivedAttributesSimpleLock);
+    os_unfair_lock_lock(&derivedAttributesLock);
     if (_contentType == nil)
 	_contentType = [OWURL contentTypeForScheme:scheme];
-    OFSimpleUnlock(&derivedAttributesSimpleLock);
+    os_unfair_lock_unlock(&derivedAttributesLock);
     return _contentType;
 }
 
@@ -873,9 +866,9 @@ OBDidLoad(^{
 {
     BOOL isSecure;
 
-    OFSimpleLock(&SecureSchemesSimpleLock);
+    os_unfair_lock_lock(&SecureSchemesLock);
     isSecure = [SecureSchemes containsObject:scheme];
-    OFSimpleUnlock(&SecureSchemesSimpleLock);
+    os_unfair_lock_unlock(&SecureSchemesLock);
     return isSecure;
 }
 
@@ -1196,7 +1189,7 @@ OBDidLoad(^{
 	return nil;
     }
     scheme = aScheme;
-    OFSimpleLockInit(&derivedAttributesSimpleLock);
+    derivedAttributesLock = OS_UNFAIR_LOCK_INIT;
     return self;
 }
 

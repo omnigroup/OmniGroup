@@ -26,7 +26,7 @@
 "Center text align" = "文本居中对齐";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "证书信任";
+"Certificate Trust" = "信任证书";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
@@ -49,19 +49,19 @@
 "Edit" = "编辑";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "本试用版未启用此功能";
+"Feature not enabled for this demo" = "对于此演示，功能未启用";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
 
 /* Help and Settings toolbar item accessibility label. */
-"Help and Settings" = "帮助与设置";
+"Help and Settings" = "帮助和设置";
 
 /* increment button accessibility label */
 "Increment" = "增加";
 
 /* default special URL confirm button title */
-"Invoke" = "激活";
+"Invoke" = "调用";
 
 /* button title */
 "Invoke and Quit" = "调用并退出";
@@ -87,7 +87,7 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "注释";
+"Note" = "备注";
 
 /* Text letting the user know why nothing is showing in the inspector */
 "Nothing to Inspect" = "没有可检查的内容";
@@ -118,6 +118,9 @@
    release notes html screen title */
 
 "Release Notes" = "发行说明";
+
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "报告错误";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "文本右对齐";

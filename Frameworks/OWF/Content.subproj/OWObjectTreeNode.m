@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,16 +59,16 @@ RCS_ID("$Id$")
 
 - (void)addChild:(OWObjectTreeNode *)aChild;
 {
-    OFSimpleLockType *mutex = [nonretainedRoot mutex];
+    os_unfair_lock *mutex = [nonretainedRoot mutex];
     OWObjectTreeNode *node;
 
     node = [[OWObjectTreeNode alloc] initWithParent:self representedObject:aChild];
 
-    OFSimpleLock(mutex);
+    os_unfair_lock_lock(mutex);
     if (!children)
         children = [[NSMutableArray alloc] init];
     [children addObject:node];
-    OFSimpleUnlock(mutex);
+    os_unfair_lock_unlock(mutex);
 
     [node release];
 }
@@ -107,16 +107,16 @@ RCS_ID("$Id$")
 - (OWObjectTreeNode *)childAtIndex:(unsigned int)index;
 {
     OWObjectTreeNode *result;
-    OFSimpleLockType *mutex = NULL;
+    os_unfair_lock *mutex = NULL;
     
     if (!isComplete) {
         mutex = [nonretainedRoot mutex];    
 
         while(1) {
-            OFSimpleLock(mutex);
+            os_unfair_lock_lock(mutex);
             if (isComplete || [children count] > index)
                 break;
-            OFSimpleUnlock(mutex);
+            os_unfair_lock_unlock(mutex);
             sched_yield();
         }
     } 
@@ -125,7 +125,7 @@ RCS_ID("$Id$")
     else
         result = nil;
     if (mutex)
-        OFSimpleUnlock(mutex);
+        os_unfair_lock_unlock(mutex);
     return result;
 }
 

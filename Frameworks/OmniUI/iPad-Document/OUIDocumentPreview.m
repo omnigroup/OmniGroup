@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -236,7 +236,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFFile
 
     // Capture snapshots before leaving the main thread
     NSMutableArray *fileEdits = [NSMutableArray array];
-    for (ODSFileItem *fileItem in fileItems) {
+    for (id <ODSFileItem>fileItem in fileItems) {
         OFFileEdit *fileEdit = fileItem.fileEdit;
         if (fileEdit)
             [fileEdits addObject:fileEdit];
@@ -678,19 +678,10 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
 {
     OUIImageLocation *placeholderImage;
 
-    if (!documentClass) {
-        // This can happen for file types that we have in the document browser, but can't actually open. We still need to show a preview for them somehow.
-        documentClass = [OUIDocument class];
-    }
-
     if (isEncrypted) {
         placeholderImage = [documentClass encryptedPlaceholderPreviewImageForFileURL:fileURL area:area];
     } else {
         placeholderImage = [documentClass placeholderPreviewImageForFileURL:fileURL area:area];
-    }
-    if (!placeholderImage) {
-        OBASSERT_NOT_REACHED("No default preview image registered?");
-        return NULL;
     }
 
     __block CGImageRef result = NULL;
@@ -722,9 +713,8 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
 
                     UIImage *previewImage = placeholderImage.image;
 
-                    if (!previewImage) {
-                        // We'll just end up with a white rectangle in this case
-                        OBASSERT_NOT_REACHED("No image found for default image name returned");
+                    if (previewImage == nil) {
+                        // We'll just draw a white rectangle in this case
                     } else {
                         CGSize imageSize = previewImage.size;
 
@@ -774,7 +764,7 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
     return result;
 }
 
-+ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
++ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(id <ODSFileItem>)fileItem withArea:(OUIDocumentPreviewArea)area;
 {
     OBPRECONDITION([NSThread isMainThread]); // We might update PreviewImageByURL for placeholders (could fork just the cache update to the main thread if needed).
 
@@ -1096,7 +1086,7 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
 - (void)startLoadingPreview;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION([[OUIDocumentAppController controller] document] == nil, "Don't load previews while we have an open document.  bug:///137636 (iOS-OmniGraffle Crasher: assertion fails sometimes saving document preview on close)"); 
+    // Note: We used to have an assertion here that we weren't loading previews while we had an open document, but now we load previews when picking a theme in the inspector
 
     if (_image)
         return; // Already loaded!

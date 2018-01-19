@@ -26,10 +26,10 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
 @property(nonatomic,copy) void (^didFinish)(void);
 
 @property(nonatomic,copy) UIColor *tintColor;
-@property(nonatomic,copy) UIColor *menuBackgroundColor;
-@property(nonatomic,copy) UIColor *menuOptionBackgroundColor;
-@property(nonatomic,copy) UIColor *menuOptionSelectionColor;
-@property(nonatomic,copy) UIColor *navigationBarBackgroundColor;
+@property(nullable,nonatomic,copy) UIColor *menuBackgroundColor;
+@property(nullable,nonatomic,copy) UIColor *menuOptionBackgroundColor;
+@property(nullable,nonatomic,copy) UIColor *menuOptionSelectionColor;
+@property(nullable,nonatomic,copy) UIColor *navigationBarBackgroundColor;
 @property(nonatomic,assign) UIBarStyle navigationBarStyle;
 
 @property(nonatomic,assign) BOOL sizesToOptionWidth;

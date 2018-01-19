@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,14 +15,14 @@
 @class OWDataStream, OWDataStreamCursor, OWObjectStreamCursor;
 @class OWCacheControlSettings;
 
-#import <OmniFoundation/OFSimpleLock.h>
 #import <OWF/OWDataStream.h>
+#import <os/lock.h>
 
 @interface OWContent : OFObject
 {
     OWContentInfo *contentInfo;
 
-    OFSimpleLockType lock;
+    os_unfair_lock lock;
     NSConditionLock *metadataCompleteCondition;
     
     id <OWConcreteCacheEntry> concreteContent;

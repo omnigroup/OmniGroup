@@ -10,21 +10,28 @@
 #import <OmniUI/OUIWrappingViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerDelegate.h>
 
+@protocol OUIInternalTemplateDelegate;
+
 @class UINavigationController;
 @class ODSStore, ODSScope, ODSFileItem, ODSFolderItem, OUIDocumentPickerViewController, OUIDocumentPickerScrollView;
 
 @interface OUIDocumentPicker : OUIWrappingViewController
 
+@property (class, readonly) BOOL shouldShowExternalScope;
+
 - (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
 
 @property (retain, nonatomic) ODSStore *documentStore;
 @property (weak, nonatomic) id<OUIDocumentPickerDelegate> delegate;
+@property (weak, nonatomic) id<OUIInternalTemplateDelegate> internalTemplateDelegate;
 
 - (void)showDocuments;
 - (void)navigateToFolder:(ODSFolderItem *)folderItem animated:(BOOL)animated;
 - (BOOL)navigateToContainerForItem:(ODSItem *)item dismissingAnyOpenDocument:(BOOL)dismissOpenDocument animated:(BOOL)animated;
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;
 - (ODSScope *)localDocumentsScope;
+
+@property(nonatomic,readonly) ODSFolderItem *currentFolder;
 
 // Go somewhere, even if the file item can't be found.
 - (void)navigateToBestEffortContainerForItem:(ODSFileItem *)fileItem;

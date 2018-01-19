@@ -119,6 +119,9 @@
 
 "Release Notes" = "Notes sur la version";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "Signaler une erreur";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "Texte aligné à droite";
 
@@ -147,7 +150,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Vous avez touché un lien qui exécutera la commande de débogage suivante :\n\n“%@”\n\nSi cela ne vous a pas été recommandé par des techniciens d’assistance Omni, ne le faites pas.\nSouhaitez-vous exécuter cette commande ?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n« %@ »\n\nVoulez-vous exécuter cette commande ?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n“%@”\n\nVoulez-vous exécuter cette commande ?";
 
 /* zoom label */
 "Zoom" = "Réduire/agrandir";

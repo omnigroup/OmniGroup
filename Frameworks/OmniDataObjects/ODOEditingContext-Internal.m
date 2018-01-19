@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@
 #import "ODOEntity-SQL.h"
 #import "ODOObject-Internal.h"
 #import "ODOSQLStatement.h"
+#import "ODOObjectSnapshot.h"
 
 #import <Foundation/NSUndoManager.h>
 
@@ -220,8 +221,8 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
         _objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
     }
 
-    NSArray *snapshot = _ODOObjectCreatePropertySnapshot(object);
-    [_objectIDToLastProcessedSnapshot setObject:snapshot forKey:objectID];
+    ODOObjectSnapshot *snapshot = _ODOObjectCreatePropertySnapshot(object);
+    _objectIDToLastProcessedSnapshot[objectID] = snapshot;
     [snapshot release];
     
     // The first edit to a database-resident object (non-inserted) should make a committed value snapshot too
@@ -236,14 +237,14 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     }
 }
 
-- (nullable NSArray *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+- (nullable ODOObjectSnapshot *)_lastProcessedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 {
     OBPRECONDITION(objectID != nil);
 #ifdef OMNI_ASSERTIONS_ON
     ODOObject *object = [_registeredObjectByID objectForKey:objectID]; // Might be nil if we have the id for something that would be a fault, were it require to be created.
 #endif
     
-    NSArray *snapshot = [_objectIDToLastProcessedSnapshot objectForKey:objectID];
+    ODOObjectSnapshot *snapshot = _objectIDToLastProcessedSnapshot[objectID];
 #ifdef OMNI_ASSERTIONS_ON
     if (snapshot == nil && object != nil) {
         OBASSERT([object isInserted]);
@@ -253,14 +254,14 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     return snapshot;
 }
 
-- (nullable NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
+- (nullable ODOObjectSnapshot *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 {
     OBPRECONDITION(objectID != nil);
 #ifdef OMNI_ASSERTIONS_ON
     ODOObject *object = [_registeredObjectByID objectForKey:objectID]; // Might be nil if we have the id for something that would be a fault, were it require to be created.
 #endif
     
-    NSArray *snapshot = [_objectIDToCommittedPropertySnapshot objectForKey:objectID];
+    ODOObjectSnapshot *snapshot = _objectIDToCommittedPropertySnapshot[objectID];
 #ifdef OMNI_ASSERTIONS_ON
     if (snapshot == nil && object != nil) {
         OBASSERT(![object isUpdated]);

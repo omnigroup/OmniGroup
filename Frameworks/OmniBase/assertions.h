@@ -203,13 +203,13 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
 
     // Pointer checks to satisfy clang scan-build in non-assertion builds too.
     #define OBASSERT_NULL(pointer, ...) do { \
-        if (pointer) { \
+        if ((pointer) != NULL) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBAnalyzerNotReached(); \
         } \
     } while(NO);
     #define OBASSERT_NOTNULL(pointer, ...) do { \
-        if (!pointer) { \
+        if ((pointer) == NULL) { \
             void *valuePtr __attribute__((unused)) = &pointer; /* have compiler check that it is an l-value */ \
             OBAnalyzerNotReached(); \
         } \

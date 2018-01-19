@@ -1,4 +1,4 @@
-// Copyright 1999-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,13 @@
 
 #import <OWF/OWObjectTreeNode.h>
 #import <OWF/OWContentProtocol.h>
-#import <OmniFoundation/OFSimpleLock.h>
+#import <os/lock.h>
 
 @interface OWObjectTree : OWObjectTreeNode <OWContent>
 {
     OWContentType *nonretainedContentType;
     OWContentInfo *contentInfo;
-    OFSimpleLockType mutex;
+    os_unfair_lock mutex;
 }
 
 - initWithRepresentedObject:(id <NSObject>)object;
@@ -27,5 +27,5 @@
 
 // Only for use by OWObjectTreeNode
 @interface OWObjectTree (lockAccess)
-- (OFSimpleLockType *)mutex;
+- (os_unfair_lock *)mutex;
 @end

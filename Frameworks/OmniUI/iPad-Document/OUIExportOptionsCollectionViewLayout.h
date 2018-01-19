@@ -9,6 +9,8 @@
 
 #import <UIKit/UICollectionViewLayout.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 // assumptions:
 // 1. all the icons are the same size.
 // 2. exterior spacing to the left and right of the outside icons should exist. Lets space these icons evenly in the space we have, like so: |<one>|--|<two>|--|<three>. Padding to the top, left, and right comes from the safe area insets.
@@ -19,3 +21,5 @@
 @property(nonatomic) CGFloat minimumInterItemSpacing;
 
 @end
+
+NS_ASSUME_NONNULL_END

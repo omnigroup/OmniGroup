@@ -111,43 +111,44 @@ RCS_ID("$Id$")
     if ([MFMailComposeViewController canSendMail]) {
         // All email options should go here (within the test for whether we can send email)
         // more than one option? Display the 'export options sheet'
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
-            if (availableExportTypes.count > 0) {
-                [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsEmail];
-            }
-            else {
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
+            NSUInteger typeCount = [availableExportTypes count];
+            if (typeCount == 0 || (typeCount == 1 && OFISNULL(availableExportTypes.firstObject))) {
+                // No known types, or the only "type" is the "native" null marker.
                 [self emailFileItem:fileItem];
+            } else {
+                [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsEmail presentingBarButtonItem:invocation.presentingBarButtonItem];
             }
         }]];
     }
     
     if (canExport) {
-#if 0 // bug:///147708
+#if 0 // We no longer support direct export to WebDAV
         [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
             [self exportDocument:fileItem];
         }]];
 #endif
-        
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Files", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToFiles" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
-            [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToService];
+
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Files", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToFiles" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
+            [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToService presentingBarButtonItem:invocation.presentingBarButtonItem];
         }]];
     }
     
     if (canUseOpenIn) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
-            [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToApp];
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
+            [self _displayExportOptionsControllerForFileItem:fileItem exportType:OUIExportOptionsSendToApp presentingBarButtonItem:invocation.presentingBarButtonItem];
         }]];
     }
     
     if (availableImageExportTypes.count > 0) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
             [self copyAsImageForFileItem:fileItem];
             [self clearSelection];
         }]];
     }
     
     if (canSendToCameraRoll) {
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
             [self sendToCameraRollForFileItem:fileItem];
             [self clearSelection];
         }]];
@@ -155,7 +156,7 @@ RCS_ID("$Id$")
     
     if (canPrint) {
         NSString *printTitle = [self _printTitleForFileItem:fileItem];
-        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuOption *option, UIViewController *presentingViewController){
+        [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^(OUIMenuInvocation *invocation){
             [self printDocument:fileItem];
         }]];
     }
@@ -287,14 +288,10 @@ RCS_ID("$Id$")
     return ([types count] > 0) ? YES : NO;
 }
 
-- (void)_displayExportOptionsControllerForFileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType
+- (void)_displayExportOptionsControllerForFileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType presentingBarButtonItem:(UIBarButtonItem *)presentingBarButtonItem;
 {
     OUIExportOptionsController *exportOptionsController = [[OUIExportOptionsController alloc] initWithServerAccount:nil fileItem:fileItem exportType:exportType exporter:self];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:exportOptionsController];
-    navController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self.hostViewController presentViewController:navController animated:YES completion:nil];
+    [exportOptionsController presentInViewController:self.hostViewController barButtonItem:presentingBarButtonItem];
 }
 
 - (void)emailFileItem:(ODSFileItem *)fileItem
@@ -305,11 +302,8 @@ RCS_ID("$Id$")
     
     NSData *documentData = [fileItem emailData];
     NSString *documentFilename = [fileItem emailFilename];
-    OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-    NSString *documentType = OFUTIForFileExtensionPreferringNative([documentFilename pathExtension], nil); // NSString *documentType = [ODAVFileInfo UTIForFilename:documentFilename];
-    OBASSERT(documentType != nil); // UTI should be registered in the Info.plist under CFBundleDocumentTypes
-    
-    [self _sendEmailWithSubject:[fileItem name] messageBody:nil isHTML:NO attachmentName:documentFilename data:documentData fileType:documentType];
+
+    [self _sendEmailWithSubject:[fileItem name] messageBody:nil isHTML:NO attachmentName:documentFilename data:documentData fileType:fileItem.fileType];
 }
 
 - (void)exportDocument:(ODSFileItem *)fileItem
@@ -325,10 +319,7 @@ RCS_ID("$Id$")
                 return;
             
             OUIExportOptionsController *exportController = [[OUIExportOptionsController alloc] initWithServerAccount:accountOrNil fileItem:fileItem exportType:OUIExportOptionsExport exporter:self];
-            
-            UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:exportController];
-            navController.modalPresentationStyle = UIModalPresentationFormSheet;
-            [self.hostViewController presentViewController:navController animated:YES completion:nil];
+            [exportController presentInViewController:self.hostViewController barButtonItem:nil];
         }];
     };
     

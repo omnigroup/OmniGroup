@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,15 +7,12 @@
 
 #import "OUIDocumentExternalScopeManager.h"
 
+@import OmniFoundation;
+
 #import <OmniDocumentStore/ODSExternalScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSScope-Subclass.h>
 #import <OmniDocumentStore/ODSStore.h>
-#import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
-#import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/OFFileEdit.h>
-#import <OmniFoundation/OFPreference.h>
-#import <OmniFoundation/OFUTI.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
@@ -27,6 +24,7 @@ RCS_ID("$Id$")
 
 @interface OUIDocumentExternalScopeManager ()
 @property (atomic) BOOL savePending;
+@property (atomic) BOOL isLoading;
 @end
 
 @interface OUIDocumentExternalFilePresenter : NSObject <NSFilePresenter>
@@ -40,21 +38,25 @@ RCS_ID("$Id$")
     ODSStore *_documentStore;
     NSMutableDictionary *_externalScopes;
     NSMutableSet *_externalFilePresenters;
-    OFPreference *_externalDocumentsPreference;
+    OFPreference *_recentlyOpenedBookmarksPreference;
+    OFPreference *_recentItemLimitPreference;
     NSOperationQueue *_externalQueue;
+    NSArray <NSURL *> *_visibleURLs;
 }
 
-- (instancetype)initWithDocumentStore:(ODSStore *)documentStore preferenceKey:(NSString *)preferenceKey; // @"OUIExternalDocuments"
+- (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
 {
     self = [super init];
     if (self == nil)
         return nil;
     
     _documentStore = documentStore;
-    _externalDocumentsPreference = [OFPreference preferenceForKey:preferenceKey];
+    _recentlyOpenedBookmarksPreference = [OFPreference preferenceForKey:@"OUIRecentlyOpenedDocuments"];
+    _recentItemLimitPreference = [OFPreference preferenceForKey:@"OUIRecentItemLimit"];
     _externalFilePresenters = [[NSMutableSet alloc] init];
     _externalQueue = [[NSOperationQueue alloc] init];
     _externalScopes = [[NSMutableDictionary alloc] init];
+    _visibleURLs = @[];
     
     [self _loadExternalScopes];
     
@@ -66,11 +68,6 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
 
     return self;
-}
-
-- (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
-{
-    return [self initWithDocumentStore:documentStore preferenceKey:@"OUIExternalDocuments"];
 }
 
 - (instancetype)init;
@@ -165,6 +162,7 @@ RCS_ID("$Id$")
                     fileItem.userModificationDate = fileEdit.fileModificationDate;
                     // Saving bookmark data for files fails before they're downloaded, so we need to do it again now.
                     [self _queueSaveExternalScopes];
+                    [self addRecentlyOpenedDocumentURL:url];
                     [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:_documentStore userInfo:@{ODSFileItemInfoKey:fileItem}];
                 }];
             }];
@@ -179,14 +177,14 @@ RCS_ID("$Id$")
     return fileItem;
 }
 
-- (ODSExternalScope *)_externalScopeForContainerDisplayName:(NSString *)containerDisplayName;
+- (ODSExternalScope *)_externalScopeWithIdentifier:(NSString *)identifier localizedDisplayName:(NSString *)localizedDisplayName;
 {
-    if (_externalScopes[containerDisplayName] != nil)
-        return _externalScopes[containerDisplayName];
+    if (_externalScopes[identifier] != nil)
+        return _externalScopes[identifier];
     
     ODSExternalScope *externalScope = [[ODSExternalScope alloc] initWithDocumentStore:_documentStore];
-    externalScope.identifier = containerDisplayName;
-    externalScope.displayName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Location label format for external documents"), containerDisplayName];
+    externalScope.identifier = identifier;
+    externalScope.displayName = localizedDisplayName;
     
     __block __weak ODSExternalScope *weakScope = externalScope;
     __block __weak OUIDocumentExternalScopeManager *weakSelf = self;
@@ -296,46 +294,37 @@ RCS_ID("$Id$")
     externalScope.itemsDidChangeBlock = ^(NSSet *fileItems) {
         OUIDocumentExternalScopeManager *strongSelf = weakSelf;
         [strongSelf _deregisterStaleFilePresenters];
-        [strongSelf _queueSaveExternalScopes];
+        if (!strongSelf.isLoading)
+            [strongSelf _queueSaveExternalScopes];
     };
     
-    _externalScopes[containerDisplayName] = externalScope;
+    _externalScopes[identifier] = externalScope;
     return externalScope;
 }
 
-// No matter what the URL is, we always pass the same display name, and we always return the one external scope. Why do we have an array? Why do we pass this URL in?
-- (ODSExternalScope *)_externalScopeForURL:(NSURL *)url;
+// Originally, we were going to try to have separate external containers for different containers: for example, you might have "iCloud Documents" and "DropBox Documents". In fact, we actually implemented multiple containers briefly. But it turned out we didn't really have API available for identifying which provider was being used for a file, so we decided to simplify this to just display "Other Documents" for all external documents at all times.
+// At least, that was the state of affairs for the last few years. Now, though, we want to be able to transfer documents to/from "Other Documents", but for browsing we want to keep track of "Recent Documents".
+
+- (ODSExternalScope *)_otherDocumentsExternalScope;
 {
-    NSString *displayName = NSLocalizedStringFromTableInBundle(@"Other", @"OmniUIDocument", OMNI_BUNDLE, @"Generic name for location of external documents");
-    return [self _externalScopeForContainerDisplayName:displayName];
+    NSString *identifier = @"-"; // _externalDocumentsPreference.key;
+    NSString *localizedDisplayName = NSLocalizedStringFromTableInBundle(@"Other…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu title for selecting an external document provider when moving a file");
+    ODSExternalScope *otherDocumentsExternalScope = [self _externalScopeWithIdentifier:identifier localizedDisplayName:localizedDisplayName];
+    otherDocumentsExternalScope.allowTransfers = YES;
+    return otherDocumentsExternalScope;
 }
 
-- (NSArray *)_externalScopeBookmarks;
+- (ODSExternalScope *)_recentDocumentsExternalScope;
 {
-    NSMutableSet *newBookmarks = [[NSMutableSet alloc] init];
-    for (ODSExternalScope *externalScope in [_externalScopes objectEnumerator]) {
-        for (ODSFileItem *fileItem in externalScope.fileItems) {
-            NSURL *url = fileItem.fileURL;
-            __autoreleasing NSError *bookmarkError = nil;
-            NSURL *securedURL = nil;
-            if ([url startAccessingSecurityScopedResource])
-                securedURL = url;
-            NSData *bookmarkData = [url bookmarkDataWithOptions:0 /* docs say to use NSURLBookmarkCreationWithSecurityScope, but SDK says not available on iOS */ includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
-            [securedURL stopAccessingSecurityScopedResource];
-            if (bookmarkData != nil) {
-                [newBookmarks addObject:bookmarkData];
-            } else {
-#ifdef DEBUG
-                // This failure is expected if the item isn't downloaded yet. When it finishes downloading, this method should get called again.
-                NSLog(@"Unable to create bookmark for %@: %@", url, [bookmarkError toPropertyList]);
-#endif
-            }
-        }
-    }
-    return [newBookmarks allObjects];
+    NSString *identifier = _recentlyOpenedBookmarksPreference.key;
+    NSString *displayName = NSLocalizedStringFromTableInBundle(@"Recent Documents", @"OmniUIDocument", OMNI_BUNDLE, @"Generic name for location of external documents");
+    ODSExternalScope *recentDocumentsExternalScope = [self _externalScopeWithIdentifier:identifier localizedDisplayName:displayName];
+    recentDocumentsExternalScope.allowBrowsing = YES;
+    recentDocumentsExternalScope.isRecentDocuments = YES;
+    return recentDocumentsExternalScope;
 }
 
-- (NSSet *)_activeURLs;
+- (NSSet <NSURL *> *)_activeURLs;
 {
     NSMutableSet *activeURLs = [[NSMutableSet alloc] init];
     for (ODSExternalScope *externalScope in [_externalScopes objectEnumerator]) {
@@ -349,6 +338,8 @@ RCS_ID("$Id$")
 
 - (void)_deregisterStaleFilePresenters;
 {
+    if (_externalFilePresenters.count == 0)
+        return; // We've already deregistered all our file presenters
     NSSet *activeURLs = [self _activeURLs];
     [self _deregisterFilePresentersNotMatchingActiveURLs:activeURLs];
     OBPOSTCONDITION(_externalFilePresenters.count == activeURLs.count);
@@ -371,31 +362,36 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)_updateRecentFileItems;
+{
+    BOOL wasLoading = self.isLoading;
+    OBASSERT(!wasLoading);
+    @try {
+        self.isLoading = YES;
+        NSArray <ODSFileItem *> *recentFileItems = [self recentlyOpenedFileItems];
+        _visibleURLs = [recentFileItems arrayByPerformingBlock:^id(ODSFileItem *fileItem) {
+            return fileItem.fileURL;
+        }];
+
+        [[self _recentDocumentsExternalScope] setFileItems:[NSSet setWithArray:recentFileItems] itemMoved:NO];
+    } @finally {
+        self.isLoading = wasLoading;
+    }
+}
+
 - (void)_loadExternalScopes;
 {
-    // Make a snapshot of our external bookmarks
-    NSArray *itemBookmarks = [[_externalDocumentsPreference arrayValue] copy];
-
     // Reset any external scopes that already exist.  We're going to reload their contents from our bookmarks.
     [self _deregisterAllFilePresenters];
     for (ODSExternalScope *externalScope in [_externalScopes objectEnumerator]) {
         [externalScope setFileItems:[NSSet set] itemMoved:NO];
     }
 
-    // Always create our default external scope, even if we don't have any bookmarks
-    [self _externalScopeForURL:nil];
-    
+    // Always create our default external scopes, even if we don't have any bookmarks
+    [self _otherDocumentsExternalScope];
+
     // Resolve our bookmarks and turn them into file items
-    for (NSData *bookmarkData in itemBookmarks) {
-        NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmarkData options:0 relativeToURL:nil bookmarkDataIsStale:NULL error:NULL];
-        if (resolvedURL != nil) {
-#ifdef DEBUG_kc
-            NSLog(@"-[%@ %@]: resolvedURL=[%@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [resolvedURL absoluteString]);
-#endif
-            ODSExternalScope *externalScope = [self _externalScopeForURL:resolvedURL];
-            [self _fileItemFromExternalURL:resolvedURL inExternalScope:externalScope];
-        }
-    }
+    [self _updateRecentFileItems];
 
     // If resolving our bookmarks discovered that a file moved or was deleted, we should save its new state now
     [self _saveExternalScopes];
@@ -413,10 +409,49 @@ RCS_ID("$Id$")
     }];
 }
 
+static NSMutableArray *_arrayByUpdatingBookmarksForTestBlock(NSArray <NSData *> *bookmarks, BOOL (^testBlock)(NSURL *resolvedURL))
+{
+    NSMutableArray *result = [NSMutableArray array];
+    for (NSData *bookmarkData in bookmarks) {
+        BOOL isStale;
+        NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmarkData options:0 relativeToURL:nil bookmarkDataIsStale:&isStale error:NULL];
+        if (resolvedURL != nil && testBlock(resolvedURL)) {
+            NSData *resolvedBookmarkData = bookmarkData;
+            if (isStale) {
+                NSError *bookmarkError = nil;
+                NSData *updatedBookmarkData = [resolvedURL bookmarkDataWithOptions:0 /* docs say to use NSURLBookmarkCreationWithSecurityScope, but SDK says not available on iOS */ includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
+                if (updatedBookmarkData != nil) {
+                    resolvedBookmarkData = updatedBookmarkData;
+                } else {
+#ifdef DEBUG
+                    NSLog(@"Unable to create bookmark for %@: %@", resolvedURL, [bookmarkError toPropertyList]);
+#endif
+                }
+            }
+            [result addObject:resolvedBookmarkData];
+        }
+    }
+    return result;
+}
+
+static NSMutableArray *_arrayByUpdatingBookmarksForRemovedURLs(NSArray <NSData *> *bookmarks, NSSet <NSURL *> *removedURLs)
+{
+    return _arrayByUpdatingBookmarksForTestBlock(bookmarks, ^BOOL(NSURL *resolvedURL) {
+        return ![removedURLs containsObject:resolvedURL];
+    });
+}
+
 - (void)_saveExternalScopes;
 {
     self.savePending = NO;
-    [_externalDocumentsPreference setArrayValue:[self _externalScopeBookmarks]];
+    NSSet <NSURL *> *visibleURLs = [NSSet setWithArray:_visibleURLs];
+    NSSet <NSURL *> *currentURLs = [self _activeURLs];
+    NSMutableSet <NSURL *> *removedURLs = [[NSMutableSet alloc] initWithSet:visibleURLs];
+    [removedURLs minusSet:currentURLs];
+
+    NSArray *activeBookmarks = _arrayByUpdatingBookmarksForRemovedURLs([_recentlyOpenedBookmarksPreference arrayValue], removedURLs);
+    [_recentlyOpenedBookmarksPreference setArrayValue:activeBookmarks];
+    [self _updateRecentFileItems];
 }
 
 - (ODSFileItem *)fileItemFromExternalDocumentURL:(NSURL *)url
@@ -425,20 +460,103 @@ RCS_ID("$Id$")
         return nil;
     }
 
-    ODSExternalScope *externalScope = [self _externalScopeForURL:url];
-    ODSFileItem *fileItem = [self _fileItemFromExternalURL:url inExternalScope:externalScope];
+    [self addRecentlyOpenedDocumentURL:url];
+    ODSFileItem *fileItem = [self _fileItemFromExternalURL:url inExternalScope:[self _recentDocumentsExternalScope]];
     return fileItem;
 }
 
-- (void)linkExternalDocumentFromURL:(NSURL *)url;
+static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *bookmarks, NSURL *url)
 {
-    ODSFileItem *fileItem = [self fileItemFromExternalDocumentURL:url];
+    return _arrayByUpdatingBookmarksForTestBlock(bookmarks, ^BOOL(NSURL *resolvedURL) {
+        return OFNOTEQUAL(resolvedURL, url);
+    });
+}
 
-    if (fileItem != nil) {
-        OUIDocumentPicker *documentPicker = [OUIDocumentAppController controller].documentPicker;
-        [documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
-        [documentPicker navigateToContainerForItem:fileItem dismissingAnyOpenDocument:YES animated:YES];
+- (BOOL)addRecentlyOpenedDocumentURL:(NSURL *)url;
+{
+    if (url == nil)
+        return NO;
+
+    NSURL *securedURL = nil;
+    if ([url startAccessingSecurityScopedResource])
+        securedURL = url;
+
+    NSError *bookmarkError = nil;
+    NSData *bookmarkData = [url bookmarkDataWithOptions:0 /* docs say to use NSURLBookmarkCreationWithSecurityScope, but SDK says not available on iOS */ includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
+    [securedURL stopAccessingSecurityScopedResource];
+    if (bookmarkData != nil) {
+        NSArray *filteredBookmarks = _arrayByRemovingBookmarksMatchingURL([_recentlyOpenedBookmarksPreference arrayValue], url); // We're replacing any existing bookmarks to this URL
+        NSMutableArray <NSData *> *recentlyOpenedBookmarks = [[NSMutableArray alloc] initWithArray:filteredBookmarks];
+        [recentlyOpenedBookmarks insertObject:bookmarkData atIndex:0];
+        NSUInteger archiveBookmarkLimit = MAX(20, [_recentItemLimitPreference integerValue] + 10); // We don't display all of these items, but we always track some extras in case some have gone missing
+        if (recentlyOpenedBookmarks.count > archiveBookmarkLimit)
+            [recentlyOpenedBookmarks removeObjectsInRange:NSMakeRange(archiveBookmarkLimit, recentlyOpenedBookmarks.count - archiveBookmarkLimit)];
+        [_recentlyOpenedBookmarksPreference setArrayValue:recentlyOpenedBookmarks];
+        [self _updateRecentFileItems];
+        return YES;
+    } else {
+#ifdef DEBUG
+        NSLog(@"Unable to create bookmark for %@: %@", url, [bookmarkError toPropertyList]);
+#endif
     }
+    return NO;
+}
+
+- (NSArray <NSURL *> *)_recentlyOpenedURLs;
+{
+    NSArray <NSData *> *recentlyOpenedBookmarks = [_recentlyOpenedBookmarksPreference arrayValue];
+    NSMutableArray <NSURL *> *resolvedURLs = [[NSMutableArray alloc] init];
+    for (NSData *bookmarkData in recentlyOpenedBookmarks) {
+        NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmarkData options:0 relativeToURL:nil bookmarkDataIsStale:NULL error:NULL];
+        if (resolvedURL != nil && ![resolvedURLs containsObject:resolvedURL]) {
+#ifdef DEBUG_kc0
+            NSLog(@"-[%@ %@]: resolvedURL=[%@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd), [resolvedURL absoluteString]);
+#endif
+            [resolvedURLs addObject:resolvedURL];
+        }
+    }
+
+    return resolvedURLs;
+}
+
+- (BOOL)_doesTrashContainURL:(NSURL *)url;
+{
+    NSURLRelationship result;
+    if ([[NSFileManager defaultManager] getRelationship:&result ofDirectory:NSTrashDirectory inDomain:0 toItemAtURL:url error:NULL]) {
+        return result != NSURLRelationshipOther; // NSURLRelationshipContains or NSURLRelationshipSame
+    } else {
+        return NO;
+    }
+}
+
+- (BOOL)_shouldIncludeFileItemForURL:(NSURL *)url;
+{
+    if ([self _doesTrashContainURL:url])
+        return NO;
+    if ([url resourceValuesForKeys:@[NSURLNameKey] error:NULL] == nil)
+        return NO; // Can't look up the name? Guess we no longer have permission to read this file.
+    return YES;
+}
+
+- (NSArray <ODSFileItem *> *)recentlyOpenedFileItems;
+{
+    ODSExternalScope *recentDocumentsExternalScope = [self _recentDocumentsExternalScope];
+    NSMutableArray <ODSFileItem *> *fileItems = [[NSMutableArray alloc] init];
+    NSArray <NSURL *> *urls = [self _recentlyOpenedURLs];
+    NSUInteger recentItemLimit = MAX(0, [_recentItemLimitPreference integerValue]);
+    for (NSURL *url in urls) {
+        if (![self _shouldIncludeFileItemForURL:url])
+            continue;
+
+        ODSFileItem *fileItem = [self _fileItemFromExternalURL:url inExternalScope:recentDocumentsExternalScope];
+        if (fileItem != nil) {
+            [fileItems addObjectIfAbsent:fileItem];
+            if (fileItems.count >= recentItemLimit)
+                break;
+        }
+    }
+
+    return fileItems;
 }
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification;

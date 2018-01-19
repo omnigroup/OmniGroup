@@ -16,7 +16,7 @@
 
 @property (readwrite, retain) IBOutlet OUINoteTextView *textView;
 @property (nonatomic, retain) IBOutlet UIButton *enterFullScreenButton;
-@property (nonatomic, retain) IBOutlet UIImageView *enterFullScreenButtonBackground;
+@property (nonatomic, retain) IBOutlet UIImageView *enterFullScreenBackground;
 
 - (IBAction)enterFullScreen:(id)sender;
 

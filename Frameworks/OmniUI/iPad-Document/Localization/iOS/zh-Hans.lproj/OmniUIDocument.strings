@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ 无法打开此类型文件。";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@文稿";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -44,7 +41,7 @@
 "1 Item Selected" = "已选择 1 个项目";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。 是否要予以替换？ 此操作无法撤销。";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "帐户信息";
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "选择格式";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "清除";
+
+/* clear button title */
+"Clear %ld Documents" = "清除 %ld 个文稿";
+
+/* remove button title */
+"Clear Document" = "清除文稿";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "清空名称字段";
@@ -155,7 +161,7 @@
 "Document Updated" = "文稿已更新";
 
 /* Toolbar button title for returning to list of documents. */
-"Documents <back button>" = "文档";
+"Documents <back button>" = "文稿";
 
 /* Duplicate document preview action title.
    Duplicate toolbar item accessibility label. */
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "上次编辑: 在本设备上编辑 %@";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "链接外部文稿";
-
 /* Server Account Setup label: location */
 "Location" = "位置";
 
@@ -258,7 +261,7 @@
 "Move to..." = "移至…";
 
 /* Move document preview action title. */
-"Move…" = "移动...";
+"Move…" = "移动…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "打开文稿可将其添加至此视图。";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "打开外部文稿";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "在其他设备上打开此文件，以配置那里的 OmniPresence。";
 
-/* Generic name for location of external documents */
-"Other" = "其他";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "其他…";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "语言";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "自定";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "选择模板";
 
 /* Server Account Setup label: password */
 "Password" = "密码";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "立即购买。";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "删除";
-
-/* remove button title */
-"Remove %ld Documents" = "删除 %ld 个文稿";
-
-/* remove button title */
-"Remove Document" = "删除文稿";
+/* Generic name for location of external documents */
+"Recent Documents" = "最近文稿";
 
 /* rename button title */
 "Rename" = "重命名";
@@ -417,19 +429,19 @@
 "Tap here to add a document without a template." = "轻按此处添加没有模板的文稿。";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "轻按此处或工具栏中的 +，添加文稿。";
+"Tap here, or on the + in the toolbar, to add a custom template." = "轻按此处或工具栏中的 +，添加自定义模板。";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "轻按工具栏上的 + 来添加存储在 iCloud Drive 上的或由其他应用程序所提供的文稿。";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "轻按此处或工具栏中的 +，添加文稿。";
 
 /* file name label for template filte types */
 "Template:" = "模板：";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@”帐户可能已编辑过未同步至云的文稿。您是否希望放弃所有本地编辑？";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "安装之后，插件将出现在此处。";

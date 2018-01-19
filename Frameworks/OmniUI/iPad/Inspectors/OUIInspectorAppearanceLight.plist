@@ -36,6 +36,13 @@
             <key>a</key>
             <real>1</real>
         </dict>
+        <key>PlaceholderTextColor</key>
+        <dict>
+            <key>w</key>
+            <real>0.5</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
         <key>PopoverBackgroundColor</key>
         <dict>
             <key>r</key>
@@ -130,6 +137,13 @@
             <real>0.937255</real>
             <key>b</key>
             <real>0.956863</real>
+            <key>a</key>
+            <real>1</real>
+        </dict>
+        <key>InterfaceActionItemSeparatorColor</key>
+        <dict>
+            <key>w</key>
+            <real>.25</real>
             <key>a</key>
             <real>1</real>
         </dict>

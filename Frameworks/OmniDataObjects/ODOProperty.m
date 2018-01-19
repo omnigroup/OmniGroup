@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniDataObjects/ODOModel.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel-Creation.h>
+#import <OmniDataObjects/ODOObject.h>
 
 #import "ODOEntity-Internal.h"
 #import "ODOObject-Accessors.h"
@@ -18,11 +19,9 @@
 RCS_ID("$Id$")
 
 @implementation ODOProperty
-
-+ (void)initialize;
 {
-    OBINITIALIZE;
-    
+    NSArray <ODOObjectPropertyChangeAction> *_willChangeActions;
+    NSArray <ODOObjectPropertyChangeAction> *_didChangeActions;
 }
 
 - (void)dealloc;
@@ -97,6 +96,12 @@ void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags
     self->_flags.calculated = (set == NULL);
     self->_sel.get = get;
     self->_sel.set = set;
+
+    // Could move this to the model generator...
+    if (self->_flags.transient && self->_flags.calculated) {
+        NSString *selectorString = [NSString stringWithFormat:@"calculateValueFor%@%@", [name substringToIndex:1].capitalizedString, [name substringFromIndex:1]];
+        self->_sel.calculate = NSSelectorFromString(selectorString);
+    }
 }
 
 void ODOPropertyBind(ODOProperty *self, ODOEntity *entity)
@@ -155,7 +160,21 @@ static void _ODOPropertyCacheImplementations(ODOProperty *self)
             self->_imp.set = setter;
         }
     }
-    
+
+    IMP calculate = NULL;
+    if (self->_sel.calculate) {
+        method = class_getInstanceMethod(instanceClass, self->_sel.calculate);
+
+        if (method != NULL) {
+            // Since calculated object results get installed right in the value storage, we only support returning object types.
+            OBASSERT(strcmp(method_getTypeEncoding(method), ODOObjectGetterSignature()) == 0);
+            calculate = (typeof(self->_imp.get))method_getImplementation(method);
+        } else {
+            // Maybe done via a subclass of -calculateValueForProperty:...?
+        }
+    }
+    self->_imp.calculate = calculate;
+
     OBPOSTCONDITION(self->_imp.get != NULL); // Setter might be NULL, though.
 }
 
@@ -183,8 +202,17 @@ IMP ODOPropertySetterImpl(ODOProperty *property)
     if (property->_imp.get == NULL) {
         _ODOPropertyCacheImplementations(property);
     }
-    
+
     return property->_imp.set;
+}
+
+IMP ODOPropertyCalculateImpl(ODOProperty *property)
+{
+    if (property->_imp.get == NULL) {
+        _ODOPropertyCacheImplementations(property);
+    }
+
+    return property->_imp.calculate;
 }
 
 BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name)
@@ -198,6 +226,34 @@ void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, NSUInteger sn
     OBPRECONDITION(property->_flags.snapshotIndex == ODO_NON_SNAPSHOT_PROPERTY_INDEX); // shouldn't have been assigned yet.
     property->_flags.snapshotIndex = (unsigned)snapshotIndex;
     OBASSERT(property->_flags.snapshotIndex == snapshotIndex); // make sure it didn't get truncated.
+}
+
+static void _ODOPropertyFindChangeActions(ODOProperty *property)
+{
+    ODOChangeActions *willChangeActions = [[[ODOChangeActions alloc] init] autorelease];
+    ODOChangeActions *didChangeActions = [[[ODOChangeActions alloc] init] autorelease];
+
+    Class instanceClass = property.entity.instanceClass;
+    [instanceClass addChangeActionsForProperty:property willActions:willChangeActions didActions:didChangeActions];
+
+    property->_willChangeActions = [willChangeActions.actions copy];
+    property->_didChangeActions = [didChangeActions.actions copy];
+}
+
+NSArray <ODOObjectPropertyChangeAction> *ODOPropertyWillChangeActions(ODOProperty *property)
+{
+    if (property->_willChangeActions == nil) {
+        _ODOPropertyFindChangeActions(property);
+    }
+    return property->_willChangeActions;
+}
+
+NSArray <ODOObjectPropertyChangeAction> *ODOPropertyDidChangeActions(ODOProperty *property)
+{
+    if (property->_didChangeActions == nil) {
+        _ODOPropertyFindChangeActions(property);
+    }
+    return property->_didChangeActions;
 }
 
 @end

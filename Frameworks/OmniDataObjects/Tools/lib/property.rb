@@ -1,10 +1,11 @@
 module OmniDataObjects
   class Property < Base
-      attr_reader :entity, :name, :getter, :optional, :transient, :inherited_from, :calculated, :swift_name, :deprecated, :deprecated_msg
+      attr_reader :entity, :name, :defineWithName, :getter, :optional, :transient, :inherited_from, :calculated, :swift_name, :deprecated, :deprecated_msg
 
     def initialize(entity, name, options = {})
       @entity = entity
       @name = name.to_s
+      @defineWithName = options[:define]
       @optional = options[:optional]
       @transient = options[:transient]
       @inherited_from = options[:inherited_from]
@@ -50,6 +51,20 @@ module OmniDataObjects
     def objcSetSel
       return "NULL" if read_only?
       "@selector(set#{name.capitalize_first}:)"
+    end
+    
+    def emitDeclaration(fp)
+        # Constant strings get distinct pointers across framework boundaries, which can make -propertyNamed: slower. This allows a property that re-uses a well-known name from another framework us its global instead of making a new constant string.
+        if defineWithName
+            fp.h << "#define #{keyName} #{defineWithName}\n"
+        else
+            super
+        end
+    end
+    
+    def emitDefinition(fp)
+        return if defineWithName
+        super
     end
     
     def emitBinding(fp)

@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,6 +110,11 @@ void ODOModelFinalize(ODOModel *model)
         }
     }
 #endif
+
+    // Tell each model class that the model is loaded.
+    [model->_entitiesByName enumerateKeysAndObjectsUsingBlock:^(NSString *entityName, ODOEntity *entity, BOOL *stop) {
+        [entity.instanceClass entityLoaded:entity];
+    }];
 }
 
 #pragma clang diagnostic push

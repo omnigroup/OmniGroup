@@ -534,6 +534,23 @@ static void OUIViewPerformPosingForThreading(void)
     }
 }
 
+// Terrible. There doesn't seem to be a proper way to set the field editor's text color, or access the field editor
+- (void)recursivelySetUITextFieldColor:(UIColor *)color;
+{
+    for (UIView *subview in self.subviews) {
+        [subview recursivelySetUITextFieldColor:color];
+    }
+}
+
+@end
+
+@implementation UITextField (RecursivelySetUITextFieldColor)
+
+- (void)recursivelySetUITextFieldColor:(UIColor *)color;
+{
+    self.textColor = color;
+}
+
 @end
 
 #ifdef DEBUG // Uses private API

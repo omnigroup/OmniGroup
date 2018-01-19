@@ -53,6 +53,11 @@ RCS_ID("$Id$");
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+- (NSArray <ODSFileItem *> *)sortedFilteredItems;
+{
+    return [[self.filteredItems allObjects] sortedArrayUsingDescriptors:[self.class sortDescriptors]];
+}
+
 #pragma mark -
 #pragma mark OUIDocumentPickerViewController subclass
 
@@ -88,9 +93,9 @@ RCS_ID("$Id$");
         NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
             if (![templateFilter.predicate evaluateWithObject:evaluatedObject])
                 return NO;
-            // filter out fileItems in the trash.
+            // filter out fileItems in the trash or recent documents.
             ODSItem *item = evaluatedObject;
-            if (item.scope.isTrash)
+            if (item.scope.isTrash || ([item.scope isKindOfClass:ODSExternalScope.class] && ((ODSExternalScope *)item.scope).isRecentDocuments))
                 return NO;
             else
                 return YES;

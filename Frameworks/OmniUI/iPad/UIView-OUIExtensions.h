@@ -60,6 +60,9 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 
 - (void)expectDeallocationOfViewTreeSoon;
 
+// UISearchBar doesn't give us a proper way to set the field editor's text color, or access the field editor. So this is a workaround, but it's generic to UIView. Recurses into subviews until it finds UITextFields and sets their textColor. UITextFields are regarded as leaf nodes.
+- (void)recursivelySetUITextFieldColor:(UIColor *)color;
+
 @end
 
 #ifdef DEBUG // Uses private API

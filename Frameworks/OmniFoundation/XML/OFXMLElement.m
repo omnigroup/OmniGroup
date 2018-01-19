@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -773,6 +773,30 @@ static void ApplyBlock(OFXMLElement *self, void (^block)(id child))
         id child = self->_child.single;
         if ([child isKindOfClass:[OFXMLElement class]]) {
             [child applyBlock:applierBlock];
+        }
+    }
+}
+
+- (void)applyBlockToAllChildren:(void (^ NS_NOESCAPE)(id child))applierBlock;
+{
+    OBPRECONDITION(applierBlock != nil);
+    
+    applierBlock(self);
+    
+    if (_multipleChildren) {
+        for (id child in _child.multiple) {
+            if ([child isKindOfClass:[OFXMLElement class]]) {
+                [child applyBlockToAllChildren:applierBlock];
+            } else {
+                applierBlock(child);
+            }
+        }
+    } else if (_child.single) {
+        id child = _child.single;
+        if ([child isKindOfClass:[OFXMLElement class]]) {
+            [child applyBlockToAllChildren:applierBlock];
+        } else {
+            applierBlock(child);
         }
     }
 }

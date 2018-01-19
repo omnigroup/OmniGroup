@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,6 +49,8 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic InspectorDisabledTextColor;
 @dynamic InspectorTextColor;
 
+@dynamic PlaceholderTextColor;
+
 @dynamic PopoverBackgroundColor;
 
 @dynamic SearchBarFieldBackgroundColor;
@@ -64,6 +66,8 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 @dynamic TableCellTextColor;
 @dynamic TableCellDetailTextLabelColor;
 @dynamic TableCellDisclosureTint;
+
+@dynamic InterfaceActionItemSeparatorColor;
 
 @end
 

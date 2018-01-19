@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,11 @@
 #import <OmniDocumentStore/ODSExternalScope.h>
 
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 
+#import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniDocumentStore/ODSScope-Subclass.h>
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniDocumentStore/ODSUtilities.h>
@@ -86,22 +88,36 @@ RCS_ID("$Id$")
     __block NSMutableSet *movedFileItems = [[NSMutableSet alloc] init];
     __block NSMutableArray *errors = [[NSMutableArray alloc] init];
     __block void (^processNextItem)(void) = ^{
-        ODSFileItem *item = [remainingItems firstObject];
+        ODSItem *item = [remainingItems firstObject];
         if (item == nil) {
             completionHandler(movedFileItems, errors.count != 0 ? errors : nil);
             processNextItem = NULL;
             return;
         }
         [remainingItems removeObjectAtIndex:0];
-        [self addDocumentInFolder:folderItem baseName:item.name fromURL:item.fileURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:^(ODSFileItem *duplicateFileItem, NSError *error) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                if (duplicateFileItem != nil)
-                    [movedFileItems addObject:duplicateFileItem];
-                if (error != nil)
-                    [errors addObject:error];
-                processNextItem();
+        if (item.type == ODSItemTypeFile) {
+            // Files are easy: add the file
+            ODSFileItem *fileItem = OB_CHECKED_CAST(ODSFileItem, item);
+            [self addDocumentInFolder:folderItem baseName:fileItem.name fromURL:fileItem.fileURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:^(ODSFileItem *duplicateFileItem, NSError *error) {
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    if (duplicateFileItem != nil)
+                        [movedFileItems addObject:duplicateFileItem];
+                    if (error != nil) {
+                        [errors addObject:error];
+                        if ([error hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSUserCancelledError]) {
+                            // If the user cancels, stop processing items
+                            [remainingItems removeAllObjects];
+                        }
+                    }
+                    processNextItem();
+                }];
             }];
-        }];
+        } else {
+            // We're going to end up prompting the user for each file contained in the folder, so it's worth presenting them in order
+            ODSFolderItem *sourceFolder = OB_CHECKED_CAST(ODSFolderItem, item);
+            [remainingItems insertObjectsFromArray:sourceFolder.childItemsSortedByName atIndex:0];
+            processNextItem();
+        }
     };
     processNextItem();
 }

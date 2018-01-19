@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,11 +11,12 @@
 
 #import <CoreFoundation/CFArray.h>
 #import <OmniDataObjects/ODOFeatures.h>
+#import <OmniDataObjects/ODOChangeActions.h>
 #import <OmniBase/macros.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class NSString, NSArray, NSError, NSMutableSet;
+@class NSString, NSArray, NSError, NSMutableIndexSet, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
 
 @interface ODOObject : OFObject {
@@ -25,9 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
     void *_observationInfo;
 
     OB_STRONG id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
-    
-    NSMutableSet<NSString *> *_keysForPropertiesBeingCalculated;
-    
+
+    union {
+        // Our implementation is non-ARC and manages these references manually, but make this header importable by ARC.
+        __unsafe_unretained ODOProperty *single;
+        __unsafe_unretained NSMutableArray <ODOProperty *> *multiple;
+    } _propertyBeingCalculated;
+
     struct {
         unsigned int isFault : 1;
         unsigned int changeProcessingDisabled : 1;
@@ -39,11 +44,16 @@ NS_ASSUME_NONNULL_BEGIN
         unsigned int isAwakingFromUnarchive : 1;
         unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
         unsigned int undeletable : 1;
+        unsigned int lastSaveWasDeletion : 1;
+        unsigned int propertyBeingCalculatedIsMultiple : 1;
     } _flags;
 }
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
 + (BOOL)shouldIncludeSnapshotForTransientCalculatedProperty:(ODOProperty *)property;
+
+// Called on each implementation class that is used in a model, once the model is fully loaded.
++ (void)entityLoaded:(ODOEntity *)entity;
 
 @property (class, nonatomic, readonly) ODOEntity *entity; // The entity represented by this subclass. It is only legal to query the entity of leaf subclasses which represents a single entity in the model.
 @property (class, nonatomic, readonly) NSString *entityName; // The name of the entity represented by this subclass. The restrictions on the entity property apply here.
@@ -54,15 +64,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey; // See description for -initWithContext:.
 
 - (void)willAccessValueForKey:(nullable NSString *)key;
-- (void)didAccessValueForKey:(NSString *)key;
 
 - (nullable id)primitiveValueForKey:(NSString *)key; // do not subclass
 - (void)setPrimitiveValue:(nullable id)value forKey:(NSString *)key; // do not subclass
 
-- (nullable id)calculateValueForKey:(NSString *)key NS_REQUIRES_SUPER;
+- (nullable id)calculateValueForProperty:(ODOProperty *)property NS_REQUIRES_SUPER;
 - (void)invalidateCalculatedValueForKey:(NSString *)key;
 
+typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
++ (void)addDefaultAttributeValueActions:(NSMutableArray <ODOObjectSetDefaultAttributeValues> *)actions;
 - (void)setDefaultAttributeValues;
+
++ (void)addChangeActionsForProperty:(ODOProperty *)property willActions:(ODOChangeActions *)willActions didActions:(ODOChangeActions *)didActions;
 
 @property (nonatomic, readonly, getter=isAwakingFromInsert) BOOL awakingFromInsert;
 - (void)awakeFromInsert;
@@ -81,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, readonly) ODOEditingContext *editingContext; // do not subclass
 @property (nonnull, nonatomic, readonly) ODOObjectID *objectID; // do not subclass
 
-- (void)willSave;
+- (void)willSave NS_REQUIRES_SUPER;
 - (void)willInsert NS_REQUIRES_SUPER; // Just calls -willSave
 - (void)willUpdate NS_REQUIRES_SUPER; // Just calls -willSave
 - (void)willDelete NS_REQUIRES_SUPER; // Just calls -willSave
@@ -115,6 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=isInvalid) BOOL invalid;
 @property (nonatomic, readonly, getter=isUndeletable) BOOL undeletable;
 
+- (BOOL)lastSaveWasDeletion;
+- (BOOL)hasBeenDeletedOrInvalidated;
+
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key NS_SWIFT_NAME(hasChangedKeySinceLastSave(_:));
 @property (nonatomic, nullable, readonly) NSDictionary *changedValues;
 @property (nonatomic, nullable, readonly) NSDictionary *changedNonDerivedValues;
@@ -135,15 +151,21 @@ NS_ASSUME_NONNULL_BEGIN
 extern BOOL ODOSetPropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue);
 extern BOOL ODOSetInt32PropertyIfChanged(ODOObject *object, NSString *key, int32_t value, int32_t * _Nullable outOldValue);
 
+// Property-based KVC accessor that are used by -valueForKey: and -setValue:forKey: when the key maps to a property. But if you have the property already, you can use these.
+extern id _Nullable ODOObjectValueForProperty(ODOObject *self, ODOProperty *prop);
+extern void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *prop);
+
 extern id ODOGetPrimitiveProperty(ODOObject *object, NSString *key);
-extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue);
+extern BOOL ODOSetPrimitivePropertyWithKeyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue);
+extern BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, ODOProperty *prop, _Nullable id value, _Nullable id * _Nullable outOldValue);
 
 typedef _Nullable id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
 
 typedef _Nullable id (^ODOObjectSnapshotFallbackLookupHandler)(ODOObjectID *objectID);
 
 /// Returns the value of the given key for the object by reading the given snapshot, instead of querying the object directly. Useful if you have taken a snapshot of the object at some earlier point in time, and care about what the value of a particular key was at that point.
-extern _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler);
+@class ODOObjectSnapshot;
+extern _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, ODOObjectSnapshot *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // We wouldn't implement this -- we need to switch to the newer API on the iPhone.  But, this will let things compile for now.

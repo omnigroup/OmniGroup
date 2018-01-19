@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "Не удалось обработать права из встроенного профиля подготовки";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "d" = "дн.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "day" = "день";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "days" = "дней";
 
 /* invalid bundle reason */
@@ -152,13 +152,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Сбой записи заблокированного файла.  %@";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "h" = "ч";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "hour" = "час";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "hours" = "часов";
 
 /* formatter input error */
@@ -167,22 +167,22 @@
 /* local bundle path readable string */
 "local configuration file" = "файл локальной конфигурации";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
+/* time span formatter span (minute) */
 "m" = "мин.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "minute" = "минута";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "minutes" = "мин.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
+/* time span formatter span (month) */
 "mo" = "мес.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "month" = "месяц";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "months" = "мес.";
 
 /* error reason */
@@ -198,22 +198,22 @@
 "PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое PKCS#7 встроенного профиля подготовки не являются допустимым файлом plist";
 
 /* alert message format when clicking on a configuration value URL */
-"Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";
+"Restore \"%@\" to its default value" = "Restore “%@” to its default value";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Восстановить для всех внутренних настроек значения по умолчанию";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "s" = "с";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "second" = "секунда";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "seconds" = "секунд";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Задать для «%1$@» значение «%2$@»";
+"Set \"%@\" to \"%@\"" = "Задать «%1$@» для «%2$@»";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
 "The encrypted item \"%@\" is missing or unreadable." = "Зашифрованный элемент «%@» отсутствует или не читается.";
@@ -237,10 +237,10 @@
 "This configuration link will make the following changes:" = "Эта ссылка конфигурации внесет следующие изменения:";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ с компьютера %2$@ %3$@ в %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера “%2$@” %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
 
 /* compression error description */
 "Unable to compress data." = "Не удается сжать данные.";
@@ -280,29 +280,29 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "Неподдерживаемый алгоритм шифрования";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "w" = "нед.";
 
 /* error description */
 "Warning encountered while loading XML." = "При загрузке XML было создано предупреждение.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "week" = "неделя";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "weeks" = "недель";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "y" = "г.";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "year" = "год";
 
-/* time span formatter span - DO NOT add leading or trailing whitespace */
+/* time span formatter span */
 "years" = "лет";
 
 /* zlib error reason */
 "zlib returned error code %d." = "возвращенный код ошибки zlib %d.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";
+"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";

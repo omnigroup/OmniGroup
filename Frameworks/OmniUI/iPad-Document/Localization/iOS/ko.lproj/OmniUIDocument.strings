@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@은(는) 이 유형의 파일을 열 수 없습니다.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ 도큐멘트";
-
 /* gigabytes */
 "%@ GB" = "%@GB";
 
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "형식 선택";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "지우기";
+
+/* clear button title */
+"Clear %ld Documents" = "%ld 도큐멘트 지우기";
+
+/* remove button title */
+"Clear Document" = "도큐멘트 지우기";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "이름 필드 지우기";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "마지막 편집: 이 장치의 %@";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "외부 도큐멘트 연결";
-
 /* Server Account Setup label: location */
 "Location" = "위치";
 
@@ -269,7 +272,7 @@
 /* New Document toolbar item accessibility label.
    New Template button title */
 
-"New Document" = "새로운 도큐멘트";
+"New Document" = "새 도큐멘트";
 
 /* Action sheet title for making a new folder from the selected documents */
 "New folder" = "새로운 폴더";
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "이 데모 버전에서는 OmniPresence가 비활성화되어 있습니다.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "이 보기에 추가할 도큐멘트를 여십시오.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "외부 도큐멘트 열기";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "다른 장치에서 이 파일을 열어서 해당 위치에서 OmniPresence를 구성합니다.";
 
-/* Generic name for location of external documents */
-"Other" = "기타";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "기타...";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "언어";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "사용자 정의";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "템플릿 선택";
 
 /* Server Account Setup label: password */
 "Password" = "암호";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "지금 구입하십시오.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "제거";
-
-/* remove button title */
-"Remove %ld Documents" = "%ld 도큐멘트 제거";
-
-/* remove button title */
-"Remove Document" = "도큐멘트 제거";
+/* Generic name for location of external documents */
+"Recent Documents" = "최근 도큐멘트";
 
 /* rename button title */
 "Rename" = "이름 변경";
@@ -355,7 +367,7 @@
 "Report Error" = "보고서 오류";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "샘플 도큐멘트 복원";
+"Restore Sample Documents" = "샘플 도큐멘트에서 복원";
 
 /* Share menu title */
 "Restore to..." = "복원 대상...";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "템플릿 없이 도큐멘트를 추가하려면 여기를 누르십시오.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "여기 또는 도구 모음의 +를 눌러서 도큐멘트를 추가하십시오.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "여기 또는 도구 모음의 +를 눌러서 사용자 정의 템플릿을 추가하십시오.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "도구 모음의 +를 눌러서 iCloud Drive에 저장되었거나 다른 앱에서 제공된 도큐멘트를 추가합니다.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "여기 또는 도구 모음의 +를 눌러서 도큐멘트를 추가하십시오.";
 
 /* file name label for template filte types */
 "Template:" = "템플릿:";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "계정 검증 중...";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "플러그인이 설치된 경우 여기에 표시됩니다.";

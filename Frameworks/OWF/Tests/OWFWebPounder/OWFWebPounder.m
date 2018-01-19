@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 
 @implementation OWFWebPounder
 
-static OFSimpleLockType statusLock;
+static os_unfair_lock statusLock = OS_UNFAIR_LOCK_INIT;
 static unsigned int processorsStarted = 0, processorsChecked = 0;
 static NSLock *anchorStringsCacheLock;
 static NSMutableDictionary *anchorStringsCache;
@@ -98,7 +98,6 @@ static NSMutableDictionary *anchorStringsCache;
 {
     OBINITIALIZE;
 
-    OFSimpleLockInit(&statusLock);
     anchorStringsCacheLock = [[NSLock alloc] init];
     anchorStringsCache = [[NSMutableDictionary alloc] init];
 }
@@ -108,9 +107,9 @@ static NSMutableDictionary *anchorStringsCache;
     OBPRECONDITION(anchorStrings != nil);
     OBPRECONDITION(source != nil);
 
-    OFSimpleLock(&statusLock);
+    os_unfair_lock_lock(&statusLock);
     processorsChecked++;
-    OFSimpleUnlock(&statusLock);
+    os_unfair_lock_unlock(&statusLock);
 
     NSArray *cachedValue;
 
@@ -163,10 +162,10 @@ static NSMutableDictionary *anchorStringsCache;
 
             unsigned int startedDelta, checkedDelta;
 
-            OFSimpleLock(&statusLock);
+            os_unfair_lock_lock(&statusLock);
             started = processorsStarted;
             checked = processorsChecked;
-            OFSimpleUnlock(&statusLock);
+            os_unfair_lock_unlock(&statusLock);
 
             OBASSERT(processorsStarted >= previousProcessorsStarted);
             OBASSERT(processorsChecked >= previousProcessorsChecked);
@@ -195,9 +194,9 @@ static NSMutableDictionary *anchorStringsCache;
 
 + (void)fetchAddressString:(NSString *)addressString;
 {
-    OFSimpleLock(&statusLock);
+    os_unfair_lock_lock(&statusLock);
     processorsStarted++;
-    OFSimpleUnlock(&statusLock);
+    os_unfair_lock_unlock(&statusLock);
 
     static OFScheduler *scheduler = nil;
 

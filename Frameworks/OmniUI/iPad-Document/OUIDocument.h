@@ -21,6 +21,9 @@
 
 @interface OUIDocument : UIDocument <OFCMSKeySource>
 
+// Can be overridden to provide a file inside the app wrapper to read into a new document. Returns nil by default.
++ (NSURL *)builtInBlankTemplateURL;
+
 + (BOOL)shouldShowAutosaveIndicator;
 
 // Called when opening an existing document
@@ -40,6 +43,7 @@
 
 // Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
 @property(nonatomic) BOOL forPreviewGeneration;
+- (void)transientFileItemForPreviewGeneration:(ODSFileItem *)fileItem;
 
 @property(nonatomic,readonly) ODSFileItem *fileItem;
 

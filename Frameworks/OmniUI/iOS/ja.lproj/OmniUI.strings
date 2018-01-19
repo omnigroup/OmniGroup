@@ -119,6 +119,9 @@
 
 "Release Notes" = "リリースノート";
 
+/* When displaying a generic error, this is the option to report the error. */
+"Report Error" = "エラーを報告";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "テキストの右揃え";
 

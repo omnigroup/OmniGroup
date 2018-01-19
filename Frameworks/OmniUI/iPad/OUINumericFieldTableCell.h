@@ -9,12 +9,14 @@
 
 #import <UIKit/UITableViewCell.h>
 
+#import <OmniUI/OUIThemedTableViewCell.h>
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const OUINumericFieldTableCellValueKey;
 
 
-@interface OUINumericFieldTableCell : UITableViewCell
+@interface OUINumericFieldTableCell : OUIThemedTableViewCell
 
 + (instancetype)numericFieldTableCell NS_SWIFT_NAME(numericFieldTableCell());
 

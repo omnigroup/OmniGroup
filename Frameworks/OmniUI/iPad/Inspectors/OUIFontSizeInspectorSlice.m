@@ -14,7 +14,9 @@
 #import <OmniUI/OUIInspectorStepperButton.h>
 #import <OmniUI/OUIFontInspectorPane.h>
 #import <OmniUI/OUIFontUtilities.h>
+#import <OmniUI/OUIInspectorAppearance.h>
 #import <OmniUI/OUIInspectorSliceView.h>
+
 #import <OmniUI/UIView-OUIExtensions.h>
 
 #import <OmniAppKit/OAFontDescriptor.h>
@@ -275,7 +277,7 @@ static const CGFloat fontSizeControlWidth = 100.0f;
        [self.fontSizeIncreaseStepperButton.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
        [self.fontSizeIncreaseStepperButton.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
        [self.fontSizeIncreaseStepperButton.widthAnchor constraintEqualToConstant:buttonWidth],
-       [self.fontSizeIncreaseStepperButton.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:buffer * -1],
+       [self.fontSizeIncreaseStepperButton.rightAnchor constraintEqualToAnchor:self.contentView.safeAreaLayoutGuide.rightAnchor constant:buffer * -1],
        
        [self.fontSizeDecreaseStepperButton.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
        [self.fontSizeDecreaseStepperButton.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
@@ -315,6 +317,18 @@ static const CGFloat fontSizeControlWidth = 100.0f;
         formatter = _wholeNumberFormatter;
     
     return [formatter stringFromNumber:[NSNumber numberWithDouble:displaySize]];
+}
+
+#pragma mark OUIInspectorAppearanceClient
+
+- (void)themedAppearanceDidChange:(OUIThemedAppearance *)changedAppearance;
+{
+    [super themedAppearanceDidChange:changedAppearance];
+    
+    OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
+    
+    self.view.backgroundColor = appearance.TableCellBackgroundColor;
+    _fontSizeLabel.textColor = appearance.TableCellTextColor;
 }
 
 @end

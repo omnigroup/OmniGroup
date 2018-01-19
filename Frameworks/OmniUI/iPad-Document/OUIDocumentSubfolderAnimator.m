@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
         
         OUIDocumentPickerScrollView *toScrollview = [destinationController mainScrollView];
         NSUInteger locationIndex = 0;
-        [toScrollview layoutIfNeeded];
+        [transitionContext.containerView layoutIfNeeded];
         for (ODSFileItem *item in [toScrollview sortedItems]) {
             OUIDocumentPickerItemView *toPreview = [toScrollview itemViewForItem:item];
             

@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,9 @@
 #import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
+#import "ODOObjectSnapshot.h"
+
+@import Foundation;
 
 RCS_ID("$Id$")
 
@@ -22,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation ODOObject (Internal)
 
 #ifdef OMNI_ASSERTIONS_ON
-BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
+BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snapshot)
 {
     // The snapshot should have no to-manys and all to-ones should be just primary keys.
     // All values shoudl be of the proper class
@@ -32,7 +35,7 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
         ODOProperty *property = [properties objectAtIndex:propertyIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(property);
         
-        id value = (id)CFArrayGetValueAtIndex(snapshot, propertyIndex);
+        id value = ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex);
         if (flags.relationship) {
             ODORelationship *rel = (ODORelationship *)property;
             
@@ -112,29 +115,70 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot)
     // We leave _objectID; notification observers need to be able to get the entity/pk of deleted objects.
 }
 
-- (BOOL)_isCalculatingValueForKey:(NSString *)key;
+- (BOOL)_isCalculatingValueForProperty:(ODOProperty *)property;
 {
-    return [_keysForPropertiesBeingCalculated containsObject:key];
-}
+    OBPRECONDITION(property);
 
-- (void)_setIsCalculatingValueForKey:(NSString *)key;
-{
-    if (_keysForPropertiesBeingCalculated == nil) {
-        _keysForPropertiesBeingCalculated = [[NSMutableSet alloc] init];
-        [_keysForPropertiesBeingCalculated addObject:key];
+    if (_flags.propertyBeingCalculatedIsMultiple) {
+        OBASSERT([_propertyBeingCalculated.multiple isKindOfClass:[NSArray class]]);
+        return [_propertyBeingCalculated.multiple indexOfObjectIdenticalTo:property] != NSNotFound;
+    } else {
+        return _propertyBeingCalculated.single == property;
     }
 }
 
-- (void)_clearIsCalculatingValueForKey:(NSString *)key;
+- (void)_setIsCalculatingValueForProperty:(ODOProperty *)property;
 {
-    [_keysForPropertiesBeingCalculated removeObject:key];
-    if (_keysForPropertiesBeingCalculated.count == 0) {
-        [_keysForPropertiesBeingCalculated release];
-        _keysForPropertiesBeingCalculated = nil;
+    OBPRECONDITION(property);
+
+    if (_flags.propertyBeingCalculatedIsMultiple) {
+        OBASSERT([_propertyBeingCalculated.multiple indexOfObjectIdenticalTo:property] == NSNotFound);
+        OBASSERT([_propertyBeingCalculated.multiple isKindOfClass:[NSArray class]]);
+        [_propertyBeingCalculated.multiple addObject:property];
+    } else {
+        // We don't bother retaining a single ODOProperty since it is owned by our entity.
+        if (_propertyBeingCalculated.single) {
+            OBASSERT([_propertyBeingCalculated.single isKindOfClass:[ODOProperty class]]);
+            OBASSERT(_propertyBeingCalculated.single != property);
+            ODOProperty *existing = _propertyBeingCalculated.single;
+            _propertyBeingCalculated.multiple = [[NSMutableArray alloc] initWithObjects:existing, property, nil];
+            _flags.propertyBeingCalculatedIsMultiple = 1;
+        } else {
+            _propertyBeingCalculated.single = property;
+        }
     }
 }
 
-NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
+- (void)_clearIsCalculatingValueForProperty:(ODOProperty *)property;
+{
+    OBPRECONDITION(property);
+
+    if (_flags.propertyBeingCalculatedIsMultiple) {
+        NSUInteger propertyIndex = [_propertyBeingCalculated.multiple indexOfObjectIdenticalTo:property];
+        if (propertyIndex == NSNotFound) {
+            OBASSERT_NOT_REACHED("Unknown property");
+            return;
+        }
+
+        [_propertyBeingCalculated.multiple removeObjectAtIndex:propertyIndex];
+
+        // Don't bother going back to the single storage format unless the array is empty (which it likely soon will be), in case we go 0-1-2-1-2 at some point.
+        if ([_propertyBeingCalculated.multiple count] == 0) {
+            [_propertyBeingCalculated.multiple release];
+            _propertyBeingCalculated.multiple = nil;
+            _flags.propertyBeingCalculatedIsMultiple = 0;
+        }
+    } else {
+        // We don't bother retaining a single ODOProperty since it is owned by our entity.
+        if (_propertyBeingCalculated.single == property) {
+            _propertyBeingCalculated.single = nil;
+        } else {
+            OBASSERT_NOT_REACHED("Unknown property");
+        }
+    }
+}
+
+ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(self->_editingContext);
@@ -145,13 +189,13 @@ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
 
     ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
-    NSUInteger propIndex, propCount = [snapshotProperties count];
+    NSUInteger propCount = [snapshotProperties count];
     
     // We do store the full array for snapshots, one slot per snapshot property, even though we don't really need the slots for to-manys.  One optimization would be to pack/unpack them as needed.
-    CFMutableArrayRef snapshot = CFArrayCreateMutable(kCFAllocatorDefault, propCount, &OFNSObjectArrayCallbacks);
+    ODOObjectSnapshot *snapshot = ODOObjectSnapshotCreate(propCount);
     Class instanceClass = [self class];
 
-    for (propIndex = 0; propIndex < propCount; propIndex++) {
+    for (NSUInteger propIndex = 0; propIndex < propCount; propIndex++) {
         ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
@@ -174,13 +218,13 @@ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self)
             value = nil;
         }
 
-        CFArrayAppendValue(snapshot, value);
+        ODOObjectSnapshotSetValueAtIndex(snapshot, propIndex, value);
     }
     
-    OBASSERT(CFArrayGetCount(snapshot) == (CFIndex)propCount);
+    OBASSERT(ODOObjectSnapshotValueCount(snapshot) == propCount);
     OBASSERT(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
-    return (NSArray *)snapshot;
+    return snapshot;
 }
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -457,7 +501,7 @@ BOOL ODOObjectChangeProcessingEnabled(ODOObject *self)
 
 // Used in ODOEditingContext udno support.  We expect that typically only a few properties will change on each update and that undo will be relatively rare compared to 'do'ing stuff.  So, we'll try to pack this down smaller than just passing along the old snapshots.  Instead, for each update we'll build an array of <editedObjectID, prop0, oldValue0, ..., propN, oldValueN>.  We will not record differences for to-many relationships.  Those are implicit in the inverse to-one relationships.  When recording the to-one properties, we'll record only the foreign key value.  We might want to record the objectID at some point, but on undo, setting the slot to the foreign key makes it into a lazy to-one fault.
 // Later optimization might include building one big array for all the updates with some marker inbetween to delimit change sets.  Probably not worth it.
-_Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot)
+_Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, ODOObjectSnapshot *snapshot)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     OBPRECONDITION(self->_objectID);
@@ -471,7 +515,7 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
     
     ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
-    OBASSERT(CFArrayGetCount(snapshot) == (CFIndex)[snapshotProperties count]);
+    OBASSERT(ODOObjectSnapshotValueCount(snapshot) == [snapshotProperties count]);
     
     NSUInteger propertyIndex, propertyCount = [snapshotProperties count];
     for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
@@ -486,7 +530,7 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
             continue;
         }
         
-        id oldValue = (id)CFArrayGetValueAtIndex(snapshot, propertyIndex);
+        id oldValue = ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex);
         id newValue = _ODOObjectValueAtIndex(self, propertyIndex);
 
         if (flags.relationship) {

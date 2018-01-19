@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOObject
 
+static IMP OFObjectWillChangeValueForKey;
+static IMP OFObjectDidChangeValueForKey;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+
+    // We can't call [super {will,did}ChangeValueForKey:] from the block to have ObjC do the dispatch for us, but we know our superclass here is OFObject so we can look up the implementations and call them.
+    OBPRECONDITION([ODOObject superclass] == [OFObject class]);
+    OFObjectWillChangeValueForKey = [OFObject instanceMethodForSelector:@selector(willChangeValueForKey:)];
+    OFObjectDidChangeValueForKey = [OFObject instanceMethodForSelector:@selector(didChangeValueForKey:)];
+}
+
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
 {
     return NO;
@@ -38,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)shouldIncludeSnapshotForTransientCalculatedProperty:(ODOProperty *)property;
 {
     return YES;
+}
+
++ (void)entityLoaded:(ODOEntity *)entity;
+{
+    // For subclasses.
 }
 
 + (ODOEntity *)entity;
@@ -138,13 +156,13 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(CFArrayRef)snapshot;
+- (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(ODOObjectSnapshot *)snapshot;
 {
     OBPRECONDITION(context);
     OBPRECONDITION(objectID);
     OBPRECONDITION(ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER == nil); // since we use calloc to start our _values
     OBPRECONDITION(snapshot);
-    OBPRECONDITION((CFIndex)[[[objectID entity] snapshotProperties] count] == CFArrayGetCount(snapshot));
+    OBPRECONDITION([[[objectID entity] snapshotProperties] count] == ODOObjectSnapshotValueCount(snapshot));
     
     self = [super init];
     if (self == nil) {
@@ -169,13 +187,14 @@ NS_ASSUME_NONNULL_BEGIN
     OBPRECONDITION(!_ODOObjectHasValues(self));
 
     OBPRECONDITION(_objectID != nil); // This doesn't get cleared when the object is invalidated.  Notification listeners need to know the entity/pk of deleted objects.
-    OBPRECONDITION(_keysForPropertiesBeingCalculated == nil);
+    OBPRECONDITION(_propertyBeingCalculated.single == nil);
 
     _ODOObjectReleaseValuesIfPresent(self); // Just in case
 
     [_editingContext release];
     [_objectID release];
-    [_keysForPropertiesBeingCalculated release];
+
+    [_propertyBeingCalculated.single release];
     
     [super dealloc];
 }
@@ -235,71 +254,101 @@ not_handled:
     ODOObjectWillAccessValueForKey(self, key);
 }
 
-- (void)didAccessValueForKey:(NSString *)key;
+static void _ODOObjectWillChangeValueForProperty(ODOObject *self, ODOProperty *prop, NSString *key)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    // See commentary in __inline_ODOObjectWillAccessValueForKey()
-    if (key != nil && ![key isEqualToString:_objectID.entity.primaryKeyAttribute.name]) {
-        OBPRECONDITION(![self isDeleted] || [_editingContext _isBeingDeleted:self]);
+    OBASSERT(prop);
+    OBASSERT(!self->_flags.invalid);
+        
+    if (self->_flags.isFault) {
+        OBASSERT(![self isInserted]);
+
+        // Setting before looking at anything; clear the fault first
+        [self willAccessValueForKey:key];
+
+        // fall through and mark the object updated
     }
-#endif
-    
-    // Nothing.
+
+    // If we are inserted recently, _objectWillBeUpdated: will do nothing.  But if we've been inserted, -processPendingChanges has been called and *then* we get updated, we'll be put in the recently updated set.  Let ODOEditingContext sort it out.
+    // TODO: Track a flag that says whether we are already in the updated (or inserted) set?
+
+    // If we are being fetched, allow editing transient properties w/o registering as updated.  Non-modeled properties (caches of various sorts) will miss this by virtue of the key not mapping to a property.
+    OBASSERT(!self->_flags.changeProcessingDisabled || [prop isTransient]);
+    if (!self->_flags.changeProcessingDisabled)
+        [self->_editingContext _objectWillBeUpdated:self];
 }
 
-static void ODOObjectWillChangeValueForProperty(ODOObject *self, ODOProperty *prop, NSString *key)
+// Called for non-property changes as well as property changes.
+static void ODOObjectWillChangeValueForKey(ODOObject *object, NSString *key)
 {
-    if (prop) {
-        OBASSERT(!self->_flags.invalid);
-        
-        if (self->_flags.isFault) {
-            OBASSERT(![self isInserted]);
-            
-            // Setting before looking at anything; clear the fault first
-            [self willAccessValueForKey:key];
-            [self didAccessValueForKey:key];
-            
-            // fall through and mark the object updated
-        }
-        
-        // If we are inserted recently, _objectWillBeUpdated: will do nothing.  But if we've been inserted, -processPendingChanges has been called and *then* we get updated, we'll be put in the recently updated set.  Let ODOEditingContext sort it out.
-        // TODO: Track a flag that says whether we are already in the updated (or inserted) set?
-        
-        // If we are being fetched, allow editing transient properties w/o registering as updated.  Non-modeled properties (caches of various sorts) will miss this by virtue of the key not mapping to a property.
-        OBASSERT(!self->_flags.changeProcessingDisabled || [prop isTransient]);
-        if (!self->_flags.changeProcessingDisabled)
-            [self->_editingContext _objectWillBeUpdated:self];
+    if (!object->_flags.changeProcessingDisabled && object->_observationInfo != NULL) {
+        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
+        // If no one is listening, don't call super. Some of our subclasses do work though, so we can't just not call this in setters (and there may be direct callers).
+        OBASSERT(!object->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
+        OBCallVoidIMPWithObject(OFObjectWillChangeValueForKey, object, @selector(willChangeValueForKey:), key);
     }
 }
 
-static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
+static void ODOObjectDidChangeValueForKey(ODOObject *object, NSString *key)
 {
-    ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
-    ODOObjectWillChangeValueForProperty(self, prop, key);
+    OBASSERT_IF([[object->_objectID entity] propertyNamed:key], !object->_flags.isFault, "Cleared in 'will'");
+
+    if (!object->_flags.changeProcessingDisabled && object->_observationInfo != NULL) {
+        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
+        OBASSERT(!object->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
+        OBCallVoidIMPWithObject(OFObjectDidChangeValueForKey, object, @selector(didChangeValueForKey:), key);
+    }
+}
+
++ (void)addChangeActionsForProperty:(ODOProperty *)property_ willActions:(ODOChangeActions *)willActions didActions:(ODOChangeActions *)didActions;
+{
+    NSString *key = property_.name;
+
+    [willActions append:^(ODOObject *object, ODOProperty *property){
+        _ODOObjectWillChangeValueForProperty(object, property, key);
+        ODOObjectWillChangeValueForKey(object, key);
+    }];
+
+    [didActions append:^(ODOObject *object, ODOProperty *property){
+        ODOObjectDidChangeValueForKey(object, key);
+    }];
+}
+
+// Analog for -{will,did}ChangeValueForKey: when you already have the property (since these can't be subclassed on ODOObject).
+void ODOObjectWillChangeValueForProperty(ODOObject *object, ODOProperty *property)
+{
+    for (ODOObjectPropertyChangeAction action in ODOPropertyWillChangeActions(property)) {
+        action(object, property);
+    }
+}
+void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property)
+{
+    for (ODOObjectPropertyChangeAction action in ODOPropertyDidChangeActions(property)) {
+        action(object, property);
+    }
 }
 
 - (void)willChangeValueForKey:(NSString *)key;
 {
-    ODOObjectWillChangeValueForKey(self, key);
-    if (!self->_flags.changeProcessingDisabled) {
-        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
-        OBASSERT(!self->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
-        [super willChangeValueForKey:key];
+    ODOProperty *property = [[self->_objectID entity] propertyNamed:key];
+
+    if (property) {
+        ODOObjectWillChangeValueForProperty(self, property);
+    } else {
+        ODOObjectWillChangeValueForKey(self, key);
     }
 }
 
-#ifdef OMNI_ASSERTIONS_ON
 - (void)didChangeValueForKey:(NSString *)key;
 {
-    if ([[self->_objectID entity] propertyNamed:key])
-        OBASSERT(!_flags.isFault); // Cleared in 'will'
-    if (!self->_flags.changeProcessingDisabled) {
-        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
-        OBASSERT(!self->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
-        [super didChangeValueForKey:key];
+    // TODO: Not great that we're looking up the property here where we didn't have to before.
+    ODOProperty *property = [[self->_objectID entity] propertyNamed:key];
+
+    if (property) {
+        ODOObjectDidChangeValueForProperty(self, property);
+    } else {
+        ODOObjectDidChangeValueForKey(self, key);
     }
 }
-#endif    
 
 // Even if the only change to an object is to a to-many, it needs to be marked updated so it will get notified on save and so it will be included in the updated object set when ODOEditingContext processes changes or saves.
 - (void)willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)inMutationKind usingObjects:(NSSet *)inObjects;
@@ -324,7 +373,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     }
 
     if (prop != nil) {
-        ODOObjectWillChangeValueForProperty(self, prop, key);
+        _ODOObjectWillChangeValueForProperty(self, prop, key);
     }
     
     [super willChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
@@ -364,7 +413,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
         ODOProperty *prop = [entity propertyNamed:keyPath];
         id value = ODOObjectPrimitiveValueForProperty(self, prop);
         if (value == nil) {
-            value = [self calculateValueForKey:keyPath];
+            value = [self calculateValueForProperty:prop];
             ODOObjectSetPrimitiveValueForProperty(self, value, prop);
         }
     }
@@ -388,18 +437,19 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     ODOObjectSetPrimitiveValueForProperty(self, value, prop);
 }
 
-- (nullable id)calculateValueForKey:(NSString *)key;
+- (nullable id)calculateValueForProperty:(ODOProperty *)property;
 {
-    OBPRECONDITION(key.length > 0);
-    
-    NSString *selectorString = [NSString stringWithFormat:@"calculateValueFor%@%@", [key substringToIndex:1].capitalizedString, [key substringFromIndex:1]];
-    SEL selector = NSSelectorFromString(selectorString);
+    OBPRECONDITION(property != nil);
+    OBPRECONDITION(ODOPropertyFlags(property).transient && ODOPropertyFlags(property).calculated);
+    OBPRECONDITION(property->_sel.calculate != NULL);
 
-    if ([self respondsToSelector:selector]) {
-        return OBSendObjectReturnMessage(self, selector);
+    IMP calculate = ODOPropertyCalculateImpl(property);
+    if (calculate) {
+        OBASSERT(property->_sel.calculate != NULL);
+        return OBCallObjectReturnIMP(calculate, self, property->_sel.calculate);
     }
     
-    OBASSERT_NOT_REACHED("Unhandled value for key: %@ and/or missing implementation of -%@.", key, selectorString);
+    OBASSERT_NOT_REACHED("Unhandled value for key: %@ and/or missing implementation of -%@.", property.name, NSStringFromSelector(property->_sel.calculate));
     return nil;
 }
 
@@ -450,21 +500,16 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     [self didChangeValueForKey:key];
 }
 
-- (nullable id)valueForKey:(NSString *)key;
+id _Nullable ODOObjectValueForProperty(ODOObject *self, ODOProperty *prop)
 {
-    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
-    if (prop == nil) {
-        return [super valueForKey:key];
-    }
-
     IMP getter = ODOPropertyGetterImpl(prop);
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    
+
     // Avoid looking up the property again.
     if (getter == (IMP)ODOGetterForUnknownOffset) {
         return ODODynamicValueForProperty(self, prop);
     }
-    
+
     if (!flags.relationship && flags.scalarAccessors) {
         // Make sure we go through the user-defined getter, if appropriate
         return ODOGetScalarValueForProperty(self, prop);
@@ -474,20 +519,23 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     return OBCallObjectReturnIMP(getter, self, sel);
 }
 
-- (void)setValue:(nullable id)value forKey:(NSString *)key;
+- (nullable id)valueForKey:(NSString *)key;
 {
-    ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
+    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
     if (prop == nil) {
-        [super setValue:value forKey:key];
-        return;
+        return [super valueForKey:key];
     }
+    return ODOObjectValueForProperty(self, prop);
+}
 
+void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *prop)
+{
     // We only prevent write access via the generic KVC method for now.  The issue is that we want to allow a class to redefined a property as writable internally if it wants, so it should be able to use 'self.foo = value' (going through the dynamic or any self-defined method). But subclasses could still -setValue:forKey: and get away with it w/o a warning. This does prevent the class itself from using generic KVC, but hopefully that is rare enough for this to be a good tradeoff.
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     if (flags.calculated) {
-        OBRejectInvalidCall(self, _cmd, @"Attempt to -setValue:forKey: on the calculated key '%@'.", key);
+        OBRejectInvalidCall(self, @selector(setValue:forKey:), @"Attempt to -setValue:forKey: on the calculated key '%@'.", prop.name);
     }
-    
+
     IMP setter = ODOPropertySetterImpl(prop);
     SEL sel = ODOPropertySetterSelector(prop);
     if (setter == nil) {
@@ -495,7 +543,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
         [self doesNotRecognizeSelector:sel];
         OBAnalyzerNotReached(); // <http://llvm.org/bugs/show_bug.cgi?id=9486> -doesNotRecognizeSelector: not flagged as being "no return"
     }
-    
+
     // Avoid looking up the property again
     if (setter == (IMP)ODOSetterForUnknownOffset) {
         ODODynamicSetValueForProperty(self, sel, prop, value);
@@ -507,40 +555,61 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     }
 }
 
+- (void)setValue:(nullable id)value forKey:(NSString *)key;
+{
+    ODOProperty *prop = [[self->_objectID entity] propertyNamed:key];
+    if (prop == nil) {
+        [super setValue:value forKey:key];
+        return;
+    }
+    ODOObjectSetValueForKey(self, value, prop);
+}
+
 // Subclasses should call this before doing anything in their own implementation, otherwise, this might override any setup they do.
++ (void)addDefaultAttributeValueActions:(NSMutableArray <ODOObjectSetDefaultAttributeValues> *)actions;
+{
+    [actions addObject:^(ODOObject *object){
+        ODOEntity *entity = object.entity;
+        NSArray <ODOAttribute *> *attributes = entity.snapshotAttributes;
+
+        // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
+        // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.
+
+        [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
+            ODOObjectWillChangeValueForProperty(object, attr);
+        }];
+
+        [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
+            // Model loading code ensures that the primary key attribute doesn't have a default value
+            // Set this even if the default value is nil in case we are re-establishing default values
+
+            BOOL isTransientCalculated = [attr isTransient] && [attr isCalculated];
+
+            if (isTransientCalculated) {
+                // When setting the default value, avoid calculating the value when ODOObjectSetPrimitiveValueForProperty queries the previous value.
+                [object _setIsCalculatingValueForProperty:attr];
+            }
+
+            ODOObjectSetPrimitiveValueForProperty(object, attr.defaultValue, attr); // Bypass this and set the primitive value to avoid and setter.
+
+            if (isTransientCalculated) {
+                [object _clearIsCalculatingValueForProperty:attr];
+            }
+        }];
+
+        [attributes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
+            ODOObjectDidChangeValueForProperty(object, attr);
+        }];
+    }];
+}
+
 - (void)setDefaultAttributeValues;
 {
-    ODOEntity *entity = self.entity;
-    NSArray <ODOAttribute *> *attributes = entity.snapshotAttributes;
+    ODOEntity *entity = [_objectID entity];
 
-    // Send all the -willChangeValueForKey: notifications, change all the values, then send all the -didChangeValueForKey: notifications.
-    // This is necessary because side effects of -didChangeValueForKey: may cause reading of properties which don't have a default value yet. We expect to have default values for required scalars, and must ensure that they are set before they are accessed.
-    
-    [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
-        [self willChangeValueForKey:attr.name];
-    }];
-
-    [attributes enumerateObjectsWithOptions:0 usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
-        // Model loading code ensures that the primary key attribute doesn't have a default value
-        // Set this even if the default value is nil in case we are re-establishing default values
-
-        BOOL isTransientCalculated = [attr isTransient] && [attr isCalculated];
-        
-        if (isTransientCalculated) {
-            // When setting the default value, avoid calculating the value when ODOObjectSetPrimitiveValueForProperty queries the previous value.
-            [self _setIsCalculatingValueForKey:attr.name];
-        }
-
-        ODOObjectSetPrimitiveValueForProperty(self, attr.defaultValue, attr); // Bypass this and set the primitive value to avoid and setter.
-
-        if (isTransientCalculated) {
-            [self _clearIsCalculatingValueForKey:attr.name];
-        }
-    }];
-
-    [attributes enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(ODOAttribute *attr, NSUInteger index, BOOL *stop){
-        [self didChangeValueForKey:attr.name];
-    }];
+    for (ODOObjectSetDefaultAttributeValues action in entity.defaultAttributeValueActions) {
+        action(self);
+    }
 }
 
 - (BOOL)isAwakingFromInsert;
@@ -634,7 +703,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 
 - (void)willSave;
 {
-    // Nothing; this is for subclasses
+    _flags.lastSaveWasDeletion = [self isDeleted] ? 1 : 0;
 }
 
 - (void)willInsert;
@@ -911,6 +980,33 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return _ODOObjectIsUndeletable(self);
 }
 
+- (BOOL)lastSaveWasDeletion;
+{
+    // Since the same object gets retained and re-inserted when undoing a delete; we need to check for re-insertion.
+    if ([self isInserted])
+        return NO;
+    return _flags.lastSaveWasDeletion;
+}
+
+// This tries to answer the question "will this explode if I do something that would unfault it".  This can happen due to deleting the object and saving, or invalidating the managed object context.
+- (BOOL)hasBeenDeletedOrInvalidated;
+{
+    if (_flags.invalid) {
+        return YES;
+    }
+
+    // This can be the case when the context has been invalidated.
+    if (_editingContext == nil)
+        return YES;
+
+
+    // In the process of being deleted or already done
+    if ([_editingContext isDeleted:self] || _flags.lastSaveWasDeletion)
+        return YES;
+
+    return NO;
+}
+
 // Possibly faster alternative to -changedValues (for small numbers of keys).  Returns NO if the object is inserted, YES if deleted (though a previously nil property might be "nil" after deletion in some sense, it is a whole new level of nil).  The deleted case probably shouldn't happen anyway.
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
 {
@@ -922,7 +1018,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         return ([self valueForKey:key] != nil);
     }
     
-    NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
+    ODOObjectSnapshot *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot) {
         // We are either inserted or totally unmodified
         return NO;
@@ -943,11 +1039,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         return NO;
     }
     
-    id oldValue = [snapshot objectAtIndex:snapshotIndex];
+    id oldValue = ODOObjectSnapshotGetValueAtIndex(snapshot, snapshotIndex);
     
     [self willAccessValueForKey:key];
     id newValue = ODOObjectPrimitiveValueForProperty(self, prop);
-    [self didAccessValueForKey:key];
     
     if ([prop isKindOfClass:[ODORelationship class]]) {
         ODORelationship *rel = (ODORelationship *)prop;
@@ -975,7 +1070,18 @@ static void _validateRelatedObjectClass(const void *value, void *context)
  We can emulate the non-transient changes for now, but we _are_ snapshotting them for undo so there is no reason not to return them.
  
  */
+
 - (nullable NSDictionary *)changedValues;
+{
+    return [self changedValuesIncludingDerived:YES];
+}
+
+- (nullable NSDictionary *)changedNonDerivedValues;
+{
+    return [self changedValuesIncludingDerived:NO];
+}
+
+- (nullable NSDictionary *)changedValuesIncludingDerived:(BOOL)includeDerived;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
@@ -983,7 +1089,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     // CoreData's version doesn't return changes to transient attributes.  Their documentation isn't clear as to what happens for inserted objects -- are all the values changed?  None?
     // CoreData's version mentions something about not firing faults -- unclear if we can deal with faults.
     
-    NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
+    ODOObjectSnapshot *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot) {
         if ([self isInserted]) {
             // Does inserting mean all the values are changed or none? We'll fall through and report all values as changes (or at least if they are different from nil).
@@ -994,24 +1100,22 @@ static void _validateRelatedObjectClass(const void *value, void *context)
             return nil;
         }
     }
-    
-    NSArray *snapshotProperties = [[_objectID entity] snapshotProperties];
-    NSUInteger propIndex = [snapshotProperties count];
-    
+
+    ODOEntity *entity = _objectID.entity;
+    NSArray *snapshotProperties = includeDerived ? entity.snapshotProperties : entity.nonDerivedSnapshotProperties;
+
     // The dictionary we return will have a short lifetime and we want to avoid time spent re-hashing as the dictionary grows (particularly for inserts where we report all the properties as changed). Maybe we should stop doing that...
 
-    NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:propIndex];
-    while (propIndex--) {
-        ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
+    NSMutableDictionary *changes = [NSMutableDictionary dictionaryWithCapacity:[snapshotProperties count]];
+    for (ODOProperty *prop in snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        OBASSERT(flags.snapshotIndex == propIndex);
-        
+
         // CoreData doesn't return transient properties from this method.
         if (flags.transient)
             continue;
-        
-        id oldValue = [snapshot objectAtIndex:propIndex];
-        id newValue = _ODOObjectValueAtIndex(self, propIndex);
+
+        id oldValue = snapshot ? ODOObjectSnapshotGetValueAtIndex(snapshot, flags.snapshotIndex) : nil;
+        id newValue = _ODOObjectValueAtIndex(self, flags.snapshotIndex);
         
         // early bail on equality
         if (OFISEQUAL(oldValue, newValue))
@@ -1048,28 +1152,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         if (newValue == nil || OFISNULL(newValue))
             newValue = [NSNull null];
         
-        [changes setObject:newValue forKey:[prop name]];
+        changes[prop.name] = newValue;
     }
     
     return changes;
-}
-
-- (nullable NSDictionary *)changedNonDerivedValues;
-{
-    NSDictionary *changedValues = [self changedValues];
-    if ([changedValues count] == 0) {
-        return changedValues;
-    }
-    NSMutableDictionary *result = [NSMutableDictionary dictionary];
-    
-    NSSet *derivedPropertyNameSet = [[self entity] derivedPropertyNameSet];
-    for (NSString *key in changedValues) {
-        if (![derivedPropertyNameSet member:key]) {
-            result[key] = changedValues[key];
-        }
-    }
-    
-    return result;
 }
 
 - (nullable id)lastProcessedValueForKey:(NSString *)key;
@@ -1077,7 +1163,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
     
-    NSArray *snapshot = [_editingContext _lastProcessedPropertySnapshotForObjectID:_objectID];
+    ODOObjectSnapshot *snapshot = [_editingContext _lastProcessedPropertySnapshotForObjectID:_objectID];
     if (snapshot == nil && ![self isInserted]) {
         snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     }
@@ -1095,7 +1181,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return ODOObjectSnapshotValueForKey(self, _editingContext, [_editingContext _committedPropertySnapshotForObjectID:_objectID], key, NULL);
 }
 
-_Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, NSArray *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
+_Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *editingContext, ODOObjectSnapshot *snapshot, NSString *key, _Nullable ODOObjectSnapshotFallbackLookupHandler fallbackLookupHandler)
 {
     ODOProperty *prop = [[self.objectID entity] propertyNamed:key];
     if (prop == nil) {
@@ -1114,12 +1200,10 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
     if (!snapshot) {
         // Inserted or never modified.  This may perform lazy creation on a fault.
         [self willAccessValueForKey:key];
-        id value = ODOObjectPrimitiveValueForProperty(self, prop);
-        [self didAccessValueForKey:key];
-        return value;
+        return ODOObjectPrimitiveValueForProperty(self, prop);
     }
     
-    id value = [snapshot objectAtIndex:flags.snapshotIndex];
+    id value = ODOObjectSnapshotGetValueAtIndex(snapshot, flags.snapshotIndex);
 
     if (value != nil && flags.relationship && !flags.toMany) {
         if (![value isKindOfClass:[ODOObject class]]) {
@@ -1158,7 +1242,7 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
     // CoreData's method says it only returns persistent properties.  Also, supposedly an input of nil returns all the properties more efficiently.
     // It isn't clear what is supposed to happen for to-many relationships.  We'll implement this to return a full dictionary in all cases, using a special dictionary class.
 #if 0    
-    NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
+    ODOObjectSnapshot *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot)
         snapshot = _ODOObjectCreatePropertySnapshot(self);
 #endif
@@ -1333,37 +1417,42 @@ BOOL ODOSetInt32PropertyIfChanged(ODOObject *object, NSString *key, int32_t valu
     return YES;
 }
 
-static id _ODOGetPrimitiveProperty(ODOObject *object, ODOProperty *property, NSString *key)
+static id _ODOGetPrimitiveProperty(ODOObject *object, ODOProperty *property)
 {
-    [object willAccessValueForKey:key];
-    id value = ODOObjectPrimitiveValueForProperty(object, property);
-    [object didAccessValueForKey:key];
-    return value;
+    ODOObjectWillAccessValueForKey(object, property.name);
+    return ODOObjectPrimitiveValueForProperty(object, property);
 }
 
 id ODOGetPrimitiveProperty(ODOObject *object, NSString *key)
 {
     ODOProperty *prop = [[object entity] propertyNamed:key];
-    return _ODOGetPrimitiveProperty(object, prop, key);
+    return _ODOGetPrimitiveProperty(object, prop);
 }
 
 
-BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue)
+BOOL ODOSetPrimitivePropertyWithKeyIfChanged(ODOObject *object, NSString *key, _Nullable id value, _Nullable id * _Nullable outOldValue)
 {
     ODOProperty *prop = [[object entity] propertyNamed:key];
-    id oldValue = _ODOGetPrimitiveProperty(object, prop, key);
-    
+    return ODOSetPrimitivePropertyIfChanged(object, prop, value, outOldValue);
+}
+
+BOOL ODOSetPrimitivePropertyIfChanged(ODOObject *object, ODOProperty *prop, _Nullable id value, _Nullable id * _Nullable outOldValue)
+{
+    id oldValue = _ODOGetPrimitiveProperty(object, prop);
+
     if (outOldValue)
         *outOldValue = [[oldValue retain] autorelease];
-    
+
     if (OFISEQUAL(value, oldValue))
         return NO;
-    
-    [object willChangeValueForKey:key];
+
+    ODOObjectWillChangeValueForProperty(object, prop);
     ODOObjectSetPrimitiveValueForProperty(object, value, prop);
-    [object didChangeValueForKey:key];
+    ODOObjectDidChangeValueForProperty(object, prop);
+
     return YES;
 }
+
 
 @end
 

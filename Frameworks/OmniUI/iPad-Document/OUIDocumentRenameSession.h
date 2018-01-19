@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 // Helper for rename operations in OUIDocumentPickerViewController
 @interface OUIDocumentRenameSession : NSObject
 
-- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView;
+- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView nameTextField:(UITextField *)nameTextField;
 
 @property(nonatomic,readonly) OUIDocumentPickerItemView *itemView;
 @property(nonatomic) CGRect origMetadataFrame;

@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,10 +29,21 @@ extern NSString * const ODSFileItemInfoKey;
 
 @end
 
+@protocol ODSFileItem <NSObject>
+@property(readonly,nonatomic) NSURL *fileURL;
+@property(copy,nonatomic) OFFileEdit *fileEdit;
+@property(readonly,nonatomic) NSString *fileType;
+@property(readonly,nonatomic) NSDate *fileModificationDate;
+@property(nonatomic,readonly) BOOL isValid;
+@property(nonatomic) BOOL isDownloaded;
+@property(weak,nonatomic) ODSScope *scope;
+- (NSString *)name;
+@end
+
 // destinationEditOrNil is nil if the copy failed
 typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *destinationURL, ODSFileItemEdit *destinationEditOrNil, NSError *errorOrNil);
 
-@interface ODSFileItem : ODSItem <ODSItem>
+@interface ODSFileItem : ODSItem <ODSItem, ODSFileItem>
 
 + (NSString *)displayNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;

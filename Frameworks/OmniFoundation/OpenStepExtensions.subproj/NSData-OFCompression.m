@@ -1,4 +1,4 @@
-// Copyright 1997-2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSData (OFCompression)
 
 - (BOOL)mightBeCompressed;
@@ -19,7 +21,7 @@ RCS_ID("$Id$")
     return OFDataMightBeCompressed((CFDataRef)self);
 }
 
-- (NSData *)compressedData:(NSError **)outError;
+- (nullable NSData *)compressedData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     CFDataRef result = OFDataCreateCompressedData((OB_BRIDGE CFDataRef)self, outError? &error : NULL);
@@ -31,7 +33,7 @@ RCS_ID("$Id$")
     return CFBridgingRelease(result);
 }
 
-- (NSData *)decompressedData:(NSError **)outError;
+- (nullable NSData *)decompressedData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     CFDataRef result = OFDataCreateDecompressedData(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL);
@@ -44,7 +46,7 @@ RCS_ID("$Id$")
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSData *)compressedBzip2Data:(NSError **)outError;
+- (nullable NSData *)compressedBzip2Data:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     NSData *result = CFBridgingRelease(OFDataCreateCompressedBzip2Data((OB_BRIDGE CFDataRef)self, outError? &error : NULL));
@@ -56,7 +58,7 @@ RCS_ID("$Id$")
     return result;
 }
 
-- (NSData *)decompressedBzip2Data:(NSError **)outError;
+- (nullable NSData *)decompressedBzip2Data:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     NSData *result = CFBridgingRelease(OFDataCreateDecompressedBzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL));
@@ -69,7 +71,7 @@ RCS_ID("$Id$")
 }
 #endif
 
-- (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
+- (nullable NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     NSData *result = CFBridgingRelease(OFDataCreateCompressedGzipData((OB_BRIDGE CFDataRef)self, includeHeader, level, outError? &error : NULL));
@@ -81,7 +83,7 @@ RCS_ID("$Id$")
     return result;
 }
 
-- (NSData *)decompressedGzipData:(NSError **)outError;
+- (nullable NSData *)decompressedGzipData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
     NSData *result = CFBridgingRelease(OFDataCreateDecompressedGzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL));
@@ -94,3 +96,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

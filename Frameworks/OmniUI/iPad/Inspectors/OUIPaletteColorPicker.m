@@ -213,6 +213,8 @@ RCS_ID("$Id$");
 {
     [super themedAppearanceDidChange:changedAppearance];
     
+    self.view.backgroundColor = OUIInspectorAppearance.appearance.InspectorBackgroundColor;
+    
     for (UIView *view in _themeViews) {
         if ([view isKindOfClass:[UILabel class]]) {
             UILabel *label = OB_CHECKED_CAST(UILabel, view);

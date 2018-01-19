@@ -11,6 +11,7 @@
 
 #import <OmniUI/OUIInspectorDelegate.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
+#import <OmniUI/OUIThemedAppearance.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
 
@@ -35,7 +36,7 @@ extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotificatio
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 #pragma mark - OUIInspector
-@interface OUIInspector : NSObject
+@interface OUIInspector : NSObject <OUIThemedAppearanceClient>
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 + (UIBarButtonItem *)inspectorOUIBarButtonItemWithTarget:(id)target action:(SEL)action;

@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,7 +70,7 @@ extern NSString * const ODOUpdatedObjectsKey; // All the updated objects
 extern NSString * const ODOMateriallyUpdatedObjectsKey; // A subset of the updated objects where each object has -changedNonDerivedChangedValue
 extern NSString * const ODOMateriallyUpdatedObjectPropertiesKey; // An NSMapTable whose keys are the materially updated objects (see above) and whose values are dictionaries indicating the changed key/value pairs on the key object(s)
 extern NSString * const ODODeletedObjectsKey;
-extern NSString * const ODODeletedObjectPropertySnapshotsKey; // An NSDictionary mapping ODOObjectIDs for deleted objects to NSArray property snapshots, representing the last state those objects were in before deletion
+extern NSString * const ODODeletedObjectPropertySnapshotsKey; // An NSDictionary mapping ODOObjectIDs for deleted objects to ODOObjectSnapshots, representing the last state those objects were in before deletion
 
 extern NSNotificationName ODOEditingContextWillResetNotification;
 extern NSNotificationName ODOEditingContextDidResetNotification;

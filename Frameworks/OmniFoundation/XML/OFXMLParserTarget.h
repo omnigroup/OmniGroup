@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,6 +61,10 @@ typedef enum {
 
 - (void)parser:(OFXMLParser *)parser addWhitespace:(NSString *)whitespace;
 - (void)parser:(OFXMLParser *)parser addString:(NSString *)string;
+
+// If neither -parser:addWhitespace: nor -parser:addString: are implemented and this is, then it will be called for any string content (without regard for the whitespace behavior for the current element, since the content won't have been classified as whitespace or non-whitespace yet).
+- (void)parser:(OFXMLParser *)parser addCharacterBytes:(const void *)bytes length:(NSUInteger)length;
+
 - (void)parser:(OFXMLParser *)parser addComment:(NSString *)string;
 
 // Deprecated

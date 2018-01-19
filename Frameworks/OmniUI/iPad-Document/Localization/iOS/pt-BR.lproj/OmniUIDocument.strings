@@ -7,9 +7,6 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ não pode abrir este tipo de arquivo.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ Documentos";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
@@ -93,6 +90,15 @@
 
 /* export options title */
 "Choose Format" = "Escolher Formato";
+
+/* Clear from Recent Documents container toolbar item accessibility label. */
+"Clear" = "Limpar";
+
+/* clear button title */
+"Clear %ld Documents" = "Limpar %ld Documentos";
+
+/* remove button title */
+"Clear Document" = "Limpar Documento";
 
 /* doc picker custom accessibility action name */
 "Clear name field" = "Limpar campo de nome";
@@ -229,9 +235,6 @@
 /* Notice for the user about the last edit to a document (this device) */
 "Last edit: %@ on this device" = "Última modificação: %@ neste dispositivo";
 
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Vincular Documento Externo";
-
 /* Server Account Setup label: location */
 "Location" = "Localização";
 
@@ -306,11 +309,26 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "O OmniPresence está desativado nesta versão demo.";
 
+/* empty picker text for Recent Documents */
+"Open a document to add it to this view." = "Abra um documento para adicioná-lo a esta visualização.";
+
+/* Open External Document toolbar item accessibility label. */
+"Open External Document" = "Abrir Documento Externo";
+
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Abra este arquivo em outro dispositivo para configurar o OmniPresence nele.";
 
-/* Generic name for location of external documents */
-"Other" = "Outros";
+/* Menu title for selecting an external document provider when moving a file */
+"Other…" = "Outro...";
+
+/* Language section title */
+"ouiLanguagePicker.language" = "Idioma";
+
+/* Custom templates header title */
+"ouiTemplatePicker.customTemplatesHeader" = "Personalizado";
+
+/* Navigation bar title: Choose a Template */
+"ouiTemplatePicker.navigationTitle" = "Escolher um Modelo";
 
 /* Server Account Setup label: password */
 "Password" = "Senha";
@@ -324,14 +342,8 @@
 /* purchase now button title */
 "Purchase Now." = "Compre Agora.";
 
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Remover";
-
-/* remove button title */
-"Remove %ld Documents" = "Remover %ld Documentos";
-
-/* remove button title */
-"Remove Document" = "Remover Documento";
+/* Generic name for location of external documents */
+"Recent Documents" = "Documentos Recentes";
 
 /* rename button title */
 "Rename" = "Renomear";
@@ -355,7 +367,7 @@
 "Report Error" = "Relatar Erro";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar Documentos de Amostra";
+"Restore Sample Documents" = "Restaurar dos Docs. Amostra";
 
 /* Share menu title */
 "Restore to..." = "Restaurar para…";
@@ -417,10 +429,10 @@
 "Tap here to add a document without a template." = "Toque aqui para adicionar um documento sem um modelo.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Toque aqui, ou em + na barra de ferramentas, para adicionar um documento.";
+"Tap here, or on the + in the toolbar, to add a custom template." = "Toque aqui, ou em + na barra de ferramentas, para adicionar um modelo personalizado.";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Toque em + na barra de ferramentas para adicionar um documento armazenado no iCloud Drive ou fornecido por outro app.";
+/* empty picker button text */
+"Tap here, or on the + in the toolbar, to add a document." = "Toque aqui, ou em + na barra de ferramentas, para adicionar um documento.";
 
 /* file name label for template filte types */
 "Template:" = "Modelo:";
@@ -463,3 +475,6 @@
 
 /* Account validation status string. */
 "Validating account..." = "Validando conta…";
+
+/* empty picker button text */
+"When plug-ins are installed, they will appear here." = "Quando estiverem instalados, os plug-ins aparecerão aqui.";

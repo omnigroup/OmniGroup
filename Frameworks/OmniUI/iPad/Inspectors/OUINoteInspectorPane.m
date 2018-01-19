@@ -36,7 +36,7 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
     [super viewDidLoad];
     
     self.enterFullScreenButton.alpha = 0.0;
-    self.enterFullScreenButtonBackground.alpha = 0.0;
+    self.enterFullScreenBackground.alpha = 0.0;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChange:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
@@ -51,12 +51,12 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
     // If we're already fullscreen, no need for the enter full screen button
     if (self.presentingViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && isCurrentlyPresented) {
         self.enterFullScreenButton.hidden = YES;
-        self.enterFullScreenButtonBackground.hidden = YES;
+        self.enterFullScreenBackground.hidden = YES;
     } else {
         self.enterFullScreenButton.hidden = NO;
-        self.enterFullScreenButtonBackground.hidden = NO;
+        self.enterFullScreenBackground.hidden = NO;
         self.enterFullScreenButton.alpha = EnterFullScreenButtonStandardAlpha; // fade in
-        self.enterFullScreenButtonBackground.alpha = EnterFullScreenButtonStandardAlpha;
+        self.enterFullScreenBackground.alpha = EnterFullScreenButtonStandardAlpha;
     }
 
     // Larger left/right insets
@@ -115,8 +115,6 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 #pragma mark -
 #pragma mark Full Screen support
 
-@synthesize enterFullScreenButton = _enterFullScreenButton;
-
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source;
 {
     OUIFullScreenNoteTransition *transition = [[OUIFullScreenNoteTransition alloc] init];
@@ -171,8 +169,8 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
     }
     
     self.enterFullScreenButton.alpha = alpha;
-    self.enterFullScreenButtonBackground.alpha = alpha;
-
+    self.enterFullScreenBackground.alpha = alpha;
+    
     if (animated) {
         [UIView commitAnimations];
     }

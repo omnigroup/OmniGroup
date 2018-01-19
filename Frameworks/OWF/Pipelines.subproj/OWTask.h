@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,8 @@
 @class OWAddress, OWContentInfo;
 
 #import <Foundation/NSDate.h> // For NSTimeInterval
-#import <OmniFoundation/OFSimpleLock.h>
 #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
+#import <os/lock.h>
 
 typedef enum {
     OWPipelineInit,            // pipeline is freshly created
@@ -41,7 +41,7 @@ typedef enum {
     } taskFlags;
     OWPipelineState state;
 
-    OFSimpleLockType displayablesSimpleLock;
+    os_unfair_lock displayablesLock;
     NSString *compositeTypeString;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ extern NSString * const OFHTTPContentTypeHeaderKey;
 // Parses a parameterized header such as Content-Type or Refresh.  Returns the simple value, and places parameters into the dictionary.  On error returns what it has so far (doesn't raise an exception).  okSet is the set of characters which can occur in an unquoted value.
 + (NSString *)parseParameterizedHeader:(NSString *)aHeader intoDictionary:(OFMultiValueDictionary *)parameters valueChars:(NSCharacterSet *)okSet;
 
-- (NSArray *)stringArrayForKey:(NSString *)aKey;
+- (NSArray <NSString *> *)stringArrayForKey:(NSString *)aKey;
 - (NSString *)firstStringForKey:(NSString *)aKey;
 - (NSString *)lastStringForKey:(NSString *)aKey;
 - (OFMultiValueDictionary *)dictionarySnapshot;

@@ -637,6 +637,21 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         IGNORE_CRASH(@"LULookupDefinitionModule", @selector(_termWithOrigin:options:forRange:inString:withOptions:originProvider:inView:))
         IGNORE_CRASH(@"LUTextAccessor", @selector(rangeOfTermInString:containingOffset:language:partOfSpeech:))
 
+        /*
+         bug reporter #35995767
+         <bug:///151468> (Mac-OmniGraffle Crasher: -[NSView(NSInternal) _enableNeedsDisplayInRectNotifications] (in AppKit))
+         
+         Assertion Failed:
+         ---------------------------
+         Object: <GraphicView:0x1053c4a00>
+         Selector: _enableNeedsDisplayInRectNotifications
+         File: /BuildRoot/Library/Caches/com.apple.xbs/Sources/AppKit/AppKit-1561.10.101/AppKit.subproj/NSView.m
+         Line: 18288
+         Description: Unbalanced needs display in rect posting count.
+         ---------------------------
+         */
+        IGNORE_CRASH(@"GraphicView", @selector(_enableNeedsDisplayInRectNotifications))
+        IGNORE_CRASH(@"GraphicView", @selector(_disableNeedsDisplayInRectNotifications))
 #undef IGNORE_CRASH
 
         // XPC services (like the 'define' service) sometimes time out:

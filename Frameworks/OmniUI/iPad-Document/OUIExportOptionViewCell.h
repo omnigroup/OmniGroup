@@ -1,4 +1,4 @@
-// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,9 +9,13 @@
 
 #import <UIKit/UICollectionViewCell.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIExportOptionViewCell : UICollectionViewCell
 
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UILabel *label;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -27,14 +27,22 @@ open class DisclosableSliceGroup: NSObject {
 
     /// Computed property that returns groupSeparatorSlice, staticSlices, buttonSlice, and disclosableSlices.
     @objc /**REVIEW**/ public var allSlices: [OUIInspectorSlice] {
+        return self.allSlices(includingGroupSeparator: false)
+    }
+    
+    @objc public func allSlices(includingGroupSeparator shouldIncludeGroupSeparator: Bool) -> [OUIInspectorSlice] {
         var all = [OUIInspectorSlice]()
-        all.append(groupSeparatorSlice)
+        if (shouldIncludeGroupSeparator) {
+            all.append(groupSeparatorSlice)
+        }
         if (headerSlice != nil) {
             all.append(headerSlice!)
         }
         all.append(contentsOf: staticSlices)
-        all.append(buttonSlice)
-        all.append(contentsOf: disclosableSlices)
+        if disclosableSlices.count != 0 {
+            all.append(buttonSlice)
+            all.append(contentsOf: disclosableSlices)
+        }
         return all
     }
 
@@ -198,6 +206,17 @@ class DiscloseButtonSlice: OUIInspectorSlice {
             delegate.updateInterface(of: self, fromInspectedObjects: reason)
         }
     }
+
+    // MARK: - OUIThemedAppearanceClient
+    
+    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
+        super.themedAppearanceDidChange(appearance);
+        
+        let changedAppearance = appearance as! OUIInspectorAppearance
+        
+        view.backgroundColor = changedAppearance.inspectorBackgroundColor
+        button.setTitleColor(changedAppearance.tableCellTextColor, for:.normal)
+    }
 }
 
 @objc protocol DiscloseButtonSliceDelegate {
@@ -209,43 +228,41 @@ class DiscloseButtonSlice: OUIInspectorSlice {
 class DiscloseGroupHeaderSlice: OUIInspectorSlice {
     @objc /**REVIEW**/ let headerTitle: String
     @objc /**REVIEW**/ weak var delegate: DiscloseHeaderSliceDelegate?
-
+    @objc let titleLabel: UILabel
+    private let wrapperView = UIView()
+    
     @objc /**REVIEW**/ public init(headerTitle: String) {
         self.headerTitle = headerTitle
+        titleLabel = OUIAbstractTableViewInspectorSlice.headerLabel(withText: self.headerTitle)
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder aDecoder: NSCoder) {
         self.headerTitle = ""
+        titleLabel = OUIAbstractTableViewInspectorSlice.headerLabel(withText: self.headerTitle)
         super.init(coder: aDecoder)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        guard let titleLabel = OUIAbstractTableViewInspectorSlice.headerLabel(withText: self.headerTitle) else {
-            return
-        }
-
+        
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        let wrapperView = UIView()
         wrapperView.translatesAutoresizingMaskIntoConstraints = false
-        wrapperView.backgroundColor = UIColor.groupTableViewBackground
 
         view.addSubview(wrapperView)
         wrapperView.addSubview(titleLabel)
 
-        view.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 44).isActive = true
 
         wrapperView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         wrapperView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         wrapperView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
         wrapperView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        titleLabel.leadingAnchor.constraint(equalTo: wrapperView.leadingAnchor, constant: 15).isActive = true
-        titleLabel.trailingAnchor.constraint(equalTo: wrapperView.trailingAnchor).isActive = true
-        titleLabel.topAnchor.constraint(equalTo: wrapperView.topAnchor).isActive = true
-        titleLabel.bottomAnchor.constraint(equalTo: wrapperView.bottomAnchor).isActive = true
+        titleLabel.leadingAnchor.constraint(equalTo: wrapperView.safeAreaLayoutGuide.leadingAnchor, constant: 15).isActive = true
+        titleLabel.trailingAnchor.constraint(equalTo: wrapperView.safeAreaLayoutGuide.trailingAnchor).isActive = true
+        titleLabel.bottomAnchor.constraint(equalTo: wrapperView.bottomAnchor, constant:-10).isActive = true
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -260,6 +277,16 @@ class DiscloseGroupHeaderSlice: OUIInspectorSlice {
         return delegate.isAppropriate(self, inspectedObjects: objects)
     }
 
+    // MARK: - OUIThemedAppearanceClient
+    
+    open override func themedAppearanceDidChange(_ appearance: OUIThemedAppearance!) {
+        super.themedAppearanceDidChange(appearance);
+        
+        let changedAppearance = appearance as! OUIInspectorAppearance
+        
+        wrapperView.backgroundColor = changedAppearance.inspectorBackgroundColor
+        titleLabel.textColor = changedAppearance.tableCellTextColor
+    }
 }
 
 @objc protocol DiscloseHeaderSliceDelegate {
@@ -289,6 +316,11 @@ class DiscloseGroupSeparatorSlice: OUIInspectorSlice {
         return UIColor.clear
     }
 
+    override var wantsAutoConfiguredBottomSeparator: Bool {
+        get {
+            return false
+        }
+    }
 }
 
 protocol DiscloseGroupSeparatorSliceDelegate : class {

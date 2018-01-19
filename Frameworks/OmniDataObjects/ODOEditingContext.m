@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -235,7 +235,7 @@ static void ODOEditingContextInternalPromoteInsertToUpdate(ODOEditingContext *se
         [self->_recentlyUpdatedObjects addObject:object];
         [self->_recentlyInsertedObjects removeObject:object];
         
-        id snapshot = [self->_objectIDToCommittedPropertySnapshot objectForKey:object.objectID];
+        ODOObjectSnapshot *snapshot = [self->_objectIDToCommittedPropertySnapshot objectForKey:object.objectID];
         if (self->_objectIDToLastProcessedSnapshot == nil) {
             self->_objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
         }
@@ -771,7 +771,7 @@ static void ODOEditingContextDidDeleteObjects(ODOEditingContext *self, NSSet *de
     CFSetApplyFunction((CFSetRef)deleted, _forgetObjectApplier, self->_registeredObjectByID);
 }
 
-static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable insertedObjects, NSSet * _Nullable updatedObjects, NSSet * _Nullable deletedObjects, NSDictionary *committedPropertySnapshotByObjectID, NSDictionary *lastProcessedPropertySnapshotByObjectID)
+static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable insertedObjects, NSSet * _Nullable updatedObjects, NSSet * _Nullable deletedObjects, NSDictionary <ODOObjectID *, ODOObjectSnapshot *> *committedPropertySnapshotByObjectID, NSDictionary <ODOObjectID *, ODOObjectSnapshot *> *lastProcessedPropertySnapshotByObjectID)
 {
     // Making copies of these sets since we mutate _recentlyUpdatedObjects below while merging (at least for the call from -_internal_processPendingChanges
     NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] init];
@@ -822,7 +822,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
         NSMutableDictionary *deletedSnapshots = [[NSMutableDictionary alloc] init];
         for (ODOObject *deletedObject in set) {
             ODOObjectID *deletedID = deletedObject.objectID;
-            NSArray *snapshot = lastProcessedPropertySnapshotByObjectID[deletedID];
+            ODOObjectSnapshot *snapshot = lastProcessedPropertySnapshotByObjectID[deletedID];
             if (snapshot == nil) {
                 snapshot = committedPropertySnapshotByObjectID[deletedID];
             }
@@ -1730,7 +1730,7 @@ static void _recordChangesToUndoUpdate(const void *value, void *context)
     RecordChangesToUndoUpdateContext *ctx = context;
     
     ODOObjectID *objectID = [object objectID];
-    CFArrayRef snapshot = (CFArrayRef)[ctx->objectIDToLastProcessedSnapshot objectForKey:objectID];
+    ODOObjectSnapshot *snapshot = ctx->objectIDToLastProcessedSnapshot[objectID];
 
     // Might return NULL if all the 'changes' to this object are to to-many relationships.
     CFArrayRef diff = ODOObjectCreateDifferenceRecordFromSnapshot(object, snapshot);
@@ -1931,10 +1931,10 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
     NSUInteger insertIndex, insertCount = [objectIDsAndSnapshotsToInsert count];
     OBASSERT((insertCount % 2) == 0); // should be objectID/snapshot sets
     for (insertIndex = 0; insertIndex < insertCount; insertIndex += 2) {
-        ODOObjectID *objectID = [objectIDsAndSnapshotsToInsert objectAtIndex:insertIndex+0];
-        CFArrayRef snapshot = (CFArrayRef)[objectIDsAndSnapshotsToInsert objectAtIndex:insertIndex+1];
+        ODOObjectID *objectID = OB_CHECKED_CAST(ODOObjectID, objectIDsAndSnapshotsToInsert[insertIndex+0]);
+        ODOObjectSnapshot *snapshot = OB_CHECKED_CAST(ODOObjectSnapshot, objectIDsAndSnapshotsToInsert[insertIndex+1]);
 
-        DEBUG_UNDO(@"  insert objectID:%@ snapshot:%@", objectID, [(id)CFCopyDescription(snapshot) autorelease]);
+        DEBUG_UNDO(@"  insert objectID:%@ snapshot:%@", objectID, snapshot);
         
         ODOEntity *entity = [objectID entity];
         ODOObject *object = [[[entity instanceClass] alloc] initWithEditingContext:self objectID:objectID snapshot:snapshot];

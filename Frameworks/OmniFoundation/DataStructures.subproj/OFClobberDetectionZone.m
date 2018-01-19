@@ -1,4 +1,4 @@
-// Copyright 2001-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 
 #import <OmniFoundation/OFClobberDetectionZone.h>
 
-#import <OmniFoundation/OFSimpleLock.h>
 #import <OmniFoundation/OFBTree.h>
 
 #import <pthread.h>
@@ -18,6 +17,7 @@
 
 RCS_ID("$Id$")
 
+#error If this is resurrected, it should use os_unfair_lock, most likely.
 
 //#define USE_MUTEX
 
@@ -33,8 +33,8 @@ RCS_ID("$Id$")
 #define ZLOCK(zone) pthread_mutex_lock(&zone->lock)
 #define ZUNLOCK(zone) pthread_mutex_unlock(&zone->lock)
 #else
-#define ZLOCK(zone) OFSimpleLock(&zone->lock)
-#define ZUNLOCK(zone) OFSimpleUnlock(&zone->lock)
+#define ZLOCK(zone) os_unfair_lock_lock(&zone->lock)
+#define ZUNLOCK(zone) os_unfair_lock_unlock(&zone->lock)
 #endif
 
 
@@ -76,7 +76,7 @@ typedef struct _OFClobberDetectionZone {
 #ifdef USE_MUTEX
     pthread_mutex_t  lock;
 #else
-    OFSimpleLockType lock;
+    os_unfair_lock lock;
 #endif
 
     // All the blocks that are currently live live in this tree.
@@ -365,7 +365,7 @@ static malloc_zone_t *_OFClobberDetectionZoneCreate(void)
 #ifdef USE_MUTEX
     pthread_mutex_init(&zone->lock, NULL);
 #else
-    OFSimpleLockInit(&zone->lock);
+    zone->lock = OS_UNFAIR_LOCK_INIT;
 #endif
     
     OFBTreeInit(&zone->allocatedTree, vm_page_size, sizeof(OFClobberDetectionBlock *), _allocateTreeNode, _deallocateTreeNode, _compareBlockAddresses);

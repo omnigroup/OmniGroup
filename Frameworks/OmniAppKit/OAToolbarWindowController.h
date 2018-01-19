@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
 - (NSString *)templateItemIdentifier;
 
 // The list of item identifiers provided by this helper. The identifiers should be <name>.<extension>, where the name will be passed into the format strings in the template specified by templateItemIdentifier.
-- (NSArray<NSString *> *)allowedItems;
+- (NSArray<NSToolbarItemIdentifier> *)allowedItems;
 
 - (nullable OAToolbarItem *)finishSetupForToolbarItem:(OAToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 
@@ -55,12 +55,12 @@ typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
 - (OAToolbar *)toolbar;
 - (void)createToolbar;
 - (BOOL)isCreatingToolbar;
-- (nullable NSDictionary *)toolbarInfoForItem:(NSString *)identifier;
-- (nullable NSDictionary *)localizedToolbarInfoForItem:(NSString *)identifier;
+- (nullable NSDictionary *)toolbarInfoForItem:(NSToolbarItemIdentifier)identifier;
+- (nullable NSDictionary *)localizedToolbarInfoForItem:(NSToolbarItemIdentifier)identifier;
 
 // implement in subclasses to control toolbar
 - (NSString *)toolbarConfigurationName; // file name to lookup .toolbar plist
-- (NSString *)toolbarIdentifier; // identifier used for preferences - defaults to configurationName if unimplemented
+- (NSToolbarIdentifier)toolbarIdentifier; // identifier used for preferences - defaults to configurationName if unimplemented
 - (BOOL)shouldAllowUserToolbarCustomization;
 - (BOOL)shouldAutosaveToolbarConfiguration;
 - (NSToolbarDisplayMode)defaultToolbarDisplayMode;
