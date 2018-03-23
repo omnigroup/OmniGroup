@@ -45,6 +45,9 @@ class MultiPanePresenter: NSObject {
     private var overlayPresenter: MultiPaneSlidingOverlayPresenter? // keep this around until the presentation has completed, otherwise the overlaid panes will get generic dismiss animation.
     @objc /**REVIEW**/ weak var delegate: MultiPanePresenterDelegate?
     
+    // Doing a live resize of the sidebar seems to result in UIBarButtonItem's with customViews bounding around. Provide an opt out. <bug:///156110> (iOS-OmniPlan Bug: Undo button in the tool bar bounces when opening Inspector and might be related to this crasher)
+    @objc public var animatesSidebarLayout: Bool = true
+    
     @objc /**REVIEW**/ lazy var rightPinButton: UIBarButtonItem = {
         let image = UIImage(named: "OUIMultiPaneRightPinButton", in: OmniUIBundle, compatibleWith: nil)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
@@ -89,7 +92,7 @@ class MultiPanePresenter: NSObject {
             
             if gesture != nil { return } // TODO: decide if we want to bail here, or try to support this gesture to drive the expand/collapse animation. It might be confusing for users that they can gesture sometimes, but not others.
             let operation: MultiPanePresenterOperation = pane.isVisible ? .collapse : .expand
-            let animator = pane.sidebarAnimator(forOperation: operation)
+            let animator = pane.sidebarAnimator(forOperation: operation, animate:animatesSidebarLayout)
             var additionalAnimations: (()->())?
             if operation == .collapse {
                 additionalAnimations = self.delegate?.animationsToPerformAlongsideEmbeddedSidebarHiding?(atLocation: pane.location, withWidth: pane.width)
@@ -355,7 +358,7 @@ extension MultiPaneAnimator {
         return animator
     }
     
-    @objc /**REVIEW**/ func sidebarAnimator(forOperation operation: MultiPanePresenterOperation) -> UIViewPropertyAnimator {
+    @objc /**REVIEW**/ func sidebarAnimator(forOperation operation: MultiPanePresenterOperation, animate: Bool) -> UIViewPropertyAnimator {
         let animator = self.defaultAnimator
         guard operation == .expand || operation == .collapse else {
             assertionFailure("expected a expand/collapse operation type, not \(operation)")
@@ -380,8 +383,10 @@ extension MultiPaneAnimator {
                 assertionFailure("unexpected pane location for expand/collapse animation \(location)")
             }
         }
-        animator.addAnimations {
-            superview.layoutIfNeeded()
+        if (animate) {
+            animator.addAnimations {
+                superview.layoutIfNeeded()
+            }
         }
         
         return animator

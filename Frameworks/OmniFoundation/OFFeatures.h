@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,4 +16,12 @@
     #else
         #define OF_ENABLE_CDSA 0
     #endif
+#endif
+
+#if defined(OMNI_BUILDING_FOR_SERVER)
+    #define OF_ENABLE_NET_STATE 0
+#elif defined(OMNI_BUILDING_FOR_IOS) || defined(OMNI_BUILDING_FOR_MAC)
+    #define OF_ENABLE_NET_STATE 1
+#else
+    #error Unknown platform
 #endif

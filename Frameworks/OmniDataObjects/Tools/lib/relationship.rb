@@ -71,7 +71,7 @@ module OmniDataObjects
           return if !inherited_relationship.abstract_target?
         end
         kindof_attribute = abstract_target? ? "__kindof " : ""
-        f << "@property (nonatomic, nullable, readonly) NSSet<#{kindof_attribute}#{target_name} *> *#{name}#{attributes};\n"
+        f << "@property (nonatomic, readonly) NSSet<#{kindof_attribute}#{target_name} *> *#{name}#{attributes};\n"
       else
         if entity.abstract || abstract_target?
           # Hacky; we have abstract self relationships for parent children.  Abstract entities don't have their relationship destinations resolved since they don't point to something real. We can at least declare the type of the to-one as specifically as we know it. Declare it read-only though (with the __kindof qualifier), since we would prefer typechecking of the exact right class for writes.

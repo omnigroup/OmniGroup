@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,27 +58,8 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    /* From the docs:
-     ** All SQL statements prepared using sqlite3_prepare() or
-     ** sqlite3_prepare16() must be deallocated using sqlite3_finalize() before
-     ** this routine is called. Otherwise, SQLITE_BUSY is returned and the
-     ** database connection remains open.
-     */
-    int rc = sqlite3_close(_sqlite);
-    if (rc != SQLITE_OK) {
-        NSString *reason = [NSString stringWithFormat:@"Unable to disconnect from database at '%@'.", [_URL absoluteString]];
-        NSMutableDictionary *userInfo = [[@{ NSUnderlyingErrorKey : [NSError errorWithDomain:ODOSQLiteErrorDomain code:rc userInfo:nil] } mutableCopy] autorelease];
-        
-        if (rc == SQLITE_BUSY) {
-            NSString *suggestion = [NSString stringWithFormat:@"Make sure that all outstanding ODOSQLStatements using %p as their connection have been invalidated.", self];
-            [userInfo setObject:suggestion forKey:NSLocalizedRecoverySuggestionErrorKey];
-        }
-        
-        [[NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:userInfo] raise];
-    }
-    
-    _sqlite = NULL;
-    
+    OBPRECONDITION(_sqlite == NULL, "Must send -close: before releasing the connection");
+
     [_operationQueue release];
     
     [_URL release];
@@ -88,6 +69,44 @@ RCS_ID("$Id$");
 }
 
 #pragma mark API
+
+- (void)close;
+{
+    __block int rc;
+
+    [_operationQueue addOperationWithBlock:^{
+        /* From the docs:
+         ** All SQL statements prepared using sqlite3_prepare() or
+         ** sqlite3_prepare16() must be deallocated using sqlite3_finalize() before
+         ** this routine is called. Otherwise, SQLITE_BUSY is returned and the
+         ** database connection remains open.
+         */
+        rc = sqlite3_close(_sqlite);
+        if (rc == SQLITE_OK) {
+            _sqlite = NULL;
+        }
+    }];
+
+    /*
+     Must wait for the connection to really close. Otherwise a caller may expect it can remove the SQLite cache file. But this will produce an error if the SQLite database is still open (usually an issue in unit tests, but not always):
+
+     2018-03-19 10:47:25.394083-0700 xctest[14601:4352156] [logging] BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use: ...
+
+     */
+    [_operationQueue waitUntilAllOperationsAreFinished];
+
+    if (rc != SQLITE_OK) {
+        NSString *reason = [NSString stringWithFormat:@"Unable to disconnect from database at '%@'.", [_URL absoluteString]];
+        NSMutableDictionary *userInfo = [[@{ NSUnderlyingErrorKey : [NSError errorWithDomain:ODOSQLiteErrorDomain code:rc userInfo:nil] } mutableCopy] autorelease];
+
+        if (rc == SQLITE_BUSY) {
+            NSString *suggestion = [NSString stringWithFormat:@"Make sure that all outstanding ODOSQLStatements using %p as their connection have been invalidated.", self];
+            [userInfo setObject:suggestion forKey:NSLocalizedRecoverySuggestionErrorKey];
+        }
+
+        [[NSException exceptionWithName:NSInternalInconsistencyException reason:reason userInfo:userInfo] raise];
+    }
+}
 
 - (void)performSQLBlock:(ODOSQLPerformBlock)block;
 {

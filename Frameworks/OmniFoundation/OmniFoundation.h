@@ -49,10 +49,7 @@
 #import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
 #import <OmniFoundation/OFMutableBijection.h>
 #import <OmniFoundation/OFMutableKnownKeyDictionary.h>
-#import <OmniFoundation/OFNetChangeNotifier.h>
 #import <OmniFoundation/OFNetReachability.h>
-#import <OmniFoundation/OFNetStateNotifier.h>
-#import <OmniFoundation/OFNetStateRegistration.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFObservation.h>
@@ -81,6 +78,12 @@
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFWeakReference.h>
 //#import <OmniFoundation/OFXMLSignature.h> -- imports non-module headers
+
+#if OF_ENABLE_NET_STATE
+    #import <OmniFoundation/OFNetChangeNotifier.h>
+    #import <OmniFoundation/OFNetStateNotifier.h>
+    #import <OmniFoundation/OFNetStateRegistration.h>
+#endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 	#import <OmniFoundation/OFBTree.h>

@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,7 +103,7 @@ SEL OBSetterForName(const char *name)
     setString[1] = 'e';
     setString[2] = 't';
     memcpy(&setString[3], name, nameLength);
-    setString[3] = toupper(setString[3]);
+    setString[3] = (char)toupper(setString[3]);
 
     setString[3+nameLength] = ':';
     setString[4+nameLength] = 0;

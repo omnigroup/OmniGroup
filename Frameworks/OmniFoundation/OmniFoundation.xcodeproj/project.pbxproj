@@ -462,7 +462,6 @@
 		34A061F01EC110A60099028D /* OFExtent.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F82719107E904600458A71 /* OFExtent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A061F11EC110A60099028D /* OFMetricPrefixFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A061F21EC110A60099028D /* NSFileManager-OFSimpleExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3455B52E11116CCA00074705 /* NSFileManager-OFSimpleExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A061F31EC110A60099028D /* OFNetChangeNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C391FA2114C1B4E0049E917 /* OFNetChangeNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A061F41EC110A60099028D /* NSFileManager-OFExtendedAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E9EBCAC1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A061F51EC110A60099028D /* NSCache-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FD243A21D12189F009AB347 /* NSCache-OFExtensions.h */; };
 		34A061F61EC110A60099028D /* OFSaveType.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E07ED0116A4D170021863D /* OFSaveType.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -482,8 +481,6 @@
 		34A062041EC110A60099028D /* OFCompletionMatch.h in Headers */ = {isa = PBXBuildFile; fileRef = E218273A145605170097BBFE /* OFCompletionMatch.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A062051EC110A60099028D /* OFIndexPath.h in Headers */ = {isa = PBXBuildFile; fileRef = E2182735145604D60097BBFE /* OFIndexPath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A062061EC110A60099028D /* OFBindingPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 345272C514F092EF003151CA /* OFBindingPoint.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A062071EC110A60099028D /* OFNetStateNotifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 348C22D5162F28DD00EBFCB9 /* OFNetStateNotifier.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A062081EC110A60099028D /* OFNetStateRegistration.h in Headers */ = {isa = PBXBuildFile; fileRef = 348C22D7162F28DD00EBFCB9 /* OFNetStateRegistration.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A062091EC110A60099028D /* OFSubjectTargettingScriptCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FAED05C162F648F00F76783 /* OFSubjectTargettingScriptCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A0620A1EC110A60099028D /* OFWeakReference.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E324F163B131E00CEC076 /* OFWeakReference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A0620B1EC110A60099028D /* OFCredentials.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA2B8D15B6200E00228508 /* OFCredentials.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -711,7 +708,6 @@
 		34A062EC1EC110A60099028D /* OFMetricPrefixFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */; };
 		34A062ED1EC110A60099028D /* NSFileManager-OFSimpleExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3455B52F11116CCA00074705 /* NSFileManager-OFSimpleExtensions.m */; };
 		34A062EE1EC110A60099028D /* NSLocking-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34BDEA361DA45C70006389CF /* NSLocking-OFExtensions.swift */; };
-		34A062EF1EC110A60099028D /* OFNetChangeNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C391FA3114C1B4E0049E917 /* OFNetChangeNotifier.m */; };
 		34A062F01EC110A60099028D /* OFEnumNameTable-OFXMLArchiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 349CCB0D118F3BCC0069017B /* OFEnumNameTable-OFXMLArchiving.m */; };
 		34A062F11EC110A60099028D /* OFErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 344D0A891190DB4700264D89 /* OFErrors.m */; };
 		34A062F21EC110A60099028D /* Bundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7F99681D875BCD00CD4533 /* Bundle.swift */; };
@@ -730,8 +726,6 @@
 		34A062FF1EC110A60099028D /* OFBindingPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 345272C614F092EF003151CA /* OFBindingPoint.m */; };
 		34A063001EC110A60099028D /* NSCache-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FD243A31D12189F009AB347 /* NSCache-OFExtensions.m */; };
 		34A063011EC110A60099028D /* OFOffsetMutableArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E4CB292162CA5D900908CF7 /* OFOffsetMutableArray.m */; };
-		34A063021EC110A60099028D /* OFNetStateNotifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 348C22D6162F28DD00EBFCB9 /* OFNetStateNotifier.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		34A063031EC110A60099028D /* OFNetStateRegistration.m in Sources */ = {isa = PBXBuildFile; fileRef = 348C22D8162F28DD00EBFCB9 /* OFNetStateRegistration.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34A063041EC110A60099028D /* OFXMLElementParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DC24AC1E9D41CB001F7A57 /* OFXMLElementParser.m */; };
 		34A063051EC110A60099028D /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; };
 		34A063061EC110A60099028D /* OFSubjectTargettingScriptCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAED05D162F648F00F76783 /* OFSubjectTargettingScriptCommand.m */; };
@@ -4209,7 +4203,6 @@
 				34A061F01EC110A60099028D /* OFExtent.h in Headers */,
 				34A061F11EC110A60099028D /* OFMetricPrefixFormatter.h in Headers */,
 				34A061F21EC110A60099028D /* NSFileManager-OFSimpleExtensions.h in Headers */,
-				34A061F31EC110A60099028D /* OFNetChangeNotifier.h in Headers */,
 				34A061F41EC110A60099028D /* NSFileManager-OFExtendedAttributes.h in Headers */,
 				34A061F51EC110A60099028D /* NSCache-OFExtensions.h in Headers */,
 				34A061F61EC110A60099028D /* OFSaveType.h in Headers */,
@@ -4229,8 +4222,6 @@
 				34A062041EC110A60099028D /* OFCompletionMatch.h in Headers */,
 				34A062051EC110A60099028D /* OFIndexPath.h in Headers */,
 				34A062061EC110A60099028D /* OFBindingPoint.h in Headers */,
-				34A062071EC110A60099028D /* OFNetStateNotifier.h in Headers */,
-				34A062081EC110A60099028D /* OFNetStateRegistration.h in Headers */,
 				34A062091EC110A60099028D /* OFSubjectTargettingScriptCommand.h in Headers */,
 				34A0620A1EC110A60099028D /* OFWeakReference.h in Headers */,
 				34A0620B1EC110A60099028D /* OFCredentials.h in Headers */,
@@ -5532,7 +5523,6 @@
 				34A062EC1EC110A60099028D /* OFMetricPrefixFormatter.m in Sources */,
 				34A062ED1EC110A60099028D /* NSFileManager-OFSimpleExtensions.m in Sources */,
 				34A062EE1EC110A60099028D /* NSLocking-OFExtensions.swift in Sources */,
-				34A062EF1EC110A60099028D /* OFNetChangeNotifier.m in Sources */,
 				34A062F01EC110A60099028D /* OFEnumNameTable-OFXMLArchiving.m in Sources */,
 				34A062F11EC110A60099028D /* OFErrors.m in Sources */,
 				34A062F21EC110A60099028D /* Bundle.swift in Sources */,
@@ -5551,8 +5541,6 @@
 				34A062FF1EC110A60099028D /* OFBindingPoint.m in Sources */,
 				34A063001EC110A60099028D /* NSCache-OFExtensions.m in Sources */,
 				34A063011EC110A60099028D /* OFOffsetMutableArray.m in Sources */,
-				34A063021EC110A60099028D /* OFNetStateNotifier.m in Sources */,
-				34A063031EC110A60099028D /* OFNetStateRegistration.m in Sources */,
 				34A063041EC110A60099028D /* OFXMLElementParser.m in Sources */,
 				34A063051EC110A60099028D /* NSFileManager-OFExtendedAttributes.m in Sources */,
 				34A063061EC110A60099028D /* OFSubjectTargettingScriptCommand.m in Sources */,

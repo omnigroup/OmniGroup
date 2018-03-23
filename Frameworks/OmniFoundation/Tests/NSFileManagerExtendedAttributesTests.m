@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,7 +125,12 @@ static NSString * const TestXattrName = @"com.omnigroup.OmniFoundation.UnitTests
     const char * path = [self.tempFilePath cStringUsingEncoding:NSUTF8StringEncoding];
     long maxSizeBits = pathconf(path, _PC_XATTR_SIZE_BITS);
     XCTAssert(maxSizeBits > 0);
-    
+
+    if (maxSizeBits == 64) {
+        // Newer OSes claim to store giant xattrs; we certainly can't malloc that much memory (or anywhere close).
+        return;
+    }
+
     size_t size = pow(2, maxSizeBits);
     void *value = memset(malloc(size), 1, size);
     NSData *data = [NSData dataWithBytes:value length:size];

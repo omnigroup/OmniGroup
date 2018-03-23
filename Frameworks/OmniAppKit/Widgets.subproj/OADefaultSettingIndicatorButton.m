@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -188,7 +188,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     
     NSPoint origin;
     origin.x = rint(xEdge + horizontalSpaceFromSnuggleView);
-    origin.y = ceilf(NSMidY(controlFrame) - (iconSize.height / 2.0f));
+    origin.y = ceil(NSMidY(controlFrame) - (iconSize.height / 2.0f));
     
     if ([self.snuggleUpToRightSideOfView isKindOfClass:[NSSegmentedControl class]]) {
         origin.y -= 1.0f;

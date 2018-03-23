@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ typedef void (^ODSScopeDocumentCreationHandler)(ODSFileItem *createdFileItem, NS
 // Allows for a specific type. Useful for instantiating templates, when the template file type has a different file type.
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fileType:(NSString *)fileType fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
 
-// Uses a default base name for the new document.
+// Uses a default base name for the new document. The given completion handler may be nil.
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
 
 // Somewhat like -addDocumentInFolderAtURL:... but this duplicates folders as well as files and only works for duplicating things currently in the scope (where -addDocumentInFolderAtURL: can be used to copy items into a copy from the iOS document Inbox). The status handler is called once for each copied file. If there is an error copying a file, the duplicateFileItem argument will be nil, but originalFileItem will not be. Once all the copying is done, the completion handler will be called with the top level items that resulted from the duplication (which will include folders for source folders, whereas the status block gets called recursively).

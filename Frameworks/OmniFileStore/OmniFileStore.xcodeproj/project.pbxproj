@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1520C9422061B7DA0005DFBC /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 1520C9282061B7D80005DFBC /* ko.lproj */; };
+		1520C9432061B7DA0005DFBC /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 1520C9412061B7D80005DFBC /* pt-BR.lproj */; };
 		1E0D274E1A6F2CCC00E65230 /* OmniFileStore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */; };
 		1E0D27551A6F2CE900E65230 /* OFSEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E0D27421A6F24E200E65230 /* OFSEncryptionTests.m */; };
 		1E0D27561A6F2ED500E65230 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EBA55741ED60D58007AAE72 /* OmniBase.framework */; };
@@ -351,6 +353,8 @@
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1520C9282061B7D80005DFBC /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
+		1520C9412061B7D80005DFBC /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
 		1571135818637612002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		15F7CBEF185F991900EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15F7CBF0185F991900EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
@@ -613,12 +617,14 @@
 		15F7CBF6185F992100EFB846 /* Localization */ = {
 			isa = PBXGroup;
 			children = (
-				1571135818637612002F6107 /* ja.lproj */,
 				15F7CBEF185F991900EFB846 /* de.lproj */,
 				15F7CBF0185F991900EFB846 /* es.lproj */,
 				15F7CBF1185F991900EFB846 /* fr.lproj */,
 				15F7CBF2185F991900EFB846 /* it.lproj */,
+				1571135818637612002F6107 /* ja.lproj */,
+				1520C9282061B7D80005DFBC /* ko.lproj */,
 				15F7CBF3185F991900EFB846 /* nl.lproj */,
+				1520C9412061B7D80005DFBC /* pt-BR.lproj */,
 				15F7CBF4185F991900EFB846 /* ru.lproj */,
 				15F7CBF5185F991900EFB846 /* zh-Hans.lproj */,
 			);
@@ -1224,6 +1230,8 @@
 				34FA1FB91B5EF50000ED0B6F /* ja.lproj in Resources */,
 				34FA1FC01B5EF50000ED0B6F /* zh-Hans.lproj in Resources */,
 				34FA1FBB1B5EF50000ED0B6F /* es.lproj in Resources */,
+				1520C9432061B7DA0005DFBC /* pt-BR.lproj in Resources */,
+				1520C9422061B7DA0005DFBC /* ko.lproj in Resources */,
 				34FA1FBE1B5EF50000ED0B6F /* nl.lproj in Resources */,
 				34FA1FBA1B5EF50000ED0B6F /* de.lproj in Resources */,
 				34FA1FBF1B5EF50000ED0B6F /* ru.lproj in Resources */,

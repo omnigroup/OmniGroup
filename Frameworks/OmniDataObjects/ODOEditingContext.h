@@ -27,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, nullable, strong) NSUndoManager *undoManager;
 
+// Schedules a runloop observer in the current runloop to process pending changes. Only set this if the instance it being used by a single runloop.
+@property(nonatomic) BOOL automaticallyProcessPendingChanges;
+
 - (void)reset;
 - (void)insertObject:(ODOObject *)object;
 - (BOOL)deleteObject:(ODOObject *)object error:(NSError **)outError;

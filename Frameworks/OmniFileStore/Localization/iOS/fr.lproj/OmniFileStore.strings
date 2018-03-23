@@ -10,6 +10,9 @@
 /* error description */
 "Cannot move file." = "Impossible de déplacer le fichier.";
 
+/* error description */
+"Cannot read file" = "Impossible de lire le fichier";
+
 /* bad password error reason */
 "Could not decode encryption document key." = "Impossible de décoder la clé de document de cryptage.";
 
@@ -46,11 +49,14 @@
 /* error reason */
 "No such file \"%@\"." = "Aucun fichier “%@”.";
 
+/* encryption access method description - key derivation from password */
+"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+
 /* error reason */
 "Please make sure that the destination folder exists." = "Assurez-vous que le dossier de destination existe.";
 
-/* keychain item description - used in keychain access control prompt */
-"Sync Encryption Key" = "Clé de cryptage de synchronisation";
+/* error reason - token is filename */
+"Unable to decrypt contents of file “%@”." = "Impossible de décrypter le contenu du fichier “%@”.";
 
 /* error description */
 "Unable to delete file." = "Impossible de supprimer le fichier.";

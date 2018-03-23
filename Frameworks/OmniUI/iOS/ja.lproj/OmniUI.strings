@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "%@ について";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "キャンセル";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "テキストの中央揃え";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "減らす";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "オーバーレイを閉じる";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "編集";
 
+/* password field placeholder text */
+"enter password" = "パスワードを入力";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "このデモでは機能が無効になっています";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "合わせる";
+
+/* button title - password/passphrase prompt */
+"Help" = "ヘルプ";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "ヘルプと設定";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
 
+/* message format */
+"Mail has not been set up on this %@." = "この %@ にはメールがセットアップされていません。";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "環境設定が変更されました";
+
+/* button title */
+"Quit" = "終了";
 
 /* Redo button title */
 "Redo" = "やり直し";

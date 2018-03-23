@@ -1,4 +1,4 @@
-// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,14 @@
 #import <OmniFoundation/OFXMLIdentifier.h>
 
 RCS_ID("$Id$")
+
+/*
+
+ NOTE: These tests and the underlying class are on the way out. High Sierra + APFS breaks resolution of aliases when the underlying file has been moved (and aliases have been deprecated in favor of bookmark data for a long while).
+
+ */
+
+#if 0
 
 @interface OFAliasTest : OFTestCase
 @end
@@ -62,3 +70,6 @@ static NSString *temporaryPath(void)
 }
 
 @end
+
+#endif
+

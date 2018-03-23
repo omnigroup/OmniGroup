@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ di %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Info su %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Annulla";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Testo allineato al centro";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Decremento";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Ignora overlay";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Modifica";
 
+/* password field placeholder text */
+"enter password" = "inserisci la password";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Funzione non abilitata in questa demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Adatta";
+
+/* button title - password/passphrase prompt */
+"Help" = "Aiuto";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Aiuto e impostazioni";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le restrizioni di Safari nelle Impostazioni.";
 
+/* message format */
+"Mail has not been set up on this %@." = "Mail non configurata su questo %@.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Preferenza modificata";
+
+/* button title */
+"Quit" = "Esci";
 
 /* Redo button title */
 "Redo" = "Ripristina";

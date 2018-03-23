@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,11 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniFoundation/OFFeatures.h>
+
+#if !OF_ENABLE_NET_STATE
+#error Should not be imported on this platform
+#endif
 
 /*
  Allows processes on the same network to communitate small state changes. For example, process that synchronize documents can publish a state change when they've been edited and new changes are available for other processes on the network to synchronize.

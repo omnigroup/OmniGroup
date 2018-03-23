@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ sur %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "À propos d’%@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Annuler";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Texte centré";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Diminuer";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Annuler la superposition";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Modifier";
 
+/* password field placeholder text */
+"enter password" = "taper le mot de passe";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Fonction inactive pour cette démo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajuster";
+
+/* button title - password/passphrase prompt */
+"Help" = "Aide";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Aide et réglages";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
 
+/* message format */
+"Mail has not been set up on this %@." = "Mail n'a pas été configuré sur cet %@.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Préférence modifiée";
+
+/* button title */
+"Quit" = "Quitter";
 
 /* Redo button title */
 "Redo" = "Rétablir";

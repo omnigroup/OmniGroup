@@ -64,7 +64,7 @@ class DiffableTests: XCTestCase {
             (IDWithPayload("B", 0), []),
             ])
         let difference = after.difference(from: after)
-        XCTAssert(difference.isEmpty)
+        XCTAssert(difference.changeKind == .noChange)
     }
     
     func testSectionsUpdated() {
@@ -78,7 +78,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.insertions.isEmpty)
@@ -101,7 +101,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.insertions.isEmpty)
@@ -130,7 +130,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.insertions.isEmpty)
@@ -154,7 +154,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.deletions.isEmpty)
@@ -175,7 +175,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.deletions.isEmpty)
@@ -194,7 +194,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.insertions.isEmpty)
@@ -219,7 +219,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.itemChanges.isEmpty) // should ignore item changes inside changing sections
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(difference.sectionChanges.updates.isEmpty)
@@ -257,7 +257,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(!difference.sectionChanges.isEmpty)
         if let sectionUpdate = difference.sectionChanges.updates.first {
             XCTAssert(sectionUpdate.0 == 1)
@@ -429,7 +429,7 @@ class DiffableTests: XCTestCase {
                 ]),
             ])
         let difference = after.difference(from: after)
-        XCTAssert(difference.isEmpty)
+        XCTAssert(difference.changeKind == .noChange)
     }
     
     func testUpdatedItems() {
@@ -447,7 +447,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.insertions.isEmpty)
@@ -482,7 +482,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.deletions.isEmpty)
@@ -517,7 +517,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.deletions.isEmpty)
@@ -546,7 +546,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.deletions.isEmpty)
@@ -612,7 +612,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.insertions.isEmpty)
@@ -650,7 +650,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.insertions.isEmpty)
@@ -686,7 +686,7 @@ class DiffableTests: XCTestCase {
             ])
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
         XCTAssert(difference.itemChanges.insertions.isEmpty)
@@ -719,7 +719,7 @@ class DiffableTests: XCTestCase {
         
         let difference = after.difference(from: before)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
     }
@@ -809,7 +809,7 @@ class DiffableTests: XCTestCase {
         
         let difference = afterDiff.difference(from: beforeDiff)
         
-        XCTAssert(!difference.isEmpty)
+        XCTAssert(difference.changeKind != .noChange)
         XCTAssert(!difference.sectionChanges.isEmpty)
         XCTAssert(!difference.itemChanges.isEmpty)
     }

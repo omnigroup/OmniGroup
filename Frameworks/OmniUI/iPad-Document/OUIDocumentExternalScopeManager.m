@@ -191,6 +191,12 @@ RCS_ID("$Id$")
     __block __weak ODSExternalScope *weakScope = externalScope;
     __block __weak OUIDocumentExternalScopeManager *weakSelf = self;
     externalScope.addDocumentBlock = ^(ODSFolderItem *folderItem, NSString *baseName, NSString *fileType, NSURL *fromURL, ODSStoreAddOption option, void (^addDocumentCompletionBlock)(ODSFileItem *duplicateFileItem, NSError *error)) {
+        
+        if (!addDocumentCompletionBlock) {
+            // The code below really expects this completion block to exists. So, if it doesn't exist, feed the code an empty completion block.
+            addDocumentCompletionBlock = ^(ODSFileItem *duplicateFileItem, NSError *error){};
+        }
+        
         if (folderItem != weakScope.rootFolder) {
             OBASSERT_NOT_REACHED("This external scope only expects to have a root folder");
             addDocumentCompletionBlock(nil, [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]);
@@ -616,6 +622,11 @@ static NSOperationQueue *presentedItemOperationQueue;
 - (void)unregisterPresenter;
 {
     [NSFileCoordinator removeFilePresenter:self];
+}
+
+- (NSString *)debugDescription
+{
+    return [NSString stringWithFormat:@"<%@:%p> %@", NSStringFromClass([self class]), self, _fileURL];
 }
 
 #pragma mark - NSFilePresenter protocol

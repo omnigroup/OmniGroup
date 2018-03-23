@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -362,6 +362,7 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
                     return NO;
                 break;
             }
+            case kCFNumberSInt64Type:
             case kCFNumberLongLongType:
             case kCFNumberNSIntegerType: {
                 if (!ODOSQLStatementBindInt64(sqlite, self, bindIndex, [constant longLongValue], outError))

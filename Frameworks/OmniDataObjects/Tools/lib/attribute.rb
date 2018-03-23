@@ -7,6 +7,10 @@ module OmniDataObjects
       @type = type
       @copy = options.key?(:copy) ? options[:copy] : true
       @value_class = options[:value_class]
+      @string_enum = options[:string_enum]
+      if @string_enum 
+          fail("Extensible enums only allowed for string properties") if @type != :string
+      end
       @default_value = options[:default]
       @primary = options[:primary]
       @objc_is_getter = options.key?(:objc_is_getter) ? options[:objc_is_getter] : true
@@ -122,6 +126,14 @@ module OmniDataObjects
       else
         fail "Unknown type name #{type}"
       end
+    end
+
+    def objcValueType
+        if @string_enum
+            return @string_enum
+        else
+            return "#{objcValueClass} *"
+        end
     end
     
     def objcScalarType
@@ -262,7 +274,7 @@ module OmniDataObjects
             additional_attributes += ", getter=#{objcGetterName}"
           end
 
-          f << "@property (nonatomic#{additional_attributes}) #{objcValueClass} *#{name}#{attributes};\n"
+          f << "@property (nonatomic#{additional_attributes}) #{objcValueType} #{name}#{attributes};\n"
       end
     end
     

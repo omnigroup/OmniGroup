@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -150,7 +150,7 @@ static const CGFloat iconBaseline = 36;
 
 - (NSUInteger)_iconsWide;
 {
-    return NSMaxX([self bounds]) / buttonSize.width;
+    return (NSUInteger)floor(NSMaxX([self bounds]) / buttonSize.width);
 }
 
 - (NSUInteger)_numberOfIcons;

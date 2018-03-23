@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -358,16 +358,25 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
             CFDataSetLength(octets, precedingChars + (sizeof(unichar) * charCount));
 
             UInt8 *charPtr = CFDataGetMutableBytePtr(octets) + precedingChars;
-            unichar *unicharPtr = (unichar *)charPtr;
+
+            // This is typed `void *` since we need to be careful reading out of it since it might not be aligned.
+            void *unicharPtr = (void *)charPtr;
             
             CFStringGetCharacters(str, (CFRange){slowCursor, charCount}, unicharPtr);
             precedingChars += charCount;
             slowCursor = fastCursor; // slowCursor += charCount; 
             while (charCount) {
-                OBASSERT( *unicharPtr >= OFDeferredASCIISupersetBase && *unicharPtr < (OFDeferredASCIISupersetBase+256) );
-                *charPtr = (uint8_t)( *unicharPtr - OFDeferredASCIISupersetBase );
+                union {
+                    UInt8 c[2];
+                    unichar u;
+                } buffer;
+                buffer.c[0] = ((UInt8 *)unicharPtr)[0];
+                buffer.c[1] = ((UInt8 *)unicharPtr)[1];
+
+                OBASSERT( buffer.u >= OFDeferredASCIISupersetBase && buffer.u < (OFDeferredASCIISupersetBase+256) );
+                *charPtr = (uint8_t)( buffer.u - OFDeferredASCIISupersetBase );
                 charPtr ++;
-                unicharPtr ++;
+                unicharPtr += sizeof(unichar);
                 charCount --;
                 // precedingChars ++;
                 // slowCursor ++;

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -124,7 +124,9 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
 {
     [super themedAppearanceDidChange:changedAppearance];
     
-    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+    if (self.view.window != nil) {
+        [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+    }
 }
 
 @end

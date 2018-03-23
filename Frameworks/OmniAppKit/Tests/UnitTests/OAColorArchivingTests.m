@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -156,11 +156,12 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
     CHECK([NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5]);
 }
 
-- (void)testPattern;
-{
-    NSImage *image = [NSImage imageNamed:@"pattern" inBundle:OMNI_BUNDLE];
-    XCTAssertNotNil(image, @"image should exist");
-    CHECK([NSColor colorWithPatternImage:image]);
-}
+// TODO: This isn't a great test since the OS controls the archiving of the image content.
+//- (void)testPattern;
+//{
+//    NSImage *image = [NSImage imageNamed:@"pattern" inBundle:OMNI_BUNDLE];
+//    XCTAssertNotNil(image, @"image should exist");
+//    CHECK([NSColor colorWithPatternImage:image]);
+//}
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -184,7 +184,7 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
     };
     
     /* Control points for squircle corners, normalized to the radius */
-    const float k1 = 0.074911, k2 = 0.169060, k3 = 0.372824, k4 = 0.631494, k5 = 0.868407, k6 = 1.088493, k7 = 1.528665;
+    const CGFloat k1 = 0.074911, k2 = 0.169060, k3 = 0.372824, k4 = 0.631494, k5 = 0.868407, k6 = 1.088493, k7 = 1.528665;
     
     /* firstCorners[] computes the first corner we want to draw, based on the contents of the edges bitmap.
        We draw any corner that is adjacent to a drawn edge, and we draw them in the order they appear in points[].
@@ -417,18 +417,22 @@ CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQ
     OBPRECONDITION(size.width >= 1);
     OBPRECONDITION(size.height >= 1);
     
-    if (size.width == CGImageGetWidth(image) && size.height == CGImageGetHeight(image))
+    size_t pixelsWide = (size_t)floor(size.width);
+    size_t pixelsHigh = (size_t)floor(size.height);
+
+    if (pixelsWide == CGImageGetWidth(image) && pixelsHigh == CGImageGetHeight(image))
         return CGImageRetain(image);
-    
+
     // Try building a bitmap context with the same settings as the input image.
     // We can cast CGImageAlphaInfo to CGBitmapInfo here because the lower 0x1F of the latter are an alpha-info mask
     CGColorSpaceRef colorSpace = CGImageGetColorSpace(image);
     size_t bytesPerPixel = CGImageGetBitsPerPixel(image) / 8; OBASSERT((CGImageGetBitsPerPixel(image) % 8) == 0);
-    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, CGImageGetBitsPerComponent(image), bytesPerPixel*size.width, colorSpace, (CGBitmapInfo)CGImageGetAlphaInfo(image));
+    CGContextRef ctx = CGBitmapContextCreate(NULL, pixelsWide, pixelsHigh, CGImageGetBitsPerComponent(image), bytesPerPixel*pixelsWide, colorSpace, (CGBitmapInfo)CGImageGetAlphaInfo(image));
     if (!ctx) {
         // Fall back to something that CGBitmapContext actually understands
         CGColorSpaceRef fallbackColorSpace = CGColorSpaceCreateDeviceRGB();
-        ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, 4*size.width, fallbackColorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
+
+        ctx = CGBitmapContextCreate(NULL, pixelsWide, pixelsHigh, 8/*bitsPerComponent*/, 4*pixelsWide, fallbackColorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
         CGColorSpaceRelease(fallbackColorSpace);
     }
 

@@ -21,6 +21,9 @@
 
 "Cancel" = "Cancelar";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Alinhamento de texto centralizado";
 
@@ -39,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Redução";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Descartar sobreposição";
+
 /* Done
    toolbar item title */
 
@@ -47,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Editar";
 
+/* password field placeholder text */
+"enter password" = "digitar a senha";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Recurso não ativado nesta demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajustar";
+
+/* button title - password/passphrase prompt */
+"Help" = "Ajuda";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Ajuda e Ajustes";
@@ -76,6 +88,9 @@
 
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Não foi possível abrir o link. Consulte as restrições do Safari em Ajustes.";
+
+/* message format */
+"Mail has not been set up on this %@." = "O Mail não foi configurado neste %@.";
 
 /* News menu item
    News view title */
@@ -106,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Preferência alterada";
+
+/* button title */
+"Quit" = "Encerrar";
 
 /* Redo button title */
 "Redo" = "Refazer";

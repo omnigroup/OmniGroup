@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Over %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Annuleer";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Tekst centreren";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Vermindering";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Verwijder overlay";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Wijzig";
 
+/* password field placeholder text */
+"enter password" = "voer het wachtwoord in";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Pas aan";
+
+/* button title - password/passphrase prompt */
+"Help" = "Help";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Help en instellingen";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
 
+/* message format */
+"Mail has not been set up on this %@." = "Mail is niet ingesteld op deze %@.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Voorkeur gewijzigd";
+
+/* button title */
+"Quit" = "Stop";
 
 /* Redo button title */
 "Redo" = "Opnieuw";

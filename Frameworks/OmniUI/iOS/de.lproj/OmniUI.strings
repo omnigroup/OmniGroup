@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ von %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Über %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Abbrechen";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Zentriert ausrichten";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Reduzieren";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Überlagerung ausblenden";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Bearbeiten";
 
+/* password field placeholder text */
+"enter password" = "Kennwort eingeben";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Funktion ist für diese Demo nicht aktiviert";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Anpassen";
+
+/* button title - password/passphrase prompt */
+"Help" = "Hilfe";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Hilfe und Einstellungen";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
 
+/* message format */
+"Mail has not been set up on this %@." = "Mail wurde auf diesem %@ nicht konfiguriert.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Einstellung wurde geändert";
+
+/* button title */
+"Quit" = "Beenden";
 
 /* Redo button title */
 "Redo" = "Wiederholen";

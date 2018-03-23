@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -436,7 +436,7 @@ id OFCreatePlistFor4CC(uint32_t v)
         UInt8 c[4];
     } buf;
     
-#define OK(ch) ( ok_chars[ch / 32] & (1 << (ch % 32)) )
+#define OK(ch) ( ok_chars[ch / 32] & (1U << (ch % 32)) )
     buf.i = CFSwapInt32HostToBig(v);
     
     if (!OK(buf.c[0]) || !OK(buf.c[1]) || !OK(buf.c[2]) || !OK(buf.c[3]))

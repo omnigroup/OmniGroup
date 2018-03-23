@@ -109,6 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request];
     ODAVOperation *operation = [[ODAVOperation alloc] initWithRequest:request start:^{
         DEBUG_TASK(1, @"starting task %@", task);
+        DEBUG_TASK(2, @"headers %@", task.originalRequest.allHTTPHeaderFields);
         [task resume];
     }
                                                                cancel:^{

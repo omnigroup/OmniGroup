@@ -1012,7 +1012,7 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
                           1, 1),
                       Pt( 10,   10   ),
                       Pt( 11,   10.1 ),
-                      Pt( 10.9, 11   ),
+                      Pt( 10.9, 10.9 ),
                       Pt( 11,   11   ), F(0.3));
     
     doCubicBoundsTest(self, CFSTR(__FILE__), __LINE__,
@@ -1025,7 +1025,6 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
 }
 
 
-#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
 static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, const char *file, int line)
 {
     BOOL val;
@@ -1056,11 +1055,9 @@ static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, con
     [mirroredPath release];
 }
 #define checkClockwise(path, expect) checkClockwise_(self, path, expect, __FILE__, __LINE__)
-#endif
 
 - (void)testPathClockwise
 {
-#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
     NSBezierPath *p;
     double i;
     
@@ -1149,7 +1146,6 @@ static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, con
     [p lineToPoint: Pt(0, 0)];
     [p closePath];
     checkClockwise(p, YES);
-#endif
 }
 
 // TODO: Test -getWinding:andHit:forPoint:.

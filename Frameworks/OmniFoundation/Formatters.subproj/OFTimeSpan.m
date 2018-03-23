@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,13 +134,13 @@ RCS_ID("$Id$")
 - (NSDateComponents *)dateComponentsValue;
 {
     NSDateComponents *result = [[[NSDateComponents alloc] init] autorelease];
-    result.year = floorf(_components.years);
-    result.month = floorf(_components.months);
-    result.weekOfYear = floorf(_components.weeks);
-    result.day = floorf(_components.days);
-    result.hour = floorf(_components.hours);
-    result.minute = floorf(_components.minutes);
-    result.second = floorf(_components.seconds);
+    result.year = (NSInteger)floorf(_components.years);
+    result.month = (NSInteger)floorf(_components.months);
+    result.weekOfYear = (NSInteger)floorf(_components.weeks);
+    result.day = (NSInteger)floorf(_components.days);
+    result.hour = (NSInteger)floorf(_components.hours);
+    result.minute = (NSInteger)floorf(_components.minutes);
+    result.second = (NSInteger)floorf(_components.seconds);
     return result;
 }
 

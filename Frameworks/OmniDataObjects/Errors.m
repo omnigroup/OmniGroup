@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ static BOOL ODOWrapMultipleErrors(NSError **outError, NSArray<NSError *> *errors
         }
     }
 
-    return YES;
+    return NO;
 }
 
 BOOL ODOMultipleDeleteError(NSError **outError, NSArray<NSError *> *errors)

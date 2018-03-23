@@ -610,6 +610,13 @@
 			remoteGlobalIDString = 34800E121B19233E0008DC9E;
 			remoteInfo = "OmniUnzip-iOS";
 		};
+		34D73AD5205AE9B200183D03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27D1BBDE1991F7D800976618 /* OmniUnzip.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34800E111B19233E0008DC9E;
+			remoteInfo = "OmniUnzip-iOS";
+		};
 		34EFC2851ECA63F70056DB93 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
@@ -2358,6 +2365,7 @@
 			dependencies = (
 				349EB2741ECA68A1008AFC01 /* PBXTargetDependency */,
 				34EFC2861ECA63F70056DB93 /* PBXTargetDependency */,
+				34D73AD6205AE9B200183D03 /* PBXTargetDependency */,
 			);
 			name = "OmniUI-iOS";
 			productName = "OmniUI-iOS";
@@ -2913,6 +2921,11 @@
 			isa = PBXTargetDependency;
 			name = "OmniAppKit-iOS";
 			targetProxy = 349EB2731ECA68A1008AFC01 /* PBXContainerItemProxy */;
+		};
+		34D73AD6205AE9B200183D03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniUnzip-iOS";
+			targetProxy = 34D73AD5205AE9B200183D03 /* PBXContainerItemProxy */;
 		};
 		34EFC2861ECA63F70056DB93 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

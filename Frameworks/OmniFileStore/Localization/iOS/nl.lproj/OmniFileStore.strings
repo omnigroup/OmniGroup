@@ -10,6 +10,9 @@
 /* error description */
 "Cannot move file." = "Kan bestand niet verplaatsen.";
 
+/* error description */
+"Cannot read file" = "Kan bestand niet lezen";
+
 /* bad password error reason */
 "Could not decode encryption document key." = "Kan codering documentsleutel niet decoderen.";
 
@@ -37,8 +40,7 @@
 /* error description */
 "Internal error updating keychain" = "Interne fout bij bijwerken Keychain";
 
-/* error reason - listing a directory that doesn't exist
-   error reason - listing contents of a nonexistent directory */
+/* error reason - listing a directory that doesn't exist */
 "No document exists at \"%@\"." = "In “%@” staan geen documenten.";
 
 /* error reason */
@@ -47,11 +49,14 @@
 /* error reason */
 "No such file \"%@\"." = "Geen dergelijk bestand “%@”.";
 
+/* encryption access method description - key derivation from password */
+"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+
 /* error reason */
 "Please make sure that the destination folder exists." = "Controleer of de doelmap bestaat.";
 
-/* keychain item description - used in keychain access control prompt */
-"Sync Encryption Key" = "Codeersleutel synchronisatie";
+/* error reason - token is filename */
+"Unable to decrypt contents of file “%@”." = "Kan inhoud van bestand “%@” niet decoderen.";
 
 /* error description */
 "Unable to delete file." = "Bestand kan niet worden verwijderd.";

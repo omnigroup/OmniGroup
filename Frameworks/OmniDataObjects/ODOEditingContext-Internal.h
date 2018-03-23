@@ -19,9 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSUndoManager *_undoManager;
     
     NSMutableDictionary *_registeredObjectByID;
-    
-    CFRunLoopObserverRef _runLoopObserver;
-    
+
     // Two sets of changes.  One for processed changes (notifications have been sent) and one for recent changes.
     NSMutableSet *_processedInsertedObjects;
     NSMutableSet *_processedUpdatedObjects;

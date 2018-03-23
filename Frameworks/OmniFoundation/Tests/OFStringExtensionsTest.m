@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -324,17 +324,16 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
 
 - (void)testFourCharCodes
 {
-    int i, shift, bg;
     FourCharCode fcc, fcc_bg;
     UInt8 backgrounds[5] = { 0, 32, 'x', 128, 255 };
     
-    for(shift = 0; shift < 32; shift += 8) {
-        for(bg = 0; bg < 5; bg ++) {
+    for (UInt32 shift = 0; shift < 32; shift += 8) {
+        for (UInt32 bg = 0; bg < 5; bg ++) {
             fcc_bg = ( 0x01010101u - ( 0x01u << shift ) );
             fcc_bg *= backgrounds[bg];
             
-            for(i = 0; i < 256; i++) {
-                fcc = ( ((UInt8)i) << shift ) | fcc_bg;
+            for (UInt32 i = 0; i < 256; i++) {
+                fcc = ( i << shift ) | fcc_bg;
                 NSString *str;
                 uint32_t tmp;
                 

@@ -21,6 +21,9 @@
 
 "Cancel" = "취소";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "텍스트 가운데 정렬";
 
@@ -39,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "감소";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "오버레이 숨김";
+
 /* Done
    toolbar item title */
 
@@ -47,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "편집";
 
+/* password field placeholder text */
+"enter password" = "암호 입력";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "이 데모에 대해 활성회되지 않은 기능";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "맞추기";
+
+/* button title - password/passphrase prompt */
+"Help" = "도움말";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "도움말 및 설정";
@@ -76,6 +88,9 @@
 
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "링크를 열 수 없습니다. 설정에서 Safari 제한 사항을 확인하십시오.";
+
+/* message format */
+"Mail has not been set up on this %@." = "이 %@에 메일이 설정되지 않았습니다.";
 
 /* News menu item
    News view title */
@@ -106,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "환경설정 변경";
+
+/* button title */
+"Quit" = "종료";
 
 /* Redo button title */
 "Redo" = "다시 실행";

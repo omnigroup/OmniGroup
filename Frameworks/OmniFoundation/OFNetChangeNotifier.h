@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,11 @@
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSNetServices.h>
+#import <OmniFoundation/OFFeatures.h>
+
+#if !OF_ENABLE_NET_STATE
+#error Should not be imported on this platform
+#endif
 
 @interface OFNetChangeNotifier : NSObject <NSNetServiceDelegate, NSNetServiceBrowserDelegate>
 {
@@ -30,4 +35,3 @@
 @protocol OFNetChangeNotifierDelegate
 - (void)netChangeNotifierNewChange:(OFNetChangeNotifier *)notifier;
 @end
-

@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,9 @@ typedef BOOL (^ODOSQLFailablePerformBlock)(struct sqlite3 *, NSError **);
 - (nullable id)initWithURL:(NSURL *)fileURL options:(ODOSQLConnectionOptions)options error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
 
 @property (nonatomic, readonly) NSURL *URL;
+
+/// Closes the connection and blocks until it is actually closed.
+- (void)close;
 
 /// Invokes the given block on a background queue, passing a valid sqlite3 structure for the caller to use.
 - (void)performSQLBlock:(ODOSQLPerformBlock)block;

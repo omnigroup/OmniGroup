@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "关于 %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "取消";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "文本居中对齐";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "减少";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "关闭覆盖";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "编辑";
 
+/* password field placeholder text */
+"enter password" = "输入密码";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "对于此演示，功能未启用";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
+
+/* button title - password/passphrase prompt */
+"Help" = "帮助";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "帮助和设置";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "无法打开链接。请检查设置中的 Safari 限制。";
 
+/* message format */
+"Mail has not been set up on this %@." = "尚未针对此 %@ 设置邮件。";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "预置已更改";
+
+/* button title */
+"Quit" = "退出";
 
 /* Redo button title */
 "Redo" = "重做";

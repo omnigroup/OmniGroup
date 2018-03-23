@@ -41,11 +41,6 @@ typedef struct {
 } OABezierPathIntersectionHalf;
 
 @interface OABezierPathIntersection : NSObject
-{
-    OABezierPathIntersectionHalf _left;
-    OABezierPathIntersectionHalf _right;
-    NSPoint _location;
-}
 
 @property (nonatomic, readwrite) OABezierPathIntersectionHalf left;
 @property (nonatomic, readwrite) OABezierPathIntersectionHalf right;
@@ -80,7 +75,7 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 // Returns all the intersections between the receiver and the specified path. As a special case, if other==self, it does the useful thing and returns only the nontrivial self-intersections.
 - (NSArray <OABezierPathIntersection *> *)allIntersectionsWithPath:(NSBezierPath *)other;
 
-- (void)getWinding:(NSInteger * __nullable)clockwiseWindingCount andHit:(NSUInteger * __nullable)strokeHitCount forPoint:(NSPoint)point;
+// - (void)getWinding:(NSInteger * __nullable)clockwiseWindingCount andHit:(NSUInteger * __nullable)strokeHitCount forPoint:(NSPoint)point; // No longer used
 
 - (NSInteger)segmentHitByPoint:(NSPoint)point padding:(CGFloat)padding;
 - (NSInteger)segmentHitByPoint:(NSPoint)point;  // 0 == no hit, padding == 5

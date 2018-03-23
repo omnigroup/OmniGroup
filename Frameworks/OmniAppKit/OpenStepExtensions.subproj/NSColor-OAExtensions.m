@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -498,16 +498,18 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     
     NSString *colorSpaceName = [self colorSpaceName];
 
-    if (!([colorSpaceName isEqualToString:[color colorSpaceName]])) {
+    if (self.colorSpace.colorSpaceModel != color.colorSpace.colorSpaceModel) {
         return NO;
     }
 
     if ([colorSpaceName isEqualToString:NSCustomColorSpace]) {
         NSColorSpace *colorSpace = self.colorSpace;
         NSColorSpace *otherColorSpace = color.colorSpace;
-        if (!OFISEQUAL(colorSpace, otherColorSpace))
-            return NO;
-
+        if (!OFISEQUAL(colorSpace, otherColorSpace)) {
+            if (self.colorSpace.colorSpaceModel != color.colorSpace.colorSpaceModel) {
+                return NO;
+            }
+        }
         switch (colorSpace.colorSpaceModel) {
             case NSColorSpaceModelRGB:
                 return (fabs([self redComponent]-[color redComponent]) < 0.001) && (fabs([self greenComponent]-[color greenComponent]) < 0.001) && (fabs([self blueComponent]-[color blueComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);

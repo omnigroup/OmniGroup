@@ -1,4 +1,4 @@
-// Copyright 2017 The Omni Group. All rights reserved.
+// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,7 @@ RCS_ID("$Id$");
     OBExpectDeallocation(_database.connection);
     
     XCTAssertTrue([statement isPrepared]);
-    XCTAssertNoThrow([_database disconnect:&error]);
+    XCTAssertThrows([_database disconnect:&error]);
     XCTAssertNoThrow([statement release]);
 }
 

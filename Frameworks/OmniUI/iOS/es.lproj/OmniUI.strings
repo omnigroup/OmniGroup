@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Acerca de %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Cancelar";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Centrar texto";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Reducir";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Ocultar superposición";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Editar";
 
+/* password field placeholder text */
+"enter password" = "introduce la contraseña";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "Función no activada para esta demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajustar";
+
+/* button title - password/passphrase prompt */
+"Help" = "Ayuda";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Ayuda y Ajustes";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "No puede abrirse el enlace. Comprueba las restricciones de Safari en Ajustes.";
 
+/* message format */
+"Mail has not been set up on this %@." = "No se ha configurado el correo electrónico en este %@.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Preferencia modificada";
+
+/* button title */
+"Quit" = "Salir";
 
 /* Redo button title */
 "Redo" = "Rehacer";

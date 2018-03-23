@@ -1,4 +1,4 @@
-// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -151,22 +151,22 @@ static inline void ascii85put(OFDataBuffer *buffer, unsigned long tuple, int byt
 {
     switch (bytes) {
         case 4:
-            OFDataBufferAppendByte(buffer, tuple >> 24);
-            OFDataBufferAppendByte(buffer, tuple >> 16);
-            OFDataBufferAppendByte(buffer, tuple >>  8);
-            OFDataBufferAppendByte(buffer, tuple);
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 24));
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 16));
+            OFDataBufferAppendByte(buffer, (char)(tuple >>  8));
+            OFDataBufferAppendByte(buffer, (char)(tuple >>  0));
             break;
         case 3:
-            OFDataBufferAppendByte(buffer, tuple >> 24);
-            OFDataBufferAppendByte(buffer, tuple >> 16);
-            OFDataBufferAppendByte(buffer, tuple >>  8);
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 24));
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 16));
+            OFDataBufferAppendByte(buffer, (char)(tuple >>  8));
             break;
         case 2:
-            OFDataBufferAppendByte(buffer, tuple >> 24);
-            OFDataBufferAppendByte(buffer, tuple >> 16);
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 24));
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 16));
             break;
         case 1:
-            OFDataBufferAppendByte(buffer, tuple >> 24);
+            OFDataBufferAppendByte(buffer, (char)(tuple >> 24));
             break;
     }
 }
@@ -388,19 +388,19 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
         }
         c1 = CHAR64(c1);
         c2 = CHAR64(c2);
-        buf[0] = ((c1<<2) | ((c2&0x30)>>4));
+        buf[0] = (char)((c1<<2) | ((c2&0x30)>>4));
         if (!suppressCR || buf[0] != '\r') BASE64_PUTC(buf[0]);
         if (c3 == '=') {
             DataDone = 1;
         } else {
             c3 = CHAR64(c3);
-            buf[1] = (((c2&0x0F) << 4) | ((c3&0x3C) >> 2));
+            buf[1] = (char)(((c2&0x0F) << 4) | ((c3&0x3C) >> 2));
             if (!suppressCR || buf[1] != '\r') BASE64_PUTC(buf[1]);
             if (c4 == '=') {
                 DataDone = 1;
             } else {
                 c4 = CHAR64(c4);
-                buf[2] = (((c3&0x03) << 6) | c4);
+                buf[2] = (char)(((c3&0x03) << 6) | c4);
                 if (!suppressCR || buf[2] != '\r') BASE64_PUTC(buf[2]);
             }
         }

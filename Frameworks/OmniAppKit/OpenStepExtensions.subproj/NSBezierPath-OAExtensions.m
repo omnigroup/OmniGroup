@@ -65,6 +65,9 @@ static NSRect _parameterizedCurveBounds(const NSPoint *curveCoefficients) NONNUL
 static unsigned _solveCubic(const double *c, double  *roots, unsigned *multiplicity) NONNULL_ARGS;
 void _parameterizeLine(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint) NONNULL_ARGS;
 void _parameterizeCurve(NSPoint *coefficients, NSPoint startPoint, NSPoint endPoint, NSPoint controlPoint1, NSPoint controlPoint2) NONNULL_ARGS;
+static unsigned findCubicExtremaGeom(double p0, double p1, double p2, double p3, double *tout) NONNULL_ARGS;
+static inline double evaluateCubicGeom(double a, double b, double c, double d, double t);
+static unsigned findCubicExtremaAndEvalGeom(double p0, double p1, double p2, double p3, double *pout);
 unsigned intersectionsBetweenLineAndLine(const NSPoint *l1, const NSPoint *l2, struct intersectionInfo *results) NONNULL_ARGS;
 unsigned intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, struct intersectionInfo *results) NONNULL_ARGS;
 unsigned intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const NSPoint *c2coefficients, struct intersectionInfo *results) NONNULL_ARGS;
@@ -654,6 +657,8 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
     return result;
 }
 
+#if 0 // No longer used
+
 // TODO: Write unit tests for this. In particular, make sure the winding count comes out right even if the test point is lined up with a vertex or cusp.
 - (void)getWinding:(NSInteger *)windingCountPtr andHit:(NSUInteger *)hitCountPtr forPoint:(NSPoint)point;
 {
@@ -755,6 +760,7 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
     if (hitCountPtr)
         *hitCountPtr = hitCount;
 }
+#endif
 
 - (BOOL)intersectionWithLine:(NSPoint *)result lineStart:(NSPoint)lineStart lineEnd:(NSPoint)lineEnd
 {
@@ -1493,10 +1499,10 @@ static double subpathElementLength(struct subpathWalkingState *iter, double erro
     return cursor.currentElt;
 }
 
-static int compareFloat(const void *a_, const void *b_)
+static int compareDouble(const void *a_, const void *b_)
 {
-    CGFloat a = *(const CGFloat *)a_;
-    CGFloat b = *(const CGFloat *)b_;
+    double a = *(const double *)a_;
+    double b = *(const double *)b_;
     
     if (a > b)
         return 1;
@@ -1506,41 +1512,63 @@ static int compareFloat(const void *a_, const void *b_)
         return 0;
 }
 
-- (BOOL)isClockwise
+static BOOL chooseProbeLocation(NSBezierPath *self, CGFloat **minXInfoOut, double *gapMidpoint)
 {
-    OABezierPathIntersection *edge = [[OABezierPathIntersection alloc] init];
-    BOOL hit;
-    NSRect bounds = [self bounds];
-    NSInteger elementCount = [self elementCount], elementIndex, coordinateCount, coordinateIndex;
-    
-    /* Determine a closed path's clockwiseness by drawing a line through it from outside the bounding box, and then seeing whether the first place it crosses the path is from right to left, or from left to right. */
-    
     /* We can have problems if the "probe" line we use is collinear with a path segment, or a couple of other similar cases. To avoid those, we choose a y-value for our horizontal probe line that goes midway between the largest gap between any points' y-coordinates. */
-    
-    /* Make a list o all elts' y-coordinates, sort it, and run through the list looking for the widest gap */
-    CGFloat *yCoordinates = malloc(sizeof(*yCoordinates) * elementCount);
-    coordinateCount = 0;
-    for(elementIndex = 0; elementIndex < elementCount; elementIndex ++) {
-        NSPoint points[3];
-        NSBezierPathElement elt = [self elementAtIndex:elementIndex associatedPoints:points];
-        if (elt == NSMoveToBezierPathElement || elt == NSLineToBezierPathElement)
-            yCoordinates[coordinateCount ++] = points[0].y;
-        else if (elt == NSCurveToBezierPathElement)
-            yCoordinates[coordinateCount ++] = points[2].y;
-        /* Else, a closepath --- ignore, since its y-coordinate would be a duplicate of some moveto's y-coordinate */
-    }
-    if (coordinateCount < 2) {
-        free(yCoordinates);
-        [edge release];
-        return YES;  // degenerate path
-    }
 
-    qsort(yCoordinates, coordinateCount, sizeof(*yCoordinates), compareFloat);
+    NSInteger elementCount = [self elementCount];
+    if (elementCount < 2) {
+        return NO;
+    }
     
+    CGFloat *minXInfo;
+    double *yCoordinates;
+    
+    minXInfo = calloc(elementCount, sizeof(*minXInfo));
+    yCoordinates = calloc(4 * elementCount, sizeof(*yCoordinates));
+    NSInteger yCoordinateCount = 0;
+    
+    NSPoint currentpoint = (NSPoint){0, 0};
+    NSInteger firstElementInSubpath = -1;
+    for (NSInteger elementIndex = 0; elementIndex < elementCount; elementIndex ++) {
+        NSPoint points[3];
+        NSPoint nextCurrentpoint;
+        CGFloat thisMin;
+        NSBezierPathElement elt = [self elementAtIndex:elementIndex associatedPoints:points];
+        if (elt == NSMoveToBezierPathElement) {
+            thisMin = points[0].x;
+            firstElementInSubpath = elementIndex;
+            nextCurrentpoint = points[0];
+            yCoordinates[yCoordinateCount++] = points[0].y;
+        } else if (elt == NSLineToBezierPathElement) {
+            thisMin = MIN(currentpoint.x, points[0].x);
+            nextCurrentpoint = points[0];
+            yCoordinates[yCoordinateCount++] = points[0].y;
+        } else if (elt == NSCurveToBezierPathElement) {
+            yCoordinateCount += findCubicExtremaAndEvalGeom(currentpoint.y, points[0].y, points[1].y, points[2].y, &(yCoordinates[yCoordinateCount]));
+            thisMin = MIN4(currentpoint.x, points[0].x, points[1].x, points[2].x);
+            nextCurrentpoint = points[2];
+            yCoordinates[yCoordinateCount++] = points[2].y;
+        } else if (elt == NSClosePathBezierPathElement) {
+            [self elementAtIndex:firstElementInSubpath associatedPoints:points];
+            firstElementInSubpath = -1;
+            thisMin = MIN(points[0].x, currentpoint.x);
+            nextCurrentpoint = points[0];
+        } else {
+            OBASSERT_NOT_REACHED("Unknown NSBezierPathElement");
+            continue;
+        }
+        
+        minXInfo[elementIndex] = thisMin;
+        currentpoint = nextCurrentpoint;
+    }
+    
+    qsort(yCoordinates, yCoordinateCount, sizeof(*yCoordinates), compareDouble);
+
     CGFloat bestGapSize, bestGapMidpoint;
     bestGapSize = -1;
     bestGapMidpoint = 0;
-    for(coordinateIndex = 1; coordinateIndex < coordinateCount; coordinateIndex ++) {
+    for(NSInteger coordinateIndex = 1; coordinateIndex < yCoordinateCount; coordinateIndex ++) {
         CGFloat gap = yCoordinates[coordinateIndex] - yCoordinates[coordinateIndex-1];
         if (gap > bestGapSize) {
             bestGapSize = gap;
@@ -1552,10 +1580,33 @@ static int compareFloat(const void *a_, const void *b_)
     
     OBASSERT(bestGapSize >= 0.0);
     if (bestGapSize <= 0) {
-        [edge release];
-        return YES; // another degenerate path
+        free(minXInfo);
+        return NO; // another degenerate path
     }
     
+    if (minXInfoOut) {
+        *minXInfoOut = minXInfo;
+    } else {
+        free(minXInfo);
+    }
+    *gapMidpoint = bestGapMidpoint;
+    return YES;
+}
+
+- (BOOL)isClockwise
+{
+    /* Determine a closed path's clockwiseness by drawing a line through it from outside the bounding box, and then seeing whether the first place it crosses the path is from right to left, or from left to right. */
+    
+    double bestGapMidpoint;
+    if (!chooseProbeLocation(self, NULL, &bestGapMidpoint)) {
+        OBASSERT_NOT_REACHED("degenerate path?");
+        return YES;
+    }
+    
+    OABezierPathIntersection *edge = [[OABezierPathIntersection alloc] init];
+    BOOL hit;
+    NSRect bounds = [self bounds];
+
     hit = [self firstIntersectionWithLine:edge
                                 lineStart:(NSPoint){ .x = NSMinX(bounds) - 1, .y = bestGapMidpoint }
                                   lineEnd:(NSPoint){ .x = NSMaxX(bounds) + 1, .y = bestGapMidpoint }];
@@ -2088,6 +2139,76 @@ static unsigned findCubicExtrema(const double *c, double *t)
     return 2;
 }
 
+static
+unsigned findCubicExtremaGeom(double p0, double p1, double p2, double p3, double *tout)
+{
+    // Similar to findCubicExtrema(), except that our arguments are a cubic Bezier in control-point form (startpoint, c1, c2, endpoint).
+    // This is equivalent to, but better than, calling parameterizeCurve() before findCubicExtrema(): a lot of the algebra cancels out, and it's possible to arrange the arithmetic so that floating-point errors don't propagate as much (at least for our geometric use-case).
+    // As an additional convenience, this doesn't return any solutions corresponding outside the range [0,1].
+    
+    // So we're finding the roots of At^2 + Bt + C = 0, where (differentiating the results of the curve expansion and removing a factor of 3):
+    //  A = 3*(p1 - p2) + (p3 - p0)
+    //  B = 2*(p0 + p2 - 2*p1)
+    //  C = p1 - p0
+    
+    // The value under the radical is B^2 - 4AC, which boils down to this. Note that it's a function of only the differences between adjacent points, not of any absolute values.
+    double d1 = p1 - p0;
+    double d2 = p2 - p1;
+    double d3 = p3 - p2;
+    double d2_d1 = p2 + p0 - 2*p1; // d2 - d1
+    double surd4 = d2*d2 - d3*d1;  // surd4 is actually 1/4 the value
+    
+    unsigned num_found = 0;
+    
+    double A = (p3 - p0) - 3*d2;
+    if (fabs(A) < EPSILON) {
+        // The derivative is linear (meaning the original Bezier closely aproximated a quadratic).
+        // The solution is t = -C / B = -d1 / 2*(d2-d1)
+        // Test for a "small" denominator. We need to avoid dividing by zero, below; but really if the denominator is smaller than the numerator, |t|>1 and we would discard the solution anyway. The factor of 2 is a fudge so that we can use <= to check for zero while also catching results where |t|=1.
+        if (2*fabs(2*d2_d1) <= fabs(d1)) {
+            // The derivative is constant, our Bezier is actually a line. Or it's shallow enough that the intercept is outside of the range of interest.
+            return 0;
+        }
+        double t = -d1 / (2*d2_d1);
+        if (t >= 0 && t <= 1)
+            tout[num_found++] = t;
+        return num_found;
+    }
+
+    if (surd4 < 0)
+        return 0; // Derivative has no real-valued zeroes; the cubic is monotonic.
+    
+    if (surd4 < EPSILON) {
+        // Flat point at t = -B/2A
+        // Note that (d2-d1) = B/2 which takes care of the 2
+        double t = -d2_d1 / A;
+        if (t >= 0 && t <= 1)
+            tout[num_found++] = t;
+        return num_found;
+    }
+    
+    // Two reversals, at t = (-B +- sqrt(surd)) / 2A
+    // Again, the factor of 2 in the denominator conveniently cancels
+    double s = sqrt(surd4);
+    double t;
+    t = (-d2_d1 - s) / A;
+    if (t >= 0 && t <= 1)
+        tout[num_found++] = t;
+    t = (-d2_d1 + s) / A;
+    if (t >= 0 && t <= 1)
+        tout[num_found++] = t;
+    return num_found;
+}
+
+unsigned findCubicExtremaAndEvalGeom(double p0, double p1, double p2, double p3, double *pout)
+{
+    unsigned num = findCubicExtremaGeom(p0, p1, p2, p3, pout);
+    for (unsigned i = 0; i < num; i++) {
+        pout[i] = evaluateCubicGeom(p0, p1, p2, p3, pout[i]);
+    }
+    return num;
+}
+
 static inline double evaluateCubic(const double *c, double x)
 {
     // Horner's rule for the win.
@@ -2104,6 +2225,16 @@ static inline double evaluateCubicSecondDerivative(const double *c, double x)
 {
     // returns d/dx of evaluateCubicDerivative()
     return  6 * c[3] * x + 2 * c[2] ;
+}
+
+static inline double evaluateCubicGeom(double a, double b, double c, double d, double t)
+{
+    double t1 = 1 - t;
+    double c0 = t1*t1*t1;
+    double c1 = (3*t1*t)*t1;
+    double c2 = (3*t1*t)*t;
+    double c3 = 1 - (c0+c1+c2);
+    return a*c0 + b*c1 + c*c2 + d*c3;
 }
 
 #if 0
@@ -3032,35 +3163,20 @@ BOOL tightBoundsOfCurveTo(NSRect *rectp, NSPoint startPoint, NSPoint controlPoin
         goto finis;
     }
     
-    /* Convert to parametric form and find the extreme points using findCubicExtrema() */
-    /* Note that findCubicExtrema() will happily return extremes outside the range [0,1], which we want to ignore */
-    NSPoint coefficientPoints[4];
-    _parameterizeCurve(coefficientPoints, startPoint, endPoint, controlPoint1, controlPoint2);
-    
-    double  coefficients[4], tvalues[2];
-    unsigned tvcount;
+    double evalues[2];
+    unsigned evcount;
     
     /* Check the x-extrema */
-    coefficients[0] = coefficientPoints[0].x;
-    coefficients[1] = coefficientPoints[1].x;
-    coefficients[2] = coefficientPoints[2].x;
-    coefficients[3] = coefficientPoints[3].x;
-    tvcount = findCubicExtrema(coefficients, tvalues);
-    if (tvcount >= 1 && tvalues[0] > 0 && tvalues[0] < 1)
-        INCLUDE(minX, maxX, evaluateCubic(coefficients, tvalues[0]), sideClearance);
-    if (tvcount >= 2 && tvalues[1] > 0 && tvalues[1] < 1)
-        INCLUDE(minX, maxX, evaluateCubic(coefficients, tvalues[1]), sideClearance);
-    
+    evcount = findCubicExtremaAndEvalGeom(startPoint.x, controlPoint1.x, controlPoint2.x, endPoint.x, evalues);
+    for (unsigned evindex = 0; evindex < evcount; evindex ++) {
+        INCLUDE(minX, maxX, evalues[evindex], sideClearance);
+    }
+
     /* and the y-extrema */
-    coefficients[0] = coefficientPoints[0].y;
-    coefficients[1] = coefficientPoints[1].y;
-    coefficients[2] = coefficientPoints[2].y;
-    coefficients[3] = coefficientPoints[3].y;
-    tvcount = findCubicExtrema(coefficients, tvalues);
-    if (tvcount >= 1 && tvalues[0] > 0 && tvalues[0] < 1)
-        INCLUDE(minY, maxY, evaluateCubic(coefficients, tvalues[0]), sideClearance);
-    if (tvcount >= 2 && tvalues[1] > 0 && tvalues[1] < 1)
-        INCLUDE(minY, maxY, evaluateCubic(coefficients, tvalues[1]), sideClearance);
+    evcount = findCubicExtremaAndEvalGeom(startPoint.y, controlPoint1.y, controlPoint2.y, endPoint.y, evalues);
+    for (unsigned evindex = 0; evindex < evcount; evindex ++) {
+        INCLUDE(minY, maxY, evalues[evindex], sideClearance);
+    }
     
 finis:
     if (modified) {
@@ -3746,6 +3862,11 @@ void OACGAddRoundedRect(CGContextRef context, NSRect rect, CGFloat minyLeft, CGF
 }
 
 @implementation OABezierPathIntersection
+{
+    OABezierPathIntersectionHalf _left;
+    OABezierPathIntersectionHalf _right;
+    NSPoint _location;
+}
 
 @synthesize left = _left;
 @synthesize right = _right;

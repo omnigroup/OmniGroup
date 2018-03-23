@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@
 #import <OmniFoundation/OFPreference.h>
 #import <Foundation/NSNetServices.h>
 #import <Foundation/NSMapTable.h>
+
+#if !OF_ENABLE_NET_STATE
+#error Should not be in the target
+#endif
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>

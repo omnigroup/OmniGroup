@@ -15,4 +15,5 @@
 
 // These are defined here instead of in the compiler flags so that they don't cause extra precompiled module generation (which are shared by the compiler environment).
 #define NOCRYPT
+#define NOUNCRYPT
 #define VERSIONMADEBY 0x0300

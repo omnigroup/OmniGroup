@@ -1,0 +1,77 @@
+/* error title */
+"An error has occurred." = "오류가 발생했습니다.";
+
+/* error description */
+"Cannot create directory." = "디렉토리를 생성할 수 없습니다.";
+
+/* error description */
+"Cannot delete file." = "파일을 삭제할 수 없습니다.";
+
+/* error description */
+"Cannot move file." = "파일을 이동할 수 없습니다.";
+
+/* error description */
+"Cannot read file" = "파일을 읽을 수 없음";
+
+/* bad password error reason */
+"Could not decode encryption document key." = "암호화 도큐멘트 키를 디코딩할 수 없습니다.";
+
+/* error description */
+"Could not decrypt file." = "파일을 암호 해독할 수 없습니다.";
+
+/* error description */
+"Could not find \"%@\"." = "'%@'을(를) 찾을 수 없습니다.";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "주소가 올바른지 확인하고 다시 시도하십시오.";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "서버 주소, 사용자 이름, 암호가 올바른지 확인하고 다시 시도하십시오.";
+
+/* error reason */
+"Failed to delete \"%@\"." = "“%@”을(를) 삭제하지 못했습니다.";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "“%1$@”을(를) “%2$@”(으)로 이동하지 못했습니다.";
+
+/* bad password error description */
+"Incorrect encryption password." = "암호화 암호가 잘못되었습니다.";
+
+/* error description */
+"Internal error updating keychain" = "키 체인 업데이트 중 내부 오류 발생";
+
+/* error reason - listing a directory that doesn't exist */
+"No document exists at \"%@\"." = "“%@”에 도큐멘트가 없습니다.";
+
+/* error reason */
+"No such directory \"%@\"" = "“%@” 디렉토리가 없습니다.";
+
+/* error reason */
+"No such file \"%@\"." = "“%@” 파일이 없습니다.";
+
+/* encryption access method description - key derivation from password */
+"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "대상 폴더가 존재하는지 확인하십시오.";
+
+/* error reason - token is filename */
+"Unable to decrypt contents of file “%@”." = "“%@” 파일의 내용을 해독할 수 없습니다.";
+
+/* error description */
+"Unable to delete file." = "파일을 삭제할 수 없습니다.";
+
+/* error description */
+"Unable to move file." = "파일을 이동할 수 없습니다.";
+
+/* error description */
+"Unable to read document." = "도큐멘트를 읽을 수 없습니다.";
+
+/* error description */
+"Unable to read file." = "파일을 읽을 수 없습니다.";
+
+/* error description */
+"Unable to write file." = "파일을 기록할 수 없습니다.";
+
+/* error detail */
+"Unrecognized settings in encryption header" = "암호화 헤더에서 인식할 수 없는 설정";

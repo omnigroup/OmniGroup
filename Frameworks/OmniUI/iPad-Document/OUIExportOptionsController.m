@@ -236,8 +236,6 @@ NS_ASSUME_NONNULL_BEGIN
         BOOL didOpen;
         if (_optionPickerView) {
             didOpen = [self.documentInteractionController presentOpenInMenuFromRect:_optionPickerRect inView:_optionPickerView animated:YES];
-        } else if (_presentingBarButtonItem) {
-            didOpen = [self.documentInteractionController presentOpenInMenuFromBarButtonItem:_presentingBarButtonItem animated:YES];
         } else {
             didOpen = [self.documentInteractionController presentPreviewAnimated:YES];
         }

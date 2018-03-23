@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -336,7 +336,7 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
                                     
                                     seln = NULL;
                                     /* No luck */
-                                    namebuf[3] = tolower(namebuf[3]);
+                                    namebuf[3] = (char)tolower(namebuf[3]);
                                     NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
                                     OBAssertFailed("");
                                 }

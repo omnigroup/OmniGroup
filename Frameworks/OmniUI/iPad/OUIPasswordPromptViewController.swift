@@ -59,6 +59,7 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
         self.showHintButton?.setTitle(NSLocalizedString("Show hint…", tableName: "OmniUI", bundle: OmniUIBundle, comment: "Show hint label - password/passphrase prompt"), for: .normal)
         self.cancelButton?.setTitle(NSLocalizedString("Cancel", tableName: "OmniUI", bundle: OmniUIBundle, comment: "button title - password/passphrase prompt"), for: .normal)
         self.okButton?.setTitle(NSLocalizedString("OK", tableName: "OmniUI", bundle: OmniUIBundle, comment: "button title - password/passphrase prompt"), for: .normal)
+        self.passwordField?.placeholder = NSLocalizedString("enter password", tableName:"OmniUI", bundle: OmniUIBundle, comment: "password field placeholder text")
         updateHintText()
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: .UIKeyboardWillShow, object: nil)

@@ -69,7 +69,7 @@ public extension Diffable {
         let itemDifferenceFast = WrappedDifferenceComparable.difference(from: oldWrappedItems, to: newWrappedItems, metaMutator: MetaMutator(sectionDifference: sectionDifference))
         switch itemDifferenceFast {
         case .reload:
-            return Difference(sectionChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), itemChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []))
+            return Difference(sectionChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), itemChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), changeKind: .hasChangeButCannotApply)
         case .applyDifference(let collectionDifference):
             itemDifference = collectionDifference
         }
@@ -135,8 +135,15 @@ public extension Diffable {
 
         let survivingItemDifference = CollectionDifference<IndexPath>(insertions: Set(survivingInsertions), deletions: Set(survivingDeletions), updates: survivingUpdates, moves: survivingMoves)
 
-
-        return Difference(sectionChanges: sectionDifference, itemChanges: survivingItemDifference)
+        let applicability: Difference.ChangeKind
+        switch (sectionDifferenceFast, itemDifferenceFast) {
+        case (.reload, _): fallthrough
+        case (_, .reload): applicability = .hasChangeButCannotApply
+        case let (.applyDifference(sectionDiff), .applyDifference(itemDiff)):
+            applicability = (sectionDiff.isEmpty && itemDiff.isEmpty) ? .noChange : .hasChangeAndCanApply
+        }
+        
+        return Difference(sectionChanges: sectionDifference, itemChanges: survivingItemDifference, changeKind: applicability)
     }
 }
 
@@ -246,9 +253,17 @@ public struct Difference {
     public let sectionChanges: CollectionDifference<Int>
     public let itemChanges: CollectionDifference<IndexPath>
     
-    public var isEmpty: Bool {
-        return sectionChanges.isEmpty && itemChanges.isEmpty
+    /// Describes how the difference can be applied.
+    ///
+    /// - hasChangeAndCanApply: This Difference contains changes that it can apply for you.
+    /// - hasChangeButCannotApply: This Difference contains changes but cannot apply them for you because it was not able to compute the minimal set of changes due to performance reasons. In this case you probably want to `reloadData()` yourself.
+    /// - noChange: This Difference does not contain any changes.
+    public enum ChangeKind {
+        case hasChangeAndCanApply
+        case hasChangeButCannotApply
+        case noChange
     }
+    public var changeKind: ChangeKind
     
     /// Animates the table view to transition between the pre- and post-states from which this `Difference` was constructed.
     ///

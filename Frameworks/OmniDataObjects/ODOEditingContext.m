@@ -46,13 +46,10 @@ RCS_ID("$Id$")
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOEditingContext
-
-static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info)
 {
-    // End-of-event processing.  This will provoke an undo group if one isn't already open.
-    ODOEditingContext *self = info;
-    if (self->_recentlyInsertedObjects || self->_recentlyUpdatedObjects || self->_recentlyDeletedObjects)
-        [self processPendingChanges];
+    // Remember the runloop we added an observer on for assertions.
+    CFRunLoopRef _runLoopForObserver;
+    CFRunLoopObserverRef _runLoopObserver;
 }
 
 - (instancetype)initWithDatabase:(ODODatabase *)database;
@@ -70,15 +67,6 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     
     _registeredObjectByID = [[NSMutableDictionary alloc] init];
     
-    // TODO: Need to register for other times?  What about when the app is sitting idle and a timer fires making changes?  That should be its own undo group.  Actually, in the case of OmniFocus, it's unclear if that should be undoable.  Undoing would put stuff in a weird state (and the change would probably get redone nearly immediately).  It might be nice to be able to mark properties as summaries -- change sets that *only* include these might automatically not have associated undos.
-    
-    // TODO: Don't schedule an observer until we have recent changes?
-    CFRunLoopObserverContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
-    ctx.info = self;
-    ctx.copyDescription = OFNSObjectCopyDescription;
-    _runLoopObserver = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true/*repeats*/, 0/*order*/, _runLoopObserverCallBack, &ctx);
-    CFRunLoopAddObserver(CFRunLoopGetCurrent(), _runLoopObserver, kCFRunLoopCommonModes);
 
     OBINVARIANT([self _checkInvariants]);
     return self;
@@ -94,14 +82,11 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     [_database release];
     [_undoManager removeAllActionsWithTarget:self];
     [_undoManager release];
-    
+
     if (_runLoopObserver) {
-        // Retain the runloop?  Assert we are in the main thread in both?
-        CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), _runLoopObserver, kCFRunLoopCommonModes);
-        CFRelease(_runLoopObserver);
-        _runLoopObserver = NULL;
+        [self _removeRunLoopObserver];
     }
-    
+
     [_registeredObjectByID release];
     
     OBASSERT([_processedInsertedObjects count] == 0);
@@ -140,6 +125,20 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     }
     
     _undoManager = [undoManager retain];
+}
+
+- (BOOL)automaticallyProcessPendingChanges;
+{
+    return _runLoopObserver != NULL;
+}
+
+- (void)setAutomaticallyProcessPendingChanges:(BOOL)automaticallyProcessPendingChanges;
+{
+    if (automaticallyProcessPendingChanges && _runLoopObserver == NULL) {
+        [self _addRunLoopObserver];
+    } else if (!automaticallyProcessPendingChanges && _runLoopObserver != NULL) {
+        [self _removeRunLoopObserver];
+    }
 }
 
 // Empties the reciever of all objects.
@@ -1495,8 +1494,46 @@ NSString * const ODODeletedObjectPropertySnapshotsKey = @"ODODeletedObjectProper
 NSNotificationName ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
 NSNotificationName ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
+
+static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *info)
+{
+    // End-of-event processing.  This will provoke an undo group if one isn't already open.
+    ODOEditingContext *self = info;
+    if (self->_recentlyInsertedObjects || self->_recentlyUpdatedObjects || self->_recentlyDeletedObjects)
+        [self processPendingChanges];
+}
+
+- (void)_addRunLoopObserver;
+{
+    // For now, ensure this is on the main run loop
+    OBPRECONDITION([NSRunLoop currentRunLoop] == [NSRunLoop mainRunLoop]);
+
+    OBPRECONDITION(_runLoopForObserver == NULL);
+    OBPRECONDITION(_runLoopObserver == NULL);
+
+    _runLoopForObserver = CFRunLoopGetCurrent();
+    CFRetain(_runLoopForObserver);
+
+    CFRunLoopObserverContext ctx;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.info = self;
+    ctx.copyDescription = OFNSObjectCopyDescription;
+    _runLoopObserver = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true/*repeats*/, 0/*order*/, _runLoopObserverCallBack, &ctx);
+    CFRunLoopAddObserver(CFRunLoopGetCurrent(), _runLoopObserver, kCFRunLoopCommonModes);
+}
+
+- (void)_removeRunLoopObserver;
+{
+    OBPRECONDITION(_runLoopForObserver != NULL);
+    OBPRECONDITION(_runLoopObserver != NULL);
+
+    CFRunLoopRemoveObserver(_runLoopForObserver, _runLoopObserver, kCFRunLoopCommonModes);
+    CFRelease(_runLoopForObserver);
+    _runLoopForObserver = NULL;
+    CFRelease(_runLoopObserver);
+    _runLoopObserver = NULL;
+}
 
 - (void)_databaseConnectionDidChange:(NSNotification *)note;
 {

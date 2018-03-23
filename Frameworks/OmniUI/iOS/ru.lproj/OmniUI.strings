@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "О программе %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,6 +21,9 @@
 
 "Cancel" = "Отмена";
 
+/* alert title */
+"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+
 /* Center Text Align button accessibility label. */
 "Center text align" = "Выравнивание по центру";
 
@@ -40,6 +42,9 @@
 /* increment button accessibility label */
 "Decrement" = "Убывание";
 
+/* Accessibility label for dismissing a sliding overlay pane */
+"Dismiss overlay" = "Отменить наложение";
+
 /* Done
    toolbar item title */
 
@@ -48,11 +53,17 @@
 /* toolbar item title */
 "Edit" = "Изменить";
 
+/* password field placeholder text */
+"enter password" = "введите пароль";
+
 /* disabled for demo */
 "Feature not enabled for this demo" = "В демо-версии эта функция не работает";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Подогнать";
+
+/* button title - password/passphrase prompt */
+"Help" = "Справка";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Справка и настройки";
@@ -78,6 +89,9 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
 
+/* message format */
+"Mail has not been set up on this %@." = "Почта не настроена на этом устройстве %@.";
+
 /* News menu item
    News view title */
 
@@ -94,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -110,6 +121,9 @@
 
 /* alert title */
 "Preference changed" = "Параметр изменен";
+
+/* button title */
+"Quit" = "Выход";
 
 /* Redo button title */
 "Redo" = "Повторить";

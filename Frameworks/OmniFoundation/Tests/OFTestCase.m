@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -209,7 +209,7 @@ static BOOL _OFCheckFilesSame(XCTestCase *self, NSString *path1, NSString *path2
         NSDictionary *attributes1 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error];
         if (!attributes1) {
             if (requireSame)
-                XCTFail(@"Unable to read attributes");
+                XCTFail(@"Error reading attributes of %@: %@", map1, error);
             return NO;
         }
         NSDictionary *attributes2 = [[NSFileManager defaultManager] attributesOfItemAtPath:map2 error:&error];

@@ -1806,9 +1806,17 @@ typedef NSString * (^MessageProvider)(void);
             }
         }
 
-        NSString *promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened"),
+
+        NSString *promptMessage;
+        if (fileItem.name != nil) {
+            promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened"),
                                    fileItem.name];
-        
+        }
+        else {
+            // When OmniGraffle imports an OmniOutliner file, the document we have on hand is not the Outliner document. So the fileItem doesn't have a name.
+            promptMessage = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document requires a password to open.", @"OmniUIDocument", OMNI_BUNDLE, @"dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened")];
+        }
+
         OUIPasswordPromptViewController *dialog = [[OUIPasswordPromptViewController alloc] init];
         dialog.title = promptMessage;
         dialog.hintText = _hint;

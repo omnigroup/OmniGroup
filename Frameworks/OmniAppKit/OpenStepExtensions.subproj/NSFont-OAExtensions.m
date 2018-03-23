@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,22 +18,22 @@ RCS_ID("$Id$")
 @implementation NSFont (OAExtensions)
 
 // N.B. These were empirically determined; they may not be stable across OS releases.
-static const CGFloat OASystemFontWeightHeavy = 11;
-static const CGFloat OASystemFontWeightMedium = 6;
-static const CGFloat OASystemFontWeightLight = 3;
-static const CGFloat OASystemFontWeightThin = 3;
-static const CGFloat OASystemFontWeightUltraLight = 2;
+static const NSInteger OASystemFontWeightHeavy = 11;
+static const NSInteger OASystemFontWeightMedium = 6;
+static const NSInteger OASystemFontWeightLight = 3;
+static const NSInteger OASystemFontWeightThin = 3;
+static const NSInteger OASystemFontWeightUltraLight = 2;
 
-static const CGFloat OASystemFontWeightBoldCutoverWeight = OASystemFontWeightMedium;
+static const NSInteger OASystemFontWeightBoldCutoverWeight = OASystemFontWeightMedium;
 
-+ (NSFont *)OA_systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;
++ (NSFont *)OA_systemFontOfSize:(CGFloat)size weight:(NSInteger)weight;
 {
     static NSMutableDictionary *fontCache = nil;
     if (fontCache == nil) {
         fontCache = [[NSMutableDictionary alloc] init];
     }
     
-    NSString *cacheKey = [NSString stringWithFormat:@"size=%.2f; weight=%.2f", size, weight];
+    NSString *cacheKey = [NSString stringWithFormat:@"size=%.2f; weight=%ld", size, weight];
     NSFont *cachedResult = fontCache[cacheKey];
     if (cachedResult != nil) {
         return cachedResult;

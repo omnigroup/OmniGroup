@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,11 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniFoundation/OFFeatures.h>
+
+#if !OF_ENABLE_NET_STATE
+#error Should not be imported on this platform
+#endif
 
 /*
  Publishes the state of a local resource that peers in the same group might be interested in.

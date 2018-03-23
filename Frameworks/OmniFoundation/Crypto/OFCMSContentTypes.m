@@ -45,7 +45,7 @@ static dispatch_data_t dispatch_of_NSData(NSData *buf) __attribute__((unused));
 
 #pragma mark EnvelopedData
 
-static NSData *_dataForAttributesWithImplicitTag(NSArray <NSData *> * __nullable attributes, int tag)
+static NSData *_dataForAttributesWithImplicitTag(NSArray <NSData *> * __nullable attributes, uint8_t tag)
 {
     NSMutableData *data = nil;
     if (attributes != nil && attributes.count != 0) {

@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -534,7 +534,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
 
 - (float)_useRoundingOnValue:(float)value;
 {
-    if (!roundingInterval)
+    if (roundingInterval == 0.0)
         return value;
         
     float valueRemainder = fmodf(value, roundingInterval);
@@ -670,7 +670,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     }
     DLOG(@"secondsLeft = %f", secondsLeft);
     
-    secondsLeft = round(secondsLeft); // not interested in showing anything smaller than a single second difference, so round to nearest second
+    secondsLeft = roundf(secondsLeft); // not interested in showing anything smaller than a single second difference, so round to nearest second
     if (secondsLeft < 0.0) {  
 	isNegative = YES;
 	secondsLeft = -secondsLeft;
@@ -679,9 +679,9 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     NSMutableString *result = [NSMutableString string];
     unsigned int unitIndex;
     for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-        if (_flags.displayUnits & (1 << unitIndex)) {
+        if (_flags.displayUnits & (1U << unitIndex)) {
             OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-            BOOL willDisplaySmallerUnits = (_flags.displayUnits & ~((1 << (unitIndex+1))-1));
+            BOOL willDisplaySmallerUnits = (_flags.displayUnits & ~((1U << (unitIndex+1))-1)) != 0;
             
             DLOG(@"  unitIndex:%d willDisplaySmallerUnits:0x%x value:%f", unitIndex, willDisplaySmallerUnits, secondsLeft);
 	    if (!willDisplaySmallerUnits) {
