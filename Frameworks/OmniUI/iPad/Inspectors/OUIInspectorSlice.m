@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -351,11 +351,12 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 - (NSArray *)appropriateObjectsForInspection;
 {
-    OBPRECONDITION(self.containingPane, "<bug:///150992> (iOS-OmniPlan Unassigned: OPBaselinesInspectorSlice looks for appropriateObjectsForInspection too early and fails assertion)");
+    OUIStackedSlicesInspectorPane *containingPane = self.containingPane;
+    OBPRECONDITION(containingPane, "<bug:///150992> (iOS-OmniPlan Unassigned: OPBaselinesInspectorSlice looks for appropriateObjectsForInspection too early and fails assertion)");
     
     NSMutableArray *objects = nil;
     
-    for (id object in self.containingPane.inspectedObjects) {
+    for (id object in containingPane.inspectedObjects) {
         if ([self isAppropriateForInspectedObject:object]) {
             if (!objects)
                 objects = [NSMutableArray array];
@@ -369,9 +370,10 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 #ifdef NS_BLOCKS_AVAILABLE
 - (void)eachAppropriateObjectForInspection:(void (^)(id obj))action;
 {
-    OBPRECONDITION(self.containingPane);
+    OUIStackedSlicesInspectorPane *containingPane = self.containingPane;
+    OBPRECONDITION(containingPane);
         
-    for (id object in self.containingPane.inspectedObjects) {
+    for (id object in containingPane.inspectedObjects) {
         if ([self isAppropriateForInspectedObject:object])
             action(object);
     }

@@ -177,6 +177,8 @@ RCS_ID("$Id$")
     return fileItem;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-repeated-use-of-weak"
 - (ODSExternalScope *)_externalScopeWithIdentifier:(NSString *)identifier localizedDisplayName:(NSString *)localizedDisplayName;
 {
     if (_externalScopes[identifier] != nil)
@@ -301,6 +303,7 @@ RCS_ID("$Id$")
     _externalScopes[identifier] = externalScope;
     return externalScope;
 }
+#pragma clang diagnostic pop
 
 // Originally, we were going to try to have separate external containers for different containers: for example, you might have "iCloud Documents" and "DropBox Documents". In fact, we actually implemented multiple containers briefly. But it turned out we didn't really have API available for identifying which provider was being used for a file, so we decided to simplify this to just display "Other Documents" for all external documents at all times.
 // At least, that was the state of affairs for the last few years. Now, though, we want to be able to transfer documents to/from "Other Documents", but for browsing we want to keep track of "Recent Documents".

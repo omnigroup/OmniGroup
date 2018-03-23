@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -290,9 +290,10 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     OUIInspector *inspector = self.inspector;
     [inspector willBeginChangingInspectedObjects];
     {
-        for (id <OUIFontInspection> object in self.parentSlice.appropriateObjectsForInspection) {
+        OUIInspectorSlice *parentSlice = self.parentSlice;
+        for (id <OUIFontInspection> object in parentSlice.appropriateObjectsForInspection) {
             // Grab any existing font size in order to preserve it
-            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self.parentSlice];
+            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:parentSlice];
             CGFloat fontSize;
             if (fontDescriptor)
                 fontSize = [fontDescriptor size];
@@ -315,7 +316,7 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice undoManager:self.undoManager];
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:parentSlice undoManager:self.undoManager];
             }
         }
     }
@@ -361,12 +362,13 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
 
 - (void)_buildSections;
 {
-    if (!self.parentSlice) {
+    OUIInspectorSlice *parentSlice = self.parentSlice;
+    if (parentSlice == nil) {
         _sections = nil;
         return;
     }
     
-    OUIFontSelection *selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
+    OUIFontSelection *selection = OUICollectFontSelection(parentSlice, parentSlice.appropriateObjectsForInspection);
     //NSLog(@"selection.fontDescriptors = %@", selection.fontDescriptors);
 
     if (_showFacesOfFont == nil) {
@@ -466,7 +468,8 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
 
 - (void)_updateSectionItems;
 {
-    OUIFontSelection *selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
+    OUIInspectorSlice *parentSlice = self.parentSlice;
+    OUIFontSelection *selection = OUICollectFontSelection(parentSlice, parentSlice.appropriateObjectsForInspection);
         
     NSSet *selectedFontNames;
     if (_showFacesOfFont)

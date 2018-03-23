@@ -1492,6 +1492,12 @@
 		A2863F510B73DFB800BF81B8 /* OFFileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2863F500B73DFB800BF81B8 /* OFFileTests.m */; };
 		A28D43B70916EAFC006D5336 /* NSSet-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = A28D43B50916EAFC006D5336 /* NSSet-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A28D43B80916EAFC006D5336 /* NSSet-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = A28D43B60916EAFC006D5336 /* NSSet-OFExtensions.m */; };
+		A28D9AE120225AD8005C4D1F /* CFNetwork-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28D9AE020225AD8005C4D1F /* CFNetwork-OFExtensions.swift */; };
+		A28D9AE220225AD8005C4D1F /* CFNetwork-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A28D9AE020225AD8005C4D1F /* CFNetwork-OFExtensions.swift */; };
+		A28D9AE920226D3C005C4D1F /* OFNetworkUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = A28D9AE720226D3C005C4D1F /* OFNetworkUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A28D9AEA20226D3C005C4D1F /* OFNetworkUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = A28D9AE720226D3C005C4D1F /* OFNetworkUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A28D9AEB20226D3C005C4D1F /* OFNetworkUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = A28D9AE820226D3C005C4D1F /* OFNetworkUtilities.m */; };
+		A28D9AEC20226D3C005C4D1F /* OFNetworkUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = A28D9AE820226D3C005C4D1F /* OFNetworkUtilities.m */; };
 		A29492F51337EE76003364F5 /* OFDigestUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = A29492F31337EE76003364F5 /* OFDigestUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A29492F61337EE76003364F5 /* OFDigestUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = A29492F41337EE76003364F5 /* OFDigestUtilities.m */; };
 		A2AC2E580F783EDD002D9BFB /* OFXMLTextWriterSink.h in Headers */ = {isa = PBXBuildFile; fileRef = A2AC2E560F783EDD002D9BFB /* OFXMLTextWriterSink.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2528,6 +2534,9 @@
 		A28C00260E25A52700832A54 /* OmniFoundation_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniFoundation_Prefix.h; sourceTree = SOURCE_ROOT; };
 		A28D43B50916EAFC006D5336 /* NSSet-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSSet-OFExtensions.h"; sourceTree = "<group>"; };
 		A28D43B60916EAFC006D5336 /* NSSet-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSSet-OFExtensions.m"; sourceTree = "<group>"; };
+		A28D9AE020225AD8005C4D1F /* CFNetwork-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CFNetwork-OFExtensions.swift"; sourceTree = "<group>"; };
+		A28D9AE720226D3C005C4D1F /* OFNetworkUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFNetworkUtilities.h; sourceTree = "<group>"; };
+		A28D9AE820226D3C005C4D1F /* OFNetworkUtilities.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFNetworkUtilities.m; sourceTree = "<group>"; };
 		A29492F31337EE76003364F5 /* OFDigestUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFDigestUtilities.h; sourceTree = "<group>"; };
 		A29492F41337EE76003364F5 /* OFDigestUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDigestUtilities.m; sourceTree = "<group>"; };
 		A2A0D6A30FE9CBFE00F55E7C /* OFXMLSignature.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLSignature.h; sourceTree = "<group>"; };
@@ -3200,6 +3209,7 @@
 				F0109F80023E8CB83897A113 /* OFCFCallbacks.h */,
 				F0109F81023E8CB83897A113 /* OFCFCallbacks.m */,
 				1EA896751D651F1D0058942E /* SecItem-OFExtensions.swift */,
+				A28D9AE020225AD8005C4D1F /* CFNetwork-OFExtensions.swift */,
 			);
 			name = "CoreFoundation Extensions";
 			path = CoreFoundationExtensions;
@@ -3530,6 +3540,8 @@
 				348C22D7162F28DD00EBFCB9 /* OFNetStateRegistration.h */,
 				348C22D8162F28DD00EBFCB9 /* OFNetStateRegistration.m */,
 				1E6A669D1CB47D66001CB11B /* OFCredentialChallengeDispositionProtocol.h */,
+				A28D9AE720226D3C005C4D1F /* OFNetworkUtilities.h */,
+				A28D9AE820226D3C005C4D1F /* OFNetworkUtilities.m */,
 			);
 			name = Network;
 			sourceTree = "<group>";
@@ -4080,6 +4092,7 @@
 				34A0617D1EC110A60099028D /* NSMutableData-OFExtensions.h in Headers */,
 				34A0617E1EC110A60099028D /* NSMutableDictionary-OFExtensions.h in Headers */,
 				34A0617F1EC110A60099028D /* NSMutableSet-OFExtensions.h in Headers */,
+				A28D9AEA20226D3C005C4D1F /* OFNetworkUtilities.h in Headers */,
 				34A061801EC110A60099028D /* NSMutableString-OFExtensions.h in Headers */,
 				34A061811EC110A60099028D /* NSNotificationCenter-OFExtensions.h in Headers */,
 				34A061821EC110A60099028D /* NSNotificationQueue-OFExtensions.h in Headers */,
@@ -4491,6 +4504,7 @@
 				4A4E067308AA72B10098FF0F /* NSMutableData-OFExtensions.h in Headers */,
 				4A4E067408AA72B10098FF0F /* NSMutableDictionary-OFExtensions.h in Headers */,
 				4A4E067508AA72B10098FF0F /* NSMutableSet-OFExtensions.h in Headers */,
+				A28D9AE920226D3C005C4D1F /* OFNetworkUtilities.h in Headers */,
 				4A4E067608AA72B10098FF0F /* NSMutableString-OFExtensions.h in Headers */,
 				4A4E067708AA72B10098FF0F /* NSNotificationCenter-OFExtensions.h in Headers */,
 				4A4E067808AA72B10098FF0F /* NSNotificationQueue-OFExtensions.h in Headers */,
@@ -4934,7 +4948,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5398,6 +5412,7 @@
 				34A062751EC110A60099028D /* NSFileManager-OFExtensions.m in Sources */,
 				34A062761EC110A60099028D /* NSInvocation-OFExtensions.m in Sources */,
 				34A062771EC110A60099028D /* NSMutableArray-OFExtensions.m in Sources */,
+				A28D9AEC20226D3C005C4D1F /* OFNetworkUtilities.m in Sources */,
 				34A062781EC110A60099028D /* NSProcessInfo-OFExtensions.swift in Sources */,
 				34A062791EC110A60099028D /* NSMutableAttributedString-OFExtensions.m in Sources */,
 				34A0627A1EC110A60099028D /* NSMutableData-OFExtensions.m in Sources */,
@@ -5544,6 +5559,7 @@
 				34A063071EC110A60099028D /* OFWeakReference.m in Sources */,
 				34A063081EC110A60099028D /* OFSecurityUtilities.m in Sources */,
 				34A063091EC110A60099028D /* OFCredentials-Mac.m in Sources */,
+				A28D9AE220225AD8005C4D1F /* CFNetwork-OFExtensions.swift in Sources */,
 				34A0630A1EC110A60099028D /* OFCredentials.m in Sources */,
 				34A0630B1EC110A60099028D /* OFHTTPHeaderDictionary.m in Sources */,
 				34A0630C1EC110A60099028D /* OFStringValueTransformers.m in Sources */,
@@ -5849,6 +5865,7 @@
 				4A4E070F08AA72B10098FF0F /* NSFileManager-OFExtensions.m in Sources */,
 				4A4E071108AA72B10098FF0F /* NSInvocation-OFExtensions.m in Sources */,
 				4A4E071208AA72B10098FF0F /* NSMutableArray-OFExtensions.m in Sources */,
+				A28D9AEB20226D3C005C4D1F /* OFNetworkUtilities.m in Sources */,
 				420E8D011DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */,
 				4A4E071308AA72B10098FF0F /* NSMutableAttributedString-OFExtensions.m in Sources */,
 				4A4E071408AA72B10098FF0F /* NSMutableData-OFExtensions.m in Sources */,
@@ -5995,6 +6012,7 @@
 				346E3253163B131E00CEC076 /* OFWeakReference.m in Sources */,
 				3402C56315C3225500AA7DAF /* OFSecurityUtilities.m in Sources */,
 				344E6C8F15DB025800830145 /* OFCredentials-Mac.m in Sources */,
+				A28D9AE120225AD8005C4D1F /* CFNetwork-OFExtensions.swift in Sources */,
 				344E6C9115DB026800830145 /* OFCredentials.m in Sources */,
 				341840A1167E683C0023D41C /* OFHTTPHeaderDictionary.m in Sources */,
 				5F7213D91695F35B00024A7B /* OFStringValueTransformers.m in Sources */,

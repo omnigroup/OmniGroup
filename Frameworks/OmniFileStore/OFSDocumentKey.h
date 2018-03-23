@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface OFSDocumentKeyDerivationParameters : NSObject <NSCopying>
+
+- initWithAlgorithm:(NSString *)algorithm rounds:(unsigned)rounds salt:(NSData *)salt pseudoRandomAlgorithm:(NSString *)pseudoRandomAlgorithm;
+
+@property(nonatomic,readonly) NSString *algorithm;
+@property(nonatomic,readonly) unsigned rounds;
+@property(nonatomic,readonly) NSData *salt;
+@property(nonatomic,readonly) NSString *pseudoRandomAlgorithm;
+
+@end
+
 /* An OFSDocumentKey represents a set of subkeys protected by a user-relevant mechanism like a passphrase. */
 @interface OFSDocumentKey : NSObject <NSCopying,NSMutableCopying>
 
@@ -28,7 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Password-based encryption */
 @property (readonly,nonatomic) BOOL hasPassword;
+- (OFSDocumentKeyDerivationParameters *)passwordDerivationParameters:(NSError **)outError;
 - (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
+- (BOOL)deriveWithWrappingKey:(NSData *)wrappingKey error:(NSError **)outError;
++ (nullable NSData *)wrappingKeyFromPassword:(NSString *)password parameters:(OFSDocumentKeyDerivationParameters *)parameters error:(NSError **)outError;
 
 - (BOOL)borrowUnwrappingFrom:(OFSDocumentKey *)otherKey;
 

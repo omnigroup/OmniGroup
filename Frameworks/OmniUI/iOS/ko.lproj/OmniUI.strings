@@ -124,6 +124,9 @@
 /* Search field placeholder text */
 "Search" = "검색";
 
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "힌트 표시...";
+
 /* Strike Through button accessibility label */
 "Strike Through" = "취소선";
 

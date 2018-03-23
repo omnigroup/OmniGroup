@@ -56,13 +56,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		34F9DDEE1ED51F4E005BE03D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34F9DDD21ED51F4D005BE03D /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		34F9DDF01ED51F4E005BE03D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34F9DDD21ED51F4D005BE03D /* OmniFoundation.xcodeproj */;
@@ -179,7 +172,6 @@
 				34F9DDE91ED51F4E005BE03D /* OmniFoundation.framework */,
 				34F9DDEB1ED51F4E005BE03D /* OFUnitTests.xctest */,
 				34F9DDED1ED51F4E005BE03D /* OFUnitTests.xctest */,
-				34F9DDEF1ED51F4E005BE03D /* OFSimpleLockTest */,
 				34F9DDF11ED51F4E005BE03D /* OFDedicatedThreadSchedulerTest */,
 				34F9DDF31ED51F4E005BE03D /* OFClobberDetectionTest */,
 				34F9DDF51ED51F4E005BE03D /* OFCrashOnExceptionTest */,
@@ -298,7 +290,7 @@
 		BFF16A5806ECEC1300D38503 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0930;
 			};
 			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -360,13 +352,6 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 34F9DDEC1ED51F4E005BE03D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34F9DDEF1ED51F4E005BE03D /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 34F9DDEE1ED51F4E005BE03D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34F9DDF11ED51F4E005BE03D /* OFDedicatedThreadSchedulerTest */ = {

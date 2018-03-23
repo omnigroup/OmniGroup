@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -90,8 +90,9 @@ RCS_ID("$Id$")
         return;
     }
     
-    if ([self.hostViewController respondsToSelector:@selector(prepareToExport)]) {
-        [self.hostViewController prepareToExport];
+    UIViewController<OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController = self.hostViewController;
+    if ([hostViewController respondsToSelector:@selector(prepareToExport)]) {
+        [hostViewController prepareToExport];
     }
     
     // Single file export options
@@ -172,11 +173,11 @@ RCS_ID("$Id$")
     if (topLevelMenuTitle)
         menu.title = topLevelMenuTitle;
     
-    menu.tintColor = [self.hostViewController tintColorForExportMenu];
+    menu.tintColor = [hostViewController tintColorForExportMenu];
     
     menu.popoverPresentationController.barButtonItem = [sender isKindOfClass:[UIBarButtonItem class]] ? sender : self.barButtonItem;
     
-    if (![self.hostViewController isKindOfClass:[OUIDocumentPickerViewController class]] &&  [OUIInspectorAppearance inspectorAppearanceEnabled]) {
+    if (![hostViewController isKindOfClass:[OUIDocumentPickerViewController class]] &&  [OUIInspectorAppearance inspectorAppearanceEnabled]) {
         OUIInspectorAppearance *appearance = OUIInspectorAppearance.appearance;
         menu.popoverPresentationController.backgroundColor = appearance.PopoverBackgroundColor;
         menu.menuBackgroundColor = appearance.PopoverBackgroundColor;
@@ -185,7 +186,7 @@ RCS_ID("$Id$")
         menu.navigationBarStyle = OUIInspectorAppearance.appearance.InspectorBarStyle;
     }
 
-    [self.hostViewController presentViewController:menu animated:YES completion:^{
+    [hostViewController presentViewController:menu animated:YES completion:^{
         menu.popoverPresentationController.passthroughViews = nil;
     }];
 }
@@ -194,8 +195,9 @@ RCS_ID("$Id$")
 - (void)export:(id)sender
 {
     ODSFileItem *fileItem;
-    if ([self.hostViewController respondsToSelector:@selector(fileItemsToExport)]) {
-        NSArray *items = [self.hostViewController fileItemsToExport];
+    UIViewController<OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController = self.hostViewController;
+    if ([hostViewController respondsToSelector:@selector(fileItemsToExport)]) {
+        NSArray *items = [hostViewController fileItemsToExport];
         if (items.count > 1) {
             NSMutableArray *urls = [NSMutableArray array];
 
@@ -204,12 +206,12 @@ RCS_ID("$Id$")
             UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:urls applicationActivities:nil];
             activityViewController.modalPresentationStyle = UIModalPresentationPopover;
             activityViewController.popoverPresentationController.barButtonItem = sender;
-            [self.hostViewController presentViewController:activityViewController animated:YES completion:nil];
+            [hostViewController presentViewController:activityViewController animated:YES completion:nil];
             return;
         }
         fileItem = items.anyObject;
     } else {
-        fileItem = [self.hostViewController fileItemToExport];
+        fileItem = [hostViewController fileItemToExport];
     }
     [self exportItem:fileItem sender:sender];
 }
@@ -342,18 +344,19 @@ RCS_ID("$Id$")
     BOOL canMakePNG = [self supportsExportAsPNG];
     
     //- (NSData *)documentPicker:(OUIDocumentPicker *)picker copyAsImageDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
+    UIViewController<OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController = self.hostViewController;
     if (canMakeCopyAsImageSpecificPDF) {
         __autoreleasing NSError *error = nil;
         NSData *pdfData = [self copyAsImageDataForFileItem:fileItem error:&error];
         if (!pdfData)
-            OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+            OUI_PRESENT_ERROR_FROM(error, hostViewController);
         else
             [items addObject:[NSDictionary dictionaryWithObject:pdfData forKey:(id)kUTTypePDF]];
     } else if (canMakePDF) {
         __autoreleasing NSError *error = nil;
         NSData *pdfData = [self PDFDataForFileItem:fileItem error:&error];
         if (!pdfData)
-            OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+            OUI_PRESENT_ERROR_FROM(error, hostViewController);
         else
             [items addObject:[NSDictionary dictionaryWithObject:pdfData forKey:(id)kUTTypePDF]];
     }
@@ -363,7 +366,7 @@ RCS_ID("$Id$")
         __autoreleasing NSError *error = nil;
         NSData *pngData = [self PNGDataForFileItem:fileItem error:&error];
         if (!pngData) {
-            OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+            OUI_PRESENT_ERROR_FROM(error, hostViewController);
         }
         else {
             // -setImage: will register our image as being for the JPEG type. But, our image isn't a photo.
@@ -386,8 +389,9 @@ RCS_ID("$Id$")
 
 - (void)clearSelection
 {
-    if ([self.hostViewController respondsToSelector:@selector(clearSelectionAndEndEditing)]) {
-        [self.hostViewController performSelectorOnMainThread:@selector(clearSelectionAndEndEditing) withObject:nil waitUntilDone:NO];
+    UIViewController<OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController = self.hostViewController;
+    if ([hostViewController respondsToSelector:@selector(clearSelectionAndEndEditing)]) {
+        [hostViewController performSelectorOnMainThread:@selector(clearSelectionAndEndEditing) withObject:nil waitUntilDone:NO];
     }
 }
 
@@ -583,20 +587,21 @@ RCS_ID("$Id$")
             }
         }
     } else {
+        UIViewController<OUIDocumentExporterHost, OUIDisabledDemoFeatureAlerter> *hostViewController = self.hostViewController;
         emailName = [fileWrapper.preferredFilename stringByAppendingPathExtension:@"zip"];
         emailType = OFUTIForFileExtensionPreferringNative(@"zip", nil);
         NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:emailName];
         @autoreleasepool {
             __autoreleasing NSError *error = nil;
             if (![OUZipArchive createZipFile:zipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
-                OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+                OUI_PRESENT_ERROR_FROM(error, hostViewController);
                 return;
             }
         };
         __autoreleasing NSError *error = nil;
         emailData = [NSData dataWithContentsOfFile:zipPath options:NSDataReadingMappedAlways error:&error];
         if (emailData == nil) {
-            OUI_PRESENT_ERROR_FROM(error, self.hostViewController);
+            OUI_PRESENT_ERROR_FROM(error, hostViewController);
             return;
         }
     }

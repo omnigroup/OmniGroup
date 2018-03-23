@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -286,24 +286,25 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *s
 
 static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self, NSDictionary *userInfo)
 {
-    if (!self.accessoryToolbarView) {
+    UIView *accessoryToolbarView = self.accessoryToolbarView;
+    if (accessoryToolbarView == nil) {
         return;
     }
 
-    UIView *superview = self.accessoryToolbarView.superview;
-    CGRect newFrame = self.accessoryToolbarView.frame;
+    UIView *superview = accessoryToolbarView.superview;
+    CGRect newFrame = accessoryToolbarView.frame;
     if (self.lastKnownKeyboardHeight > 0) {
         newFrame.origin.x = 0;
-        newFrame.origin.y = superview.frame.size.height - self.accessoryToolbarView.frame.size.height - self.lastKnownKeyboardHeight;
+        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - self.lastKnownKeyboardHeight;
     }
     else {
         newFrame.origin.x = 0;
-        newFrame.origin.y = superview.frame.size.height - self.accessoryToolbarView.frame.size.height - superview.safeAreaInsets.bottom;
+        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - superview.safeAreaInsets.bottom;
     }
 
     DEBUG_KEYBOARD("accessory: current frame %@, new frame %@", NSStringFromCGRect(self.accessoryToolbarView.frame), NSStringFromCGRect(newFrame));
 
-    if (CGRectEqualToRect(self.accessoryToolbarView.frame, newFrame)) {
+    if (CGRectEqualToRect(accessoryToolbarView.frame, newFrame)) {
         return;
     }
 
@@ -319,7 +320,7 @@ static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self, NSDictio
     [UIView animateWithDuration:[durationNumber doubleValue] animations:^{
         [UIView setAnimationCurve:[curveNumber intValue]];
         [UIView setAnimationBeginsFromCurrentState:YES];
-        self.accessoryToolbarView.frame = newFrame;
+        accessoryToolbarView.frame = newFrame;
     }];
 }
 

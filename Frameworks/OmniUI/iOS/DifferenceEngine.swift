@@ -1,7 +1,24 @@
-// Copyright 2017 The Omni Group.  All rights reserved.
+// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
 // $Id$
 
 import UIKit
+
+fileprivate extension IndexSet {
+    
+    init<S: Sequence>(from sequence: S) where S.Element == Int {
+        self.init()
+        sequence.forEach { self.insert($0) }
+    }
+    
+}
+
+// MARK: -
 
 /// A representation of a two level tree.
 ///
@@ -28,6 +45,11 @@ public extension Diffable {
     
     /// Returns a difference value that can be used to update the table or collection view.
     public func difference(from old: Self) -> Difference {
+        let oldSectionIdentifiers = old.sections.map({ $0.differenceIdentifier })
+        let sectionIdentifiers = sections.map({ $0.differenceIdentifier })
+        precondition(Set(oldSectionIdentifiers).count == oldSectionIdentifiers.count, "Old sections must have unique section identifiers to compute a difference")
+        precondition(Set(sectionIdentifiers).count == sectionIdentifiers.count, "Sections must have unique section identifiers to compute a difference")
+        
         let newWrappedSections = sections.enumerated().map { WrappedDifferenceComparable(index: $0, value: $1) }
         let oldWrappedSections = old.sections.enumerated().map { WrappedDifferenceComparable(index: $0, value: $1) }
         
@@ -205,12 +227,6 @@ public struct Difference {
     ///   - otherUpdates: invoked in the same batch update as the updates defined by this `Difference`
     ///   - completion: invoked after the batch update animations complete
     public func updateTableView(_ tableView: UITableView, animations: TableUpdateAnimations = TableUpdateAnimations(), sectionUpdater: DifferenceSectionUpdater? = nil, rowUpdater: DifferenceRowUpdater? = nil, otherUpdates: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {
-        func indexSet<S: Sequence>(from set: S) -> IndexSet where S.Element == Int {
-            var result = IndexSet()
-            set.forEach { result.insert($0) }
-            return result
-        }
-        
         if let updater = sectionUpdater {
             for (source, destination) in sectionChanges.updates {
                 guard let sectionHeader = tableView.headerView(forSection: source) else { continue }
@@ -241,8 +257,8 @@ public struct Difference {
         }
         
         tableView.performBatchUpdates({
-            tableView.deleteSections(indexSet(from: sectionChanges.deletions), with: animations.sectionDeletion)
-            tableView.insertSections(indexSet(from: sectionChanges.insertions), with: animations.sectionInsertion)
+            tableView.deleteSections(IndexSet(from: sectionChanges.deletions), with: animations.sectionDeletion)
+            tableView.insertSections(IndexSet(from: sectionChanges.insertions), with: animations.sectionInsertion)
             for (source, destination) in sectionChanges.moves {
                 tableView.moveSection(source, toSection: destination)
             }
@@ -257,8 +273,22 @@ public struct Difference {
         }, completion: completion)
     }
     
-    public func updateCollectionView(_ collectionView: UICollectionView) {
-        fatalError("not yet implemented")
+    public func updateCollectionView(_ collectionView: UICollectionView, otherUpdates: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {
+        collectionView.performBatchUpdates({
+            collectionView.deleteSections(IndexSet(from: sectionChanges.deletions))
+            collectionView.insertSections(IndexSet(from: sectionChanges.insertions))
+            for (source, destination) in sectionChanges.moves {
+                collectionView.moveSection(source, toSection: destination)
+            }
+            
+            collectionView.deleteItems(at: Array(itemChanges.deletions))
+            collectionView.insertItems(at: Array(itemChanges.insertions))
+            for (source, destination) in itemChanges.moves {
+                collectionView.moveItem(at: source, to: destination)
+            }
+            
+            otherUpdates?()
+        }, completion: completion)
     }
 }
 
@@ -274,6 +304,9 @@ public protocol DifferenceIndex: Comparable, Hashable {
     static func moveComparisonContext<Value>(for simulationState: SimulatedTableView<Self, Value>) -> MoveComparisonContext
     /// Order must be “strict weak” as defined in the documentation of `Array.sorted(by:)`.
     static func movesAreOrderedByIncreasingImpact(_ left: (Self, Self), _ right: (Self, Self), context: MoveComparisonContext) -> Bool
+    
+    /// The engine will try to filter out moves that don't shift the position of a value in a flattened array of values. This isn't always OK; an item might move from the start of one section to the end of the preceding section, for example. Return `false` to require that such moves be included in results, or `true` to allow such moves to be filtered out of computed differences.
+    static func moveIsFilterable(_ move: (Self, Self)) -> Bool
 }
 
 public protocol Bumper {
@@ -299,6 +332,10 @@ extension Int: DifferenceIndex {
     public static func movesAreOrderedByIncreasingImpact(_ left: (Int, Int), _ right: (Int, Int), context: Int) -> Bool {
         // impact is distance moved
         return abs(left.0 - left.1) < abs(right.0 - right.1)
+    }
+    
+    public static func moveIsFilterable(_ move: (Int, Int)) -> Bool {
+        return true
     }
 }
 
@@ -332,8 +369,12 @@ extension IndexPath: DifferenceIndex {
                         sectionDelta += 1
                     }
                 }
+                
+                // We may have scanned to the end of the section list and found only deleted sections. If that's the case, be sure not to reset the nextRow; otherwise, we'll restart counting from row 0 in the (unchanged) currentIncomingSection, leading to possible index path duplication in the results.
+                if (index.section - sectionDelta > currentIncomingSection) {
+                    nextRow = 0
+                }
                 currentIncomingSection = index.section
-                nextRow = 0
             }
             result.append(IndexPath(row: nextRow, section: currentIncomingSection - sectionDelta))
             nextRow += 1
@@ -381,6 +422,10 @@ extension IndexPath: DifferenceIndex {
         }
         
         return impact(left) < impact(right)
+    }
+    
+    public static func moveIsFilterable(_ move: (IndexPath, IndexPath)) -> Bool {
+        return move.0.section == move.1.section
     }
 }
 
@@ -593,16 +638,16 @@ public struct SimulatedTableView<Index: DifferenceIndex, Value: DifferenceCompar
         var result: [(Index, Index)] = []
         
         for possibleMove in sortedPossibleMoves.reversed() {
+            let source = possibleMove.0
             let destination = possibleMove.1
             let indexMap = self.indexMap()
-            if let destinationArrayIndex = indexMap[destination.index], orderedItems[destinationArrayIndex] == destination {
+            if let destinationArrayIndex = indexMap[destination.index], orderedItems[destinationArrayIndex] == destination && Index.moveIsFilterable((source.index, destination.index)) {
                 // superfluous, already at the destination
                 continue
             }
             
             // Simulate the single item move so subsequent checks are accurate.
             // Sadly, this is O(n·m), where m is the number of moves that survive our filter above. In the worst case, random permutation of a list, m = n and we have an O(n^2) algorithm. Let's see if it flies in practice.
-            let source = possibleMove.0
             guard let intermediateIndex = index(for: source) else {
                 continue
             }

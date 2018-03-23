@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,15 +70,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setExportDestination:(nullable NSString *)text;
 {
     [self view]; // load our outlets
-    OBASSERT(_exportDestinationLabel != nil);
-    _exportDestinationLabel.text = text;
+    UILabel *exportDestinationLabel = _exportDestinationLabel;
+    OBASSERT(exportDestinationLabel != nil);
+    exportDestinationLabel.text = text;
 }
 
 - (void)setActionDescription:(nullable NSString *)text;
 {
     [self view]; // load our outlets
-    OBASSERT(_exportDescriptionLabel != nil);
-    _exportDescriptionLabel.text = text;
+    UILabel *exportDescriptionLabel = _exportDescriptionLabel;
+    OBASSERT(exportDescriptionLabel != nil);
+    exportDescriptionLabel.text = text;
 }
 
 - (void)setInterfaceDisabledWhileExporting:(BOOL)shouldDisable completion:(void (^ _Nullable)(void))completion;
@@ -131,25 +133,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateViewConstraints;
 {
     // This code manipulates the bottom of the collection view and the container view that contains the "buy pro" and "where are we uploading" views, so that only the relevant views show and the collection view eats as much vertical space as possible.
-    if (![_inAppPurchaseButton isHidden] && _exportDestinationLabel.text) {
+    UIButton *inAppPurchaseButton = _inAppPurchaseButton;
+    UILabel *exportDestinationLabel = _exportDestinationLabel;
+    if (![inAppPurchaseButton isHidden] && exportDestinationLabel.text) {
         [self.view removeConstraint:self.collectionViewTrailingConstraint];
         self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.bottomViewsContainerView attribute:NSLayoutAttributeTop multiplier:1.0 constant:0];
         [self.view addConstraint:self.collectionViewTrailingConstraint];
         self.bottomViewsTrailingConstraint.constant = 0;
-        self.exportDestinationLabel.hidden = NO;
-    } else if (![_inAppPurchaseButton isHidden]) {
+        exportDestinationLabel.hidden = NO;
+    } else if (![inAppPurchaseButton isHidden]) {
         [self.view removeConstraint:self.collectionViewTrailingConstraint];
         self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.bottomViewsContainerView attribute:NSLayoutAttributeTop multiplier:1.0 constant:0];
         [self.view addConstraint:self.collectionViewTrailingConstraint];
 
         self.bottomViewsTrailingConstraint.constant = -8; //the empty text label collapses down, so we only need to account for the extra 8 pts of padding between the label & button.
-        self.exportDestinationLabel.hidden = YES;
-    } else if (_exportDestinationLabel.text) {
+        exportDestinationLabel.hidden = YES;
+    } else if (exportDestinationLabel.text) {
         [self.view removeConstraint:self.collectionViewTrailingConstraint];
         self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.exportDestinationLabel attribute:NSLayoutAttributeTop multiplier:1.0 constant:-8.0]; // -8.0 to give the expected padding above the export destination label
         [self.view addConstraint:self.collectionViewTrailingConstraint];
         self.bottomViewsTrailingConstraint.constant = 0;
-        self.exportDestinationLabel.hidden = NO;
+        exportDestinationLabel.hidden = NO;
     } else {
         [self.view removeConstraint:self.collectionViewTrailingConstraint];
         self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
@@ -201,8 +205,9 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 
 - (void)_updateInAppPurchaseButton;
 {
-    [_inAppPurchaseButton setTitle:_inAppPurchaseButtonTitle forState:UIControlStateNormal];
-    _inAppPurchaseButton.hidden = !_showInAppPurchaseButton;
+    UIButton *inAppPurchaseButton = _inAppPurchaseButton;
+    [inAppPurchaseButton setTitle:_inAppPurchaseButtonTitle forState:UIControlStateNormal];
+    inAppPurchaseButton.hidden = !_showInAppPurchaseButton;
 }
 
 - (void)_inAppPurchaseButtonTapped:(id)sender;

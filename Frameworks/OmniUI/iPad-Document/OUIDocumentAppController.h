@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,9 +35,6 @@
 
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
-
-// these types can be read and will be saved to a different fileType (presumably our native format). Defaults to @[]
-- (NSArray *)importableFileTypes;
 
 - (IBAction)makeNewDocument:(id)sender;
 - (void)makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;

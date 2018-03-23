@@ -129,6 +129,11 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     return nil;
 }
 
++ (BOOL)shouldImportFileAtURL:(NSURL *)fileURL;
+{
+    return NO;
+}
+
 + (BOOL)shouldShowAutosaveIndicator;
 {
 #if 1 && defined(DEBUG)
@@ -138,7 +143,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 }
 
 // existing document
-- initWithExistingFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
+- (instancetype)initWithExistingFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
 {
     OBPRECONDITION(fileItem);
     OBPRECONDITION(fileItem.fileURL);
@@ -146,7 +151,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     return [self initWithFileItem:fileItem url:fileItem.fileURL error:outError];
 }
 
-- initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+- (instancetype)initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
 {
     OBPRECONDITION(![NSThread isMainThread], "Subclassers are supposed to read the template, so this should be on a background queue.");
     
@@ -160,14 +165,14 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     return self;
 }
 
-- initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+- (instancetype)initWithContentsOfImportableFileAtURL:(NSURL *)importableURL toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
 {
     OBPRECONDITION(![NSThread isMainThread], "Subclassers are supposed to read the contents at importableURL, so this should be on a background queue.");
 
     return [self initWithFileItem:nil url:saveURL error:outError];
 }
 
-- initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
+- (instancetype)initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
 
@@ -175,13 +180,13 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 }
 
 // Use one of our two initializers
-- initWithFileURL:(NSURL *)fileURL;
+- (instancetype)initWithFileURL:(NSURL *)fileURL;
 {
     OBRejectUnusedImplementation(self, _cmd);
     return nil;
 }
 
-- initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
+- (instancetype)initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 {
     DEBUG_DOCUMENT(@"INIT %p with %@ %@", self, [fileItem shortDescription], url);
 
@@ -1099,7 +1104,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             __strong OUIDocument *strongDoc = document;
             [[OUIDocumentAppController controller] documentDidFailToRebuildViewController:strongDoc];
             [oldPresentedViewController dismissViewControllerAnimated:NO completion:nil];
-            document.isDefinitelyClosing = YES;
+            strongDoc.isDefinitelyClosing = YES;
             // Possibly deleted via iTunes while the document was open and we were backgrounded. Hit this as part of <bug:///77658> ([Crash] After deleting a lot of docs via iTunes you crash on next launch of app) and logged Radar 10775218: UIDocument should manage background tasks when performing state transitions. We should be working around this with our own background task management now.
             NSLog(@"Failed to revert document %@", self);
             
@@ -1757,8 +1762,8 @@ typedef NSString * (^MessageProvider)(void);
         ODSItem *fileItem;
         UIViewController *presenter;
         
+        OUIDocument *strongDoc = self.document;
         {
-            OUIDocument *strongDoc = self.document;
 
             if (!strongDoc || self.cancelled) {
                 _enteredError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
@@ -1811,8 +1816,8 @@ typedef NSString * (^MessageProvider)(void);
             [self finish];
         };
 
-        [self.document.applicationLock unlock];
-        self.document.applicationLock = nil;
+        [strongDoc.applicationLock unlock];
+        strongDoc.applicationLock = nil;
         [presenter presentViewController:dialog animated:YES completion:nil];
     });
 }

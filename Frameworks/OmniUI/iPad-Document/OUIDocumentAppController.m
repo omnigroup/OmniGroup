@@ -628,9 +628,9 @@ static unsigned SyncAgentRunningAccountsContext;
     };
     onFail = [onFail copy];
 
-    NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:[fileItemToOpen.fileURL path] error:NULL];
+    NSString *originalPath = fileItemToOpen.fileURL.path;
+    NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:originalPath error:NULL];
     if (symlinkDestination != nil) {
-        NSString *originalPath = [fileItemToOpen.fileURL path];
         NSString *targetPath = [originalPath stringByResolvingSymlinksInPath];
         if (targetPath == nil || OFISEQUAL(targetPath, originalPath)) {
             onFail();
@@ -666,15 +666,12 @@ static unsigned SyncAgentRunningAccountsContext;
     completionHandler = [completionHandler copy];
     
     void (^doOpen)(void) = ^{
-        Class cls = [self documentClassForURL:fileItemToOpen.fileURL];
+        NSURL *fileURL = fileItemToOpen.fileURL;
+        Class cls = [self documentClassForURL:fileURL];
         OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
 
-
-        NSString *fileType = OFUTIForFileExtensionPreferringNative([fileItemToOpen.fileURL pathExtension], nil);
-        BOOL fileWillBeImported = [[self importableFileTypes] containsObject:fileType];
-        if (fileWillBeImported) {
-            [self importDocumentFromURL:fileItemToOpen.fileURL];
-            
+        if ([cls shouldImportFileAtURL:fileURL]) {
+            [self importDocumentFromURL:fileURL];
             [activityIndicator hide];
             return;
         }
@@ -1272,11 +1269,6 @@ static unsigned SyncAgentRunningAccountsContext;
     }
     
     return _editableFileTypes;
-}
-
-- (NSArray *)importableFileTypes;
-{
-    return @[];
 }
 
 - (NSArray *)_viewableFileTypes;
@@ -2168,8 +2160,9 @@ static NSSet *ViewableFileTypes()
                     OUI_PRESENT_ERROR_FROM(errorOrNil, self.window.rootViewController);
                     return;
                 }
-
-                if (_document != nil && [_documentPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [_documentPicker.delegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
+                
+                id<OUIDocumentPickerDelegate> documentPickerDelegate = _documentPicker.delegate;
+                if (_document != nil && [documentPickerDelegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [documentPickerDelegate documentPickerShouldOpenButNotDisplayUTType:newFileItem.fileType]) {
                     // If we already have an open document and we would accept but not display anything for this file type, then just do nothing and keep the current doc open. (For OmniJS plugin installation, for instance.)
                     return;
                 }
@@ -2229,7 +2222,9 @@ static NSSet *ViewableFileTypes()
     BOOL fileWillBeImported = NO;
     if (openInPlaceAccessOkay) {
         OBASSERT(url.isFileURL);
-        fileWillBeImported = [[self importableFileTypes] containsObject:fileType];
+        Class cls = [self documentClassForURL:url];
+        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+        fileWillBeImported = [cls shouldImportFileAtURL:url];
     }
     
     void (^launchAction)(void) = ^{
@@ -2473,6 +2468,8 @@ static NSSet *ViewableFileTypes()
 
 - (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler;
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-repeated-use-of-weak"
     __weak OUIDocumentAppController *weakSelf = self;  // weak self is only to keep compiler happy
     if ([shortcutItem.type hasSuffix:@".shortcut-items.open-recent"]) {
         // Open Recent
@@ -2512,6 +2509,7 @@ static NSSet *ViewableFileTypes()
             }];
         }];
     }
+#pragma clang diagnostic pop
 }
 
 #pragma mark - ODSStoreDelegate

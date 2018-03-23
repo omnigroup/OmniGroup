@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
 
 
 class SldingOverlayPresentationController: UIPresentationController {
-    @objc /**REVIEW**/ let shieldingView = UIView()
+    private let shieldingView = UIButton(type: .custom)
     @objc /**REVIEW**/ var pane: Pane
     
     @objc /**REVIEW**/ init(withPane pane: Pane, presentingController: UIViewController?) {
@@ -71,19 +71,18 @@ class SldingOverlayPresentationController: UIPresentationController {
     
     override func presentationTransitionWillBegin() {
         guard let container = self.containerView  else {
-            assertionFailure("No container view, can't contiue")
+            assertionFailure("No container view, can't continue")
             return
         }
         
         self.shieldingView.frame = container.bounds
         self.shieldingView.backgroundColor = UIColor.clear
         self.shieldingView.alpha = 0.0
+        self.shieldingView.accessibilityLabel = NSLocalizedString("Dismiss overlay", tableName: "OmniUI", bundle: OmniUIBundle, comment: "Accessibility label for dismissing a sliding overlay pane")
         container.addSubview(self.shieldingView)
         
-        let dismiss = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        dismiss.debugIdentifier = "overlay sidebar dismisser"
-        self.shieldingView.addGestureRecognizer(dismiss)
-        
+        shieldingView.addTarget(self, action: #selector(handleTap), for: .primaryActionTriggered)
+
         if let transition = self.presentedViewController.transitionCoordinator {
             transition.animate(alongsideTransition: { (context) in
                 self.shieldingView.alpha = 0.3

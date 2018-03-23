@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -204,9 +204,10 @@ typedef NS_ENUM(NSUInteger, _OUIOverlayInspectorLayout) {
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
-    
-    if ([self.dismissalDelegate respondsToSelector:@selector(inspectorWillDismiss:)]) {
-        [self.dismissalDelegate inspectorWillDismiss:self];
+
+    id <OUIInspectorPresentationControllerDismissalDelegate> dismissalDelegate = self.dismissalDelegate;
+    if ([dismissalDelegate respondsToSelector:@selector(inspectorWillDismiss:)]) {
+        [dismissalDelegate inspectorWillDismiss:self];
     }
     
     // Grabbing stack variables to the blocks that are about to be captured by the block below so that we don't capture `self`. We don't need to call `copy` on these because they are declared `copy` via the property.
@@ -257,8 +258,9 @@ typedef NS_ENUM(NSUInteger, _OUIOverlayInspectorLayout) {
     self.animationsToPerformAlongsideDismissal = nil;
     self.dismissInspectorCompletion = nil;
     
-    if ([self.dismissalDelegate respondsToSelector:@selector(inspectorDidDismiss:)]) {
-        [self.dismissalDelegate inspectorDidDismiss:self];
+    id <OUIInspectorPresentationControllerDismissalDelegate> dismissalDelegate = self.dismissalDelegate;
+    if ([dismissalDelegate respondsToSelector:@selector(inspectorDidDismiss:)]) {
+        [dismissalDelegate inspectorDidDismiss:self];
     }
 }
 

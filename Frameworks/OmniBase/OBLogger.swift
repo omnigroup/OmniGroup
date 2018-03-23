@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -107,12 +107,12 @@ public func maintainLogLevelPreference(for key: String, updater: ((OBLogger?) ->
 }
 
 private var logLevelMaintainers: [String: OBLogLevelMaintainer] = [:]
+private let observerContext = UnsafeMutableRawPointer.allocate(bytes: 4, alignedTo: 4)
 
 private class OBLogLevelMaintainer: NSObject {
     private let key: String
     private let updater: (OBLogger?) -> Void
-    private let observerContext = UnsafeMutableRawPointer.allocate(bytes: 4, alignedTo: 4)
-    
+
     @objc /**REVIEW**/ init(key: String, updater: @escaping (OBLogger?) -> Void) {
         self.key = key
         self.updater = updater
@@ -124,7 +124,7 @@ private class OBLogLevelMaintainer: NSObject {
     }
     
     deinit {
-        UserDefaults.standard.removeObserver(self, forKeyPath: key)
+        UserDefaults.standard.removeObserver(self, forKeyPath: key, context: observerContext)
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {

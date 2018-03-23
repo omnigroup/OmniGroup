@@ -19,9 +19,36 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ODOObject () // Internal initializers
+@interface ODOObject () {
+
+    @package
+    union {
+        // Our implementation is non-ARC and manages these references manually, but make this header importable by ARC.
+        __unsafe_unretained ODOProperty *single;
+        __unsafe_unretained NSMutableArray <ODOProperty *> *multiple;
+    } _propertyBeingCalculated;
+
+    struct {
+        unsigned int isFault : 1;
+        unsigned int changeProcessingDisabled : 1;
+        unsigned int invalid : 1;
+        unsigned int isAwakingFromInsert : 1;
+        unsigned int needsAwakeFromFetch : 1;
+        unsigned int isAwakingFromFetch : 1;
+        unsigned int isAwakingFromReinsertionAfterUndoneDeletion : 1;
+        unsigned int isAwakingFromUnarchive : 1;
+        unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
+        unsigned int undeletable : 1;
+        unsigned int lastSaveWasDeletion : 1;
+        unsigned int propertyBeingCalculatedIsMultiple : 1;
+    } _flags;
+
+}
+
+// Internal initializers
 - (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID isFault:(BOOL)isFault NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithEditingContext:(ODOEditingContext *)context objectID:(ODOObjectID *)objectID snapshot:(ODOObjectSnapshot *)snapshot NS_DESIGNATED_INITIALIZER;
+
 @end
 
 @interface ODOObject (Internal)

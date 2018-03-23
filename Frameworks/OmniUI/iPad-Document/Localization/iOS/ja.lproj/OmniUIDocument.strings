@@ -309,6 +309,12 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "このデモバージョンでは OmniPresence が無効になっています。";
 
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+"On My iPad" = "この iPad 内";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+"On My iPhone" = "この iPhone 内";
+
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "書類を開くと、その書類がこのビューに追加されます。";
 
@@ -317,6 +323,9 @@
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "このファイルを別のデバイス上で開き、そこで OmniPresence を構成してください。";
+
+/* home screen button label */
+"Open…" = "開く...";
 
 /* Menu title for selecting an external document provider when moving a file */
 "Other…" = "その他...";

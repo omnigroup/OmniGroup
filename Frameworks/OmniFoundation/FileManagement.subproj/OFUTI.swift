@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,7 +111,7 @@ public struct UTI {
         return UTTypeConformsTo(self.rawFileType as CFString, otherUTI.rawFileType as CFString)
     }
 
-    public func conformsToAny<T>(_ otherUTIs:T) -> Bool where T : Sequence, T.Iterator.Element == UTI {
+    public func conformsToAny<T>(_ otherUTIs:T) -> Bool where T : Sequence, T.Element == UTI {
         for e in otherUTIs {
             if self.conformsTo(e) {
                 return true

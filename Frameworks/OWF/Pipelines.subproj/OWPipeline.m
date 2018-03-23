@@ -616,8 +616,8 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
 
     if (someCaches != nil)
         caches = someCaches;
-    else if ([_weakTarget respondsToSelector:@selector(defaultCacheGroup)])
-        caches = [(id <OWOptionalTarget>)_weakTarget defaultCacheGroup];
+    else if ([aTarget respondsToSelector:@selector(defaultCacheGroup)])
+        caches = [(id <OWOptionalTarget>)aTarget defaultCacheGroup];
     else
         caches = [OWContentCacheGroup defaultCacheGroup];
 
@@ -666,17 +666,17 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
     /* Convert our strong retain of the target into a weak retain, but make sure it doesn't go away before we're done with this method */
 
     @try {
-        [[self class] _addPipeline:self forTarget:_weakTarget];
-        [self setParentContentInfo:[_weakTarget parentContentInfo]];
+        [[self class] _addPipeline:self forTarget:aTarget];
+        [self setParentContentInfo:[aTarget parentContentInfo]];
         OBASSERT(parentContentInfo != nil);
 
         [self _computeAcceptableContentTypes];
-        targetTypeFormatString = [_weakTarget targetTypeFormatString];
+        targetTypeFormatString = [aTarget targetTypeFormatString];
         [self _rebuildCompositeTypeString];
         if (targetRespondsTo.pipelineDidBegin)
-            [(id <OWOptionalTarget>)_weakTarget pipelineDidBegin:self];
+            [(id <OWOptionalTarget>)aTarget pipelineDidBegin:self];
 
-        [self _notifyTargetOfTreeActivation:_weakTarget];
+        [self _notifyTargetOfTreeActivation:aTarget];
     } @catch (NSException *localException) {
         NSLog(@"%@: exception during init: %@", [self shortDescription], localException);
         [self invalidate];
@@ -1645,11 +1645,13 @@ static void addBlocksToQueue(NSMutableArray *blockQueue, NSArray *pipelines, voi
 - (void)_cleanupPipelineIfDead;
 {
     BOOL treeHasActiveChildren = [self treeHasActiveChildren];
+    id <OWTarget, NSObject> target = self.target;
+
     if (OWPipelineDebug || flags.debug)
-        NSLog(@"%@: %@ - target=%@ treeHasActiveChildren=%d", [self shortDescription], NSStringFromSelector(_cmd), OBShortObjectDescription([self target]), treeHasActiveChildren);
+        NSLog(@"%@: %@ - target=%@ treeHasActiveChildren=%d", [self shortDescription], NSStringFromSelector(_cmd), OBShortObjectDescription(target), treeHasActiveChildren);
 
     // Note: This non-locked access to target should be fine because even if we're half-way through a write our equality test will still give a reasonable result
-    if ([self target] != nil || treeHasActiveChildren)
+    if (target != nil || treeHasActiveChildren)
         return;
 
     [OWPipeline lock];

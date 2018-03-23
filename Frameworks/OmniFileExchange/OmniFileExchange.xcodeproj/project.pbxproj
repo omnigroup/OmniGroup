@@ -371,13 +371,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		1E9FA5A01ED511BE00CC2AB8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1E9FA5841ED511BD00CC2AB8 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		1E9FA5A21ED511BE00CC2AB8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1E9FA5841ED511BD00CC2AB8 /* OmniFoundation.xcodeproj */;
@@ -845,7 +838,6 @@
 				1E9FA59B1ED511BE00CC2AB8 /* OmniFoundation.framework */,
 				1E9FA59D1ED511BE00CC2AB8 /* OFUnitTests.xctest */,
 				1E9FA59F1ED511BE00CC2AB8 /* OFUnitTests.xctest */,
-				1E9FA5A11ED511BE00CC2AB8 /* OFSimpleLockTest */,
 				1E9FA5A31ED511BE00CC2AB8 /* OFDedicatedThreadSchedulerTest */,
 				1E9FA5A51ED511BE00CC2AB8 /* OFClobberDetectionTest */,
 				1E9FA5A71ED511BE00CC2AB8 /* OFCrashOnExceptionTest */,
@@ -1431,7 +1423,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					343682781B58284500BC25E6 = {
@@ -1596,13 +1588,6 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 1E9FA59E1ED511BE00CC2AB8 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1E9FA5A11ED511BE00CC2AB8 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 1E9FA5A01ED511BE00CC2AB8 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		1E9FA5A31ED511BE00CC2AB8 /* OFDedicatedThreadSchedulerTest */ = {

@@ -53,9 +53,13 @@
     
     /// for MultiPaneTransitionStyle.navigation, define which pane should be visible after a transition to compact. not called for the other MultiPaneTransitionStyles
     @objc optional func visiblePaneAfterCompactTransition(multiPaneController: MultiPaneController) -> MultiPaneLocation
+
     /// called before a transition to left/center. (currently only called for transistions in compact) and only for the transition style is MultiPaneTransitionStyle.navigate
     @objc optional func willNavigate(toPane location: MultiPaneLocation, with multiPaneController: MultiPaneController)
-    
+
+    /// called faster a transition to left/center. (currently only called for transistions in compact) and only for the transition style is MultiPaneTransitionStyle.navigate
+    @objc optional func didNavigate(toPane location: MultiPaneLocation, with multiPaneController: MultiPaneController)
+
     @objc optional func animationsToPerformAlongsideEmbeddedSidebarShowing(atLocation: MultiPaneLocation, withWidth: CGFloat) -> (()->())?
 
     @objc optional func animationsToPerformAlongsideEmbeddedSidebarHiding(atLocation: MultiPaneLocation, withWidth: CGFloat) -> (()->())?
@@ -903,8 +907,8 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         switch operation {
         case .push, .pop:
             visibleCompactPane = pane.location
-            navigationDelegate?.willNavigate?(toPane: visibleCompactPane, with: self)
-
+            sendWillNavigateToPaneNotification(pane: visibleCompactPane)
+            
         case .overlay:
             // TODO: decide if we want a shadow on an overlaid controller.
             if pane.location == .left || pane.location == .right {
@@ -938,7 +942,9 @@ extension MultiPaneController: MultiPanePresenterDelegate {
             // catch the interactive cancel case and update correctly.
             if visibleCompactPane != pane.location {
                 visibleCompactPane = pane.location
-                navigationDelegate?.willNavigate?(toPane: visibleCompactPane, with: self)
+                sendWillNavigateToPaneNotification(pane: visibleCompactPane)
+            } else {
+                sendDidNavigateToPaneNotification(pane: visibleCompactPane)
             }
 
             // re-run our layout so that the panes and the layout are lined up.
@@ -960,10 +966,19 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         }
     }
     
+    private func sendWillNavigateToPaneNotification(pane: MultiPaneLocation) {
+        navigationDelegate?.willNavigate?(toPane: visibleCompactPane, with: self)
+        NotificationCenter.default.post(name: .OUIMultiPaneControllerWillNavigateToPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : visibleCompactPane.rawValue])
+    }
+
+    private func sendDidNavigateToPaneNotification(pane: MultiPaneLocation) {
+        navigationDelegate?.didNavigate?(toPane: visibleCompactPane, with: self)
+        NotificationCenter.default.post(name: .OUIMultiPaneControllerDidNavigateToPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : visibleCompactPane.rawValue])
+    }
+
     func willPresent(viewController: UIViewController) {
         navigationDelegate?.willPresent?(viewController: viewController)
         guard let pane = pane(forViewController: viewController) else { return }
-        
         NotificationCenter.default.post(name: .OUIMultiPaneControllerWillPresentPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
     }
     

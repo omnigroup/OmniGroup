@@ -166,8 +166,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     _exporter = [OUIDocumentExporter exporterForViewController:self];
 
-    if ([picker.delegate respondsToSelector:@selector(defaultDocumentStoreFilterFilterPredicate:)])
-        _documentStoreFilter.filterPredicate = [picker.delegate defaultDocumentStoreFilterFilterPredicate:picker];
+    id<OUIDocumentPickerDelegate> pickerDelegate = picker.delegate;
+    if ([pickerDelegate respondsToSelector:@selector(defaultDocumentStoreFilterFilterPredicate:)])
+        _documentStoreFilter.filterPredicate = [pickerDelegate defaultDocumentStoreFilterFilterPredicate:picker];
     
     [self _flushAfterDocumentStoreInitializationActions];
 
@@ -449,13 +450,14 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     ODSDocumentType type = [self documentTypeForCurrentFilter];
 
     // Use the new template picker if the internalTemplateDelegate is set
-    if (_documentPicker.internalTemplateDelegate != nil) {
+    id<OUIInternalTemplateDelegate> internalTemplateDelegate = _documentPicker.internalTemplateDelegate;
+    if (internalTemplateDelegate != nil) {
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"OUITemplatePicker" bundle:OUIDocumentPickerViewController.bundle];
         OUITemplatePicker *viewController = (OUITemplatePicker *)[storyboard instantiateViewControllerWithIdentifier:@"templatePicker"];
         viewController.documentPicker = _documentPicker;
         viewController.folderItem = _folderItem;
         viewController.navigationTitle = NSLocalizedStringWithDefaultValue(@"ouiTemplatePicker.navigationTitle", @"OmniUIDocument", OMNI_BUNDLE, @"Choose a Template", @"Navigation bar title: Choose a Template");
-        viewController.internalTemplateDelegate = _documentPicker.internalTemplateDelegate;
+        viewController.internalTemplateDelegate = internalTemplateDelegate;
         viewController.templateDelegate = self;
         // TODO: fix to support animations
         [self.navigationController pushViewController:viewController animated:NO];
@@ -581,8 +583,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type preserveDocumentName:(BOOL)preserveDocumentName completion:(void (^)(void))completion;
 {
-    ODSScope *documentScope = preserveDocumentName ? templateFileItem.scope : _documentScope;
-    ODSStore *documentStore = preserveDocumentName ? templateFileItem.scope.documentStore : _documentStore;
+    ODSScope *templateFileItemScope = templateFileItem.scope;
+    ODSScope *documentScope = preserveDocumentName ? templateFileItemScope : _documentScope;
+    ODSStore *documentStore = preserveDocumentName ? templateFileItemScope.documentStore : _documentStore;
     ODSFolderItem *folderItem = preserveDocumentName ? templateFileItem.parentFolder : _folderItem;
     NSString *documentName = preserveDocumentName ? templateFileItem.name : nil;
     NSURL *templateURL = templateFileItem.fileURL;
@@ -626,8 +629,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             return;
         }
         
-        if ([_documentPicker.delegate respondsToSelector:@selector(documentPicker:didDuplicateFileItem:toFileItem:)])
-            [_documentPicker.delegate documentPicker:_documentPicker didDuplicateFileItem:originalFileItemMotion.fileItem toFileItem:duplicateFileItemEditOrNil.fileItem];
+        id<OUIDocumentPickerDelegate> documentPickerDelegate = _documentPicker.delegate;
+        if ([documentPickerDelegate respondsToSelector:@selector(documentPicker:didDuplicateFileItem:toFileItem:)])
+            [documentPickerDelegate documentPicker:_documentPicker didDuplicateFileItem:originalFileItemMotion.fileItem toFileItem:duplicateFileItemEditOrNil.fileItem];
         
         // Copy document view state
         [OUIDocumentAppController copyDocumentStateFromFileEdit:originalFileItemMotion.originalItemEdit.originalFileEdit toFileEdit:duplicateFileItemEditOrNil.originalFileEdit];
@@ -797,7 +801,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
         
         if (!duplicateFileItem) {
-            OUI_PRESENT_ERROR_FROM(error, weakSelf);
+            OUI_PRESENT_ERROR_FROM(error, strongSelf);
             [lock unlock];
             completionHandler();
             return;
@@ -830,8 +834,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (void)addSampleDocumentFromURL:(NSURL *)url;
 {
     BOOL copyAndOpen = YES;
-    if ([self.documentPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenSampleDocuments)])
-        copyAndOpen = [self.documentPicker.delegate documentPickerShouldOpenSampleDocuments];
+    id<OUIDocumentPickerDelegate> documentPickerDelegate = self.documentPicker.delegate;
+    if ([documentPickerDelegate respondsToSelector:@selector(documentPickerShouldOpenSampleDocuments)])
+        copyAndOpen = [documentPickerDelegate documentPickerShouldOpenSampleDocuments];
     
     NSString *fileName = [url lastPathComponent];
     NSString *localizedBaseName = [[OUIDocumentAppController controller] localizedNameForSampleDocumentNamed:[fileName stringByDeletingPathExtension]];
@@ -1093,8 +1098,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
     NSArray *availableFilters = nil;
 
-    if ([picker.delegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
-        availableFilters = [picker.delegate documentPickerAvailableFilters:picker];
+    id<OUIDocumentPickerDelegate> pickerDelegate = picker.delegate;
+    if ([pickerDelegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
+        availableFilters = [pickerDelegate documentPickerAvailableFilters:picker];
 
     if (availableFilters.count == 1)
         return availableFilters.lastObject;
@@ -1116,8 +1122,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     NSString *identifier = [filterPreference stringValue];
     NSArray *availableFilters = nil;
     
-    if ([picker.delegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
-        availableFilters = [picker.delegate documentPickerAvailableFilters:picker];
+    id<OUIDocumentPickerDelegate> pickerDelegate = picker.delegate;
+    if ([pickerDelegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
+        availableFilters = [pickerDelegate documentPickerAvailableFilters:picker];
     
     OUIDocumentPickerFilter *filter = nil;
     NSUInteger filterIndex = 0;
@@ -1332,8 +1339,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (void)updateTitle;
 {
     NSString *title;
-    if (_folderItem == _folderItem.scope.rootFolder)
-        title = _folderItem.scope.displayName;
+    ODSScope *folderItemScope = _folderItem.scope;
+    if (_folderItem == folderItemScope.rootFolder)
+        title = folderItemScope.displayName;
     else
         title = _folderItem.name;
 
@@ -1363,8 +1371,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (NSString *)nameLabelForItem:(ODSItem *)item;
 {
     NSString *nameLabel = nil;
-    if ([self.documentPicker.delegate respondsToSelector:@selector(documentPicker:nameLabelForItem:)]) {
-        nameLabel = [self.documentPicker.delegate documentPicker:self.documentPicker nameLabelForItem:item];
+    id<OUIDocumentPickerDelegate> documentPickerDelegate = self.documentPicker.delegate;
+    if ([documentPickerDelegate respondsToSelector:@selector(documentPicker:nameLabelForItem:)]) {
+        nameLabel = [documentPickerDelegate documentPicker:self.documentPicker nameLabelForItem:item];
     } else if ([self documentTypeForCurrentFilter] == ODSDocumentTypeTemplate) {
         nameLabel =  NSLocalizedStringFromTableInBundle(@"Template:", @"OmniUIDocument", OMNI_BUNDLE, @"file name label for template filte types");
     }
@@ -1684,8 +1693,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         OUIDocumentPreview *documentPreview = [OUIDocumentPreview makePreviewForDocumentClass:cls fileItem:fileItem withArea:OUIDocumentPreviewAreaLarge];
         
         OUIDocumentPreviewingViewController *documentPreviewingViewController = [[OUIDocumentPreviewingViewController alloc] initWithFileItem:fileItem preview:documentPreview];
+        ODSScope *fileItemScope = fileItem.scope;
         if (self.canPerformActions) {
-            if (fileItem.scope.isTrash == NO) {
+            if (fileItemScope.isTrash == NO) {
                 // Export
                 UIPreviewAction *exportAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Export…", @"OmniUIDocument", OMNI_BUNDLE, @"Export document preview action title.")
                                                                            style:UIPreviewActionStyleDefault
@@ -1694,7 +1704,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                                                                          }];
                 [documentPreviewingViewController addPreviewAction:exportAction];
                 
-                if (fileItem.scope.isExternal == NO) {
+                if (fileItemScope.isExternal == NO) {
                     // Move
                     UIPreviewAction *moveAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Move…", @"OmniUIDocument", OMNI_BUNDLE, @"Move document preview action title.")
                                                                              style:UIPreviewActionStyleDefault
@@ -1711,7 +1721,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 }
             }
             
-            if ((fileItem.isDownloaded) && (fileItem.scope.isExternal == NO)) {
+            if ((fileItem.isDownloaded) && (fileItemScope.isExternal == NO)) {
                 // Duplicte
                 UIPreviewAction *duplicateAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Duplicate", @"OmniUIDocument", OMNI_BUNDLE, @"Duplicate document preview action title.")
                                                                               style:UIPreviewActionStyleDefault
@@ -1874,14 +1884,16 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
 {
-    if ([self.documentPicker.delegate respondsToSelector:@selector(documentPicker:willDisplayItemView:)])
-        [self.documentPicker.delegate documentPicker:self.documentPicker willDisplayItemView:itemView];
+    id<OUIDocumentPickerDelegate> documentPickerDelegate = self.documentPicker.delegate;
+    if ([documentPickerDelegate respondsToSelector:@selector(documentPicker:willDisplayItemView:)])
+        [documentPickerDelegate documentPicker:self.documentPicker willDisplayItemView:itemView];
 }
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;
 {
-    if ([self.documentPicker.delegate respondsToSelector:@selector(documentPicker:willEndDisplayingItemView:)])
-        [self.documentPicker.delegate documentPicker:self.documentPicker willEndDisplayingItemView:itemView];
+    id<OUIDocumentPickerDelegate> documentPickerDelegate = self.documentPicker.delegate;
+    if ([documentPickerDelegate respondsToSelector:@selector(documentPicker:willEndDisplayingItemView:)])
+        [documentPickerDelegate documentPicker:self.documentPicker willEndDisplayingItemView:itemView];
 }
 
 - (NSArray *)sortDescriptorsForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
@@ -2277,7 +2289,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
         ODSScope *itemScope = item.scope;
         ODSFolderItem *itemFolder = item.parentFolder;
         if (OFNOTEQUAL(itemScope, targetScope) || OFNOTEQUAL(itemFolder, targetFolder)) {
-            [itemsByScope addObject:item forKey:item.scope];
+            [itemsByScope addObject:item forKey:itemScope];
         }
     }
 
@@ -2673,6 +2685,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
 {
     if (![[OUIAppController sharedController] canCreateNewDocument])
         return NO;
+    OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
+    if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterPlugInIdentifier))
+        return NO;
     return YES;
 }
 
@@ -2858,7 +2873,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
             _freezeTopControlAlpha = NO;
             [self scrollViewDidScroll:self.mainScrollView];
             
-            if (_documentScope.isTrash && self.restoreToMenuController == self.presentedViewController) {
+            OUIMenuController *restoreToMenuController = self.restoreToMenuController;
+            if (_documentScope.isTrash && restoreToMenuController == self.presentedViewController) {
                 // Move popover to new frame of selected item. (While in trash, we only support single selection.)
                 ODSItem *firstSelected = nil;
                 for (ODSItem *item in self.mainScrollView.items) {
@@ -2869,8 +2885,8 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 }
                 
                 UIView *view = [self.mainScrollView itemViewForItem:firstSelected];
-                self.restoreToMenuController.popoverPresentationController.sourceView = view;
-                self.restoreToMenuController.popoverPresentationController.sourceRect = view.bounds;
+                restoreToMenuController.popoverPresentationController.sourceView = view;
+                restoreToMenuController.popoverPresentationController.sourceRect = view.bounds;
             }
         }];
     } else {
@@ -3349,7 +3365,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
             };
 
             OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
-            if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterTemplateIdentifier)) {
+            if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterPlugInIdentifier)) {
+                buttonMessage = NSLocalizedStringFromTableInBundle(@"When plug-ins are installed, they will appear here.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
+                buttonAction = NULL;
+            } else if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterTemplateIdentifier)) {
                 buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a custom template.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
             } else {
                 buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a document.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");

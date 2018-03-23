@@ -98,8 +98,9 @@ RCS_ID("$Id$")
 - (OUIDocumentPickerHomeScreenViewController *)homeScreenViewController;
 {
     if (!_homeScreenViewController) {
-        if ([_delegate respondsToSelector:@selector(documentPickerHomeViewController:)])
-            _homeScreenViewController = [_delegate documentPickerHomeViewController:self];
+        id<OUIDocumentPickerDelegate> delegate = _delegate;
+        if ([delegate respondsToSelector:@selector(documentPickerHomeViewController:)])
+            _homeScreenViewController = [delegate documentPickerHomeViewController:self];
         else
             _homeScreenViewController = [[OUIDocumentPickerHomeScreenViewController alloc] initWithDocumentPicker:self];
     }
@@ -169,7 +170,7 @@ RCS_ID("$Id$")
     
     NSArray *existingViewControllers = self.topLevelNavigationController.viewControllers;
     if ([existingViewControllers count] == 0) {
-        OBASSERT_NOT_REACHED("How can this happen? Cold launch of some sort?");
+        // This happens when launching into an open document
         [self _setUpNavigationControllerForTraitCollection:self.traitCollection unconditionally:YES];
     }
     existingViewControllers = self.topLevelNavigationController.viewControllers;
@@ -199,13 +200,12 @@ RCS_ID("$Id$")
         folderItem = folderItem.parentFolder;
     }
 
-    // <bug:///121867> (Crasher: Crash launching from Spotlight or 3D Touch to a document save in a subfolder -[__NSArrayM insertObject:atIndex:]: object cannot be nil)
-    // This is not actually true when launching from a shortcut. It would be good to make this true in another way (since other code might depend on it being in the stack), but for now, we'll just use the home screen controller directly.
     UIViewController *homeViewController = [existingViewControllers firstObject];
-    OBASSERT(homeViewController == self.homeScreenViewController || homeViewController == self.homeScreenContainer);
-
-    if (homeViewController)
+    if (homeViewController != nil) {
+        // We might not have any existing view controllers when launching from a shortcut. It might be good to ensure our home view controller gets onto the stack somehow (since other code might depend on it being there), but for now we just access the controller directly when we need it.
+        OBASSERT(homeViewController == self.homeScreenViewController || homeViewController == self.homeScreenContainer);
         [newViewControllers insertObject:homeViewController atIndex:0];
+    }
 
     [self.topLevelNavigationController setViewControllers:newViewControllers animated:animated];
 }
@@ -454,8 +454,9 @@ RCS_ID("$Id$")
         }
     }
     
-    if ([_delegate respondsToSelector:@selector(documentPicker:viewWillAppear:)])
-        [_delegate documentPicker:self viewWillAppear:animated];
+    id<OUIDocumentPickerDelegate> delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(documentPicker:viewWillAppear:)])
+        [delegate documentPicker:self viewWillAppear:animated];
 
     [super viewWillAppear:animated];
 }
@@ -477,8 +478,9 @@ RCS_ID("$Id$")
     NSDictionary *barTitleAttributes;
     BOOL wantsVisibleNavigationBarAtRoot = NO;
     
-    if ([self.delegate respondsToSelector:@selector(documentPickerWantsVisibleNavigationBarAtRoot:)]) {
-        wantsVisibleNavigationBarAtRoot = [self.delegate documentPickerWantsVisibleNavigationBarAtRoot:self];
+    id<OUIDocumentPickerDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(documentPickerWantsVisibleNavigationBarAtRoot:)]) {
+        wantsVisibleNavigationBarAtRoot = [delegate documentPickerWantsVisibleNavigationBarAtRoot:self];
     }
     
     if (!wantsVisibleNavigationBarAtRoot && (!_isSetUpForCompact && (viewController == _homeScreenContainer || viewController == _homeScreenViewController))) {
@@ -574,8 +576,9 @@ RCS_ID("$Id$")
     if (scope.isTrash)
         return @[];
     
-    if ([_delegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
-        return [_delegate documentPickerAvailableFilters:self];
+    id<OUIDocumentPickerDelegate> delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
+        return [delegate documentPickerAvailableFilters:self];
     
     else
         return @[];

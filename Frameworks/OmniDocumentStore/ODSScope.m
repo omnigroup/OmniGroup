@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -553,8 +553,9 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
         
         NSURL *fakeDestinationURL = [folderURL URLByAppendingPathComponent:[baseName stringByAppendingPathExtension:extension]];
 
-        canView = ([self.documentStore fileItemClassForURL:fakeDestinationURL] != Nil);
-        canView &= (fileType != nil) && [self.documentStore canViewFileTypeWithIdentifier:fileType];
+        ODSStore *documentStore = self.documentStore;
+        canView = ([documentStore fileItemClassForURL:fakeDestinationURL] != Nil);
+        canView &= (fileType != nil) && [documentStore canViewFileTypeWithIdentifier:fileType];
     }
     
     if (!canView) {
@@ -1190,15 +1191,18 @@ static ODSScope *_templateScope = nil;
 
 - (void)_moveItems:(NSSet *)items toFolder:(ODSFolderItem *)parentFolder ignoringFileItems:(NSSet *)ignoredFileItems completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
 {
+#if defined(OMNI_ASSERTIONS_ON)
+    ODSScope *parentFolderScope = parentFolder.scope;
+#endif
     OBPRECONDITION([NSThread isMainThread]); // since we'll send the completion handler back to the main thread, make sure we came from there
-    OBPRECONDITION(!parentFolder || parentFolder.scope == self);
+    OBPRECONDITION(!parentFolder || parentFolderScope == self);
 
     // This gets used for both moving items into our scope and moving them out.
     BOOL movingWithinSameScope;
     {
         ODSScope *sourceScope = [(ODSItem *)[items anyObject] scope];
         OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == sourceScope; }], "All the items should be from the same scope");
-        OBPRECONDITION(sourceScope == self || parentFolder.scope == self, "We should be involved in this move somehow, not an innocent bystander");
+        OBPRECONDITION(sourceScope == self || parentFolderScope == self, "We should be involved in this move somehow, not an innocent bystander");
         
         // We calculate this here since if we are moving items to the trash, the source items might have been invalidated and had their scope cleared by the time we get to the status block.
         movingWithinSameScope = (sourceScope == self);

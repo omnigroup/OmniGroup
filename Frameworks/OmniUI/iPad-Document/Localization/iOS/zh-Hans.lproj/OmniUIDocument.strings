@@ -309,6 +309,12 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "OmniPresence 已在此演示版本中禁用。";
 
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+"On My iPad" = "我的 iPad";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+"On My iPhone" = "我的 iPhone";
+
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "打开文稿可将其添加至此视图。";
 
@@ -317,6 +323,9 @@
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "在其他设备上打开此文件，以配置那里的 OmniPresence。";
+
+/* home screen button label */
+"Open…" = "打开…";
 
 /* Menu title for selecting an external document provider when moving a file */
 "Other…" = "其他…";

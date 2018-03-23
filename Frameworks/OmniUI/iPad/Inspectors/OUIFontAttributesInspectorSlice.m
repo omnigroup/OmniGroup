@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -130,11 +130,12 @@ RCS_ID("$Id$");
     
     [self.contentView addSubview: _fontAttributeSegmentedControl];
 
-    self.rightMarginLayoutConstraint = [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
+    NSLayoutConstraint *rightMarginLayoutConstraint = [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.rightAnchor];
+    self.rightMarginLayoutConstraint = rightMarginLayoutConstraint;
     [NSLayoutConstraint activateConstraints:
      @[
        [_fontAttributeSegmentedControl.leftAnchor constraintEqualToAnchor:self.contentView.layoutMarginsGuide.leftAnchor],
-       self.rightMarginLayoutConstraint,
+       rightMarginLayoutConstraint,
        [_fontAttributeSegmentedControl.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
        [self.contentView.heightAnchor constraintEqualToConstant:[self sliceHeight]],
        ]

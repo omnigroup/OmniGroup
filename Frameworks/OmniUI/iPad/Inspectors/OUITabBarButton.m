@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,8 +88,9 @@ RCS_ID("$Id$");
 - (void)updateImageViewTintColors;
 {
     UIColor *tintColor = nil;
-    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)] && self.selected) {
-        tintColor = [self.appearanceDelegate selectedTabTintColor];
+    id <OUITabBarAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil && [appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)] && self.selected) {
+        tintColor = [appearanceDelegate selectedTabTintColor];
     }
     
     // Don't adjust the image when the tab is selected.
@@ -108,12 +109,14 @@ RCS_ID("$Id$");
 {
     UIColor *selectedTitleColor;
     UIColor *disabledTitleColor;
-    if (self.appearanceDelegate != nil) {
-        if ([self.appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)]) {
-            selectedTitleColor = self.appearanceDelegate.selectedTabTintColor;
+    
+    id <OUITabBarAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil) {
+        if ([appearanceDelegate respondsToSelector:@selector(selectedTabTintColor)]) {
+            selectedTitleColor = appearanceDelegate.selectedTabTintColor;
         }
-        if ([self.appearanceDelegate respondsToSelector:@selector(disabledTabTintColor)]) {
-            disabledTitleColor = self.appearanceDelegate.disabledTabTintColor;
+        if ([appearanceDelegate respondsToSelector:@selector(disabledTabTintColor)]) {
+            disabledTitleColor = appearanceDelegate.disabledTabTintColor;
         }
     } else {
         selectedTitleColor = [UIColor blackColor];
@@ -126,6 +129,7 @@ RCS_ID("$Id$");
     [self setTitleColor:selectedTitleColor forState:(UIControlStateSelected | UIControlStateHighlighted)];
 
     [self setTitleColor:disabledTitleColor forState:UIControlStateDisabled];
+    [self setTitleColor:disabledTitleColor forState:(UIControlStateDisabled | UIControlStateSelected)];
 }
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect;

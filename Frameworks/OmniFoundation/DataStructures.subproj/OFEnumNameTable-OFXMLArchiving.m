@@ -1,4 +1,4 @@
-// Copyright 2002-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,8 +38,7 @@ static int _compareIntptrs(const void *arg1, const void *arg2) {
 
 static inline int _writableEnumValue(NSInteger value)
 {
-    // Foundation has started doing enum {...}; typedef NSUInteger FooEnum and the like.  We don't expect to get large values; let's assert that.
-    OBASSERT(value >= INT16_MIN && value <= INT16_MAX); // This assertion used to say INT_MIN and INT_MAX, but that assertion was failing on armv7 for values of 0 and 1.
+    OBASSERT(value >= INT32_MIN && value <= INT32_MAX); // The writing code currently uses `int`; make sure we don't need to update to 64-bit (soon 32-bit support will be deprecated...)
     return (int)value;
 }
 

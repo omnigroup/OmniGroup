@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,8 +173,9 @@ static void _commonInit(OUIBarButtonItem *self, UIColor *tintColor)
 
 - (void)_buttonAction:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
-    if (![[UIApplication sharedApplication] sendAction:self.action to:self.target from:self forEvent:nil])
-        NSLog(@"Unable to send action %@ from %@ to %@", NSStringFromSelector(self.action), self, self.target);
+    id target = self.target;
+    if (![[UIApplication sharedApplication] sendAction:self.action to:target from:self forEvent:nil])
+        NSLog(@"Unable to send action %@ from %@ to %@", NSStringFromSelector(self.action), self, target);
 }
 
 @end

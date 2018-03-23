@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,17 +112,18 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     if (!column.hidden)
         return; // Already active
 
+    id dataSource = [self dataSource];
     if (confDataSourceFlags.willActivate)
-        [(id)[self dataSource] configurableColumnTableView: self willActivateColumn: column];
+        [dataSource configurableColumnTableView:self willActivateColumn:column];
         
-    NSMenuItem *item = [self _itemForTableColumn: column];
+    NSMenuItem *item = [self _itemForTableColumn:column];
     item.state = YES;
     column.hidden = NO;
 
     [self _OA_saveTableColumns];
 
     if (confDataSourceFlags.didActivate)
-        [(id)[self dataSource] configurableColumnTableView: self didActivateColumn: column];
+        [dataSource configurableColumnTableView:self didActivateColumn:column];
 }
 
 - (void)deactivateTableColumn:(NSTableColumn *)column;
@@ -130,17 +131,18 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     if (column.hidden)
         return; // Already inactive
 
+    id dataSource = [self dataSource];
     if (confDataSourceFlags.willDeactivate)
-        [(id)[self dataSource] configurableColumnTableView: self willDeactivateColumn: column];
+        [dataSource configurableColumnTableView:self willDeactivateColumn:column];
         
-    NSMenuItem *item = [self _itemForTableColumn: column];
+    NSMenuItem *item = [self _itemForTableColumn:column];
     item.state = NO;
     column.hidden = YES;
     
     [self _OA_saveTableColumns];
 
     if (confDataSourceFlags.didDeactivate)
-        [(id)[self dataSource] configurableColumnTableView: self didDeactivateColumn: column];
+        [dataSource configurableColumnTableView:self didDeactivateColumn:column];
 }
 
 - (void)toggleTableColumn:(NSTableColumn *)column;

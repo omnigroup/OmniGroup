@@ -21,6 +21,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3415B656201FF0950067BC05 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34824B101742E74B00253D52 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B77AB51EC0FE5500BBBA65;
+			remoteInfo = "OmniBase-server";
+		};
+		3415B666201FF0950067BC05 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34A063261EC110A60099028D;
+			remoteInfo = "OmniFoundation-server";
+		};
 		3419A2CE17E7910000AE33BF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
@@ -70,13 +84,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		34824B3A1742E75A00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		34824B3C1742E75A00253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
@@ -90,13 +97,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A4E07A608AA72B10098FF0F;
 			remoteInfo = OFClobberDetectionZoneTest;
-		};
-		34824B401742E75A00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E07DF08AA72B10098FF0F;
-			remoteInfo = OFMainThreadLockTest;
 		};
 		34824B421742E75A00253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -331,6 +331,7 @@
 				34825EF419509B150026EABC /* OmniBase.framework */,
 				34825EF619509B150026EABC /* OBUnitTests.xctest */,
 				503D71911B66FA9400EF5899 /* OmniBase.framework */,
+				3415B657201FF0950067BC05 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -340,12 +341,11 @@
 			children = (
 				34824B331742E75A00253D52 /* OmniFoundation.framework */,
 				34825F0919509B150026EABC /* OmniFoundation.framework */,
+				3415B667201FF0950067BC05 /* OmniFoundation.framework */,
 				34825F0B19509B150026EABC /* OFUnitTests.xctest */,
 				34824B391742E75A00253D52 /* OFUnitTests.xctest */,
-				34824B3B1742E75A00253D52 /* OFSimpleLockTest */,
 				34824B3D1742E75A00253D52 /* OFDedicatedThreadSchedulerTest */,
 				34824B3F1742E75A00253D52 /* OFClobberDetectionTest */,
-				34824B411742E75A00253D52 /* OFMainThreadLockTest */,
 				34824B431742E75A00253D52 /* OFCrashOnExceptionTest */,
 				34824B451742E75A00253D52 /* OFRandomRepeatTest */,
 				34824B471742E75A00253D52 /* OFXMLParsingTest */,
@@ -398,7 +398,7 @@
 		34824A9B1742E3C200253D52 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34824A9E1742E3C200253D52 /* Build configuration list for PBXProject "OmniCommandLine" */;
@@ -429,6 +429,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		3415B657201FF0950067BC05 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 3415B656201FF0950067BC05 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3415B667201FF0950067BC05 /* OmniFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFoundation.framework;
+			remoteRef = 3415B666201FF0950067BC05 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		3419A2CF17E7910000AE33BF /* OFNetStateNotifierTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -478,13 +492,6 @@
 			remoteRef = 34824B381742E75A00253D52 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34824B3B1742E75A00253D52 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 34824B3A1742E75A00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		34824B3D1742E75A00253D52 /* OFDedicatedThreadSchedulerTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -497,13 +504,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OFClobberDetectionTest;
 			remoteRef = 34824B3E1742E75A00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34824B411742E75A00253D52 /* OFMainThreadLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFMainThreadLockTest;
-			remoteRef = 34824B401742E75A00253D52 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34824B431742E75A00253D52 /* OFCrashOnExceptionTest */ = {

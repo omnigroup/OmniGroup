@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1018,7 +1018,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)_updateMetadataInteraction;
 {
-    if (self.isReadOnly || !_item.isValid || _item.scope == nil || ![_item.scope canRenameDocuments]) {
+    ODSScope *itemScope = _item.scope;
+    if (self.isReadOnly || !_item.isValid || itemScope == nil || ![itemScope canRenameDocuments]) {
         _metadataView.userInteractionEnabled = NO;
         return;
     }

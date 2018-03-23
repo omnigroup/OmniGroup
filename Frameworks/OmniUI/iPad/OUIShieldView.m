@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,8 +40,9 @@ RCS_ID("$Id$");
     if (self.shouldForwardAllEvents) {
         if ([super hitTest:point withEvent:event]) {
             // Someplace inside of me did get hit. Let the delegate know, but return nil;
-            if (_delegate && [_delegate respondsToSelector:@selector(shieldViewWasTouched:)]) {
-                [_delegate shieldViewWasTouched:self];
+            id<OUIShieldViewDelegate> delegate = _delegate;
+            if (delegate && [delegate respondsToSelector:@selector(shieldViewWasTouched:)]) {
+                [delegate shieldViewWasTouched:self];
             }
         }
         
@@ -67,9 +68,9 @@ RCS_ID("$Id$");
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     // We capture all touches sent to us, and if they complete successfully we inform the delegate so it can dismiss us.
-    
-    if (_delegate && [_delegate respondsToSelector:@selector(shieldViewWasTouched:)])
-        [_delegate shieldViewWasTouched:self];
+    id<OUIShieldViewDelegate> delegate = _delegate;
+    if (delegate && [delegate respondsToSelector:@selector(shieldViewWasTouched:)])
+        [delegate shieldViewWasTouched:self];
 }
 
 // Per the documentation, these implementations must exist. We want them anyway so we don't forward touch events up the responder chain.

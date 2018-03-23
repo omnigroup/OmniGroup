@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,15 +48,16 @@ RCS_ID("$Id$");
     
     BOOL shouldConvert = NO;
     OUIDocumentPicker *docPicker = [OUIDocumentAppController controller].documentPicker;
+    id<OUIDocumentPickerDelegate> docPickerDelegate = docPicker.delegate;
     OBASSERT(docPicker);
-    if (docPicker && [docPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
+    if (docPicker && [docPickerDelegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPickerDelegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
         BOOL isDirectory = NO;
         [[NSFileManager defaultManager] fileExistsAtPath:[itemToMoveURL path] isDirectory:&isDirectory];
-        shouldConvert = [docPicker.delegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([itemToMoveURL pathExtension], @(isDirectory))];
+        shouldConvert = [docPickerDelegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([itemToMoveURL pathExtension], @(isDirectory))];
         
         if (shouldConvert) { // convert files we claim to view, but do not display in our doc-picker?
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:itemToMoveURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
+                [docPickerDelegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:itemToMoveURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
                     [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scope inFolder:scope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
                         finishedBlock([movedFileItems anyObject], [errorsOrNil firstObject]);
                     }];
@@ -99,6 +100,7 @@ RCS_ID("$Id$");
         NSInteger filesOpened = 0;
         BOOL isZip = ODSIsZipFileType(uti);
         OUUnzipArchive *archive = nil;
+        ODSStore *scopeDocumentStore = scope.documentStore;
         if (isZip) {
             archive = [[OUUnzipArchive alloc] initWithPath:[inboxURL path] error:&error];
             if (!archive) {
@@ -112,7 +114,7 @@ RCS_ID("$Id$");
                 NSString *fileName = [[name pathComponents] firstObject];
                 NSString *unzippedUTI = OFUTIForFileExtensionPreferringNative([fileName pathExtension], [NSNumber numberWithBool:isDirectory]);
                 
-                if ([scope.documentStore canViewFileTypeWithIdentifier:unzippedUTI]) {
+                if ([scopeDocumentStore canViewFileTypeWithIdentifier:unzippedUTI]) {
                     NSURL *unzippedFileURL = [archive URLByWritingTemporaryCopyOfTopLevelEntryNamed:fileName error:&error];
                     if (!unzippedFileURL)
                         continue;
@@ -124,7 +126,7 @@ RCS_ID("$Id$");
                 filesOpened += 1;
             }
         } else {
-            if ([scope.documentStore canViewFileTypeWithIdentifier:uti]) {
+            if ([scopeDocumentStore canViewFileTypeWithIdentifier:uti]) {
                 [self _inAsyncFileAccessCloneInboxItem:inboxURL toScope:scope completionHandler:finishedBlock];
                 filesOpened += 1;
             }

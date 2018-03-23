@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,20 +22,21 @@ RCS_ID("$Id$")
 {
     BOOL viewLoaded = self.isViewLoaded;
     
-    if (_wrappedViewController) {
-        [_wrappedViewController willMoveToParentViewController:nil];
+    UIViewController *existingWrappedViewController = _wrappedViewController;
+    if (existingWrappedViewController != nil) {
+        [existingWrappedViewController willMoveToParentViewController:nil];
         if (viewLoaded)
-            [_wrappedViewController.view removeFromSuperview];
-        [_wrappedViewController removeFromParentViewController];
+            [existingWrappedViewController.view removeFromSuperview];
+        [existingWrappedViewController removeFromParentViewController];
     }
     
     _wrappedViewController = wrappedViewController;
     
-    if (_wrappedViewController) {
-        [self addChildViewController:_wrappedViewController];
+    if (wrappedViewController != nil) {
+        [self addChildViewController:wrappedViewController];
         if (viewLoaded)
             [self _addWrappedViewControllerView];
-        [_wrappedViewController didMoveToParentViewController:self];
+        [wrappedViewController didMoveToParentViewController:self];
     }
 }
 
@@ -43,8 +44,9 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION(self.isViewLoaded, "Call to -_addWrappedViewControllerView forced loading the view; please try to wait until the view is already loaded to enable lazy loading");
     
-    OBASSERT_NOTNULL(_wrappedViewController, "Called -_addWrappedViewControllerView without a wrappedViewController to add");
-    UIView *wrappedView = _wrappedViewController.view;
+    UIViewController *wrappedViewController = _wrappedViewController;
+    OBASSERT_NOTNULL(wrappedViewController, "Called -_addWrappedViewControllerView without a wrappedViewController to add");
+    UIView *wrappedView = wrappedViewController.view;
     
     UIView *containerView = self.containerView;
     OBASSERT_NOTNULL(containerView, "-containerView returned nil; did you forget to connect an outlet?");

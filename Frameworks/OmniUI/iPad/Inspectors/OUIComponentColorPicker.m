@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,6 +44,12 @@ RCS_ID("$Id$");
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
+}
+
+- (OUIComponentColorPickerConvertToRGB)shadingRGBAComponentConverter;
+{
+    // Usually we want the same converter for all sliders
+    return [self rgbaComponentConverter];
 }
 
 #pragma mark -
@@ -200,8 +206,13 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
 {
     // The sliders need something to base edits on, so we need to give them a color even if there is multiple selection.
     OAColor *color = self.selectionValue.firstValue;
+    if (color == nil) {
+        // Sliders require a color as a reference point (even if it's a transparent one). White is a better default choice than Black because we want the saturation slider to show something meaningful.
+        color = [OAColor colorWithWhite:1.0 alpha:0.0];
+    }
+
     NSUInteger componentCount = [_componentSliders count];
-    if (!color || !componentCount)
+    if (componentCount == 0)
         return;
     
     CGFloat *components;
@@ -230,7 +241,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
             
             info->components = malloc(componentsSize);
             memcpy(info->components, components, componentsSize);
-            info->convertToRGB = [self rgbaComponentConverter];
+            info->convertToRGB = [self shadingRGBAComponentConverter];
             
             // Build our luma values. We can muck with this slot since it will be interpolated by the shading build anyway.
             info->components[componentIndex] = 0;

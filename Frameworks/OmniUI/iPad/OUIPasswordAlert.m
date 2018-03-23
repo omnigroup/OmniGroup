@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,8 +74,9 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     // Username field
     if (showUsername && allowEditingUsername) {
         [_alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            weakSelf.usernameTextField = textField;
-            weakSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text - username field of login/password prompt");
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            strongSelf.usernameTextField = textField;
+            strongSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text - username field of login/password prompt");
         }];
     }
     
@@ -100,10 +101,11 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         [self _didDismissWithAction:OUIPasswordAlertActionCancel];
     }]];
     
-    self.loginAction = [UIAlertAction actionWithTitle:logInButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    UIAlertAction *loginAlertAction = [UIAlertAction actionWithTitle:logInButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
     }];
-    [_alertController addAction:self.loginAction];
+    [_alertController addAction:loginAlertAction];
+    self.loginAction = loginAlertAction;
     
     return self;
 }

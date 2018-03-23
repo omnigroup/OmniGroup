@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,9 +56,10 @@ RCS_ID("$Id$");
     else
         newSize = NSMakeSize(32.0f, 32.0f);
 
+    NSToolbarItem *toolbarItem = self.toolbarItem;
     [self setFrameSize:newSize];
-    [self.toolbarItem setMinSize:newSize];
-    [self.toolbarItem setMaxSize:newSize];
+    [toolbarItem setMinSize:newSize];
+    [toolbarItem setMaxSize:newSize];
 
     NSRect myBounds = [self bounds];
     NSArray *subviews = [self subviews];
@@ -127,8 +128,9 @@ RCS_ID("$Id$");
 
 - (NSPopUpButton *)_popUpButton;
 {
-    if ([_delegate respondsToSelector:@selector(popUpButtonForToolbarButton:)])
-        return [_delegate popUpButtonForToolbarButton:self];
+    id delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(popUpButtonForToolbarButton:)])
+        return [delegate popUpButtonForToolbarButton:self];
     else
         return nil;
 }

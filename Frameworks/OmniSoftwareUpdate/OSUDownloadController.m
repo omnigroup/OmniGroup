@@ -1,4 +1,4 @@
-// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -723,7 +723,8 @@ totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite;
         [window recalculateKeyViewLoop];
         
         NSView *nextValidKeyView = [[newContent firstObject] nextValidKeyView];
-        BOOL shouldAdjustFirstResponder = [window firstResponder] == nil || [window firstResponder] == window;
+        NSResponder *firstResponder = [window firstResponder];
+        BOOL shouldAdjustFirstResponder = firstResponder == nil || firstResponder == window;
         if (shouldAdjustFirstResponder && nextValidKeyView != nil) {
             [window makeFirstResponder:nextValidKeyView];
         }

@@ -170,13 +170,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		348774BE19C244E300AF3065 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 348774A419C244E300AF3065 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		348774C019C244E300AF3065 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 348774A419C244E300AF3065 /* OmniFoundation.xcodeproj */;
@@ -544,7 +537,6 @@
 				3476609B1EC52F2700515F67 /* OmniFoundation.framework */,
 				348774BB19C244E300AF3065 /* OFUnitTests.xctest */,
 				348774BD19C244E300AF3065 /* OFUnitTests.xctest */,
-				348774BF19C244E300AF3065 /* OFSimpleLockTest */,
 				348774C119C244E300AF3065 /* OFDedicatedThreadSchedulerTest */,
 				348774C319C244E300AF3065 /* OFClobberDetectionTest */,
 				348774C719C244E300AF3065 /* OFCrashOnExceptionTest */,
@@ -755,7 +747,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					34218E4919C23ECE00899C9A = {
 						CreatedOnToolsVersion = 6.1;
@@ -870,13 +862,6 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 348774BC19C244E300AF3065 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		348774BF19C244E300AF3065 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 348774BE19C244E300AF3065 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		348774C119C244E300AF3065 /* OFDedicatedThreadSchedulerTest */ = {

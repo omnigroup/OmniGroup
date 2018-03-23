@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -584,7 +584,29 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
                 location.y = (CGFloat)((( elementCoefficients[3].y * t + elementCoefficients[2].y ) * t + elementCoefficients[1].y ) * t + elementCoefficients[0].y);
                 newIntersection.location = location;
 
-                [intersections insertObject:newIntersection atIndex:insertionPoint];
+                BOOL intersectionIsValid = YES;
+                if ((selfIter.what == NSLineToBezierPathElement && otherIter.what == NSCurveToBezierPathElement) || (selfIter.what == NSCurveToBezierPathElement && otherIter.what == NSLineToBezierPathElement)) {
+                    // Make extra double-sure that both beziers actually pass through this point
+                    // intersectionsBetweenCurveAndLine can yield spurious results with perfectly horizontal/vertical lines, so we need this extra check to make sure the line actually intersects our calculated point.
+                    // This is intended to be a bandaid for <bug:///96013> (Mac-OmniGraffle Bug: Orthogonal lines display unexpected routing behavior [overlapping, east/west]) because this code is *much* easier to debug than intersectionsBetweenCurveAndLine
+                    // Filed <bug:///154923> (Frameworks-Mac Bug: intersectionsBetweenCurveAndLine in NSBezierPath-OAExtensions can yield spurious intersections when a line is perfectly horizontal or vertical) to fix this at the root.
+                    NSBezierPath *line = selfIter.what == NSLineToBezierPathElement ? self : other;
+                    NSPoint smallVerticalLineTop = CGPointApplyAffineTransform(location, CGAffineTransformMakeTranslation(0, -0.5));
+                    NSPoint smallVerticalLineBottom = CGPointApplyAffineTransform(location, CGAffineTransformMakeTranslation(0, 0.5));
+                    BOOL lineIntersectsPointVertically = [line intersectionWithLine:NULL lineStart:smallVerticalLineTop lineEnd:smallVerticalLineBottom];
+
+                    NSPoint smallHorizontalLineLeft = CGPointApplyAffineTransform(location, CGAffineTransformMakeTranslation(0, -0.5));
+                    NSPoint smallHorizontalLineRight = CGPointApplyAffineTransform(location, CGAffineTransformMakeTranslation(0, 0.5));
+                    BOOL lineIntersectPointHorizontally = [line intersectionWithLine:NULL lineStart:smallHorizontalLineLeft lineEnd:smallHorizontalLineRight];
+                    if (!lineIntersectsPointVertically || !lineIntersectPointHorizontally) {
+                        intersectionIsValid = NO;
+                    }
+
+                }
+                if (intersectionIsValid) {
+                    [intersections insertObject:newIntersection atIndex:insertionPoint];
+                }
+                
                 [newIntersection release];
             }
         }
@@ -766,8 +788,10 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
     }
 
     if (minimumLength < 1.0) {
-        result->x = lineCoefficients[0].x + minimumLength * lineCoefficients[1].x;
-        result->y = lineCoefficients[0].y + minimumLength * lineCoefficients[1].y;
+        if (result != NULL) {
+            result->x = lineCoefficients[0].x + minimumLength * lineCoefficients[1].x;
+            result->y = lineCoefficients[0].y + minimumLength * lineCoefficients[1].y;
+        }
         return YES;
     } else {
         return NO;

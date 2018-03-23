@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,14 +138,15 @@ NS_ASSUME_NONNULL_BEGIN
     [self _foreground_enableInterfaceAfterExportConversionWithCompletion:^{
         __autoreleasing NSError *error = nil;
         OUIWebDAVSyncListController *syncListController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:_serverAccount exporting:YES error:&error];
+        _OUIExportOptionsNavigationController *navigationController = _navigationController;
         if (!syncListController) {
-            OUI_PRESENT_ERROR_FROM(error, _navigationController);
+            OUI_PRESENT_ERROR_FROM(error, navigationController);
             return;
         }
 
         syncListController.exportFileWrapper = fileWrapper;
 
-        [_navigationController pushViewController:syncListController animated:YES];
+        [navigationController pushViewController:syncListController animated:YES];
     }];
 }
 
@@ -261,8 +262,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (UIViewController *)_viewControllerForPresenting;
 {
-    if (_navigationController) {
-        return _navigationController;
+    _OUIExportOptionsNavigationController *navigationController = _navigationController;
+    if (navigationController) {
+        return navigationController;
     }
     OBASSERT(_hostViewController);
     return _hostViewController;

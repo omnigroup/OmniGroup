@@ -309,6 +309,12 @@
 /* demo disabled title */
 "OmniPresence is disabled in this demo version." = "Служба OmniPresence отключена в этой демо-версии.";
 
+/* Local Documents device-specific display name (should match the name of the On My iPad location in the Files app on an iPad) */
+"On My iPad" = "На iPad";
+
+/* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
+"On My iPhone" = "На iPhone";
+
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Откройте документ, чтобы добавить его в это представление.";
 
@@ -317,6 +323,9 @@
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Откройте этот файл на другом устройстве, чтобы настроить там OmniPresence.";
+
+/* home screen button label */
+"Open…" = "Открыть…";
 
 /* Menu title for selecting an external document provider when moving a file */
 "Other…" = "Другое…";

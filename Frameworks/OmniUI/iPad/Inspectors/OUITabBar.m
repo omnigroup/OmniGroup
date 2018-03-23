@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -157,6 +157,12 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     }
 }
 
+- (void)setEnabled:(BOOL)enabled;
+{
+    [super setEnabled:enabled];
+    [self setNeedsLayout];
+}
+
 - (UIFont *)tabTitleFont;
 {
     return _tabTitleFont;
@@ -301,6 +307,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
             UIFont *font = button.selected ? self.selectedVerticalTabTitleFont : self.verticalTabTitleFont;
             OBASSERT(font != nil);
             button.titleLabel.font = font;
+            button.enabled = self.enabled;
         }
         
         if (_footerView != nil) {
@@ -327,6 +334,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
             UIFont *font = button.selected ? self.selectedTabTitleFont : self.tabTitleFont;
             OBASSERT(font != nil);
             button.titleLabel.font = font;
+            button.enabled = self.enabled;
         }
     }
 }
@@ -519,8 +527,9 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 
 - (UIColor *)verticalTabSeparatorColor;
 {
-    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(verticalTabSeparatorColor)]) {
-        return self.appearanceDelegate.verticalTabSeparatorColor;
+    id <OUITabBarAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil && [appearanceDelegate respondsToSelector:@selector(verticalTabSeparatorColor)]) {
+        return appearanceDelegate.verticalTabSeparatorColor;
     }
     
     return [UIColor colorWithWhite:0.90 alpha:1.00];
@@ -548,9 +557,10 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     UIColor *gradientStartColor = nil;
     UIColor *gradientEndColor = nil;
 
-    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)] && [self.appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
-        gradientStartColor = self.appearanceDelegate.horizontalTabBottomStrokeColor;
-        gradientEndColor = self.appearanceDelegate.horizontalTabSeparatorTopColor;
+    id <OUITabBarAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil && [appearanceDelegate respondsToSelector:@selector(horizontalTabBottomStrokeColor)] && [appearanceDelegate respondsToSelector:@selector(horizontalTabSeparatorTopColor)]) {
+        gradientStartColor = appearanceDelegate.horizontalTabBottomStrokeColor;
+        gradientEndColor = appearanceDelegate.horizontalTabSeparatorTopColor;
     } else {
         gradientStartColor = [UIColor colorWithWhite:0.80 alpha:1.0];
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
@@ -578,9 +588,10 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     UIColor *gradientStartColor = nil;
     UIColor *gradientEndColor = nil;
 
-    if (self.appearanceDelegate != nil && [self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeFadeToColor)] && [self.appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeColor)]) {
-        gradientStartColor = self.appearanceDelegate.verticalTabRightEdgeFadeToColor;
-        gradientEndColor = self.appearanceDelegate.verticalTabRightEdgeColor;
+    id <OUITabBarAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil && [appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeFadeToColor)] && [appearanceDelegate respondsToSelector:@selector(verticalTabRightEdgeColor)]) {
+        gradientStartColor = appearanceDelegate.verticalTabRightEdgeFadeToColor;
+        gradientEndColor = appearanceDelegate.verticalTabRightEdgeColor;
     } else {
         gradientStartColor = [UIColor colorWithWhite:0.96 alpha:0.0];
         gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];

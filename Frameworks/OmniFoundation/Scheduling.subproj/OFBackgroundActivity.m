@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 #import <stdatomic.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 static OFDeclareDebugLogLevel(OFBackgroundActivityDebug);
 #define DEBUG_ACTIVITY(level, format, ...) do { \
@@ -40,7 +42,7 @@ static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
     return [[[self alloc] initWithIdentifier:identifier] autorelease];
 }
 
-- initWithIdentifier:(NSString *)identifier;
+- (instancetype)initWithIdentifier:(NSString *)identifier;
 {
     if (!(self = [super init]))
         return nil;
@@ -48,14 +50,25 @@ static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
     _identifier = [identifier copy];
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    _task = [OFSharedApplication() beginBackgroundTaskWithExpirationHandler:^{
+    __weak typeof(self) weakSelf = self;
+    _task = [OFSharedApplication() beginBackgroundTaskWithName:identifier expirationHandler:^{
+        __strong typeof(self) strongSelf = weakSelf;
+        OBASSERT(strongSelf != nil);
+        if (strongSelf == nil) {
+            return;
+        }
+        
         // The Mac side and the new API on NSProcessInfo doesn't have an expiration handler. Should we expose this on iOS?
-        NSLog(@"OFBackgroundActivity %@ expired", _identifier);
+        NSLog(@"OFBackgroundActivity %@ expired", strongSelf->_identifier);
+        [OFSharedApplication() endBackgroundTask:strongSelf->_task];
+        strongSelf->_task = UIBackgroundTaskInvalid;
     }];
-    if (_task == UIBackgroundTaskInvalid)
+    
+    if (_task == UIBackgroundTaskInvalid) {
         NSLog(@"OFBackgroundActivity %@ unable to start background task", _identifier);
-    else
+    } else {
         atomic_fetch_add_explicit(&RunningActivityCount, 1, memory_order_relaxed);
+    }
 #else
     [[NSProcessInfo processInfo] disableSuddenTermination];
     _suddenTerminationDisabled = YES;
@@ -133,3 +146,6 @@ static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

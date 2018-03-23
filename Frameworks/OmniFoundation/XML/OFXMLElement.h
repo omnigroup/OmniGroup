@@ -22,9 +22,9 @@ typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 
 @interface OFXMLElement : OFObject
 
-- initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECEIVER TAKES OWNERSHIP OF attributeOrder and attributes!
-- initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
-- initWithName:(NSString *)name;
+- (instancetype)initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECEIVER TAKES OWNERSHIP OF attributeOrder and attributes!
+- (instancetype)initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
+- (instancetype)initWithName:(NSString *)name;
 
 
 - (id)deepCopy NS_RETURNS_RETAINED;

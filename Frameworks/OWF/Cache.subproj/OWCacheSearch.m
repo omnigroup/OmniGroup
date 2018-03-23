@@ -1,4 +1,4 @@
-// Copyright 2004-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -211,7 +211,9 @@ RCS_ID("$Id$");
     destType = [anArc expectedResultType];
     if (destType == nil)
         destType = [OWContentType wildcardContentType];
-    anEstimate = [weaklyRetainedPipeline estimateCostFromType:destType];
+
+    OWPipeline *pipeline = weaklyRetainedPipeline;
+    anEstimate = [pipeline estimateCostFromType:destType];
 #ifdef DEBUG_kc
     if (flags.debug)
         NSLog(@"-[%@ %@%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(anArc), [destType contentTypeString], anEstimate);
@@ -220,7 +222,7 @@ RCS_ID("$Id$");
     followonCost = anEstimate != nil ? [anEstimate floatValue] : unacceptableCost;
 
     if ([anArc resultIsSource]) {
-        anEstimate = [weaklyRetainedPipeline estimateCostFromType:[OWContentType sourceContentType]];
+        anEstimate = [pipeline estimateCostFromType:[OWContentType sourceContentType]];
 #ifdef DEBUG_kc
         if (flags.debug)
             NSLog(@"-[%@ %@%@]: estimateCostFromType:%@ = %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), OBShortObjectDescription(anArc), [[OWContentType sourceContentType] contentTypeString], anEstimate);

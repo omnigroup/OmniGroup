@@ -791,13 +791,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		34C3DABA1ECA03E5002AB1B9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 348934E01EC285F800CFB933 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		34C3DABC1ECA03E5002AB1B9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 348934E01EC285F800CFB933 /* OmniFoundation.xcodeproj */;
@@ -888,13 +881,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
-		};
-		34C3DAE51ECA03E5002AB1B9 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34765FE41EC52EAA00515F67 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
 		};
 		34C3DAE71ECA03E5002AB1B9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1995,7 +1981,6 @@
 				34C3DAB51ECA03E5002AB1B9 /* OmniFoundation.framework */,
 				34C3DAB71ECA03E5002AB1B9 /* OFUnitTests.xctest */,
 				34C3DAB91ECA03E5002AB1B9 /* OFUnitTests.xctest */,
-				34C3DABB1ECA03E5002AB1B9 /* OFSimpleLockTest */,
 				34C3DABD1ECA03E5002AB1B9 /* OFDedicatedThreadSchedulerTest */,
 				34C3DABF1ECA03E5002AB1B9 /* OFClobberDetectionTest */,
 				34C3DAC11ECA03E5002AB1B9 /* OFCrashOnExceptionTest */,
@@ -2016,7 +2001,6 @@
 				34C3DAE01ECA03E5002AB1B9 /* OmniFoundation.framework */,
 				34C3DAE21ECA03E5002AB1B9 /* OFUnitTests.xctest */,
 				34C3DAE41ECA03E5002AB1B9 /* OFUnitTests.xctest */,
-				34C3DAE61ECA03E5002AB1B9 /* OFSimpleLockTest */,
 				34C3DAE81ECA03E5002AB1B9 /* OFDedicatedThreadSchedulerTest */,
 				34C3DAEA1ECA03E5002AB1B9 /* OFClobberDetectionTest */,
 				34C3DAEC1ECA03E5002AB1B9 /* OFCrashOnExceptionTest */,
@@ -3384,7 +3368,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
@@ -3584,13 +3568,6 @@
 			remoteRef = 34C3DAB81ECA03E5002AB1B9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34C3DABB1ECA03E5002AB1B9 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 34C3DABA1ECA03E5002AB1B9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		34C3DABD1ECA03E5002AB1B9 /* OFDedicatedThreadSchedulerTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -3680,13 +3657,6 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 34C3DAE31ECA03E5002AB1B9 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34C3DAE61ECA03E5002AB1B9 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 34C3DAE51ECA03E5002AB1B9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34C3DAE81ECA03E5002AB1B9 /* OFDedicatedThreadSchedulerTest */ = {

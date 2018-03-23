@@ -251,12 +251,13 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     if (!shouldForce && !isViewInWindow)
         return; // We only update the inspectedObjects if we are forcing an update or if the view is visually in the window.
 
-    NSArray *objects = [self.delegate objectsToInspectForInspector:self];
+    id <OUIInspectorDelegate> delegate = self.delegate;
+    NSArray *objects = [delegate objectsToInspectForInspector:self];
     if (!shouldForce && OFISEQUAL(self.mainPane.inspectedObjects, objects))
         return; // We're still inspecting the same objects
 
     self.mainPane.inspectedObjects = objects;
-    if (!([self.delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [self.delegate inspectorShouldMaintainStateWhileReopening:self])) {
+    if (!([delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [delegate inspectorShouldMaintainStateWhileReopening:self])) {
         [self.navigationController popToRootViewControllerAnimated:NO];
     } else {
         // If we're going to keep showing a pane, we need to make sure to update its inspected objects as well as the main pane's inspected objects

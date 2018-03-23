@@ -156,7 +156,7 @@ static NSString * _Nullable LastAttributeName(OFXMLElement *self)
     return self->_attribute.single.name;
 }
 
-- initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
+- (instancetype)initWithName:(NSString *)name attributeOrder:(nullable NSMutableArray *)attributeOrder attributes:(nullable NSMutableDictionary *)attributes; // RECIEVER TAKES OWNERSHIP OF attributeOrder and attributes!
 {
     self = [super init];
 
@@ -176,7 +176,7 @@ static NSString * _Nullable LastAttributeName(OFXMLElement *self)
     return self;
 }
 
-- initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
+- (instancetype)initWithName:(NSString *)name attributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue;
 {
     self = [super init];
     
@@ -190,7 +190,7 @@ static NSString * _Nullable LastAttributeName(OFXMLElement *self)
     return self;
 }
 
-- initWithName:(NSString *)name;
+- (instancetype)initWithName:(NSString *)name;
 {
     return [self initWithName:name attributeOrder:nil attributes:nil];
 }

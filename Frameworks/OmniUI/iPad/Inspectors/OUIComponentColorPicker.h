@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,5 +29,6 @@ typedef OALinearRGBA (*OUIComponentColorPickerConvertToRGB)(const CGFloat *input
 - (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color; // The count of the result of -makeComponentSliders determines the size of 'components'.
 - (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 - (OUIComponentColorPickerConvertToRGB)rgbaComponentConverter;
+- (OUIComponentColorPickerConvertToRGB)shadingRGBAComponentConverter;
 
 @end

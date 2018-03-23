@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,8 +56,9 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 @synthesize inspector = _weak_inspector;
 - (OUIInspector *)inspector;
 {
-    OBPRECONDITION(_weak_inspector);
-    return _weak_inspector;
+    OUIInspector *inspector = _weak_inspector;
+    OBPRECONDITION(inspector != nil);
+    return inspector;
 }
 
 @synthesize parentSlice = _weak_parentSlice;

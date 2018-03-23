@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Security/Security.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
+#import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
@@ -38,6 +39,40 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
     { CFSTR(PBKDFPRFSHA256), kCCPRFHmacAlgSHA256 },
     { CFSTR(PBKDFPRFSHA512), kCCPRFHmacAlgSHA512 },
 };
+
+@implementation OFSDocumentKeyDerivationParameters
+
+- initWithAlgorithm:(NSString *)algorithm rounds:(unsigned)rounds salt:(NSData *)salt pseudoRandomAlgorithm:(NSString *)pseudoRandomAlgorithm;
+{
+    _algorithm = [algorithm copy];
+    _rounds = rounds;
+    _salt = [salt copy];
+    _pseudoRandomAlgorithm = [pseudoRandomAlgorithm copy];
+
+    return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return self;
+}
+
+- (BOOL)isEqual:(id)otherObject;
+{
+    if (![otherObject isKindOfClass:[OFSDocumentKeyDerivationParameters class]]) {
+        return NO;
+    }
+    OFSDocumentKeyDerivationParameters *otherParameters = otherObject;
+    return [_algorithm isEqual:otherParameters.algorithm] && _rounds == otherParameters.rounds && [_salt isEqual:otherParameters.salt] && [_pseudoRandomAlgorithm isEqual:otherParameters.pseudoRandomAlgorithm];
+}
+
+- (NSString *)description;
+{
+    return [NSString stringWithFormat:@"<%@:%p algorithm:%@ rounds:%u salt:%@ pseudoRandomAlgorithm:%@>", NSStringFromClass([self class]), self, _algorithm, _rounds, [_salt unadornedLowercaseHexString], _pseudoRandomAlgorithm];
+}
+
+@end
+
 
 @interface OFSMutableDocumentKey ()
 - (instancetype)_init;
@@ -154,6 +189,31 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
     return (passwordDerivation != nil)? YES : NO;
 }
 
+- (OFSDocumentKeyDerivationParameters *)passwordDerivationParameters:(NSError **)outError;
+{
+    return keyDerivationParametersFromDocumentInfo(passwordDerivation, outError);
+}
+
+static void _incorrectPassword(NSError **outError, id inputValue)
+{
+    // If we got a password but the derivation failed with a decode error, wrap that up in our own bad-password error
+    // Note that the kCCDecodeError code here is actually set by other OFS bits – per unwrapData() in OFSDocumentKey.m, CCSymmetricKeyUnwrap() can return bad codes, so we substitute a better code there
+    // (If the CommonCrypto unwrap function is someday updated to conform to its own documentation, it will return kCCDecodeError naturally)
+    if (outError && [*outError hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:kCCDecodeError]) {
+        id wrongPasswordInfoValue;
+#if defined(DEBUG)
+        wrongPasswordInfoValue = inputValue;
+#else
+        wrongPasswordInfoValue = @YES;
+#endif
+
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Incorrect encryption password.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Could not decode encryption document key.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error reason");
+        OFSErrorWithInfo(outError, OFSEncryptionNeedAuth, description, reason, OFSEncryptionWrongPassword, wrongPasswordInfoValue, nil);
+    }
+
+}
+
 - (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
 {
     OFSKeySlots *derivedKeyTable = deriveFromPassword(passwordDerivation, password, &wk, outError);
@@ -161,22 +221,20 @@ static const struct { CFStringRef name; CCPseudoRandomAlgorithm value; } prfName
         slots = derivedKeyTable;
         return YES;
     } else {
-        // If we got a password but the derivation failed with a decode error, wrap that up in our own bad-password error
-        // Note that the kCCDecodeError code here is actually set by other OFS bits – per unwrapData() in OFSDocumentKey.m, CCSymmetricKeyUnwrap() can return bad codes, so we substitute a better code there
-        // (If the CommonCrypto unwrap function is someday updated to conform to its own documentation, it will return kCCDecodeError naturally)
-        if (outError && [*outError hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:kCCDecodeError]) {
-            id wrongPasswordInfoValue;
-#if defined(DEBUG)
-            wrongPasswordInfoValue = password;
-#else
-            wrongPasswordInfoValue = @YES;
-#endif
-            
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Incorrect encryption password.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error description");
-            NSString *reason = NSLocalizedStringFromTableInBundle(@"Could not decode encryption document key.", @"OmniFileStore", OMNI_BUNDLE, @"bad password error reason");
-            OFSErrorWithInfo(outError, OFSEncryptionNeedAuth, description, reason, OFSEncryptionWrongPassword, wrongPasswordInfoValue, nil);
-        }
-        
+        _incorrectPassword(outError, password);
+        return NO;
+    }
+}
+
+// Here, the assumption is that the password+parameters -> wrappingKey was done externally.
+- (BOOL)deriveWithWrappingKey:(NSData *)wrappingKey error:(NSError **)outError;
+{
+    OFSKeySlots *derivedKeyTable = deriveFromWrappingKey(passwordDerivation, wrappingKey, &wk, outError);
+    if (derivedKeyTable && wk.len) {
+        slots = derivedKeyTable;
+        return YES;
+    } else {
+        _incorrectPassword(outError, wrappingKey);
         return NO;
     }
 }
@@ -228,7 +286,7 @@ static uint16_t derive(uint8_t derivedKey[MAX_SYMMETRIC_KEY_BYTES], NSString *pa
     return outputLength;
 }
 
-static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password, struct skbuf *outWk, NSError **outError)
+static OFSDocumentKeyDerivationParameters *keyDerivationParametersFromDocumentInfo(NSDictionary *docInfo, NSError **outError)
 {
     /* Retrieve all our parameters from the dictionary */
     NSString *alg = [docInfo objectForKey:PBKDFAlgKey];
@@ -236,20 +294,52 @@ static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password
         unsupportedError(outError, alg);
         return nil;
     }
-    
+
     unsigned pbkdfRounds = [docInfo unsignedIntForKey:PBKDFRoundsKey];
     if (!pbkdfRounds) {
         unsupportedError(outError, [docInfo objectForKey:PBKDFRoundsKey]);
         return nil;
     }
-    
+
     NSData *salt = [docInfo objectForKey:PBKDFSaltKey];
     if (![salt isKindOfClass:[NSData class]]) {
         unsupportedError(outError, NSStringFromClass([salt class]));
         return nil;
     }
-    
-    id prfString = [docInfo objectForKey:PBKDFPRFKey defaultObject:@"" PBKDFPRFSHA1];
+
+    NSString *prfString = [docInfo objectForKey:PBKDFPRFKey defaultObject:@"" PBKDFPRFSHA1];
+    if (![prfString isKindOfClass:[NSString class]]) {
+        unsupportedError(outError, NSStringFromClass([prfString class]));
+        return nil;
+    }
+
+    return [[OFSDocumentKeyDerivationParameters alloc] initWithAlgorithm:alg rounds:pbkdfRounds salt:salt pseudoRandomAlgorithm:prfString];
+}
+
+static OFSKeySlots *deriveFromWrappingKey(NSDictionary *docInfo, NSData *wrappingKey, struct skbuf *outWk, NSError **outError)
+{
+    NSData *wrappedKey = [docInfo objectForKey:DocumentKeyKey];
+
+    /* Unwrap the document key(s) using the key-wrapping-key */
+    const uint8_t *wrappingKeyBytes = (const uint8_t *)[wrappingKey bytes];
+    size_t wrappingKeyLength = [wrappingKey length];
+    OFSKeySlots *retval = [[OFSKeySlots alloc] initWithData:wrappedKey wrappedWithKey:wrappingKeyBytes length:wrappingKeyLength error:outError];
+
+    if (retval) {
+        OBASSERT(wrappingKeyLength <= UINT16_MAX);
+        outWk->len = (uint16_t)wrappingKeyLength;
+        memcpy(outWk->bytes, wrappingKeyBytes, wrappingKeyLength);
+    }
+
+    // TODO: Not wiping the wrapping key -- might be nice to have a NSData subclass that memsets itself in -dealloc, but we're making a copy of it above anyway, so...
+    // memset(wrappingKey, 0, sizeof(wrappingKey));
+
+    return retval;
+}
+
++ (NSData *)wrappingKeyFromPassword:(NSString *)password parameters:(OFSDocumentKeyDerivationParameters *)parameters error:(NSError **)outError;
+{
+    NSString *prfString = parameters.pseudoRandomAlgorithm;
     CCPseudoRandomAlgorithm prf = 0;
     for (int i = 0; i < (int)arraycount(prfNames); i++) {
         if ([prfString isEqualToString:(__bridge NSString *)(prfNames[i].name)]) {
@@ -264,26 +354,45 @@ static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password
                          PBKDFPRFKey, prfString, nil);
         return nil;
     }
-    
-    NSData *wrappedKey = [docInfo objectForKey:DocumentKeyKey];
-    
+
     /* Derive the key-wrapping-key from the user's password */
     uint8_t wrappingKey[MAX_SYMMETRIC_KEY_BYTES];
-    uint16_t wrappingKeyLength = derive(wrappingKey, password, salt, prf, pbkdfRounds, outError);
+    uint16_t wrappingKeyLength = derive(wrappingKey, password, parameters.salt, prf, parameters.rounds, outError);
     if (!wrappingKeyLength) {
         return nil;
     }
-    
+
+    return [NSData dataWithBytes:wrappingKey length:wrappingKeyLength];
+}
+
+static OFSKeySlots *deriveFromPassword(NSDictionary *docInfo, NSString *password, struct skbuf *outWk, NSError **outError)
+{
+    OFSDocumentKeyDerivationParameters *parameters = keyDerivationParametersFromDocumentInfo(docInfo, outError);
+    if (!parameters) {
+        return nil;
+    }
+
+    NSData *wrappingKey = [OFSDocumentKey wrappingKeyFromPassword:password parameters:parameters error:outError];
+    if (!wrappingKey) {
+        return nil;
+    }
+
+    NSData *wrappedKey = [docInfo objectForKey:DocumentKeyKey];
+
     /* Unwrap the document key(s) using the key-wrapping-key */
-    OFSKeySlots *retval = [[OFSKeySlots alloc] initWithData:wrappedKey wrappedWithKey:wrappingKey length:wrappingKeyLength error:outError];
+    const uint8_t *wrappingKeyBytes = (const uint8_t *)[wrappingKey bytes];
+    size_t wrappingKeyLength = [wrappingKey length];
+    OFSKeySlots *retval = [[OFSKeySlots alloc] initWithData:wrappedKey wrappedWithKey:wrappingKeyBytes length:wrappingKeyLength error:outError];
     
     if (retval) {
-        outWk->len = wrappingKeyLength;
-        memcpy(outWk->bytes, wrappingKey, wrappingKeyLength);
+        OBASSERT(wrappingKeyLength <= UINT16_MAX);
+        outWk->len = (uint16_t)wrappingKeyLength;
+        memcpy(outWk->bytes, wrappingKeyBytes, wrappingKeyLength);
     }
     
-    memset(wrappingKey, 0, sizeof(wrappingKey));
-    
+    // TODO: Not wiping the wrapping key -- might be nice to have a NSData subclass that memsets itself in -dealloc, but we're making a copy of it above anyway, so...
+    // memset(wrappingKey, 0, sizeof(wrappingKey));
+
     return retval;
 }
 

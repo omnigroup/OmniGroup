@@ -452,6 +452,9 @@
     "name": "iMac",
     "comment": "27 inch, 5K, mid 2017"
   },
+  "iMacPro1,1": {
+    "name": "iMac Pro"
+  },
   "Macmini1,1": {
     "name": "Mac mini"
   },

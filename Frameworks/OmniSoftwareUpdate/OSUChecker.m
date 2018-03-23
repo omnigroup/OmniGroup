@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -508,7 +508,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         return;
     }
     __weak OSUChecker *weakSelf = self;
-    self.newsCacheTask = [[NSURLSession sharedSession] dataTaskWithURL:[self currentNewsURL] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionTask *newsCacheTask = [[NSURLSession sharedSession] dataTaskWithURL:[self currentNewsURL] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         OSUChecker *strongSelf = weakSelf;
         if (!data) {
             return;
@@ -519,7 +519,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
                                                           userInfo:@{@"OSUNewsAnnouncementURL":[strongSelf cachedNewsURL]}];
         strongSelf.newsCacheTask = nil;
     }];
-    [self.newsCacheTask resume];
+    self.newsCacheTask = newsCacheTask;
+    [newsCacheTask resume];
 }
 
 - (void)setUnreadNewsAvailable:(BOOL)unreadNewsAvailable

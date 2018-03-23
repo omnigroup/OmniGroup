@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <Security/Security.h>
+
+#import <libxml/xmlIO.h>
 
 RCS_ID("$Id$");
 

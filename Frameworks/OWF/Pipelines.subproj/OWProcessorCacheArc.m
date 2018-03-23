@@ -119,8 +119,8 @@ RCS_ID("$Id$");
     flags.state = ArcStateInitial;
     observers = OFCreateNonOwnedPointerArray();
     context = owningPipeline;
-    OBASSERT(context != nil);
-    [context addDeallocationObserver:self];
+    OBASSERT(owningPipeline != nil);
+    [owningPipeline addDeallocationObserver:self];
 
 #warning TODO [wiml nov2003] - clumsy
     // We want to know whether the result might be "source" content. This is ugly --- we should probably put a flag on OWContentTypeLink to indicate source-ness.
@@ -1085,10 +1085,11 @@ RCS_ID("$Id$");
     OWAddress *logAddress;
     NSString *logAddressStr;
 
+    OWPipeline *context_ = context;
     if ([source isAddress])
         logAddress = [source address];
     else
-        logAddress = [context lastAddress];
+        logAddress = [context_ lastAddress];
 
     if (logAddress != nil) {
         NSString *addressMethod;
@@ -1102,7 +1103,7 @@ RCS_ID("$Id$");
     }
 
 #ifdef DEBUG
-    return [NSString stringWithFormat:@"%@ (%@, %@)", [self shortDescription], [context shortDescription], logAddressStr];
+    return [NSString stringWithFormat:@"%@ (%@, %@)", [self shortDescription], [context_ shortDescription], logAddressStr];
 #else
     return [NSString stringWithFormat:@"%@ (%@)", logAddressStr, [[self processorDescription] processorClassName]];
 #endif

@@ -1,0 +1,18 @@
+// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all Server targets
+#include "Target-Server-Common.xcconfig"
+
+// Common settings for Tool targets
+INFOPLIST_FILE = 
+
+// And include any private headers for just *our* library
+HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/$(PRODUCT_NAME)-Private $(TARGET_BUILD_DIR)/include
+
+// We want to sign all tools
+CODE_SIGN_IDENTITY = $(OMNI_MAC_CODE_SIGN_IDENTITY)
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_SERVER
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FOR_SERVER

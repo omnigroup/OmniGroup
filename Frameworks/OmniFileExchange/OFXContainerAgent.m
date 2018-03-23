@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -628,6 +628,7 @@ tryAgain:
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         DEBUG_SYNC(1, @"Finished download of %@ (committed:%d)", fileItem, (errorOrNil == nil));
         
+        OFXAccountAgent *accountAgent = _weak_accountAgent;
         if (errorOrNil == nil) {
             NSString *updatedLocalRelativePath = fileItem.localRelativePath;
             if (OFNOTEQUAL(originalLocalRelativePath, updatedLocalRelativePath)) {
@@ -646,13 +647,13 @@ tryAgain:
                 OFXFileState *remoteState = fileItem.remoteState;
                 if (localState.missing || remoteState.edited || remoteState.userMoved) {
                     OBASSERT(localState.missing || remoteState.edited, "We don't know about remote renames for real. We might have seen a new version on the server before our first download finished, so we might still be in the create state");
-                    [_weak_accountAgent containerNeedsFileTransfer:self];
+                    [accountAgent containerNeedsFileTransfer:self];
                 }
             }
             OBPOSTCONDITION([self _checkInvariants]); // checks the queue too
         } else if ([errorOrNil hasUnderlyingErrorDomain:OFXErrorDomain code:OFXFileDeletedWhileDownloading]) {
             // Start the delete transfer
-            [_weak_accountAgent containerNeedsFileTransfer:self];
+            [accountAgent containerNeedsFileTransfer:self];
         }
         
         return nil;

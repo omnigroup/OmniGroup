@@ -547,10 +547,11 @@ RCS_ID("$Id$")
 {
     // Find the 'most relevant' object that has an inspector that directly applies to it.  You can either register a preferred tab identifier for an inspection identifier, or auto-select a tab based on the order in which objects were added to the inspection set.
     OIInspectorController *inspectorController = self.inspectorController;
-    OIInspectionSet *inspectionSet = [inspectorController.inspectorRegistry inspectionSet];
+    OIInspectorRegistry *inspectorRegistry = inspectorController.inspectorRegistry;
+    OIInspectionSet *inspectionSet = [inspectorRegistry inspectionSet];
     NSArray *sortedObjects = [inspectionSet objectsSortedByInsertionOrder:objects];
     
-    NSString *inspectionIdentifier = [inspectorController.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
+    NSString *inspectionIdentifier = [inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
     if (_currentInspectionIdentifier || inspectionIdentifier) {
         // do not change the selected tab if the inspectionIdentifier has not changed.
         if ([inspectionIdentifier isEqual:_currentInspectionIdentifier])

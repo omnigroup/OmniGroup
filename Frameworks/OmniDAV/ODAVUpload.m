@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,12 @@ RCS_ID("$Id$");
     
     if (!(self = [super init]))
         return nil;
-    
+
+    // Make sure that we can compare _baseURL/targetURL while creating collections
+    if ([fileWrapper isDirectory]) {
+        toURL = OFURLWithTrailingSlash(toURL);
+    }
+
     _baseURL = [toURL copy];
     _createParentCollections = createParentCollections;
     _connection = connection;

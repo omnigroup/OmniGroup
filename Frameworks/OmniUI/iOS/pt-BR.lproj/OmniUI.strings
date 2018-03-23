@@ -124,6 +124,9 @@
 /* Search field placeholder text */
 "Search" = "Busca";
 
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "Mostrar dica...";
+
 /* Strike Through button accessibility label */
 "Strike Through" = "Tachado";
 

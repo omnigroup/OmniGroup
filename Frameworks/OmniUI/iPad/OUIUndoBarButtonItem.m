@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -207,13 +207,14 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)appearanceDidChange;
 {
-    if (self.appearanceDelegate != nil) {
+    id <OUIUndoBarButtonMenuAppearanceDelegate> appearanceDelegate = self.appearanceDelegate;
+    if (appearanceDelegate != nil) {
         
         if (_menuController != nil) {
-            _menuController.popoverPresentationController.backgroundColor = [self.appearanceDelegate undoBarButtonMenuPopoverBackgroundColor];
-            _menuController.menuBackgroundColor = [self.appearanceDelegate undoBarButtonMenuBackgroundColor];
-            _menuController.menuOptionBackgroundColor = [self.appearanceDelegate undoBarButtonMenuOptionBackgroundColor];
-            _menuController.menuOptionSelectionColor = [self.appearanceDelegate undoBarButtonMenuOptionSelectionColor];
+            _menuController.popoverPresentationController.backgroundColor = [appearanceDelegate undoBarButtonMenuPopoverBackgroundColor];
+            _menuController.menuBackgroundColor = [appearanceDelegate undoBarButtonMenuBackgroundColor];
+            _menuController.menuOptionBackgroundColor = [appearanceDelegate undoBarButtonMenuOptionBackgroundColor];
+            _menuController.menuOptionSelectionColor = [appearanceDelegate undoBarButtonMenuOptionSelectionColor];
         }
     }
 }
@@ -271,11 +272,12 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 - (void)_showUndoMenu;
 {
     id menuPresenter;
+    id undoBarButtonItemTarget = _weak_undoBarButtonItemTarget;
     
-    if ([_weak_undoBarButtonItemTarget respondsToSelector:@selector(targetForAction:withSender:)]) {
-        menuPresenter = [(id)_weak_undoBarButtonItemTarget targetForAction:@selector(presentMenuForUndoBarButtonItem:) withSender:self];
+    if ([undoBarButtonItemTarget respondsToSelector:@selector(targetForAction:withSender:)]) {
+        menuPresenter = [undoBarButtonItemTarget targetForAction:@selector(presentMenuForUndoBarButtonItem:) withSender:self];
     } else {
-        menuPresenter = [_weak_undoBarButtonItemTarget respondsToSelector:@selector(presentMenuForUndoBarButtonItem:)] ? _weak_undoBarButtonItemTarget : nil;
+        menuPresenter = [undoBarButtonItemTarget respondsToSelector:@selector(presentMenuForUndoBarButtonItem:)] ? undoBarButtonItemTarget : nil;
     }
     
     [menuPresenter presentMenuForUndoBarButtonItem:self];

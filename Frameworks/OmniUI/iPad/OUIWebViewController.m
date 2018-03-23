@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,7 +65,8 @@ RCS_ID("$Id$")
 
 - (IBAction)close:(id)sender;
 {
-    if ([_delegate respondsToSelector:@selector(webViewControllerShouldClose:)] && ![_delegate webViewControllerShouldClose:self])
+    id <OUIWebViewControllerDelegate> delegate = _delegate;
+    if ([delegate respondsToSelector:@selector(webViewControllerShouldClose:)] && ![delegate webViewControllerShouldClose:self])
         return;
 
     [self dismissViewControllerAnimated:YES completion:^{

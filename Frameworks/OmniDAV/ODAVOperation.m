@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -358,7 +358,8 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 - (void)_didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend;
 {
-    OBPRECONDITION(_response == nil);
+    // When we get a 401, supply a credential, and NSURLSession trys again, we'll get a second pass through our body data (with the totalBytesExpectedToSend having been bumped for the re-transmission (so we don't need to reset our counter).
+    OBPRECONDITION(_response == nil || _response.statusCode == ODAV_HTTP_UNAUTHORIZED);
     OBPRECONDITION(bytesSent >= 0);
     
     DEBUG_DAV(3, @"%@: did send data of length %qd (total %qd, expected %qd)", [self shortDescription], bytesSent, totalBytesSent, totalBytesExpectedToSend);

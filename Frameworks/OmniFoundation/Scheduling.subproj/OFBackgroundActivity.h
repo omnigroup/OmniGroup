@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
  
  */
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OFBackgroundActivity : NSObject
 
 + (instancetype)backgroundActivityWithIdentifier:(NSString *)identifier NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
@@ -23,3 +25,5 @@
 - (void)finished NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
 
 @end
+
+NS_ASSUME_NONNULL_END

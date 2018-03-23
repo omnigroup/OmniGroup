@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,8 +74,9 @@ static OUIUndoIndicator *_sharedIndicator;
 - (void)_update;
 {
     OUIUndoIndicatorView *view = (OUIUndoIndicatorView *)self.view;
-    if (view.superview != _parentView){
-        [_parentView addSubview:view];
+    UIView *parentView = _parentView;
+    if (view.superview != parentView){
+        [parentView addSubview:view];
         view.frame = CGRectMake(0, self.frameYOffset, 50, 50);
     }
     

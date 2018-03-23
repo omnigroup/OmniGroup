@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,49 +49,57 @@ RCS_ID("$Id$");
         [weakSelf.body appendString:text];
     };
     _p = ^(NSString *line){
-        [weakSelf.body appendString:@"<p>"];
-        [weakSelf.body appendString:line];
-        [weakSelf.body appendString:@"</p>"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<p>"];
+        [strongSelf.body appendString:line];
+        [strongSelf.body appendString:@"</p>"];
     };
     
     _table = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<table class=\"toptable\">"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<table class=\"toptable\">"];
         guts();
-        [weakSelf.body appendString:@"</table>"];
+        [strongSelf.body appendString:@"</table>"];
     };
     _tr = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<tr>"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<tr>"];
         guts();
-        [weakSelf.body appendString:@"</tr>"];
+        [strongSelf.body appendString:@"</tr>"];
     };
     _th_section = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<th colspan=2 class=\"section\">"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<th colspan=2 class=\"section\">"];
         guts();
-        [weakSelf.body appendString:@"</th>"];
+        [strongSelf.body appendString:@"</th>"];
     };
     _th = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<th>"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<th>"];
         guts();
-        [weakSelf.body appendString:@"</th>"];
+        [strongSelf.body appendString:@"</th>"];
     };
     _td = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<td>"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<td>"];
         guts();
-        [weakSelf.body appendString:@"</td>"];
+        [strongSelf.body appendString:@"</td>"];
     };
     _td_right = ^(void (^guts)(void)) {
-        [weakSelf.body appendString:@"<td align=\"right\">"];
+        __strong typeof(self) strongSelf = weakSelf;
+        [strongSelf.body appendString:@"<td align=\"right\">"];
         guts();
-        [weakSelf.body appendString:@"</td>"];
+        [strongSelf.body appendString:@"</td>"];
     };
     
     _infoRow = ^(NSString *title, NSString *value){
-        weakSelf.tr(^{
-            weakSelf.th(^{
-                [weakSelf.body appendString:title];
+        __strong typeof(self) strongSelf = weakSelf;
+        strongSelf.tr(^{
+            strongSelf.th(^{
+                [strongSelf.body appendString:title];
             });
-            weakSelf.td(^{
-                [weakSelf.body appendString:value];
+            strongSelf.td(^{
+                [strongSelf.body appendString:value];
             });
         });
     };

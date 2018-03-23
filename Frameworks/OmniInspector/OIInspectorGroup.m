@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -193,9 +193,10 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 #ifdef OMNI_ASSERTIONS_ON
     NSWindow *topWindow = [[_inspectors firstObject] window];
 #endif
+    OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
     OIInspectorGroup *newGroup = [[OIInspectorGroup alloc] init];
-    newGroup.inspectorRegistry = self.inspectorRegistry;
-    [self.inspectorRegistry addExistingGroup:newGroup];
+    newGroup.inspectorRegistry = inspectorRegistry;
+    [inspectorRegistry addExistingGroup:newGroup];
     
     NSUInteger inspectorCount = [_inspectors count];
     
@@ -378,7 +379,8 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     CGFloat position;
 
     // Snap to top or bottom of other group
-    for (OIInspectorGroup *otherGroup in self.inspectorRegistry.existingGroups) {
+    OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+    for (OIInspectorGroup *otherGroup in inspectorRegistry.existingGroups) {
         NSRect otherGroupFrame;
             
         if (self == otherGroup || ![otherGroup isVisible] || ![otherGroup getGroupFrame:&otherGroupFrame])
@@ -399,7 +401,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
     // Check for snap to side of other group
     
-    for (OIInspectorGroup *otherGroup in self.inspectorRegistry.existingGroups) {
+    for (OIInspectorGroup *otherGroup in inspectorRegistry.existingGroups) {
         NSRect otherFrame;
         CGFloat distance;
 
@@ -466,9 +468,10 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         OIInspectorGroup *closestGroupWithoutSnapping = nil;
         float closestVerticalDistance = 1e10;
 
-        count = [self.inspectorRegistry.existingGroups count];
+        OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+        count = [inspectorRegistry.existingGroups count];
         for (index = 0; index < count; index++) {
-            OIInspectorGroup *otherGroup = [self.inspectorRegistry.existingGroups objectAtIndex:index];
+            OIInspectorGroup *otherGroup = [inspectorRegistry.existingGroups objectAtIndex:index];
             NSRect otherFrame;
 
             if (self == otherGroup || ![otherGroup isVisible] || ![otherGroup getGroupFrame:&otherFrame])
@@ -924,12 +927,13 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 - (CGFloat)yPositionOfGroupBelowWithSingleHeight:(CGFloat)singleControllerHeight;
 {
     NSRect firstFrame = [self firstFrame];
-    NSUInteger index = [self.inspectorRegistry.existingGroups count];
+    OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+    NSUInteger index = [inspectorRegistry.existingGroups count];
     CGFloat result = NSMinY([[[[_inspectors firstObject] window] screen] visibleFrame]);
     CGFloat ignoreAbove = (NSMaxY(firstFrame) - ((CGFloat)([_inspectors count] - 1) * OIInspectorStartingHeaderButtonHeight) - singleControllerHeight);
     
     while (index--) {
-        OIInspectorGroup *group = [self.inspectorRegistry.existingGroups objectAtIndex:index];
+        OIInspectorGroup *group = [inspectorRegistry.existingGroups objectAtIndex:index];
         NSRect otherFirstFrame;
         
         if (group == self || ![group isVisible])

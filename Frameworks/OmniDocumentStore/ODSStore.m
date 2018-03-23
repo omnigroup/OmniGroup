@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -121,7 +121,7 @@ static unsigned ScopeContext;
     _scopes = [[NSArray alloc] init];
     
 #ifdef OMNI_ASSERTIONS_ON
-#define BadDelegate(sel) OBASSERT_NOT_IMPLEMENTED(_weak_delegate, sel)
+#define BadDelegate(sel) OBASSERT_NOT_IMPLEMENTED(delegate, sel)
     BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createdNewDocument:templateURL:completionHandler: instead
     BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createdNewDocument:templateURL:completionHandler: instead
 #endif

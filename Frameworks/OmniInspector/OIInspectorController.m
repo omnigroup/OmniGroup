@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,9 +87,10 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)setGroup:(OIInspectorGroup *)aGroup;
 {
-    if (_weak_group != aGroup) {
+    OIInspectorGroup *oldGroup = _weak_group;
+    if (oldGroup != aGroup) {
         _weak_group = aGroup;
-        if (_weak_group != nil)
+        if (aGroup != nil)
             [headingButton setNeedsDisplay:YES];
     }
 }
@@ -155,7 +156,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)toggleDisplay;
 {
-    if ([_weak_group isVisible]) {
+    OIInspectorGroup *group = _weak_group;
+    if ([group isVisible]) {
         [self loadInterface]; // Load the UI and thus 'headingButton'
         [self headerViewDidToggleExpandedness:headingButton];
     } else {
@@ -163,7 +165,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             [self loadInterface]; // Load the UI and thus 'headingButton'
             [self headerViewDidToggleExpandedness:headingButton];
         }
-        [_weak_group showGroup];
+        [group showGroup];
     }
 }
 
@@ -179,10 +181,11 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)showInspector;
 {
-    if (![_weak_group isVisible] || !_isExpanded)
+    OIInspectorGroup *group = _weak_group;
+    if (![group isVisible] || !_isExpanded)
         [self toggleDisplay];
     else
-        [_weak_group orderFrontGroup]; 
+        [group orderFrontGroup];
 }
 
 - (BOOL)isVisible;
@@ -349,12 +352,15 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     @try {
         
         // Don't update the inspector if the list of objects to inspect hasn't changed. -inspectedObjectsOfClass: returns a pointer-sorted list of objects, so we can just to 'identical' on the array.
-        NSArray *newInspectedObjects = [self.inspectorRegistry copyObjectsInterestingToInspector:inspector];
-        NSString *newInspectionIdentifier = [self.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
+        OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+        NSArray *newInspectedObjects = [inspectorRegistry copyObjectsInterestingToInspector:inspector];
+        NSString *newInspectionIdentifier = [inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
         if (OFISEQUAL(currentInspectionIdentifier, newInspectionIdentifier) && ((newInspectedObjects == nil && currentlyInspectedObjects == nil) || [newInspectedObjects isIdenticalToArray:currentlyInspectedObjects])) {
             return;
         }
         
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-repeated-use-of-weak" // Ignore this below since it's not smart enough to realize that -makeFirstResponder: changes -firstResponder in a way that requires multiple accesses
         // Record what was first responder in the inspector before we clear it.  We want to clear it since resigning first responder can cause controls to send actions and thus we want this happen *before* we change what would be affected by the action!
         oldResponder = [window firstResponder];
         
@@ -377,6 +383,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             // Since this is delayed, there is really no reasonable way for a NSResponder to refuse to resign here.  The selection has *already* changed!
             OBASSERT([window firstResponder] == window);
         }
+#pragma clang diagnostic pop
         
         currentInspectionIdentifier = newInspectionIdentifier;
         currentlyInspectedObjects = newInspectedObjects; // takes ownership of the reference
@@ -422,8 +429,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     [result setObject:[window description] forKey:@"window"];
     if ([window childWindows])
         [result setObject:[[window childWindows] description] forKey:@"childWindows"];
-    if ([window parentWindow])
-        [result setObject:[[window parentWindow] description] forKey:@"parentWindow"];
+    NSWindow *parentWindow = [window parentWindow];
+    if (parentWindow)
+        [result setObject:[parentWindow description] forKey:@"parentWindow"];
     return result;
 }
 
@@ -436,14 +444,15 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         [self toggleDisplay];
         didExpand = YES;
     }
-    if (![_weak_group isVisible]) {
-        [_weak_group showGroup];
-    } else if ([_weak_group isBelowOverlappingGroup]) {
-        [_weak_group orderFrontGroup];
+    OIInspectorGroup *group = _weak_group;
+    if (![group isVisible]) {
+        [group showGroup];
+    } else if ([group isBelowOverlappingGroup]) {
+        [group orderFrontGroup];
     } else if (!didExpand) {
-        if ([_weak_group isOnlyExpandedMemberOfGroup:self])
-            [_weak_group hideGroup];
-        if ([[_weak_group inspectors] count] > 1) {
+        if ([group isOnlyExpandedMemberOfGroup:self])
+            [group hideGroup];
+        if ([[group inspectors] count] > 1) {
             [self loadInterface]; // Load the UI and thus 'headingButton'
             [self headerViewDidToggleExpandedness:headingButton];
         }
@@ -541,11 +550,12 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         }
         
 	NSSize size = [inspectorView frame].size;
-	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth], @"size is %1.2f, inspector registry wants %1.2f", size.width, [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
-        if (size.width > [self.inspectorRegistry inspectorWidth]) {
-            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", self.inspectorIdentifier, size.width, [self.inspectorRegistry inspectorWidth]);
+        OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+	OBASSERT(size.width <= [inspectorRegistry inspectorWidth], @"size is %1.2f, inspector registry wants %1.2f", size.width, [inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
+        if (size.width > [inspectorRegistry inspectorWidth]) {
+            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", self.inspectorIdentifier, size.width, [inspectorRegistry inspectorWidth]);
         }
-	size.width = [self.inspectorRegistry inspectorWidth];
+	size.width = [inspectorRegistry inspectorWidth];
 	[inspectorView setFrameSize:size];
 	
         loadedInspectorView = YES;
@@ -557,11 +567,13 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     NSView *view = [self _inspectorView];
-    BOOL hadVisibleInspectors = [self.inspectorRegistry hasVisibleInspector];
+    OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+    BOOL hadVisibleInspectors = [inspectorRegistry hasVisibleInspector];
 
     _isExpanded = expanded;
     _isSettingExpansion = YES;
-    [_weak_group setScreenChangesEnabled:NO];
+    OIInspectorGroup *group = _weak_group;
+    [group setScreenChangesEnabled:NO];
     [headingButton setExpanded:_isExpanded];
 
     CGFloat additionalHeaderHeight;
@@ -608,10 +620,10 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 	
         NSRect headingFrame;
         headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0f : OIInspectorSpaceBetweenButtons);
-        if (_weak_group == nil)
+        if (group == nil)
             headingFrame.size = [headingButton frame].size;
         else
-            headingFrame.size = NSMakeSize([self.inspectorRegistry inspectorWidth], [headingButton frame].size.height);
+            headingFrame.size = NSMakeSize([inspectorRegistry inspectorWidth], [headingButton frame].size.height);
         NSRect headingWindowFrame = [window frameRectForContentRect:headingFrame];
         headingWindowFrame.origin.x = topLeftPoint.x;
         headingWindowFrame.origin.y = topLeftPoint.y - headingWindowFrame.size.height;
@@ -640,9 +652,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         [headingBackground setNeedsDisplay:YES];
     }
     
-    [self.inspectorRegistry configurationsChanged];
+    [inspectorRegistry configurationsChanged];
     
-    [_weak_group setScreenChangesEnabled:YES];
+    [group setScreenChangesEnabled:YES];
     _isSettingExpansion = NO;
     
     [self _postExpandednessChangedNotification];
@@ -654,13 +666,14 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     
     if (expanded == _isExpanded)
         return;
-    BOOL hadVisibleInspector = [self.inspectorRegistry hasVisibleInspector];
+    OIInspectorRegistry *inspectorRegistry = self.inspectorRegistry;
+    BOOL hadVisibleInspector = [inspectorRegistry hasVisibleInspector];
     _isExpanded = expanded;
     [headingButton setExpanded:_isExpanded];
 
     if (updateInspector) {
         if (!hadVisibleInspector) {
-            [self.inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[self containerView] window]];
+            [inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[self containerView] window]];
         }
         [self updateInspector];
     }
@@ -720,8 +733,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (BOOL)_groupCanBeginResizingOperation;
 {
-    if (_weak_group) {
-        return [_weak_group canBeginResizingOperation];
+    OIInspectorGroup *group = _weak_group;
+    if (group) {
+        return [group canBeginResizingOperation];
     } else {
         return (self.interfaceType == OIInspectorInterfaceTypeEmbedded);
     }
@@ -802,7 +816,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     NSRect result;
 
-    if ([_weak_group ignoreResizing]) {
+    OIInspectorGroup *group = _weak_group;
+    if ([group ignoreResizing]) {
         return toRect;
     }
 
@@ -824,8 +839,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         toRect.size.height = NSHeight(fromRect);
     }
     
-    if (_weak_group != nil) {
-        result = [_weak_group inspector:self willResizeToFrame:toRect isSettingExpansion:_isSettingExpansion];
+    if (group != nil) {
+        result = [group inspector:self willResizeToFrame:toRect isSettingExpansion:_isSettingExpansion];
 	OBASSERT(result.size.width == toRect.size.width); // Not allowed to width-size inspectors ever!
     } else
         result = toRect;
@@ -870,8 +885,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (NSRect)headerView:(OIInspectorHeaderView *)view willDragWindowToFrame:(NSRect)aFrame onScreen:(NSScreen *)screen;
 {
-    aFrame = [_weak_group fitFrame:aFrame onScreen:screen forceVisible:NO];
-    aFrame = [_weak_group snapToOtherGroupWithFrame:aFrame];
+    OIInspectorGroup *group = _weak_group;
+    aFrame = [group fitFrame:aFrame onScreen:screen forceVisible:NO];
+    aFrame = [group snapToOtherGroupWithFrame:aFrame];
     return aFrame;
 }
 

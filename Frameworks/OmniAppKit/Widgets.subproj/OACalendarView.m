@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -294,10 +294,8 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     if ([self isEnabled]) {
         NSPoint location = [self convertPoint:[mouseEvent locationInWindow] fromView:nil];
         NSDate *hitDate = [self _hitDateWithLocation:location];
+        id target = [self target];
         if (hitDate) {
-            id target;
-
-            target = [self target];
             if (!flags.targetApprovesDateSelection || [_delegate calendarView:self shouldSelectDate:hitDate]) {
                 [self setSelectedDay:hitDate];
                 if (flags.showsDaysForOtherMonths)
@@ -310,7 +308,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             if (hitWeekday) {
                 if (!flags.targetApprovesDateSelection || [_delegate calendarView:self shouldSelectDate:hitWeekday]) {
                     [self setSelectedDay:hitWeekday];
-                    [self sendAction:[self action] to:[self target]];
+                    [self sendAction:[self action] to:target];
                 }
             }
         }

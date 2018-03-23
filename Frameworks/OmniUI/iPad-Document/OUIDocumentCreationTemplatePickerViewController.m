@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,7 +95,8 @@ RCS_ID("$Id$");
                 return NO;
             // filter out fileItems in the trash or recent documents.
             ODSItem *item = evaluatedObject;
-            if (item.scope.isTrash || ([item.scope isKindOfClass:ODSExternalScope.class] && ((ODSExternalScope *)item.scope).isRecentDocuments))
+            ODSScope *itemScope = item.scope;
+            if (itemScope.isTrash || ([itemScope isKindOfClass:ODSExternalScope.class] && ((ODSExternalScope *)itemScope).isRecentDocuments))
                 return NO;
             else
                 return YES;

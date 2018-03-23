@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,9 +80,24 @@ static OALinearRGBA _convertHSVAToRGBA(const CGFloat *input)
     return OAHSVToRGB(hsva);
 }
 
+static OALinearRGBA _convertShadingHSVAToRGBA(const CGFloat *input)
+{
+    OAHSV hsva;
+    hsva.h = input[0];
+    hsva.s = MAX(input[1], 0.05); // We want to see a hint of our current hue even when our saturation is 0.0
+    hsva.v = input[2];
+    hsva.a = input[3];
+    return OAHSVToRGB(hsva);
+}
+
 - (OUIComponentColorPickerConvertToRGB)rgbaComponentConverter;
 {
     return _convertHSVAToRGBA;
+}
+
+- (OUIComponentColorPickerConvertToRGB)shadingRGBAComponentConverter;
+{
+    return _convertShadingHSVAToRGBA;
 }
 
 @end

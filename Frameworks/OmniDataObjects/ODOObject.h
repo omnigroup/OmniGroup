@@ -26,27 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
     void *_observationInfo;
 
     OB_STRONG id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
-
-    union {
-        // Our implementation is non-ARC and manages these references manually, but make this header importable by ARC.
-        __unsafe_unretained ODOProperty *single;
-        __unsafe_unretained NSMutableArray <ODOProperty *> *multiple;
-    } _propertyBeingCalculated;
-
-    struct {
-        unsigned int isFault : 1;
-        unsigned int changeProcessingDisabled : 1;
-        unsigned int invalid : 1;
-        unsigned int isAwakingFromInsert : 1;
-        unsigned int needsAwakeFromFetch : 1;
-        unsigned int isAwakingFromFetch : 1;
-        unsigned int isAwakingFromReinsertionAfterUndoneDeletion : 1;
-        unsigned int isAwakingFromUnarchive : 1;
-        unsigned int hasChangedModifyingToManyRelationshipSinceLastSave : 1;
-        unsigned int undeletable : 1;
-        unsigned int lastSaveWasDeletion : 1;
-        unsigned int propertyBeingCalculatedIsMultiple : 1;
-    } _flags;
 }
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;

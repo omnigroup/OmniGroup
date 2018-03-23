@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -312,14 +312,15 @@ NS_ASSUME_NONNULL_BEGIN
     cell.textLabel.backgroundColor = nil;
 
     // ... unless a menu option background color is otherwise requested
-    UIColor *menuOptionBackgroundColor = [_weak_controller menuOptionBackgroundColor];
+    OUIMenuController *controller = _weak_controller;
+    UIColor *menuOptionBackgroundColor = [controller menuOptionBackgroundColor];
     if (menuOptionBackgroundColor != nil) {
-        cell.textLabel.backgroundColor = [_weak_controller menuOptionBackgroundColor];
-        cell.backgroundColor = [_weak_controller menuOptionBackgroundColor];
+        cell.textLabel.backgroundColor = [controller menuOptionBackgroundColor];
+        cell.backgroundColor = [controller menuOptionBackgroundColor];
     }
 
     // Add a selectedBackgroundView if the menu controller requests it
-    UIColor *menuOptionSelectionColor = [_weak_controller menuOptionSelectionColor];
+    UIColor *menuOptionSelectionColor = [controller menuOptionSelectionColor];
     if (menuOptionSelectionColor != nil) {
         UIView *selectedBackgroundView = [[UIView alloc] initWithFrame:cell.bounds];
         selectedBackgroundView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);

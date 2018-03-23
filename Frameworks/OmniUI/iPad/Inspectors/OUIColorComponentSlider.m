@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -122,6 +122,8 @@ static id _commonInit(OUIColorComponentSlider *self)
     self.opaque = NO;
     self.backgroundColor = nil;
     self.layer.needsDisplayOnBoundsChange = YES;
+    self.color = nil;
+
     [self setNeedsLayout];
     
     self->_knobLayer = [[OUIColorComponentSliderKnobLayer alloc] init];
@@ -182,6 +184,11 @@ static id _commonInit(OUIColorComponentSlider *self)
 // We want the knob interior to show the calculated color
 - (void)setColor:(OAColor *)color;
 {
+    if (color == nil) {
+        // Sliders require a color (even if it's a transparent one). If you want no color, you have to go back to the No Color choice.
+        color = [OAColor colorWithWhite:1.0 alpha:0.0];
+    }
+
     if (OFISEQUAL(_color, color))
         return;
     

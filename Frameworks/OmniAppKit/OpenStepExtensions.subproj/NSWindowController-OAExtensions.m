@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -395,16 +395,17 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
         return;
     }
 
-    if (_LongOperationWindow.parentWindow == documentWindow) {
+    NSWindow *parentWindow = _LongOperationWindow.parentWindow;
+    if (parentWindow == documentWindow) {
         // This can happen if you hit cmd-s twice really fast.
         [self continuingLongOperation:operationDescription];
         return;
-    } else if (_LongOperationWindow.parentWindow != nil) {
+    } else if (parentWindow != nil) {
         // There is an operation on a *different* window; cancel it
         [self finishedLongOperation];
     }
 
-    OBASSERT(_LongOperationWindow == nil || _LongOperationWindow.parentWindow == nil || _LongOperationWindow.parentWindow == documentWindow);
+    OBASSERT(_LongOperationWindow == nil || parentWindow == nil || parentWindow == documentWindow);
 
     if (_LongOperationWindow != nil && _IndicatorView.progressStyle != progressStyle) {
         [_LongOperationWindow release];
@@ -512,16 +513,17 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
     DEBUG_LONG_OPERATION_INDICATOR(@"%s: documentWindow:%p operationStatus=%@", __PRETTY_FUNCTION__, operationWindow.parentWindow, operationStatus);
     OBPRECONDITION([NSThread isMainThread]);
 
-    if (!LongOperationIndicatorEnabledForWindow(_LongOperationWindow.parentWindow)) {
+    NSWindow *parentWindow = _LongOperationWindow.parentWindow;
+    if (!LongOperationIndicatorEnabledForWindow(parentWindow)) {
         return;
     }
 
-    if (_LongOperationWindow.parentWindow == nil) {
+    if (parentWindow == nil) {
         // Nothing going on, supposedly.  Maybe the document window isn't visible or we're hidden.
         return;
     }
     
-    [_IndicatorView setTitle:operationStatus documentWindow:_LongOperationWindow.parentWindow];
+    [_IndicatorView setTitle:operationStatus documentWindow:parentWindow];
 }
 
 + (void)continuingLongOperationWithProgress:(double)progress;
@@ -529,11 +531,12 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    if (!LongOperationIndicatorEnabledForWindow(_LongOperationWindow.parentWindow)) {
+    NSWindow *parentWindow = _LongOperationWindow.parentWindow;
+    if (!LongOperationIndicatorEnabledForWindow(parentWindow)) {
         return;
     }
 
-    if (_LongOperationWindow.parentWindow == nil) {
+    if (parentWindow == nil) {
         // Nothing going on, supposedly.  Maybe the document window isn't visible or we're hidden.
         return;
     }

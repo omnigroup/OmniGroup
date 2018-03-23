@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -142,13 +142,14 @@ RCS_ID("$Id$");
             BOOL shouldConvert = NO;
 
             NSURL *documentToAddURL = downloadURL;
-            if ([docPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
+            id<OUIDocumentPickerDelegate> docPickerDelegate = docPicker.delegate;
+            if ([docPickerDelegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPickerDelegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
                 BOOL isDirectory = NO;
                 [[NSFileManager defaultManager] fileExistsAtPath:[documentToAddURL path] isDirectory:&isDirectory];
-                shouldConvert = [docPicker.delegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([downloadURL pathExtension], @(isDirectory))];
+                shouldConvert = [docPickerDelegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([downloadURL pathExtension], @(isDirectory))];
 
                 if (shouldConvert) { // convert files we claim to view, but do not display in our doc-picker?
-                    [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:documentToAddURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
+                    [docPickerDelegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:documentToAddURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
                         [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scopeViewController.selectedScope inFolder:scopeViewController.selectedScope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
 
                         }];

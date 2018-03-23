@@ -1,4 +1,4 @@
-// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -208,8 +208,9 @@ static NSMutableDictionary *sharedViewerCache = nil;
 - (void)windowWillClose:(NSNotification *)notification;
 {
     @autoreleasepool {
-        if ([_delegate respondsToSelector:@selector(viewer:windowWillClose:)]) {
-            [_delegate viewer:self windowWillClose:notification];
+        id<OAWebPageViewerDelegate> delegate = _delegate;
+        if ([delegate respondsToSelector:@selector(viewer:windowWillClose:)]) {
+            [delegate viewer:self windowWillClose:notification];
         }
         [self invalidate];
     }
@@ -446,8 +447,9 @@ static NSMutableDictionary *sharedViewerCache = nil;
         }
     }
 
-    if (success && [_delegate respondsToSelector:@selector(viewer:didLoadURL:)]) {
-        [_delegate viewer:self didLoadURL:url];
+    id<OAWebPageViewerDelegate> delegate = _delegate;
+    if (success && [delegate respondsToSelector:@selector(viewer:didLoadURL:)]) {
+        [delegate viewer:self didLoadURL:url];
     }
 }
 @end

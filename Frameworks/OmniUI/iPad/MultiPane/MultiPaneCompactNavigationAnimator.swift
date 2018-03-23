@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,8 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
     @objc /**REVIEW**/ let animator: UIViewControllerAnimatedTransitioning
     @objc /**REVIEW**/ let containerView: UIView
     
-    var isAnimated: Bool = true
-    var isInteractive: Bool = false
+    @objc(isAnimated) var isAnimated: Bool = true
+    @objc(isInteractive) var isInteractive: Bool = false
     var transitionWasCancelled: Bool = false // TODO: this should be dependent on the actual animation state.
     @objc /**REVIEW**/ var completedTransition: (Bool) -> Void = { _ in }
     
@@ -195,7 +195,7 @@ extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordi
         return isInteractive
     }
     
-    var isCancelled: Bool {
+    @objc(isCancelled) var isCancelled: Bool {
         return transitionWasCancelled
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,14 +76,15 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleView.delegate = self;
         _documentTitleView.hideTitle = NO;
         
-        if ([fileItem.scope isKindOfClass:[OFXDocumentStoreScope class]]) {
-            OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)fileItem.scope;
+        ODSScope *fileItemScope = fileItem.scope;
+        if ([fileItemScope isKindOfClass:[OFXDocumentStoreScope class]]) {
+            OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)fileItemScope;
             OFXAgentActivity *agentActivity = [OUIDocumentAppController controller].agentActivity;
             _documentTitleView.syncAccountActivity = [agentActivity activityForAccount:scope.account];
             OBASSERT(_documentTitleView.syncAccountActivity != nil);
         }
         
-        _documentTitleView.titleCanBeTapped = fileItem.scope.canRenameDocuments;
+        _documentTitleView.titleCanBeTapped = fileItemScope.canRenameDocuments;
         self.title = title;
         
         self.titleView = _documentTitleView;
@@ -206,10 +207,11 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     OBPRECONDITION(textField == _documentTitleTextField);
     OBPRECONDITION(_hasAttemptedRename == NO);
     
-    [_document willEditDocumentTitle];
+    OUIDocument *document = _document;
+    [document willEditDocumentTitle];
     textField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
 
-    ODSFileItem *fileItem = _document.fileItem;
+    ODSFileItem *fileItem = document.fileItem;
     OBASSERT(fileItem);
     
     textField.text = fileItem.editingName;
@@ -220,12 +222,13 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 {
     // If we are new, there will be no fileItem.
     // Actually, we give documents default names and load their fileItem up immediately on creation...
-    ODSFileItem *fileItem = _document.fileItem;
+    OUIDocument *document = _document;
+    ODSFileItem *fileItem = document.fileItem;
     NSString *originalName = fileItem.editingName;
     OBASSERT(originalName);
     
     NSString *newName = [textField text];
-    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:originalName] || _document.editingDisabled) {
+    if (_hasAttemptedRename || [NSString isEmptyString:newName] || [newName isEqualToString:originalName] || document.editingDisabled) {
         _hasAttemptedRename = NO; // This rename finished (or we are going to discard it due to an incoming iCloud edit); prepare for the next one.
         textField.text = originalName;
         return YES;
@@ -242,7 +245,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 //    OUIDocumentPicker *documentPicker = self.documentPicker;
     
     // Tell the document that the rename is local
-    [_document _willBeRenamedLocally];
+    [document _willBeRenamedLocally];
     self.title = newName; // edit field will be dismissed and the title label displayed before the rename is completed so this will make sure that the label shows the updated name
     
     // Make sure we don't close the document while the rename is happening, or some such. It would probably be OK with the synchronization API, but there is no reason to allow it.
@@ -365,8 +368,9 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     if (_renaming) {
         DEBUG_EDIT_MODE(@"Switching to rename mode.");
         // only save the document if there are changes
-        if (self.document.hasUnsavedChanges) {
-            [self.document saveToURL:self.document.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
+        OUIDocument *document = self.document;
+        if (document.hasUnsavedChanges) {
+            [document saveToURL:document.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL success) {
                 [self _finishUpdateItemsForRenaming];
             }];
         } else {

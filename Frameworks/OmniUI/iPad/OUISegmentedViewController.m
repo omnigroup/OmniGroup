@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -304,8 +304,9 @@ RCS_ID("$Id$")
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
-        [self.originalNavDelegate navigationController:navigationController willShowViewController:viewController animated:animated];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
+        [originalNavDelegate navigationController:navigationController willShowViewController:viewController animated:animated];
     }
     
 #ifdef DEBUG_tom
@@ -316,8 +317,9 @@ RCS_ID("$Id$")
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:didShowViewController:animated:)]) {
-        [self.originalNavDelegate navigationController:navigationController didShowViewController:viewController animated:animated];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationController:didShowViewController:animated:)]) {
+        [originalNavDelegate navigationController:navigationController didShowViewController:viewController animated:animated];
     }
 }
 
@@ -327,8 +329,9 @@ RCS_ID("$Id$")
 - (NSUInteger)navigationControllerSupportedInterfaceOrientations:(UINavigationController *)navigationController;
 #endif
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationControllerSupportedInterfaceOrientations:)]) {
-        return [self.originalNavDelegate navigationControllerSupportedInterfaceOrientations:navigationController];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationControllerSupportedInterfaceOrientations:)]) {
+        return [originalNavDelegate navigationControllerSupportedInterfaceOrientations:navigationController];
     }
     
     return UIInterfaceOrientationMaskAll;
@@ -336,8 +339,9 @@ RCS_ID("$Id$")
 
 - (UIInterfaceOrientation)navigationControllerPreferredInterfaceOrientationForPresentation:(UINavigationController *)navigationController;
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationControllerPreferredInterfaceOrientationForPresentation:)]) {
-        return [self.originalNavDelegate navigationControllerPreferredInterfaceOrientationForPresentation:navigationController];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationControllerPreferredInterfaceOrientationForPresentation:)]) {
+        return [originalNavDelegate navigationControllerPreferredInterfaceOrientationForPresentation:navigationController];
     }
     
     return UIInterfaceOrientationPortrait;
@@ -346,8 +350,9 @@ RCS_ID("$Id$")
 - (id <UIViewControllerInteractiveTransitioning>)navigationController:(UINavigationController *)navigationController
                           interactionControllerForAnimationController:(id <UIViewControllerAnimatedTransitioning>) animationController;
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:interactionControllerForAnimationController:)]) {
-        return [self.originalNavDelegate navigationController:navigationController interactionControllerForAnimationController:animationController];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationController:interactionControllerForAnimationController:)]) {
+        return [originalNavDelegate navigationController:navigationController interactionControllerForAnimationController:animationController];
     }
     
     return nil;
@@ -358,8 +363,9 @@ RCS_ID("$Id$")
                                                 fromViewController:(UIViewController *)fromVC
                                                   toViewController:(UIViewController *)toVC;
 {
-    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
-        return [self.originalNavDelegate navigationController:navigationController animationControllerForOperation:operation fromViewController:fromVC toViewController:toVC];
+    id<UINavigationControllerDelegate> originalNavDelegate = self.originalNavDelegate;
+    if ([originalNavDelegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
+        return [originalNavDelegate navigationController:navigationController animationControllerForOperation:operation fromViewController:fromVC toViewController:toVC];
     }
     
     return nil;

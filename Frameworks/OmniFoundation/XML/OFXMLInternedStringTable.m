@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,6 +99,7 @@ NSString *OFXMLInternedStringTableGetInternedString(OFXMLInternedStringTable tab
 static const char * const EmptyString = "";
 
 typedef struct {
+    CFHashCode hash;
     const char *namespace;
     const char *name;
 } QNameKey;
@@ -127,9 +128,7 @@ static Boolean QNameKeyEqual(const void *value1, const void *value2)
 static CFHashCode QNameKeyHash(const void *value)
 {
     const QNameKey *key = value;
-    
-    // We upgrade NULL to EmptyString to make this easier.
-    return _stringHash(key->name) ^ _stringHash(key->namespace);
+    return key->hash;
 }
 
 static const char *_personalizeString(const char *str)
@@ -156,9 +155,13 @@ OFXMLInternedNameTable OFXMLInternedNameTableCreate(OFXMLInternedNameTable start
         QNameKey *key = malloc(sizeof(*key));
         
         // TODO: We are potentially making lots of copies of the same namespace string, one per attribute/element in that namespace.
+
         key->namespace = _personalizeString([qname.namespace UTF8String]);
         key->name = _personalizeString([qname.name UTF8String]);
-        
+
+        // We upgrade NULL to EmptyString to make this easier.
+        key->hash = _stringHash(key->name) ^ _stringHash(key->namespace);
+
         OBASSERT(CFDictionaryGetValue(TABLE, key) == NULL);
         CFDictionarySetValue(TABLE, key, (__bridge CFTypeRef)qname);
     }
@@ -183,8 +186,10 @@ OFXMLQName *OFXMLInternedNameTableGetInternedName(OFXMLInternedNameTable table, 
         namespace = EmptyString;
     if (!name)
         name = EmptyString;
-    
-    QNameKey proto = {.namespace = namespace, .name = name};
+
+    CFHashCode hash = _stringHash(name) ^ _stringHash(namespace);
+
+    QNameKey proto = {.hash = hash, .namespace = namespace, .name = name};
     
     OFXMLQName *interned = (OFXMLQName *)CFDictionaryGetValue(TABLE, &proto);
     if (interned)
@@ -194,6 +199,7 @@ OFXMLQName *OFXMLInternedNameTableGetInternedName(OFXMLInternedNameTable table, 
     QNameKey *key = malloc(sizeof(*key));
     key->namespace = _personalizeString(namespace);
     key->name = _personalizeString(name);
+    key->hash = hash;
 
     NSString *namespaceString = (namespace != EmptyString) ? [[NSString alloc] initWithCString:namespace encoding:NSUTF8StringEncoding] : @"";
     NSString *nameString = (name != EmptyString) ? [[NSString alloc] initWithCString:name encoding:NSUTF8StringEncoding] : @"";

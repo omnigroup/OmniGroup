@@ -528,8 +528,9 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
         [textStorage removeAttribute:attr range:characterRange];
     [textStorage endEditing];
     
-    if ([self.delegate respondsToSelector:@selector(textView:didChangeAttributesInRange:)]) {
-        [self.delegate textView:self didChangeAttributesInRange:range];
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textView:didChangeAttributesInRange:)]) {
+        [delegate textView:self didChangeAttributesInRange:range];
         [_selectedTextHighlightView setNeedsDisplay];
     }
 }
@@ -794,10 +795,11 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 #if 1
     UITextPosition *position = self.selectedTextRange.start;
 
-    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)]) {
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveUpAtTop:)]) {
         UITextRange *firstLineRange = [self.tokenizer rangeEnclosingPosition:self.beginningOfDocument withGranularity:UITextGranularityLine inDirection:UITextLayoutDirectionUp];
         if (firstLineRange && _rangeContainsPosition(self, firstLineRange, position)) {
-            [self.delegate textViewMoveUpAtTop:self];
+            [delegate textViewMoveUpAtTop:self];
             return;
         }
     }
@@ -805,8 +807,9 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
     UITextPosition *upPosition = [self _closestPositionByMovingUpFromPosition:position];
     self.selectedTextRange = [self textRangeFromPosition:upPosition toPosition:upPosition];
 #else
-    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
-        [self.delegate textViewMoveUpAtTop:self];
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
+        [delegate textViewMoveUpAtTop:self];
 #endif
 }
 
@@ -816,11 +819,12 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 #if 1
     UITextPosition *position = self.selectedTextRange.start;
 
-    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)]) {
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)]) {
         UITextRange *lastLineRange = [self.tokenizer rangeEnclosingPosition:self.endOfDocument withGranularity:UITextGranularityLine inDirection:UITextLayoutDirectionDown];
         // lastLineRange can be nil if you have "foo\n" and the insertion point is before the "f".
         if (lastLineRange && _rangeContainsPosition(self, lastLineRange, position)) {
-            [self.delegate textViewMoveDownAtBottom:self];
+            [delegate textViewMoveDownAtBottom:self];
             return;
         }
     }
@@ -828,21 +832,24 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
     UITextPosition *downPosition = [self _closestPositionByMovingDownFromPosition:position];
     self.selectedTextRange = [self textRangeFromPosition:downPosition toPosition:downPosition];
 #else
-    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
-        [self.delegate textViewMoveDownAtBottom:self];
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
+        [delegate textViewMoveDownAtBottom:self];
 #endif
 }
 
 - (void)moveRightAtEnd:(nullable id)sender;
 {
-    if ([self.delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
-        [self.delegate textViewMoveRightAtEnd:self];
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
+        [delegate textViewMoveRightAtEnd:self];
 }
 
 - (void)moveLeftAtBeginning:(nullable id)sender;
 {
-    if ([self.delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
-        [self.delegate textViewMoveLeftAtBeginning:self];
+    id <OUITextViewDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
+        [delegate textViewMoveLeftAtBeginning:self];
 }
 
 - (void)moveToBeginningOfParagraph:(nullable id)sender;
@@ -1190,9 +1197,10 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         return NO;
     }
     
+    id <OUITextViewDelegate> delegate = self.delegate;
+    
     // We want to provide extendable copy/paste support.
     if (action == @selector(paste:) || action == @selector(pasteTogglingPreserveStyle:)) {
-        id <OUITextViewDelegate> delegate = self.delegate;
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
         if ([delegate respondsToSelector:@selector(textViewReadablePasteboardTypes:)]) {
             NSArray *types = [delegate textViewReadablePasteboardTypes:self];
@@ -1213,7 +1221,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
         return YES;
 #if 0
-        if (![self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
+        if (![delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
         UITextPosition *upPosition = [self _closestPositionByMovingUpFromPosition:position];
@@ -1231,7 +1239,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
         return YES;
 #if 0
-        if (![self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
+        if (![delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
         UITextPosition *downPosition = [self positionFromPosition:position inDirection:UITextLayoutDirectionDown offset:0];
@@ -1246,7 +1254,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         if (self.markedTextRange)
             return NO;
 
-        if (![self.delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
+        if (![delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
         return [self comparePosition:position toPosition:self.endOfDocument] == NSOrderedSame;
@@ -1256,7 +1264,7 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         if (self.markedTextRange)
             return NO;
 
-        if (![self.delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
+        if (![delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
         return [self comparePosition:position toPosition:self.beginningOfDocument] == NSOrderedSame;

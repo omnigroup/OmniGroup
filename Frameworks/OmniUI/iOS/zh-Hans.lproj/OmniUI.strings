@@ -128,6 +128,9 @@
 /* Search field placeholder text */
 "Search" = "搜索";
 
+/* Show hint label - password/passphrase prompt */
+"Show hint…" = "显示提示...";
+
 /* Strike Through button accessibility label */
 "Strike Through" = "删去";
 
