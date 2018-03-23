@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,7 @@ extension OFDocumentEncryptionSettings {
         }
     }
     
-    #if true
-    // Work in progress: allow spotlight to index the envelope of an encrypted document (recipients and document-key-UUID)
+    // Allow spotlight to index the envelope of an encrypted document (recipients and document-key-UUID)
     @objc(addMetadata:)
     public func addMetadata(to into: NSMutableDictionary) -> () {
     
@@ -83,7 +82,6 @@ extension OFDocumentEncryptionSettings {
 
         into[OFMDItemEncryptionRecipientCount] = UInt(recipients.count) + unreadableRecipientCount;
     }
-    #endif
     
     /// Returns the total number of recipients.
     @objc public
@@ -139,7 +137,11 @@ extension OFDocumentEncryptionSettings {
     /// Returns all public-key recipients.
     @objc public
     func publicKeyRecipients() -> [CMSRecipient] {
-        return recipients.flatMap({ $0 as? CMSPKRecipient });
+        #if swift(>=4.1)
+        return recipients.compactMap({ $0 as? CMSPKRecipient })
+        #else
+        return recipients.flatMap({ $0 as? CMSPKRecipient })
+        #endif
     }
     
     /// Adds a PK recipient for the supplied certificate.

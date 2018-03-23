@@ -23,6 +23,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
 #import <OmniUI/OUIDebugURLCommand.h>
+#import <OmniUI/OUIHelpURLCommand.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIPurchaseURLCommand.h>
 #import <OmniUI/OUISendFeedbackURLCommand.h>
@@ -34,6 +35,7 @@
 
 #import <sys/sysctl.h>
 
+#import "OUIChangeAppIconURLCommand.h"
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
@@ -53,6 +55,10 @@ NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
 @interface OUIAppController ()
 @property(strong, nonatomic) NSTimer *timerForSnapshots;
 @property(strong, nonatomic) NSMapTable *appMenuUnderlyingButtonsMappedToAssociatedBarButtonItems;
+
+// Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
+- (BOOL)webViewControllerShouldClose:(OUIWebViewController *)webViewController NS_EXTENSION_UNAVAILABLE_IOS("");
+
 @end
 
 @implementation OUIAppController
@@ -200,8 +206,10 @@ static void __iOS7B5CleanConsoleOutput(void)
     }
     
     Class myClass = [self class];
+    [myClass registerCommandClass:[OUIChangeAppIconURLCommand class] forSpecialURLPath:@"/change-app-icon"];
     [myClass registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
     [myClass registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
+    [myClass registerCommandClass:[OUIHelpURLCommand class] forSpecialURLPath:@"/help"];
     [myClass registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
     [myClass registerCommandClass:[OUISendFeedbackURLCommand class] forSpecialURLPath:@"/send-feedback"];
     [myClass registerDefaultReportErrorAction];
@@ -227,7 +235,17 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (nullable NSString *)helpEdition;
 {
-    return [self applicationEdition];
+    return nil;
+}
+
++ (nullable NSString *)helpTitle;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
+    if ([NSString isEmptyString:helpBookName])
+        return nil;
+
+    return [mainBundle localizedStringForKey:OUIHelpBookNameKey value:helpBookName table:@"InfoPlist"];
 }
 
 + (BOOL)inSandboxStore;
@@ -254,7 +272,7 @@ static void __iOS7B5CleanConsoleOutput(void)
     for (NSDictionary *urlType in urlTypes) {
         NSArray *urlSchemes = [urlType objectForKey:@"CFBundleURLSchemes"];
         for (NSString *supportedScheme in urlSchemes) {
-            if ([urlScheme isEqualToString:supportedScheme]) {
+            if ([urlScheme isEqualToString:supportedScheme.lowercaseString]) {
                 return YES;
             }
         }
@@ -354,6 +372,10 @@ static void __iOS7B5CleanConsoleOutput(void)
         UIViewController *topViewController = viewController;
         UIViewController *vc;
         while ((vc = topViewController.presentedViewController)) {
+            if (vc.isBeingDismissed) {
+                // This can happen when topViewController is presenting a OUIMenuController using a popover presentation. This check seems goofy though.
+                break;
+            }
             topViewController = vc;
         }
 
@@ -933,6 +955,11 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
         return [self _helpForwardURL];
     }
 
+    NSString *helpEdition = [[self class] helpEdition];
+    if (helpEdition != nil) {
+        helpBookFolder = [helpBookFolder stringByAppendingPathComponent:helpEdition];
+    }
+
     NSURL *helpIndexURL = [mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
     
     if (helpIndexURL == nil) {
@@ -945,16 +972,6 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
     
     OBASSERT(helpIndexURL != nil);
     return helpIndexURL;
-}
-
-- (NSString *)_onlineHelpTitle;
-{
-    NSBundle *mainBundle = [NSBundle mainBundle];
-    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
-    if ([NSString isEmptyString:helpBookName])
-        return nil;
-    
-    return [mainBundle localizedStringForKey:OUIHelpBookNameKey value:helpBookName table:@"InfoPlist"];
 }
 
 - (void)_showOnlineHelp:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
@@ -971,7 +988,7 @@ static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
         return;
     }
 
-    NSString *webViewTitle = [self _onlineHelpTitle];
+    NSString *webViewTitle = [[self class] helpTitle];
     
     OUIWebViewController *webController = [self showWebViewWithURL:helpIndexURL title:webViewTitle];
     [webController invokeJavaScriptAfterLoad:[self _rewriteHelpURLJavaScript] completionHandler:nil];

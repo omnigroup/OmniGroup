@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -200,6 +200,7 @@ class OFCMSFileWrapper {
     var embeddedCertificates : [Data] = [];
     var outermostIdentifier: Data? = nil;
     var passwordHint : String? = nil;
+    var shouldSupportLegacyHints: Bool = true
     public var delegate : OFCMSKeySource? = nil;
     public var auxiliaryAsymmetricKeys : [Keypair] = [];
     
@@ -247,14 +248,14 @@ class OFCMSFileWrapper {
     func wrap(input: FileWrapper, previous: FileWrapper?, schema: [String: Any]?, recipients: [CMSRecipient], docID: Data? = nil, options: OFCMSOptions) throws -> FileWrapper {
         
         var toplevelFileAttributes = input.fileAttributes;
-        
+
         if input.isRegularFile {
             /* For flat files, we can simply encrypt the flat file and write it out. */
             let wrapped = FileWrapper(regularFileWithContents: try self.wrap(data: input.regularFileContents!, recipients: recipients, embeddedCertificates: embeddedCertificates, options: options, outerIdentifier: docID));
             if let fname = input.preferredFilename {
                 wrapped.preferredFilename = fname;
             }
-            if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
+            if shouldSupportLegacyHints, let hintData = passwordHint?.data(using: String.Encoding.utf8) {
                 var xattrs : [String : Any] = ( toplevelFileAttributes[NSFileExtendedAttributes] as? [String : Any] ) ?? [:];
                 xattrs[OFCMSFileWrapper.hintFileXattr] = hintData;
                 toplevelFileAttributes[NSFileExtendedAttributes] = xattrs;
@@ -263,16 +264,16 @@ class OFCMSFileWrapper {
             return wrapped;
         } else if input.isDirectory {
             /* For file packages, we encrypt all the files under random names, and write an index file indicating the real names of each file member. */
-            
+
             let nameCount = input.countRegularFiles();
             let nlen = nameCount < 125 ? 6 : nameCount < 600 ? 8 : 15;
             var ns = Set<String>();
             let sides = CMSKEKRecipient();
-            
+
             var sideFiles : [ (String, FileWrapper, OFCMSOptions) ] = [];
             var insideFiles : [ partWrapSpec ] = [];
             var nextPartNumber = 1;
-            
+
             /** Helper function, used for recursively descending the plantext file wrapper and collecting items to encrypt. */
             func wrapWrapperHierarchy(_ w: FileWrapper, settings: [String:Any]?) -> (files: [PackageIndex.FileEntry], directories: [PackageIndex.DirectoryEntry]) {
                 guard let items = w.fileWrappers else {
@@ -285,7 +286,7 @@ class OFCMSFileWrapper {
                     if wrapper.isRegularFile {
                         var obscuredName : String;
                         var fileOptions : OFCMSOptions = [];
-                        
+
                         if let specifiedOptions = setting?[OFDocEncryptionFileOptions] {
                             if let asOpts = specifiedOptions as? OFCMSOptions {
                                 fileOptions.formUnion(asOpts);
@@ -296,33 +297,33 @@ class OFCMSFileWrapper {
                                 assert(false, "invalid type in CMSFileWrapper schema");
                             }
                         }
-                        
+
                         let contentType = (fileOptions.contains(OFCMSOptions.contentIsXML)) ? OFCMSContentType_XML : OFCMSContentType_data;
-                        
+
                         if fileOptions.contains(OFCMSOptions.storeInMain) {
-                            
+
                             let cid = "part\(nextPartNumber)";
                             nextPartNumber += 1;
-                            
+
                             insideFiles.append( (cid.data(using: String.Encoding.ascii)!, dataSrc.fileWrapper(wrapper), contentType, fileOptions) );
-                            
+
                             obscuredName = "#" + cid;
                         } else {
-                            
+
                             if let exposed = setting?[OFDocEncryptionExposeName] {
                                 obscuredName = exposed as! String;
                             } else {
                                 obscuredName = OFCMSFileWrapper.generateCrypticFilename(ofLength: nlen);
                             }
-                            
+
                             while ns.contains(obscuredName) {
                                 obscuredName = OFCMSFileWrapper.generateCrypticFilename(ofLength: nlen);
                             }
                             ns.insert(obscuredName);
-                            
+
                             sideFiles.append( (obscuredName, wrapper, fileOptions) );
                         }
-                        
+
                         files.append(PackageIndex.FileEntry(realName: realName, storedName: obscuredName, options: fileOptions))
                     } else if wrapper.isDirectory {
                         let subSettings : [String : Any]? = setting?[OFDocEncryptionChildren] as! [String : Any]?;
@@ -330,25 +331,25 @@ class OFCMSFileWrapper {
                         directories.append(PackageIndex.DirectoryEntry(realName: realName, files: subFiles, directories: subDirectories));
                     }
                 }
-                
+
                 return (files: files, directories: directories);
             }
-            
+
             // Traverse the plaintext file wrapper, extracting a list of file contents and where they should go.
             var packageIndex = PackageIndex();
             packageIndex.keys[sides.keyIdentifier] = sides.kek;
             (packageIndex.files, packageIndex.directories) = wrapWrapperHierarchy(input, settings: schema);
-            
+
             // Include the table-of-contents item in the list of things to encrypt.
             try insideFiles.insert( (nil, dataSrc.data(packageIndex.serialize()), OFCMSContentType_XML, options), at: 0);
-            
+
             // Embed recipients' certificates.
             if !embeddedCertificates.isEmpty {
                 let certBundle = OFCMSCreateSignedData(OFCMSContentType_data.asDER(), nil, embeddedCertificates, [Data]());
                 insideFiles.insert( (nil, dataSrc.data(OFNSDataFromDispatchData(certBundle)), OFCMSContentType_signedData, [OFCMSOptions.storeInMain, OFCMSOptions.compress] ),
                                     at: 1);
             }
-            
+
             // Wrap the main object, containing the table-of-contents and any files we've decided to store with it.
             let wrappedIndex = try self.wrap(parts: insideFiles,
                                              recipients: recipients,
@@ -356,7 +357,7 @@ class OFCMSFileWrapper {
                                              outerIdentifier: docID);
             var resultItems : [String:FileWrapper] = [:];
             resultItems[OFCMSFileWrapper.indexFileName] = FileWrapper(regularFileWithContents: wrappedIndex);
-            
+
             // Wrap any side files.
             for (obscuredName, wrapper, fileOptions) in sideFiles {
                 let wrappedData = try self.wrap(data: wrapper.regularFileContents!, recipients: [sides], options: fileOptions);
@@ -364,14 +365,14 @@ class OFCMSFileWrapper {
                 sideFile.preferredFilename = obscuredName;
                 resultItems[obscuredName] = sideFile;
             }
-            
+
             // Insert the password hint if we have one
-            if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
+            if shouldSupportLegacyHints, let hintData = passwordHint?.data(using: String.Encoding.utf8) {
                 let addition = FileWrapper(regularFileWithContents: hintData);
                 addition.preferredFilename = OFCMSFileWrapper.hintFileName;
                 resultItems[OFCMSFileWrapper.hintFileName] = addition;
             }
-            
+
             let result = FileWrapper(directoryWithFileWrappers: resultItems);
             result.fileAttributes = toplevelFileAttributes;
             return result;
@@ -413,12 +414,11 @@ class OFCMSFileWrapper {
         if input.isRegularFile {
             // Extract the password hint, if any
             var fileAttributes = input.fileAttributes;
-            if let xattrs = fileAttributes[NSFileExtendedAttributes] as? [String:Any],
+            if shouldSupportLegacyHints && passwordHint == nil, let xattrs = fileAttributes[NSFileExtendedAttributes] as? [String:Any],
                let pwhint = xattrs[OFCMSFileWrapper.hintFileXattr] {
                 if let pwhint_data = pwhint as? Data {
                     passwordHint = String(data: pwhint_data, encoding: String.Encoding.utf8);
                 }
-                fileAttributes[NSFileExtendedAttributes] = fileAttributes[NSFileExtendedAttributes];
             }
 
             // Read and decrypt the file
@@ -455,10 +455,11 @@ class OFCMSFileWrapper {
             }
             
             // Extract the password hint, if any
-            if let hintFile = encryptedFiles[OFCMSFileWrapper.hintFileName],
-               hintFile.isRegularFile,
-               let hintData = hintFile.regularFileContents {
-                passwordHint = String(data: hintData, encoding: String.Encoding.utf8);
+            if shouldSupportLegacyHints && passwordHint == nil,
+                let hintFile = encryptedFiles[OFCMSFileWrapper.hintFileName],
+                hintFile.isRegularFile,
+                let hintData = hintFile.regularFileContents {
+                passwordHint = String(data: hintData, encoding: String.Encoding.utf8)
             }
             
             // Decrypt the main object to get the index / table-of-contents
@@ -610,38 +611,45 @@ class OFCMSFileWrapper {
             contentType = OFCMSContentType_signedData;
         }
         
-        // Generate the seesion key (CEK), and produce a wrapped CEK for each recipient
+        // Generate the session key (CEK), and produce a wrapped CEK for each recipient
         let cek = NSData.cryptographicRandomData(ofLength: 32);
         let rinfos = try recipients.map( { (recip) -> Data in try recip.recipientInfo(wrapping: cek) } );
         
         var envelope : Data;
         var envelopeType : OFCMSContentType;
         
-        let attributes : [Data]?;
-        if let cid = outerIdentifier {
-            attributes = [ OFCMSIdentifierAttribute(cid) ];
-        } else {
-            attributes = nil;
-        }
-        
         // Perform the actual bulk encryption
-        if !options.contains(.withoutAEAD) {
-            var error : NSError? = nil;
-            guard let enveloped_ = OFCMSCreateAuthenticatedEnvelopedData(cek, rinfos, options, contentType.asDER(), input, attributes, &error) else {
-                throw error!;
-            }
-            envelope = OFNSDataFromDispatchData(enveloped_);
-            envelopeType = OFCMSContentType_authenticatedEnvelopedData;
+        let hintAttributes : [Data]?
+        if let hintData = passwordHint?.data(using: String.Encoding.utf8) {
+            hintAttributes = [ OFCMSHintAttribute(hintData) ]
         } else {
-            var error : NSError? = nil;
-            guard let enveloped_ = OFCMSCreateEnvelopedData(cek, rinfos, contentType.asDER(), input, &error) else {
-                throw error!;
+            hintAttributes = nil
+        }
+
+        if !options.contains(.withoutAEAD) {
+            let authAttributes : [Data]?
+            if let cid = outerIdentifier {
+                authAttributes = [ OFCMSIdentifierAttribute(cid) ]
+            } else {
+                authAttributes = nil
             }
-            envelope = OFNSDataFromDispatchData(enveloped_);
-            envelopeType = OFCMSContentType_envelopedData;
+
+            var error : NSError? = nil;
+            guard let enveloped_ = OFCMSCreateAuthenticatedEnvelopedData(cek, rinfos, options, contentType.asDER(), input, authAttributes, hintAttributes, &error) else {
+                throw error!
+            }
+            envelope = OFNSDataFromDispatchData(enveloped_)
+            envelopeType = OFCMSContentType_authenticatedEnvelopedData
+        } else {
+            var error : NSError? = nil
+            guard let enveloped_ = OFCMSCreateEnvelopedData(cek, rinfos, contentType.asDER(), input, hintAttributes, &error) else {
+                throw error!
+            }
+            envelope = OFNSDataFromDispatchData(enveloped_)
+            envelopeType = OFCMSContentType_envelopedData
         }
         
-        return OFNSDataFromDispatchData(OFCMSWrapContent(envelopeType, envelope));
+        return OFNSDataFromDispatchData(OFCMSWrapContent(envelopeType, envelope))
     }
     
     // Wrap multiple plaintext items into one ciphertext file

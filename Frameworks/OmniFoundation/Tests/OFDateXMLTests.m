@@ -143,7 +143,8 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
 
 - (void)testNil;
 {
-    REJECT(nil);
+    NSString *input = nil;
+    REJECT(input);
 }
 
 - (void)testTruncatedDate

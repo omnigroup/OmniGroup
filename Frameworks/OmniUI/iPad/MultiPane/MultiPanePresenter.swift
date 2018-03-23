@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -168,6 +168,7 @@ class MultiPanePresenter: NSObject {
                 pinButton = self.rightPinButton
             }
             self.overlayPresenter = MultiPaneSlidingOverlayPresenter(pane: pane, pinBarButtonItem: pinButton)
+            self.overlayPresenter?.sldingOverlayPresentationControllerDelegate = self
             self.overlayPresenter?.edgeGesture = gesture
             pane.viewController.transitioningDelegate = self.overlayPresenter
             pane.viewController.modalPresentationStyle = .custom
@@ -299,6 +300,15 @@ class MultiPanePresenter: NSObject {
         }
         
         animator.startAnimation()
+    }
+}
+
+extension MultiPanePresenter: SldingOverlayPresentationControllerDelegate {
+    @nonobjc func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, willDismiss pane: Pane) {
+        self.delegate?.willPerform(operation: .dismiss, withPane: pane)
+    }
+    @nonobjc func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, didDismiss pane: Pane) {
+        self.delegate?.didPerform(operation: .dismiss, withPane: pane)
     }
 }
 

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		22F25C0B203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		22F25C0C203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		22F25C0D203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */; };
 		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3400BAA30D8E23CE00390D08 /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
@@ -440,6 +443,7 @@
 
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ODOEditingContext-Subclass.h"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects_Prefix.h; sourceTree = "<group>"; };
 		3400B6880D8C625700390D08 /* ODOObject-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOObject-Internal.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOEditingContext-Internal.h"; sourceTree = "<group>"; };
@@ -986,6 +990,7 @@
 				3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */,
 				3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */,
 				344FB1AB0D89973500AA63FE /* ODOEditingContext.h */,
+				22F25C0A203DDF38003B0ED8 /* ODOEditingContext-Subclass.h */,
 				344FB1BD0D89979200AA63FE /* ODOEditingContext.m */,
 				5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */,
 				3400B6880D8C625700390D08 /* ODOObject-Internal.h */,
@@ -1048,6 +1053,7 @@
 				34019F9C1B62ED9B003A5BE4 /* ODOObject-Accessors.h in Headers */,
 				34019F8E1B62ED96003A5BE4 /* ODOModel.h in Headers */,
 				34019FA41B62ED9F003A5BE4 /* ODODatabase-Internal.h in Headers */,
+				22F25C0C203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */,
 				34019F9A1B62ED9B003A5BE4 /* ODOObject-Internal.h in Headers */,
 				34019F981B62ED9B003A5BE4 /* ODOEditingContext.h in Headers */,
 				34019F871B62ED96003A5BE4 /* ODOEntity-Internal.h in Headers */,
@@ -1087,6 +1093,7 @@
 				34B77C151EC10F6C00BBBA65 /* ODOObject.h in Headers */,
 				34B77C161EC10F6C00BBBA65 /* ODOModel-SQL.h in Headers */,
 				34B77C171EC10F6C00BBBA65 /* ODODatabase-Internal.h in Headers */,
+				22F25C0D203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */,
 				34B77C181EC10F6C00BBBA65 /* ODOEditingContext.h in Headers */,
 				34B77C191EC10F6C00BBBA65 /* ODOModel.h in Headers */,
 				34B77C1A1EC10F6C00BBBA65 /* ODODatabase.h in Headers */,
@@ -1126,6 +1133,7 @@
 				344FB1B30D89973500AA63FE /* ODOObject.h in Headers */,
 				3441C4BF19C8E66800A2FAAE /* ODOModel-SQL.h in Headers */,
 				3441C4C819C8E6A400A2FAAE /* ODODatabase-Internal.h in Headers */,
+				22F25C0B203DDF38003B0ED8 /* ODOEditingContext-Subclass.h in Headers */,
 				344FB1B40D89973500AA63FE /* ODOEditingContext.h in Headers */,
 				344FB1B50D89973500AA63FE /* ODOModel.h in Headers */,
 				344FB1B60D89973500AA63FE /* ODODatabase.h in Headers */,

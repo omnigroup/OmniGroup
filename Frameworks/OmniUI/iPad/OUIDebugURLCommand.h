@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,6 +37,8 @@
 
 /// Debug command parameters extracted from the original URL for this command. Your custom command_ methods may make use of these parameters to further fine-tune their behavior.
 - (NSArray *)parameters;
+- (BOOL)emailURLs:(NSArray *)URLs toAddress:(NSString *)address subject:(NSString *)subject error:(NSError **)outError NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
+
 
 @end
 

@@ -8,7 +8,7 @@
 
 #import <OmniUI/OUIKeyboardNotifier.h>
 
-#import <OmniFoundation/OFExtent.h>
+@import OmniFoundation;
 
 #import <OmniUI/OUIAppController.h>
 
@@ -50,6 +50,9 @@ typedef NS_ENUM(NSInteger, OUIKeyboardState) {
 #pragma mark -
 
 @implementation OUIKeyboardNotifier
+{
+    BOOL _needsUpdate;
+}
 
 static OUIKeyboardNotifier *sharedNotifier = nil;
 
@@ -121,7 +124,7 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
         return;
     
     _accessoryToolbarView = accessoryToolbarView;
-    _updateAccessoryToolbarViewFrame(self, nil);
+    _updateAccessoryToolbarViewFrame(self);
 }
 
 - (CGFloat)getMinYOfLastKnownKeyboardInView:(UIView *)view;
@@ -229,23 +232,23 @@ static void _postNotification(OUIKeyboardNotifier *self, NSString *notificationN
 
 - (BOOL)_handleKeyboardFrameChange:(NSNotification *)note isDid:(BOOL)isDid;
 {
-    self.lastKnownKeyboardInfo = note.userInfo;
+    _lastKnownKeyboardInfo = note.userInfo;
     
-    CGFloat avoidedBottomHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, note);
+    CGFloat avoidedBottomHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, _lastKnownKeyboardInfo);
     if (_lastKnownKeyboardHeight == avoidedBottomHeight) {
         DEBUG_KEYBOARD("  same (%f) -- bailing", _lastKnownKeyboardHeight);
         return NO; // No animation started
     }
-    
+
     _lastKnownKeyboardHeight = avoidedBottomHeight;
 
     NSDictionary *userInfo = [note userInfo];
 
     _lastAnimationDuration = [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
     _lastAnimationCurve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] unsignedIntegerValue];
-    OBASSERT((long)_lastAnimationCurve == 7, "Did UIKit start using a standard or yet another different private animation curve?");
-    
-    _updateAccessoryToolbarViewFrame(self, userInfo);
+
+    [self _accessoryToolbarViewFrameNeedsUpdate];
+
     if (isDid) {
         DEBUG_KEYBOARD("posting frame-did-change");
         _postNotification(self, OUIKeyboardNotifierKeyboardDidChangeFrameNotification, userInfo);
@@ -257,25 +260,25 @@ static void _postNotification(OUIKeyboardNotifier *self, NSString *notificationN
     return YES;
 }
 
-static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *self, NSNotification *note)
+static CGFloat _bottomHeightToAvoidForKeyboardFrameValue(OUIKeyboardNotifier *self, NSValue *keyboardFrameValue)
 {
-    NSValue *keyboardEndFrameValue = [[note userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey];
-    if (!keyboardEndFrameValue) {
+    if (keyboardFrameValue == nil) {
         return 0;
     }
-    CGRect keyboardEndFrame = [keyboardEndFrameValue CGRectValue];
-    DEBUG_KEYBOARD("keyboardEndFrame: %@", NSStringFromCGRect(keyboardEndFrame));
+
+    CGRect keyboardFrame = [keyboardFrameValue CGRectValue];
+    DEBUG_KEYBOARD("keyboardFrame: %@", NSStringFromCGRect(keyboardFrame));
 
     CGRect screenBounds = [UIScreen mainScreen].bounds;
     DEBUG_KEYBOARD("screenBounds: %@", NSStringFromCGRect(screenBounds));
     
-    CGFloat keyboardHeight = CGRectGetHeight(keyboardEndFrame);
+    CGFloat keyboardHeight = CGRectGetHeight(keyboardFrame);
 
     OB_UNUSED_VALUE(keyboardHeight);
     DEBUG_KEYBOARD("keyboardHeight: %f", keyboardHeight);
 
     CGFloat heightToAvoid = 0;
-    CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardEndFrame);
+    CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardFrame);
     if (!CGRectIsNull(intersectionRect)) {
         heightToAvoid = CGRectGetHeight(intersectionRect);
     }
@@ -284,43 +287,76 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *s
     return heightToAvoid;
 }
 
-static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self, NSDictionary *userInfo)
+static CGFloat _bottomHeightToAvoidForBeginningKeyboardFrame(OUIKeyboardNotifier *self, NSDictionary *userInfo)
 {
+    return _bottomHeightToAvoidForKeyboardFrameValue(self, [userInfo objectForKey:UIKeyboardFrameBeginUserInfoKey]);
+}
+
+static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *self, NSDictionary *userInfo)
+{
+    return _bottomHeightToAvoidForKeyboardFrameValue(self, [userInfo objectForKey:UIKeyboardFrameEndUserInfoKey]);
+}
+
+- (void)_accessoryToolbarViewFrameNeedsUpdate;
+{
+    _needsUpdate = YES;
+    OFAfterDelayPerformBlock(0.0, ^{
+        _updateAccessoryToolbarViewFrame(self);
+    });
+}
+
+static CGRect _targetFrameForHeight(UIView *superview, UIView *accessoryToolbarView, CGFloat height)
+{
+    CGRect newFrame = accessoryToolbarView.frame;
+    if (height > 0) {
+        newFrame.origin.x = 0;
+        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - height;
+    } else {
+        newFrame.origin.x = 0;
+        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - superview.safeAreaInsets.bottom;
+    }
+    return newFrame;
+}
+
+static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self)
+{
+    self->_needsUpdate = NO;
+
     UIView *accessoryToolbarView = self.accessoryToolbarView;
     if (accessoryToolbarView == nil) {
         return;
     }
 
+    NSDictionary *userInfo = self->_lastKnownKeyboardInfo;
+    CGFloat endHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, userInfo);
+
     UIView *superview = accessoryToolbarView.superview;
-    CGRect newFrame = accessoryToolbarView.frame;
-    if (self.lastKnownKeyboardHeight > 0) {
-        newFrame.origin.x = 0;
-        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - self.lastKnownKeyboardHeight;
-    }
-    else {
-        newFrame.origin.x = 0;
-        newFrame.origin.y = superview.frame.size.height - accessoryToolbarView.frame.size.height - superview.safeAreaInsets.bottom;
-    }
+    CGRect endFrame = _targetFrameForHeight(superview, accessoryToolbarView, endHeight);
+    DEBUG_KEYBOARD("accessory: current frame %@, new frame %@", NSStringFromCGRect(self.accessoryToolbarView.frame), NSStringFromCGRect(endFrame));
 
-    DEBUG_KEYBOARD("accessory: current frame %@, new frame %@", NSStringFromCGRect(self.accessoryToolbarView.frame), NSStringFromCGRect(newFrame));
-
-    if (CGRectEqualToRect(accessoryToolbarView.frame, newFrame)) {
-        return;
+    if (CGRectEqualToRect(accessoryToolbarView.frame, endFrame)) {
+        return; // We're already where we want to be
     }
 
     NSNumber *durationNumber = [userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     NSNumber *curveNumber = [userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
 
     if (durationNumber == nil || curveNumber == nil) {
-        OBASSERT((durationNumber == nil) == (curveNumber == nil));
+        OBASSERT(durationNumber == nil);
+        OBASSERT(curveNumber == nil);
         durationNumber = [NSNumber numberWithDouble:0.25];
         curveNumber = [NSNumber numberWithInt:UIViewAnimationCurveEaseInOut];
     }
 
+    [UIView performWithoutAnimation:^{
+        CGFloat startHeight = _bottomHeightToAvoidForBeginningKeyboardFrame(self, userInfo);
+        CGRect startFrame = _targetFrameForHeight(superview, accessoryToolbarView, startHeight);
+        accessoryToolbarView.frame = startFrame;
+    }];
     [UIView animateWithDuration:[durationNumber doubleValue] animations:^{
         [UIView setAnimationCurve:[curveNumber intValue]];
         [UIView setAnimationBeginsFromCurrentState:YES];
-        accessoryToolbarView.frame = newFrame;
+        accessoryToolbarView.frame = endFrame;
     }];
 }
 

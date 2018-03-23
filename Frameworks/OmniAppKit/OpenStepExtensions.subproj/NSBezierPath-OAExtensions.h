@@ -67,6 +67,8 @@ BOOL tightBoundsOfCurveTo(NSRect *r, NSPoint startPoint, NSPoint control1, NSPoi
 - (BOOL)strokesSimilarlyIgnoringEndcapsToPath:(NSBezierPath *)otherPath;
 - (NSCountedSet *)countedSetOfEncodedStrokeSegments;
 
+- (NSArray *)divideMultiplePaths;
+
 - (BOOL)intersectsRect:(NSRect)rect;
 
 // Returns the "start"-most intersection with the given line (that is, the intersection closest to the start of the line).

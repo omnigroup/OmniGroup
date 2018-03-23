@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,21 @@ static dispatch_data_t dispatch_of_NSData(NSData *buf) __attribute__((unused));
 
 #pragma mark EnvelopedData
 
-dispatch_data_t OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, NSData *innerContentType, NSData *content, NSError **outError)
+static NSData *_dataForAttributesWithImplicitTag(NSArray <NSData *> * __nullable attributes, int tag)
+{
+    NSMutableData *data = nil;
+    if (attributes != nil && attributes.count != 0) {
+        data = [NSMutableData data];
+        OFASN1AppendSet(data, FLAG_CONSTRUCTED | BER_TAG_SET, attributes);
+        uint8_t implicit_tag[1];
+        implicit_tag[0] = FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC | tag;
+        [data replaceBytesInRange:(NSRange){0, 1} withBytes:implicit_tag length:1];
+    }
+    return data;
+}
+
+
+dispatch_data_t __nullable OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable unprotectedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED
 {
     const uint8_t *contentEncryptionAlgOID;
     NSUInteger cekLength = cek.length;
@@ -80,20 +94,22 @@ dispatch_data_t OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipie
     if (!inner)
         return nil;
 
-    
+    NSData *unprotectedAttributeData = _dataForAttributesWithImplicitTag(unprotectedAttributes, 1);
+
     /* We're producing the following structure (see RFC5083):
      
-     EnvelopedData ::= SEQUENCE {
-         version INTEGER,                                      -- 0, 2, 3, or 4
-         originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,  -- Omitted by us
-         recipientInfos RecipientInfos,
-         encryptedContentInfo EncryptedContentInfo ::= SEQUENCE {
-             contentType OBJECT IDENTIFIER,
-             contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
-             encryptedContent [0] IMPLICIT OCTET STRING
+        EnvelopedData ::= SEQUENCE {
+            version CMSVersion,                                    -- 0, 2, 3, or 4
+            originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,   -- Omitted by us
+            recipientInfos RecipientInfos,
+            encryptedContentInfo EncryptedContentInfo ::= SEQUENCE {
+                contentType OBJECT IDENTIFIER,
+                contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
+                encryptedContent [0] IMPLICIT OCTET STRING
+            }
+            unprotectedAttrs [1] IMPLICIT UnprotectedAttributes OPTIONAL
          }
-     }
-     
+
      */
     
     unsigned int syntaxVersion = 2;  /* TODO: RFC5652 [6.1] - version number is 0 in some cases */
@@ -103,15 +119,16 @@ dispatch_data_t OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipie
     /* No OriginatorInfo; we can omit it */
     OFASN1AppendSet(prologue, BER_TAG_SET | FLAG_CONSTRUCTED, recipientInfos);
     
-    return OFASN1MakeStructure("(d(d(+[*])![d]))",
+    return OFASN1MakeStructure("(d(d(+[*])![d])d)",
                                prologue,               // Version and recipientInfos
                                innerContentType,       // Wrapped content type
                                contentEncryptionAlgOID, sizeof(iv), iv,  // Algorithm structure (OID and parameters)
                                0 /* [0] EXPLICIT tag */ | FLAG_PRIMITIVE | CLASS_CONTEXT_SPECIFIC,
-                               inner);
+                               inner,
+                               unprotectedAttributeData);
 }
 
-int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent)
+int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent, NSArray **outUnprotAttrs)
 {
     enum OFASN1ErrorCodes rc;
     struct parsedTag outerTag;
@@ -145,7 +162,17 @@ int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSM
     rc = parseCMSEncryptedContentInfo(buf, &(envDataValues[3].i), innerContentType, algorithm, innerContent);
     if (rc)
         return rc;
-    
+
+    if (!(envDataValues[4].i.classAndConstructed & FLAG_OPTIONAL)) {
+        NSMutableArray * __autoreleasing array = [NSMutableArray array];
+        rc = extractMembersAsDER(buf, envDataValues[4].i, array);
+        if (rc != OFASN1Success)
+            return rc;
+        *outUnprotAttrs = array;
+    } else {
+        *outUnprotAttrs = nil;
+    }
+
     return OFASN1Success;
 }
 
@@ -153,7 +180,7 @@ int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSM
 
 #define DEFAULT_ICV_LEN 12 /* See RFC5084 [3.1] */
 
-dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, NSUInteger options, NSData *innerContentType, NSData *content, NSArray <NSData *> *authenticatedAttributes, NSError **outError)
+dispatch_data_t __nullable OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSArray <NSData *> * __nullable unauthenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED
 {
     if (!innerContentType) {
         [NSException raise:NSInvalidArgumentException format:@"%s: missing innerContentType", __PRETTY_FUNCTION__];
@@ -170,7 +197,7 @@ dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSDat
     NSMutableData *algorithmIdentifier;
     OFAuthenticatedStreamEncryptorState encState;
     
-    /* RFC5083 [2.1]: If the content type is not id-data, then the authenticated attributes must incude the content-type attribute */
+    /* RFC5083 [2.1]: If the content type is not id-data, then the authenticated attributes must include the content-type attribute */
     if (![innerContentType isEqualToData:[NSData dataWithBytes:der_ct_data length:der_ct_data_len]]) {
         NSData *ctAttr = OFASN1AppendStructure(nil, "(+{d})", der_attr_contentType, innerContentType);
         if (authenticatedAttributes)
@@ -189,7 +216,9 @@ dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSDat
         static const uint8_t implicit_tag_1[1] = { FLAG_CONSTRUCTED | CLASS_CONTEXT_SPECIFIC | 1 };
         [authAttrs replaceBytesInRange:(NSRange){0, 1} withBytes:implicit_tag_1 length:1];
     }
-    
+
+    NSData *unauthAttrs = _dataForAttributesWithImplicitTag(unauthenticatedAttributes, 2);
+
     /* Figure out our algorithm identifier */
     const uint8_t *algorithmOID;
     switch(cek.length) {
@@ -291,19 +320,20 @@ dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSDat
     
     /* We're producing the following structure (see RFC5083):
     
-     AuthEnvelopedData ::= SEQUENCE {
-         version INTEGER,                                      -- Always 0
-         originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,  -- Omitted by us
-         recipientInfos RecipientInfos,
-         authEncryptedContentInfo EncryptedContentInfo ::= SEQUENCE {
-             contentType OBJECT IDENTIFIER,
-             contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
-             encryptedContent [0] IMPLICIT OCTET STRING
-         }
-         authAttrs [1] IMPLICIT AuthAttributes OPTIONAL,
-         mac OCTET STRING
-     }
-     
+        AuthEnvelopedData ::= SEQUENCE {
+            version CMSVersion,                                    -- Must be 0
+            originatorInfo [0] IMPLICIT OriginatorInfo OPTIONAL,   -- Omitted by us
+            recipientInfos RecipientInfos,
+            authEncryptedContentInfo EncryptedContentInfo ::= SEQUENCE {
+                contentType ContentType,
+                contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
+                encryptedContent [0] IMPLICIT EncryptedContent OPTIONAL
+            },
+            authAttrs [1] IMPLICIT AuthAttributes OPTIONAL,
+            mac MessageAuthenticationCode,
+            unauthAttrs [2] IMPLICIT UnauthAttributes OPTIONAL
+        }
+
     */
     
     NSMutableData *prologue = [[NSMutableData alloc] init];
@@ -311,15 +341,16 @@ dispatch_data_t OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSDat
     /* No OriginatorInfo; we can omit it */
     OFASN1AppendSet(prologue, BER_TAG_SET | FLAG_CONSTRUCTED, recipientInfos);
     
-    return OFASN1MakeStructure("(d(dd![d])d[*])",
+    return OFASN1MakeStructure("(d(dd![d])d[*]d)",
                                prologue, innerContentType, algorithmIdentifier,
                                0 /* [0] IMPLICIT tag */ | FLAG_PRIMITIVE | CLASS_CONTEXT_SPECIFIC,
                                encrypted,
                                authAttrs ?: [NSData data],
-                               (size_t)DEFAULT_ICV_LEN, icvBuffer);
+                               (size_t)DEFAULT_ICV_LEN, icvBuffer,
+                               unauthAttrs ?: [NSData data]);
 }
 
-int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent, NSArray **outAuthAttrs, NSData **mac)
+int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData **algorithm, NSData **innerContent, NSArray **outAuthAttrs, NSData **mac, NSArray **outUnauthenticatedAttrs)
 {
     enum OFASN1ErrorCodes rc;
     struct parsedTag outerTag;
@@ -371,6 +402,16 @@ int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion,
     if (rc)
         return rc;
     
+    if (!(envDataValues[6].i.classAndConstructed & FLAG_OPTIONAL)) {
+        NSMutableArray * __autoreleasing array = [NSMutableArray array];
+        rc = extractMembersAsDER(buf, envDataValues[6].i, array);
+        if (rc != OFASN1Success)
+            return rc;
+        *outUnauthenticatedAttrs = array;
+    } else {
+        *outUnauthenticatedAttrs = nil;
+    }
+
     return OFASN1Success;
 }
 
@@ -1405,6 +1446,7 @@ NSError *OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned
         
         case OFCMSAttribute_messageDigest:      /* RFC5652 [11.2] - OCTET STRING */
         case OFCMSAttribute_contentIdentifier:  /* RFC2634 / RFC5035 - OCTET STRING */
+        case OFCMSAttribute_omniHint:           /* OCTET STRING */
         {
             if (valueTag.classAndConstructed != (FLAG_PRIMITIVE|CLASS_UNIVERSAL) || valueTag.tag != BER_TAG_OCTET_STRING) {
                 rc = OFASN1UnexpectedType;
@@ -1447,6 +1489,11 @@ NSError *OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned
 NSData *OFCMSIdentifierAttribute(NSData *cid)
 {
     return OFASN1AppendStructure(nil, "(+{[d]})", der_attr_contentIdentifier, cid);
+}
+
+NSData *OFCMSHintAttribute(NSData *cid)
+{
+    return OFASN1AppendStructure(nil, "(+{[d]})", der_attr_omniHint, cid);
 }
 
 static dispatch_data_t dispatch_of_NSData(NSData *buf)

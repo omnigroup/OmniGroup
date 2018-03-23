@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import "ODAVConnection-Subclass.h"
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ODAVConnection_URLConnection () <ODAVConnectionSubclass>
 @end
@@ -155,7 +157,7 @@ RCS_ID("$Id$")
 
 #pragma mark - NSURLConnectionDataDelegate
 
-- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
+- (nullable NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
 {
     return [[self _operationForConnection:connection] _willSendRequest:request redirectResponse:redirectResponse];
 }
@@ -180,10 +182,12 @@ RCS_ID("$Id$")
     [[self _operationForConnection:connection andRemove:YES] _didCompleteWithError:nil];
 }
 
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;
+- (nullable NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;
 {
     DEBUG_DAV(2, @"will cache response %@", cachedResponse);
     return nil; // Don't cache DAV stuff if asked to.
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

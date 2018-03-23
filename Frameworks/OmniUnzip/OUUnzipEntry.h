@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) size_t compressedSize;
 @property(nonatomic,readonly) size_t uncompressedSize;
 @property(nonatomic,readonly) unsigned long crc;
+
+// YES if compressionMethod == Z_DEFLATE (without having to publish that #define)
+@property(nonatomic,readonly) BOOL compressedWithDeflate;
 
 @end
 

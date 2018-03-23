@@ -86,6 +86,9 @@ BOOL initializeSubpathWalkingState(struct subpathWalkingState *s, NSBezierPath *
 BOOL nextSubpathElement(struct subpathWalkingState *s) NONNULL_ARGS;
 BOOL hasNextSubpathElement(struct subpathWalkingState *s) NONNULL_ARGS;
 void repositionSubpathWalkingState(struct subpathWalkingState *s, NSInteger toIndex) NONNULL_ARGS;
+#if DEBUGGING_CURVE_INTERSECTIONS
+static NSString *describeSubpathWalkingState(const struct subpathWalkingState *s) __unused;
+#endif
 
 - (BOOL)_curvedIntersection:(CGFloat *)length time:(CGFloat *)time curve:(NSPoint *)c line:(NSPoint *)a;
 
@@ -467,8 +470,56 @@ static BOOL subsequent(struct OABezierPathIntersectionHalf *one, struct OABezier
 }
 #endif
 
+- (NSArray *)divideMultiplePaths
+{
+    NSInteger count = [self elementCount];
+    NSInteger i;
+    
+    NSMutableArray *array = [NSMutableArray array];
+    NSBezierPath *path = nil;
+    BOOL pathContainsMove = NO;
+    
+    for(i=0;i<count;i++) {
+        if (!path) {
+            path = [NSBezierPath bezierPath];
+            pathContainsMove = NO;
+        }
+        NSPoint points[3];
+        NSInteger operand = [self elementAtIndex:i associatedPoints:points];
+        if (operand == NSClosePathBezierPathElement) {
+            [path closePath];
+            [array addObject:path];
+            path = nil;
+        } else if (operand == NSMoveToBezierPathElement) {
+            if (pathContainsMove) {
+                [array addObject:path];
+                path = [NSBezierPath bezierPath];
+            }
+            [path moveToPoint:points[0]];
+            pathContainsMove = YES;
+        } else if (operand == NSLineToBezierPathElement) {
+            [path lineToPoint:points[0]];
+        } else {
+            [path curveToPoint:points[2] controlPoint1:points[0] controlPoint2:points[1]];
+        }
+    }
+    if ([path elementCount] > 1)  // try to skip the extra moveto
+        [array addObject:path];
+    return array;
+}
+
 - (NSArray <OABezierPathIntersection *> *)allIntersectionsWithPath:(NSBezierPath *)other
 {
+    // The algorithm below expects one continuous path. If we're a multi-part path, divide and do some recursion.
+    NSArray *paths = [self divideMultiplePaths];
+    if (paths.count > 1) {
+        NSArray *subpathIntersections = @[];
+        for (NSBezierPath *path in paths) {
+            subpathIntersections = [subpathIntersections arrayByAddingObjectsFromArray:[path allIntersectionsWithPath:other]];
+        }
+        return subpathIntersections;
+    }
+    
     struct subpathWalkingState selfIter;
     
     if (!initializeSubpathWalkingState(&selfIter, self, 0, NO))
@@ -1957,23 +2008,29 @@ static unsigned _solveCubic(const double *c, double *roots, unsigned *multiplici
     // (Also note that in some formulations, we're solving x^3+px=q, in which case q has the opposite sign from here)
     p = 9 * B - 3 * (A * A);  // this is actually 9*p
     q = 2 * (A*A*A) - 9 * A * B + 27 * C; // this is actually 27*q
-    // Also, in the standardish formulation, we also have (confusingly) Q=p/3 and R=q/2
+    // Also, in the standardish formulation, we also have (confusingly) Q=p/3 and R=-q/2 (or R=q/2, depending on which definition of q you're using)
     
     cb_p = p * p * p;  // 729 * p^3
     D = q * q / 4 + cb_p / 27;  // Actually 729 * D, where D = Q^3 + R^2 = ((q/2)^2 + (p/3)^3)
     // NSLog(@"Stinky cheese: A=%g (%g), B=%g (%g), C=%g (%g);   D=%g p=%g q=%g", A, A-floor(A+0.5), B, B-floor(B+0.5), C, C-floor(C+0.5), D/729, p/9, q/27);
     
-    // (D is the polynomial discriminant, times a constant factor of 3^6)
+    // At this point we can do a further substitution, w such that x' = w - p / (3 * w), and then rewriting our equation in terms of w^3.
+    // This turns the equation into a quadratic in w^3, (w^3^2 - qw^3 - (p/3)^3 = 0) whose solutions are w^3 = R +- sqrt(D)
+    
+    // (D is the polynomial discriminant; our variable D is D times a constant factor of 3^6)
     
     if (fabs(D)<EPSILON) {
+        // Only one solution to the equation in w^3: w^3 = R = -q/2
+        // This gives three solutions to the equation in x', corresponding to the three cube roots of R, one of which is real and the other two of which are a complex conjugate.
         if (q==0) {  // one triple solution
             roots[0] = 0;
             multiplicity[0] = 3;
             num = 1;
         } else {     // one single and one double solution
-            double u = cbrt(-q)/3.f;
+            double u = cbrt(-q/54); // Our q is 27*q, so u is the actual cube root of -q/2
             roots[0] = 2 * u;
             multiplicity[0] = 1;
+            // The conjugate is w = u * (-1 +- sqrt(-3))/2; both of these correspond to the same real-valued root of our original cubic
             roots[1] = -u;
             multiplicity[1] = 2;
             num = 2;
@@ -2002,9 +2059,9 @@ static unsigned _solveCubic(const double *c, double *roots, unsigned *multiplici
 
     // resubstitute
 
-    sub = 1.0f/3 * A;
+    sub = -A / 3;
     for(unsigned i=0;i<num;i++) {
-        roots[i] -= sub;
+        roots[i] += sub;
     }
 
     return num;
@@ -2246,7 +2303,6 @@ unsigned intersectionsBetweenCurveAndLine(const NSPoint *c, const NSPoint *a, st
 }
 
 #if 0
-#warning 64BIT: Check formatting arguments
 #define dlog(expr) printf("%s:%d: %s = %g\n", __func__, __LINE__, #expr, (expr));
 #else
 #define dlog(expr) /* */
@@ -3076,7 +3132,6 @@ static unsigned coalesceExtendedIntersections(struct intersectionInfo *results, 
                 
                 CDB(printf("into [%g%+g %g%+g] %s-%s\n", results[i].leftParameter, results[i].leftParameterDistance, results[i].rightParameter, results[i].rightParameterDistance, straspect(results[i].leftEntryAspect), straspect(results[i].leftExitAspect));)
                     
-#warning 64BIT: Inspect use of sizeof
                 memmove(&(results[j]), &(results[j+1]), sizeof(*results) * (found - (j+1)));
                 found --;
                 j --;
@@ -3322,6 +3377,35 @@ void repositionSubpathWalkingState(struct subpathWalkingState *s, NSInteger toIn
     
     OBASSERT(s->what == NSLineToBezierPathElement || s->what == NSCurveToBezierPathElement || s->what == NSClosePathBezierPathElement);
 }
+
+#if DEBUGGING_CURVE_INTERSECTIONS
+static NSString *describeSubpathWalkingState(const struct subpathWalkingState *s)
+{
+    NSString *whatdescr;
+    unsigned npoints;
+    NSString *pdescr;
+    
+    switch (s->what) {
+        case NSLineToBezierPathElement:  whatdescr = @"lineto"; npoints = 2;  break;
+        case NSCurveToBezierPathElement:  whatdescr = @"curveto"; npoints = 4;  break;
+        case NSClosePathBezierPathElement:  whatdescr = @"close"; npoints = 2;  break;
+        default: whatdescr = @"unknown"; npoints = 0; break;
+    }
+    
+    if (npoints) {
+        NSMutableArray *pp = [NSMutableArray array];
+        for(unsigned pindex = 0; pindex < npoints; pindex ++) {
+            [pp addObject:NSStringFromPoint(s->points[pindex])];
+        }
+        pdescr = [@" " stringByAppendingString:[pp componentsJoinedByString:@"-"]];
+    } else {
+        pdescr = @"";
+    }
+    
+    return [NSString stringWithFormat:@"{Elt %" PRIdNS "/%" PRIdNS " of %p: %@%@}", s->currentElt, s->elementCount, s->pathBeingWalked, whatdescr, pdescr];
+}
+
+#endif
 
 static BOOL _straightLineIntersectsRect(const NSPoint *a, NSRect rect) {
     // PENDING: needs some work...

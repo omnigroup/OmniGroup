@@ -7,6 +7,7 @@
 
 #import <OmniDataObjects/ODOEditingContext.h>
 
+#import <OmniDataObjects/ODOEditingContext-Subclass.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOObjectID.h>
@@ -656,6 +657,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     
     OBINVARIANT([self _checkInvariants]);
     OBPRECONDITION(!_isValidatingAndWritingChanges); // Can't make edits in the validation methods
+    OBPRECONDITION(!_isDeletingObjects);
     OBPRECONDITION(object);
     OBPRECONDITION([object editingContext] == self);
     OBPRECONDITION([_registeredObjectByID objectForKey:[object objectID]] == object); // has to be registered
@@ -690,65 +692,71 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBASSERT(!_recentlyInsertedObjects);
     OBASSERT(!_recentlyUpdatedObjects);
 
-    // We do delete propagation immediately rather than delaying it until -processPendingChanges.  Not 100% sure what CoreData does.  For now, only the externally initialized delete will go through public API.  That is, subclasses won't get a -deleteObject: for propagated deletes.
+    _isDeletingObjects = YES;
     
-    // Trace the object graph figuring out what we need to cascade, nullify and deny.  This operation should make NO changes in case there is an error detected.
-    TraceForDeletionContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
-    ctx.self = self;
-    ctx.toDelete = [NSMutableSet set]; // Objects that have been cascaded
-    ctx.relationshipsToNullifyByObjectID = [NSMutableDictionary dictionary]; // objectID -> array of to-one relationship keys
-    ctx.denyObjectIDToReferer = [NSMutableDictionary dictionary];
-
-    ctx.error = nil;
-    
-    _traceForDeletion(object, &ctx);
-    if (ctx.fail) {
-        if (outError != NULL)
-            *outError = ctx.error;
-        return NO;
-    }
-    DEBUG_DELETE(@"DELETE: toDelete: %@", [ctx.toDelete setByPerformingSelector:@selector(shortDescription)]);
-    DEBUG_DELETE(@"DELETE: relationshipsToNullifyByObjectID: %@", ctx.relationshipsToNullifyByObjectID);
-    DEBUG_DELETE(@"DELETE: denyObjectIDToReferer: %@", ctx.denyObjectIDToReferer);
-    
-    // Before making any changes, check for deny.  CoreData had deletions supercedeing deny.  That is, if we have (not so hypoteticalliy) a one-to-one between Project and Task with Project->Task being cascade and Task->Project being deny, then if we start the delete at Project, we'll then cascade to Task and find a deny pointing back to Project.  We'll make a note of this when tracing the object graph.  But, since the Project is getting deleted, we'll ignore the deny.  Thus, deny only applies if the object being denied isn't getting deleted.
-    if ([ctx.denyObjectIDToReferer count] > 0) {
-        CFSetApplyFunction((CFSetRef)ctx.toDelete, _removeDenyApplier, ctx.denyObjectIDToReferer);
+    @try {
+        // We do delete propagation immediately rather than delaying it until -processPendingChanges.  Not 100% sure what CoreData does.  For now, only the externally initialized delete will go through public API.  That is, subclasses won't get a -deleteObject: for propagated deletes.
         
-        // If there are still denies in place, log an error and bail
-        if ([ctx.denyObjectIDToReferer count] > 0) {
-            OBRequestConcreteImplementation(self, _cmd);
+        // Trace the object graph figuring out what we need to cascade, nullify and deny.  This operation should make NO changes in case there is an error detected.
+        TraceForDeletionContext ctx;
+        memset(&ctx, 0, sizeof(ctx));
+        ctx.self = self;
+        ctx.toDelete = [NSMutableSet set]; // Objects that have been cascaded
+        ctx.relationshipsToNullifyByObjectID = [NSMutableDictionary dictionary]; // objectID -> array of to-one relationship keys
+        ctx.denyObjectIDToReferer = [NSMutableDictionary dictionary];
+
+        ctx.error = nil;
+        
+        _traceForDeletion(object, &ctx);
+        if (ctx.fail) {
+            if (outError != NULL)
+                *outError = ctx.error;
+            return NO;
         }
+        DEBUG_DELETE(@"DELETE: toDelete: %@", [ctx.toDelete setByPerformingSelector:@selector(shortDescription)]);
+        DEBUG_DELETE(@"DELETE: relationshipsToNullifyByObjectID: %@", ctx.relationshipsToNullifyByObjectID);
+        DEBUG_DELETE(@"DELETE: denyObjectIDToReferer: %@", ctx.denyObjectIDToReferer);
+        
+        // Before making any changes, check for deny.  CoreData had deletions supercedeing deny.  That is, if we have (not so hypoteticalliy) a one-to-one between Project and Task with Project->Task being cascade and Task->Project being deny, then if we start the delete at Project, we'll then cascade to Task and find a deny pointing back to Project.  We'll make a note of this when tracing the object graph.  But, since the Project is getting deleted, we'll ignore the deny.  Thus, deny only applies if the object being denied isn't getting deleted.
+        if ([ctx.denyObjectIDToReferer count] > 0) {
+            CFSetApplyFunction((CFSetRef)ctx.toDelete, _removeDenyApplier, ctx.denyObjectIDToReferer);
+            
+            // If there are still denies in place, log an error and bail
+            if ([ctx.denyObjectIDToReferer count] > 0) {
+                OBRequestConcreteImplementation(self, _cmd);
+            }
+        }
+        
+        // Turns out none of our objects implement -validateForDelete: right now.
+    #if 0
+        // Validate deletion of all the objects that got collected.  Note that the objects and their neighbors will be in their pre-deletion state.
+        // TODO: Need a general 'disallow edits' flag.  -validateForDelete: should not add more edits.
+        OBASSERT([toDelete count] >= 1);
+        ValidateForDeleteApplierContext ctx;
+        memset(&ctx, 0, sizeof(ctx));
+        CFSetApplyFunction((CFSetRef)toDelete, _validateForDeleteApplier, &ctx);
+        if (ctx.failed) {
+            if (outError)
+                *outError = ctx.error;
+            return NO;
+        }
+    #endif
+        
+        // We CANNOT have recent insertions or updates, as it turns out.  If we do, then someone who has fetched against us, and gotten back a match due to in-memory updates of results sets, will be confused if we don't send a deletion notification.  So, above, we've called -processPendingChanges to ensure that everything has been notified and flattened into the processed changes.  After the _nullifyRelationships application, though, we will likely have recently updated objects.
+        OBASSERT(!_recentlyInsertedObjects);
+        OBASSERT(!_recentlyUpdatedObjects);
+        
+        // Take a snapshot of this object, if needed, before nullifying relationships and deleting
+        [self _snapshotObjectPropertiesIfNeeded:object];
+        
+        CFDictionaryApplyFunction((CFDictionaryRef)ctx.relationshipsToNullifyByObjectID, _nullifyRelationships, &ctx);
+        
+        ODOEditingContextInternalDeleteObjects(self, ctx.toDelete);
+        
+        OBINVARIANT([self _checkInvariants]);
+    } @finally {
+        _isDeletingObjects = NO;
     }
-    
-    // Turns out none of our objects implement -validateForDelete: right now.
-#if 0
-    // Validate deletion of all the objects that got collected.  Note that the objects and their neighbors will be in their pre-deletion state.
-    // TODO: Need a general 'disallow edits' flag.  -validateForDelete: should not add more edits.
-    OBASSERT([toDelete count] >= 1);
-    ValidateForDeleteApplierContext ctx;
-    memset(&ctx, 0, sizeof(ctx));
-    CFSetApplyFunction((CFSetRef)toDelete, _validateForDeleteApplier, &ctx);
-    if (ctx.failed) {
-        if (outError)
-            *outError = ctx.error;
-        return NO;
-    }
-#endif
-    
-    // We CANNOT have recent insertions or updates, as it turns out.  If we do, then someone who has fetched against us, and gotten back a match due to in-memory updates of results sets, will be confused if we don't send a deletion notification.  So, above, we've called -processPendingChanges to ensure that everything has been notified and flattened into the processed changes.  After the _nullifyRelationships application, though, we will likely have recently updated objects.
-    OBASSERT(!_recentlyInsertedObjects);
-    OBASSERT(!_recentlyUpdatedObjects);
-    
-    // Take a snapshot of this object, if needed, before nullifying relationships and deleting
-    [self _snapshotObjectPropertiesIfNeeded:object];
-    
-    CFDictionaryApplyFunction((CFDictionaryRef)ctx.relationshipsToNullifyByObjectID, _nullifyRelationships, &ctx);
-    
-    ODOEditingContextInternalDeleteObjects(self, ctx.toDelete);
-    
-    OBINVARIANT([self _checkInvariants]);
 
     return YES;
 }
@@ -930,6 +938,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     OBINVARIANT([self _checkInvariants]);
     OBPRECONDITION(!_isSendingWillSave); // See -_sendWillSave:
     OBPRECONDITION(!_isValidatingAndWritingChanges); // Can't call -processPendingChanges while validating.  Would be pointless anyway since it has already been called and we don't allow making edits paste -_sendWillSave:
+    OBPRECONDITION(!_isDeletingObjects); // Don't call this while inside a delete handler because it causes us to turn objects into faults before we're done with the delete work and validation.
     OBPRECONDITION(![_recentlyInsertedObjects intersectsSet:_recentlyUpdatedObjects]);
     OBPRECONDITION(![_recentlyInsertedObjects intersectsSet:_recentlyDeletedObjects]);
     OBPRECONDITION(![_recentlyUpdatedObjects intersectsSet:_recentlyDeletedObjects]);
@@ -1465,6 +1474,11 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     return object;
 }
 
+- (ODOEditingContextFaultErrorRecovery)handleFaultFulfillmentError:(NSError *)error;
+{
+    // Don't attempt anything in the base class. Subclasses can try to recover in an app-specific manner.
+    return ODOEditingContextFaultErrorUnhandled;
+}
 
 NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification = @"ODOEditingContextObjectsWillBeDeletedNotification";
 NSNotificationName const ODOEditingContextObjectsDidChangeNotification = @"ODOEditingContextObjectsDidChangeNotification";

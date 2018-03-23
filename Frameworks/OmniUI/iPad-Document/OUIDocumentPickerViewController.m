@@ -596,7 +596,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                         }
 
                         [_documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:documentScope folder:folderItem documentType:type documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
-                            finish(createdFileItem, error);
+                            // Add the item and make it visible in the doc picker
+                            [self setFilteredItems:[_filteredItems setByAddingObject:createdFileItem]];
+                            [self _propagateItems:_filteredItems toScrollView:self.mainScrollView withCompletionHandler:^{
+                                finish(createdFileItem, error);
+                            }];
                         }];
                     }];
                 }];
@@ -1273,10 +1277,12 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         
         CGRect offscreenRect = frame;
         offscreenRect.origin.x -= movement;
-        _mainScrollView.frame = offscreenRect;
         
         [[[self class] filterPreference] setStringValue:newFilterIdentifier];
         [_mainScrollView layoutIfNeeded];
+        
+        // The layout pass resets the scroll view's frame. We need to offset it after the layout pass is done.
+        _mainScrollView.frame = offscreenRect;
     }];
     [UIView animateWithDuration:0.4 delay:0 usingSpringWithDamping:0.75 initialSpringVelocity:0 options:0 animations:^{
         _mainScrollView.frame = frame;
@@ -1536,7 +1542,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             _mainScrollView.contentOffset = statusQuoOffset;
         }
     }
-    
+
     [super viewDidLayoutSubviews];
     if (_isAppearing || _needsDelayedHandleResize) {
         CGFloat yOffset = [self contentOffsetYAfterAdjustingInsetToShowTopControls:self.wasShowingTopControlsBeforeTransition];
@@ -1965,7 +1971,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self,
         return;
     if (_renameSession){
         if (_renameSession.itemView == itemView) {
-            [_renameSession endRenaming];
+            [_renameSession endRenaming:NO];
             return;
         } else {
             return; // Another rename might be starting (we don't have a spot to start/stop ignore user interaction there since the keyboard drives the animation).
@@ -2187,11 +2193,12 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (CGFloat)_bottomContentInsetNecessaryToAllowContentOffsetY:(CGFloat)desiredOffsetY;
 {
+    CGFloat toolbarHeight = 44.0;
     CGFloat heightRemainingBelowOffset = _mainScrollView.contentSize.height - desiredOffsetY;
     if (heightRemainingBelowOffset < _mainScrollView.frame.size.height) {
-        return _mainScrollView.frame.size.height - heightRemainingBelowOffset;
+        return fmax(toolbarHeight, _mainScrollView.frame.size.height - heightRemainingBelowOffset);
     }
-    return 0;
+    return toolbarHeight;
 }
 
 #pragma mark - Accessibility
@@ -2881,7 +2888,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     
     if (_renameSession) {
-        [_renameSession endRenaming];
+        [_renameSession endRenaming:YES];
     }
     
     if (!self.isTransitioningTraitCollection) {

@@ -111,18 +111,21 @@ public extension Diffable {
             return !sectionDifference.deletions.contains(indexPaths.0.section)
         }
 
-        // tekl 2018.02.14: leave a comment about this
+        // Above, when creating `survivingMoves`, we're doing a quick pass to omit moves that contain deleted items/sections or items in newly added sections. Here we're digging a little deeper by looking at where each potential move lands. If a potential move destination can be achieved via the deletions and insertions above, then we can ignore the move.
         survivingMoves = survivingMoves.filter { indexPaths in
             let (source, destination) = indexPaths
             
+            // To figure if the source IndexPath would land in the same place via deletions and insertions — for each change that would effect its location — we decrement the source section for each deletion and increment it for each insertion.
             var section = source.section
             section -= sectionDifference.deletions.filter({ $0 < section }).count
             section += sectionDifference.insertions.filter({ $0 <= section }).count
             
+            // Here we do the same thing as we did for the sections for the rows.
             var item = source.item
             item -= survivingDeletions.filter({ $0.section == source.section && $0.item < item }).count
             item += survivingInsertions.filter({ $0.section == destination.section && $0.item <= item }).count
             
+            // If this new IndexPath is the same as the potential move destination, there's no need to consider it. We'll just let the deletions and insertions handle it.
             if IndexPath(item: item, section: section) == destination {
                 return false
             }

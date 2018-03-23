@@ -1,4 +1,4 @@
-// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,10 @@
 
 #import <OmniDAV/ODAVConnection.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ODAVConnection_URLSession : ODAVConnection
 
 @end
+
+NS_ASSUME_NONNULL_END

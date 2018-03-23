@@ -11,6 +11,7 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
     @objc /**REVIEW**/ let pinBarButton: UIBarButtonItem
     @objc /**REVIEW**/ let presentingPane: Pane
     @objc /**REVIEW**/ var isInteractive: Bool = false
+    weak var sldingOverlayPresentationControllerDelegate: SldingOverlayPresentationControllerDelegate?
     
     @objc /**REVIEW**/ var edgeGesture: UIScreenEdgePanGestureRecognizer? {
         didSet {
@@ -48,7 +49,9 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
     }
     
     func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
-        return SldingOverlayPresentationController(withPane: self.presentingPane, presentingController: presenting)
+        let presentationController = SldingOverlayPresentationController(withPane: self.presentingPane, presentingController: presenting)
+        presentationController.sldingOverlayPresentationControllerDelegate = sldingOverlayPresentationControllerDelegate
+        return presentationController
 
     }
     
@@ -58,10 +61,15 @@ class MultiPaneSlidingOverlayPresenter: NSObject, UIViewControllerTransitioningD
     }
 }
 
+protocol SldingOverlayPresentationControllerDelegate: class {
+    func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, willDismiss pane: Pane)
+    func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, didDismiss pane: Pane)
+}
 
 class SldingOverlayPresentationController: UIPresentationController {
     private let shieldingView = UIButton(type: .custom)
     @objc /**REVIEW**/ var pane: Pane
+    weak var sldingOverlayPresentationControllerDelegate: SldingOverlayPresentationControllerDelegate?
     
     @objc /**REVIEW**/ init(withPane pane: Pane, presentingController: UIViewController?) {
         self.pane = pane
@@ -91,10 +99,17 @@ class SldingOverlayPresentationController: UIPresentationController {
     }
     
     override func dismissalTransitionWillBegin() {
+        sldingOverlayPresentationControllerDelegate?.slidingOverlayPresentationController(self, willDismiss: pane)
         if let transistion = self.presentedViewController.transitionCoordinator {
             transistion.animate(alongsideTransition: { (context) in
                 self.shieldingView.alpha = 0.0
                 }, completion: nil)
+        }
+    }
+    
+    override func dismissalTransitionDidEnd(_ completed: Bool) {
+        if completed {
+            sldingOverlayPresentationControllerDelegate?.slidingOverlayPresentationController(self, didDismiss: pane)
         }
     }
     

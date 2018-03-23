@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
 
 // NSURLSession retains its delegate until it is invalidated. Break this up...
 @interface ODAVConnectionDelegate_URLSession : NSObject <NSURLSessionDataDelegate>
@@ -123,7 +124,7 @@ RCS_ID("$Id$")
     return operation;
 }
 
-- (void)_taskCompleted:(NSURLSessionTask *)task error:(NSError *)error;
+- (void)_taskCompleted:(NSURLSessionTask *)task error:(nullable NSError *)error;
 {
     /*
      Radar 14557123: NSURLSession can send -URLSession:task:didCompleteWithError: twice for a task.
@@ -155,7 +156,7 @@ RCS_ID("$Id$")
 
 #pragma mark - NSURLSessionDelegate
 
-- (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error;
+- (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(nullable NSError *)error;
 {
     DEBUG_DAV(1, "didBecomeInvalidWithError:%@", error);
     
@@ -163,7 +164,7 @@ RCS_ID("$Id$")
 }
 
 - (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
- completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
+ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 {
     DEBUG_DAV(1, "didReceiveChallenge:%@", challenge);
 
@@ -207,7 +208,7 @@ willPerformHTTPRedirection:(NSHTTPURLResponse *)response
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
 didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
- completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
+ completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential * _Nullable credential))completionHandler;
 {
     DEBUG_DAV(1, "task:%@ didReceiveChallenge:%@", task, challenge);
     
@@ -227,7 +228,7 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-didCompleteWithError:(NSError *)error;
+didCompleteWithError:(nullable NSError *)error;
 {
     DEBUG_DAV(1, "task:%@ didCompleteWithError:%@", task, error);
     
@@ -296,7 +297,7 @@ didReceiveResponse:(NSURLResponse *)response
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
  willCacheResponse:(NSCachedURLResponse *)proposedResponse
- completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler;
+ completionHandler:(void (^)(NSCachedURLResponse * _Nullable cachedResponse))completionHandler;
 {
     DEBUG_DAV(1, @"dataTask:%@ willCacheResponse:%@", dataTask, proposedResponse);
 
@@ -305,3 +306,5 @@ didReceiveResponse:(NSURLResponse *)response
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

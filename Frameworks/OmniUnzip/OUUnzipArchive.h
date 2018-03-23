@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,6 +51,9 @@ extern NSString * const OUUnzipArchiveFilePathErrorKey;
 
 // Writes all entries prefixed with "name" to temp.
 - (nullable NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)name error:(NSError **)outError;
+
+// Returns a uniqued list of the top level item names, excluding "__MACOSX". Items that represent directories will have a trailing "/".
+- (NSArray <NSString *> *)topLevelEntryNames;
 
 - (nullable NSFileWrapper *)fileWrapperWithError:(NSError **)outError;
 

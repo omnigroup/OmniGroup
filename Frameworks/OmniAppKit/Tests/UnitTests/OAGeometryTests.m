@@ -309,7 +309,7 @@ void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double
 }
 
 /* Verify that the line/curve intersection code finds intersections at the expected location with the expected aspects. */
-static BOOL checkOneLineCurve(OAGeometryTests *tc, const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
+static BOOL checkOneLineCurve(OAGeometryTests *tc, unsigned line, const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
 {
     struct intersectionInfo r[3];
     int ix;
@@ -317,18 +317,19 @@ static BOOL checkOneLineCurve(OAGeometryTests *tc, const NSPoint *cparams, const
     for(ix = 0; ix < 3; ix++) {
         r[ix] = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
     }
+    assert(count <= 3);
 
     BOOL success = YES;
 
     ix = intersectionsBetweenCurveAndLine(cparams, lparams, r);
     if (ix != count) {
+        dumpFoundIntersections(ix, "curve", "line", cparams, lparams, r);
+        dumpExpectedIntersections(count, i, NULL, a, a, invertAspects);
         [tc recordFailureWithDescription:[NSString stringWithFormat:@"Incorrect number of intersections found; found %d, expected %d", ix, count]
-                                  inFile:@"" __FILE__ atLine:__LINE__ expected:NO];
+                                  inFile:@"" __FILE__ atLine:line expected:NO];
         return NO;
     }
     
-    
-#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to look at this it (accesses to r[ix] are out of bounds if count > 3)
     for(ix = 0; ix < count; ix++) {
 #define checkValidParameter(p) if (p < -EPSILON || p > 1+EPSILON) { \
         [tc recordFailureWithDescription:[NSString stringWithFormat:@"Intersection parameter for ixn %d is invalid: %s = %g = 1+%g = %a, but must be between -EPSILON and 1+EPSILON", ix, #p, p, p-1, p] \
@@ -371,7 +372,7 @@ static BOOL checkOneLineCurve(OAGeometryTests *tc, const NSPoint *cparams, const
             success = NO;
         }
     }
-#endif   
+
     return success;
 }
 
@@ -384,7 +385,7 @@ void checkLineCurve_(OAGeometryTests *tc, unsigned line, const NSPoint *c, const
                     NSPoint i3, enum OAIntersectionAspect a3i, enum OAIntersectionAspect a3o) */
 {
     NSPoint cparams[4];
-    NSPoint lparams[2];
+    NSPoint lparams[4];
     NSPoint intersections[3], rev_intersections[3];
     enum OAIntersectionAspect aspects[6], rev_aspects[6];
     va_list argl;
@@ -410,16 +411,18 @@ void checkLineCurve_(OAGeometryTests *tc, unsigned line, const NSPoint *c, const
     
     _parameterizeCurve(cparams, c[0], c[3], c[1], c[2]);
     _parameterizeLine(lparams, l[0], l[1]);
-    ok[0] = checkOneLineCurve(tc, cparams, lparams, count, intersections, aspects, NO);
+    lparams[2] = (NSPoint){0, 0};
+    lparams[3] = (NSPoint){0, 0};
+    ok[0] = checkOneLineCurve(tc, line, cparams, lparams, count, intersections, aspects, NO);
     
     _parameterizeLine(lparams, l[1], l[0]);
-    ok[1] = checkOneLineCurve(tc, cparams, lparams, count, intersections, aspects, YES);
+    ok[1] = checkOneLineCurve(tc, line, cparams, lparams, count, intersections, aspects, YES);
     
     _parameterizeCurve(cparams, c[3], c[0], c[2], c[1]);
-    ok[2] = checkOneLineCurve(tc, cparams, lparams, count, rev_intersections, rev_aspects, NO);
+    ok[2] = checkOneLineCurve(tc, line, cparams, lparams, count, rev_intersections, rev_aspects, NO);
     
     _parameterizeLine(lparams, l[0], l[1]);
-    ok[3] = checkOneLineCurve(tc, cparams, lparams, count, rev_intersections, rev_aspects, YES);
+    ok[3] = checkOneLineCurve(tc, line, cparams, lparams, count, rev_intersections, rev_aspects, YES);
     
     if (!ok[0] || !ok[1] || !ok[2] || !ok[3]) {
         NSString *whichFailures = [NSString stringWithFormat:@"Line/Curve intersection failures in %s: Failures[%s %s %s %s]",
@@ -507,8 +510,8 @@ static NSPoint pointOnCurve(const NSPoint *pts, double t)
                    Pt(0.857143, 0), intersectionEntryRight, intersectionEntryRight);
     checkLineCurve(c4, l7, 1,
                    Pt(1.5, 0), intersectionEntryRight, intersectionEntryLeft);  // Osculation (a double root in solveCubic())
-    
-    // Another S, with carefully-contrived coordinates
+
+    // Another (lazy) S, with carefully-contrived coordinates. The curve is vertical at both ends, and exactly grazes the x-axis at t=3/5, X=81
     NSPoint c5[4] = { {0,0}, {0,3}, {125,-4}, {125,4} };
     checkLineCurve(c5, l6, 2,
                    Pt(0,0), intersectionEntryLeft, intersectionEntryLeft,
@@ -625,7 +628,7 @@ typedef struct expect {
     BOOL justTouches;
 } expect;
 
-static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoint *right, int intersectionCount, ...)
+static BOOL checkCurveCurve_(OAGeometryTests *tc, unsigned line, BOOL looseAspects, const NSPoint *left, const NSPoint *right, int intersectionCount, ...)
 {
     NSPoint pts[intersectionCount];
     double lens[intersectionCount];
@@ -633,8 +636,7 @@ static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoi
     va_list argl;
     int intersectionIndex;
     BOOL ok1, ok2, ok3, ok4;
-    
-    // bug:///135498 (Frameworks-Mac Bug: Fix logic error in OAGeometryTests.m checkCurveCurve_)
+ 
     // Workaround/fix for Static Analyzer Logic error warning; explicitly initialize these array
     for(intersectionIndex = 0; intersectionIndex < intersectionCount; intersectionIndex ++) {
         pts[intersectionIndex] = NSZeroPoint;
@@ -671,14 +673,14 @@ static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoi
     if (ok1 && ok2 && ok3 && ok4)
         return YES;
     else {
-        NSLog(@"%s:%d  Failures[%s %s %s %s]", __func__, __LINE__, ok1?"pass":"fail", ok2?"pass":"fail", ok3?"pass":"fail", ok4?"pass":"fail");
+        [tc recordFailureWithDescription:[NSString stringWithFormat:@"%s: Failures[%s %s %s %s]", __func__, ok1?"pass":"fail", ok2?"pass":"fail", ok3?"pass":"fail", ok4?"pass":"fail"] \
+                                  inFile:@"" __FILE__ atLine:line expected:NO];
         return NO;
     }
 }
-#define checkCurveCurve(...) XCTAssertTrue(checkCurveCurve_(NO, __VA_ARGS__))
-#define checkCurveCurveLoose(...) XCTAssertTrue(checkCurveCurve_(YES, __VA_ARGS__))
+#define checkCurveCurve(...) checkCurveCurve_(self, __LINE__, NO, __VA_ARGS__)
+#define checkCurveCurveLoose(...) checkCurveCurve_(self, __LINE__, YES, __VA_ARGS__)
 
-#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
 static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
     NSPoint c[4];
@@ -763,7 +765,6 @@ static BOOL checkCurveSelf_backwards(const NSPoint *p, NSPoint i, double t1, dou
 
 /* Check a given curve forwards and backwards */
 #define checkCurveSelf(...) XCTAssertTrue(checkOneCurveSelf(__VA_ARGS__)); XCTAssertTrue(checkCurveSelf_backwards(__VA_ARGS__));
-#endif
 
 - (void)testCurveCurveIntersections1
 {
@@ -877,14 +878,12 @@ static BOOL checkCurveSelf_backwards(const NSPoint *p, NSPoint i, double t1, dou
 
 - (void)testCurveSelfIntersection
 {
-#if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
     NSPoint bow1[4] = { {0, 1}, {2, -2}, { 2, 2}, {0, -1} }; // Self-intersecting curve
     NSPoint bow2[4] = { {0, 1}, {2, -2}, {-1, 0}, {1,  0} }; // Asymmetrical self-intersecting curve
 
     checkCurveSelf(bow1, Pt(6./7., 0.0),             0.5 - sqrt(3./28.),    0.5 + sqrt(3./28.),    intersectionEntryLeft);
     
     checkCurveSelf(bow2, Pt(403./675., -128./3375.), 8./15. - sqrt(11./75), 8./15. + sqrt(11./75), intersectionEntryRight); 
-#endif
 }
 
 static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line, NSRect expected, NSPoint s, NSPoint c1, NSPoint c2, NSPoint e, CGFloat halfwidth)

@@ -139,6 +139,9 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 - (void)dealloc;
 {
+    self.usersLeftBarButtonItems = nil;
+    self.usersRightBarButtonItems = nil;
+    self.renaming = NO;
     [_fileNameBinding invalidate];
     _documentTitleView.delegate = nil;
 }
@@ -280,12 +283,19 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     return NO;
 }
 
+- (void)setRenaming:(BOOL)isRenaming;
+{
+    if (_renaming == isRenaming)
+        return;
+
+    _renaming = isRenaming;
+    [self _updateItemsForRenaming];
+}
+
 - (void)textFieldDidEndEditing:(UITextField *)textField;
 {
     OBPRECONDITION(textField == _documentTitleTextField);
-    
-    _renaming = NO;
-    [self _updateItemsForRenaming];
+    self.renaming = NO;
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
@@ -323,9 +333,8 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     if (_renaming) {
         return;
     }
-    
-    _renaming = YES;
-    [self _updateItemsForRenaming];
+
+    self.renaming = YES;
 }
 
 #pragma mark - Helpers
@@ -352,15 +361,16 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     _documentTitleTextField.returnKeyType = UIReturnKeyDone;
     [_documentTitleTextField becomeFirstResponder];
 
-    // Add Shild View
+    // Add Shield View
     UIWindow *window = [OUIAppController controller].window;
     UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];
     NSArray *passthroughViews = [NSArray arrayWithObject:_documentTitleTextField];
-    self.shieldView = [OUIShieldView shieldViewWithView:window];
-    [self.shieldView addGestureRecognizer:shieldViewTapRecognizer];
-    self.shieldView.passthroughViews = passthroughViews;
-    [window addSubview:self.shieldView];
-    [window bringSubviewToFront:self.shieldView];
+    OUIShieldView *shieldView = [OUIShieldView shieldViewWithView:window];
+    [shieldView addGestureRecognizer:shieldViewTapRecognizer];
+    shieldView.passthroughViews = passthroughViews;
+    self.shieldView = shieldView;
+    [window addSubview:shieldView];
+    [window bringSubviewToFront:shieldView];
 }
 
 - (void)_updateItemsForRenaming;
@@ -382,28 +392,26 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         DEBUG_EDIT_MODE(@"Switching to non-rename mode.");
         
         // Allow rotation again.
-        [self.renamingRotationLock unlock];
-        self.renamingRotationLock = nil;
-        
-        // Can't make these assertions becuase these items may have never been set.
-        //        OBASSERT(self.usersLeftBarButtonItems);
-        //        OBASSERT(self.usersRightBarButtonItems);
+        [_renamingRotationLock unlock];
+        _renamingRotationLock = nil;
         
         // Add user's items back.
-        self.leftBarButtonItems = self.usersLeftBarButtonItems;
-        self.rightBarButtonItems = self.usersRightBarButtonItems;
-        
-        // Clear cached user's items.
-        self.usersLeftBarButtonItems = nil;
-        self.usersRightBarButtonItems = nil;
+        if (_usersLeftBarButtonItems != nil) {
+            self.leftBarButtonItems = _usersLeftBarButtonItems;
+            _usersLeftBarButtonItems = nil;
+        }
+        if (_usersRightBarButtonItems != nil) {
+            self.rightBarButtonItems = _usersRightBarButtonItems;
+            _usersRightBarButtonItems = nil;
+        }
         
         // Set our titleView back.
         self.titleView = _documentTitleView;
         
         // Remove Shield View
-        if (self.shieldView) {
-            [self.shieldView removeFromSuperview];
-            self.shieldView = nil;
+        if (_shieldView) {
+            [_shieldView removeFromSuperview];
+            _shieldView = nil;
         }
     }
 }

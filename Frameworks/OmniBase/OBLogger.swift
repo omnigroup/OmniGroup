@@ -107,7 +107,11 @@ public func maintainLogLevelPreference(for key: String, updater: ((OBLogger?) ->
 }
 
 private var logLevelMaintainers: [String: OBLogLevelMaintainer] = [:]
+#if swift(>=4.1)
+private let observerContext = UnsafeMutableRawPointer.allocate(byteCount: 4, alignment: 4)
+#else
 private let observerContext = UnsafeMutableRawPointer.allocate(bytes: 4, alignedTo: 4)
+#endif
 
 private class OBLogLevelMaintainer: NSObject {
     private let key: String

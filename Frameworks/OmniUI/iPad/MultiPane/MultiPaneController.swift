@@ -22,16 +22,16 @@
     /// NOTE: If you need to update a bar button item managed by the MultiPaneController, implement this delegate and access the button from the MultiPaneController. By the time this function is called, the button will have been returend to its deafult state.
     @objc optional func didTransition(to displayMode: MultiPaneDisplayMode, multiPaneController: MultiPaneController)
     
-    /// called before hiding a pane if the pane is .embeded and the displayMode is .multi
+    /// called before hiding a pane if the displayMode is .multi and the pane is either .embeded or .overlay
     @objc optional func willHidePane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
-    /// called before showing a pane if the pane is .embeded and the displayMode is .multi
+    /// called before showing a pane if the displayMode is .multi and the pane is either .embeded or .overlay
     @objc optional func willShowPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
-    /// called before hiding a pane if the pane is .embeded and the displayMode is .multi
+    /// called before hiding a pane if the displayMode is .multi and the pane is either .embeded or .overlay
     @objc optional func didHidePane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
-    /// called before showing a pane if the pane is .embeded and the displayMode is .multi
+    /// called after showing a pane if the displayMode is .multi and the pane is either .embeded or .overlay
     @objc optional func didShowPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     
     /// called before showing a pane if the pane is .embeded and the displayMode is .multi. Called before willShowPane, as a false return value can preempt showing the pane.
@@ -93,19 +93,59 @@
     case right
 }
 
+public extension MultiPaneLocation {
+    init?(named name: String) {
+        switch name {
+        case "left": self = .left
+        case "right": self = .right
+        case "center": self = .center
+        default: assertionFailure("Unknown MultiPaneLocation \"\(name)\""); return nil
+        }
+    }
+}
+
+extension MultiPaneLocation: CustomStringConvertible {
+    public var name: String {
+        switch self {
+        case .left: return "left"
+        case .right: return "right"
+        case .center: return "center"
+        }
+    }
+    
+    public var description: String {
+        return name
+    }
+}
+
 @objc(OUIMultiPaneDisplayMode) public enum MultiPaneDisplayMode: Int {
     case compact // compact width environment, individual apps can customize "sidebar" presentation (presented modally by default)
     case single  // regular width environment, sidebars are overlaid when shown
     case multi   // regular width environment, one or more sidebars will be embedded, one sidebar may be overlaid when shown
 }
 
+public extension MultiPaneDisplayMode {
+    init?(named name: String) {
+        switch name {
+        case "compact": self = .compact
+        case "single": self = .single
+        case "multi": self = .multi
+        default: assertionFailure("Unknown MultiPaneDisplayMode \"\(name)\""); return nil
+        }
+    }
+}
+
 extension MultiPaneDisplayMode: CustomStringConvertible {
-    public var description: String {
+    public var name: String {
         switch self {
         case .compact: return "compact"
         case .single: return "single"
         case .multi: return "multi"
         }
+    }
+    
+    public var description: String {
+        return name
     }
 }
 
@@ -899,10 +939,14 @@ extension MultiPaneController: MultiPanePresenterDelegate {
             sendWillNavigateToPaneNotification(pane: visibleCompactPane)
             
         case .overlay:
+            layoutDelegate?.willShowPane?(at: pane.location, multiPaneController: self)
             // TODO: decide if we want a shadow on an overlaid controller.
             if pane.location == .left || pane.location == .right {
                 pane.apply(decorations: [AddShadow()])
             }
+            
+        case .dismiss:
+            layoutDelegate?.willHidePane?(at: pane.location, multiPaneController: self)
 
         case .expand:
             layoutDelegate?.willShowPane?(at: pane.location, multiPaneController: self)
@@ -939,6 +983,12 @@ extension MultiPaneController: MultiPanePresenterDelegate {
             // re-run our layout so that the panes and the layout are lined up.
             preparePanesForLayout(toMode: displayMode, withSize: currentSize)
 
+        case .overlay:
+            layoutDelegate?.didShowPane?(at: pane.location, multiPaneController: self)
+            
+        case .dismiss:
+            layoutDelegate?.didHidePane?(at: pane.location, multiPaneController: self)
+            
         case .collapse:
             if pane.location == .left || pane.location == .right {
                pane.apply(decorations: [HideDivider()])
@@ -1047,19 +1097,6 @@ extension MultiPaneController: UIGestureRecognizerDelegate {
         }
         
         return false
-    }
-}
-
-extension MultiPaneLocation: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .left:
-            return "left"
-        case .center:
-            return "center"
-        case .right:
-            return "right"
-        }
     }
 }
 

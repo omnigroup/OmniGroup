@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,6 +46,8 @@ RCS_ID("$Id$");
     BOOL _isEndingEditing;
     BOOL _isFinishedRenaming;
     BOOL _needsHorizontalLayout;
+    
+    BOOL ignoreChangesMade;
     
     NSTimeInterval _animationDuration;
     UIViewAnimationCurve _animationCurve;
@@ -245,6 +247,9 @@ RCS_ID("$Id$");
 {
     RENAME_DEBUG(@"textFieldShouldEndEditing:");
     
+    if (ignoreChangesMade)
+        return YES;
+    
     // We need an extra BOOL here to let us know we should really go ahead and end the rename.
     // The rename operation doesn't call our completion block until the file presenter queue has performed the -presentedItemDidMoveToURL:, but in that case the file item will have only updated its _filePresenterURL (which must update immediately and which can be accessed from any thead) and has only enqueued a main thread operation to update its _displayedFileURL (which is what sources the -name method below). The ordering of operations will still be correct since our completion block will still get called on the main thread after the display name is updated, but we can't tell that here.
     NSString *newName = [textField text];
@@ -388,12 +393,84 @@ RCS_ID("$Id$");
     [self _done:shieldView];
 }
 
-- (void)endRenaming
+- (void)endRenaming:(BOOL)ignoreChanges
 {
-    [self _done:nil];
+    if (ignoreChanges) {
+        [self _dismissFromScreen:NO];
+        ignoreChangesMade = YES;
+        [_nameTextField endEditing:YES];
+        _isFinishedRenaming = YES;
+        if (_isRegisteredAsFilePresenter) {
+            _isRegisteredAsFilePresenter = NO;
+            [NSFileCoordinator removeFilePresenter:self];
+        }
+    } else {
+        [self _done:nil];
+    }
 }
 
 #pragma mark - Private
+
+- (void)_dismissFromScreen:(BOOL)animated
+{
+    UIView *dimmingView = _dimmingView;
+    
+    OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
+    
+    if (animated) {
+        // get the animating view on screen
+        [UIView performWithoutAnimation:^{
+            CGRect startFrame = _itemView.metadataView.frame;
+            
+            UIView *weNeedToGenerateTheSnapshotSoTheViewKnowsToResetItselfToRegularSize = [_itemView.metadataView viewForScalingStartFrame:startFrame endFrame:self.origMetadataFrame];
+            if (!_animatingView) {  // but if we already have an animating view, we need to use it for the animation instead of the view we just generated
+                _animatingView = weNeedToGenerateTheSnapshotSoTheViewKnowsToResetItselfToRegularSize;
+            }
+            _itemView.metadataView.backgroundColor = [UIColor clearColor];
+            _itemView.metadataView.alpha = 0.0f;
+            [_itemView.metadataView.superview addSubview:_animatingView];
+        }];
+        
+        // animate the frame changes
+        [UIView animateWithDuration:notifier.lastAnimationDuration
+                              delay:0
+                            options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionOverrideInheritedOptions
+                         animations:^{
+                             [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+                             dimmingView.alpha = 0;
+                             _itemView.frame = self.origItemFrame;
+                             self.origMetadataFrame = CGRectInset(self.origMetadataFrame, 1, 1);
+                             _animatingView.frame = self.origMetadataFrame;
+                             _opaqueBackingView.frame = self.origMetadataFrame;
+                             [_itemView.metadataView animationsToPerformAlongsideScalingToHeight:self.origMetadataFrame.size.height];
+                         } completion:^(BOOL mainFinished){
+                             _itemView.metadataView.frame = self.origMetadataFrame;
+                             [dimmingView removeFromSuperview];
+                             _dimmingView = nil;
+                             _itemView.metadataView.alpha = 0.6f;
+                             _animatingView.alpha = 0.0f;
+                             _itemView.metadataView.alpha = 1.0f;
+                             _itemView.metadataView.backgroundColor = self.origBackgroundColor;
+                             [_opaqueBackingView removeFromSuperview];
+                             _opaqueBackingView = nil;
+                             [_animatingView removeFromSuperview];
+                             [_itemView reattachMetaDataView];
+                         }];
+    } else {
+        _itemView.frame = self.origItemFrame;
+        self.origMetadataFrame = CGRectInset(self.origMetadataFrame, 1, 1);
+        [_itemView.metadataView animationsToPerformAlongsideScalingToHeight:self.origMetadataFrame.size.height];
+        _itemView.metadataView.frame = self.origMetadataFrame;
+        _itemView.metadataView.doubleSizeFonts = NO;
+        [_opaqueBackingView removeFromSuperview];
+        _opaqueBackingView = nil;
+        _dimmingView.alpha = 0.0f;
+        [_dimmingView removeFromSuperview];
+        _dimmingView = nil;
+        [_itemView reattachMetaDataView];
+    }
+    
+}
 
 - (void)_done:(id)sender;
 {
@@ -401,48 +478,7 @@ RCS_ID("$Id$");
     RENAME_DEBUG(@"-_done: calling -endEditing:");
     RENAME_DEBUG(@"  _isAttemptingRename %d", _isAttemptingRename);
 
-    UIView *dimmingView = _dimmingView;
-    
-    OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
-    
-    // get the animating view on screen
-    [UIView performWithoutAnimation:^{
-        CGRect startFrame = _itemView.metadataView.frame;
-
-        UIView *weNeedToGenerateTheSnapshotSoTheViewKnowsToResetItselfToRegularSize = [_itemView.metadataView viewForScalingStartFrame:startFrame endFrame:self.origMetadataFrame];
-        if (!_animatingView) {  // but if we already have an animating view, we need to use it for the animation instead of the view we just generated
-            _animatingView = weNeedToGenerateTheSnapshotSoTheViewKnowsToResetItselfToRegularSize;
-        }
-        _itemView.metadataView.backgroundColor = [UIColor clearColor];
-        _itemView.metadataView.alpha = 0.0f;
-        [_itemView.metadataView.superview addSubview:_animatingView];
-    }];
-
-    // animate the frame changes
-    [UIView animateWithDuration:notifier.lastAnimationDuration
-                          delay:0
-                        options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionOverrideInheritedOptions
-                     animations:^{
-        [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
-        dimmingView.alpha = 0;
-        _itemView.frame = self.origItemFrame;
-        self.origMetadataFrame = CGRectInset(self.origMetadataFrame, 1, 1);
-        _animatingView.frame = self.origMetadataFrame;
-        _opaqueBackingView.frame = self.origMetadataFrame;
-        [_itemView.metadataView animationsToPerformAlongsideScalingToHeight:self.origMetadataFrame.size.height];
-    } completion:^(BOOL mainFinished){
-        _itemView.metadataView.frame = self.origMetadataFrame;
-        [dimmingView removeFromSuperview];
-        _dimmingView = nil;
-        _itemView.metadataView.alpha = 0.6f;
-        _animatingView.alpha = 0.0f;
-        _itemView.metadataView.alpha = 1.0f;
-        _itemView.metadataView.backgroundColor = self.origBackgroundColor;
-        [_opaqueBackingView removeFromSuperview];
-        _opaqueBackingView = nil;
-        [_animatingView removeFromSuperview];
-        [_itemView reattachMetaDataView];
-    }];
+    [self _dismissFromScreen:YES];
     
     // Depending on how the user ends editing, we can get called first or -textFieldShouldEndEditing:.
     _isEndingEditing = YES;

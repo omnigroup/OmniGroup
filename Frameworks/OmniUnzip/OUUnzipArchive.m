@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -366,6 +366,28 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
     return [writeURL URLByAppendingPathComponent:topLevelEntryName];
 }
 
+- (NSArray <NSString *> *)topLevelEntryNames;
+{
+    NSMutableOrderedSet <NSString *> *topNames = [NSMutableOrderedSet orderedSet];
+
+    for (OUUnzipEntry *entry in self.entries) {
+        if ([entry.name rangeOfString:@"__MACOSX" options:(NSAnchoredSearch | NSCaseInsensitiveSearch)].location != NSNotFound) {
+            continue;
+        }
+
+        // By convention, the zip command line tool when adding a directory will make a 'foo/' entry and then entries for each child element. But if you pass 'foo/bar.txt', it will just add a single entry with that path. Likewise, if you have a subdirectory and pass 'foo/bar' it will archive 'foo/bar/'. We want to make sure to neither duplicate top-level items, nor skip them if there is no initial 'foo/'.
+        NSString *name = entry.name;
+        NSRange slashRange = [name rangeOfString:@"/"];
+
+        if (slashRange.location != NSNotFound) {
+            name = [name substringToIndex:NSMaxRange(slashRange)];
+        }
+
+        [topNames addObject:name];
+    }
+    return topNames.array;
+}
+
 - (nullable NSFileWrapper *)_wrapperForUnzipEntry:(OUUnzipEntry *)entry inArchive:(OUUnzipArchive *)unzipArchive error:(NSError **)outError;
 {
     NSData *data = [unzipArchive dataForEntry:entry error:outError];
@@ -377,7 +399,7 @@ static _Nullable id _unzipError(id self, const char *func, int err, NSError **ou
     
     NSString *name = [entry name];
     NSString *fileType = [entry fileType];
-#ifdef DEBUG_kc
+#ifdef DEBUG_kc0
     NSLog(@"Building file wrapper for %@ (%@)", name, fileType);
 #endif
     NSFileWrapper *fileWrapper = nil;

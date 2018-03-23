@@ -42,7 +42,7 @@
                 <constraint firstItem="eCq-dl-JlQ" firstAttribute="bottom" secondItem="6" secondAttribute="bottom" id="OiH-04-wES"/>
                 <constraint firstItem="eCq-dl-JlQ" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="Y2H-9B-WRl"/>
                 <constraint firstItem="eCq-dl-JlQ" firstAttribute="top" secondItem="6" secondAttribute="top" id="gl2-j3-jHm"/>
-                <constraint firstItem="4" firstAttribute="bottom" secondItem="Vbg-m6-PaV" secondAttribute="bottom" id="m7J-4C-mwc"/>
+                <constraint firstItem="4" firstAttribute="bottom" secondItem="6" secondAttribute="bottom" id="m7J-4C-mwc"/>
                 <constraint firstItem="4" firstAttribute="leading" secondItem="Vbg-m6-PaV" secondAttribute="leading" id="qk5-Pu-avh"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>

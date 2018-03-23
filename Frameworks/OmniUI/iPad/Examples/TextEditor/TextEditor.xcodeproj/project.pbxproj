@@ -338,7 +338,7 @@
 			remoteGlobalIDString = 34E88FCE1EC11818007B918E;
 			remoteInfo = "OmniUnzip-server";
 		};
-		34405B1E20659E1100C5C635 /* PBXContainerItemProxy */ = {
+		34405BC320659F5400C5C635 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3427219D119480CE00B39788 /* OmniUI.xcodeproj */;
 			proxyType = 2;
@@ -803,7 +803,7 @@
 			isa = PBXGroup;
 			children = (
 				34BCD88A1B586C2700EBAA20 /* OmniUI.framework */,
-				34405B1F20659E1100C5C635 /* OUIUnitTests-iOS.xctest */,
+				34405BC420659F5400C5C635 /* OUIUnitTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1203,11 +1203,11 @@
 			remoteRef = 344019CF1ED67D7B00F3AABC /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34405B1F20659E1100C5C635 /* OUIUnitTests-iOS.xctest */ = {
+		34405BC420659F5400C5C635 /* OUIUnitTests-iOS.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = "OUIUnitTests-iOS.xctest";
-			remoteRef = 34405B1E20659E1100C5C635 /* PBXContainerItemProxy */;
+			remoteRef = 34405BC320659F5400C5C635 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		3442ADB41BD944FA003CE384 /* OmniBase.framework */ = {

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -146,6 +146,8 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 
 - (NSDictionary *)attributesAtIndex:(NSUInteger)location effectiveRange:(NSRangePointer)range;
 {
+    if (location == self.length)
+        return _lastUsedAttributes;
     return [_storageWithFontSizesScaledForDisplay attributesAtIndex:location effectiveRange:range];
 }
 

@@ -1,4 +1,6 @@
 use strict;
+use integer;
+use Math::BigInt;
 
 my(%definitions, @emits, @lookups);
 
@@ -54,7 +56,9 @@ sub resolve {
     my(@resolved);
     foreach my $part (@{$definitions{$name}}) {
         if ($part =~ /^\d+$/) {
-            push(@resolved, 0 + $part);
+            my($partValue) = 0 + $part;
+            $partValue = Math::BigInt->new($part) if $partValue < 0;
+            push(@resolved, $partValue);
         } else {
             die "OID $name is defined in terms of $part, which isn't defined. Died" unless defined $definitions{$part};
             push(@resolved, &resolve($part));
@@ -192,7 +196,8 @@ foreach my $emit (sort keys %aliases) {
     my(@bytes) = ( ( $nums[0] * 40 ) + $nums[1] );
     shift @nums;
     shift @nums;
-    foreach my $num (@nums) {
+    foreach my $eachnum (@nums) {
+        my $num = $eachnum; # If we don't do this, our Math::BigInt binding of the loop variable takes precedence
         my(@digits);
         while ($num > 127) {
             unshift(@digits, $num & 0x7F);
@@ -288,6 +293,10 @@ pgut = 1.3.6.1.4.1.3029
 aes = csor 4 1
 cert-ext = 2.5.29
 
+iana-pen = 1.3.6.1.4.1 # iso.org.dod.internet.private.enterprise
+omni = iana-pen 51522 # Omni's private enterprise number
+omni-frameworks = omni 1 # Omni frameworks
+
 sha256 = csor 4 2 1
 sha512 = csor 4 2 3
 emit sha*
@@ -354,6 +363,10 @@ attr-messageDigest = pkcs 9 4
 attr-signingTime = pkcs 9 5
 attr-contentIdentifier = pkcs 9 16 2 7
 attr-binarySigningTime = pkcs 9 16 2 46
+
+# Our hint attribute
+attr-omniHint = omni-frameworks 1 # Password hint attribute
+
 emit attr-*
 lookup attr-* in OFCMSAttribute as *
 

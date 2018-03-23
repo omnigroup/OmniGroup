@@ -110,10 +110,12 @@ static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
     
     if (task != UIBackgroundTaskInvalid) {
         // Delay ending the task until the current call stack is done, letting other resources possible be deallocated in the autorelease pool (since we may be going to sleep and not dying outright). Also, we might be on a background queue (probably safe to call UIApplication here, but let's not assume so).
+        
+        // This macro references self, and using it within the block block keeps a hold on our pointer for an extra turn of the run loop. But, this method can be called from dealloc, and keeping around a pointer to self causes ARC to overrelease us when the block is deallocated, and that's a crash. So, we can't place this debug log within the enqueued block.
+        DEBUG_ACTIVITY(1, @"*almost* finished");
+        
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             atomic_fetch_add_explicit(&RunningActivityCount, -1, memory_order_relaxed);
-            DEBUG_ACTIVITY(1, @"finished");
-
             // Do this last since it might be the last thing we do...
             [OFSharedApplication() endBackgroundTask:task];
         }];
@@ -127,10 +129,11 @@ static atomic_int_fast32_t RunningActivityCount = ATOMIC_VAR_INIT(0);
     }
     
     if (disabled) {
+        // This macro references self, and using it within the block block keeps a hold on our pointer for an extra turn of the run loop. But, this method can be called from dealloc, and keeping around a pointer to self causes ARC to overrelease us when the block is deallocated, and that's a crash. So, we can't place this debug log within the enqueued block.
+        DEBUG_ACTIVITY(1, @"*almost* finished");
+        
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             atomic_fetch_add_explicit(&RunningActivityCount, -1, memory_order_relaxed);
-            DEBUG_ACTIVITY(1, @"finished");
-            
             // Do this last since it might be the last thing we do...
             [[NSProcessInfo processInfo] enableSuddenTermination];
         }];

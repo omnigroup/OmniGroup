@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,6 +47,23 @@ void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCo
 unsigned int OFASN1SizeOfTagLength(uint8_t tag, NSUInteger byteCount); // Number of bytes that OFASN1AppendTagLength() will produce
 void OFASN1AppendTagIndefinite(NSMutableData *buffer, uint8_t tag);
 void OFASN1AppendInteger(NSMutableData *buffer, uint64_t i);
+
+/* Notes on the format strings used by OFASN1*():
+    '!' allows the caller to override the tag+class value of the next object. (This is mostly useful for implicit context tagging.)
+    ' ' ignored
+    'd' Raw bytes, as an NSData
+    'a' Raw bytes, as an array of NSDatas
+    '*' Raw bytes, as a (size_t, const uint8_t *) pair of arguments
+    '+' Similar to '*', but we read the object's length from its DER tag
+    'p' A placeholder. The first arg is a size_t indicating the length of the data which will be inserted. The second arg is a (size_t *) into which we will store the offset at which the placeholder data should be inserted in the returned buffer to produce the final value.
+    'u' An unsigned integer. We format it into stuffData[]. We can currently hold numbers up to 2^31-1; it's the caller's responsibility to make sure the number is in that range.
+    Container types, whose length field depends on other pieces:
+    '(...)' BER_TAG_SEQUENCE | FLAG_CONSTRUCTED
+    '{...}' BER_TAG_SET | FLAG_CONSTRUCTED
+    '[...]' BER_TAG_OCTET_STRING
+    '<...>' BER_TAG_BIT_STRING [stuffs bytes]
+*/
+
 NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...);
 dispatch_data_t OFASN1MakeStructure(const char *fmt, ...);
 void OFASN1AppendSet(NSMutableData *buffer, unsigned char tagByte, NSArray *derElements);
@@ -115,6 +132,7 @@ enum OFCMSAttribute {
     OFCMSAttribute_signingTime,
     OFCMSAttribute_contentIdentifier,
     OFCMSAttribute_binarySigningTime,  // RFC 6019
+    OFCMSAttribute_omniHint,
 };
 
 /* Parsing helper for some Algorithm structures */

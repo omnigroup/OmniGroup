@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ enum OFCMSRecipientType {
     OFCMSRKeyTransport,       /// Key transport, e.g. RSA
     OFCMSRKeyAgreement,       /// Key agreement, e.g. elliptic-DH
     OFCMSRPassword,           /// Password-based key derivation
-    OFCMSRPreSharedKey        /// Side-channel transported key
+    OFCMSRPreSharedKey,       /// Side-channel transported key
 };
 
 

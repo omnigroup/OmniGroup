@@ -615,24 +615,29 @@ RCS_ID("$Id$")
     OBASSERT_NOTNULL(completionHandler);
     
     completionHandler = [completionHandler copy]; // preserve scope
-    
-    if (OFISNULL(exportType)) {
+
+    // For 'native' files, don't bother with loading in all the data, just grab the file wrapper
+    if (OFISNULL(exportType) || [exportType isEqual:fileItem.fileType]) {
         // The 'nil' type is always first in our list of types, so we can eport the original file as is w/o going through any app specific exporter.
         // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-                       ^{
-                           __autoreleasing NSError *error = nil;
-                           NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error];
-                           
-                           if (completionHandler) {
-                               completionHandler(fileWrapper, error);
-                           }
-                           
-                       });
+
+        [fileItem.scope performAsynchronousFileAccessUsingBlock:^{
+            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+
+            __block NSFileWrapper *fileWrapper;
+            NSError *readingError = nil;
+
+            [coordinator readItemAtURL:fileItem.fileURL withChanges:YES error:&readingError byAccessor:^BOOL(NSURL *newURL, NSError **outError){
+                fileWrapper = [[NSFileWrapper alloc] initWithURL:newURL options:NSFileWrapperReadingImmediate error:outError];
+                return (fileWrapper != nil);
+            }];
+            completionHandler(fileWrapper, readingError);
+        }];
         return;
     }
-    
+
     // try the older NSData API if the app-specific subclass is calling up to us
+    // Unsure if any of our apps actually get this far... —LM
     NSData *fileData = nil;
     NSString *pathExtension = nil;
     __autoreleasing NSError *error = nil;

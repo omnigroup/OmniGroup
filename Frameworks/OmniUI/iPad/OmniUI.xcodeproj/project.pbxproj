@@ -479,6 +479,10 @@
 		429586661C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 429586631C497D26009ED770 /* OUIToolbarInfo-Compact@3x.png */; };
 		42B7ECF71F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B7ECF61F4E2704003F3F4E /* DisclosableMultiSegmentInspectorPane.swift */; };
 		42D6E8AA1F2154F9006B9697 /* DisclosableSliceGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D6E8A91F2154F9006B9697 /* DisclosableSliceGroup.swift */; };
+		4A0CE67B20435DFB00154E5D /* OUIHelpURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0CE66F20435DFA00154E5D /* OUIHelpURLCommand.m */; };
+		4A0CE67C20435DFB00154E5D /* OUIHelpURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A0CE67A20435DFB00154E5D /* OUIHelpURLCommand.h */; };
+		4A1BDAC5204CAC00003917CB /* OUIChangeAppIconURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */; };
+		4A1BDAC6204CAC00003917CB /* OUIChangeAppIconURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */; };
 		4AF368E52006E665004EED9D /* OUIPasswordPromptViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF368E32006E665004EED9D /* OUIPasswordPromptViewController.swift */; };
 		4AF368E62006E665004EED9D /* OUIPasswordPromptViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */; };
 		4AF93D7E1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1052,6 +1056,10 @@
 		498EFFD417CF0C420078F593 /* OUIStepperMinus@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperMinus@2x.png"; sourceTree = "<group>"; };
 		49C3E85517B96CF40087A458 /* OUIInspectorSliceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorSliceView.h; sourceTree = "<group>"; };
 		49C3E85617B96CF40087A458 /* OUIInspectorSliceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorSliceView.m; sourceTree = "<group>"; };
+		4A0CE66F20435DFA00154E5D /* OUIHelpURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIHelpURLCommand.m; sourceTree = "<group>"; };
+		4A0CE67A20435DFB00154E5D /* OUIHelpURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIHelpURLCommand.h; sourceTree = "<group>"; };
+		4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OUIChangeAppIconURLCommand.h; sourceTree = "<group>"; };
+		4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OUIChangeAppIconURLCommand.m; sourceTree = "<group>"; };
 		4AE47BD4138B567E003D72DF /* OUIToolbarButtonFauxHighlight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIToolbarButtonFauxHighlight.png; sourceTree = "<group>"; };
 		4AF368E32006E665004EED9D /* OUIPasswordPromptViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OUIPasswordPromptViewController.swift; sourceTree = "<group>"; };
 		4AF368E42006E665004EED9D /* OUIPasswordPromptViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIPasswordPromptViewController.xib; sourceTree = "<group>"; };
@@ -2071,10 +2079,14 @@
 			children = (
 				3E609BDF198B5DC9006BCF43 /* OUIAppController+SpecialURLHandling.h */,
 				3E609BE0198B5DC9006BCF43 /* OUIAppController+SpecialURLHandling.m */,
+				4A1BDAC3204CAC00003917CB /* OUIChangeAppIconURLCommand.h */,
+				4A1BDAC4204CAC00003917CB /* OUIChangeAppIconURLCommand.m */,
 				3E609C0E198B78ED006BCF43 /* OUIChangePreferenceURLCommand.h */,
 				3E609C0F198B78ED006BCF43 /* OUIChangePreferenceURLCommand.m */,
 				3E609C12198B7951006BCF43 /* OUIDebugURLCommand.h */,
 				3E609C13198B7951006BCF43 /* OUIDebugURLCommand.m */,
+				4A0CE67A20435DFB00154E5D /* OUIHelpURLCommand.h */,
+				4A0CE66F20435DFA00154E5D /* OUIHelpURLCommand.m */,
 				23137CFB19ABB435005D85AE /* OUIPurchaseURLCommand.h */,
 				23137CFC19ABB435005D85AE /* OUIPurchaseURLCommand.m */,
 				4AF93D7C1E9D328D00DA8E01 /* OUISendFeedbackURLCommand.h */,
@@ -2156,6 +2168,7 @@
 				348A7B221B584CF10082D55D /* OUIRotationLock.h in Headers */,
 				348A7A2A1B584AF10082D55D /* OUIPaletteColorPicker.h in Headers */,
 				348A7AE61B584C980082D55D /* OUIEditableLabeledTableViewCell.h in Headers */,
+				4A1BDAC5204CAC00003917CB /* OUIChangeAppIconURLCommand.h in Headers */,
 				348A79F51B584AC60082D55D /* OUINoteInspectorPane.h in Headers */,
 				348A7B311B584D050082D55D /* OUIFullScreenNoteTextViewController.h in Headers */,
 				348A7A5E1B584B590082D55D /* OUIInstructionTextInspectorSlice.h in Headers */,
@@ -2220,6 +2233,7 @@
 				348A7B091B584CC30082D55D /* OUIBlockOutShieldView.h in Headers */,
 				348A79DC1B584A8D0082D55D /* OUIAppController.h in Headers */,
 				348A7AD51B584C720082D55D /* OUIVerticalSplitTransition.h in Headers */,
+				4A0CE67C20435DFB00154E5D /* OUIHelpURLCommand.h in Headers */,
 				348A79DE1B584A950082D55D /* OUIAppController+SpecialURLHandling.h in Headers */,
 				348A7AF41B584CAD0082D55D /* OUIRotationGestureRecognizer.h in Headers */,
 				348A79E81B584AA50082D55D /* OUIMenuOptionsController.h in Headers */,
@@ -2741,6 +2755,7 @@
 				232F1EF81DF7436500201BEC /* OUIInspectorNavigationController.m in Sources */,
 				348A7B471B584D130082D55D /* UIFontDescriptor-OUIExtensions.m in Sources */,
 				348A7B3B1B584D130082D55D /* OUIScrollNotifier.m in Sources */,
+				4A1BDAC6204CAC00003917CB /* OUIChangeAppIconURLCommand.m in Sources */,
 				348A7B551B584D130082D55D /* UIViewController-OUIExtensions.m in Sources */,
 				348A7AF51B584CAD0082D55D /* OUIRotationGestureRecognizer.m in Sources */,
 				23105FDB1EAFD9AE008E0647 /* MultiPaneControllerBarButtonManagement.swift in Sources */,
@@ -2842,6 +2857,7 @@
 				348A79FD1B584AE10082D55D /* OUIColorComponentSlider.m in Sources */,
 				348A7AF31B584CAD0082D55D /* OUILongPressGestureRecognizer.m in Sources */,
 				348A7AE91B584C980082D55D /* OUILabeledValueCell.m in Sources */,
+				4A0CE67B20435DFB00154E5D /* OUIHelpURLCommand.m in Sources */,
 				348A7A441B584B590082D55D /* OUIAbstractTableViewInspectorSlice.m in Sources */,
 				348A7A7D1B584BAE0082D55D /* OUIColorAttributeInspectorWell.m in Sources */,
 				348A7AE11B584C810082D55D /* OUITiledScalingView.m in Sources */,

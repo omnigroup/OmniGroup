@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,17 +42,18 @@ NSError * __nullable _OFASN1ParseCMSRecipientIdentifier(NSData *buf, enum OFCMSR
 dispatch_data_t __nullable OFCMSCreateCompressedData(NSData *ctype, NSData *content, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 dispatch_data_t OFCMSWrapContent(enum OFCMSContentType ct, NSData *content) DISPATCH_RETURNS_RETAINED /* OB_HIDDEN */;
 dispatch_data_t __nullable OFCMSCreateAuthenticatedData(NSData *hmacKey, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
-dispatch_data_t __nullable OFCMSCreateEnvelopedData(NSData *CEK, NSArray<NSData *> *recipientInfos, NSData *innerContentType, NSData *content, NSError **outError) DISPATCH_RETURNS_RETAINED /* OB_HIDDEN */;
-dispatch_data_t __nullable OFCMSCreateAuthenticatedEnvelopedData(NSData *CEK, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
+dispatch_data_t __nullable OFCMSCreateEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable unprotectedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED /* OB_HIDDEN */;
+dispatch_data_t __nullable OFCMSCreateAuthenticatedEnvelopedData(NSData *cek, NSArray<NSData *> *recipientInfos, OFCMSOptions options, NSData *innerContentType, NSData *content, NSArray <NSData *> * __nullable authenticatedAttributes, NSArray <NSData *> * __nullable unauthenticatedAttributes, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 dispatch_data_t OFCMSCreateSignedData(NSData *innerContentType, NSData * __nullable content, NSArray * __nullable certificates, NSArray * __nullable signatures) OB_HIDDEN;
 dispatch_data_t OFCMSCreateMultipart(NSArray<NSData *> *parts) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 dispatch_data_t OFCMSCreateAttributedContent(NSData *oid, NSData *content, NSArray<NSData *> *attributes) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
 NSData *OFCMSIdentifierAttribute(NSData *cid) OB_HIDDEN;
+NSData *OFCMSHintAttribute(NSData *cid) OB_HIDDEN;
 dispatch_data_t OFCMSWrapIdentifiedContent(enum OFCMSContentType ct, NSData *content, NSData *cid) DISPATCH_RETURNS_RETAINED OB_HIDDEN;  // A convenience on top of OFCMSCreateAttributedContent()
 
 /* CMS content parsing */
-int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent) OB_HIDDEN;
-int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent, NSArray NANNP outAuthAttrs, NSData NANNP mac) OB_HIDDEN;
+int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent, NSArray NANNP outUnprotectedAttributes) OB_HIDDEN;
+int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent, NSArray NANNP outAuthAttrs, NSData NANNP mac, NSArray NANNP outUnauthenticatedAttrs) OB_HIDDEN;
 int OFASN1ParseCMSSignedData(NSData *pkcs7, NSRange range, int *cmsVersion, NSMutableArray * __nullable outCertificates, NSMutableArray * __nullable outSignatures, enum OFCMSContentType *innerContentType, NSRange *innerContentObjectLocation) /* OB_HIDDEN */;
 int OFASN1ParseCMSCompressedData(NSData *pkcs7, NSRange range, int *outSyntaxVersion, enum OFASN1Algorithm *outCompressionAlgorithm, enum OFCMSContentType *outContentType, NSRange *outContentRange) OB_HIDDEN;
 

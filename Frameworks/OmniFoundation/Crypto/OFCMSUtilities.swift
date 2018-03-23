@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ protocol CMSRecipient {
     func debugDictionary() -> NSMutableDictionary;
 }
 
-/** A CMSRecipientIdentifier corresponds to the [RecipientIndentifier](https://tools.ietf.org/html/rfc5652#section-6.2.1) datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
+/** A CMSRecipientIdentifier corresponds to the [RecipientIdentifier](https://tools.ietf.org/html/rfc5652#section-6.2.1) datatype in CMS: it identifies a key. It can either be a key identifier (an opaque blob) or an issuer+serial pair. */
 enum CMSRecipientIdentifier {
     
     /* The two possibilities for a RecipientIdentifier */
@@ -374,11 +374,10 @@ class CMSKEKRecipient : CMSRecipient {
     
     let type = OFCMSRPreSharedKey;
     
-    var keyIdentifier: Data;
-    var kek: Data?;
+    var keyIdentifier: Data
+    var kek: Data?
     
     func recipientInfo(wrapping cek: Data) throws -> Data {
-        
         guard let key = kek else {
             throw OFError(.OFKeyNotAvailable)
         }
@@ -389,31 +388,31 @@ class CMSKEKRecipient : CMSRecipient {
             throw OFError(.OFKeyNotAvailable)
         }
     }
-
-    init(keyIdentifier ki: Data, key: Data?) {
-        keyIdentifier = ki;
-        kek = key;
-    }
     
+    init(keyIdentifier ki: Data, key: Data?) {
+        keyIdentifier = ki
+        kek = key
+    }
+
     convenience init() {
         self.init(keyIdentifier: NSData.cryptographicRandomData(ofLength:12), key: NSData.cryptographicRandomData(ofLength:32));
     }
     
     func unwrap(kek: Data, data: Data) throws -> Data {
-        var error : NSError?;
+        var error : NSError?
         guard let unwrapped = OFUnwrapRIForCMSPWRI(data, kek, &error) else {
-            throw error!;
+            throw error!
         }
         
-        self.kek = kek;
-        return unwrapped;
+        self.kek = kek
+        return unwrapped
     }
     
     func canWrap() -> Bool {
         if kek == nil {
-            return false;
+            return false
         }
-        return true;
+        return true
     }
     
     @objc public
@@ -564,7 +563,7 @@ class OFCMSUnwrapper {
     var contentIdentifier: Data?         = nil;
     var authenticated: Bool              = false;
     var embeddedCertificates: [Data]     = [];
-    
+
     // Sources of key material.
     internal var keySource : OFCMSKeySource?;
     internal var auxiliarySymmetricKeys : [Data : Data]  = [:];
@@ -644,6 +643,7 @@ class OFCMSUnwrapper {
         var pkRecipients : [(CMSPKRecipient, Data)] = [];
         var pskRecipients : [(CMSKEKRecipient, Data)] = [];
         var discardedRecipientCount : UInt = 0;
+        var hint: String?
         
         mutating
         func parse(recipientBlob: Data) throws {
@@ -667,7 +667,7 @@ class OFCMSUnwrapper {
             case OFCMSRPreSharedKey:
                 let recip = CMSKEKRecipient(keyIdentifier: who! as Data, key: nil);
                 pskRecipients.append( (recip, what! as Data) )
-                
+
             default:
                 discardedRecipientCount += 1;
                 break
@@ -688,6 +688,10 @@ class OFCMSUnwrapper {
             try allRecipients.parse(recipientBlob: recipientBlob as! Data);
         }
         
+        if let recipientHint = allRecipients.hint {
+            passwordHint = recipientHint
+        }
+
         var cek : Data? = nil; // The content encryption key.
         var keyAccessError : NSError? = nil; // Stored error encountered while iterating over recipients.
         var usedRecipient : CMSRecipient? = nil; // The specific recipient we used.
@@ -847,14 +851,21 @@ class OFCMSUnwrapper {
         var innerType : OFCMSContentType = OFCMSContentType_Unknown;
         var algorithm : NSData? = nil;
         var innerContent : NSData? = nil;
-        
-        let rc = OFASN1ParseCMSEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent);
+        var unprotectedAttributes : NSArray? = nil
+
+        let rc = OFASN1ParseCMSEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent, &unprotectedAttributes)
         if (rc != 0) {
             throw OFNSErrorFromASN1Error(rc, "EnvelopedData");
         }
 
         // Check version number. Version 4 indicates some features we don't support, but we should fail reasonably on them, so accept it anyway. See RFC5652 [6.1].
         try checkVersion(cmsVersion, "EnvelopedData", min: 0, max: 4);
+
+        // Look for a password hint
+        let unprotectedAttrs = try OFCMSUnwrapper.parseAttributes(unprotectedAttributes, innerType: innerType);
+        if let hintData = unprotectedAttrs.passwordHintData {
+            passwordHint = String(data: hintData, encoding: String.Encoding.utf8)
+        }
 
         let (contentKey, usedRecipient, allRecipients) = try self.recoverContentKey(recipientBlobs: recipientBlobs);
         
@@ -884,9 +895,10 @@ class OFCMSUnwrapper {
         var algorithm : NSData? = nil;
         var innerContent : NSData? = nil;
         var authenticatedAttributes : NSArray? = nil;
+        var unauthenticatedAttributes : NSArray? = nil
         var mac : NSData?;
         
-        let rc = OFASN1ParseCMSAuthEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent, &authenticatedAttributes, &mac);
+        let rc = OFASN1ParseCMSAuthEnvelopedData(cms!, contentRange, &cmsVersion, recipientBlobs, &innerType, &algorithm, &innerContent, &authenticatedAttributes, &mac, &unauthenticatedAttributes)
         if (rc != 0) {
             throw OFNSErrorFromASN1Error(rc, "AuthEnvelopedData");
         }
@@ -894,9 +906,15 @@ class OFCMSUnwrapper {
         // Check version number. See RFC5083 [2.1].
         try checkVersion(cmsVersion, "AuthEnvelopedData", min: 0, max: 0);
 
+        // Look for a password hint
+        let unauthenticatedAttrs = try OFCMSUnwrapper.parseAttributes(unauthenticatedAttributes, innerType: innerType);
+        if let hintData = unauthenticatedAttrs.passwordHintData {
+            passwordHint = String(data: hintData, encoding: String.Encoding.utf8)
+        }
+
         // Parse the attributes.
         let attrs = try OFCMSUnwrapper.parseAttributes(authenticatedAttributes, innerType: innerType);
-        
+
         // Check that authenticated attributes includes the inner content type (see RFC 5083). For security reasons the content type attribute is only allowed to be missing if the content type is 'data'.
         if !attrs.sawMatchingContentType && innerType != OFCMSContentType_data {
             throw OFError(.OFCMSFormatError, userInfo: [ NSLocalizedFailureReasonErrorKey: "Content-Type missing" ])
@@ -1041,12 +1059,14 @@ class OFCMSUnwrapper {
         let sawMatchingContentType : Bool;
         let contentIdentifier : Data?;
         let messageDigest : Data?;
+        var passwordHintData: Data?
     };
     private static func parseAttributes(_ attributes_: NSArray?, innerType: OFCMSContentType) throws -> parsedAttributes {
-        var sawMatchingContentType = false;
-        var contentIdentifier : Data? = nil;
-        var messageDigest : Data? = nil;
-        
+        var sawMatchingContentType = false
+        var contentIdentifier: Data? = nil
+        var messageDigest: Data? = nil
+        var passwordHintData: Data? = nil
+
         if let attributes = attributes_ {
             for attribute in attributes {
                 var attrIdentifier : OFCMSAttribute = OFCMSAttribute_Unknown;
@@ -1069,6 +1089,9 @@ class OFCMSUnwrapper {
                 case OFCMSAttribute_messageDigest:    // We'll need this if we support verifying of signed data or (non-AEAD) authenticated data.
                     messageDigest = attrData as Data?;
                     
+                case OFCMSAttribute_omniHint:
+                    passwordHintData = attrData as Data?
+
                 //case OFCMSAttribute_signingTime:
                 default:
                     break;
@@ -1076,7 +1099,7 @@ class OFCMSUnwrapper {
             }
         }
         
-        return parsedAttributes(sawMatchingContentType: sawMatchingContentType, contentIdentifier: contentIdentifier, messageDigest: messageDigest);
+        return parsedAttributes(sawMatchingContentType: sawMatchingContentType, contentIdentifier: contentIdentifier, messageDigest: messageDigest, passwordHintData: passwordHintData)
     }
 }
 

@@ -737,7 +737,7 @@
 		34A063061EC110A60099028D /* OFSubjectTargettingScriptCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FAED05D162F648F00F76783 /* OFSubjectTargettingScriptCommand.m */; };
 		34A063071EC110A60099028D /* OFWeakReference.m in Sources */ = {isa = PBXBuildFile; fileRef = 346E3250163B131E00CEC076 /* OFWeakReference.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34A063081EC110A60099028D /* OFSecurityUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3402C56015C3225500AA7DAF /* OFSecurityUtilities.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		34A063091EC110A60099028D /* OFCredentials-Mac.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C8E15DB025800830145 /* OFCredentials-Mac.m */; };
+		34A063091EC110A60099028D /* OFCredentials-Mac.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C8E15DB025800830145 /* OFCredentials-Mac.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		34A0630A1EC110A60099028D /* OFCredentials.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C9015DB026800830145 /* OFCredentials.m */; };
 		34A0630B1EC110A60099028D /* OFHTTPHeaderDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 3418409F167E683C0023D41C /* OFHTTPHeaderDictionary.m */; };
 		34A0630C1EC110A60099028D /* OFStringValueTransformers.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F7213D51695F35B00024A7B /* OFStringValueTransformers.m */; };

@@ -109,7 +109,7 @@ RCS_ID("$Id$");
             }
             
             NSMutableArray *unzippedURLs = [NSMutableArray array];
-            for (NSString *name in [self topLevelEntryNamesInArchive:archive]) {
+            for (NSString *name in archive.topLevelEntryNames) {
                 BOOL isDirectory = [name hasSuffix:@"/"];
                 NSString *fileName = [[name pathComponents] firstObject];
                 NSString *unzippedUTI = OFUTIForFileExtensionPreferringNative([fileName pathExtension], [NSNumber numberWithBool:isDirectory]);
@@ -141,9 +141,10 @@ RCS_ID("$Id$");
             OBASSERT(![NSString isEmptyString:appName]);
             
             __autoreleasing NSError *utiShouldNotBeIncludedError = nil;
-            NSString *title =  NSLocalizedStringFromTableInBundle(@"Unable to open file.", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
-            NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ cannot open this type of file.", @"OmniUIDocument", OMNI_BUNDLE, @"error description"), appName];
-            OUIDocumentError(&utiShouldNotBeIncludedError, OUICannotMoveItemFromInbox, title, description);
+            NSString *title = NSLocalizedStringFromTableInBundle(@"Unable to open file.", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
+            NSString *localizedDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ cannot open this type of file.", @"OmniUIDocument", OMNI_BUNDLE, @"error description"), appName];
+            NSString *detailedDescription = [NSString stringWithFormat:@"%@ [%@ (%@)]", localizedDescription, inboxURL.lastPathComponent, uti];
+            OUIDocumentError(&utiShouldNotBeIncludedError, OUICannotMoveItemFromInbox, title, detailedDescription);
             
             finishedBlock(nil, utiShouldNotBeIncludedError);
             return;
@@ -174,21 +175,6 @@ RCS_ID("$Id$");
         *outError = deleteError;
     
     return success;
-}
-
-#pragma mark - Private
-
-+ (NSArray *)topLevelEntryNamesInArchive:(OUUnzipArchive *)archive;
-{
-    NSMutableArray *result = [NSMutableArray array];
-    for (OUUnzipEntry *entry in archive.entries) {
-        if ([entry.name rangeOfString:@"__MACOSX" options:(NSAnchoredSearch | NSCaseInsensitiveSearch)].location != NSNotFound)
-            continue;
-        NSRange slashRange = [entry.name rangeOfString:@"/"];
-        if (slashRange.location == NSNotFound || slashRange.location == (entry.name.length - 1))
-            [result addObject:entry.name];
-    }
-    return result;
 }
 
 @end

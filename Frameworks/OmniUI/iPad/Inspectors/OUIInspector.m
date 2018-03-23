@@ -367,9 +367,10 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
 {
     // We give this navigation controller a rootViewController at creation and the pop API don't allow you to pop the root view controller. We should always have a view controller to return from here so we don't need to fall back to _mainPane.
     UIViewController *topViewController = self.navigationController.topViewController;
-    OBASSERT([topViewController isKindOfClass:[OUIInspectorPane class]]);
-    
-    return (OUIInspectorPane *)topViewController;
+    if ([topViewController isKindOfClass:[OUIInspectorPane class]])
+        return (OUIInspectorPane *)topViewController;
+    else
+        return nil;
 }
 
 - (void)willBeginChangingInspectedObjects;

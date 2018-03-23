@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,10 @@
 //
 // $Id$
 
-#import <OmniDAV/ODAVConnection.h>
+#import <OmniUI/OUIAppController+SpecialURLHandling.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
-@interface ODAVConnection_URLConnection : ODAVConnection
-
+/*!
+ Concrete special URL command handler for /help URLs.
+ */
+@interface OUIHelpURLCommand : OUISpecialURLCommand
 @end
-
-NS_ASSUME_NONNULL_END

@@ -14,6 +14,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSDate (OFExtensions)
 
 - (NSString *)descriptionWithHTTPFormat; // rfc1123 format with TZ forced to GMT
@@ -148,7 +150,7 @@ RCS_ID("$Id$")
  
  */
 
-static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t length)
+static NSDate * _Nullable _initDateFromXMLString(NSDate *self, const char *buf, size_t length)
 {
     // Since we read forward, we'll catch a early NUL with digit or specific character checks.
     NSInteger year, month, day, hour, minute, second;
@@ -267,7 +269,7 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
     return result;
 }
 
-- initWithXMLString:(NSString *)xmlString;
+- (nullable instancetype)initWithXMLString:(NSString *)xmlString;
 {
     static const NSUInteger OFXMLDateStringMaximumLength = 100; // The true maximum isn't fixed since the fractional seconds part is variable length.  Anything hugely long will be rejected.
     
@@ -291,7 +293,7 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 // Since XML dates are always ASCII, mentioning the encoding in the API is redundant.
-- initWithXMLCString:(const char *)cString;
+- (nullable instancetype)initWithXMLCString:(const char *)cString;
 {
     NSDate *result = _initDateFromXMLString(self, cString, strlen(cString));
     OBPOSTCONDITION_EXPENSIVE(strcmp([[result xmlString] UTF8String], cString) == 0);
@@ -315,7 +317,7 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
 }
 
 // Expects a calendar date string in the XML Schema / ISO 8601 format: YYYY-MM-DD.  This doesn't attempts to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
-- initWithXMLDateString:(NSString *)xmlString;
+- (nullable instancetype)initWithXMLDateString:(NSString *)xmlString;
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFXMLDateStringLength = 10;
@@ -403,7 +405,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 }
 
 // Expects a string in the ICS format: YYYYMMdd.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
-- initWithICSDateOnlyString:(NSString *)aString;
+- (nullable instancetype)initWithICSDateOnlyString:(NSString *)aString;
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFDateStringLength = 8;
@@ -450,7 +452,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 }
 
 // Expects a string in the ICS format: YYYYMMddTHHmmssZ.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
-- initWithICSDateString:(NSString *)aString;
+- (nullable instancetype)initWithICSDateString:(NSString *)aString;
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFDateStringLength = 16;
@@ -506,3 +508,5 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

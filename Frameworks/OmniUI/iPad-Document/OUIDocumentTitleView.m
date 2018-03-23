@@ -38,7 +38,7 @@ RCS_ID("$Id$");
 static void _commonInit(OUIDocumentTitleView *self)
 {
     self.autoresizingMask = UIViewAutoresizingFlexibleHeight;
-#ifdef DEBUG_kc
+#ifdef DEBUG_kc0
     self.backgroundColor = [[UIColor redColor] colorWithAlphaComponent:0.1];
 #endif
 

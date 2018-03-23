@@ -2,6 +2,7 @@ framework module OmniDataObjects {
     umbrella header "OmniDataObjects.h"
 
     exclude header "ODOModel-Creation.h"
+    exclude header "ODOEditingContext-Subclass.h"
 
     export *
     module * { export * }

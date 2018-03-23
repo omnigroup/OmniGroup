@@ -1,5 +1,5 @@
 Title:  Omni Document File Encryption  
-Revision: $Id: OFDocumentEncryption.md 276695 2017-01-05 00:24:40Z wiml $
+Revision: $Id: OFDocumentEncryption.md 305309 2018-02-27 19:32:35Z wiml $
 
 # Document File Encryption
 
@@ -67,7 +67,7 @@ It contains an XML document describing the structure of the file package that wo
 
 ### Package index
 
-The index XML document is in the namespace <`http://www.omnigroup.com/namespace/DocumentEncryption/v1`>. The [XLink][xlink] namespace, <`http://www.w3.org/1999/xlink`>, is also used.
+The index XML document is in the namespace <`http://www.omnigroup.com/namespace/DocumentEncryption/v1`>; its structure is described by the schema in `OFDocumentEncryption.rnc`. The [XLink][xlink] namespace, <`http://www.w3.org/1999/xlink`>, is also used.
 
 The root element must be `<index>`. It contains the following elements (order is insignificant):
 

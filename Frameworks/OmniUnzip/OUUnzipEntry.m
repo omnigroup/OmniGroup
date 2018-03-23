@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import <OmniUnzip/OUUnzipEntry.h>
 
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+
+#import "zip.h"
 
 RCS_ID("$Id$");
 
@@ -32,6 +34,11 @@ RCS_ID("$Id$");
     _crc = crc;
     
     return self;
+}
+
+- (BOOL)compressedWithDeflate;
+{
+    return _compressionMethod == Z_DEFLATED;
 }
 
 - (NSString *)shortDescription;

@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     BOOL _isSendingWillSave;
     BOOL _isValidatingAndWritingChanges;
+    BOOL _isDeletingObjects;
     BOOL _inProcessPendingChanges;
     BOOL _isResetting;
     

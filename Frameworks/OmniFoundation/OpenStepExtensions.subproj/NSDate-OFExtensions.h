@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <Foundation/NSDate.h>
 
 @class NSCalendar, NSString, NSTimeZone;
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDate (OFExtensions)
 
@@ -27,28 +29,26 @@
 + (NSCalendar *)gregorianLocalCalendar;
 
 // date formatted according to http://www.w3.org/2001/XMLSchema-datatypes
-- initWithXMLDateString:(NSString *)xmlString;
+- (nullable instancetype)initWithXMLDateString:(NSString *)xmlString;
 - (NSString *)xmlDateString;
 
 // dateTime formatted according to http://www.w3.org/2001/XMLSchema-datatypes
-- initWithXMLString:(NSString *)xmlString;
-- initWithXMLCString:(const char *)cString;
+- (nullable instancetype)initWithXMLString:(NSString *)xmlString;
+- (nullable instancetype)initWithXMLCString:(const char *)cString;
 - (NSString *)xmlString;
 
 // date formatted according to iCal
-- initWithICSDateOnlyString:(NSString *)aString;
+- (nullable instancetype)initWithICSDateOnlyString:(NSString *)aString;
 - (NSString *)icsDateOnlyString;
 
 // datetime formatted according to iCal
-- initWithICSDateString:(NSString *)aString;
+- (nullable instancetype)initWithICSDateString:(NSString *)aString;
 - (NSString *)icsDateString;
 
 // datetime formatted for OmniFocus sync transactions
 - (NSString *)omnifocusSyncTransactionDateString;
 
 @end
-
-#import <OmniBase/assertions.h>
 
 // For old versions of Foundation w/o -dateByAddingTimeInterval:.
 static inline NSDate *OFDateByAddingTimeInterval(NSDate *date, NSTimeInterval interval)
@@ -59,3 +59,6 @@ static inline NSDate *OFDateByAddingTimeInterval(NSDate *date, NSTimeInterval in
     return [date dateByAddingTimeInterval:interval];
 #endif
 }
+
+NS_ASSUME_NONNULL_END
+

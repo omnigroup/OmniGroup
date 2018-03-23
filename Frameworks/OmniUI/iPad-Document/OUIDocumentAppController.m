@@ -150,6 +150,17 @@ static unsigned SyncAgentRunningAccountsContext;
     }
 }
 
++ (BOOL)shouldOfferToReportError:(NSError *)error;
+{
+    if (![super shouldOfferToReportError:error])
+        return NO;
+
+    if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse])
+        return NO; // We need to let the user know to pick a different filename, but reporting this error to us won't help anyone
+
+    return YES;
+}
+
 - (void)dealloc;
 {
     [self _setDocument:nil];

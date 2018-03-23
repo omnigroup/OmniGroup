@@ -313,23 +313,7 @@ NS_ASSUME_NONNULL_BEGIN
             });
         };
 
-        // Handle the 'native' case here.
-        if (OFISNULL(fileType) || [fileType isEqual:_fileItem.fileType]) {
-            [_fileItem.scope performAsynchronousFileAccessUsingBlock:^{
-                NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-
-                __block NSFileWrapper *fileWrapper;
-                NSError *readingError = nil;
-
-                [coordinator readItemAtURL:_fileItem.fileURL withChanges:YES error:&readingError byAccessor:^BOOL(NSURL *newURL, NSError **outError){
-                    fileWrapper = [[NSFileWrapper alloc] initWithURL:newURL options:NSFileWrapperReadingImmediate error:outError];
-                    return (fileWrapper != nil);
-                }];
-                finish(fileWrapper, readingError);
-            }];
-            return;
-        }
-
+        // Give apps an opportunity to override, or defer to super for the simplest cases
         [_exporter exportFileWrapperOfType:fileType forFileItem:_fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             finish(fileWrapper, error);
         }];

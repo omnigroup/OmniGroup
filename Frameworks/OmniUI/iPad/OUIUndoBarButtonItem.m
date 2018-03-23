@@ -324,8 +324,19 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     
     // Setup Popover Presentation Controller - This must be done each time becase when the popover is dismissed the current popoverPresentationController is released and a new one is created next time.
-    _menuController.popoverPresentationController.barButtonItem = self;
-
+    
+    // workaround for <bug:///155450> (iOS-OmniPlan Unassigned: Undo popover shifts to the left side of the screen if you bring it up twice)
+    // When the bar button item has a custom view and is in a _UIButtonBarStackView, the second time we present a popover from it, the popover is instead presented from the left side of the stack view. In fact if we use the custom view as sourceView and an appropriate sourceRect, we wind up with an equivalent bug. So instead we'll just use the stack view.
+    UIStackView *enclosingStackView = OB_CHECKED_CAST_OR_NIL(UIStackView, [_undoButton enclosingViewOfClass:[UIStackView class]]);
+    if (enclosingStackView) {
+        CGRect sourceRect = [enclosingStackView convertRect:_undoButton.bounds fromView:_undoButton];
+        _menuController.popoverPresentationController.sourceView = enclosingStackView;
+        _menuController.popoverPresentationController.sourceRect = sourceRect;
+    } else {
+        _menuController.popoverPresentationController.sourceView = nil;
+        _menuController.popoverPresentationController.barButtonItem = self;
+    }
+    
     // give the appearanceDelegate, if present, an opportunity to alter the appearance each time
     [self appearanceDidChange];
     

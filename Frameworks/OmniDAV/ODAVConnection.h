@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,18 +10,21 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSURLSession.h>
 #import <OmniDAV/ODAVFeatures.h>
+#import <OmniBase/macros.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSURLCredential, NSURLAuthenticationChallenge, NSOperation;
 @class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVRedirect, ODAVURLResult, ODAVURLAndDataResult;
 @protocol OFCertificateTrustDisposition, OFCredentialChallengeDisposition;
 
-typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);
+typedef void (^ODAVConnectionBasicCompletionHandler)(NSError * _Nullable errorOrNil);
 typedef void (^ODAVConnectionOperationCompletionHandler)(ODAVOperation *op);
-typedef void (^ODAVConnectionURLCompletionHandler)(ODAVURLResult *result, NSError *errorOrNil);
-typedef void (^ODAVConnectionURLAndDataCompletionHandler)(ODAVURLAndDataResult *result, NSError *errorOrNil);
-typedef void (^ODAVConnectionStringCompletionHandler)(NSString *resultString, NSError *errorOrNil);
-typedef void (^ODAVConnectionMultipleFileInfoCompletionHandler)(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil);
-typedef void (^ODAVConnectionSingleFileInfoCompletionHandler)(ODAVSingleFileInfoResult *properties, NSError *errorOrNil);
+typedef void (^ODAVConnectionURLCompletionHandler)(ODAVURLResult * _Nullable result, NSError * _Nullable errorOrNil);
+typedef void (^ODAVConnectionURLAndDataCompletionHandler)(ODAVURLAndDataResult * _Nullable result, NSError * _Nullable errorOrNil);
+typedef void (^ODAVConnectionStringCompletionHandler)(NSString * _Nullable resultString, NSError * _Nullable errorOrNil);
+typedef void (^ODAVConnectionMultipleFileInfoCompletionHandler)(ODAVMultipleFileInfoResult * _Nullable properties, NSError * _Nullable errorOrNil);
+typedef void (^ODAVConnectionSingleFileInfoCompletionHandler)(ODAVSingleFileInfoResult * _Nullable properties, NSError * _Nullable errorOrNil);
 
 typedef NS_ENUM(NSUInteger, ODAVDepth) {
     ODAVDepthLocal,
@@ -31,7 +34,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 @interface ODAVConnectionConfiguration : NSObject
 
-+ (NSString *)userAgentStringByAddingComponents:(NSArray *)components;
++ (NSString *)userAgentStringByAddingComponents:(nullable NSArray *)components;
 
 @property(nonatomic,copy) NSString *userAgent;
 
@@ -65,34 +68,34 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 // findCredentialsForChallenge: Start an operation to get a username+password for an operation, and return it. The DAV operation will be canceled, but the NSOperation will be returned in the error block for the caller to wait on if it wants. (In the future we may want the DAV operation to wait on the NSOperation automatically.)
 @property(nonatomic,copy) NSOperation <OFCredentialChallengeDisposition> *(^findCredentialsForChallenge)(NSURLAuthenticationChallenge *challenge);
 
-- (void)deleteURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(ODAVConnectionBasicCompletionHandler)completionHandler;
-- (ODAVOperation *)asynchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag;
+- (void)deleteURL:(NSURL *)url withETag:(nullable NSString *)ETag completionHandler:(nullable ODAVConnectionBasicCompletionHandler)completionHandler;
+- (ODAVOperation *)asynchronousDeleteURL:(NSURL *)url withETag:(nullable NSString *)ETag;
 
 - (void)makeCollectionAtURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-- (void)makeCollectionAtURLIfMissing:(NSURL *)url baseURL:(NSURL *)baseURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)makeCollectionAtURLIfMissing:(NSURL *)url baseURL:(nullable NSURL *)baseURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 
-- (void)fileInfosAtURL:(NSURL *)url ETag:(NSString *)predicateETag depth:(ODAVDepth)depth completionHandler:(ODAVConnectionMultipleFileInfoCompletionHandler)completionHandler;
-- (void)fileInfoAtURL:(NSURL *)url ETag:(NSString *)predicateETag completionHandler:(void (^)(ODAVSingleFileInfoResult *result, NSError *error))completionHandler;
+- (void)fileInfosAtURL:(NSURL *)url ETag:(nullable NSString *)predicateETag depth:(ODAVDepth)depth completionHandler:(ODAVConnectionMultipleFileInfoCompletionHandler)completionHandler;
+- (void)fileInfoAtURL:(NSURL *)url ETag:(nullable NSString *)predicateETag completionHandler:(void (^)(ODAVSingleFileInfoResult * _Nullable result, NSError * _Nullable error))completionHandler;
 
 // Removes the directory URL itself, "._" files, and does some more error checking for non-directory cases.
-- (void)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(ODAVConnectionMultipleFileInfoCompletionHandler)completionHandler;
+- (void)directoryContentsAtURL:(NSURL *)url withETag:(nullable NSString *)ETag completionHandler:(ODAVConnectionMultipleFileInfoCompletionHandler)completionHandler;
 
-- (void)getContentsOfURL:(NSURL *)url ETag:(NSString *)ETag completionHandler:(ODAVConnectionOperationCompletionHandler)completionHandler;
+- (void)getContentsOfURL:(NSURL *)url ETag:(nullable NSString *)ETag completionHandler:(ODAVConnectionOperationCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url; // Returns an unstarted operation
-- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(NSString *)ETag range:(NSString *)range;
+- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(nullable NSString *)ETag range:(NSString *)range;
 
 - (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 
 - (void)putData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousPutData:(NSData *)data toURL:(NSURL *)url; // Returns an unstarted operation
 
-- (void)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(nullable NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 
 - (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(nullable NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(nullable NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(nullable NSString *)lock overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(nullable NSString *)lock overwrite:(BOOL)overwrite completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 - (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 - (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL ifURLExists:(NSURL *)tagURL completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 
@@ -102,22 +105,22 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @end
 
 @interface ODAVOperationResult : NSObject
-@property(nonatomic,copy) NSArray <ODAVRedirect *> *redirects;
-@property(nonatomic,copy) NSDate *serverDate;
+@property(nullable,nonatomic,copy) NSArray <ODAVRedirect *> *redirects;
+@property(nullable,nonatomic,copy) NSDate *serverDate;
 @end
 
 @interface ODAVMultipleFileInfoResult : ODAVOperationResult
-@property(nonatomic,copy) NSArray <ODAVFileInfo *> *fileInfos;
+@property(nullable,nonatomic,copy) NSArray <ODAVFileInfo *> *fileInfos;
 @end
 @interface ODAVSingleFileInfoResult : ODAVOperationResult
-@property(nonatomic,copy) ODAVFileInfo *fileInfo;
+@property(nullable,nonatomic,copy) ODAVFileInfo *fileInfo;
 @end
 @interface ODAVURLResult : ODAVOperationResult
-@property(nonatomic,copy) NSURL *URL;
+@property(nullable,nonatomic,copy) NSURL *URL;
 @end
 @interface ODAVURLAndDataResult : ODAVOperationResult
-@property(nonatomic,copy) NSURL *URL;
-@property(nonatomic,copy) NSData *responseData;
+@property(nullable,nonatomic,copy) NSURL *URL;
+@property(nullable,nonatomic,copy) NSData *responseData;
 @end
 
 // Utilities to help when we want synchronous operations.
@@ -138,28 +141,29 @@ extern void ODAVSyncOperations(const char *file, unsigned line, ODAVAddOperation
 // Synchronous wrappers
 @interface ODAVConnection (ODAVSyncExtensions)
 
-- (BOOL)synchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
+- (BOOL)synchronousDeleteURL:(NSURL *)url withETag:(nullable NSString *)ETag error:(NSError **)outError;
 
-- (ODAVURLResult *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
+- (nullable ODAVURLResult *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
 
-- (ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url error:(NSError **)outError;
-- (ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (nullable ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url error:(NSError **)outError;
+- (nullable ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url serverDate:(NSDate * __nullable OB_AUTORELEASING * __nullable)outServerDate error:(NSError **)outError;
 
-- (ODAVMultipleFileInfoResult *)synchronousDirectoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
+- (nullable ODAVMultipleFileInfoResult *)synchronousDirectoryContentsAtURL:(NSURL *)url withETag:(nullable NSString *)ETag error:(NSError **)outError;
 
-- (NSData *)synchronousGetContentsOfURL:(NSURL *)url ETag:(NSString *)ETag error:(NSError **)outError;
-- (NSURL *)synchronousPutData:(NSData *)data toURL:(NSURL *)url error:(NSError **)outError;
+- (nullable NSData *)synchronousGetContentsOfURL:(NSURL *)url ETag:(nullable NSString *)ETag error:(NSError **)outError;
+- (nullable NSURL *)synchronousPutData:(NSData *)data toURL:(NSURL *)url error:(NSError **)outError;
 
-- (NSURL *)synchronousCopyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)eTag overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (nullable NSURL *)synchronousCopyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(nullable NSString *)eTag overwrite:(BOOL)overwrite error:(NSError **)outError;
 
-- (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
-- (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
-- (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
-- (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
+- (nullable NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(nullable NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (nullable NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(nullable NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (nullable NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(nullable NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
+- (nullable NSURL *)synchronousMoveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
 
-- (NSString *)synchronousLockURL:(NSURL *)url error:(NSError **)outError;
+- (nullable NSString *)synchronousLockURL:(NSURL *)url error:(NSError **)outError;
 - (BOOL)synchronousUnlockURL:(NSURL *)url token:(NSString *)lockToken error:(NSError **)outError;
 
 @end
 
+NS_ASSUME_NONNULL_END
 

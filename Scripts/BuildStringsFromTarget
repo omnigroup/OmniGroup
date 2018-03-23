@@ -9,15 +9,6 @@
 #
 # $Id$
 
-
-##
-## NOTE: extractLocStrings is busted in 9.3b1, as far as I can tell. Radar 36873781.
-##
-if xcodebuild -version | grep -q 9.3; then
-	echo "*** Not extracting localized strings under Xcode 9.3 ***"
-	exit
-fi
-
 #
 # Xcode doesn't go out of its way to make it easy to figure out which source
 # files were a part of which target.
