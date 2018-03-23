@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -652,6 +652,18 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
          */
         IGNORE_CRASH(@"GraphicView", @selector(_enableNeedsDisplayInRectNotifications))
         IGNORE_CRASH(@"GraphicView", @selector(_disableNeedsDisplayInRectNotifications))
+        
+        /*
+         bug reporter #37711145
+         <bug:///154713> (Mac-OmniFocus Crasher: Crash resizing the attachments window)
+         Same as above, but in NSOutlineView instead of our own view class
+         */
+        IGNORE_CRASH(@"NSOutlineView", @selector(_enableNeedsDisplayInRectNotifications))
+        IGNORE_CRASH(@"NSOutlineView", @selector(_disableNeedsDisplayInRectNotifications))
+        
+        /* bug reporter #37539192 <bug:///155090> (Mac-OmniGraffle Crasher: Crash trying to Add People to a file recently saved to iCloud on a Touchbar Mac) */
+        IGNORE_CRASH(@"SHKRemoteView", @selector(_mapPerProcessIdentifiers:of:))
+        
 #undef IGNORE_CRASH
 
         // XPC services (like the 'define' service) sometimes time out:

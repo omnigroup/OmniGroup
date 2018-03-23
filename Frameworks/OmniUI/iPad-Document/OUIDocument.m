@@ -474,6 +474,10 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 - (void)didWriteToURL:(NSURL *)url;
 {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [OUIDocumentAppController.controller addRecentlyOpenedDocumentURL:url];
+    }];
+
     __autoreleasing NSError *error;
     OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:url error:&error];
     if (!fileEdit) {
@@ -867,11 +871,16 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
         if (ensureUniqueName) {
             ODSFileItem *fileItem = self.fileItem;
-            OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
-            url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
-            if ([url.pathExtension isEqualToString:fileItem.fileURL.pathExtension]) {
-                // this should mean that no rename is necessary.  we should overwrite this file with the same name instead of using the unnecessary unique name we just generated (e.g. we are changing from a flat .graffle to a package .graffle)
-                url = fileItem.fileURL;
+            if (fileItem == nil) {
+                // Use our original URL as the basis for our file name
+                url = [_documentScope urlForNewDocumentInFolderAtURL:url.URLByDeletingLastPathComponent baseName:[url.lastPathComponent stringByDeletingPathExtension] fileType:self.savingFileType];
+            } else {
+                // We are converting the file type of an existing document. (This is not a new unsaved document.)
+                url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
+                if ([url.pathExtension isEqualToString:fileItem.fileURL.pathExtension]) {
+                    // this should mean that no rename is necessary.  we should overwrite this file with the same name instead of using the unnecessary unique name we just generated (e.g. we are changing from a flat .graffle to a package .graffle)
+                    url = fileItem.fileURL;
+                }
             }
         }
     }

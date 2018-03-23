@@ -50,6 +50,7 @@ extern NSString *OUIAttentionSeekingForNewsKey;
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 + (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");
 
++ (BOOL)shouldOfferToReportError:(NSError *)error;
 + (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line;
@@ -152,6 +153,8 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 extern NSString * const OUISystemIsSnapshottingNotification;
 
 @property (readonly) BOOL canCreateNewDocument;
+@property (readonly) BOOL shouldEnableCreateNewDocument;
+- (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 
 @end
 

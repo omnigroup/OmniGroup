@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -447,8 +447,8 @@ RCS_ID("$Id$")
 {
     NSScriptObjectSpecifier *specifier = [self objectSpecifier];
     if (specifier == nil) {
-        // RT #429341 -- 10.6 began adding non-plist values to -[NSWorkspace currentApplication]. We'll be lossy here in the conversion of NSObject's to event descriptors instead of halting everything for no particularly good reason. We'll return a null descriptor so that we have a non-nil (no error) result and so that if we are getting wrapped in a dictionary, we'll an entry for this key (with missing value? not sure w/o testing).
-        return [NSAppleEventDescriptor nullDescriptor];
+        // RT #429341 -- 10.6 began adding non-plist values to -[NSWorkspace currentApplication]. We'll be lossy here in the conversion of NSObjects to event descriptors instead of halting everything for no particularly good reason. We'll return a null descriptor so that we have a non-nil (no error) result and so that if we are getting wrapped in a dictionary, we'll get an missing value entry for this key.
+        return [NSAppleEventDescriptor descriptorWithTypeCode:cMissingValue];
     }
 
     NSAppleEventDescriptor *desc = [specifier descriptor];
@@ -458,6 +458,15 @@ RCS_ID("$Id$")
     }
 
     return desc;
+}
+
+@end
+
+@implementation NSNull (OFAppleScriptExtensions)
+
+- (NSAppleEventDescriptor *)convertToAppleEventDescriptor:(NSError **)outError;
+{
+    return [NSAppleEventDescriptor descriptorWithTypeCode:cMissingValue];
 }
 
 @end
@@ -508,7 +517,7 @@ RCS_ID("$Id$")
     NSUInteger objectIndex, objectCount = [self count];
     for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
         NSAppleEventDescriptor *desc = [[self objectAtIndex:objectIndex] convertToAppleEventDescriptor:outError];
-        if (!desc)
+        if (desc == nil)
             return nil;
         [result insertDescriptor:desc atIndex:1+objectIndex]; // 1-based
     }

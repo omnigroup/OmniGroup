@@ -1912,12 +1912,13 @@ static NSSet *ViewableFileTypes()
         [_syncAgent afterAsynchronousOperationsFinish:^{
             DEBUG_LAUNCH(1, @"Sync agent finished first pass");
             
+            _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _localDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
+            [_documentStore addScope:_localScope];
+
             // See commentary by -_updateDocumentStoreScopes for why we observe the sync agent instead of the account registry
             [_syncAgent addObserver:self forKeyPath:OFValidateKeyPath(_syncAgent, runningAccounts) options:0 context:&SyncAgentRunningAccountsContext];
             [self _updateDocumentStoreScopes];
             
-            _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _localDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
-            [_documentStore addScope:_localScope];
             _externalScopeManager = [[OUIDocumentExternalScopeManager alloc] initWithDocumentStore:_documentStore];
             ODSScope *trashScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[self _trashDirectoryURL] scopeType:ODSLocalDirectoryScopeTrash documentStore:_documentStore];
             [_documentStore addScope:trashScope];
@@ -2424,16 +2425,15 @@ static NSSet *ViewableFileTypes()
     // Update quicklaunch actions
     NSArray *recentItems = [self recentlyOpenedFileItems];
     NSMutableArray <UIApplicationShortcutItem *> *shortcutItems = [[NSMutableArray <UIApplicationShortcutItem *> alloc] init];
-    
-    // dynamically create the "new document" option
-    UIApplicationShortcutIcon *newDocShortcutIcon = [UIApplicationShortcutIcon iconWithTemplateImageName:[self newDocumentShortcutIconImageName]];
-    UIApplicationShortcutItem *newDocItem = [[UIApplicationShortcutItem alloc] initWithType:ODSShortcutTypeNewDocument
-                                                                             localizedTitle: NSLocalizedStringWithDefaultValue(@"New Document",  @"OmniUIDocument", OMNI_BUNDLE, @"New Document", @"New Template button title")
-                                                                          localizedSubtitle:nil
-                                                                                       icon:newDocShortcutIcon
-                                                                                   userInfo:nil];
-    [shortcutItems addObject:newDocItem];
-    
+
+    if (self.canCreateNewDocument) {
+        // dynamically create the "new document" option
+        UIApplicationShortcutIcon *newDocShortcutIcon = [UIApplicationShortcutIcon iconWithTemplateImageName:[self newDocumentShortcutIconImageName]];
+        NSString *newDocumentLocalizedTitle = NSLocalizedStringWithDefaultValue(@"New Document", @"OmniUIDocument", OMNI_BUNDLE, @"New Document", @"New Template button title");
+        UIApplicationShortcutItem *newDocItem = [[UIApplicationShortcutItem alloc] initWithType:ODSShortcutTypeNewDocument localizedTitle:newDocumentLocalizedTitle localizedSubtitle:nil icon:newDocShortcutIcon userInfo:nil];
+        [shortcutItems addObject:newDocItem];
+    }
+
     NSString *shortcutImageName = [self recentDocumentShortcutIconImageName];
     for (ODSFileItem *fileItem in recentItems) {
         NSURL *fileURL = fileItem.fileURL;

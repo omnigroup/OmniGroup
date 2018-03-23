@@ -119,7 +119,7 @@
 "Relationship %@.%@ specified no type." = "La relación %1$@.%2$@ no ha especificado ningún tipo.";
 
 /* error reason */
-"The cache database was removed while it was still open. Close and reopen the database to recover." = "La base de datos caché se ha eliminado mientras estaba abierta. Cierre y abra la base de datos de nuevo para recuperarla.";
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "La base de datos caché se ha eliminado mientras estaba abierta. Cierra y abre la base de datos de nuevo para recuperarla.";
 
 /* error reason */
 "Tried 100 times to settle -willSave, but edits kept being made." = "Se ha intentado establecer -willSave 100 veces, pero siguen produciéndose modificaciones.";

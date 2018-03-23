@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -207,6 +207,6 @@ static inline NSString *OBUnlocalized(NSString *value) __attribute__((annotate("
 
 #define OB_CHECKED_CAST_OR_NIL(CLS_, VALUE_) ({ \
     CLS_ *maybeNil__ = (CLS_ *)(VALUE_); \
-    (maybeNil__ ? OB_CHECKED_CAST(CLS_, maybeNil__) : nil); \
+    (maybeNil__ != nil ? OB_CHECKED_CAST(CLS_, maybeNil__) : nil); \
 })
 

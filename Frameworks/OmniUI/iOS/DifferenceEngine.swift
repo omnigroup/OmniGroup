@@ -53,16 +53,32 @@ public extension Diffable {
         let newWrappedSections = sections.enumerated().map { WrappedDifferenceComparable(index: $0, value: $1) }
         let oldWrappedSections = old.sections.enumerated().map { WrappedDifferenceComparable(index: $0, value: $1) }
         
-        let sectionDifference = WrappedDifferenceComparable.difference(from: oldWrappedSections, to: newWrappedSections)
+        let sectionDifference: CollectionDifference<Int>
+        let sectionDifferenceFast = WrappedDifferenceComparable.difference(from: oldWrappedSections, to: newWrappedSections)
+        switch sectionDifferenceFast {
+        case .reload:
+            sectionDifference = CollectionDifference(insertions: [], deletions: [], updates: [], moves: [])
+        case .applyDifference(let collectionDifference):
+            sectionDifference = collectionDifference
+        }
+        
         
         let newWrappedItems = wrappedItems
         let oldWrappedItems = old.wrappedItems
-        let itemDifference = WrappedDifferenceComparable.difference(from: oldWrappedItems, to: newWrappedItems, metaMutator: MetaMutator(sectionDifference: sectionDifference))
+        let itemDifference: CollectionDifference<IndexPath>
+        let itemDifferenceFast = WrappedDifferenceComparable.difference(from: oldWrappedItems, to: newWrappedItems, metaMutator: MetaMutator(sectionDifference: sectionDifference))
+        switch itemDifferenceFast {
+        case .reload:
+            return Difference(sectionChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), itemChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []))
+        case .applyDifference(let collectionDifference):
+            itemDifference = collectionDifference
+        }
+        
         
         // Clean up moves to/from inserted/deleted sections.
         var convertedInsertions = Set<IndexPath>()
         var convertedDeletions = Set<IndexPath>()
-        let survivingMoves = itemDifference.moves.filter { indexPaths in
+        var survivingMoves = itemDifference.moves.filter { indexPaths in
             let (source, destination) = indexPaths
             var omitMove = false
 
@@ -95,7 +111,24 @@ public extension Diffable {
             return !sectionDifference.deletions.contains(indexPaths.0.section)
         }
 
-
+        // tekl 2018.02.14: leave a comment about this
+        survivingMoves = survivingMoves.filter { indexPaths in
+            let (source, destination) = indexPaths
+            
+            var section = source.section
+            section -= sectionDifference.deletions.filter({ $0 < section }).count
+            section += sectionDifference.insertions.filter({ $0 <= section }).count
+            
+            var item = source.item
+            item -= survivingDeletions.filter({ $0.section == source.section && $0.item < item }).count
+            item += survivingInsertions.filter({ $0.section == destination.section && $0.item <= item }).count
+            
+            if IndexPath(item: item, section: section) == destination {
+                return false
+            }
+            
+            return true
+        }
 
         let survivingItemDifference = CollectionDifference<IndexPath>(insertions: Set(survivingInsertions), deletions: Set(survivingDeletions), updates: survivingUpdates, moves: survivingMoves)
 
@@ -158,6 +191,11 @@ public struct CollectionDifference<Index: DifferenceIndex> {
     public var isEmpty: Bool {
         return insertions.isEmpty && deletions.isEmpty && updates.isEmpty && moves.isEmpty
     }
+}
+
+fileprivate enum FastCollectionDifferenceWrapper<Index: DifferenceIndex> {
+    case reload
+    case applyDifference(CollectionDifference<Index>)
 }
 
 // MARK: -
@@ -361,17 +399,20 @@ extension IndexPath: DifferenceIndex {
         var sectionDelta = 0
         var result: [IndexPath] = []
         for index in originals {
+            // <bug:///155292> (iOS-OmniFocus Engineering: Engineering Review of DifferenceEngine Change)
             if index.section != currentIncomingSection {
                 // Make sure we re-number sections when entire section has been deleted. This handles the distinction between all items in a section being deleted and an entire section being deleted. From an items-only view we can't distinguish, so we need to get the sectionDifference involved via the metaMutator.
+                var localSectionDelta = 0
                 if let metaMutator = metaMutator, index.section > currentIncomingSection + 1 {
                     // Scan forward to the next section that wasn't deleted.
-                    while metaMutator.isSectionDeleted(1 + currentIncomingSection + sectionDelta) {
-                        sectionDelta += 1
+                    while metaMutator.isSectionDeleted(1 + currentIncomingSection + localSectionDelta) {
+                        localSectionDelta += 1
                     }
+                    sectionDelta += localSectionDelta
                 }
                 
                 // We may have scanned to the end of the section list and found only deleted sections. If that's the case, be sure not to reset the nextRow; otherwise, we'll restart counting from row 0 in the (unchanged) currentIncomingSection, leading to possible index path duplication in the results.
-                if (index.section - sectionDelta > currentIncomingSection) {
+                if (index.section - localSectionDelta > currentIncomingSection) {
                     nextRow = 0
                 }
                 currentIncomingSection = index.section
@@ -479,7 +520,7 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
         return value.diff(from: preState.value)
     }
     
-    static func difference(from old: [WrappedDifferenceComparable<Index, Value>], to new: [WrappedDifferenceComparable<Index, Value>], metaMutator: MetaMutator? = nil) -> CollectionDifference<Index> {
+    static func difference(from old: [WrappedDifferenceComparable<Index, Value>], to new: [WrappedDifferenceComparable<Index, Value>], metaMutator: MetaMutator? = nil) -> FastCollectionDifferenceWrapper<Index> {
         let newSet = Set(new)
         let oldSet = Set(old)
         
@@ -491,7 +532,7 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
         let deleted = Set<Index>(deletedSet.map({ $0.index }))
         
         if old.isEmpty { // avoid remaining work, only inserting in this case
-            return CollectionDifference(insertions: inserted, deletions: deleted, updates: [], moves: [])
+            return .applyDifference(CollectionDifference(insertions: inserted, deletions: deleted, updates: [], moves: []))
         }
 
         // We need to filter out superfluous moves, which can provoke UITableView to throw. To do that, we simulate what table view will do. rdar://35009240
@@ -520,9 +561,16 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
             }
         }
         
-        let moved = simulatedState.filteredMoves(possibleMoves)
+        let result: FastCollectionDifferenceWrapper<Index>
+        let PossibleMovesThreshold = 300
+        if possibleMoves.count <= PossibleMovesThreshold {
+            let moved = simulatedState.filteredMoves(possibleMoves)
+            result = .applyDifference(CollectionDifference(insertions: inserted, deletions: deleted, updates: updated, moves: moved))
+        } else {
+            result = .reload
+        }
         
-        return CollectionDifference(insertions: inserted, deletions: deleted, updates: updated, moves: moved)
+        return result
     }
 }
 

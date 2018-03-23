@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIAppController.h>
 
+@import StoreKit; // For SKErrorDomain
+
 #import <MessageUI/MFMailComposeViewController.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <MobileCoreServices/UTType.h>
@@ -279,6 +281,27 @@ static void __iOS7B5CleanConsoleOutput(void)
     [sharedApplication openURL:url options:options completionHandler:completion];
 }
 
++ (BOOL)shouldOfferToReportError:(NSError *)error;
+{
+    if (error == nil)
+        return NO; // There isn't an error, so don't report one
+
+    if ([error causedByUnreachableHost])
+        return NO; // Unreachable hosts cannot be solved by the app
+
+    NSError *storeError = [error underlyingErrorWithDomain:SKErrorDomain];
+    if (storeError != nil) {
+        switch (storeError.code) {
+            case SKErrorStoreProductNotAvailable: // Product is not available in the current storefront
+                return YES; // We do want to hear about this
+            default:
+                return NO; // But everything else in StoreKit is stuff we have no control over
+        }
+    }
+
+    return YES;
+}
+
 // Very basic.
 + (void)presentError:(NSError *)error;
 {
@@ -341,7 +364,7 @@ static void __iOS7B5CleanConsoleOutput(void)
 + (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char * _Nullable)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
 {
     void (^optionalAction)(UIAlertAction *action);
-    if (_defaultReportErrorActionBlock != NULL) {
+    if (_defaultReportErrorActionBlock != NULL && [self shouldOfferToReportError:error]) {
         optionalAction = ^(UIAlertAction * __nonnull action) {
             _defaultReportErrorActionBlock(error);
         };
@@ -596,6 +619,16 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (BOOL)canCreateNewDocument
 {
     return YES;
+}
+
+- (BOOL)shouldEnableCreateNewDocument;
+{
+    return self.canCreateNewDocument;
+}
+
+- (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
+{
+    completionBlock(self.canCreateNewDocument);
 }
 
 #pragma mark - App menu support

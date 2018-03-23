@@ -145,10 +145,10 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 /* Initializes the receiver from a string representation of a version number.  The input string may have an optional leading 'v' or 'V' followed by a sequence of positive integers separated by '.'s.  Any trailing component of the input string that doesn't match this pattern is ignored.  If no portion of this string matches the pattern, nil is returned. */
 - (nullable instancetype)initWithVersionString:(NSString *)versionString;
 {
-    OBPRECONDITION([versionString isKindOfClass:[NSString class]]);
+    OBPRECONDITION(versionString == nil || [versionString isKindOfClass:[NSString class]]);
     
     // Input might be from a NSBundle info dictionary that could be misconfigured, so check at runtime too
-    if (!versionString || ![versionString isKindOfClass:[NSString class]]) {
+    if (versionString == nil || ![versionString isKindOfClass:[NSString class]]) {
         [self release];
         return nil;
     }

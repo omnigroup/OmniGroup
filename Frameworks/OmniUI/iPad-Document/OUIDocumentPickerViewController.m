@@ -442,9 +442,18 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (IBAction)newDocument:(id)sender;
 {
+    [OUIDocumentAppController.controller unlockCreateNewDocumentWithCompletion:^(BOOL isUnlocked) {
+        if (isUnlocked) {
+            [self _newDocument:sender];
+        }
+    }];
+}
+
+- (IBAction)_newDocument:(id)sender;
+{
     OBPRECONDITION(_renameSession == nil); // Can't be renaming right now, so need to try to stop
 
-    if (![self canPerformAction:_cmd withSender:sender])
+    if (!OUIDocumentAppController.controller.canCreateNewDocument || ![self canPerformAction:_cmd withSender:sender])
         return;
 
     ODSDocumentType type = [self documentTypeForCurrentFilter];
@@ -479,6 +488,21 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)newDocumentWithContext:(OUINewDocumentCreationContext *)context completion:(void (^)(void))completion;
 {
+    [OUIDocumentAppController.controller unlockCreateNewDocumentWithCompletion:^(BOOL isUnlocked) {
+        if (isUnlocked) {
+            [self _newDocumentWithContext:context completion:completion];
+        }
+    }];
+}
+
+- (void)_newDocumentWithContext:(OUINewDocumentCreationContext *)context completion:(void (^)(void))completion;
+{
+    if (!OUIDocumentAppController.controller.canCreateNewDocument) {
+        if (completion != NULL)
+            completion();
+        return;
+    }
+
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
 
     ODSScope *documentScope = context.scope;
@@ -1800,7 +1824,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
     if (action == @selector(newDocument:)) {
-        return self.canPerformActions && self.selectedScope.canRenameDocuments && !self.selectedScope.isTrash && !self.presentedViewController && [[OUIDocumentAppController sharedController] canCreateNewDocument];
+        return self.canPerformActions && self.selectedScope.canRenameDocuments && !self.selectedScope.isTrash && !self.presentedViewController;
     }
 
     return [super canPerformAction:action withSender:sender];
@@ -2676,14 +2700,14 @@ static UIImage *ImageForScope(ODSScope *scope) {
             [self deleteBarButtonItem].enabled = YES; // Deletion while in the trash is just an immediate removal.
         }
     }
-    
+
     // Disable adding new documents if we are not licensed
-    self.addDocumentButtonItem.enabled = [self _canCreateNewDocument];
+    self.addDocumentButtonItem.enabled = [self _shouldEnableCreateNewDocument];
 }
 
-- (BOOL)_canCreateNewDocument;
+- (BOOL)_shouldEnableCreateNewDocument;
 {
-    if (![[OUIAppController sharedController] canCreateNewDocument])
+    if (!OUIAppController.controller.shouldEnableCreateNewDocument)
         return NO;
     OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
     if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterPlugInIdentifier))

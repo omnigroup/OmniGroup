@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,19 +30,13 @@ static inline void main_sync(void (^block)(void))
 static SecKeychainItemRef _OFKeychainItemForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {
     NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-    
-    // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
-    // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
-    
+
     SecKeychainItemRef itemRef = NULL;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
     OSStatus err = SecKeychainFindGenericPassword(NULL, // default keychain search list
                                                   (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                   0, NULL, // username length and bytes -- we don't care
                                                   NULL, NULL, // password length and bytes -- we'll get these via SecKeychainItemCopyAttributesAndData()
                                                   &itemRef);
-#pragma clang diagnostic pop
     if (err != errSecSuccess) {
         if (err == errSecItemNotFound) {
             if (outError)
@@ -58,7 +52,7 @@ static SecKeychainItemRef _OFKeychainItemForServiceIdentifier(NSString *serviceI
     return itemRef;
 }
 
-NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
+NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError * __autoreleasing *outError)
 {
     DEBUG_CREDENTIALS(@"read credentials for service identifier %@", serviceIdentifier);
     
@@ -69,11 +63,13 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
     }
     
     __block NSURLCredential *result = nil;
+    __block NSError *error = nil;
     
     main_sync(^{
-        SecKeychainItemRef itemRef = _OFKeychainItemForServiceIdentifier(serviceIdentifier, outError);
-        if (!itemRef)
+        SecKeychainItemRef itemRef = _OFKeychainItemForServiceIdentifier(serviceIdentifier, &error);
+        if (!itemRef) {
             return;
+        }
         
         UInt32 passwordLength = 0;
         void *passwordBytes = NULL;
@@ -89,7 +85,7 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
         OSStatus err = SecKeychainItemCopyAttributesAndData(itemRef, &attributeInfo, NULL/*itemClass*/, &attributes, &passwordLength, &passwordBytes);
         
         if (err != errSecSuccess) {
-            OFSecError("SecKeychainItemCopyAttributesAndData", err, outError);
+            OFSecError("SecKeychainItemCopyAttributesAndData", err, &error);
             CFRelease(itemRef);
             DEBUG_CREDENTIALS(@"  returning nil credentials");
             return;
@@ -97,20 +93,22 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
         
         OBASSERT(attributes->count == 1);
         OBASSERT(attributes->attr[0].tag == kSecAccountItemAttr);
-        NSString *userName = [[[NSString alloc] initWithBytes:attributes->attr[0].data length:attributes->attr[0].length encoding:NSUTF8StringEncoding] autorelease];
-        NSString *password = [[[NSString alloc] initWithBytes:passwordBytes length:passwordLength encoding:NSUTF8StringEncoding] autorelease];
+        NSString *userName = [[NSString alloc] initWithBytes:attributes->attr[0].data length:attributes->attr[0].length encoding:NSUTF8StringEncoding];
+        NSString *password = [[NSString alloc] initWithBytes:passwordBytes length:passwordLength encoding:NSUTF8StringEncoding];
         
         SecKeychainItemFreeAttributesAndData(attributes, passwordBytes);
         CFRelease(itemRef);
     
-        result = [_OFCredentialFromUserAndPassword(userName, password) retain];
+        result = _OFCredentialFromUserAndPassword(userName, password);
     });
     
     DEBUG_CREDENTIALS(@"  trying %@",  result);
-    return [result autorelease];
+    if (result == nil && outError != NULL)
+        *outError = error;
+    return result;
 }
 
-BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError **outError)
+BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError * __autoreleasing *outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
     OBPRECONDITION(![NSString isEmptyString:userName]);
@@ -119,7 +117,8 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     DEBUG_CREDENTIALS(@"writing credentials for userName:%@ password:%@ serviceIdentifier:%@", userName, password, serviceIdentifier);
 
     __block BOOL success = NO;
-    
+    __block NSError *error = nil;
+
     main_sync(^{
         SecKeychainRef keychain = NULL; // default keychain
         
@@ -127,23 +126,17 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
         NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
         NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
-        // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
-        // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
-        
         SecKeychainItemRef itemRef = NULL;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
         OSStatus err = SecKeychainFindGenericPassword(keychain,
                                                       (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                       0, NULL, // username length and bytes -- we don't care
                                                       NULL, NULL, // password length and data
                                                       &itemRef);
-#pragma clang diagnostic pop
         if (err == errSecSuccess) {
             err = SecKeychainItemModifyAttributesAndData(itemRef, NULL/*attributes*/,
                                                          (UInt32)[passwordData length], [passwordData bytes]);
             if (err != errSecSuccess)
-                OFSecError("SecKeychainItemModifyAttributesAndData", err, outError);
+                OFSecError("SecKeychainItemModifyAttributesAndData", err, &error);
             else
                 success = YES;
             CFRelease(itemRef);
@@ -155,13 +148,15 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
                                                 (UInt32)[passwordData length], [passwordData bytes],
                                                 NULL/*outItemRef*/);
             if (err != errSecSuccess)
-                OFSecError("SecKeychainAddGenericPassword", err, outError);
+                OFSecError("SecKeychainAddGenericPassword", err, &error);
             else
                 success = YES;
         } else
-            OFSecError("SecKeychainFindGenericPassword", err, outError);
+            OFSecError("SecKeychainFindGenericPassword", err, &error);
     });
     
+    if (!success && outError != NULL)
+        *outError = error;
     return success;
 }
 
@@ -179,18 +174,12 @@ BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSErro
         NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
         while (YES) {
-            // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
-            // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
-
             SecKeychainItemRef itemRef = NULL;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
             OSStatus err = SecKeychainFindGenericPassword(keychain,
                                                           (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                           0, NULL, // username length and bytes -- we don't care
                                                           NULL, NULL, // password length and data
                                                           &itemRef);
-#pragma clang diagnostic pop
             if (err == errSecItemNotFound) {
                 success = YES;
                 break;

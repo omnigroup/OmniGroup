@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 
+@import OmniFoundation.OFPreference;
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUISegmentedControl.h>
 #import <OmniUI/OUISegmentedControlButton.h>
@@ -23,6 +24,17 @@ RCS_ID("$Id$");
     OUISegmentedControlButton *_italicFontAttributeButton;
     OUISegmentedControlButton *_underlineFontAttributeButton;
     OUISegmentedControlButton *_strikethroughFontAttributeButton;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self == nil)
+        return nil;
+
+    _showStrikethrough = [[OFPreference preferenceForKey:@"OUIFontAttributesInspectorSliceShowsStrikethroughByDefault"] boolValue];
+
+    return self;
 }
 
 - (OUISegmentedControlButton *)fontAttributeButtonForType:(OUIFontAttributeButtonType)type; // Useful when overriding -updateFontAttributeButtons

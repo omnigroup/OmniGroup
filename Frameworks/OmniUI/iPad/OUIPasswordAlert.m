@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFVersionNumber.h>
 
+#import <UIKit/UIKit.h>
+
 RCS_ID("$Id$");
 
 NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
@@ -17,6 +19,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 {
   @private
     NSString *_username;
+    UIAlertAction *_helpAlertAction;
     
     struct {
         NSUInteger dismissed:1;
@@ -44,6 +47,18 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         _alerts = [[NSMutableSet alloc] init];
     });
     return _alerts;
+}
+
++ (NSString *)localizedTitleForAction:(OUIPasswordAlertAction)action;
+{
+    switch (action) {
+        case OUIPasswordAlertActionCancel:
+            return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
+        case OUIPasswordAlertActionHelp:
+            return NSLocalizedStringFromTableInBundle(@"Help", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
+        case OUIPasswordAlertActionLogIn:
+            return NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
+    }
 }
 
 - (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(OUIPasswordAlertOptions)options;
@@ -92,16 +107,12 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         }];
     }
     
-    // Buttons
-    NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
-    NSString *logInButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
-    
     // See discussion around dismiss timing in -_didDismissWithAction:.
-    [_alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+    [_alertController addAction:[UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionCancel] style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionCancel];
     }]];
     
-    UIAlertAction *loginAlertAction = [UIAlertAction actionWithTitle:logInButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+    UIAlertAction *loginAlertAction = [UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionLogIn] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         [self _didDismissWithAction:OUIPasswordAlertActionLogIn];
     }];
     [_alertController addAction:loginAlertAction];
@@ -220,6 +231,26 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     _minimumPasswordLength = minimumPasswordLength;
     
     [self setNeedsLoginActionStateUpdate];
+}
+
+- (void)setHelpURL:(NSURL *)helpURL;
+{
+    if ([helpURL isEqual:_helpURL]) {
+        return;
+    }
+    _helpURL = [helpURL copy];
+    
+    if (_helpAlertAction == nil) {
+        _helpAlertAction = [UIAlertAction actionWithTitle:[[self class] localizedTitleForAction:OUIPasswordAlertActionHelp] style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            OBASSERT(self.helpURL != nil, @"Clearing the helpURL from an OUIPasswordAlert after setting it is not supported.");
+            [self _didDismissWithAction:OUIPasswordAlertActionHelp];
+            
+            if (self.helpURL != nil) {
+                [[UIApplication sharedApplication] openURL:self.helpURL options:@{} completionHandler:nil];
+            }
+        }];
+        [self.alertController addAction:_helpAlertAction];
+    }
 }
 
 #pragma mark Internal

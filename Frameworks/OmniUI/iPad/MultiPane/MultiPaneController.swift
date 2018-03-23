@@ -229,7 +229,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return minWidth + widthOfSidebars
     }
     
-// MARK: - View Controller Lifecycle
+    // MARK: - View Controller Lifecycle
+    
     override open func viewDidLoad() {
         super.viewDidLoad()
         if deferChildControllerContainment {
@@ -239,7 +240,6 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
         
         updateDisplayMode(forSize: currentSize, traitCollection: traitCollection)
-        // Do any additional setup after loading the view.
         
         view.addGestureRecognizer(leftEdgePanGesture)
     }
@@ -260,7 +260,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         updateDisplayButtonItems(forMode: displayMode)
     }
     
-// MARK: - View Controller Trait Environment
+    // MARK: - View Controller Trait Environment
+    
     override open func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         self.pinningLayoutPass = false
@@ -270,34 +271,19 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) { 
         super.willTransition(to: newCollection, with: coordinator)
         coordinator.animate(alongsideTransition: { [weak self] (context) in
-            guard self != nil else { return }
-            self!.pinningLayoutPass = false
-            self!.updateDisplayMode(forSize: self!.currentSize, traitCollection: newCollection)
+            guard let strongSelf = self else { return }
+            strongSelf.pinningLayoutPass = false
+            strongSelf.updateDisplayMode(forSize: strongSelf.currentSize, traitCollection: newCollection)
         }, completion: nil)
     }
     
     override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: { [weak self] (context) in
-            guard self != nil else { return }
-            self!.pinningLayoutPass = false
-            self!.updateDisplayMode(forSize: size, traitCollection: self!.traitCollection)
+            guard let strongSelf = self else { return }
+            strongSelf.pinningLayoutPass = false
+            strongSelf.updateDisplayMode(forSize: size, traitCollection: strongSelf.traitCollection)
         }, completion: nil)
-    }
-    
-    override open func overrideTraitCollection(forChildViewController childViewController: UIViewController) -> UITraitCollection? {
-        guard panes.count > 0 else {
-            return nil
-        }
-        
-        if let center = pane(withLocation: .center) {
-        // only the center pane can be regular
-            if center.viewController == childViewController && displayMode != .compact {
-                return UITraitCollection(traitsFrom: [traitCollection, UITraitCollection(horizontalSizeClass: .regular)])
-            }
-        }
-        
-        return UITraitCollection(traitsFrom: [traitCollection, UITraitCollection(horizontalSizeClass: .compact)])
     }
     
     override open var preferredStatusBarStyle: UIStatusBarStyle {
@@ -360,8 +346,14 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return pane
     }
     
-    @objc open func viewController(atLocation location: MultiPaneLocation) -> UIViewController? {
+    /// Convenience method for returning the UIViewController currently installed in the pane at the given location.
+    @objc public final func viewController(atLocation location: MultiPaneLocation) -> UIViewController? {
         return pane(withLocation: location)?.viewController
+    }
+    
+    /// Convenience method for returning the UITraitCollection currently in use for the view controller at the given location.
+    @objc public final func traitCollection(forChildAtLocation location: MultiPaneLocation) -> UITraitCollection? {
+        return viewController(atLocation: location)?.traitCollection
     }
     
     @objc /**REVIEW**/ open func pane(withLocation location: MultiPaneLocation) -> Pane? {
@@ -481,10 +473,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         guard pane(withLocation: .center) != nil else {
             fatalError("Expected a multiPaneController configured with at least a .center pane")
         }
-        // see canUpdateDisplayMode()
-        guard canUpdateDisplayMode() else {
-            return
-        }
+        guard canUpdateDisplayMode() else { return }
         
         if traitCollection.horizontalSizeClass == .compact {
             displayMode = .compact
@@ -519,8 +508,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 if !presentedController.isBeingDismissed {
                     dismiss(animated: false, completion: { [weak self] in
                         // call update with the the MPC's stored values for these properties, which will be correct by the time we get the callback.
-                        guard self != nil else { return }
-                        self!.updateDisplayMode(forSize: self!.currentSize, traitCollection: self!.traitCollection)
+                        guard let strongSelf = self else { return }
+                        strongSelf.updateDisplayMode(forSize: strongSelf.currentSize, traitCollection: strongSelf.traitCollection)
                     })
                 }
                 // skip doing display updates since we have modal controllers in the way and that takes some time to clear up.

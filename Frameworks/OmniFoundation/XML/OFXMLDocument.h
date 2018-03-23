@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,7 +106,7 @@ typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFX
 // Writing conveniences
 - (OFXMLElement *) pushElement: (NSString *) elementName;
 - (void) popElement;
-- (void) addElement:(NSString *)elementName childBlock:(void (^)(void))block;
+- (void) addElement:(NSString *)elementName childBlock:(void (__attribute__((noescape)) ^)(void))block;
 
 @property(nonatomic,readonly) OFXMLElement *topElement;
 - (void) appendString: (NSString *) string;

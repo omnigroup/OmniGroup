@@ -182,7 +182,7 @@
 		344D563117BD48A60049F9E5 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A4E075308AA72B10098FF0F /* OmniFoundation.framework */; };
 		344E39691947862D00F5A57F /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 342691F517C578F700B1372F /* XCTest.framework */; };
 		344E6C8D15DAF33E00830145 /* OFCredentialsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C8B15DAF33E00830145 /* OFCredentialsTests.m */; };
-		344E6C8F15DB025800830145 /* OFCredentials-Mac.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C8E15DB025800830145 /* OFCredentials-Mac.m */; };
+		344E6C8F15DB025800830145 /* OFCredentials-Mac.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C8E15DB025800830145 /* OFCredentials-Mac.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		344E6C9115DB026800830145 /* OFCredentials.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E6C9015DB026800830145 /* OFCredentials.m */; };
 		344E6C9415DB028B00830145 /* OFCredentials-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E6C9315DB028B00830145 /* OFCredentials-Internal.h */; };
 		345272C714F092EF003151CA /* OFBindingPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 345272C514F092EF003151CA /* OFBindingPoint.h */; settings = {ATTRIBUTES = (Public, ); }; };

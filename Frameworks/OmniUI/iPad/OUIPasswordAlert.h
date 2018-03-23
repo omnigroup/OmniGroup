@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, OUIPasswordAlertAction) {
     OUIPasswordAlertActionCancel = 0,
     OUIPasswordAlertActionLogIn,
+    OUIPasswordAlertActionHelp,
 };
 
 typedef NS_OPTIONS(NSUInteger, OUIPasswordAlertOptions) {
@@ -45,6 +46,8 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @property (nonatomic, assign) NSUInteger minimumPasswordLength;
 
 @property (nonatomic, strong, null_resettable) UIColor *tintColor;
+
+@property (nonatomic, copy, nullable) NSURL *helpURL NS_EXTENSION_UNAVAILABLE_IOS("Cannot open help in a browser from app extensions");
 
 - (void)showFromController:(UIViewController *)controller;
 

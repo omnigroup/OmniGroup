@@ -457,6 +457,8 @@
 		34A7474D1E302A1E005CD73F /* OUIExport@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34A747471E302A1E005CD73F /* OUIExport@3x.png */; };
 		34C782C21BDEB71C00536364 /* OmniUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C782C11BDEB71C00536364 /* OmniUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D4F4251B6AA8F00003556D /* OUIDocumentPreviewArea.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3E1F09D62034C0BD001EE416 /* OmniUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348A79BB1B5849C70082D55D /* OmniUI.framework */; };
+		3E1F0A202034C4BB001EE416 /* DiffableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E1F09E62034C4BB001EE416 /* DiffableTests.swift */; };
 		3E7656D21F59D5BF008B76B7 /* NSURL-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E7656D01F59D5BF008B76B7 /* NSURL-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E7656D31F59D5BF008B76B7 /* NSURL-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E7656D11F59D5BF008B76B7 /* NSURL-OUIExtensions.m */; };
 		3EA7ECE21D52A98C00040F4B /* OUIPasswordAlert-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA7ECD81D52A95600040F4B /* OUIPasswordAlert-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -610,6 +612,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 34218E4919C23ECE00899C9A;
 			remoteInfo = "OmniQuartz-iOS";
+		};
+		3E1F09D72034C0BD001EE416 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 348A79BA1B5849C70082D55D;
+			remoteInfo = "OmniUI-iOS";
 		};
 		4DD560CC1ED39D5C00F9A088 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -993,6 +1002,12 @@
 		34FF3497178B150B005A4F1F /* OUIKeyCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIKeyCommands.h; sourceTree = "<group>"; };
 		34FF3498178B150B005A4F1F /* OUIKeyCommands.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIKeyCommands.m; sourceTree = "<group>"; };
 		34FF349B178B20EF005A4F1F /* OmniUI.keycommands */ = {isa = PBXFileReference; explicitFileType = text.plist; fileEncoding = 4; path = OmniUI.keycommands; sourceTree = "<group>"; };
+		3E1F09D12034C0BD001EE416 /* OUIUnitTests-iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "OUIUnitTests-iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3E1F09D52034C0BD001EE416 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3E1F09E62034C4BB001EE416 /* DiffableTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiffableTests.swift; sourceTree = "<group>"; };
+		3E1F0A212034C56D001EE416 /* Touch-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		3E1F0A222034C56D001EE416 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		3E1F0A232034C56E001EE416 /* Touch-XCTest-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
 		3E609BDF198B5DC9006BCF43 /* OUIAppController+SpecialURLHandling.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OUIAppController+SpecialURLHandling.h"; sourceTree = "<group>"; };
 		3E609BE0198B5DC9006BCF43 /* OUIAppController+SpecialURLHandling.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OUIAppController+SpecialURLHandling.m"; sourceTree = "<group>"; };
 		3E609C0E198B78ED006BCF43 /* OUIChangePreferenceURLCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIChangePreferenceURLCommand.h; sourceTree = "<group>"; };
@@ -1214,6 +1229,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3E1F09CE2034C0BD001EE416 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E1F09D62034C0BD001EE416 /* OmniUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1240,6 +1263,7 @@
 			isa = PBXGroup;
 			children = (
 				348A79BB1B5849C70082D55D /* OmniUI.framework */,
+				3E1F09D12034C0BD001EE416 /* OUIUnitTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1250,6 +1274,7 @@
 				346C49F0119326AD00BE8C49 /* Configurations */,
 				08FB77AEFE84172EC02AAC07 /* Source */,
 				348A79BF1B5849C70082D55D /* Info.plist */,
+				3E1F09D22034C0BD001EE416 /* OUIUnitTests-iOS */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 				15F7CC29185F9C3900EFB846 /* Localization */,
@@ -1460,6 +1485,9 @@
 		346C49F0119326AD00BE8C49 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
+				3E1F0A222034C56D001EE416 /* Touch-XCTest-Common.xcconfig */,
+				3E1F0A212034C56D001EE416 /* Touch-XCTest-Debug.xcconfig */,
+				3E1F0A232034C56E001EE416 /* Touch-XCTest-Release.xcconfig */,
 				348A79C91B5849D30082D55D /* Omni-Application-Common-AppStore.xcconfig */,
 				348A79CA1B5849D30082D55D /* Omni-Application-Common-MacAppStore.xcconfig */,
 				348A79CB1B5849D30082D55D /* Omni-Application-Common-MacAppStorePro.xcconfig */,
@@ -2029,6 +2057,15 @@
 			name = Paragraph;
 			sourceTree = "<group>";
 		};
+		3E1F09D22034C0BD001EE416 /* OUIUnitTests-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3E1F09E62034C4BB001EE416 /* DiffableTests.swift */,
+				3E1F09D52034C0BD001EE416 /* Info.plist */,
+			);
+			path = "OUIUnitTests-iOS";
+			sourceTree = "<group>";
+		};
 		3E609C0D198B78C1006BCF43 /* Special URL Handling */ = {
 			isa = PBXGroup;
 			children = (
@@ -2313,17 +2350,41 @@
 			productReference = 348A79BB1B5849C70082D55D /* OmniUI.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		3E1F09D02034C0BD001EE416 /* OUIUnitTests-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3E1F09E52034C0BE001EE416 /* Build configuration list for PBXNativeTarget "OUIUnitTests-iOS" */;
+			buildPhases = (
+				3E1F09CD2034C0BD001EE416 /* Sources */,
+				3E1F09CE2034C0BD001EE416 /* Frameworks */,
+				3E1F09CF2034C0BD001EE416 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3E1F09D82034C0BD001EE416 /* PBXTargetDependency */,
+			);
+			name = "OUIUnitTests-iOS";
+			productName = "OmniUI-iOSTests";
+			productReference = 3E1F09D12034C0BD001EE416 /* OUIUnitTests-iOS.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0920;
 				LastUpgradeCheck = 0930;
 				TargetAttributes = {
 					348A79BA1B5849C70082D55D = {
 						CreatedOnToolsVersion = 7.0;
 						LastSwiftMigration = 0830;
+					};
+					3E1F09D02034C0BD001EE416 = {
+						CreatedOnToolsVersion = 9.2;
+						DevelopmentTeam = 34YW5XSRB7;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -2355,6 +2416,7 @@
 			projectRoot = "";
 			targets = (
 				348A79BA1B5849C70082D55D /* OmniUI-iOS */,
+				3E1F09D02034C0BD001EE416 /* OUIUnitTests-iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -2606,6 +2668,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3E1F09CF2034C0BD001EE416 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -2813,6 +2882,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3E1F09CD2034C0BD001EE416 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E1F0A202034C4BB001EE416 /* DiffableTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2825,6 +2902,11 @@
 			isa = PBXTargetDependency;
 			name = "OmniQuartz-iOS";
 			targetProxy = 34EFC2851ECA63F70056DB93 /* PBXContainerItemProxy */;
+		};
+		3E1F09D82034C0BD001EE416 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 348A79BA1B5849C70082D55D /* OmniUI-iOS */;
+			targetProxy = 3E1F09D72034C0BD001EE416 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2891,6 +2973,131 @@
 			};
 			name = Release;
 		};
+		3E1F09D92034C0BD001EE416 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3E1F0A212034C56D001EE416 /* Touch-XCTest-Debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 34YW5XSRB7;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "OUIUnitTests-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3E1F09DA2034C0BD001EE416 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3E1F0A232034C56E001EE416 /* Touch-XCTest-Release.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 34YW5XSRB7;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "OUIUnitTests-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2908,6 +3115,15 @@
 			buildConfigurations = (
 				348A79C01B5849C70082D55D /* Debug */,
 				348A79C11B5849C70082D55D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3E1F09E52034C0BE001EE416 /* Build configuration list for PBXNativeTarget "OUIUnitTests-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3E1F09D92034C0BD001EE416 /* Debug */,
+				3E1F09DA2034C0BD001EE416 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

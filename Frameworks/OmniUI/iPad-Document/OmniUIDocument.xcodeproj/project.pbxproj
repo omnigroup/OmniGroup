@@ -379,6 +379,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		34405AF620659E0600C5C635 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3466ADF71F59F4CE00646BA5 /* OmniUI.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
+			remoteInfo = "OUIUnitTests-iOS";
+		};
 		345350D91ECA6EB900E2FB65 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 345350D51ECA6EB900E2FB65 /* OmniDocumentStore.xcodeproj */;
@@ -1335,6 +1342,7 @@
 			isa = PBXGroup;
 			children = (
 				3466AE051F59F4CE00646BA5 /* OmniUI.framework */,
+				34405AF720659E0600C5C635 /* OUIUnitTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1648,6 +1656,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		34405AF720659E0600C5C635 /* OUIUnitTests-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "OUIUnitTests-iOS.xctest";
+			remoteRef = 34405AF620659E0600C5C635 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		345350DA1ECA6EB900E2FB65 /* OmniDocumentStore.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
