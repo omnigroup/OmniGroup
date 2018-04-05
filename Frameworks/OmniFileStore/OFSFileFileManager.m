@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+
+#import <sys/stat.h>
 
 RCS_ID("$Id$");
 
@@ -43,20 +45,28 @@ RCS_ID("$Id$");
 
 static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
 {
-    // TODO: Return nil here if we get an error other than 'does not exist'
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
-    BOOL exists = (attributes != nil);
+    struct stat buf;
+    const char *cPath = [path cStringUsingEncoding:NSUTF8StringEncoding];
+    int result = stat(cPath, &buf);
+    if (result == -1 && errno != ENOENT) {
+        return nil;
+    }
     
-    BOOL directory = [[attributes fileType] isEqualToString:NSFileTypeDirectory];
+    BOOL exists = (result == 0);
+    BOOL isDirectory = exists && ((buf.st_mode & S_IFMT) == S_IFDIR);
     off_t size = 0;
-    if (!directory && attributes)
-        size = [attributes fileSize];
+    if (exists && !isDirectory) {
+        size = buf.st_size;
+    }
     
-    // +[NSURL fileURLWithPath:] will re-check whether this is a directory, but we already know.
-    CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)path, kCFURLPOSIXPathStyle, directory);
-    ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:(__bridge NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
-    CFRelease(url);
+    NSDate *modifiedDate = nil;
+    if (exists) {
+        NSTimeInterval interval = buf.st_mtimespec.tv_sec + ((double)buf.st_mtimespec.tv_nsec) / NSEC_PER_SEC;
+        modifiedDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    }
     
+    NSURL *url = [NSURL fileURLWithPath:path isDirectory:isDirectory];
+    ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:url name:[path lastPathComponent] exists:exists directory:isDirectory size:size lastModifiedDate:modifiedDate];
     return info;
 }
 

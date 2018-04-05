@@ -845,6 +845,22 @@ static BOOL checkCurveSelf_backwards(const NSPoint *p, NSPoint i, double t1, dou
                     (expect){Pt( 0.09791,-0.08374), intersectionEntryRight});
 }
 
+#ifdef DEBUG_wiml
+- (void)testCurveCurveIntersectionsRegressions
+{
+    // This tests the case from bug #156724
+    NSPoint ovalish[4] = {
+        Pt(393.80251542775778, 250.42792372513134), Pt(373.99478693587287, 240.52400875828957), Pt(342.00521306412713, 240.52400875828957), Pt(322.19748457224222, 250.42792372513134)
+    };
+    NSPoint lineish[4] = {
+        Pt(358, 147), Pt(358, 147), Pt(358, 269), Pt(358, 269)
+    };
+    
+    checkCurveCurve(ovalish, lineish, 1,
+                    (expect){Pt(358, 240), intersectionEntryBogus});
+}
+#endif
+
 - (void)testCurveCurveGrazing
 {
     NSPoint bulge1[4] = { Pt(0,0), Pt(-8,5), Pt(32, 5), Pt(24, 0) };

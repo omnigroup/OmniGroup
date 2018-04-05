@@ -1,4 +1,4 @@
-// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @class NSImageCell;
 
-extern NSString *TabTitleDidChangeNotification;
+extern NSString * const TabTitleDidChangeNotification;
 
 @interface OITabCell : NSButtonCell
 {

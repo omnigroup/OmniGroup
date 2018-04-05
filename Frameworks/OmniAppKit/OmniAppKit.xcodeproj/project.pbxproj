@@ -590,6 +590,8 @@
 		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B69E15CC836000E162D6 /* OAToolbarButton.m */; };
+		E25C440C2075359300660AE6 /* OAImages.m in Sources */ = {isa = PBXBuildFile; fileRef = E25C440B2075359300660AE6 /* OAImages.m */; };
+		E25C4435207535C800660AE6 /* OAImages.h in Headers */ = {isa = PBXBuildFile; fileRef = E25C4434207535C800660AE6 /* OAImages.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A61BE01D41574900416AB5 /* OAAutosizingSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */; };
 		E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */; };
@@ -1256,12 +1258,10 @@
 		34C12B06194FF90F005CB70B /* OAUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34C12B1B194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B1C194FF926005CB70B /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		34C12B1D194FF926005CB70B /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34C12B1E194FF926005CB70B /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B1F194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B20194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B21194FF926005CB70B /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		34C12B22194FF926005CB70B /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34C12B23194FF926005CB70B /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B24194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34C12B25194FF926005CB70B /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
@@ -1495,6 +1495,8 @@
 		E235B46315CC771600E162D6 /* OATrackingLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATrackingLoop.m; sourceTree = "<group>"; };
 		E235B69D15CC836000E162D6 /* OAToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarButton.h; sourceTree = "<group>"; };
 		E235B69E15CC836000E162D6 /* OAToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarButton.m; sourceTree = "<group>"; };
+		E25C440B2075359300660AE6 /* OAImages.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OAImages.m; sourceTree = "<group>"; };
+		E25C4434207535C800660AE6 /* OAImages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAImages.h; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
 		E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAutosizingSegmentedControl.h; sourceTree = "<group>"; };
@@ -2667,6 +2669,8 @@
 				34D04A38110E0270007399B9 /* OAUtilities.m */,
 				3435EF861DEE4CFE002CB3F9 /* OAStrings.h */,
 				3435EF871DEE4CFE002CB3F9 /* OAStrings.m */,
+				E25C4434207535C800660AE6 /* OAImages.h */,
+				E25C440B2075359300660AE6 /* OAImages.m */,
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
 				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
@@ -2696,7 +2700,6 @@
 			children = (
 				34C12B1B194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */,
 				34C12B1C194FF926005CB70B /* Omni-Application-Common-MacAppStore.xcconfig */,
-				34C12B1D194FF926005CB70B /* Omni-Application-Common-MacAppStorePro.xcconfig */,
 				34C12B1E194FF926005CB70B /* Omni-Application-Common-OmniStore.xcconfig */,
 				A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */,
 				4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */,
@@ -2709,7 +2712,6 @@
 				4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */,
 				34C12B20194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */,
 				34C12B21194FF926005CB70B /* Omni-Global-Common-MacAppStore.xcconfig */,
-				34C12B22194FF926005CB70B /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				34C12B23194FF926005CB70B /* Omni-Global-Common-OmniStore.xcconfig */,
 				A207C2340AA3BC7F00C3A5EF /* Omni-Global-Common.xcconfig */,
 				4AB8F09C08AD0A0600DBB061 /* Omni-Global-Debug.xcconfig */,
@@ -3046,6 +3048,7 @@
 				4AA1E67C08AA764600E2FF6B /* OAInternetConfig.h in Headers */,
 				4AA1E67E08AA764600E2FF6B /* NSColor-ColorSyncExtensions.h in Headers */,
 				3EF5F1BF19104DEF0072ED90 /* OAWebPageViewerDelegate.h in Headers */,
+				E25C4435207535C800660AE6 /* OAImages.h in Headers */,
 				4AA1E67F08AA764600E2FF6B /* NSImage-ColorSyncExtensions.h in Headers */,
 				4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */,
 				4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */,
@@ -3378,6 +3381,9 @@
 						DevelopmentTeam = 34YW5XSRB7;
 						DevelopmentTeamName = "The Omni Group";
 						TestTargetID = 34C12AFB194FF90F005CB70B;
+					};
+					4AA1E67A08AA764600E2FF6B = {
+						LastSwiftMigration = "";
 					};
 					4AA1E7FA08AA764600E2FF6B = {
 						TestTargetID = 4AA1E67A08AA764600E2FF6B;
@@ -4169,6 +4175,7 @@
 				346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */,
 				27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */,
 				E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */,
+				E25C440C2075359300660AE6 /* OAImages.m in Sources */,
 				E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */,
 				49EF503E15F6EAD000254849 /* OALabelField.m in Sources */,
 				3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */,

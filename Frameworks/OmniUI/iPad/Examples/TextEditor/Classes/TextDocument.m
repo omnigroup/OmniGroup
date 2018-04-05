@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,7 +172,7 @@ static void _writePreview(Class self, OFFileEdit *fileEdit, UIViewController *vi
         return NO;
     
     NSNumber *scale = documentAttributes[NSViewZoomDocumentAttribute];
-    if (scale) {
+    if (scale != nil) {
         _scale = [scale floatValue] / 100;
         _scale = CLAMP(_scale, 0.25, 3.0);
     } else

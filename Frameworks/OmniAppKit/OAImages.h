@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,9 +7,8 @@
 //
 // $Id$
 
-@class NSString;
-
-// Common localized strings
-extern NSString * _Nonnull OAOK(void);
-extern NSString * _Nonnull OACancel(void);
-extern NSString * _Nonnull OALearnMore(void);
+extern NSImage *OAActionImage(void);
+extern NSImage *OAGearTemplateImage(void);
+extern NSImage *OAInfoTemplateImage(void);
+extern NSImage *OAMiniAction(void);
+extern NSImage *OAMiniRemove(void);

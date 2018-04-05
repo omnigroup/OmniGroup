@@ -26,10 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableSet *_processedDeletedObjects;
     
     NSMutableSet *_recentlyInsertedObjects;
-    ODOObject *_nonretainedLastRecentlyInsertedObject;
     NSMutableSet *_recentlyUpdatedObjects;
     NSMutableSet *_recentlyDeletedObjects;
     
+    NSMutableSet *_reinsertedObjects;
+    
+    ODOObject *_nonretainedLastRecentlyInsertedObject;
+
     // This value is filled in only for the window of time that we are sending the ODOEditingContextObjectsWillBeDeletedNotification notification.
     NSSet *_objectsForObjectsWillBeDeletedNotification;
     

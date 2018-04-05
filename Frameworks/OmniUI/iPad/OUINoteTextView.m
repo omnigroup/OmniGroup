@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@ static UIDataDetectorTypes typesToDetectWithUITextView = (
                                                           (UIDataDetectorTypes)0 // or-ing 0 on the end for easier enabling/disabling of cases above
                                                           );
 
-CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
+const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 
 @interface OUINoteTextView () {
   @private

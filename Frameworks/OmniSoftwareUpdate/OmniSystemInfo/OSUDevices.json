@@ -317,14 +317,34 @@
     "comment": "10.5 inch"
   },
   "J71sAP": {
-    "name": "iPad (2017)",
+    "name": "iPad (5th generation)",
     "platform": "iPad6,11",
-    "comment": "9.7 inch"
+    "comment": "9.7 inch; 2017"
   },
   "J72sAP": {
-    "name": "iPad (2017 LTE)",
+    "name": "iPad (5th generation)",
     "platform": "iPad6,12",
-    "comment": "9.7 inch"
+    "comment": "9.7 inch; 2017; LTE"
+  },
+  "J71tAP": {
+    "name": "iPad (5th generation)",
+    "platform": "iPad6,11",
+    "comment": "9.7 inch; 2017"
+  },
+  "J72tAP": {
+    "name": "iPad (5th generation)",
+    "platform": "iPad6,12",
+    "comment": "9.7 inch; 2017; LTE"
+  },
+  "J71bAP": {
+    "name": "iPad (6th generation)",
+    "platform": "iPad7,5",
+    "comment": "9.7 inch; 2018; education event"
+  },
+  "J72bAP": {
+    "name": "iPad (6th generation)",
+    "platform": "iPad7,6",
+    "comment": "9.7 inch; 2018; LTE; education event"
   },
   "N45AP": {
     "name": "iPod Touch 1G"

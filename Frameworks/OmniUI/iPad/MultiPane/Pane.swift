@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -176,7 +176,7 @@ import UIKit
         
         let view = self.viewController.view
         view?.translatesAutoresizingMaskIntoConstraints = false
-        view?.setContentCompressionResistancePriority(UILayoutPriorityRequired, for: .horizontal)
+        view?.setContentCompressionResistancePriority(.required, for: .horizontal)
         self.widthConstraint = view?.widthAnchor.constraint(equalToConstant: 0.0)
         self.heightConstraint = view?.heightAnchor.constraint(equalToConstant: 0.0)
     }

@@ -518,7 +518,7 @@ static BOOL _fetchAttributesCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
 
 #pragma mark Private
 
-NSNotificationName ODODatabaseConnectedURLChangedNotification = @"ODODatabaseConnectedURLChanged";
+NSNotificationName const ODODatabaseConnectedURLChangedNotification = @"ODODatabaseConnectedURLChanged";
 
 - (BOOL)_setupNewDatabase:(NSError **)outError;
 {

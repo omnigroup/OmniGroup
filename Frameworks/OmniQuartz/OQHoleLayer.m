@@ -436,7 +436,8 @@ static void _setFrameYExtent(CALayer *layer, OFExtent yExtent)
 
     //CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
 
-    CGImageRef gradientImage = OQCreateVerticalGradientImage(_gradient, kCGColorSpaceGenericGray, CGRectGetHeight(bounds), YES/*opaque*/, YES/*flip*/);
+    size_t height = (size_t)ceil(CGRectGetHeight(bounds));
+    CGImageRef gradientImage = OQCreateVerticalGradientImage(_gradient, kCGColorSpaceGenericGray, height, YES/*opaque*/, YES/*flip*/);
     self.contents = (id)gradientImage;
     CGImageRelease(gradientImage);
 

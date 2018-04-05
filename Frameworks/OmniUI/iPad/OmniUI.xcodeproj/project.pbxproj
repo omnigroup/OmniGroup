@@ -920,12 +920,10 @@
 		348A79BF1B5849C70082D55D /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		348A79C91B5849D30082D55D /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		348A79CA1B5849D30082D55D /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		348A79CB1B5849D30082D55D /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		348A79CC1B5849D30082D55D /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		348A79CD1B5849D30082D55D /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		348A79CE1B5849D30082D55D /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		348A79CF1B5849D30082D55D /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		348A79D01B5849D30082D55D /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		348A79D11B5849D30082D55D /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		348A79D31B5849D30082D55D /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
 		348A79D41B5849D30082D55D /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -1505,7 +1503,6 @@
 				3E1F0A232034C56E001EE416 /* Touch-XCTest-Release.xcconfig */,
 				348A79C91B5849D30082D55D /* Omni-Application-Common-AppStore.xcconfig */,
 				348A79CA1B5849D30082D55D /* Omni-Application-Common-MacAppStore.xcconfig */,
-				348A79CB1B5849D30082D55D /* Omni-Application-Common-MacAppStorePro.xcconfig */,
 				348A79CC1B5849D30082D55D /* Omni-Application-Common-OmniStore.xcconfig */,
 				346C49F1119326AD00BE8C49 /* Omni-Application-Common.xcconfig */,
 				348A79CD1B5849D30082D55D /* Omni-Application-Common-OmniStore.xcconfig */,
@@ -1519,7 +1516,6 @@
 				346C49FC119326AD00BE8C49 /* Omni-Framework-Release.xcconfig */,
 				348A79CE1B5849D30082D55D /* Omni-Global-Common-AppStore.xcconfig */,
 				348A79CF1B5849D30082D55D /* Omni-Global-Common-MacAppStore.xcconfig */,
-				348A79D01B5849D30082D55D /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				348A79D11B5849D30082D55D /* Omni-Global-Common-OmniStore.xcconfig */,
 				346C49FD119326AD00BE8C49 /* Omni-Global-Common.xcconfig */,
 				346C49FF119326AD00BE8C49 /* Omni-Global-Debug.xcconfig */,
@@ -2401,7 +2397,7 @@
 				TargetAttributes = {
 					348A79BA1B5849C70082D55D = {
 						CreatedOnToolsVersion = 7.0;
-						LastSwiftMigration = 0830;
+						LastSwiftMigration = 0930;
 					};
 					3E1F09D02034C0BD001EE416 = {
 						CreatedOnToolsVersion = 9.2;
@@ -2980,8 +2976,6 @@
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -2998,7 +2992,6 @@
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
-				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -3061,9 +3054,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3120,8 +3110,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};

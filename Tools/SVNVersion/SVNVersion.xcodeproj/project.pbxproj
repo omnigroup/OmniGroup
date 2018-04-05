@@ -101,7 +101,6 @@
 /* Begin PBXFileReference section */
 		3440201119072D900002120F /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		3440201219072D900002120F /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		3440201319072D900002120F /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		3440201419072D900002120F /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		3440201519072D900002120F /* Omni-Application-Common-Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-Store.xcconfig"; sourceTree = "<group>"; };
 		3440201619072D900002120F /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -115,7 +114,6 @@
 		3440202119072D900002120F /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		3440202219072D900002120F /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		3440202319072D900002120F /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		3440202419072D900002120F /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		3440202519072D900002120F /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		3440202619072D900002120F /* Omni-Global-Common-Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-Store.xcconfig"; sourceTree = "<group>"; };
 		3440202719072D900002120F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
@@ -163,7 +161,6 @@
 			children = (
 				3440201119072D900002120F /* Omni-Application-Common-AppStore.xcconfig */,
 				3440201219072D900002120F /* Omni-Application-Common-MacAppStore.xcconfig */,
-				3440201319072D900002120F /* Omni-Application-Common-MacAppStorePro.xcconfig */,
 				3440201419072D900002120F /* Omni-Application-Common-OmniStore.xcconfig */,
 				3440201519072D900002120F /* Omni-Application-Common-Store.xcconfig */,
 				3440201619072D900002120F /* Omni-Application-Common.xcconfig */,
@@ -177,7 +174,6 @@
 				3440202119072D900002120F /* Omni-Framework-Release.xcconfig */,
 				3440202219072D900002120F /* Omni-Global-Common-AppStore.xcconfig */,
 				3440202319072D900002120F /* Omni-Global-Common-MacAppStore.xcconfig */,
-				3440202419072D900002120F /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				3440202519072D900002120F /* Omni-Global-Common-OmniStore.xcconfig */,
 				3440202619072D900002120F /* Omni-Global-Common-Store.xcconfig */,
 				3440202719072D900002120F /* Omni-Global-Common.xcconfig */,
@@ -236,6 +232,23 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0930;
+				TargetAttributes = {
+					3440203D19072DAD0002120F = {
+						LastSwiftMigration = "";
+					};
+					3440204119072DB60002120F = {
+						LastSwiftMigration = "";
+					};
+					344BDE9C1EC0F54C0006B0C1 = {
+						LastSwiftMigration = "";
+					};
+					34DBCD14190709F400968086 = {
+						LastSwiftMigration = "";
+					};
+					5F3D70441B66B6B000FF7D64 = {
+						LastSwiftMigration = "";
+					};
+				};
 			};
 			buildConfigurationList = 34DBCD11190709E100968086 /* Build configuration list for PBXProject "SVNVersion" */;
 			compatibilityVersion = "Xcode 3.2";

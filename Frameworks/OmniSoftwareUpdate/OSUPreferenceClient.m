@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,7 +63,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 - (IBAction)setValueForSender:(id)sender;
 {
     if (sender == _enableButton) {
-        [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:[_enableButton state]];
+        [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:[_enableButton state] != 0];
     } else if (sender == _frequencyPopup) {
         int checkFrequencyInHours;
         
@@ -81,7 +81,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
         }
         [[OSUPreferences checkInterval] setIntegerValue:checkFrequencyInHours];
     } else if (sender == _includeHardwareButton) {
-        [[OSUPreferences includeHardwareDetails] setBoolValue:[_includeHardwareButton state]];
+        [[OSUPreferences includeHardwareDetails] setBoolValue:[_includeHardwareButton state] != 0];
     }
 }
 

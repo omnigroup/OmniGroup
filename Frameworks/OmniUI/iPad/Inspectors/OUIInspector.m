@@ -58,8 +58,8 @@ OBDEPRECATED_METHOD(-setUseFullScreenOnHorizontalCompact:); // OUIInspector has 
 
 // Variable now, should really be turned into an accessor instead of this global. Popovers are required to be between 320 and 600; let's shoot for the minimum.
 // MT 8/20/15
-const CGFloat OUIConstantInspectorWidth = 320;
-CGFloat OUIInspectorContentWidth = OUIConstantInspectorWidth;
+//static const CGFloat OUIConstantInspectorWidth = 320;
+//static const CGFloat OUIInspectorContentWidth = OUIConstantInspectorWidth;
 
 const NSTimeInterval OUICrossFadeDuration = 0.2;
 

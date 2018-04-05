@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,10 +28,10 @@ extension PaneConfiguration {
     }
 
     var widthPriority: UILayoutPriority {
-        return 800.0
+        return UILayoutPriority(rawValue: 800.0)
     }
     var heightPriority: UILayoutPriority {
-        return 800.0
+        return UILayoutPriority(rawValue: 800.0)
     }
 }
 
@@ -169,7 +169,7 @@ class Content: PaneConfiguration {
     var canBePinned: Bool = false
     
     var widthPriority: UILayoutPriority {
-        return 751.0
+        return UILayoutPriority(rawValue: 751.0)
     }
     
     var preferredMinimumWidth: CGFloat = 520.0

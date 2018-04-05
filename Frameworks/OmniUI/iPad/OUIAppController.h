@@ -24,9 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 #define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
 /// Posted when attention is sought or no longer sought. Notifications user info will have key for the sort of attention, mapping to a boolean value which is YES if attention is sought or NO if attention is no longer sought.
-extern NSString *OUIAttentionSeekingNotification;
+extern NSNotificationName const OUIAttentionSeekingNotification;
 /// The key for when attention is sought for new "News" from Omni.
-extern NSString *OUIAttentionSeekingForNewsKey;
+extern NSString * const OUIAttentionSeekingForNewsKey;
 
 @protocol OUIDisabledDemoFeatureAlerter
 - (NSString *)featureDisabledForDemoAlertTitle;
@@ -151,7 +151,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (void)didFinishWaitingForSnapshots;
 - (void)startNewSnapshotTimer;
 - (void)destroyCurrentSnapshotTimer;
-extern NSString * const OUISystemIsSnapshottingNotification;
+extern NSNotificationName const OUISystemIsSnapshottingNotification;
 
 @property (readonly) BOOL canCreateNewDocument;
 @property (readonly) BOOL shouldEnableCreateNewDocument;

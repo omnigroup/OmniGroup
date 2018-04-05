@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,7 @@ static NSFont *labelFont = nil;
 	cellSize.height += LABEL_FONT_SIZE + LABEL_PADDING
 	                   - LABEL_OVERLAP_WITH_BOTTOM_PADDING;
 
-    columnCount = MAX(superBounds.size.width / cellSize.width, 1);
+    columnCount = (NSUInteger)MAX(superBounds.size.width / cellSize.width, 1);
     rowCount = [provider thumbnailCount] / columnCount
         + (([provider thumbnailCount] % columnCount) ? 1 : 0);
     rowCount = MAX(1U, rowCount);
@@ -89,8 +89,8 @@ static NSFont *labelFont = nil;
 
     NSUInteger thumbnailCount = [provider thumbnailCount];
     
-    NSUInteger startRow = NSMinY(dirtyRect) / cellSize.height;
-    NSUInteger endRow = MIN(NSMaxY(dirtyRect) / cellSize.height, rowCount);
+    NSUInteger startRow = (NSUInteger)NSMinY(dirtyRect) / cellSize.height;
+    NSUInteger endRow = (NSUInteger)MIN(NSMaxY(dirtyRect) / cellSize.height, rowCount);
 
     for (NSUInteger row = startRow; row <= endRow; row++) {
 	CGFloat y = cellSize.height * row;

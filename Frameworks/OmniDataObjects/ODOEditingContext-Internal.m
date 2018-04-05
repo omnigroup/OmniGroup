@@ -233,7 +233,8 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
             if (_objectIDToCommittedPropertySnapshot == nil) {
                 _objectIDToCommittedPropertySnapshot = [[NSMutableDictionary alloc] init];
             }
-            [_objectIDToCommittedPropertySnapshot setObject:snapshot forKey:objectID];
+
+            _objectIDToCommittedPropertySnapshot[objectID] = snapshot;
         }
     }
 }

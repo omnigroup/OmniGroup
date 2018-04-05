@@ -74,6 +74,13 @@
 			remoteGlobalIDString = 34218E4919C23ECE00899C9A;
 			remoteInfo = "OmniQuartz-iOS";
 		};
+		3441D7782069FFCF00ACEDB9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74671199B73C0023E017 /* OmniUI.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
+			remoteInfo = "OUIUnitTests-iOS";
+		};
 		348ADC6A19C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
@@ -235,13 +242,6 @@
 			remoteGlobalIDString = 4A4E07CF08AA72B10098FF0F;
 			remoteInfo = OFUnitTests;
 		};
-		34ED744F1199B7240023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4A4E077408AA72B10098FF0F;
-			remoteInfo = OFSimpleLockTest;
-		};
 		34ED74511199B7240023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
@@ -345,12 +345,10 @@
 		34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		349413071B66B27D001FA03A /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		349413081B66B27D001FA03A /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		349413091B66B27D001FA03A /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		3494130A1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		3494130B1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		3494130C1B66B27D001FA03A /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		349413111B66B27D001FA03A /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
 		349413121B66B27D001FA03A /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
@@ -534,7 +532,6 @@
 			children = (
 				349413071B66B27D001FA03A /* Omni-Application-Common-AppStore.xcconfig */,
 				349413081B66B27D001FA03A /* Omni-Application-Common-MacAppStore.xcconfig */,
-				349413091B66B27D001FA03A /* Omni-Application-Common-MacAppStorePro.xcconfig */,
 				3494130A1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */,
 				34915C74116FE3E4005EA90E /* Omni-Application-Common.xcconfig */,
 				34915C76116FE3E4005EA90E /* Omni-Application-Debug.xcconfig */,
@@ -548,7 +545,6 @@
 				34ED74131199B6C80023E017 /* Omni-Framework-Release.xcconfig */,
 				3494130C1B66B27D001FA03A /* Omni-Global-Common-AppStore.xcconfig */,
 				3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */,
-				3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */,
 				34915C78116FE3E4005EA90E /* Omni-Global-Common.xcconfig */,
 				34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */,
@@ -617,7 +613,6 @@
 				342AEE501ED5327700FDB031 /* OmniFoundation.framework */,
 				348ADC8E19C113C2003AEF77 /* OFUnitTests.xctest */,
 				34ED744E1199B7240023E017 /* OFUnitTests.xctest */,
-				34ED74501199B7240023E017 /* OFSimpleLockTest */,
 				34ED74521199B7240023E017 /* OFDedicatedThreadSchedulerTest */,
 				34ED74541199B7240023E017 /* OFClobberDetectionTest */,
 				34ED74581199B7240023E017 /* OFCrashOnExceptionTest */,
@@ -643,6 +638,7 @@
 			isa = PBXGroup;
 			children = (
 				34CE84FC1B5877920016E129 /* OmniUI.framework */,
+				3441D7792069FFCF00ACEDB9 /* OUIUnitTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -770,6 +766,13 @@
 			remoteRef = 34392A9A19C37B1C00D08401 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		3441D7792069FFCF00ACEDB9 /* OUIUnitTests-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "OUIUnitTests-iOS.xctest";
+			remoteRef = 3441D7782069FFCF00ACEDB9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -894,13 +897,6 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 34ED744D1199B7240023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED74501199B7240023E017 /* OFSimpleLockTest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = OFSimpleLockTest;
-			remoteRef = 34ED744F1199B7240023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34ED74521199B7240023E017 /* OFDedicatedThreadSchedulerTest */ = {

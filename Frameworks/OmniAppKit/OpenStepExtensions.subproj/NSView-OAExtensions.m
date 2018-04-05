@@ -1029,7 +1029,7 @@ static NSImageView * _Nonnull _snapshotImageViewForView(NSView * _Nonnull view)
 
 // Debugging
 
-unsigned int NSViewMaxDebugDepth = 10;
+static unsigned int ViewMaxDebugDepth = 10;
 
 - (NSMutableDictionary *)debugDictionary;
 {
@@ -1049,7 +1049,7 @@ unsigned int NSViewMaxDebugDepth = 10;
 
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
 {
-    if (level < NSViewMaxDebugDepth)
+    if (level < ViewMaxDebugDepth)
         return [[self debugDictionary] descriptionWithLocale:locale indent:level];
     else
         return [self shortDescription];

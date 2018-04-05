@@ -121,6 +121,13 @@
 			remoteGlobalIDString = 34AFADA8164B1401009E39AB;
 			remoteInfo = OFXUnitTests;
 		};
+		34244F162076D06B0053D577 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3427219D119480CE00B39788 /* OmniUI.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
+			remoteInfo = "OUIUnitTests-iOS";
+		};
 		3427215D1194809800B39788 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
@@ -386,13 +393,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 34B2F63B17188539000E45DF;
 			remoteInfo = OFXMLIdHash;
-		};
-		349614492065A16700634719 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3427219D119480CE00B39788 /* OmniUI.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3E1F09D12034C0BD001EE416;
-			remoteInfo = "OUIUnitTests-iOS";
 		};
 		34A115F41745282400008FF1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -803,7 +803,7 @@
 			isa = PBXGroup;
 			children = (
 				34BCD88A1B586C2700EBAA20 /* OmniUI.framework */,
-				3496144A2065A16700634719 /* OUIUnitTests-iOS.xctest */,
+				34244F172076D06B0053D577 /* OUIUnitTests-iOS.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1012,6 +1012,13 @@
 			fileType = wrapper.cfbundle;
 			path = OFXUnitTests.xctest;
 			remoteRef = 340E55341676B1010085CF55 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34244F172076D06B0053D577 /* OUIUnitTests-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "OUIUnitTests-iOS.xctest";
+			remoteRef = 34244F162076D06B0053D577 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		3427215E1194809800B39788 /* OmniBase.framework */ = {
@@ -1243,13 +1250,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OFXMLIdHash;
 			remoteRef = 349029891729810600F9C449 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3496144A2065A16700634719 /* OUIUnitTests-iOS.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "OUIUnitTests-iOS.xctest";
-			remoteRef = 349614492065A16700634719 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34A115F51745282400008FF1 /* OFXAuthTest */ = {

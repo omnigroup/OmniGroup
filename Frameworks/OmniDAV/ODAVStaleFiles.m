@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$")
 /// Value is a dictionary mapping identifiers to a file info blob.
 /// A file info blob is an array consisting of a first-checked date, last-checked date, and a fileInfos dictionary.
 /// The fileInfos dictionary maps resourceNames to meta-date about the file (size, mod time, count of times seen, etc.)
-NSString const *ODAVStaleFilesPreferenceKey = @"StaleFiles";
+NSString * const ODAVStaleFilesPreferenceKey = @"StaleFiles";
 
 // Keys in an individual file entry dictionary
 static NSString *ODAVStaleFileETag = @"etag";  // The file's ETag, optional

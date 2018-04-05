@@ -75,7 +75,7 @@ extern NSString * const ODOMateriallyUpdatedObjectPropertiesKey; // An NSMapTabl
 extern NSString * const ODODeletedObjectsKey;
 extern NSString * const ODODeletedObjectPropertySnapshotsKey; // An NSDictionary mapping ODOObjectIDs for deleted objects to ODOObjectSnapshots, representing the last state those objects were in before deletion
 
-extern NSNotificationName ODOEditingContextWillResetNotification;
-extern NSNotificationName ODOEditingContextDidResetNotification;
+extern NSNotificationName const ODOEditingContextWillResetNotification;
+extern NSNotificationName const ODOEditingContextDidResetNotification;
 
 NS_ASSUME_NONNULL_END

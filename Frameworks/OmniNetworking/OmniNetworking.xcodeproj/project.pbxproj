@@ -188,7 +188,6 @@
 		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
 		34DC600E1DB92EA8008D7C87 /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34DC600F1DB92EA8008D7C87 /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		34DC60101DB92EA8008D7C87 /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34DC60111DB92EA8008D7C87 /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34DC60121DB92EA8008D7C87 /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34DC60131DB92EA8008D7C87 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -196,7 +195,6 @@
 		34DC60151DB92EA8008D7C87 /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
 		34DC60161DB92EA8008D7C87 /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34DC60171DB92EA8008D7C87 /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
-		34DC60181DB92EA8008D7C87 /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
 		34DC60191DB92EA8008D7C87 /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34DC601B1DB92EA8008D7C87 /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		34DC601C1DB92EA8008D7C87 /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
@@ -455,7 +453,6 @@
 			children = (
 				34DC600E1DB92EA8008D7C87 /* Omni-Application-Common-AppStore.xcconfig */,
 				34DC600F1DB92EA8008D7C87 /* Omni-Application-Common-MacAppStore.xcconfig */,
-				34DC60101DB92EA8008D7C87 /* Omni-Application-Common-MacAppStorePro.xcconfig */,
 				34DC60111DB92EA8008D7C87 /* Omni-Application-Common-OmniStore.xcconfig */,
 				34DC60131DB92EA8008D7C87 /* Omni-Application-Common.xcconfig */,
 				4AFE733E08A042A400ED9F2D /* Omni-Application-Debug.xcconfig */,
@@ -468,7 +465,6 @@
 				4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */,
 				34DC60161DB92EA8008D7C87 /* Omni-Global-Common-AppStore.xcconfig */,
 				34DC60171DB92EA8008D7C87 /* Omni-Global-Common-MacAppStore.xcconfig */,
-				34DC60181DB92EA8008D7C87 /* Omni-Global-Common-MacAppStorePro.xcconfig */,
 				34DC60191DB92EA8008D7C87 /* Omni-Global-Common-OmniStore.xcconfig */,
 				34DC60121DB92EA8008D7C87 /* Omni-Application-Common-OmniStore.xcconfig */,
 				34DC601B1DB92EA8008D7C87 /* Omni-Global-Common.xcconfig */,

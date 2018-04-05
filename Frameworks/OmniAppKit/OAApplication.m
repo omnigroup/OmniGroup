@@ -598,8 +598,8 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         CGFloat startingWidth = [infoDict floatForKey:@"OAHelpWidth" defaultValue:800.0f];
         CGFloat startingHeight = [infoDict floatForKey:@"OAHelpHeight" defaultValue:650.0f];
         CGFloat minHeight = [infoDict floatForKey:@"OAHelpMinHeight" defaultValue:200.0f];
-        CGFloat minWidth = [infoDict floatForKey:@"OAHelpMinWidth" defaultValue:startingWidth];
-        CGFloat maxWidth = [infoDict floatForKey:@"OAHelpMaxWidth" defaultValue:startingWidth];
+        CGFloat minWidth = [infoDict floatForKey:@"OAHelpMinWidth" defaultValue:(float)startingWidth];
+        CGFloat maxWidth = [infoDict floatForKey:@"OAHelpMaxWidth" defaultValue:(float)startingWidth];
 
         NSWindow *window = [viewer window];
         [window setTitle:title];

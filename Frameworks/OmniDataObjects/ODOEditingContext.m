@@ -160,24 +160,33 @@ NS_ASSUME_NONNULL_BEGIN
         // get rid of pending, processed changes and snapshots
         [_objectIDToCommittedPropertySnapshot release];
         _objectIDToCommittedPropertySnapshot = nil;
+
         [_objectIDToLastProcessedSnapshot release];
         _objectIDToLastProcessedSnapshot = nil;
         
         [_processedInsertedObjects release];
         _processedInsertedObjects = nil;
+
         [_processedUpdatedObjects release];
         _processedUpdatedObjects = nil;
+        
         [_processedDeletedObjects release];
         _processedDeletedObjects = nil;
         
         [_recentlyInsertedObjects release];
         _recentlyInsertedObjects = nil;
-        _nonretainedLastRecentlyInsertedObject = nil;
+        
         [_recentlyUpdatedObjects release];
         _recentlyUpdatedObjects = nil;
+        
         [_recentlyDeletedObjects release];
         _recentlyDeletedObjects = nil;
         
+        [_reinsertedObjects release];
+        _reinsertedObjects = nil;
+        
+        _nonretainedLastRecentlyInsertedObject = nil;
+
         // get rid of database metadata changes
         [_database _discardPendingMetadataChanges];
         
@@ -209,48 +218,39 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     
     // TODO: Verify that the object being inserted isn't some old dead invalidated object (previously deleted and a save happened since then).
     
+    // Check to see if we are re-inserting something which was previously marked for deletion
+    
+    ODOObject *previouslyRegisteredObject = [self->_registeredObjectByID objectForKey:[object objectID]];
+    if (previouslyRegisteredObject != nil) {
+        // Assert that the object we are trying to "replace" has been deleted
+        OBASSERT([self->_recentlyDeletedObjects containsObject:previouslyRegisteredObject] || [self->_processedDeletedObjects containsObject:previouslyRegisteredObject]);
+        
+        [self->_recentlyDeletedObjects removeObject:previouslyRegisteredObject];
+        [self->_processedDeletedObjects removeObject:previouslyRegisteredObject];
+        
+        ODOEditingContextDidDeleteObjects(self, [NSSet setWithObject:previouslyRegisteredObject]);
+        
+        self->_objectIDToLastProcessedSnapshot[previouslyRegisteredObject.objectID] = nil;
+        self->_objectIDToCommittedPropertySnapshot[previouslyRegisteredObject.objectID] = nil;
+        
+        // Record this object as a re-insert so we can do the right thing at save time
+        
+        if (self->_reinsertedObjects == nil) {
+            self->_reinsertedObjects = [[NSMutableSet alloc] init];
+        }
+        
+        [self->_reinsertedObjects addObject:object];
+    }
+
+    // Register and add it to the recent set
+    
     if (self->_recentlyInsertedObjects == nil) {
         self->_recentlyInsertedObjects = ODOEditingContextCreateRecentSet(self);
     }
-    
+
     [self->_recentlyInsertedObjects addObject:object];
     self->_nonretainedLastRecentlyInsertedObject = object;
     [self _registerObject:object];
-}
-
-static void ODOEditingContextInternalPromoteInsertToUpdate(ODOEditingContext *self, ODOObject *object)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
-    OBPRECONDITION([object isKindOfClass:[ODOObject class]]);
-    OBPRECONDITION([object editingContext] == self);
-    
-    OBPRECONDITION(!self->_isValidatingAndWritingChanges); // Can't make edits in the validation methods
-    OBPRECONDITION([self->_recentlyInsertedObjects containsObject:object] || [self->_processedInsertedObjects containsObject:object]);
-    
-    if ([self->_recentlyInsertedObjects containsObject:object]) {
-        if (self->_recentlyUpdatedObjects == nil) {
-            self->_recentlyUpdatedObjects = ODOEditingContextCreateRecentSet(self);
-        }
-        
-        [self->_recentlyUpdatedObjects addObject:object];
-        [self->_recentlyInsertedObjects removeObject:object];
-        
-        ODOObjectSnapshot *snapshot = [self->_objectIDToCommittedPropertySnapshot objectForKey:object.objectID];
-        if (self->_objectIDToLastProcessedSnapshot == nil) {
-            self->_objectIDToLastProcessedSnapshot = [[NSMutableDictionary alloc] init];
-        }
-
-        [self->_objectIDToLastProcessedSnapshot setObject:snapshot forKey:object.objectID];
-    } else if ([self->_processedInsertedObjects containsObject:object]) {
-        OBStopInDebugger("Step through and verify.");
-
-        if (self->_processedUpdatedObjects == nil) {
-            self->_processedUpdatedObjects = [[NSMutableSet alloc] init];
-        }
-
-        [self->_processedUpdatedObjects addObject:object];
-        [self->_processedInsertedObjects removeObject:object];
-    }
 }
 
 // This is the global first-time insertion hook.  This should only be called with *new* objects.  That is, the undo of a delete should *not* go through here since that would re-call the -awakeFromInsert method.
@@ -270,20 +270,6 @@ static void ODOEditingContextInternalPromoteInsertToUpdate(ODOEditingContext *se
     }
     
     @try {
-        BOOL shouldPromoteInsertToUpdate = NO;
-        
-        ODOObject *previouslyRegisteredObject = [_registeredObjectByID objectForKey:[object objectID]];
-        if (previouslyRegisteredObject != nil) {
-            // Assert that the object we are trying to "replace" has been deleted
-            OBASSERT([_recentlyDeletedObjects containsObject:previouslyRegisteredObject] || [_processedDeletedObjects containsObject:previouslyRegisteredObject]);
-            [_recentlyDeletedObjects removeObject:previouslyRegisteredObject];
-            [_processedDeletedObjects removeObject:previouslyRegisteredObject];
-            ODOEditingContextDidDeleteObjects(self, [NSSet setWithObject:previouslyRegisteredObject]);
-
-            // Fall through and insert the new object as normal for now; after insertion we'll promote it to an update
-            shouldPromoteInsertToUpdate = YES;
-        }
-        
         ODOEditingContextInternalInsertObject(self, object);
         
         OBASSERT(![object _isAwakingFromInsert]);
@@ -300,12 +286,6 @@ static void ODOEditingContextInternalPromoteInsertToUpdate(ODOEditingContext *se
                 [self processPendingChanges];
             }
         }
-        
-        if (shouldPromoteInsertToUpdate) {
-            // promote to object to the updated objects set, since it isn't really an insert
-            ODOEditingContextInternalPromoteInsertToUpdate(self, object);
-        }
-        
     } @finally {
         if (undeletable)
             [_undoManager enableUndoRegistration];
@@ -774,7 +754,7 @@ static void ODOEditingContextDidDeleteObjects(ODOEditingContext *self, NSSet *de
 {
     [deleted makeObjectsPerformSelector:@selector(_invalidate)]; // Once saved, deleted objects are gone forever.  Unless we resurrect them by pointer for undo.  Might just create new objects.
     
-    // Forget the invalidated objects.  They still have their objectID, which is good since we need to remove those keys from our registered objects.
+    // Forget the invalidated objects. They still have their objectID, which is good since we need to remove those keys from our registered objects.
     CFSetApplyFunction((CFSetRef)deleted, _forgetObjectApplier, self->_registeredObjectByID);
 }
 
@@ -857,14 +837,15 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
 
     // Send notifications for inserts, updates and deletes based on the pending edits (i.e., a previously inserted object can be the subject of a update notification and a previous insert/update can be the subject of a delete).    
     NSDictionary *userInfo = _createChangeSetNotificationUserInfo(_recentlyInsertedObjects, _recentlyUpdatedObjects, _recentlyDeletedObjects, _objectIDToCommittedPropertySnapshot, _objectIDToLastProcessedSnapshot);
-    NSNotification *note = [NSNotification notificationWithName:ODOEditingContextObjectsDidChangeNotification object:self userInfo:userInfo];
+    NSNotification *notification = [NSNotification notificationWithName:ODOEditingContextObjectsDidChangeNotification object:self userInfo:userInfo];
     [userInfo release];
 
     // Register undos based on the recent changes, if we have an undo manager, along with any snapshots necessary to get back into the right state after undoing.
     // TODO: Record only the object IDs and snapshots?
     // TODO: These snapshots aren't right -- they are from the last *save* but we need snapshots from the last -processPendingChanges.
-    if (_undoManager)
+    if (_undoManager != nil) {
         [self _registerUndoForRecentChanges];
+    }
     
     //
     // Merge the recent changes into the processed changes.
@@ -878,17 +859,42 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     [_recentlyUpdatedObjects minusSet:_processedInsertedObjects];
     
     // Any previously processed inserts or updates that have recently been deleted are also now irrelevant for -save:.
-    if (_recentlyDeletedObjects) {
+    if (_recentlyDeletedObjects != nil) {
         // Also, any processed inserts are irrelevant for -save:.  That is, the processed insert and recent delete cancel out.
+        // However, if the processed insert was actual a re-insert, the delete does not cancel it out; we must preserve the delete as a material delete.
         if ([_processedInsertedObjects intersectsSet:_recentlyDeletedObjects]) {
-            NSMutableSet *canceledInserts = [[NSMutableSet alloc] initWithSet:_recentlyDeletedObjects];
-            [canceledInserts intersectSet:_processedInsertedObjects];
-            [_recentlyDeletedObjects minusSet:canceledInserts];
-            [_processedInsertedObjects minusSet:canceledInserts];
+            // Anything that was inserted, but not reinserted can just be cancelled; a material delete is not required
+            NSMutableSet *cancelledInserts = [[NSMutableSet alloc] initWithSet:_recentlyDeletedObjects];
+            [cancelledInserts intersectSet:_processedInsertedObjects];
+            [cancelledInserts minusSet:_reinsertedObjects];
             
+            // Anything that was re-inserted must be preserved as a material delete
+            NSMutableSet *uncancellableInserts = [[NSMutableSet alloc] initWithSet:_recentlyDeletedObjects];
+            [uncancellableInserts intersectSet:_reinsertedObjects];
+
+            // Cancelled inserts are no longer inserted or deleted
+            [_recentlyDeletedObjects minusSet:cancelledInserts];
+            [_processedInsertedObjects minusSet:cancelledInserts];
+
+            // Both cancelled and uncancelled inserts are no longer reinserted.
+            // This is most clearly expressed as:
+            //
+            //    [_reinsertedObjects minusSet:cancelledInserts];
+            //    [_reinsertedObjects minusSet:uncancellableInserts];
+            //
+            // but can be expressed as this single set operation as long as it is done before mutating _recentlyDeletedObjects
+            [_reinsertedObjects minusSet:_recentlyDeletedObjects];
+
+            // Uncancellable inserts are no longer inserted, but do stick around as material deletes
+            [_processedInsertedObjects minusSet:uncancellableInserts];
+            [_recentlyDeletedObjects unionSet:uncancellableInserts];
+
+
             // These canceled inserts are now gone forever!  Update our state the same as if we'd saved the deletes
-            ODOEditingContextDidDeleteObjects(self, canceledInserts);
-            [canceledInserts release];
+            ODOEditingContextDidDeleteObjects(self, cancelledInserts);
+            
+            [cancelledInserts release];
+            [uncancellableInserts release];
         }
         
         [_processedUpdatedObjects minusSet:_recentlyDeletedObjects];
@@ -896,29 +902,34 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     
     // Any remaining recent operations should merge right across.  If we didn't have changes in a category, steal the recent set rather than building a new one.
     _nonretainedLastRecentlyInsertedObject = nil;
-    if (_processedInsertedObjects)
+
+    if (_processedInsertedObjects) {
         [_processedInsertedObjects unionSet:_recentlyInsertedObjects];
-    else  {
+    } else  {
         _processedInsertedObjects = _recentlyInsertedObjects;
         _recentlyInsertedObjects = nil;
     }
-    if (_processedUpdatedObjects)
+    
+    if (_processedUpdatedObjects) {
         [_processedUpdatedObjects unionSet:_recentlyUpdatedObjects];
-    else {
+    } else {
         _processedUpdatedObjects = _recentlyUpdatedObjects;
         _recentlyUpdatedObjects = nil;
     }
-    if (_processedDeletedObjects) 
+    
+    if (_processedDeletedObjects) {
         [_processedDeletedObjects unionSet:_recentlyDeletedObjects];
-    else {
+    } else {
         _processedDeletedObjects = _recentlyDeletedObjects;
         _recentlyDeletedObjects = nil;
     }
     
     [_recentlyInsertedObjects release];
     _recentlyInsertedObjects = nil;
+
     [_recentlyUpdatedObjects release];
     _recentlyUpdatedObjects = nil;
+    
     [_recentlyDeletedObjects release];
     _recentlyDeletedObjects = nil;
 
@@ -927,7 +938,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     // As our final act, post the notification (since we have now processed the changes).  Additionally, this means that listeners can provoke further changes.
     //NSLog(@"note = %@", note);
 
-    [[NSNotificationCenter defaultCenter] postNotification:note];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
     
     return YES;
 }
@@ -1002,7 +1013,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
         return [NSSet setWithSet:_processedDeletedObjects];
     }
     
-    NSMutableSet *result = [NSMutableSet setWithSet:_processedUpdatedObjects];
+    NSMutableSet *result = [NSMutableSet setWithSet:_processedDeletedObjects];
     [result unionSet:_recentlyDeletedObjects];
     return result;
 }
@@ -1169,16 +1180,22 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
         NSSet *inserted = _processedInsertedObjects;
         NSSet *updated = _processedUpdatedObjects;
         NSSet *deleted = _processedDeletedObjects;
+        
+        NSSet *reinserted = _reinsertedObjects;
 
         _processedInsertedObjects = nil;
         _processedUpdatedObjects = nil;
         _processedDeletedObjects = nil;
+        _reinsertedObjects = nil;
 
         [inserted makeObjectsPerformSelector:@selector(didSave)];
         [inserted release];
 
         [updated makeObjectsPerformSelector:@selector(didSave)];
         [updated release];
+        
+        // No notiication for re-insertion
+        [reinserted release];
         
         // Deleted objects currently get -willDelete, but no -didSave.
         if (deleted != nil) {
@@ -1491,8 +1508,8 @@ NSString * const ODOMateriallyUpdatedObjectPropertiesKey = @"ODOMateriallyUpdate
 NSString * const ODODeletedObjectsKey = @"ODODeletedObjectsKey";
 NSString * const ODODeletedObjectPropertySnapshotsKey = @"ODODeletedObjectPropertySnapshotsKey";
 
-NSNotificationName ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
-NSNotificationName ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
+NSNotificationName const ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
+NSNotificationName const ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
 
 #pragma mark - Private
 
@@ -1657,6 +1674,7 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
 
 typedef struct {
     ODODatabase *database;
+    NSSet *reinsertedObjects;
     sqlite3 *sqlite;
     BOOL errorOccurred;
     NSError **outError;
@@ -1667,10 +1685,21 @@ static void _writeInsertApplier(const void *value, void *context)
     ODOObject *object = (ODOObject *)value;
     WriteSQLApplierContext *ctx = context;
     
-    if (ctx->errorOccurred)
+    if (ctx->errorOccurred) {
         return;
-    if (![[object entity] _writeInsert:ctx->sqlite database:ctx->database object:object error:ctx->outError])
-        ctx->errorOccurred = YES;
+    }
+    
+    BOOL isReinsert = ([ctx->reinsertedObjects member:object] == object);
+    
+    if (isReinsert) {
+        if (![object.entity _writeUpdate:ctx->sqlite database:ctx->database object:object error:ctx->outError]) {
+            ctx->errorOccurred = YES;
+        }
+    } else {
+        if (![object.entity _writeInsert:ctx->sqlite database:ctx->database object:object error:ctx->outError]) {
+            ctx->errorOccurred = YES;
+        }
+    }
 }
 
 static void _writeUpdateApplier(const void *value, void *context)
@@ -1678,10 +1707,13 @@ static void _writeUpdateApplier(const void *value, void *context)
     ODOObject *object = (ODOObject *)value;
     WriteSQLApplierContext *ctx = context;
     
-    if (ctx->errorOccurred)
+    if (ctx->errorOccurred) {
         return;
-    if (![[object entity] _writeUpdate:ctx->sqlite database:ctx->database object:object error:ctx->outError])
+    }
+
+    if (![object.entity _writeUpdate:ctx->sqlite database:ctx->database object:object error:ctx->outError]) {
         ctx->errorOccurred = YES;
+    }
 }
 
 static void _writeDeleteApplier(const void *value, void *context)
@@ -1689,10 +1721,13 @@ static void _writeDeleteApplier(const void *value, void *context)
     ODOObject *object = (ODOObject *)value;
     WriteSQLApplierContext *ctx = context;
     
-    if (ctx->errorOccurred)
+    if (ctx->errorOccurred) {
         return;
-    if (![[object entity] _writeDelete:ctx->sqlite database:ctx->database object:object error:ctx->outError])
+    }
+
+    if (![object.entity _writeDelete:ctx->sqlite database:ctx->database object:object error:ctx->outError]) {
         ctx->errorOccurred = YES;
+    }
 }
 
 // Writes the changes, but doesn't clear them (the transaction may fail).
@@ -1710,24 +1745,34 @@ static void _writeDeleteApplier(const void *value, void *context)
     WriteSQLApplierContext ctx;
     memset(&ctx, 0, sizeof(ctx));
     ctx.database = _database;
+    ctx.reinsertedObjects = _reinsertedObjects;
     ctx.sqlite = sqlite;
     ctx.outError = outError;
     
-    if (_processedInsertedObjects)
+    if (_processedInsertedObjects != nil) {
         CFSetApplyFunction((CFSetRef)_processedInsertedObjects, _writeInsertApplier, &ctx);
-    if (ctx.errorOccurred)
-        return NO;
+    }
     
-    if (_processedUpdatedObjects)
+    if (ctx.errorOccurred) {
+        return NO;
+    }
+    
+    if (_processedUpdatedObjects != nil) {
         CFSetApplyFunction((CFSetRef)_processedUpdatedObjects, _writeUpdateApplier, &ctx);
-    if (ctx.errorOccurred)
-        return NO;
+    }
     
-    if (_processedDeletedObjects)
+    if (ctx.errorOccurred) {
+        return NO;
+    }
+
+    if (_processedDeletedObjects != nil) {
         CFSetApplyFunction((CFSetRef)_processedDeletedObjects, _writeDeleteApplier, &ctx);
-    if (ctx.errorOccurred)
-        return NO;
+    }
     
+    if (ctx.errorOccurred) {
+        return NO;
+    }
+
     return YES;
 }
 

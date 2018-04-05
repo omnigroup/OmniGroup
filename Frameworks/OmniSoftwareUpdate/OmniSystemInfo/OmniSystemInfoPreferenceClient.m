@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ RCS_ID("$Id$");
 - (IBAction)setValueForSender:(id)sender;
 {
     if (sender == _includeHardwareButton) {
-        BOOL enabled = [_includeHardwareButton state];
+        BOOL enabled = [_includeHardwareButton state] != 0;
         [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:enabled];
         [[OSUPreferences includeHardwareDetails] setBoolValue:enabled];
         [[OSUPreferences checkInterval] restoreDefaultValue]; // Leave this at whatever is in the defaults file (we might change the registered default if we switch to reporting a message of the day).

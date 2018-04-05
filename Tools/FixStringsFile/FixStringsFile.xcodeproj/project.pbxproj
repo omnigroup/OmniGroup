@@ -183,6 +183,7 @@
 				TargetAttributes = {
 					8DD76F740486A8DE00D96B5E = {
 						DevelopmentTeam = 34YW5XSRB7;
+						LastSwiftMigration = "";
 					};
 				};
 			};

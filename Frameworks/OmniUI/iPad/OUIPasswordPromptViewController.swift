@@ -126,7 +126,7 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
         passwordField?.textColor = changedAppearance.tableCellTextColor
         passwordField?.backgroundColor = changedAppearance.tableCellBackgroundColor
         if let placeholder = passwordField?.placeholder {
-            passwordField!.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [NSForegroundColorAttributeName: changedAppearance.placeholderTextColor])
+            passwordField!.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor: changedAppearance.placeholderTextColor])
         }
         hintLabelButton?.setTitleColor(changedAppearance.inspectorTextColor, for: .normal)
 

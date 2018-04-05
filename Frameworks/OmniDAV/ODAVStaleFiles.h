@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class NSRegularExpression;
 
-extern NSString const *ODAVStaleFilesPreferenceKey;
+extern NSString * const ODAVStaleFilesPreferenceKey;
 
 @interface ODAVStaleFiles : NSObject
 

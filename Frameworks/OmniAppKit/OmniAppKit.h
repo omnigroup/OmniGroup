@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,6 +116,7 @@
 #import <OmniAppKit/OAGradientTableView.h>
 #import <OmniAppKit/OAGridView.h>
 #import <OmniAppKit/OAHierarchicalPopUpController.h>
+#import <OmniAppKit/OAImages.h>
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/OALabelField.h>
 #import <OmniAppKit/OAMouseTipWindow.h>

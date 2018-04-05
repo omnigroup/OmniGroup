@@ -946,7 +946,7 @@ static NSString *XMLElementName = @"color";
 static void _xmlComponentAdder(id container, NSString *key, double component)
 {
     OBPRECONDITION([container isKindOfClass:[OFXMLDocument class]]);
-    [container setAttribute:key real:component];
+    [container setAttribute:key real:(float)component];
 }
 
 static void _xmlStringAdder(id container, NSString *key, NSString *string)

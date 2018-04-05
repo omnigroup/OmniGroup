@@ -40,12 +40,12 @@
 
 RCS_ID("$Id$");
 
-NSString * const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
+NSNotificationName const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
 NSString * const NeedToShowURLKey = @"OSU_need_to_show_URL";
 NSString * const PreviouslyShownURLsKey = @"OSU_previously_shown_URLs";
 
-NSString *OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
-NSString *OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
+NSNotificationName const OUIAttentionSeekingNotification = @"OUIAttentionSeekingNotification";
+NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey";
 
 @interface UIApplication (NewsletterExtensions)
 @property (nonatomic, readonly) NSArray<NSURLQueryItem *> *signUpForOmniNewsletterQueryItems;

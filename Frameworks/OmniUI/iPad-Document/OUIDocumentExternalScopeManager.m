@@ -191,12 +191,13 @@ RCS_ID("$Id$")
     __block __weak ODSExternalScope *weakScope = externalScope;
     __block __weak OUIDocumentExternalScopeManager *weakSelf = self;
     externalScope.addDocumentBlock = ^(ODSFolderItem *folderItem, NSString *baseName, NSString *fileType, NSURL *fromURL, ODSStoreAddOption option, void (^addDocumentCompletionBlock)(ODSFileItem *duplicateFileItem, NSError *error)) {
-        
+
         if (!addDocumentCompletionBlock) {
             // The code below really expects this completion block to exists. So, if it doesn't exist, feed the code an empty completion block.
+            OBASSERT_NOT_REACHED("Expected a completion block for addDocument. Providing an empty one to prevent crashing.");
             addDocumentCompletionBlock = ^(ODSFileItem *duplicateFileItem, NSError *error){};
         }
-        
+
         if (folderItem != weakScope.rootFolder) {
             OBASSERT_NOT_REACHED("This external scope only expects to have a root folder");
             addDocumentCompletionBlock(nil, [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]);
