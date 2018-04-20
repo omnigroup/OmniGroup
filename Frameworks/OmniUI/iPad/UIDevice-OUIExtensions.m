@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -190,11 +190,8 @@ RCS_ID("$Id$");
                     break;
                 }
                 case 5: // iPad Air 2
-                {
-                    ppi = 264;
-                    break;
-                }
-                case 6: // iPad Pro
+                case 6: // iPad Pro, 2017 iPad
+                case 7: // iPad Pro 10.5, 2018 iPad
                 {
                     ppi = 264;
                     break;

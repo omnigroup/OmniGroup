@@ -943,7 +943,7 @@ static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *tar
 - _initWithFileURL:(NSURL *)fileURL fileEdit:(OFFileEdit *)fileEdit area:(OUIDocumentPreviewArea)area previewURL:(NSURL *)previewURL exists:(BOOL)exists empty:(BOOL)empty;
 {
     OBPRECONDITION(fileURL); // Needed for placeholders to get the proper image
-    OBPRECONDITION(!fileEdit || OFURLEqualsURL(fileURL, fileEdit.originalFileURL));
+    OBPRECONDITION(!fileEdit || OFURLEqualsURL(fileURL, fileEdit.originalFileURL), "<bug:///158063> (iOS-OmniGraffle Engineering: Assertion failure in OUIDocumentPreview when closing document)");
     OBPRECONDITION(fileEdit || !exists);
     OBPRECONDITION(previewURL || !exists);
     

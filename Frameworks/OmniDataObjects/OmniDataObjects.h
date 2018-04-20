@@ -16,6 +16,7 @@
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOObject.h>
+#import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODOModel.h>

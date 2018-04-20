@@ -14,6 +14,7 @@ RCS_ID("$Id$");
 
 @interface OUIChangeAppIconURLCommand ()
 // Radar 37952455: Regression: Spurious "implementing unavailable method" warning when subclassing
+- (id)initWithURL:(NSURL *)url NS_DESIGNATED_INITIALIZER NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 - (BOOL)skipsConfirmation NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 - (void)invoke NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 @end

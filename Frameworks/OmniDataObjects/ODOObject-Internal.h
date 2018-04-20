@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniDataObjects/ODOObject.h>
+#import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOEditingContext.h>
@@ -15,7 +16,6 @@
 #import <Foundation/NSUndoManager.h>
 
 #import "ODOEntity-Internal.h"
-#import "ODOObjectSnapshot.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

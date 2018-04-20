@@ -677,9 +677,16 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
     return _flags.isAwakingFromReinsertionAfterUndoneDeletion;
 }
 
-- (void)awakeFromReinsertionAfterUndoneDeletion;
+- (void)awakeFromEvent:(ODOAwakeEvent)snapshotEvent snapshot:(nullable ODOObjectSnapshot *)snapshot;
 {
-    OBPRECONDITION(_flags.isAwakingFromReinsertionAfterUndoneDeletion);
+    switch (snapshotEvent) {
+        case ODOAwakeEventUndoneDeletion:
+            OBPRECONDITION(_flags.isAwakingFromReinsertionAfterUndoneDeletion);
+            break;
+        case ODOAwakeEventReinsertion:
+            OBPRECONDITION(_flags.isAwakingFromInsert);
+            break;
+    }
     
     // Nothing for us to do; for subclasses
 }

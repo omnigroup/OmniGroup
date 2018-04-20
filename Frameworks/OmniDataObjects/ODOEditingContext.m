@@ -202,7 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextDidResetNotification object:self];
 }
 
-static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOObject *object)
+static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOObject *object, ODOObjectSnapshot **outMostRecentSnapshot)
 {
     OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
     OBPRECONDITION([object isKindOfClass:[ODOObject class]]);
@@ -229,6 +229,15 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
         [self->_processedDeletedObjects removeObject:previouslyRegisteredObject];
         
         ODOEditingContextDidDeleteObjects(self, [NSSet setWithObject:previouslyRegisteredObject]);
+        
+        if (outMostRecentSnapshot != NULL) {
+            // Try last-processed first, falling back to committed, since that's effectively "reverse chronological"
+            ODOObjectSnapshot *mostRecentSnapshot = self->_objectIDToLastProcessedSnapshot[previouslyRegisteredObject.objectID];
+            if (mostRecentSnapshot == nil) {
+                mostRecentSnapshot = self->_objectIDToCommittedPropertySnapshot[previouslyRegisteredObject.objectID];
+            }
+            *outMostRecentSnapshot = mostRecentSnapshot;
+        }
         
         self->_objectIDToLastProcessedSnapshot[previouslyRegisteredObject.objectID] = nil;
         self->_objectIDToCommittedPropertySnapshot[previouslyRegisteredObject.objectID] = nil;
@@ -270,12 +279,17 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
     }
     
     @try {
-        ODOEditingContextInternalInsertObject(self, object);
+        ODOObjectSnapshot *priorSnapshot = nil;
+        ODOEditingContextInternalInsertObject(self, object, &priorSnapshot);
         
         OBASSERT(![object _isAwakingFromInsert]);
         [object _setIsAwakingFromInsert:YES];
         @try {
             [object awakeFromInsert];
+            
+            if ([_reinsertedObjects containsObject:object]) {
+                [object awakeFromEvent:ODOAwakeEventReinsertion snapshot:priorSnapshot];
+            }
         } @finally {
             [object _setIsAwakingFromInsert:NO];
         }
@@ -2034,7 +2048,7 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
         
         ODOEntity *entity = [objectID entity];
         ODOObject *object = [[[entity instanceClass] alloc] initWithEditingContext:self objectID:objectID snapshot:snapshot];
-        ODOEditingContextInternalInsertObject(self, object);
+        ODOEditingContextInternalInsertObject(self, object, NULL);
         [object release];
     }
     
@@ -2048,7 +2062,7 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
         
         [object _setIsAwakingFromReinsertionAfterUndoneDeletion:YES];
         @try {
-            [object awakeFromReinsertionAfterUndoneDeletion];
+            [object awakeFromEvent:ODOAwakeEventUndoneDeletion snapshot:nil];
         } @finally {
             [object _setIsAwakingFromReinsertionAfterUndoneDeletion:NO];
         }

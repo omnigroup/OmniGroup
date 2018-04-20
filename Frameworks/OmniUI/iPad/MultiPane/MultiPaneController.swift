@@ -51,9 +51,6 @@
     /// default transition style is MultiPaneTransitionStyle.modal
     @objc (compactTransitioningStyleForLocation:) optional func compactTransitioningStyle(for location: MultiPaneLocation) -> MultiPaneCompactTransitionStyle
     
-    /// for MultiPaneTransitionStyle.navigation, define which pane should be visible after a transition to compact. not called for the other MultiPaneTransitionStyles
-    @objc optional func visiblePaneAfterCompactTransition(multiPaneController: MultiPaneController) -> MultiPaneLocation
-
     /// called before a transition to left/center. (currently only called for transistions in compact) and only for the transition style is MultiPaneTransitionStyle.navigate
     @objc optional func willNavigate(toPane location: MultiPaneLocation, with multiPaneController: MultiPaneController)
 
@@ -168,15 +165,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             if  changed {
                 // for compact transitions from another display mode, we want to show the center pane
                 visibleCompactPane = .center
-            } else {
-                // on a rotation from compact to compact, we need to get the last visible pane and use it.
-                if pane(withLocation: .left) != nil {
-                    visibleCompactPane = .left
-                } else {
-                    visibleCompactPane = .center
-                }
             }
-
+            
             preparePanesForLayout(toMode: displayMode, withSize: currentSize)
             if changed {
                 updateDisplayButtonItems(forMode: displayMode)
@@ -308,7 +298,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         updateDisplayMode(forSize: currentSize, traitCollection: traitCollection)
     }
     
-    override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) { 
+    override open func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         super.willTransition(to: newCollection, with: coordinator)
         coordinator.animate(alongsideTransition: { [weak self] (context) in
             guard let strongSelf = self else { return }
@@ -545,14 +535,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         // This can take a runloop turn or two, so we use the dismissal completion handler to call our update system again.
         if let presentedController = presentedViewController {
             if pane(forViewController: presentedController) != nil {
-                if !presentedController.isBeingDismissed {
-                    dismiss(animated: false, completion: { [weak self] in
-                        // call update with the the MPC's stored values for these properties, which will be correct by the time we get the callback.
-                        guard let strongSelf = self else { return }
-                        strongSelf.updateDisplayMode(forSize: strongSelf.currentSize, traitCollection: strongSelf.traitCollection)
-                    })
-                }
-                // skip doing display updates since we have modal controllers in the way and that takes some time to clear up.
+                // skip doing display updates since we have modal controllers in the way.
                 return false
             }
         }
@@ -745,7 +728,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             
             var presentationMode: MultiPanePresentationMode = .none
             if style == .navigation {
-                let visiblePane = visibleCompactPane // navigationDelegate?.visiblePaneAfterCompactTransition?(multiPaneController: self) ?? .center
+                let visiblePane = visibleCompactPane
                 presentationMode = (visiblePane == pane.location ? .embedded : .none)
             } else {
                 presentationMode = (pane.location == .center ? .embedded : .none)
@@ -1005,11 +988,13 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         }
     }
     
+    // <bug:///157931> (iOS-OmniFocus Engineering: Method argument cleanup in MultiPaneController) - pane never used
     private func sendWillNavigateToPaneNotification(pane: MultiPaneLocation) {
         navigationDelegate?.willNavigate?(toPane: visibleCompactPane, with: self)
         NotificationCenter.default.post(name: .OUIMultiPaneControllerWillNavigateToPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : visibleCompactPane.rawValue])
     }
 
+    // <bug:///157931> (iOS-OmniFocus Engineering: Method argument cleanup in MultiPaneController) - pane never used
     private func sendDidNavigateToPaneNotification(pane: MultiPaneLocation) {
         navigationDelegate?.didNavigate?(toPane: visibleCompactPane, with: self)
         NotificationCenter.default.post(name: .OUIMultiPaneControllerDidNavigateToPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : visibleCompactPane.rawValue])
@@ -1092,11 +1077,15 @@ extension MultiPaneController: UIGestureRecognizerDelegate {
     }
     
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer == leftEdgePanGesture {
-            return true
+        guard gestureRecognizer == leftEdgePanGesture else { return false }
+        
+        // <bug:///157076> (iOS-OmniFocus Crasher: Compact: Crash swiping to navigate (No occurrence for index path (null)' | -[UISwipeActionController swipeHandlerDidBeginSwipe:] + 280))
+        // The left edge pan gesture recognizer will start to take the center pane out of the view — but if that view is a UITableView, and there's a swipe action on the row under the panning touch, UIKit may try to begin that swipe as well and fail an assertion. Suppress UITableView gestures when handling left edge pans to avoid the resultant crash.
+        if otherGestureRecognizer.view is UITableView {
+            return false
         }
         
-        return false
+        return true
     }
 }
 

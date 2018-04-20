@@ -10,9 +10,14 @@
 
 // Using a CFArray is slower than it needs to be since it bridges back to NSArray. Using a NSArray directly won't work since we store nils.
 
+#import <OmniBase/macros.h>
+
+@class ODOProperty;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ODOObjectSnapshot : NSObject
+- (nullable id)valueForProperty:(ODOProperty *)property;
 @end
 
 extern ODOObjectSnapshot *ODOObjectSnapshotCreate(NSUInteger propertyCount) OB_HIDDEN;

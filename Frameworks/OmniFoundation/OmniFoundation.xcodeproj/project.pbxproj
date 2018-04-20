@@ -172,9 +172,6 @@
 		343BFCFF1D59201D0074DFAD /* OFXMLParserNamespaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BFCF51D591DF20074DFAD /* OFXMLParserNamespaceTests.m */; };
 		343E5FBB0F77E69500F9982D /* OFXMLQName.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E5FB90F77E69500F9982D /* OFXMLQName.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343E5FBC0F77E69500F9982D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; };
-		3447000F20745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3447000E20745BC700F6AE94 /* Sequence-OFExtensions.swift */; };
-		3447001020745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3447000E20745BC700F6AE94 /* Sequence-OFExtensions.swift */; };
-		3447001120745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3447000E20745BC700F6AE94 /* Sequence-OFExtensions.swift */; };
 		3448244D17AB148200889E8F /* OFBackgroundActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 3448244B17AB148200889E8F /* OFBackgroundActivity.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3448244F17AB148200889E8F /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; };
 		344AD00C172740D2004B30B1 /* NSURL-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2165,7 +2162,6 @@
 		343F2CD91D3EB2BA00E7C89D /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
 		343F2CDA1D3EB2BA00E7C89D /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
 		343F2CDB1D3EB2BA00E7C89D /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
-		3447000E20745BC700F6AE94 /* Sequence-OFExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence-OFExtensions.swift"; sourceTree = "<group>"; };
 		3448244B17AB148200889E8F /* OFBackgroundActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBackgroundActivity.h; sourceTree = "<group>"; };
 		3448244C17AB148200889E8F /* OFBackgroundActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBackgroundActivity.m; sourceTree = "<group>"; };
 		344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL-OFExtensions.h"; sourceTree = "<group>"; };
@@ -2917,7 +2913,6 @@
 				34A71C3E0663D47D0097A113 /* AppleScript */,
 				00E51D28FE8AAEA611C9CC38 /* NSArray-OFExtensions.h */,
 				4D9E12371ED8B6DA00E04E34 /* Collection-OFExtensions.swift */,
-				3447000E20745BC700F6AE94 /* Sequence-OFExtensions.swift */,
 				00E51D0CFE8AAEA611C9CC38 /* NSArray-OFExtensions.m */,
 				00E51D29FE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.h */,
 				00E51D0DFE8AAEA611C9CC38 /* NSAttributedString-OFExtensions.m */,
@@ -5323,7 +5318,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				34A062271EC110A60099028D /* NSObjectSpecifier-OFFixes.m in Sources */,
-				3447001120745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */,
 				34A062281EC110A60099028D /* NSCalendar-OFExtensions.m in Sources */,
 				34A062291EC110A60099028D /* OFAddScriptCommand.m in Sources */,
 				34A0622A1EC110A60099028D /* OFRemoveScriptCommand.m in Sources */,
@@ -5687,7 +5681,6 @@
 				3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */,
 				34F16C22194F77C800AD9C4D /* OFXMLDocument.m in Sources */,
 				34F16C37194F799400AD9C4D /* OFXMLReader.m in Sources */,
-				3447001020745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */,
 				34F16BFC194F772200AD9C4D /* NSRegularExpression-OFExtensions.m in Sources */,
 				420E8D021DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */,
 				34F16B63194F6E7100AD9C4D /* OFBinding.m in Sources */,
@@ -5889,7 +5882,6 @@
 				4A4E072A08AA72B10098FF0F /* OFIObjectSelector.m in Sources */,
 				4A4E072B08AA72B10098FF0F /* OFIObjectSelectorBool.m in Sources */,
 				4A4E072C08AA72B10098FF0F /* OFIObjectSelectorInt.m in Sources */,
-				3447000F20745BC700F6AE94 /* Sequence-OFExtensions.swift in Sources */,
 				4A4E072D08AA72B10098FF0F /* OFIObjectSelectorIntInt.m in Sources */,
 				4A4E072E08AA72B10098FF0F /* OFIObjectSelectorObject.m in Sources */,
 				4A4E072F08AA72B10098FF0F /* OFIObjectSelectorObjectInt.m in Sources */,

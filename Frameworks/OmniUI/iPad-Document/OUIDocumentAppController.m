@@ -484,16 +484,20 @@ static unsigned SyncAgentRunningAccountsContext;
         __block OUIDocument *document;
         
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        BOOL securedURL = [url startAccessingSecurityScopedResource];
         [coordinator readItemAtURL:url withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
-            BOOL startedAccess = [newURL startAccessingSecurityScopedResource];
             document = [[cls alloc] initWithContentsOfImportableFileAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
-            if (startedAccess)
-                [newURL stopAccessingSecurityScopedResource];
             return (document != nil);
         }];
+        if (securedURL) {
+            [url stopAccessingSecurityScopedResource];
+        }
         
         if (document == nil) {
-            OUI_PRESENT_ERROR(readError);
+            __block NSError *reportableError = readError;
+            OFMainThreadPerformBlock(^(void) {
+                OUI_PRESENT_ERROR(reportableError);
+            });
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{

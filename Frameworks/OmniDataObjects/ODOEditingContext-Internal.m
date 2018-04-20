@@ -9,6 +9,7 @@
 
 #import <OmniDataObjects/ODOEditingContext-Subclass.h>
 #import <OmniDataObjects/ODOObjectID.h>
+#import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 
@@ -16,7 +17,6 @@
 #import "ODOEntity-SQL.h"
 #import "ODOObject-Internal.h"
 #import "ODOSQLStatement.h"
-#import "ODOObjectSnapshot.h"
 
 #import <Foundation/NSUndoManager.h>
 
@@ -198,6 +198,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
 - (void)_snapshotObjectPropertiesIfNeeded:(ODOObject *)object;
 {
     ODOObjectID *objectID = [object objectID];
+    BOOL isReinserted = [_reinsertedObjects containsObject:object];
     
     if ([_objectIDToLastProcessedSnapshot objectForKey:objectID] != nil) {
         // This object has already been snapshotted this editing processing cycle.
@@ -206,12 +207,12 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
         // Here isInserted might mean 'was inserted but we are cancelling that for a deletion'. If we are in the middle of -deleteObject:error:, the object can be in both the processed inserts and the recent deletes. In both the case that the object is inserted and still pending insertion and was inserted but about to go away, we don't want a snapshot registered.
         BOOL isInserted = ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object);
         
-        if (isInserted) {
+        if (isInserted && !isReinserted) {
             // Should be no committed snapshot for inserted objects
             OBASSERT([_objectIDToCommittedPropertySnapshot objectForKey:objectID] == nil);
         } else {
             // Object must be inserted or deleted since it isn't inserted.  Updated or deleted objects should have gotten their committed snapshot filled out the first time they passed through here
-            OBASSERT([object isUpdated] || [object isDeleted]);
+            OBASSERT([object isUpdated] || [object isDeleted] || isReinserted);
             OBASSERT([_objectIDToCommittedPropertySnapshot objectForKey:objectID] != nil);
         }
 #endif
@@ -229,7 +230,7 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     // The first edit to a database-resident object (non-inserted) should make a committed value snapshot too
     if ([_objectIDToCommittedPropertySnapshot objectForKey:objectID] == nil) {
         // As above, -[ODOObject isInserted:] will be NO already for objects that were inserted, but are being deleted.
-        if (!ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object)) {
+        if (!ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object) || isReinserted) {
             if (_objectIDToCommittedPropertySnapshot == nil) {
                 _objectIDToCommittedPropertySnapshot = [[NSMutableDictionary alloc] init];
             }

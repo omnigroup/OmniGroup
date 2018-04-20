@@ -13,7 +13,7 @@ OMNI_SDK_VERSION =
 OMNI_SDKROOT = iphoneos
 SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
 
-IPHONEOS_DEPLOYMENT_TARGET = 11.2
+IPHONEOS_DEPLOYMENT_TARGET = 11.3
 
 // Bitcode makes crash reports unreadable since Apple builds a new binary with a new uuid
 ENABLE_BITCODE = NO

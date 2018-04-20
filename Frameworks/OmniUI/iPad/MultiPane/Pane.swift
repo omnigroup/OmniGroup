@@ -225,7 +225,14 @@ struct CompactEnvironment: PaneEnvironment {
 
 extension UIViewController {
     @objc var isVisible: Bool {
-        guard self.isViewLoaded && self.view.window != nil else { return false }
+        guard self.isViewLoaded else { return false }
+        
+        let hasWindow = (self.view.window != nil)
+        var hasFullscreenPresentedViewController: Bool = false
+        if let presented = presentedViewController, presented.modalPresentationStyle == .currentContext || presented.modalPresentationStyle == .fullScreen {
+            hasFullscreenPresentedViewController = true
+        }
+        guard hasWindow || hasFullscreenPresentedViewController else { return false }
         
         if let superView = self.view.superview {
             let contains = superView.bounds.contains(self.view.frame)

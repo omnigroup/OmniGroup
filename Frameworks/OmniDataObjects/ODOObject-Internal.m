@@ -10,11 +10,11 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOObjectID.h>
+#import <OmniDataObjects/ODOObjectSnapshot.h>
 
 #import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
-#import "ODOObjectSnapshot.h"
 
 @import Foundation;
 

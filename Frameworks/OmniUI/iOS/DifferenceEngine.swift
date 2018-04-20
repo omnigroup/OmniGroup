@@ -214,7 +214,12 @@ fileprivate enum FastCollectionDifferenceWrapper<Index: DifferenceIndex> {
 public typealias DifferenceRowUpdater = (UITableViewCell, IndexPath, IndexPath) -> Void
 
 /// Takes a table view header view to be updated, that view's section number in the pre-state, and that view's section number in the post-state.
-public typealias DifferenceSectionUpdater = (UITableViewHeaderFooterView, Int, Int) -> Void
+/// - Parameters:
+///   - header: A header view for updated section
+///   - footer: A footer view for updated section
+///   - preStateSection: The section index prior to update
+///   - postStateSection: The section index after to update
+public typealias DifferenceSectionUpdater = (_ header: UITableViewHeaderFooterView?, _ footer: UITableViewHeaderFooterView?, _ preStateSection: Int, _ postStateSection: Int) -> Void
 
 private let updateCrossDissolveAnimationDuration: TimeInterval = 0.05
 
@@ -270,7 +275,7 @@ public struct Difference {
     /// - Parameters:
     ///   - tableView: the table view to animate
     ///   - animations: the animations to use, defaults to fades for updates and `top` for inserts and deletes
-    ///   - sectionUpdater: a block invoked for each section header requiring an update; receives the current header view, pre-state section index, and post-state section index. If `animations.sectionUpdate` is non-empty, then `sectionUpdater` is invoked inside a `UIView.transition(with: sectionHeader,…)` animation
+    ///   - sectionUpdater: a block invoked for each section header requiring an update; receives the current header and/or footer view, pre-state section index, and post-state section index. If `animations.sectionUpdate` is non-empty, then `sectionUpdater` is invoked inside a `UIView.transition(with: section[Header|Footer],…)` animation
     ///
     ///     Defaults to `nil`.
     ///
@@ -285,13 +290,23 @@ public struct Difference {
     public func updateTableView(_ tableView: UITableView, animations: TableUpdateAnimations = TableUpdateAnimations(), sectionUpdater: DifferenceSectionUpdater? = nil, rowUpdater: DifferenceRowUpdater? = nil, otherUpdates: (() -> Void)? = nil, completion: ((Bool) -> Void)? = nil) {
         if let updater = sectionUpdater {
             for (source, destination) in sectionChanges.updates {
-                guard let sectionHeader = tableView.headerView(forSection: source) else { continue }
+                let sectionHeader = tableView.headerView(forSection: source)
+                let sectionFooter = tableView.footerView(forSection: source)
+                guard !(sectionHeader == nil && sectionFooter == nil) else { continue }
                 if animations.sectionUpdate.isEmpty {
-                    updater(sectionHeader, source, destination)
+                    updater(sectionHeader, sectionFooter, source, destination)
                 } else {
-                    UIView.transition(with: sectionHeader, duration: updateCrossDissolveAnimationDuration, options: animations.sectionUpdate, animations: {
-                        updater(sectionHeader, source, destination)
-                    }, completion: nil)
+                    if let sectionHeader = sectionHeader {
+                        UIView.transition(with: sectionHeader, duration: updateCrossDissolveAnimationDuration, options: animations.sectionUpdate, animations: {
+                            updater(sectionHeader, nil, source, destination)
+                        }, completion: nil)
+                    }
+                    
+                    if let sectionFooter = sectionFooter {
+                        UIView.transition(with: sectionFooter, duration: updateCrossDissolveAnimationDuration, options: animations.sectionUpdate, animations: {
+                            updater(nil, sectionFooter, source, destination)
+                        }, completion: nil)
+                    }
                 }
             }
         }
@@ -629,7 +644,7 @@ public struct SimulatedTableView<Index: DifferenceIndex, Value: DifferenceCompar
         guard !preStateIndexes.isEmpty else { return }
         let indexMap = self.indexMap()
         
-        let arrayIndexesOfItemsToDelete = preStateIndexes.flatMap({ indexMap[$0] }).sorted().reversed()
+        let arrayIndexesOfItemsToDelete = preStateIndexes.compactMap({ indexMap[$0] }).sorted().reversed()
         for arrayIndex in arrayIndexesOfItemsToDelete {
             orderedItems.remove(at: arrayIndex)
         }

@@ -5,7 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "ODOObjectSnapshot.h"
+#import <OmniDataObjects/ODOObjectSnapshot.h>
+
+#import "ODOProperty-Internal.h"
 
 @import OmniBase;
 
@@ -16,6 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation ODOObjectSnapshot
 {
     NSUInteger _propertyCount;
+}
+
+- (nullable id)valueForProperty:(ODOProperty *)property;
+{
+    NSUInteger propertyIndex = ODOPropertySnapshotIndex(property);
+    OBASSERT(propertyIndex < _propertyCount);
+    return ODOObjectSnapshotGetValueAtIndex(self, propertyIndex);
 }
 
 - (void)dealloc;

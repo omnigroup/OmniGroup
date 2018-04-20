@@ -207,9 +207,9 @@
 		34B9CDDA0D8B1A4E001A5AB1 /* ODOEntity-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CDD80D8B1A4E001A5AB1 /* ODOEntity-SQL.m */; };
 		34B9CDDB0D8B1A56001A5AB1 /* ODOModel-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B9CDD20D8B19BC001A5AB1 /* ODOModel-SQL.m */; };
 		34C25FC50EAE7AC000F5FC90 /* ODOObject-Accessors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */; };
-		34CBB32A2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; };
-		34CBB32B2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; };
-		34CBB32C2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; };
+		34CBB32A2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34CBB32B2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34CBB32C2004190400B471F6 /* ODOObjectSnapshot.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34CBB34220041A1000B471F6 /* ODOObjectSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CBB34120041A1000B471F6 /* ODOObjectSnapshot.m */; };
 		34CBB34320041A1000B471F6 /* ODOObjectSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CBB34120041A1000B471F6 /* ODOObjectSnapshot.m */; };
 		34CBB34420041A1000B471F6 /* ODOObjectSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CBB34120041A1000B471F6 /* ODOObjectSnapshot.m */; };

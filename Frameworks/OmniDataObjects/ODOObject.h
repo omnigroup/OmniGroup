@@ -12,12 +12,18 @@
 #import <CoreFoundation/CFArray.h>
 #import <OmniDataObjects/ODOFeatures.h>
 #import <OmniDataObjects/ODOChangeActions.h>
+#import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniBase/macros.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class NSString, NSArray, NSError, NSMutableIndexSet, NSMutableSet;
 @class ODOEntity, ODOEditingContext, ODOObjectID, ODOProperty, ODORelationship;
+
+typedef NS_ENUM(NSUInteger, ODOAwakeEvent) {
+    ODOAwakeEventReinsertion = 0, // deleted an object, then inserted a "new" object with the same object ID
+    ODOAwakeEventUndoneDeletion, // deleted an object, then performed an undo
+};
 
 @interface ODOObject : OFObject {
   @package
@@ -67,7 +73,9 @@ typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
 
 @property (nonatomic, readonly, getter=isAwakingFromReinsertionAfterUndoneDeletion) BOOL awakingFromReinsertionAfterUndoneDeletion;
-- (void)awakeFromReinsertionAfterUndoneDeletion;
+
+/// Potentially called on any insertion path, depending on whether previous snapshots exist for an object with the same object ID. (This implies a previous delete followed by an insert, either via undo or by specifying the same object ID for a "new" object.) This call does not replace -awakeFromInsert; rather, it may be called after -awakeFromInsert.
+- (void)awakeFromEvent:(ODOAwakeEvent)snapshotEvent snapshot:(nullable ODOObjectSnapshot *)snapshot;
 
 @property (nonnull, nonatomic, readonly) ODOEntity *entity; // do not subclass
 @property (nonnull, nonatomic, readonly) ODOEditingContext *editingContext; // do not subclass
