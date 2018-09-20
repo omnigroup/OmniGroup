@@ -23,6 +23,8 @@
 		1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */; };
 		1EFC4ECA1DB5B7CE006C7922 /* OASecCertificateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EFC4EC81DB5B7CE006C7922 /* OASecCertificateProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EFC4ECB1DB5B7CE006C7922 /* OASecCertificateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */; };
+		23BB91EC20F7F49200C041FB /* OADropDownTriangleDimmed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */; };
+		23BB91ED20F7F49200C041FB /* OADropDownTriangleDimmed.png in Resources */ = {isa = PBXBuildFile; fileRef = 23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
@@ -1102,6 +1104,8 @@
 		1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASecCertificateProxy.m; sourceTree = "<group>"; };
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
+		23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADropDownTriangleDimmed@2x.png"; sourceTree = "<group>"; };
+		23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADropDownTriangleDimmed.png; sourceTree = "<group>"; };
 		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
 		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
@@ -2360,6 +2364,8 @@
 		3FDA413F020970820297A14E /* NSPopUpButton */ = {
 			isa = PBXGroup;
 			children = (
+				23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */,
+				23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */,
 				00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */,
 				00E51F7CFE8AB2E911C9CC38 /* OAPopUpButton.m */,
 				008AB54614032D2B001F29CD /* OATinyPopUpButton.h */,
@@ -3863,8 +3869,10 @@
 				4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.xib in Resources */,
 				008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */,
 				272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */,
+				23BB91EC20F7F49200C041FB /* OADropDownTriangleDimmed@2x.png in Resources */,
 				E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */,
 				E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */,
+				23BB91ED20F7F49200C041FB /* OADropDownTriangleDimmed.png in Resources */,
 				E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */,
 				E2EF49081B9F799A003C3900 /* calendar@2x.png in Resources */,
 				E23A3F2E20AE07A300ADEB59 /* OADisclosureButtonCollapsed.png in Resources */,

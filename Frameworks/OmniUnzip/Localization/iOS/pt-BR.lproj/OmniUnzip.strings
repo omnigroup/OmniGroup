@@ -25,9 +25,7 @@
 /* error description */
 "Unable to open zip archive." = "Não foi possível abrir o arquivo comprimido.";
 
-/* error description
-   error reason */
-
+/* error description */
 "Unable to read zip data." = "Não foi possível ler os dados comprimidos.";
 
 /* error description */

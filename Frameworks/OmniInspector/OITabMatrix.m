@@ -1,4 +1,4 @@
-// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,8 @@ RCS_ID("$Id$");
         return nil;
     
     _allowPinning = YES;
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(accentColorChanged:) name:NSSystemColorsDidChangeNotification object:nil]; // to react to accent color changes
+
     return self;
 }
 
@@ -39,8 +40,14 @@ RCS_ID("$Id$");
         return nil;
     
     _allowPinning = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(accentColorChanged:) name:NSSystemColorsDidChangeNotification object:nil]; // to react to accent color changes
 
     return self;
+}
+
+- (void)dealloc;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)awakeFromNib
@@ -186,7 +193,7 @@ RCS_ID("$Id$");
     if (highlightStyle == OITabMatrixYosemiteHighlightStyle) {
         NSUInteger cellIndex;
         [[NSColor colorWithWhite:0 alpha:0.07f] set];
-        for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
+        for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRect rect = [self cellFrameAtRow:0 column:cellIndex];
                 rect.size.height -= 2;
@@ -200,7 +207,7 @@ RCS_ID("$Id$");
         // Used to be done by OITabCell; now we draw all the backgrounds first before drawing any cells, and all the foregrounds after drawing all cells
         NSUInteger cellIndex;
         [[NSColor colorWithWhite:.85f alpha:1.0f] set];
-        for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
+        for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRectFill([self cellFrameAtRow:0 column:cellIndex]);
             }
@@ -212,7 +219,7 @@ RCS_ID("$Id$");
     if (highlightStyle == OITabMatrixCellsHighlightStyle) {
         /* Simply draw a frame around each selected cell */
         NSUInteger cellIndex;
-        for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
+        for (cellIndex = 0; cellIndex < cellCount; cellIndex++) {
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRect cellFrame = [self cellFrameAtRow:0 column:cellIndex];
                 [[NSColor lightGrayColor] set];
@@ -225,6 +232,11 @@ RCS_ID("$Id$");
         }
     }
     
+}
+
+- (void)accentColorChanged:(NSNotification *)notification;
+{
+    [self setNeedsDisplay];
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)theEvent;

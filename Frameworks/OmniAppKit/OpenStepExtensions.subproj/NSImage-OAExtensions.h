@@ -17,6 +17,7 @@
 #define OAClearImageTintSuffix     (@"Clear")
 
 extern NSString * const OADropDownTriangleImageName;
+extern NSString * const OADropDownTriangleDimmedImageName;
 extern NSString * const OAInfoTemplateImageName;
 
 @class /* Foundation     */ NSMutableSet;

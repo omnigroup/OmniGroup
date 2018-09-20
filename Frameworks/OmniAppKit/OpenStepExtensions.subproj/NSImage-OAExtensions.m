@@ -23,6 +23,7 @@
 RCS_ID("$Id$")
 
 NSString * const OADropDownTriangleImageName = @"OADropDownTriangle";
+NSString * const OADropDownTriangleDimmedImageName = @"OADropDownTriangleDimmed";
 NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 
 @interface _OATintedImage : NSImage

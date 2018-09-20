@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -406,7 +406,8 @@ OBDidLoad(^{
     // Set text first so we have a range to apply the other attributes over.
     NSMutableDictionary *tempDict = [dictionary mutableCopy];
     NSNumber *textFourCharCode = [NSNumber numberWithInt:'ctxt'];
-    [result setText:[tempDict objectForKey:textFourCharCode]]; 
+    NSString *coercedText = [tempDict objectForKey:textFourCharCode];
+    [result setText:coercedText ? coercedText : @" "]; 
     [tempDict removeObjectForKey:textFourCharCode];
 
     //  Squirrel way the size and set it last so that, say, setting the font name doesn't say "Verdana?  That's 12pt!" and blow away the size.  The only font descriptor attributes that we support are font name and size.  If someone were to add, say, font weight or italic, this would become order dependent and we wouldn't be taking advantage of NSFontDescriptor's ability to find the best match.  Switch to NSFontDescriptor, then.

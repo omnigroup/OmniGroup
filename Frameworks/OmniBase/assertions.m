@@ -53,7 +53,7 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
 
     const char *reasonCString = [reason UTF8String];
     OBLogAssertionFailure(type, expression, file, lineNumber, reasonCString);
-    OBAssertFailed(reasonCString);
+//    OBAssertFailed(reasonCString);
 }
 
 // The message is not logged here, but is used to check if there is a bug logged.

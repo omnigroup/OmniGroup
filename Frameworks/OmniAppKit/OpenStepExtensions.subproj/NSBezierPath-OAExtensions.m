@@ -1147,6 +1147,8 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
         segment = (NSInteger)floor(position*segmentCount);
         segmentPosition = position * segmentCount - segment;
     }
+    
+    OBASSERT(segment >= 0 && segment < segmentCount);
 
     startPoint = [self _endPointForSegment:segment];
     if (segmentCount == 0) {

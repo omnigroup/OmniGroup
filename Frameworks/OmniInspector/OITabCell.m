@@ -13,6 +13,22 @@
 
 RCS_ID("$Id$");
 
+#if !defined(MAC_OS_X_VERSION_10_14)
+
+typedef NS_ENUM(NSInteger, NSColorSystemEffect) {
+    NSColorSystemEffectNone,
+    NSColorSystemEffectPressed,
+    NSColorSystemEffectDeepPressed,
+    NSColorSystemEffectDisabled,
+    NSColorSystemEffectRollover,
+} NS_AVAILABLE_MAC(10_14);
+
+@interface NSColor (Mojave)
+@property (class, strong, readonly) NSColor *controlAccentColor NS_AVAILABLE_MAC(10_14);
+- (NSColor *)colorWithSystemEffect:(NSColorSystemEffect)systemEffect NS_AVAILABLE_MAC(10_14);
+@end
+#endif
+
 NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
 
 @interface OITabCell (/*Private*/)
@@ -119,7 +135,15 @@ NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
         imageRect.origin.y = cellFrame.origin.y + rint((cellFrame.size.height - [image size].height)/2);
     }
     NSColor *tabColor;
-    if (@available(macOS 10.13, *)) {
+    if (@available(macOS 10.14, *)) {
+        if ([self state]) {
+            tabColor = [NSColor controlAccentColor];
+        } else if ([self isHighlighted]) {
+            tabColor = [[NSColor controlAccentColor] colorWithSystemEffect:NSColorSystemEffectPressed];
+        } else {
+            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+        }
+    } else if (@available(macOS 10.13, *)) {
         if ([self state]) {
             tabColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
         } else if ([self isHighlighted]) {

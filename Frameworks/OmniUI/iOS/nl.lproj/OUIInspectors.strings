@@ -4,7 +4,7 @@
 /* title format for color component slider
    title format for color component slider - alpha component, 0-100 */
 
-"<alpha title+value>" = "Doorzichtigheid: %d%%";
+"<alpha title+value>" = "Ondoorzichtigheid: %d%%";
 
 /* title format for color component slider - blue component in RGB model, 0-255 */
 "<blue title+value>" = "Blauw: %d";
@@ -66,7 +66,7 @@
 "No color selected" = "Geen kleur geselecteerd";
 
 /* popover inspector label title for no selected objects */
-"No Selection" = "Geen selectie";
+"No Selection" = "Niets geselecteerd";
 
 /* Title for section of font list */
 "Recommended Fonts" = "Aanbevolen lettertypen";

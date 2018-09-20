@@ -14,10 +14,10 @@
 "The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "“%4$@” 内の “%3$@” エントリのデータを読み込もうとした際、zip ライブラリの関数 %1$s が %2$d を返しました。";
 
 /* error reason */
-"Unable to close zip data." = "zip データを閉じることができません。";
+"Unable to close zip data." = "zip データを閉じられません。";
 
 /* error reason */
-"Unable to close zip file." = "zip ファイルを閉じることができません。";
+"Unable to close zip file." = "zip ファイルを閉じられません。";
 
 /* error reason */
 "Unable to create zip file." = "zip ファイルを作成できません。";
@@ -27,11 +27,10 @@
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "zip データを読み込めません。";
 
 /* error description */
 "Unable to read zip file." = "zip ファイルを読み込めません。";
 
 /* error description */
-"Unable to write zip file." = "zip ファイルに書き込めません。";
+"Unable to write zip file." = "zip ファイルを書き込めません。";

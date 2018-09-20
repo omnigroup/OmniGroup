@@ -13,6 +13,22 @@
           "alpha" : "1.000"
         }
       }
+    },
+    {
+      "idiom" : "universal",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "color" : {
+        "color-space" : "extended-gray",
+        "components" : {
+          "white" : "0.750",
+          "alpha" : "1.000"
+        }
+      }
     }
   ]
 }

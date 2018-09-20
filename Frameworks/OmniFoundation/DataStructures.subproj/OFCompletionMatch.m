@@ -91,7 +91,7 @@ static void filterIntoResults(
     return bestMatch;
 }
 
-NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFCompletionMatch *match2) = ^(OFCompletionMatch *match1, OFCompletionMatch *match2){
+const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompletionMatch *match1, OFCompletionMatch *match2){
     NSInteger score1 = match1.score;
     NSInteger score2 = match2.score;
 
@@ -125,7 +125,7 @@ NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFC
     [matches release];
     
     if (shouldSort) {
-        [results sortUsingComparator:OFCompletionMatchComparator];
+        [results sortUsingComparator:OFDefaultCompletionMatchComparator];
     }
 
     return results;

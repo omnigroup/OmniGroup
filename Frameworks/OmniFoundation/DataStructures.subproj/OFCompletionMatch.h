@@ -18,7 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NSString * _Nonnull (^OFCompletionMatchTransformSubstring)(NSString *string);
 
-extern NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFCompletionMatch *match2);
+typedef NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFCompletionMatch *match2);
+
+extern const OFCompletionMatchComparator OFDefaultCompletionMatchComparator;
 
 @interface OFCompletionMatch : NSObject
 
