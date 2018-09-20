@@ -247,18 +247,19 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
             });
         });
         
-#if OSU_FULL
         html.tr(^{
             html.th(^{
                 [html.body appendString:NSLocalizedStringFromTableInBundle(@"License Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for license type row in the info table.")];
             });
             html.td(^{
+                [html.body appendFormat:@"%@", getValue(@"license-type")];
+#if OSU_FULL
                 NSString *explain = NSLocalizedStringFromTableInBundle(@"Your license key itself will never be sent.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Explanatory text for the license type row in the info table.");
-                [html.body appendFormat:@"%@<br><span class=\"explain\">%@</span>", getValue(@"license-type"), explain];
+                [html.body appendFormat:@"<br><span class=\"explain\">%@</span>", explain];
+#endif
             });
         });
-#endif
-        
+
         html.infoRow(NSLocalizedStringFromTableInBundle(@"OS Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the OS version row in the info table."),
                 getValue(@"os"));
 
@@ -675,6 +676,10 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
 
         if ([key isEqual:@"OSU_BODY"]) {
             return html.body;
+        }
+
+        if ([key isEqual:@"OSU_BODY_CLASS"]) {
+            return self.window.effectiveAppearance.OA_isDarkAppearance ? @"dark-mode" : @"";
         }
         
         OBASSERT_NOT_REACHED("Unknown template key %@", key);

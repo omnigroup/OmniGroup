@@ -142,6 +142,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 @property(nonatomic,readonly) UIImage *quickStartMenuImage;
 @property(nonatomic,readonly) UIImage *trialModeMenuImage;
 @property(nonatomic,readonly) UIImage *introVideoMenuImage;
+@property(nonatomic,readonly) UIImage *registerMenuImage;
 
 @property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
 

@@ -145,7 +145,7 @@ RCS_ID("$Id$");
         },
     };
     
-    NSColor *separatorColor = [NSColor controlColor];
+    NSColor *separatorColor = [NSColor gridColor];
     [separatorColor set];
     NSRectFill(separatorRect);
 }

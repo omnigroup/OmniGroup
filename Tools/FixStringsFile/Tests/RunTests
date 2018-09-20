@@ -19,3 +19,6 @@ for output in "$TEST_OUTPUT_DIR/"*.strings; do
   $CMD "$output"
   diff "$output" "$expected_output"
 done
+
+# Update the marker file for the build system, indicating that everything was OK for the current set of inputs.
+touch "$SCRIPT_OUTPUT_FILE_0"

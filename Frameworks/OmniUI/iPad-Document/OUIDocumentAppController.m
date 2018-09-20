@@ -27,6 +27,7 @@
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
+#import <OmniUIDocument/OUIErrors.h>
 #import <OmniUIDocument/OUIServerAccountSetupViewController.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 //#import <CrashReporter/CrashReporter.h>
@@ -64,8 +65,6 @@ static NSString * const ODSShortcutTypeNewDocument = @"com.omnigroup.framework.O
 static NSString * const ODSShortcutTypeOpenRecent = @"com.omnigroup.framework.OmniUIDocument.shortcut-items.open-recent";
 
 static NSString * const ODSOpenRecentDocumentShortcutFileKey = @"ODSFileItemURLStringKey";
-
-static NSString * const OpenDocumentURLActivityIdentifier = @"com.OmniGroup.OmniGraffle.OpenDocumentURLActivity";
 
 static OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
 #define DEBUG_LAUNCH(level, format, ...) do { \
@@ -160,6 +159,9 @@ static unsigned SyncAgentRunningAccountsContext;
 
     if ([error hasUnderlyingErrorDomain:ODSErrorDomain code:ODSFilenameAlreadyInUse])
         return NO; // We need to let the user know to pick a different filename, but reporting this error to us won't help anyone
+    
+    if ([error hasUnderlyingErrorDomain:OUIDocumentErrorDomain code:OUICannotMoveItemFromInbox])
+        return NO; // Ignore the error as per <bug:///160026> (iOS-OmniGraffle Bug: Error encountered: Unable to open file (public.zip-archive))
 
     return YES;
 }
@@ -518,8 +520,9 @@ static unsigned SyncAgentRunningAccountsContext;
 }
 
 - (void)_makeNewDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem preserveFileName:(BOOL)preserveFileName;
-{
+{    
     __block OUIDocumentPicker *docPicker = [self documentPicker];
+    
     [self _closeAllDocumentsBeforePerformingBlock:^{
         if (!preserveFileName) {
             [docPicker navigateToScope:[docPicker localDocumentsScope] animated:NO];
@@ -713,6 +716,9 @@ static unsigned SyncAgentRunningAccountsContext;
 
         document.applicationLock = [OUIInteractionLock applicationLock];
 
+        // Can't call this in the open completion handler, the user info comes back empty if we call this there. It's generally ok if our user activity posts as available a bit early, so let's do it here.
+        [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore isCreatingFromTemplate:NO];
+        
         [document openWithCompletionHandler:^(BOOL success){
             if (!success) {
                 OUIDocumentHandleDocumentOpenFailure(document, nil);
@@ -728,8 +734,6 @@ static unsigned SyncAgentRunningAccountsContext;
             OBASSERT([NSThread isMainThread]);
             [self _setDocument:document];
             _isOpeningURL = NO;
-            
-            [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore];
             
             UIViewController *presentFromViewController = _documentPicker;
             if (!presentFromViewController)
@@ -853,42 +857,67 @@ static unsigned SyncAgentRunningAccountsContext;
     self.userActivityForCurrentlyOpenDocument = nil;
 }
 
-- (void)_createDocumentUserActivityForURL:(NSURL *)url inStore:(ODSStore *)store
+- (void)documentPickerViewController:(OUIDocumentPickerViewController *)controller willCreateNewDocumentFromTemplateAtURL:(NSURL *)url inStore:(ODSStore *)store;
 {
+    [self _createDocumentUserActivityForURL:url inStore:store isCreatingFromTemplate:YES];
+}
+
+- (void)_createDocumentUserActivityForURL:(NSURL *)url inStore:(ODSStore *)store isCreatingFromTemplate:(BOOL)isCreatingFromTemplate;
+{
+    if (![[self class] supportsSiriShortcuts]) {
+        return;
+    }
+    
     if (@available(iOS 12.0, *)) {
         OBPRECONDITION(self.userActivity == nil, "Need to invalidate the old activity before creating a new one");
-        OBPRECONDITION(self.document != nil, "Need a document before we create the activity");
         OBPRECONDITION(store != nil);
+
+        NSString *identifier = [self _persistentIdentifierForOpenDocumentActivityAtURL:url inStore:store];
+        if (!identifier) {
+            OBASSERT_NOT_REACHED(@"no identifier could be created for %@, possibly an iCloud url?  <bug:///165843> (iOS-OmniGraffle Crasher: Crash opening a file from iCloud using \"Share\" the first time (doesn't crash the 2nd time))", url);
+            return;
+        }
         
-        NSUserActivity *activity = [[NSUserActivity alloc] initWithActivityType:OpenDocumentURLActivityIdentifier];
+        NSUserActivity *activity;
+        NSString *localizedOpenFormatString;
+        if (url == nil) {
+            activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
+            activity.title = NSLocalizedStringFromTableInBundle(@"Create New Document", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
+        } else {
+            if (isCreatingFromTemplate) {
+                activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
+                localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Create New Document From %@", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
+            } else {
+                activity = [[NSUserActivity alloc] initWithActivityType:[[self class] openDocumentUserActivityType]];
+                localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
+            }
+
+            activity.title = [NSString stringWithFormat:localizedOpenFormatString, url.URLByDeletingPathExtension.lastPathComponent];
+        }
         
-        NSString *localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
-        activity.title = [NSString stringWithFormat:localizedOpenFormatString, self.document.localizedName];
-        
-        [activity addUserInfoEntriesFromDictionary:@{ @"URL" : url }];
-        activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL"];
-        
+        if (url != nil) {
+            NSError *bookmarkError = nil;
+            NSData *urlBookmark = [url bookmarkDataWithOptions:NSURLBookmarkCreationMinimalBookmark includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
+            if (urlBookmark == nil && bookmarkError != nil) {
+                NSLog(@"error creating bookmark from url %@ - %@", url, bookmarkError);
+            }
+            [activity addUserInfoEntriesFromDictionary:@{ @"URL_bookmark" : urlBookmark }];
+            activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL_bookmark"];
+        }
         // Exposes us to Siri Shortcuts
         [activity setEligibleForPrediction:YES];
-        
-        [activity setPersistentIdentifier:[self _persistentIdentifierForOpenDocumentActivityAtURL:url inStore:store]];
-        
+
+        [activity setPersistentIdentifier:identifier];
+
+        // Exposes us to Spotlight
+        [activity setEligibleForSearch:YES];
+
         // <bug:///108386> (iOS-OmniGraffle Feature: Feature: Handoff support)
         // Need to determine whether or not this is an iCloud URL. If so, we can make this activity eligible for Handoff. Or, if it's not an  iCloud doc, we can adopt the continuation stream APIs to give the other side the data to replicate our document.
         activity.eligibleForHandoff = NO;
         
         self.userActivityForCurrentlyOpenDocument = activity;
         [activity becomeCurrent];
-    }
-}
-
-- (void)updateUserActivityState:(NSUserActivity *)activity
-{
-    [super updateUserActivityState:activity];
-    
-    OBPRECONDITION(self.document != nil);
-    if ([activity.activityType isEqualToString:OpenDocumentURLActivityIdentifier]) {
-        [activity addUserInfoEntriesFromDictionary:[NSDictionary dictionaryWithObjects:@[self.document.fileURL] forKeys:@[@"URL"]]];
     }
 }
 
@@ -1163,6 +1192,39 @@ static unsigned SyncAgentRunningAccountsContext;
 }
 
 #pragma mark - OUIAppController subclass
+
+/*
+ In order to adopt Siri Shortcuts, your app's OUIAppController subclass must override the three methods below.
+ Your override for supportsSiriShortcuts should simply return YES.
+ For the other two methods, you should return a reverse-domain name string that ends with the activity's name. For example, OmniGraffle returns these:
+ 
+        "com.OmniGroup.OmniGraffle.OpenDocumentURLActivity"
+        "com.OmniGroup.OmniGraffle.CreateDocumentFromTemplateActivity"
+ 
+ Then, it must add this key with analogous values at the top level of your app's Info.plist:
+ 
+        <key>NSUserActivityTypes</key>
+        <array>
+            <string>com.OmniGroup.OmniGraffle.OpenDocumentURLActivity</string>
+            <string>com.OmniGroup.OmniGraffle.CreateDocumentFromTemplateActivity</string>
+        </array>
+ 
+ Then, you get the Open Document and Create Document From Template Shortcuts for free!
+ */
+
++ (BOOL)supportsSiriShortcuts
+{
+    return NO;
+}
+
++ (NSString *)openDocumentUserActivityType;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
++ (NSString *)createDocumentFromTemplateUserActivityType;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
 
 - (UIResponder *)defaultFirstResponder;
 {
@@ -1657,6 +1719,15 @@ static NSSet *ViewableFileTypes()
     OBRequestConcreteImplementation(self, _cmd);
 }
 
+- (BOOL)allowsMultiFileSharing
+{
+    // Default to not allowing this. Some of our apps can do this, others can't.
+    
+    // Historical comment for context:
+    // Exporting more than one thing is really fine, except when sending OmniPlan files via Mail. But we don't have a good way to restrict just that. bug:///147627
+    return NO;
+}
+
 - (void)mainThreadFinishedLoadingDocument:(OUIDocument *)document;  // For handling any loading that can't be done in a thread
 {
     // Okay to do nothing
@@ -1923,28 +1994,65 @@ static NSSet *ViewableFileTypes()
 
 - (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(RestorablerObjectsArgumentType _Nullable restorableObjects))restorationHandler;
 {
-    if ([userActivity.activityType isEqualToString:OpenDocumentURLActivityIdentifier]) {
-        NSURL *url = userActivity.userInfo[@"URL"];
-        if (url == nil) {
-            return NO;
-        }
-        ODSFileItem *item;
-        for (ODSScope *aScope in _documentStore.scopes) {
-            item = [aScope fileItemWithURL:url];
-            if (item) {
-                break;
+    BOOL isOpenDocumentActivity = [userActivity.activityType isEqualToString:[[self class] openDocumentUserActivityType]];
+    BOOL isCreateTemplateDocumentActivity = [userActivity.activityType isEqualToString:[[self class] createDocumentFromTemplateUserActivityType]];
+    if (isOpenDocumentActivity || isCreateTemplateDocumentActivity) {
+        NSData *urlBookmark = userActivity.userInfo[@"URL_bookmark"];
+        NSError *bookmarkError = nil;
+        NSURL *fileURL = [NSURL URLByResolvingBookmarkData:urlBookmark options:NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:nil error:&bookmarkError];
+
+        if (fileURL == nil && isCreateTemplateDocumentActivity == NO) { // if we have a create new doc w/o a template URL, use the default, instead of failing
+            if (bookmarkError != nil) {
+                NSLog(@"Error resolving bookmark %@", bookmarkError);
             }
-        }
-        if (item == nil) {
             return NO;
         }
-        if (self.document) {
-            [self closeAndDismissDocumentWithCompletionHandler:^{
-                [self openDocument:item];
+        
+        // Let everyone know to not reopen the previously open document in case we're in the process of launching the app
+        _isOpeningURL = YES;
+        
+        
+        // Make sure to execute this after launching, so that our document store is set up. This early outs to run immediately if the application is actively running
+        __weak OUIDocumentAppController *weakSelf = self;
+        [self addLaunchAction:^{
+            // Also make sure to execute the actual opening after the document scan is complete, so that we can properly access the data at the URL. This also early outs to run immediately if the application is running.
+            [weakSelf.documentStore addAfterInitialDocumentScanAction:^{
+                __strong OUIDocumentAppController *strongSelf = weakSelf;
+                
+                ODSFileItem *item = nil;
+                if (fileURL) {
+                    for (ODSScope *aScope in strongSelf.documentStore.scopes) {
+                        item = [aScope fileItemWithURL:fileURL];
+                        if (item) {
+                            break;
+                        }
+                    }
+                }
+                if (isOpenDocumentActivity) {
+                    if (strongSelf.document) {
+                        [strongSelf closeAndDismissDocumentWithCompletionHandler:^{
+                            OFAfterDelayPerformBlock(0, ^{
+                                [strongSelf openDocument:item];
+                            });
+                            
+                        }];
+                    } else {
+                        [strongSelf openDocument:item];
+                    }
+                } else {
+                    if (strongSelf.document) {
+                        [strongSelf closeAndDismissDocumentWithCompletionHandler:^{
+                            OFAfterDelayPerformBlock(0, ^{
+                                [strongSelf makeNewDocumentWithTemplateFileItem:item];
+                            });
+                        }];
+                    } else {
+                        [strongSelf makeNewDocumentWithTemplateFileItem:item];
+                    }
+                }
             }];
-        } else {
-            [self openDocument:item];
-        }
+        }];
+        
         return YES;
     }
     
@@ -2687,14 +2795,25 @@ static NSSet *ViewableFileTypes()
 
 - (NSString *)_persistentIdentifierForOpenDocumentActivityAtURL:(NSURL *)url inStore:(ODSStore *)store
 {
+    if (url == nil) {
+        // OmniPlan passes nil as the URL because it doesn't allow the user to specify a template when making a new document.
+        return [@[self.localScope.displayName, @"NewDocumentFromDefaultTemplate"] componentsJoinedByString:@"."];
+    }
+
     NSString *scopeString;
     for (ODSScope *scope in store.scopes) {
         if ([scope isFileInContainer:url]) {
             scopeString = scope.displayName;
         }
     }
+    if (scopeString == nil) {
+        scopeString = @"inAppBundle";
+    }
     OBASSERT_NOTNULL(scopeString);
     NSString *identifier = url.lastPathComponent;
+    if (scopeString == nil || identifier == nil) {
+        return nil;
+    }
     return [@[scopeString, identifier] componentsJoinedByString:@"."];
 }
 

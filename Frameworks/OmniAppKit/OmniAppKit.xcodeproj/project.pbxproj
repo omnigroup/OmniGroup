@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -1138,6 +1138,7 @@
 		341991861950021800BA8113 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		341AB85711935816005E6F74 /* OAFontDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFontDescriptor.h; sourceTree = "<group>"; };
 		341AB85811935816005E6F74 /* OAFontDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptor.m; sourceTree = "<group>"; };
+		3420BBDF214C696D00E7A60D /* OmniAppKit.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniAppKit.xcfilelist; sourceTree = "<group>"; };
 		3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSLayoutManager-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.h"; sourceTree = "<group>"; };
 		3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSLayoutManager-OAExtensions.m"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.m"; sourceTree = "<group>"; };
 		34275D1C13981621003F28F5 /* OAFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFeatures.h; sourceTree = "<group>"; };
@@ -2623,6 +2624,7 @@
 				34DAF8660556CA0D0097A113 /* OAVersion.h */,
 				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
+				3420BBDF214C696D00E7A60D /* OmniAppKit.xcfilelist */,
 				BF94281F062222D400B83989 /* Info.plist */,
 				94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */,
 				342F05121B69794C00C7BB34 /* Appearance */,
@@ -3894,10 +3896,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -4400,7 +4406,11 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4424,7 +4434,11 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4449,7 +4463,10 @@
 				);
 				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
 			};
@@ -4466,7 +4483,10 @@
 				);
 				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
 				INFOPLIST_FILE = "Info-OAUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
 			};

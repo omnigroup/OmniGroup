@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,24 +32,12 @@ RCS_ID("$Id$");
 
 + (NSImage *)actionImage;
 {
-    static NSImage *OAActionImage = nil;
-    if (OAActionImage == nil) {
-        OAActionImage = [NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE];
-        OBASSERT(OAActionImage != nil);
-    }
-
-    return OAActionImage;
+    return [NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE];
 }
 
 + (NSImage *)miniActionImage;
 {
-    static NSImage *OAMiniActionImage = nil;
-    if (OAMiniActionImage == nil) {
-        OAMiniActionImage = [NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE];
-        OBASSERT(OAMiniActionImage != nil);
-    }
-
-    return OAMiniActionImage;
+    return [NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE];
 }
 
 - (id)initWithFrame:(NSRect)frameRect;

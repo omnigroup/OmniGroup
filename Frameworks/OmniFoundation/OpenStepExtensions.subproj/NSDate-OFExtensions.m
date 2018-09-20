@@ -18,20 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation NSDate (OFExtensions)
 
-- (NSString *)descriptionWithHTTPFormat; // rfc1123 format with TZ forced to GMT
-{
-    // See rfc2616 [3.3.1].  For example: "Mon, 01 Jan 2001 00:00:00 GMT"
-    static NSDateFormatter *dateFormatter = nil;
-    if (dateFormatter == nil) {
-        dateFormatter = [[NSDateFormatter alloc] init];
-        NSLocale* us_en_locale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
-        [dateFormatter setLocale:us_en_locale];
-        [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-        [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];
-    }
-    return [dateFormatter stringFromDate:self];
-}
-
 - (void)sleepUntilDate;
 {
     NSTimeInterval timeIntervalSinceNow;
@@ -50,6 +36,186 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isBeforeDate:(NSDate *)otherDate
 {
     return [self compare:otherDate] == NSOrderedAscending;
+}
+
+#if 0 && defined(DEBUG)
+    #define DEBUG_XML_STRING(format, ...) NSLog((format), ## __VA_ARGS__)
+#else
+    #define DEBUG_XML_STRING(format, ...)
+#endif
+
+#define BAD_INIT do { \
+    self = [self init]; \
+    [self release]; \
+    return nil; \
+} while(0)
+
+// We don't check for out-of-bounds here since we know we have a NUL terminated string, and this will reject reading a NUL
+#define GET_DIGIT(d, delta) do { \
+  char c = buf[offset+delta]; \
+  if (c < '0' || c > '9') BAD_INIT; \
+  d = (c - '0'); \
+} while(0)
+
+// Likewise regarding NUL termination
+#define READ_CHAR(c) do { \
+  if (buf[offset] != c) BAD_INIT; \
+  offset++; \
+} while(0)
+
+#define READ_2UINT(u) do { \
+  uint_fast8_t d10, d1; \
+  GET_DIGIT(d10, 0); \
+  GET_DIGIT(d1, 1); \
+  u = 10*d10 + d1; \
+  offset += 2; \
+} while(0)
+
+#define READ_4UINT(u) do { \
+    uint_fast16_t d1000, d100, d10, d1; \
+    GET_DIGIT(d1000, 0); \
+    GET_DIGIT(d100, 1); \
+    GET_DIGIT(d10, 2); \
+    GET_DIGIT(d1, 3); \
+    u = 1000*d1000 + 100*d100 + 10*d10 + d1; \
+    offset += 4; \
+} while(0)
+
+// This allows some non-alphanumeric characters between the upper and lower case, but really we're just checking for a NUL here to make sure we don't read off the end of the buffer.
+#define READ_ALPHA(c, delta) do { \
+    c = buf[offset+delta]; \
+    if (c < 'A' || c > 'z') { BAD_INIT; } \
+} while(0)
+
+#define READ_3ALPHA(str) do { \
+    char c0, c1, c2; \
+    READ_ALPHA(c0, 0); \
+    READ_ALPHA(c1, 1); \
+    READ_ALPHA(c2, 2); \
+    offset += 3; \
+    str[0] = c0; \
+    str[1] = c1; \
+    str[2] = c2; \
+    str[3] = 0; \
+} while(0)
+
+#pragma mark - HTTP date support
+
+static NSDateFormatter *HttpDateFormatter(void) {
+    static NSDateFormatter *formatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // reference: https://developer.apple.com/library/archive/qa/qa1480/_index.html
+        NSLocale *locale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"] autorelease];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];
+        [dateFormatter setLocale:locale];
+        [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+
+        formatter = dateFormatter;
+    });
+    return formatter;
+}
+
+- (nullable instancetype)initWithHTTPString:(NSString *)aString;
+{
+    // "Sat, 06 Jan 2001 10:14:09 GMT"
+    static const NSUInteger OFHTTPStringMaximumLength = 29;
+
+    NSUInteger length = [aString length];
+    if (length == 0 || length > OFHTTPStringMaximumLength) {
+        BAD_INIT;
+    }
+
+    char buf[OFHTTPStringMaximumLength+1]; // Allow room for the terminating NUL
+    if (![aString getCString:buf maxLength:sizeof(buf) encoding:NSASCIIStringEncoding]) { // ... which this will append.
+        OBASSERT_NOT_REACHED("Unexpected encoding in HTTP date");
+        BAD_INIT;
+    }
+
+    // Since we read forward, we'll catch a early NUL with digit or specific character checks.
+    NSInteger year, month, day, hour, minute, second;
+    unsigned offset = 0;
+
+    // Skip the short weekday name for now (w/o even validating it is one of the valid weekdays).
+    if (length < 3) {
+        BAD_INIT;
+    }
+    offset = 3;
+    READ_CHAR(',');
+    READ_CHAR(' ');
+
+    READ_2UINT(day);
+    READ_CHAR(' ');
+
+    do {
+        char monthName[4];
+        READ_3ALPHA(monthName);
+
+        static const char * const months = "JanFebMarAprMayJunJulAugSepOctNovDec";
+        char *found = strstr(months, monthName);
+        if (found == NULL) {
+            BAD_INIT;
+        }
+        long foundOffset = found - months;
+        long index = foundOffset / 3;
+
+        if (index * 3 != foundOffset) {
+            BAD_INIT; // 'ebM' or whatever nonsense.
+        }
+        month = index + 1;
+    } while(0);
+    READ_CHAR(' ');
+
+    READ_4UINT(year);
+    READ_CHAR(' ');
+
+    READ_2UINT(hour);
+    READ_CHAR(':');
+    READ_2UINT(minute);
+    READ_CHAR(':');
+    READ_2UINT(second);
+
+    READ_CHAR(' ');
+    do {
+        char tz[4];
+        READ_3ALPHA(tz);
+
+        if (strcmp(tz, "GMT") != 0) {
+            BAD_INIT;
+        }
+    } while(0);
+
+    // TODO: Share this with the XML reading?
+    static CFCalendarRef gregorianUTCCalendar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        CFTimeZoneRef utc = CFTimeZoneCreateWithName(kCFAllocatorDefault, CFSTR("UTC"), true);
+        OBASSERT(utc);
+        gregorianUTCCalendar = CFCalendarCreateWithIdentifier(kCFAllocatorDefault, kCFGregorianCalendar);
+        CFCalendarSetTimeZone(gregorianUTCCalendar, utc);
+        CFRelease(utc);
+    });
+
+    // -dateFromComponents: doesn't return nil for an out-of-range component, it wraps it (even though both it and -isValidDateInCalendar: call down to CFCalendarComposeAbsoluteTime).
+    // CFCalendarComposeAbsoluteTime also doesn't return FALSE for out-of-range components, even though it is documented to (wrapping the components). Radar 36367324. This path is performance sensitive enough to want to avoid the overhead, but perhaps it would be good to have an option to check that the components are in range.
+    CFAbsoluteTime timeInterval;
+    Boolean success = CFCalendarComposeAbsoluteTime(gregorianUTCCalendar, &timeInterval, "yMdHms", year, month, day, hour, minute, second);
+    if (!success) {
+        BAD_INIT;
+    }
+
+    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:timeInterval];
+    DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
+
+    return result;
+}
+
+// Not currently bothering with a fast path for emitting HTTP date strings since we don't do a ton of that.
+// OmniDAV parsing of PROPFIND results can end up parsing HTTP date strings often, but we don't emit them very much across our apps.
+- (NSString *)descriptionWithHTTPFormat;
+{
+    return [HttpDateFormatter() stringFromDate:self];
 }
 
 #pragma mark -
@@ -99,47 +265,6 @@ NS_ASSUME_NONNULL_BEGIN
     
     return cal;
 }
-
-#if 0 && defined(DEBUG)
-    #define DEBUG_XML_STRING(format, ...) NSLog((format), ## __VA_ARGS__)
-#else
-    #define DEBUG_XML_STRING(format, ...)
-#endif
-
-#define BAD_INIT do { \
-    self = [self init]; \
-    [self release]; \
-    return nil; \
-} while(0)
-
-#define GET_DIGIT(d, delta) do { \
-  char c = buf[offset+delta]; \
-  if (c < '0' || c > '9') BAD_INIT; \
-  d = (c - '0'); \
-} while(0)
-
-#define READ_CHAR(c) do { \
-  if (buf[offset] != c) BAD_INIT; \
-  offset++; \
-} while(0)
-
-#define READ_2UINT(u) do { \
-  uint_fast8_t d10, d1; \
-  GET_DIGIT(d10, 0); \
-  GET_DIGIT(d1, 1); \
-  u = 10*d10 + d1; \
-  offset += 2; \
-} while(0)
-
-#define READ_4UINT(u) do { \
-    uint_fast16_t d1000, d100, d10, d1; \
-    GET_DIGIT(d1000, 0); \
-    GET_DIGIT(d100, 1); \
-    GET_DIGIT(d10, 2); \
-    GET_DIGIT(d1, 3); \
-    u = 1000*d1000 + 100*d100 + 10*d10 + d1; \
-    offset += 4; \
-} while(0)
 
 /*
  Expects a string in the XML Schema / RFC 3339 / ISO 8601 format, such as YYYY-MM-ddTHH:mm:ss(.S+)(Z|[+-]HH:MM).  This doesn't attempts to be very forgiving in parsing; the goal should be to feed in a conforming string. No support is included for negative years, though XML Schema and ISO 8601 allow it (RFC 3339 doesn't). Any deviation from the supported grammar will result in a nil return value.

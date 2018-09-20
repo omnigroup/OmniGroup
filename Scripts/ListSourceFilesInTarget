@@ -27,10 +27,12 @@ end
 $RequiredAttributes = []
 $NoCache = false
 $IgnoreDerived = false
+$KeepVariables = false
 
 GetoptLong.new(
   [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ],
   [ "--ignore-derived", "-D", GetoptLong::NO_ARGUMENT ],
+  [ "--keep-variables", "-V", GetoptLong::NO_ARGUMENT ],
   [ "--no-cache", "-I", GetoptLong::NO_ARGUMENT ]
 
 ).each do |opt,arg|
@@ -39,6 +41,8 @@ GetoptLong.new(
     $RequiredAttributes << arg
   when "--ignore-derived"
     $IgnoreDerived = arg
+  when "--keep-variables"
+    $KeepVariables = arg
   when "--no-cache"
     $NoCache = true
   else
@@ -87,8 +91,12 @@ def do_target(target)
 
       next if $IgnoreDerived && fileRef.isDerived?
       
-      fullpath = $Project.resolvepath(fileRef.identifier)
-      $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
+      fullpath = $Project.resolvepath(fileRef.identifier, !$KeepVariables)
+      if $KeepVariables && fullpath.index("$")
+        $MatchingFiles << "#{fullpath}\n"
+      else
+        $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
+      end
   }
 end
 

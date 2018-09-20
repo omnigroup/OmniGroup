@@ -163,6 +163,9 @@ static NSString *_doneActionButtonTitle;
 
 - (void)_resizeTable;
 {
+    if (_tableView.window != nil)
+        [_tableView layoutIfNeeded];
+
     OUITableViewAdjustHeightToFitContents(_tableView);
     CGFloat currentHeight = self.tableView.contentSize.height;
     if (currentHeight == 0.0)

@@ -662,10 +662,16 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         /*
          bug reporter #37711145
          <bug:///154713> (Mac-OmniFocus Crasher: Crash resizing the attachments window)
-         Same as above, but in NSOutlineView instead of our own view class
+         <bug:///157567> (Mac-OmniFocus Crasher: High Sierra: Crash resizing OmniOutliner document column mapping import window)
+         Same as above, but in NSTableView/NSOutlineView instead of our own view class
+         Seems fixed on Mojave
          */
-        IGNORE_CRASH(@"NSOutlineView", @selector(_enableNeedsDisplayInRectNotifications))
-        IGNORE_CRASH(@"NSOutlineView", @selector(_disableNeedsDisplayInRectNotifications))
+        if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
+            IGNORE_CRASH(@"NSOutlineView", @selector(_enableNeedsDisplayInRectNotifications))
+            IGNORE_CRASH(@"NSOutlineView", @selector(_disableNeedsDisplayInRectNotifications))
+            IGNORE_CRASH(@"NSTableView", @selector(_enableNeedsDisplayInRectNotifications))
+            IGNORE_CRASH(@"NSTableView", @selector(_disableNeedsDisplayInRectNotifications))
+        }
         
         /* bug reporter #37539192 <bug:///155090> (Mac-OmniGraffle Crasher: Crash trying to Add People to a file recently saved to iCloud on a Touchbar Mac) */
         IGNORE_CRASH(@"SHKRemoteView", @selector(_mapPerProcessIdentifiers:of:))

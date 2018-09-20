@@ -288,14 +288,13 @@ certicom = 1.3.132
 x9-57 = 1.2.840.10040
 x9-62 = 1.2.840.10045
 x9-63 = 1.3.133.16.840.63
-gnu = 1.3.6.1.4.1.11591
-pgut = 1.3.6.1.4.1.3029
+iana-enterprise = 1.3.6.1.4.1 # iso.org.dod.internet.private.enterprise
+gnu = iana-enterprise 11591
+pgut = iana-enterprise 3029
+omni = iana-enterprise 51522 # Omni's private enterprise number
+omni-frameworks = omni 1 # Omni frameworks
 aes = csor 4 1
 cert-ext = 2.5.29
-
-iana-pen = 1.3.6.1.4.1 # iso.org.dod.internet.private.enterprise
-omni = iana-pen 51522 # Omni's private enterprise number
-omni-frameworks = omni 1 # Omni frameworks
 
 sha256 = csor 4 2 1
 sha512 = csor 4 2 3

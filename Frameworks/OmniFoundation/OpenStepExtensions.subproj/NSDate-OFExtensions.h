@@ -15,12 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSDate (OFExtensions)
 
-- (NSString *)descriptionWithHTTPFormat; // rfc1123 format with TZ forced to GMT
-
 - (void)sleepUntilDate;
 
 - (BOOL)isAfterDate: (NSDate *) otherDate;
 - (BOOL)isBeforeDate: (NSDate *) otherDate;
+
+// HTTP dates
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
+- (nullable instancetype)initWithHTTPString:(NSString *)aString;
+- (NSString *)descriptionWithHTTPFormat; // rfc1123 format with TZ forced to GMT
 
 // XML Schema / ISO 8601 support
 + (NSTimeZone *)UTCTimeZone;

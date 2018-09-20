@@ -13,7 +13,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class NSString, NSArray, NSDictionary, NSSet;
-@class ODOObject, ODOEditingContext, ODOModel, ODOAttribute, ODOProperty, ODOSQLStatement;
+@class ODOObject, ODOEditingContext, ODOModel, ODOAttribute, ODOProperty, ODORelationship, ODOSQLStatement;
 
 @interface ODOEntity : OFObject
 
@@ -33,19 +33,19 @@ NS_ASSUME_NONNULL_BEGIN
 // An array of names that are disjoint from the property names for this entity, but might be passed to -propertyNamed:.
 @property (nonatomic, copy) NSArray <NSString *> *nonPropertyNames;
 
-@property (nonatomic, readonly) NSDictionary *relationshipsByName;
-@property (nonatomic, readonly) NSArray *relationships;
-@property (nonatomic, readonly) NSArray *toOneRelationships;
-@property (nonatomic, readonly) NSArray *toManyRelationships;
+@property (nonatomic, readonly) NSDictionary <NSString *, ODORelationship *> *relationshipsByName;
+@property (nonatomic, readonly) NSArray <ODORelationship *> *relationships;
+@property (nonatomic, readonly) NSArray <ODORelationship *> *toOneRelationships;
+@property (nonatomic, readonly) NSArray <ODORelationship *> *toManyRelationships;
 
-@property (nonatomic, readonly) NSArray *attributes;
-@property (nonatomic, readonly) NSDictionary *attributesByName;
+@property (nonatomic, readonly) NSArray <ODOAttribute *> *attributes;
+@property (nonatomic, readonly) NSDictionary <NSString *, ODOAttribute *> *attributesByName;
 
 @property (nonatomic, readonly) ODOAttribute *primaryKeyAttribute;
 
-@property (nonatomic, readonly) NSSet *derivedPropertyNameSet;
-@property (nonatomic, readonly) NSSet *nonDateModifyingPropertyNameSet;
-@property (nonatomic, readonly) NSSet *calculatedTransientPropertyNameSet;
+@property (nonatomic, readonly) NSSet <NSString *> *derivedPropertyNameSet;
+@property (nonatomic, readonly) NSSet <NSString *> *nonDateModifyingPropertyNameSet;
+@property (nonatomic, readonly) NSSet <NSString *> *calculatedTransientPropertyNameSet;
 
 + (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context primaryKey:(nullable id)primaryKey;
 + (nullable id)insertNewObjectForEntityForName:(NSString *)entityName inEditingContext:(ODOEditingContext *)context;

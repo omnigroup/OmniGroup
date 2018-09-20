@@ -1,0 +1,10 @@
+$(SRCROOT)/OmniDAV.xcodeproj/project.pbxproj
+ODAVConformanceTest.m
+ODAVConnection.m
+ODAVConnection_URLConnection.m
+ODAVConnection_URLSession.m
+ODAVErrors.m
+ODAVFileInfo.m
+ODAVOperation.m
+ODAVStaleFiles.m
+ODAVUpload.m

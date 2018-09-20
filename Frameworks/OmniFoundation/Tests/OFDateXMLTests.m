@@ -8,6 +8,7 @@
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniBase/OmniBase.h>
 
@@ -162,16 +163,16 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
 
 #define EQUAL_DATES(str1, str2) do { \
     NSDate *date1 = [[NSDate alloc] initWithXMLString:str1]; \
-    NSDate *date2 = [[NSDate alloc] initWithXMLString:str1]; \
+    NSDate *date2 = [[NSDate alloc] initWithXMLString:str2]; \
     XCTAssertEqualObjects(date1, date2); \
 } while(0)
 
 - (void)testNonUTCTimeZone;
 {
-    EQUAL_DATES(@"2004-06-07T14:15:34.987Z", @"2004-06-07T15:15:34.987-01:00");
+    EQUAL_DATES(@"2004-06-07T16:15:34.987Z", @"2004-06-07T15:15:34.987-01:00");
     EQUAL_DATES(@"2004-06-07T22:50:00Z", @"2004-06-07T18:50:00-04:00");
 
-    EQUAL_DATES(@"2004-06-07T13:15:34.987Z", @"2004-06-07T15:15:34.987+01:00");
+    EQUAL_DATES(@"2004-06-07T14:15:34.987Z", @"2004-06-07T15:15:34.987+01:00");
     EQUAL_DATES(@"2004-06-07T14:50:00Z", @"2004-06-07T18:50:00+04:00");
 }
 
@@ -205,6 +206,85 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
     }
     
     [queue waitUntilAllOperationsAreFinished];
+}
+
+// Check our new implementation vs. how the system does it.
+static NSDateFormatter *HttpDateFormatter(void) {
+    static NSDateFormatter *formatter;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // reference: https://developer.apple.com/library/archive/qa/qa1480/_index.html
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];
+        [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+
+        formatter = dateFormatter;
+    });
+    return formatter;
+}
+
+
+- (void)testRandomHTTPDateParsing;
+{
+    for (NSUInteger trial = 0; trial < 100000; trial++) {
+        NSTimeInterval timeInterval = round(OFRandomNextDouble() * 1e6); // One million seconds since the Jan 1, 2001 epoch.
+        NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:timeInterval];
+
+        NSString *httpString = [HttpDateFormatter() stringFromDate:date];
+        NSDate *parsedDate = [[NSDate alloc] initWithHTTPString:httpString];
+
+        XCTAssertEqualObjects(date, parsedDate);
+
+        NSString *formattedString = [date descriptionWithHTTPFormat];
+        XCTAssertEqualObjects(httpString, formattedString);
+    }
+}
+
+- (void)testHTTPDateParsing;
+{
+    NSString *httpString = @"Sat, 06 Jan 2001 10:14:09 GMT";
+    NSDate *date = [HttpDateFormatter() dateFromString:httpString];
+    NSDate *parsedDate = [[NSDate alloc] initWithHTTPString:httpString];
+    XCTAssertEqualObjects(date, parsedDate);
+}
+
+- (void)testHTTPDateParsingSpeed;
+{
+    NSArray <NSString *> *dateStrings;
+    @autoreleasepool {
+        NSMutableArray *results = [NSMutableArray array];
+        for (NSUInteger trial = 0; trial < 100000; trial++) {
+            NSTimeInterval timeInterval = round(OFRandomNextDouble() * 1e6); // One million seconds since the Jan 1, 2001 epoch.
+            NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:timeInterval];
+            NSString *httpString = [HttpDateFormatter() stringFromDate:date];
+            [results addObject:httpString];
+        }
+        dateStrings = [results copy];
+    }
+
+    NSMutableArray *dates = [NSMutableArray array];
+    NSMutableArray *parsedDates = [NSMutableArray array];
+    NSTimeInterval start, end, old, new;
+
+    start = [NSDate timeIntervalSinceReferenceDate];
+    for (NSString *string in dateStrings) {
+        NSDate *date = [HttpDateFormatter() dateFromString:string];
+        [dates addObject:date];
+    }
+    end = [NSDate timeIntervalSinceReferenceDate];
+    old = (end - start);
+
+    start = [NSDate timeIntervalSinceReferenceDate];
+    for (NSString *string in dateStrings) {
+        NSDate *date = [[NSDate alloc] initWithHTTPString:string];
+        [parsedDates addObject:date];
+    }
+    end = [NSDate timeIntervalSinceReferenceDate];
+    new = (end - start);
+
+    XCTAssertEqualObjects(dates, parsedDates);
+    NSLog(@"old %f, new %f", old, new);
 }
 
 // YYYYMMddTHHmmssZ

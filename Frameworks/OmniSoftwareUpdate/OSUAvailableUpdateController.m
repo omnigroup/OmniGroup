@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,7 @@
 #import <WebKit/WebDataSource.h>
 #import <WebKit/WebFrame.h>
 #import <WebKit/WebPolicyDelegate.h>
+#import <WebKit/WebPreferences.h>
 #import <WebKit/WebView.h>
 
 NSString * const OSUAvailableUpdateControllerAvailableItemsBinding = @"availableItems";
@@ -33,6 +34,8 @@ NSString * const OSUAvailableUpdateControllerDetailsBinding = @"details";
 NSString * const OSUAvailableUpdateControllerLoadingReleaseNotesBinding = @"loadingReleaseNotes";
 NSString * const OSUAvailableUpdateControllerLastCheckFailedBinding = @"lastCheckFailed";
 NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBinding = @"lastCheckExplicit";
+
+static NSString * const OSUAvailableUpdateControllerEffectiveAppearanceBinding = @"effectiveAppearance";
 
 
 RCS_ID("$Id$");
@@ -99,6 +102,8 @@ RCS_ID("$Id$");
 
 @property(nonatomic,strong) IBOutlet NSView *itemAlertPane;
 @property(nonatomic,strong) IBOutlet NSTextField *itemAlertMessage;
+
+@property(nonatomic,strong) NSAppearance *effectiveAppearance;
 
 @property(nonatomic) BOOL loadingReleaseNotes;
 @property(nonatomic) BOOL checkInProgress;
@@ -177,6 +182,7 @@ RCS_ID("$Id$");
 - (void)dealloc
 {
     [self unbind:OSUAvailableUpdateControllerCheckInProgressBinding];
+    [self unbind:OSUAvailableUpdateControllerEffectiveAppearanceBinding];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:nil];
 }
 
@@ -221,6 +227,8 @@ RCS_ID("$Id$");
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
+
+    [self bind:OSUAvailableUpdateControllerEffectiveAppearanceBinding toObject:self.window withKeyPath:OSUAvailableUpdateControllerEffectiveAppearanceBinding options:nil];
 }
 
 #pragma mark -
@@ -554,8 +562,21 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     [self setValue:[NSNumber numberWithBool:YES] forKey:OSUAvailableUpdateControllerLoadingReleaseNotesBinding];
 }
 
+- (void)_callJavaScript:(NSString *)javaScript;
+{
+#ifdef DEBUG_kc
+    NSLog(@"DEBUG: JavaScript: %@", javaScript);
+#endif
+    [_releaseNotesWebView stringByEvaluatingJavaScriptFromString:javaScript];
+}
+
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
 {
+    if (self.effectiveAppearance.OA_isDarkAppearance) {
+        [self _callJavaScript:@"document.body.classList.add('dark-mode');"];
+    } else {
+        [self _callJavaScript:@"document.body.classList.remove('dark-mode');"];
+    }
     [self setValue:[NSNumber numberWithBool:NO] forKey:OSUAvailableUpdateControllerLoadingReleaseNotesBinding];
 }
 
@@ -732,14 +753,32 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     }
 }
 
+- (void)setEffectiveAppearance:(NSAppearance *)effectiveAppearance;
+{
+    _effectiveAppearance = effectiveAppearance;
+    [self _loadReleaseNotes];
+}
+
+- (void)_loadBlankPage;
+{
+    NSAppearance *savedAppearance = NSAppearance.currentAppearance;
+    NSAppearance.currentAppearance = self.effectiveAppearance;
+    NSColor *backgroundColor = NSColor.textBackgroundColor;
+    NSString *backgroundColorHexString = [OAColorPalette stringForColor:backgroundColor];
+    NSAppearance.currentAppearance = savedAppearance;
+    NSString *blankHTML = [NSString stringWithFormat:@"<body bgcolor=%@ />", backgroundColorHexString];
+    [[_releaseNotesWebView mainFrame] loadHTMLString:blankHTML baseURL:nil];
+}
+
 - (void)_loadReleaseNotes;
 {
     if (![self isWindowLoaded])
         return;
 
-    if (!_selectedItem) {
-         // Clear out the web view
-         [[_releaseNotesWebView mainFrame] loadHTMLString:@"" baseURL:nil];
+    [self _loadBlankPage];
+
+    if (_selectedItem == nil) {
+        // Clear out the web view
         return;
     }
     
@@ -748,6 +787,7 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
         return;
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:releaseNotesURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:120.0];
+    _releaseNotesWebView.preferences.suppressesIncrementalRendering = YES;
     [[_releaseNotesWebView mainFrame] loadRequest:request];
 }
 

@@ -415,7 +415,7 @@ module Xcode
       when '<group>'
         groupID = @containingGroup[key.to_s]
         fail "no group contains child ref #{key}, died" unless groupID
-        base = resolvepath(groupID)
+        base = resolvepath(groupID, resolve_variables)
       when '<absolute>'
         base = '/';
       else

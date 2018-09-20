@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -1465,6 +1465,8 @@
 		A2091C1A0E5A149E007B59A7 /* OFFilterProcess.h in Headers */ = {isa = PBXBuildFile; fileRef = A2091C180E5A149E007B59A7 /* OFFilterProcess.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2091C1B0E5A149E007B59A7 /* OFFilterProcess.m in Sources */ = {isa = PBXBuildFile; fileRef = A2091C190E5A149E007B59A7 /* OFFilterProcess.m */; };
 		A211EB0B09327540002B603D /* OFRationalTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A211EB0A09327540002B603D /* OFRationalTests.m */; };
+		A22269A521519B8500B6C7CD /* Data-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22269A421519B8500B6C7CD /* Data-OFExtensions.swift */; };
+		A22269A621519B8500B6C7CD /* Data-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22269A421519B8500B6C7CD /* Data-OFExtensions.swift */; };
 		A22C597F0BA88349005F177C /* OFDataTest.m in Sources */ = {isa = PBXBuildFile; fileRef = A22C597E0BA88349005F177C /* OFDataTest.m */; };
 		A22D9877101E513F005FF4FF /* OFXMLSignatureTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A22D9876101E513F005FF4FF /* OFXMLSignatureTests.m */; };
 		A22D987C101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz in Resources */ = {isa = PBXBuildFile; fileRef = A22D987A101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz */; };
@@ -2055,6 +2057,7 @@
 		3433031C0D86097E00C82A0B /* NSString-OFConversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString-OFConversion.h"; sourceTree = "<group>"; };
 		3433031D0D86097E00C82A0B /* NSString-OFConversion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString-OFConversion.m"; sourceTree = "<group>"; };
 		3433588F06415A4C00EEBA57 /* OFCompressionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFCompressionTest.m; sourceTree = "<group>"; };
+		3439601E214C41D6004E58A5 /* OmniFoundation.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniFoundation.xcfilelist; sourceTree = "<group>"; };
 		343B36341034F68F0006290A /* OFRandomRepeatTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFRandomRepeatTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		343B363E1034F6C40006290A /* OFRandomRepeatTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRandomRepeatTest.m; sourceTree = "<group>"; };
 		343B36B4103514E40006290A /* CHANGE-LOG.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CHANGE-LOG.txt"; sourceTree = "<group>"; };
@@ -2465,6 +2468,7 @@
 		A2102AAA093BD942006D0DFC /* distance.ofunits */ = {isa = PBXFileReference; explicitFileType = text.plist; fileEncoding = 4; path = distance.ofunits; sourceTree = "<group>"; };
 		A211EB0A09327540002B603D /* OFRationalTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFRationalTests.m; sourceTree = "<group>"; };
 		A2177C9704FEB5350097A146 /* OFHashTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFHashTests.m; sourceTree = "<group>"; };
+		A22269A421519B8500B6C7CD /* Data-OFExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data-OFExtensions.swift"; sourceTree = "<group>"; };
 		A22C597E0BA88349005F177C /* OFDataTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFDataTest.m; sourceTree = "<group>"; };
 		A22D9876101E513F005FF4FF /* OFXMLSignatureTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLSignatureTests.m; sourceTree = "<group>"; };
 		A22D987A101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; name = "01-merlin-xmldsig-twenty-three.tar.gz"; path = "Inputs/01-merlin-xmldsig-twenty-three.tar.gz"; sourceTree = "<group>"; };
@@ -2909,6 +2913,7 @@
 				346DE9EA0D861EA7000C9E97 /* NSData-OFEncoding.m */,
 				00E51D2CFE8AAEA611C9CC38 /* NSData-OFExtensions.h */,
 				00E51D10FE8AAEA611C9CC38 /* NSData-OFExtensions.m */,
+				A22269A421519B8500B6C7CD /* Data-OFExtensions.swift */,
 				3472CB4C12E3BF1B00F646AE /* NSData-OFSignature.h */,
 				3472CB4D12E3BF1B00F646AE /* NSData-OFSignature.m */,
 				3416584D0FEB4B7400F4CED4 /* NSData-OFFileIO.h */,
@@ -3820,6 +3825,7 @@
 				3402C55615C3209000AA7DAF /* OFFeatures.h */,
 				1E7F99681D875BCD00CD4533 /* Bundle.swift */,
 				BF0E642806309CBE0097A147 /* Info.plist */,
+				3439601E214C41D6004E58A5 /* OmniFoundation.xcfilelist */,
 				341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */,
 				34A1594705641CC70097A113 /* OmniFoundation.order */,
 				349BD3A515A61FA100AC12AA /* Network */,
@@ -5213,10 +5219,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -5325,6 +5335,7 @@
 				34A062491EC110A60099028D /* OFRandom.m in Sources */,
 				34A0624A1EC110A60099028D /* OFSignature.m in Sources */,
 				34A0624B1EC110A60099028D /* OFSparseArray.m in Sources */,
+				A22269A621519B8500B6C7CD /* Data-OFExtensions.swift in Sources */,
 				34A0624C1EC110A60099028D /* OFTrie.m in Sources */,
 				34A0624D1EC110A60099028D /* OFTrieBucket.m in Sources */,
 				34A0624E1EC110A60099028D /* OFTrieEnumerator.m in Sources */,
@@ -5861,6 +5872,7 @@
 				4A4E073308AA72B10098FF0F /* OFInvocation.m in Sources */,
 				347CA787192FC7BA00693624 /* OFPerformanceMeasurement.m in Sources */,
 				4A4E073408AA72B10098FF0F /* OFMessageQueue.m in Sources */,
+				A22269A521519B8500B6C7CD /* Data-OFExtensions.swift in Sources */,
 				4A4E073508AA72B10098FF0F /* OFObject-Queue.m in Sources */,
 				4A4E073608AA72B10098FF0F /* OFQueueProcessor.m in Sources */,
 				4A4E073708AA72B10098FF0F /* OFResultHolder.m in Sources */,
@@ -6294,7 +6306,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (
 					"$(value)",
@@ -6318,7 +6333,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (
 					"$(value)",
@@ -6428,7 +6446,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (
 					"$(value)",
@@ -6452,7 +6473,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniFoundation.modulemap;
 				OTHER_LDFLAGS = (
 					"$(value)",
@@ -6565,7 +6589,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Info-OFUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"-lxml2",
@@ -6587,7 +6614,10 @@
 				);
 				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = "Info-OFUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(value) $(DEVELOPER_FRAMEWORKS_DIR)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				OTHER_LDFLAGS = (
 					"$(value)",
 					"-lxml2",

@@ -31,6 +31,163 @@ RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
+
+@interface OFSEncryptingFileManager ()
++ (NSData *)_decryptData:(NSData *)encrypted url:(NSURL *)url documentKey:(OFSDocumentKey *)keyManager error:(NSError **)outError;
+@end
+
+@interface _OFSEncryptingFileManagerReadOperation : NSObject <ODAVAsynchronousOperation>
+
+- initWithURL:(NSURL *)url documentKey:(OFSDocumentKey *)keyManager underlyingOperation:(id <ODAVAsynchronousOperation>)operation;
+- initWithURL:(NSURL *)url error:(NSError *)error;
+
+@property(nonatomic,readonly) NSURL *url;
+@property(nonatomic,readonly) NSMutableData *encryptedData;
+@property(nonatomic,readonly) NSData *resultData;
+
+@end
+
+@implementation _OFSEncryptingFileManagerReadOperation
+{
+    id <ODAVAsynchronousOperation> _operation;
+    OFSDocumentKey *_keyManager;
+    NSError *_error;
+}
+
+- initWithURL:(NSURL *)url documentKey:(OFSDocumentKey *)keyManager underlyingOperation:(id <ODAVAsynchronousOperation>)operation;
+{
+    _operation = operation;
+    _keyManager = [keyManager copy];
+    _url = [url copy];
+
+    __weak _OFSEncryptingFileManagerReadOperation *weakSelf = self;
+    _operation.didFinish = ^(id<ODAVAsynchronousOperation> _Nonnull op, NSError * _Nullable errorOrNil){
+        _OFSEncryptingFileManagerReadOperation *strongSelf = weakSelf;
+        [strongSelf _didFinish:errorOrNil];
+    };
+    _operation.didReceiveData = ^(id<ODAVAsynchronousOperation>  _Nonnull op, NSData * _Nonnull data) {
+        _OFSEncryptingFileManagerReadOperation *strongSelf = weakSelf;
+        [strongSelf _didReceiveData:data];
+    };
+
+    return self;
+}
+
+- initWithURL:(NSURL *)url error:(NSError *)error;
+{
+    _error = [error copy];
+    _url = [url copy];
+
+    return self;
+}
+
+@synthesize shouldRetry = _shouldRetry;
+@synthesize willRetry = _willRetry;
+@synthesize didFinish = _didFinish;
+@synthesize didReceiveData = _didReceiveData;
+@synthesize didReceiveBytes = _didReceiveBytes;
+@synthesize didSendBytes = _didSendBytes;
+
+- (long long)expectedLength;
+{
+    OBPRECONDITION(_operation != nil);
+    return _operation.expectedLength;
+}
+
+- (long long)processedLength;
+{
+    OBPRECONDITION(_operation != nil);
+    return _operation.processedLength;
+}
+
+- (void)cancel;
+{
+    [_operation cancel];
+}
+
+- (void)startWithCallbackQueue:(NSOperationQueue * _Nullable)queue;
+{
+    if (_operation) {
+        [_operation startWithCallbackQueue:queue];
+    } else {
+        OBASSERT(_error);
+
+        // This is a non-HTTP error which we don't retry.
+        typeof(_didFinish) didFinish = _didFinish;
+        [self _clearCallbacks];
+
+        if (didFinish) {
+            if (!queue) {
+                queue = [NSOperationQueue currentQueue];
+            }
+            [queue addOperationWithBlock:^{
+                didFinish(self, _error);
+            }];
+        }
+    }
+}
+
+- (void)_clearCallbacks;
+{
+    _shouldRetry = nil;
+    _willRetry = nil;
+    _didFinish = nil;
+    _didReceiveBytes = nil;
+    _didReceiveData = nil;
+    _didSendBytes = nil;
+}
+
+#pragma mark - NSCopying
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return self;
+}
+
+#pragma mark - Private
+
+- (void)_didReceiveData:(NSData *)data;
+{
+    if (_encryptedData == nil) {
+        _encryptedData = [[NSMutableData alloc] init];
+    }
+    [_encryptedData appendData:data];
+}
+
+- (void)_didFinish:(NSError *)errorOrNil;
+{
+    // NOTE: We aren't bridging the shouldRetry support here, but the only place it is currently used is in this class's -asynchronouslyTasteKeySlot:.
+
+    NSError * __autoreleasing error;
+
+    if (errorOrNil) {
+        error = errorOrNil;
+    } else {
+        OBASSERT(_encryptedData);
+
+        NSData *decrypted = [OFSEncryptingFileManager _decryptData:_encryptedData url:_url documentKey:_keyManager error:&error];
+
+        if (_didReceiveData) {
+            // With this block set, we don't "buffer" the data.
+            _didReceiveData(self, decrypted);
+        } else {
+            _resultData = [decrypted copy];
+        }
+    }
+
+    typeof(_didFinish) didFinish = _didFinish;
+    [self _clearCallbacks];
+
+    if (didFinish) {
+        // Here we've been called on the callback queue for the underlying operation and can just directly call the didFinish block.
+        didFinish(self, errorOrNil);
+    }
+}
+
+@end
+
+
+
 @interface OFSEncryptingFileManagerTasteOperation (/* Private interfaces */)
 - (instancetype)initWithOperation:(id <ODAVAsynchronousOperation>)op;
 - (instancetype)initWithResult:(int)policy;
@@ -117,6 +274,22 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     return result;
 }
 
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
+{
+    OBLog(OFSFileManagerLogger, 2, @"ENCRYPTION operation: read %@", url);
+
+    if ([self maskingFileAtURL:url]) {
+        OBLog(OFSFileManagerLogger, 1, @"    --> masking");
+        NSError * __autoreleasing error;
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read file.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such file \"%@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
+        OFSError(&error, OFSNoSuchFile, description, reason);
+        return [[_OFSEncryptingFileManagerReadOperation alloc] initWithURL:url error:error];
+    }
+
+    return [[_OFSEncryptingFileManagerReadOperation alloc] initWithURL:url documentKey:keyManager underlyingOperation:[underlying asynchronousReadContentsOfURL:url]];
+}
+
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 {
     OBLog(OFSFileManagerLogger, 2, @"ENCRYPTION operation: read %@", url);
@@ -132,7 +305,12 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     NSData *encrypted = [underlying dataWithContentsOfURL:url error:outError];
     if (!encrypted)
         return nil;
-    
+
+    return [[self class] _decryptData:encrypted url:url documentKey:keyManager error:outError];
+}
+
++ (NSData *)_decryptData:(NSData *)encrypted url:(NSURL *)url documentKey:(OFSDocumentKey *)keyManager error:(NSError **)outError;
+{
     unsigned dispositionFlags = [keyManager flagsForFilename:[url lastPathComponent]];
     if (dispositionFlags & OFSDocKeyFlagAlwaysUnencryptedRead) {
         OBLog(OFSFileManagerLogger, 1, @"    --> always unencrypted read");

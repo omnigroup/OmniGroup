@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -728,6 +728,8 @@
 		341605EB0C693324002839DF /* OSUItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUItem.m; sourceTree = "<group>"; };
 		3416076E0C6A27AA002839DF /* OSUFlippedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUFlippedView.h; sourceTree = "<group>"; };
 		3416076F0C6A27AA002839DF /* OSUFlippedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUFlippedView.m; sourceTree = "<group>"; };
+		3420BBF9214C69D300E7A60D /* OmniSystemInfo.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniSystemInfo.xcfilelist; sourceTree = SOURCE_ROOT; };
+		3420BBFA214C6A1200E7A60D /* OmniSoftwareUpdate.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniSoftwareUpdate.xcfilelist; sourceTree = "<group>"; };
 		3424B2230636F5DB0097A113 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		3433C1F71A12BB920021318A /* OSUSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUSettings.h; sourceTree = "<group>"; };
 		3433C1F81A12BB920021318A /* OSUSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUSettings.m; sourceTree = "<group>"; };
@@ -782,7 +784,7 @@
 		348A78871B583C830082D55D /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		348A78881B583C830082D55D /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		348CDD581A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OSUHardwareDescriptionTemplate.html; sourceTree = "<group>"; };
-		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; name = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		348D92E51AB798A40093AD35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		348D92E61AB798A40093AD35 /* OSUCheckServiceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckServiceProtocol.h; sourceTree = "<group>"; };
 		348D92E71AB798A40093AD35 /* OSUCheckService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckService.h; sourceTree = "<group>"; };
@@ -1299,6 +1301,7 @@
 		34A5F50C184E474C00E8BA9A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				3420BBF9214C69D300E7A60D /* OmniSystemInfo.xcfilelist */,
 				151FB8701DEF9955003E84F5 /* OmniSoftwareUpdate.strings */,
 				151FB87A1DEF9979003E84F5 /* OmniSystemInfo.strings */,
 				42943FD31CBC2AC1005E9862 /* OSUDevices.json */,
@@ -1354,6 +1357,7 @@
 				34775A231266672800FCDD2D /* InfoPlist.h */,
 				32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */,
 				34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */,
+				3420BBFA214C6A1200E7A60D /* OmniSoftwareUpdate.xcfilelist */,
 				34821EFD063407360097A113 /* Checking */,
 				08FB77AEFE84172EC02AAC07 /* Mac */,
 				34A2E0DD184F91B9009E0D9F /* iOS */,
@@ -2179,10 +2183,11 @@
 			);
 			name = "Check Version Number";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-CheckVersionNumber",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "./OSUInstallerPrivilegedHelper/CheckVersionNumber || (touch OSUInstallerPrivilegedHelper/Info.plist; exit 1)\n";
+			shellPath = /bin/zsh;
+			shellScript = "set -e\n\n./OSUInstallerPrivilegedHelper/CheckVersionNumber || (touch OSUInstallerPrivilegedHelper/Info.plist; exit 1)\n\n# Dummy file to make incremental builds not run this script repeatedly.\ntouch \"$DERIVED_FILE_DIR/$TARGET_NAME-CheckVersionNumber\"\n";
 			showEnvVarsInLog = 0;
 		};
 		348A790C1B5847FE0082D55D /* Build Strings */ = {
@@ -2222,10 +2227,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2238,13 +2247,17 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/OSUInstallerPrivilegedHelper/Info.plist",
+				"$(SRCROOT)/OSUInstallerPrivilegedHelper/launchd.plist",
 			);
 			name = "Preprocess plists";
 			outputPaths = (
+				"$(TEMP_DIR)/Preprocessed-Info.plist",
+				"$(TEMP_DIR)/Preprocessed-launchd.plist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd OSUInstallerPrivilegedHelper\nexport OTHER_PREPROCESSOR_DEFINITIONS=\"$INFOPLIST_PREPROCESSOR_DEFINITIONS\"\n\n# Speed incremental builds by not touching the plists if the input hasn't changed (causing relinking of this tool, causing re-copying in the framework, causing re-signing of the framework, etc.) This does mean that if build settings change (which can be expanded in the result) then you'll need to do a clean build. This is rare, though, compared to incremental builds that don't change settings.\n\nif [ ! -f \"$TEMP_DIR/Preprocessed-Info.plist\" -o Info.plist -nt \"$TEMP_DIR/Preprocessed-Info.plist\" ]; then\n    ../../../Scripts/PreprocessFiles --strip-xml-comments Info.plist -o \"$TEMP_DIR/Preprocessed-Info.plist\"\nfi\n\nif [ ! -f \"$TEMP_DIR/Preprocessed-launchd.plist\" -o launchd.plist -nt \"$TEMP_DIR/Preprocessed-launchd.plist\" ]; then\n    ../../../Scripts/PreprocessFiles --strip-xml-comments launchd.plist -o \"$TEMP_DIR/Preprocessed-launchd.plist\"\nfi\n";
+			shellScript = "cd OSUInstallerPrivilegedHelper\nexport OTHER_PREPROCESSOR_DEFINITIONS=\"$INFOPLIST_PREPROCESSOR_DEFINITIONS\"\n\n../../../Scripts/PreprocessFiles --strip-xml-comments Info.plist -o \"$TEMP_DIR/Preprocessed-Info.plist\"\n../../../Scripts/PreprocessFiles --strip-xml-comments launchd.plist -o \"$TEMP_DIR/Preprocessed-launchd.plist\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A24A971B1249A32A005C98E1 /* Copy trust root */ = {
@@ -2269,10 +2282,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2711,7 +2728,10 @@
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"@loader_path/../../../../../../../",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)$(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)";
 				SKIP_INSTALL = YES;
@@ -2727,7 +2747,10 @@
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"@loader_path/../../../../../../../",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)$(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)";
 				SKIP_INSTALL = YES;
@@ -2903,7 +2926,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"@loader_path/../../../../../../../",
+				);
 				MACH_O_TYPE = mh_execute;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
@@ -2924,7 +2950,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(value)",
+					"@loader_path/../../../../../../../",
+				);
 				MACH_O_TYPE = mh_execute;
 				OTHER_LDFLAGS = (
 					"-sectcreate",

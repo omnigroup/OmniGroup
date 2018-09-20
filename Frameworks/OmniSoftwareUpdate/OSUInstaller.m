@@ -21,6 +21,8 @@
 
 RCS_ID("$Id$");
 
+#define OSUPackageFormatPreferenceKey @"OSUPreferredPackageFormat"
+
 static BOOL OSUInstallerHasReceivedApplicationWillTerminate;
 
 @interface OSUInstaller () <OFControllerStatusObserver> {
@@ -105,10 +107,12 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         
         // Allow the user to change the preference ordering, for testing
         NSArray *preferredFormats = nil;
-        id value = [[NSUserDefaults standardUserDefaults] objectForKey:@"OSUPreferredPackageFormat"];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        id value = [defaults objectForKey:OSUPackageFormatPreferenceKey];
         
         if (value && [value isKindOfClass:[NSString class]]) {
             preferredFormats = [NSArray arrayWithObject:value];
+            [defaults setObject:preferredFormats forKey:OSUPackageFormatPreferenceKey];
         } else if (value && [value isKindOfClass:[NSArray class]]) {
             preferredFormats = value;
         }

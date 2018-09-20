@@ -167,8 +167,6 @@ static NSString *StandardUserAgentString;
 @interface ODAVConnection (Subclass) <ODAVConnectionSubclass>
 @end
 
-static NSDateFormatter *HttpDateFormatter;
-
 @implementation ODAVConnection
 {
     NSArray *_redirects;
@@ -187,20 +185,6 @@ static NSDateFormatter *HttpDateFormatter;
         OBASSERT([entitlements[@"com.apple.security.network.client"] boolValue]);
     }
 #endif
-
-    
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-    [dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss 'GMT'"];   /* rfc 1123 */
-    /* reference: http://developer.apple.com/library/ios/#qa/qa2010/qa1480.html */
-    [dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
-    [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-    
-    HttpDateFormatter = dateFormatter;
-}
-
-+ (NSDate *)dateFromString:(NSString *)httpDate;
-{
-    return [HttpDateFormatter dateFromString:httpDate];
 }
 
 - init;
@@ -1122,7 +1106,7 @@ static NSDate *_serverDateForOperation(ODAVOperation *operation)
     NSString *dateHeader = [operation valueForResponseHeader:@"Date"];
     
     if (![NSString isEmptyString:dateHeader])
-        return [HttpDateFormatter dateFromString:dateHeader];
+        return [[NSDate alloc] initWithHTTPString:dateHeader];
     else
         return nil;
 }
@@ -1909,7 +1893,7 @@ static NSMutableArray <ODAVFileInfo *> * _Nullable ODAVParseMultistatus(OFXMLDoc
                         
                         if ( (propElement = [anElement firstChildNamed:@"getlastmodified"]) != nil ) {
                             NSString *lastModified = OFCharacterDataFromElement(propElement);
-                            dateModified = [HttpDateFormatter dateFromString:lastModified];
+                            dateModified = [[NSDate alloc] initWithHTTPString:lastModified];
                         }
                         
                         if ( (propElement = [anElement firstChildNamed:@"getetag"]) != nil ) {

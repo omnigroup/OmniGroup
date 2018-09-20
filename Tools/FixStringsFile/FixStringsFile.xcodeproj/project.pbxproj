@@ -213,9 +213,18 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/Tests/input.m",
+				"$(SRCROOT)/Tests/Ellipsis.strings",
+				"$(SRCROOT)/Tests/MultipleCommentsForOnePair.strings",
+				"$(SRCROOT)/Tests/MultiplePairsForOneComment.strings",
+				"$(SRCROOT)/Tests/SmartQuotes.strings",
+				"$(SRCROOT)/Tests/UnmatchedQuotes.strings",
+				"$(SRCROOT)/Tests/RunTests",
+				"$(CONFIGURATION_BUILD_DIR)/FixStringsFile",
 			);
 			name = "Run Tests";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/FixStringsFileTestsOK",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

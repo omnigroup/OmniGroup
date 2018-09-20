@@ -606,6 +606,11 @@ static void __iOS7B5CleanConsoleOutput(void)
     return menuImage(@"OUIMenuItemPurchases.png");
 }
 
+- (UIImage *)registerMenuImage;
+{
+    return menuImage(@"OUIMenuItemRegister.png");
+}
+
 - (UIImage *)quickStartMenuImage {
     return menuImage(@"OUIMenuItemQuickStart.png");
 }

@@ -7,6 +7,8 @@
 
 #import <OmniInspector/OIAppearance.h>
 
+#import <OmniAppKit/NSAppearance-OAExtensions.h>
+
 RCS_ID("$Id$");
 
 @interface OIAppearanceDynamicColor : NSColor
@@ -73,7 +75,7 @@ RCS_ID("$Id$");
 
 static BOOL _isDarkAppearance(NSAppearance *appearance)
 {
-    return OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    return appearance.OA_isDarkAppearance;
 }
 
 - (NSColor *)_currentColor;

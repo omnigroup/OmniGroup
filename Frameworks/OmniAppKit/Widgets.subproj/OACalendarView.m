@@ -700,7 +700,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     NSRect drawRect = rect;
     int lineIndex;
     
-    [[[NSColor gridColor] colorWithAlphaComponent:0.5f] set];
+    [[NSColor gridColor] set];
     
     drawRect.size.width = 1.0f;
     for (lineIndex = 1; lineIndex < (OACalendarViewNumDaysPerWeek); lineIndex++) {

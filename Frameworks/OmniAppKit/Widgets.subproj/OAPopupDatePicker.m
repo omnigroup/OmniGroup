@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,11 +12,11 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
-
+#import <OmniAppKit/NSAppearance-OAExtensions.h>
 #import <OmniAppKit/NSEvent-OAExtensions.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/OAWindowCascade.h>
-#import "OADatePicker.h"
+#import <OmniAppKit/OADatePicker.h>
 #import <OmniAppKit/OAVersion.h>
 
 NSString * const OAPopupDatePickerWillShowNotificationName = @"OAPopupDatePickerWillShow";
@@ -426,7 +426,7 @@ static NSSize calendarImageSize;
     NSWindow *popupWindow = [self window];
     NSAppearance *appearance = emergeFromView.window.appearance;
     popupWindow.appearance = appearance;
-    BOOL isDark = OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    BOOL isDark = appearance.OA_isDarkAppearance;
     if (isDark) {
         _timePicker.bordered = YES;
     } else {
@@ -582,7 +582,7 @@ static NSSize calendarImageSize;
 - (void)drawRect:(NSRect)dirtyRect;
 {
     NSAppearance *appearance = self.effectiveAppearance;
-    BOOL isDark = OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    BOOL isDark = appearance.OA_isDarkAppearance;
     if (isDark) {
         [[NSColor controlBackgroundColor] set]; // windowBackgroundColor blends in with the black calendar days
     } else {

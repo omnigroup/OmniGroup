@@ -102,6 +102,8 @@
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
 
+- (void)documentPickerViewController:(OUIDocumentPickerViewController *)controller willCreateNewDocumentFromTemplateAtURL:(NSURL *)url inStore:(ODSStore *)store;
+
 // API for opening external documents
 - (void)openDocumentFromExternalContainer:(id)sender;
 - (void)addRecentlyOpenedDocumentURL:(NSURL *)url;
@@ -125,6 +127,11 @@
 - (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
 /// Default is _window.tintColor.
 - (UIColor *)launchActivityIndicatorColor;
+@property (readonly) BOOL allowsMultiFileSharing;
+
+// Per-app user activity definitions
++ (NSString *)openDocumentUserActivityType;
++ (NSString *)createDocumentFromTemplateUserActivityType;
 
 - (BOOL)shouldEnableCopyFromWebDAV; // default YES
 

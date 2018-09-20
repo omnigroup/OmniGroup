@@ -405,8 +405,11 @@ OBDidLoad(^{
     } else if ([delegate respondsToSelector:@selector(cut:)]) {
         [(id)delegate cut:sender];
     } else {
-        if ([self _copyToPasteboard:[NSPasteboard generalPasteboard]])
+        if ([self _copyToPasteboard:[NSPasteboard generalPasteboard]]) {
             [self delete:sender];
+        } else {
+            NSBeep(); // Give feedback that this operation failed
+        }
     }
 }
 
@@ -420,7 +423,9 @@ OBDidLoad(^{
     } else if ([delegate respondsToSelector:@selector(copy:)]) {
         [(id)delegate copy:sender];
     } else {
-        [self _copyToPasteboard:[NSPasteboard generalPasteboard]];
+        if (![self _copyToPasteboard:[NSPasteboard generalPasteboard]]) {
+            NSBeep(); // Give feedback that this operation failed
+        }
     }
 }
 

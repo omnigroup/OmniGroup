@@ -7,6 +7,7 @@
 
 #import "OIDisclosureButton.h"
 
+#import <OmniAppKit/NSAppearance-OAExtensions.h>
 #import <OmniInspector/OIAppearance.h>
 
 #import "OIDisclosureButtonCell.h"
@@ -19,7 +20,7 @@ RCS_ID("$Id$");
 
 static BOOL _isDarkAppearance(NSAppearance *appearance)
 {
-    return OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
+    return appearance.OA_isDarkAppearance;
 }
 
 - (id)initWithFrame:(NSRect)frame;
