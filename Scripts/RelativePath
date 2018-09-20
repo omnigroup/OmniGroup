@@ -1,0 +1,35 @@
+#!/usr/bin/ruby
+#
+# Copyright 2012 Omni Development, Inc. All rights reserved.
+#
+# This software may only be used and reproduced according to the
+# terms in the file OmniSourceLicense.html, which should be
+# distributed with this project and can also be found at
+# <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+#
+# $Id$
+
+require 'pathname'
+
+# For shell scripts, where there isn't a convenient way to compute relative paths
+
+$prog = File.basename(__FILE__)
+def usage
+    msg = <<EOS
+usage: #{$prog} path [reference-directory]
+EOS
+    STDERR.print msg
+    exit 1
+end
+usage unless ARGV.length == 1 || ARGV.length == 2
+
+if ARGV.length == 1
+  reference_dir = Dir.getwd
+else
+  reference_dir = ARGV[1]
+end
+
+path = Pathname.new(ARGV[0]).realpath
+reference_path = Pathname.new(reference_dir).realpath
+
+puts path.relative_path_from(reference_path)
