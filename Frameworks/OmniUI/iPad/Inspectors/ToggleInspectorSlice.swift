@@ -45,8 +45,8 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
             label.sizeToFit()
 
             contentView.addSubview(label)
-            label.topAnchor.constraintEqualToSystemSpacingBelow(contentView.topAnchor, multiplier: 1).isActive = true
-            contentView.bottomAnchor.constraintEqualToSystemSpacingBelow(label.bottomAnchor, multiplier: 1).isActive = true
+            label.topAnchor.constraint(equalToSystemSpacingBelow: contentView.topAnchor, multiplier: 1).isActive = true
+            contentView.bottomAnchor.constraint(equalToSystemSpacingBelow: label.bottomAnchor, multiplier: 1).isActive = true
             label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: insets.left).isActive = true
 
             self.toggleLabel = label
@@ -65,11 +65,11 @@ open class ToggleInspectorSlice : OUIInspectorSlice {
         }
 
         contentView.addSubview(toggle)
-        toggle.topAnchor.constraintEqualToSystemSpacingBelow(contentView.topAnchor, multiplier: 1).isActive = true
-        contentView.bottomAnchor.constraintEqualToSystemSpacingBelow(toggle.bottomAnchor, multiplier: 1).isActive = true
+        toggle.topAnchor.constraint(equalToSystemSpacingBelow: contentView.topAnchor, multiplier: 1).isActive = true
+        contentView.bottomAnchor.constraint(equalToSystemSpacingBelow: toggle.bottomAnchor, multiplier: 1).isActive = true
         toggle.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: insets.right * -1).isActive = true
         if (toggleLabel != nil) {
-            toggle.leadingAnchor.constraintGreaterThanOrEqualToSystemSpacingAfter((toggleLabel?.trailingAnchor)!, multiplier: 1).isActive = true
+            toggle.leadingAnchor.constraint(greaterThanOrEqualToSystemSpacingAfter: (toggleLabel?.trailingAnchor)!, multiplier: 1).isActive = true
         }
 
         self.view = view

@@ -16,7 +16,7 @@
     
     @objc optional func willPresent(viewController: UIViewController)
     
-    @objc optional func navigationAnimationController(for operation: UINavigationControllerOperation, animatingTo toVC: UIViewController, from fromVC: UIViewController) -> UIViewControllerAnimatedTransitioning?
+    @objc optional func navigationAnimationController(for operation: UINavigationController.Operation, animatingTo toVC: UIViewController, from fromVC: UIViewController) -> UIViewControllerAnimatedTransitioning?
     
     @objc optional func animationsToPerformAlongsideEmbeddedSidebarShowing(atLocation: MultiPaneLocation, withWidth: CGFloat) -> (()->Void)?
     
@@ -235,7 +235,7 @@ class MultiPanePresenter: NSObject {
     
     private func navigate(to pane: Pane, presentingController: UIViewController, gesture: UIScreenEdgePanGestureRecognizer?, animated: Bool) {
         // FIXME: instead of assuming the current child controller, should we delegate back for the pane we want to use instead?
-        guard let fromController = presentingController.childViewControllers.first else {
+        guard let fromController = presentingController.children.first else {
             assertionFailure("Expected a controller to exist prior to navigation")
             return
         }
@@ -266,7 +266,7 @@ class MultiPanePresenter: NSObject {
             break
         }
         
-        let animationOperation: UINavigationControllerOperation = (operation == .pop ? .pop : .push)
+        let animationOperation: UINavigationController.Operation = (operation == .pop ? .pop : .push)
         let animation = self.delegate?.navigationAnimationController?(for: animationOperation, animatingTo: pane.viewController, from: fromController)
         
         let transitionContext = MultiPaneNavigationTransitionContext(fromViewController: fromController, toViewController: pane.viewController, operation: animationOperation, animator: animation)

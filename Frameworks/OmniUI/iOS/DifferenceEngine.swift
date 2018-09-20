@@ -240,16 +240,16 @@ private let updateCrossDissolveAnimationDuration: TimeInterval = 0.05
 /// Encapsulates the difference between two `Diffable`s and can apply those differences to a table or collection view.
 public struct Difference {
     public struct TableUpdateAnimations {
-        public var sectionDeletion: UITableViewRowAnimation
-        public var sectionInsertion: UITableViewRowAnimation
-        public var sectionUpdate: UIViewAnimationOptions
+        public var sectionDeletion: UITableView.RowAnimation
+        public var sectionInsertion: UITableView.RowAnimation
+        public var sectionUpdate: UIView.AnimationOptions
         
-        public var rowDeletion: UITableViewRowAnimation
-        public var rowInsertion: UITableViewRowAnimation
+        public var rowDeletion: UITableView.RowAnimation
+        public var rowInsertion: UITableView.RowAnimation
         
-        public var rowUpdate: UIViewAnimationOptions
+        public var rowUpdate: UIView.AnimationOptions
         
-        public init(sectionDeletion: UITableViewRowAnimation = .top, sectionInsertion: UITableViewRowAnimation = .top, sectionUpdate: UIViewAnimationOptions = [.transitionCrossDissolve], rowDeletion: UITableViewRowAnimation = .top, rowInsertion: UITableViewRowAnimation = .top, rowUpdate: UIViewAnimationOptions = [.transitionCrossDissolve]) {
+        public init(sectionDeletion: UITableView.RowAnimation = .top, sectionInsertion: UITableView.RowAnimation = .top, sectionUpdate: UIView.AnimationOptions = [.transitionCrossDissolve], rowDeletion: UITableView.RowAnimation = .top, rowInsertion: UITableView.RowAnimation = .top, rowUpdate: UIView.AnimationOptions = [.transitionCrossDissolve]) {
             self.sectionDeletion = sectionDeletion
             self.sectionInsertion = sectionInsertion
             self.sectionUpdate = sectionUpdate
@@ -259,7 +259,7 @@ public struct Difference {
         }
         
         public init(fade: Bool) {
-            let animation: UITableViewRowAnimation = fade ? .fade : .none
+            let animation: UITableView.RowAnimation = fade ? .fade : .none
             self.sectionDeletion = animation
             self.sectionInsertion = animation
             self.sectionUpdate = fade ? [.transitionCrossDissolve] : []

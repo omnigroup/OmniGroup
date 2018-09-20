@@ -36,7 +36,7 @@ extension UIViewController: MultiPaneContentController {
     /// Informs controllers that the displayMode of the MultiPaneController has changed. This messages is sent to the UIViewControllers managed by Panes of the MultiPaneController regardless of the Pane's presentation mode. View Controllers that implement this method should not assume that they are embedded (child view controllers) in the MultiPaneController when called.
     /// clients that override should call super.
     @objc /**REVIEW**/ open func multiPaneConfigurationDidChange(to configuration: MultiPaneConfiguration) {
-        for child in self.childViewControllers {
+        for child in self.children {
             child.multiPaneConfigurationDidChange(to: configuration)
         }
     }

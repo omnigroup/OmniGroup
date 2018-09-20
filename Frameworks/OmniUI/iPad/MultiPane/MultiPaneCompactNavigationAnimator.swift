@@ -13,7 +13,7 @@ import UIKit
 // Providing a custom UIViewControllerContextTransitioning is what allows for proper child controller containment before and after transitions, while still keeping a consistent interface for custom vc transitions to MultiPaneController clients.
 //
 class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTransitioning {
-    let operation: UINavigationControllerOperation
+    let operation: UINavigationController.Operation
     let toViewController: UIViewController
     let fromViewController: UIViewController
     let animator: UIViewControllerAnimatedTransitioning
@@ -33,7 +33,7 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
         return .custom
     }
     
-    init(fromViewController: UIViewController, toViewController: UIViewController, operation: UINavigationControllerOperation, animator: UIViewControllerAnimatedTransitioning?) {
+    init(fromViewController: UIViewController, toViewController: UIViewController, operation: UINavigationController.Operation, animator: UIViewControllerAnimatedTransitioning?) {
         self.toViewController = toViewController
         self.fromViewController = fromViewController
         self.operation = operation
@@ -97,12 +97,12 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
 
         if didComplete {
             self.fromViewController.view.removeFromSuperview()
-            self.fromViewController.removeFromParentViewController()
-            self.toViewController.didMove(toParentViewController: parentVC)
+            self.fromViewController.removeFromParent()
+            self.toViewController.didMove(toParent: parentVC)
         } else {
-            self.toViewController.willMove(toParentViewController: nil)
+            self.toViewController.willMove(toParent: nil)
             self.toViewController.view.removeFromSuperview()
-            self.toViewController.removeFromParentViewController()
+            self.toViewController.removeFromParent()
         }
         
         finalizeTransition(didComplete)
@@ -147,8 +147,8 @@ class MultiPaneNavigationTransitionContext: NSObject, UIViewControllerContextTra
 
     private func prepareForTransition() {
         let parent = self.fromViewController.parent!
-        self.fromViewController.willMove(toParentViewController: nil)
-        parent.addChildViewController(self.toViewController)
+        self.fromViewController.willMove(toParent: nil)
+        parent.addChild(self.toViewController)
     }
     
     private func finalizeTransition(_ didComplete: Bool) {
@@ -166,8 +166,8 @@ extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordi
         return animator.transitionDuration(using: self)
     }
     
-    var completionCurve: UIViewAnimationCurve {
-        let defaultCurve = UIViewAnimationCurve.linear
+    var completionCurve: UIView.AnimationCurve {
+        let defaultCurve = UIView.AnimationCurve.linear
         guard let propertyAnimator = propertyAnimator else { return defaultCurve }
         guard let parameters = propertyAnimator.timingParameters else { return defaultCurve }
         
@@ -238,7 +238,7 @@ extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordi
     
 }
 
-extension UINavigationControllerOperation {
+extension UINavigationController.Operation {
     func pushPopTransform(width: CGFloat) -> CGAffineTransform {
         switch self {
         case .push: return CGAffineTransform(translationX: width * -1, y: 0.0)
@@ -249,12 +249,12 @@ extension UINavigationControllerOperation {
 }
 
 class MultiPanePushPopTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {
-    let operation: UINavigationControllerOperation
+    let operation: UINavigationController.Operation
     
     // Default animation setup to mimic the push/pop style that UINavigationController uses.
     var animator: UIViewPropertyAnimator = UIViewPropertyAnimator(duration: 0.0, timingParameters: UISpringTimingParameters())
     
-    init(with operation: UINavigationControllerOperation, animator: UIViewPropertyAnimator?) {
+    init(with operation: UINavigationController.Operation, animator: UIViewPropertyAnimator?) {
         self.operation = operation
         if let animator = animator {
             self.animator = animator

@@ -62,8 +62,8 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
         self.passwordField?.placeholder = NSLocalizedString("enter password", tableName:"OmniUI", bundle: OmniUIBundle, comment: "password field placeholder text")
         updateHintText()
 
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: .UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: .UIKeyboardWillHide, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
     override open func viewWillAppear(_ animated: Bool) {
@@ -142,11 +142,11 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
     // MARK: - Notifications (Keyboard)
 
     @objc func keyboardWillShow(_ notification: Notification) {
-        guard let userInfo = notification.userInfo, let keyboardEndFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect else {
+        guard let userInfo = notification.userInfo, let keyboardEndFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
             return
         }
 
-        self.additionalSafeAreaInsets = UIEdgeInsetsMake(0.0, 0.0, keyboardEndFrame.height, 0.0)
+        self.additionalSafeAreaInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: keyboardEndFrame.height, right: 0.0)
         self.view.setNeedsLayout()
 
         animateLayoutDuringKeyboardChange(userInfo: userInfo)
@@ -163,11 +163,11 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
 
     private func animateLayoutDuringKeyboardChange(userInfo: [AnyHashable: Any]) {
 
-        guard let curve = userInfo[UIKeyboardAnimationCurveUserInfoKey] as? Int, let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as? TimeInterval else {
+        guard let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int, let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else {
             return
         }
 
-        let options: UIViewAnimationOptions = [(UIViewAnimationOptions(rawValue: UIViewAnimationOptions.RawValue(curve << 16))), .beginFromCurrentState]
+        let options: UIView.AnimationOptions = [(UIView.AnimationOptions(rawValue: UIView.AnimationOptions.RawValue(curve << 16))), .beginFromCurrentState]
 
         UIView.animate(withDuration: duration, delay: 0.0, options: options, animations: {
             self.view.layoutIfNeeded()

@@ -66,7 +66,7 @@
     @objc(willPresentViewController:) optional func willPresent(viewController: UIViewController)
     
     /// called prior to a transition when the MultiPaneCompactTransitionStyle is .navigation
-    @objc optional func navigationAnimationController(for operation: UINavigationControllerOperation, animating toViewController: UIViewController, fromViewController: UIViewController, multiPaneController: MultiPaneController) -> UIViewControllerAnimatedTransitioning?
+    @objc optional func navigationAnimationController(for operation: UINavigationController.Operation, animating toViewController: UIViewController, fromViewController: UIViewController, multiPaneController: MultiPaneController) -> UIViewControllerAnimatedTransitioning?
     
     /// called when the user taps one of the bar button items before presentation. This is called in addition to the willHidePane and willShowPane methods, but this will also be called in every displayMode. If the receiver only cares about this message in certain displayModes, it can check the display mode of the multiPaneController parameter.
     @objc optional func userWillExplicitlyToggleVisibility(_ paneWillBeShown: Bool, at location: MultiPaneLocation, multiPaneController: MultiPaneController)
@@ -507,11 +507,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
         
         let viewController = pane.viewController
-        if !childViewControllers.contains(viewController) {
-            addChildViewController(viewController)
+        if !children.contains(viewController) {
+            addChild(viewController)
             viewController.view.translatesAutoresizingMaskIntoConstraints = false
             view.insertSubview(viewController.view, at: pane.location.rawValue)
-            viewController.didMove(toParentViewController: self)
+            viewController.didMove(toParent: self)
             if pane.configuration is Sidebar {
                 setupDividerIfNeeded(onPane: pane)
             }
@@ -527,10 +527,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     private func removePane(pane: Pane) {
         let viewController = pane.viewController
-        if childViewControllers.contains(viewController) {
-            viewController.willMove(toParentViewController: nil)
+        if children.contains(viewController) {
+            viewController.willMove(toParent: nil)
             viewController.view.removeFromSuperview()
-            viewController.removeFromParentViewController()
+            viewController.removeFromParent()
         }
     }
     
@@ -757,7 +757,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             guard sidebar.wantsDivider else { return }
             guard let divider = sidebar.divider else { return }
 
-            view.bringSubview(toFront:divider)
+            view.bringSubviewToFront(divider)
         }
 
         NSLayoutConstraint.deactivate(layoutConstraints)
@@ -1058,7 +1058,7 @@ extension MultiPaneController: MultiPanePresenterDelegate {
         NotificationCenter.default.post(name: .OUIMultiPaneControllerWillPresentPane, object: self, userInfo: [OUIMultiPaneControllerPaneLocationUserInfoKey : pane.location.rawValue])
     }
     
-    func navigationAnimationController(for operation: UINavigationControllerOperation, animatingTo toVC: UIViewController, from fromVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+    func navigationAnimationController(for operation: UINavigationController.Operation, animatingTo toVC: UIViewController, from fromVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return navigationDelegate?.navigationAnimationController?(for: operation, animating:toVC, fromViewController: fromVC, multiPaneController: self)
     }
     

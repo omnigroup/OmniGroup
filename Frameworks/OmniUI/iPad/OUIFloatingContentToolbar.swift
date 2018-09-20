@@ -22,7 +22,7 @@ open class OUIFloatingContentToolbar: UIToolbar {
     override open func layoutSubviews() {
         super.layoutSubviews()
         if let view = contentView {
-            bringSubview(toFront: view)
+            bringSubviewToFront(view)
         }
     }
 }

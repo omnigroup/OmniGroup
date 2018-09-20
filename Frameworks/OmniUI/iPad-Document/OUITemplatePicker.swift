@@ -405,7 +405,7 @@ extension OUITemplatePicker: UICollectionViewDelegate {
     public func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: OUITemplatePicker.headerIdentifier, for: indexPath) as! OUITemplatePickerHeader
 
-        guard let delegate = internalTemplateDelegate, kind == UICollectionElementKindSectionHeader else {
+        guard let delegate = internalTemplateDelegate, kind == UICollectionView.elementKindSectionHeader else {
             view.isHidden = true
             return view
         }
