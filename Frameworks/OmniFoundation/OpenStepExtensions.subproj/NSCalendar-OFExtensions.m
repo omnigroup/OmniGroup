@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ RCS_ID("$Id$")
         cachedCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
         OFPreference *preference = [NSCalendar firstDayOfTheWeekPreference];
         if ([preference hasNonDefaultValue])
-            [cachedCalendar setFirstWeekday:[preference integerValue] + 1];
+            [cachedCalendar setFirstWeekday:[preference unsignedIntegerValue] + 1];
         else {
             NSCalendar *currentCalendar = [NSCalendar currentCalendar];
             if ([[currentCalendar calendarIdentifier] isEqualToString:NSCalendarIdentifierGregorian]) {
@@ -41,7 +41,7 @@ RCS_ID("$Id$")
 {
     OFPreference *preference = [NSCalendar firstDayOfTheWeekPreference];
     if ([preference hasNonDefaultValue])
-        return [preference integerValue];
+        return [preference unsignedIntegerValue];
     else
         return [[NSCalendar cachedCalendar] firstWeekday] - 1;
 }

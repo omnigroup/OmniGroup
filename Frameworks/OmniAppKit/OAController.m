@@ -86,7 +86,7 @@ RCS_ID("$Id$")
 	    class = NSClassFromString(className);
 	    if (!class)
 		NSLog(@"Unable to find class '%@'", className);
-	    if (!OBClassIsSubclassOfClass(class, [OAAboutPanelController class]))
+	    else if (!OBClassIsSubclassOfClass(class, [OAAboutPanelController class]))
 		class = Nil;
 	}
 	if (!class)

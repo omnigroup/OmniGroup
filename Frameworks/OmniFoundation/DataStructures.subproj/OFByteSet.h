@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@
 
 static inline BOOL isByteInByteSet(OFByte aByte, OFByteSet *byteSet)
 {
-    return byteSet->bitmapRep[aByte >> 3] & (((unsigned)1) << (aByte & 7));
+    return (byteSet->bitmapRep[aByte >> 3] & (((unsigned)1) << (aByte & 7)))? YES : NO;
 }
 
 static inline BOOL isCharacterInByteSet(unichar ch, OFByteSet *byteSet)

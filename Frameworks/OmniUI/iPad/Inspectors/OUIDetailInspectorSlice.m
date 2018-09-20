@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OUIDetailInspectorSliceItem
 @end
@@ -93,7 +95,7 @@ RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSlice
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+- (id)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil;
 {
     if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
         return nil;
@@ -117,17 +119,17 @@ RCS_ID("$Id$");
 }
 
 // Let subclasses filter/adjust the inspection set for their details. Returning nil uses the default behavior of passing the same inspection set along.
-- (NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
 {
     return nil;
 }
 
-- (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
 {
     return nil;
 }
 
-- (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
 {
     return nil;
 }
@@ -141,14 +143,14 @@ RCS_ID("$Id$");
     return [OUIInspector disabledLabelTextColor];
 }
 
-- (void)setPlaceholderTextColor:(UIColor *)placeholderTextColor;
+- (void)setPlaceholderTextColor:(UIColor * _Nullable)placeholderTextColor;
 {
     if (_placeholderTextColor == placeholderTextColor)
         return;
     _placeholderTextColor = placeholderTextColor;
 }
 
-- (NSString *)groupTitle;
+- (nullable NSString *)groupTitle;
 {
     return nil;
 }
@@ -289,7 +291,7 @@ RCS_ID("$Id$");
     return cell;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+- (nullable NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
 {
     return [self groupTitle];
 }
@@ -310,7 +312,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     OUIDetailInspectorSliceTableViewCell *cell = (OUIDetailInspectorSliceTableViewCell *)[tableView cellForRowAtIndexPath:indexPath];
     return cell.enabled ? indexPath : nil;
@@ -359,3 +361,4 @@ RCS_ID("$Id$");
 }
 @end
 
+NS_ASSUME_NONNULL_END

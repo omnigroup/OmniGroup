@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
 
 RCS_ID("$Id$")
 
+
+NS_ASSUME_NONNULL_BEGIN
 
 #ifdef DEBUG
 // In Xcode 6.2 beta 4, environment variables set in a Xcode scheme are prefixed with $(SRCROOT).
@@ -62,7 +64,7 @@ static void _fixPreferences(void) {
 }
 
 // Call this from main() to fix arguments...
-void OBFixXcodeBustedArguments(int argc, char *argv[])
+void OBFixXcodeBustedArguments(int argc, char * _Nonnull * _Nonnull argv)
 {
     NSDictionary *environment = [[NSProcessInfo processInfo] environment];
     NSString *prefixString = environment[@"OBFixXcodeBustedEnvironment"];
@@ -99,7 +101,7 @@ static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
     return class_addMethod(cls, name, imp, types);
 }
 
-IMP OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
+IMP _Nullable OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
 {
     Method newMethod = class_getInstanceMethod(aClass, newSelector);
     if (!newMethod) {
@@ -110,7 +112,7 @@ IMP OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newS
     return OBReplaceMethodImplementationFromMethod(aClass, oldSelector, newMethod);
 }
 
-IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)
+IMP _Nullable OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)
 {
     Method localMethod, superMethod;
     IMP oldImp = NULL;
@@ -147,7 +149,7 @@ static void _NSToCG(char *p)
     p[1] = 'G';
 }
 
-const char *_OBGeometryAdjustedSignature(const char *sig)
+const char * _Nullable _OBGeometryAdjustedSignature(const char * _Nullable sig)
 {
     if (sig == NULL) {
         // This happens for @objc Swift classes that defined index/key subscripts https://bugs.swift.org/browse/SR-970
@@ -169,7 +171,7 @@ const char *_OBGeometryAdjustedSignature(const char *sig)
 }
 #endif
 
-IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
+IMP _Nullable OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
 {
     OBASSERT(newMethod != NULL);
     
@@ -224,30 +226,30 @@ IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Metho
     return oldImp;
 }
 
-IMP OBReplaceMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
+IMP _Nullable OBReplaceMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
 {
     return OBReplaceMethodImplementationFromMethod(aClass, oldSelector, class_getInstanceMethod(aClass, newSelector));
 }
 
-IMP OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL oldSelector, Class sourceClass, SEL newSelector)
+IMP _Nullable OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL oldSelector, Class sourceClass, SEL newSelector)
 {
     return OBReplaceMethodImplementationFromMethod(destClass, oldSelector, class_getInstanceMethod(sourceClass, newSelector));
 }
 
-IMP OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
+IMP _Nullable OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
 {
     OBPRECONDITION(!class_isMetaClass(aClass));
     return OBReplaceMethodImplementationWithSelector(object_getClass(aClass), oldSelector, newSelector);
 }
 
-IMP OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
+IMP _Nullable OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod)
 {
     OBPRECONDITION(!class_isMetaClass(aClass));
     return OBReplaceMethodImplementationFromMethod(object_getClass(aClass), oldSelector, newMethod);
 }
 
 // Returns the class in the inheritance chain of 'cls' that actually implements the given selector, or Nil if it isn't implemented
-Class OBClassImplementingMethod(Class cls, SEL sel)
+Class _Nullable OBClassImplementingMethod(Class cls, SEL sel)
 {
     Method method = class_getInstanceMethod(cls, sel);
     if (!method)
@@ -265,7 +267,7 @@ Class OBClassImplementingMethod(Class cls, SEL sel)
     return cls;
 }
 
-BOOL OBObjectIsKindOfClass(id object, Class cls)
+BOOL OBObjectIsKindOfClass(id _Nullable object, Class cls)
 {
     return [object isKindOfClass:cls];
 }
@@ -276,30 +278,30 @@ BOOL OBObjectIsKindOfClass(id object, Class cls)
  
  See also: - description (NSObject), - description (OBObject), - shortDescription (OBObject)
  "*/
-NSString *OBShortObjectDescription(id anObject)
+NSString *OBShortObjectDescription(id _Nullable anObject)
 {
     if (!anObject)
-        return nil;
+        return @"<null>";
 
     return [NSString stringWithFormat:@"<%@:%p>", NSStringFromClass([anObject class]), anObject];
 }
 
-NSString *OBShortObjectDescriptionWith(id anObject, NSString *extra)
+NSString *OBShortObjectDescriptionWith(id _Nullable anObject, NSString *extra)
 {
     if (!anObject)
-        return nil;
-    
+        return @"<null>";
+
     return [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([anObject class]), anObject, extra];
 }
 
-NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
+NSString *OBFormatObjectDescription(id _Nullable anObject, NSString * fmt, ...)
 {
     NSString *suffix, *result;
     va_list varg;
     
     if (!anObject)
-        return nil;
-    
+        return @"<null>";
+
     va_start(varg, fmt);
     suffix = [[NSString alloc] initWithFormat:fmt arguments:varg];
     va_end(varg);
@@ -335,11 +337,21 @@ void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned
     exit(1);  // notreached, but needed to pacify the compiler
 }
 
-void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...)
+void _OBRejectInvalidCall(id _Nullable self, SEL _Nullable _cmd, const char *file, unsigned int line, NSString *format, ...)
 {
-    const char *className = class_getName(OBClassForPointer(self));
-    const char *methodName = sel_getName(_cmd);
-    
+    NSMutableString *reason = [[NSMutableString alloc] init];
+
+    if (self) {
+        const char *className = class_getName(OBClassForPointer(self));
+        if (_cmd) {
+            const char *methodName = sel_getName(_cmd);
+            [reason appendFormat:@"%c[%s %s]", OBPointerIsClass(self) ? '+' : '-', className, methodName];
+        } else {
+            [reason appendFormat:@"%s", className];
+        }
+        [reason appendString:@" "];
+    }
+
     va_list argv;
     va_start(argv, format);
     NSString *complaint = [[NSString alloc] initWithFormat:format arguments:argv];
@@ -348,12 +360,13 @@ void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line
 #ifdef DEBUG
     fprintf(stderr, "Invalid call on:\n%s:%d\n", file, line);
 #endif
-    
-    NSString *reasonString = [NSString stringWithFormat:@"%c[%s %s] (%s:%d) %@", OBPointerIsClass(self) ? '+' : '-', className, methodName, file, line, complaint];
-    NSLog(@"%@", reasonString);
 
-    [[NSException exceptionWithName:NSInvalidArgumentException reason:reasonString userInfo:nil] raise];
-    exit(1);  // not reached, but needed to pacify the compiler
+    [reason appendFormat:@"(%s:%d) %@", file, line, complaint];
+    NSLog(@"%@", reason);
+
+    [[NSException exceptionWithName:NSInvalidArgumentException reason:reason userInfo:nil] raise];
+
+    abort();
 }
 
 void _OBFinishPorting(const char *text)
@@ -418,4 +431,6 @@ void _OBStopInDebugger(const char *file, unsigned int line, const char *function
 
 DEFINE_NSSTRING(OBAbstractImplementation);
 DEFINE_NSSTRING(OBUnusedImplementation);
+
+NS_ASSUME_NONNULL_END
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,13 +21,15 @@
 #import <OmniBase/objc.h>
 #import <OmniBase/macros.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
     
 #ifdef DEBUG
-void OBFixXcodeBustedArguments(int argc, char *argv[]);
+void OBFixXcodeBustedArguments(int argc, char * _Nonnull * _Nonnull argv);
 #endif
 
 #if defined(__GNUC__)
@@ -39,7 +41,7 @@ void OBFixXcodeBustedArguments(int argc, char *argv[]);
 #define OB_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
 
 // In some cases, we really need to keep an object alive. For example, we may have a window controller that will release itself in response to its window being closed.
-static inline void OBStrongRetain(id object)
+static inline void OBStrongRetain(id _Nullable object)
 {
     if (object) {
         void *ptr = (OB_BRIDGE void *)object;
@@ -47,7 +49,7 @@ static inline void OBStrongRetain(id object)
     }
 }
     
-static inline void OBStrongRelease(id object)
+static inline void OBStrongRelease(id _Nullable object)
 {
     if (object) {
         void *ptr = (OB_BRIDGE void *)object;
@@ -55,7 +57,7 @@ static inline void OBStrongRelease(id object)
     }
 }
     
-static inline void OBAutorelease(id object)
+static inline void OBAutorelease(id _Nullable object)
 {
     if (object) {
         void *ptr = (OB_BRIDGE void *)object;
@@ -63,17 +65,17 @@ static inline void OBAutorelease(id object)
     }
 }
     
-static inline void OBRetainAutorelease(id object)
+static inline void OBRetainAutorelease(id _Nullable object)
 {
     OBStrongRetain(object);
     OBAutorelease(object);
 }
 
 // ARC doesn't allow object_getInstanceVariable().
-extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsafe_unretained id *outValue);
+extern void OBObjectGetUnsafeObjectIvar(id _Nullable object, const char *ivarName, __unsafe_unretained id _Nullable * _Nullable outValue);
     
 // ARC doesn't allow casting between 'void **' and '__unsafe_unretained id *' for some reason.
-extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer);
+extern __unsafe_unretained id _Nullable * _Nullable OBCastMemoryBufferToUnsafeObjectArray(void * _Nullable buffer);
 
 // ARC doesn't allow NSAllocateObject
 extern id OBAllocateObject(Class cls, NSUInteger extraBytes) NS_RETURNS_RETAINED;
@@ -83,7 +85,7 @@ extern void *OBGetIndexedIvars(id object);
 
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
-extern void _OBRejectInvalidCall(id self, SEL _cmd, const char *file, unsigned int line, NSString *format, ...)
+extern void _OBRejectInvalidCall(id _Nullable self, SEL _Nullable _cmd, const char *file, unsigned int line, NSString *format, ...)
                     NORETURN __attribute__((cold)) __attribute__((format(__NSString__, 5, 6)));
 
 #define OBRequestConcreteImplementation(self, sel) _OBRequestConcreteImplementation((self), (sel), __FILE__, __LINE__)
@@ -150,45 +152,45 @@ extern NSString * const OBUnusedImplementation;
     
 #undef NORETURN
 
-extern IMP OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
+extern IMP _Nullable OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
 /*.doc.
 Provides the same functionality as +[NSObject registerInstanceMethod:withMethodTypes:forSelector: but does it without provoking +initialize on the target class.  Returns the original implementation.
 */
 
-extern IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp);
+extern IMP _Nullable OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp);
 /*.doc.
 Replaces the given method implementation in place.  Returns the old implementation.
 */
 
-IMP OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod);
+extern IMP _Nullable OBReplaceMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod);
 /*.doc.
 Replaces the given method implementation in place.  Returns the old implementation.
 */
 
-extern IMP OBReplaceMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
+extern IMP _Nullable OBReplaceMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
 /*.doc.
 Calls the above, but determines newImp by looking up the instance method for newSelector.  Returns the old implementation.
 */
 
-extern IMP OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL oldSelector, Class sourceClass, SEL newSelector);
+extern IMP _Nullable OBReplaceMethodImplementationWithSelectorOnClass(Class destClass, SEL oldSelector, Class sourceClass, SEL newSelector);
 /*.doc.
 Calls OBReplaceMethodImplementation.  Derives newImp from newSelector on sourceClass and changes method implementation for oldSelector on destClass.
 */
 
-extern IMP OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
+extern IMP _Nullable OBReplaceClassMethodImplementationWithSelector(Class aClass, SEL oldSelector, SEL newSelector);
 /*.doc.
 Calls OBReplaceMethodImplementationWithSelector with aClass's metaclass as the class argument. aClass must not itself be a metaclass.
 */
 
-extern IMP OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod);
+extern IMP _Nullable OBReplaceClassMethodImplementationFromMethod(Class aClass, SEL oldSelector, Method newMethod);
 /*.doc.
 Calls OBReplaceMethodImplementationFromMethod with aClass's metaclass as the class argument. aClass must not itself be a metaclass.
 */
 
-extern Class OBClassImplementingMethod(Class cls, SEL sel);
+extern Class _Nullable OBClassImplementingMethod(Class cls, SEL sel);
 
 // This returns YES if the given object is a class object
-static inline BOOL OBObjectIsClass(id object)
+static inline BOOL OBObjectIsClass(id _Nullable object)
 {
     if (object) {
         Class cls = object_getClass(object);
@@ -197,14 +199,14 @@ static inline BOOL OBObjectIsClass(id object)
     return NO;
 }
 
-static inline BOOL OBObjectIsMetaClass(id object)
+static inline BOOL OBObjectIsMetaClass(id _Nullable object)
 {
     // Calling class_isMetaClass() on a plain object isn't valid.
     return OBObjectIsClass(object) && class_isMetaClass(object);
 }
 
 // This returns the class object for the given pointer.  For an instance, that means getting the class.  But for a class object, that means returning the pointer itself
-static inline Class OBClassForObject(id object)
+static inline Class OBClassForObject(id _Nullable object)
 {
     if (!object)
         return object;
@@ -220,7 +222,7 @@ static inline Class OBClassForObject(id object)
 #define OBPointerIsMetaClass OBObjectIsMetaClass
 #define OBClassForPointer OBClassForObject
 
-extern BOOL OBObjectIsKindOfClass(id object, Class cls); // Useful in Swift when dealing with a type *variable*
+extern BOOL OBObjectIsKindOfClass(id _Nullable object, Class cls); // Useful in Swift when dealing with a type *variable*
 
 
 static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
@@ -234,9 +236,9 @@ static inline BOOL OBClassIsSubclassOfClass(Class subClass, Class superClass)
     return NO;
 }
 
-extern NSString *OBShortObjectDescription(id anObject);
-extern NSString *OBShortObjectDescriptionWith(id anObject, NSString *extra);
-extern NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
+extern NSString * OBShortObjectDescription(id _Nullable anObject);
+extern NSString * OBShortObjectDescriptionWith(id _Nullable anObject, NSString *extra);
+extern NSString * OBFormatObjectDescription(id _Nullable anObject, NSString *fmt, ...)
     __attribute__((format(__NSString__, 2, 3)));
 
 
@@ -331,7 +333,7 @@ OB_UNUSED_VALUE_FOR_TYPE(CGRect)
 
 #if NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 // Returns a copy of the method signature with the NSGeometry types replaced with CG types.  The result should be free'd by the caller.
-__attribute__((visibility("hidden"))) const char *_OBGeometryAdjustedSignature(const char *sig);
+__attribute__((visibility("hidden"))) const char * _Nullable _OBGeometryAdjustedSignature(const char * _Nullable sig);
 #endif
 
 // Inttypes-style format macros for Apple-defined types
@@ -381,3 +383,5 @@ __attribute__((visibility("hidden"))) const char *_OBGeometryAdjustedSignature(c
 #if defined(__cplusplus)
 } // extern "C"
 #endif
+
+NS_ASSUME_NONNULL_END

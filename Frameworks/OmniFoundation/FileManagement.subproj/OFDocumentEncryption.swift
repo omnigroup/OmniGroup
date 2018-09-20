@@ -108,7 +108,7 @@ class OFDocumentEncryptionSettings : NSObject {
         unreadableRecipientCount = 0
         passwordHint = wrapper.passwordHint
         
-        let embeddedCertificates = wrapper.embeddedCertificates.lazy.flatMap { SecCertificateCreateWithData(kCFAllocatorDefault, $0 as CFData) }
+        let embeddedCertificates = wrapper.embeddedCertificates.lazy.compactMap { SecCertificateCreateWithData(kCFAllocatorDefault, $0 as CFData) }
         
         for recipient_ in recipients {
             resolveRecipient:
@@ -169,9 +169,9 @@ class OFDocumentEncryptionSettings : NSObject {
     }
     
     @objc public override
-    func debugDictionary() -> NSMutableDictionary! {
-        let debugDictionary : NSMutableDictionary = super.debugDictionary()!
-        
+    var debugDictionary: NSMutableDictionary {
+        let debugDictionary : NSMutableDictionary = super.debugDictionary
+
         debugDictionary.setUnsignedIntegerValue(self.cmsOptions.rawValue, forKey: "cmsOptions")
         if let docId = self.documentIdentifier as NSData? {
             debugDictionary.setObject(docId, forKey: "documentIdentifier" as NSString)
@@ -890,7 +890,7 @@ class OFCMSFileWrapper {
                 throw OFError(.OFXMLDocumentNoRootElementError)
             }
             guard rtelt.name == "index", rtelt.namespace == encryptedContentIndexNamespaceURI else {
-                throw miscFormatError(reason: "Incorrect root element: \(rtelt.shortDescription()!)")
+                throw miscFormatError(reason: "Incorrect root element: \(rtelt.shortDescription)")
             }
             
             var files : [PackageIndex.FileEntry] = []

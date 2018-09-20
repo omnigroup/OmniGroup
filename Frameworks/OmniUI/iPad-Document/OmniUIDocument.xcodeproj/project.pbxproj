@@ -705,7 +705,7 @@
 		3458F1221B5D75EC000011A6 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3458F1241B5D75F3000011A6 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		3466ADF71F59F4CE00646BA5 /* OmniUI.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniUI.xcodeproj; path = ../iPad/OmniUI.xcodeproj; sourceTree = "<group>"; };
-		346BF491179495E800E6890A /* OmniUIDocument.keycommands */ = {isa = PBXFileReference; explicitFileType = sourcecode.c; fileEncoding = 4; path = OmniUIDocument.keycommands; sourceTree = SOURCE_ROOT; };
+		346BF491179495E800E6890A /* OmniUIDocument.keycommands */ = {isa = PBXFileReference; explicitFileType = text.plist; fileEncoding = 4; path = OmniUIDocument.keycommands; sourceTree = SOURCE_ROOT; };
 		3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUIDocument.h; sourceTree = SOURCE_ROOT; };
 		3470A40E1BDEC0F000D14049 /* OmniUIDocument.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = OmniUIDocument.modulemap; sourceTree = SOURCE_ROOT; };
 		34C1BC01179DD5600095744C /* OUIErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIErrors.h; sourceTree = SOURCE_ROOT; };
@@ -1604,7 +1604,7 @@
 		342F48B8167799AC007C5FFB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					3458EF301B5D6ED0000011A6 = {

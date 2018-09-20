@@ -1855,7 +1855,14 @@ static NSSet *ViewableFileTypes()
     return availableWidth;
 }
 
-- (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
+#if defined(__IPHONE_12_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_12_0
+// iOS 12 defines a real protocol here
+#define RestorablerObjectsArgumentType NSArray <id <UIUserActivityRestoring>> *
+#else
+#define RestorablerObjectsArgumentType NSArray *
+#endif
+
+- (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(RestorablerObjectsArgumentType _Nullable restorableObjects))restorationHandler;
 {
     NSString *uniqueID = userActivity.userInfo[CSSearchableItemActivityIdentifier];
     if (uniqueID) {

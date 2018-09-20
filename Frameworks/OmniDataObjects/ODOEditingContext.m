@@ -236,7 +236,7 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
             if (mostRecentSnapshot == nil) {
                 mostRecentSnapshot = self->_objectIDToCommittedPropertySnapshot[previouslyRegisteredObject.objectID];
             }
-            *outMostRecentSnapshot = mostRecentSnapshot;
+            *outMostRecentSnapshot = [[mostRecentSnapshot retain] autorelease];
         }
         
         self->_objectIDToLastProcessedSnapshot[previouslyRegisteredObject.objectID] = nil;

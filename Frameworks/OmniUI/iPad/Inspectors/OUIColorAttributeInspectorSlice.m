@@ -15,6 +15,8 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUIColorAttributeInspectorSlice ()
 @property (strong, nonatomic) UIView *bottomSeparator;
 @end
@@ -39,12 +41,12 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark UIViewController subclass
 
-- (NSString *)nibName
+- (nullable NSString *)nibName
 {
     return nil;
 }
 
-- (NSBundle *)nibBundle
+- (nullable NSBundle *)nibBundle
 {
     return nil;
 }
@@ -114,3 +116,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

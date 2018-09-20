@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@
 
 static inline BOOL OFCharacterSetHasMember(OFCharacterSet *unicharSet, unichar character)
 {
-    return unicharSet->bitmapRep[character >> 3] & (((unsigned)1) << (character & 7));
+    return (unicharSet->bitmapRep[character >> 3] & (((unsigned)1) << (character & 7)))? YES : NO;
 }
 
 static inline void OFCharacterSetAddCharacter(OFCharacterSet *unicharSet, unichar character)

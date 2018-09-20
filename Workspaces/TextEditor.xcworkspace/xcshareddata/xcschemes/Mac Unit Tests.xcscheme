@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0810"
+   LastUpgradeVersion = "1000"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -42,7 +42,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "349F978E15DEA87B00D7677C"
+               BlueprintIdentifier = "1E0D27471A6F2CCC00E65230"
                BuildableName = "OFSUnitTests.xctest"
                BlueprintName = "OFSUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
@@ -94,7 +94,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "349F978E15DEA87B00D7677C"
+               BlueprintIdentifier = "1E0D27471A6F2CCC00E65230"
                BuildableName = "OFSUnitTests.xctest"
                BlueprintName = "OFSUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">

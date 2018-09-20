@@ -189,7 +189,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return panes.sorted { $0.location.rawValue < $1.location.rawValue }
     }
     
-    @objc open weak var layoutDelegate: MultiPaneLayoutDelegate? = LayoutDelegate()
+    @objc open weak var layoutDelegate: MultiPaneLayoutDelegate?
     @objc open weak var navigationDelegate: MultiPaneNavigationDelegate?
     @objc /**REVIEW**/ open weak var appearanceDelegate: MultiPaneAppearanceDelegate?
     
@@ -1170,16 +1170,5 @@ extension Pane {
     
     var presentationMode: MultiPanePresentationMode {
         return environment?.presentationMode ?? .none
-    }
-}
-
-// TODO: this is tempoarary so we get a different layout on the 12.9" iPad Pro. It should be removed/moved to the application at some point.
-class LayoutDelegate: NSObject, MultiPaneLayoutDelegate {
-    @objc /**REVIEW**/ func multiPaneController(controller: MultiPaneController, willTransitionToDisplayMode mode: MultiPaneDisplayMode, currentSize size: CGSize) -> MultiPaneDisplayMode {
-        if size.width - 320 > 600 {
-            return .multi
-        }
-        
-        return mode
     }
 }

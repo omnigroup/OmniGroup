@@ -4935,7 +4935,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0930;
+				LastUpgradeCheck = 1000;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -6371,7 +6371,6 @@
 			buildSettings = {
 				GCC_PREFIX_HEADER = "Tests/OFXMLIdHash/OFXMLIdHash-Prefix.pch";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				VALID_ARCHS = "x86_64 i386";
 			};
 			name = Debug;
 		};
@@ -6381,7 +6380,6 @@
 			buildSettings = {
 				GCC_PREFIX_HEADER = "Tests/OFXMLIdHash/OFXMLIdHash-Prefix.pch";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				VALID_ARCHS = "x86_64 i386";
 			};
 			name = Release;
 		};

@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc.All rights reserved.
+// Copyright 2016,2018 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,9 +77,7 @@ OB_REQUIRE_ARC
         size_t len2 = obj->derData.length;
         int byteCmp = memcmp([derData bytes], [obj->derData bytes], MIN(len1, len2));
         // Due to the nature of DER encoding, one valid encoding can't be a prefix of the other.
-        if (byteCmp == 0) {
-            OBASSERT(len1 == len2);
-        }
+        OBASSERT_IF(byteCmp == 0, len1 == len2);
         cmp = ( byteCmp < 0 )? NSOrderedAscending : ( (byteCmp == 0)? NSOrderedSame : NSOrderedDescending );
     }
     

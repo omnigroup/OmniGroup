@@ -9,7 +9,8 @@
 DSTROOT = /
 // INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
 
-SWIFT_OPTIMIZATION_LEVEL = -Owholemodule
+// Xcode 10 recommends this, and Xcode 9.3+ recognize it. This leave SWIFT_OPTIMIZATION_LEVEL set to the default '-O'.
+SWIFT_COMPILATION_MODE = wholemodule
 
 // Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
 OMNI_BUILD_FILE_SUFFIX=

@@ -277,20 +277,6 @@ static BOOL displayIfNeededBlocksInProgress = NO;
     [self insertTitlebarAccessoryViewController:accessory atIndex:0];
 }
 
-- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
-{
-    NSRect windowRect = (NSRect){.origin = windowPoint, .size = NSZeroSize};
-    NSRect screenRect = [self convertRectToScreen:windowRect];
-    return screenRect.origin;
-}
-
-- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
-{
-    NSRect screenRect = (NSRect){.origin = screenPoint, .size = NSZeroSize};
-    NSRect windowRect = [self convertRectFromScreen:screenRect];
-    return windowRect.origin;
-}
-
 /*" Convert a point from a window's base coordinate system to the CoreGraphics global ("screen") coordinate system. "*/
 - (CGPoint)convertBaseToCGScreen:(NSPoint)windowPoint;
 {
@@ -546,13 +532,11 @@ OBPerformPosing(^{
     
     if ([[self class] hasTabbedWindowSupport]) {
         NSWindowTabbingMode savedTabbingMode = self.tabbingMode;
-        NSDisableScreenUpdates();
         @try {
             self.tabbingMode = tabbingMode;
             block();
         } @finally {
             self.tabbingMode = savedTabbingMode;
-            NSEnableScreenUpdates();
         }
     } else {
         block();

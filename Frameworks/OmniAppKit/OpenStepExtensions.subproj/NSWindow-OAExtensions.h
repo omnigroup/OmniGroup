@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,12 @@
 #import <OmniBase/OBUtilities.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface NSWindow (Sierra)
+// These are present on 10.12, but not declared publically until 10.14.
+- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
+- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
+@end
 
 @interface NSWindow (OAExtensions)
 
@@ -38,9 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)shouldDrawAsKey;
 
 - (void)addConstructionWarning;
-
-- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
-- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
 
 - (CGPoint)convertBaseToCGScreen:(NSPoint)windowPoint;
 

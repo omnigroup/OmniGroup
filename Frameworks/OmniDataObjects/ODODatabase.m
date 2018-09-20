@@ -678,7 +678,7 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     
     if (OFISNULL(plistObject)) {
         // Use a DELETE statement
-        OBRequestConcreteImplementation(nil, _cmd);
+        OBRequestConcreteImplementation(self, _cmd);
     } else {
         if (!ODOSQLStatementBindString(sqlite, _metadataInsertStatement, 1, keyString, outError)) {
             return NO;

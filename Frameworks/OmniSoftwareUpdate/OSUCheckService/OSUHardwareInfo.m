@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -156,10 +156,11 @@ static NSDictionary *copySystemProfileForDataType(NSString *dataType)
     
     __autoreleasing NSError *error = nil;
     id plist = [NSPropertyListSerialization propertyListWithData:output options:NSPropertyListImmutable format:NULL error:&error];
-    if (!plist && error) {
+    if (!plist) {
 #ifdef DEBUG    
 	NSLog(@"Unable to query system profile for '%@' -- '%@'", dataType, error);
 #endif	
+        return nil;
     }
     
     if (![plist isKindOfClass:[NSArray class]]) {

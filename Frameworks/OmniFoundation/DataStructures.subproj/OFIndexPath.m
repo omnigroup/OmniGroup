@@ -193,7 +193,7 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
     return description;
 }
 
-- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
+- (NSString *)descriptionWithLocale:(nullable NSDictionary *)locale indent:(NSUInteger)level
 {
     return [self description];
 }

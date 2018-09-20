@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 #import <OmniBase/macros.h>
 
 RCS_ID("$Id$")
+
+NS_ASSUME_NONNULL_BEGIN
 
 @implementation OBObject
 /*" OBObject is an immediate subclass of NSObject, and adds common functionality which Omni has found to be valuable in its own development. OBObject is a superclass for virtually all (if not all) of the classes in Omni's Frameworks (such as OmniFoundation, OmniAppkit, and the publically available OmniNetworking frameworks) as well as in Omni's commercial applications (including OmniWeb and OmniPDF). Also, the class header file includes a couple of other header files which are used in many to virtually all of our classes, and recommended for your use as well. This way you need not include these utility headers everywhere.
@@ -284,7 +286,7 @@ Normally, calls [self debugDictionary], asks that dictionary to perform descript
 
 See also: - debugDictionary
 "*/
-- (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level
+- (NSString *)descriptionWithLocale:(nullable NSDictionary *)locale indent:(NSUInteger)level
 {
     if (level < MaxDebugDepth)
         return [[self debugDictionary] descriptionWithLocale:locale indent:level];
@@ -314,8 +316,7 @@ See also: - debugDictionary
 
 CFStringRef OBNSObjectCopyShortDescription(const void *value)
 {
-    CFStringRef str = (__bridge CFStringRef)[(OB_BRIDGE id)value shortDescription];
-    if (str)
-        CFRetain(str);
-    return str;
+    return CFBridgingRetain([(OB_BRIDGE id)value shortDescription]);
 }
+
+NS_ASSUME_NONNULL_END

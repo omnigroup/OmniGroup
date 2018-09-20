@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /*
  Presents a table view of navigation items, each with a title and an optional value for the current state of some setting.
  */
@@ -17,10 +19,10 @@
 
 // Filled out with default values so -updateItem:atIndex: can fill out only the bits relevant
 @interface OUIDetailInspectorSliceItem : NSObject
-@property(nonatomic,copy) NSString *title; // Defaults to the slice's title
-@property(nonatomic,copy) NSString *value; // Defaults to nil
-@property(nonatomic,copy) UIImage *valueImage; // Defaults to nil
-@property(nonatomic,copy) UIImage *image; // Defaults to nil
+@property(nonatomic,nullable,copy) NSString *title; // Defaults to the slice's title
+@property(nonatomic,nullable,copy) NSString *value; // Defaults to nil
+@property(nonatomic,nullable,copy) UIImage *valueImage; // Defaults to nil
+@property(nonatomic,nullable,copy) UIImage *image; // Defaults to nil
 @property(nonatomic,assign) BOOL drawImageAsTemplate; // Defaults to YES
 @property(nonatomic,assign) BOOL enabled; // Defaults to YES
 @property(nonatomic,assign) BOOL boldValue; //Defaults to NO
@@ -35,17 +37,20 @@
 - (void)updateItem:(OUIDetailInspectorSliceItem *)item atIndex:(NSUInteger)itemIndex;
 
 // Defaults to nil, meaning the inspection set of the receiver will be passed to the detail pane.
-- (NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable NSArray *)inspectedObjectsForItemAtIndex:(NSUInteger)itemIndex;
 
 // Will be called if the corresponding value passed to the 'handler' of -updateItemAtIndex:with: is nil. Defaults to nil.
-- (NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
-- (NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
-@property(nonatomic,copy) UIColor *placeholderTextColor;
+- (nullable NSString *)placeholderTitleForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable NSString *)placeholderValueForItemAtIndex:(NSUInteger)itemIndex;
+@property(nonatomic,copy,null_resettable) UIColor *placeholderTextColor;
 
-- (NSString *)groupTitle;
+- (nullable NSString *)groupTitle;
 
 @end
 
 @interface OUIDetailInspectorSlice (SubclassResponsibility)
-- (OUIInspectorPane *)makeDetailsPaneForItemAtIndex:(NSUInteger)itemIndex;
+- (nullable OUIInspectorPane *)makeDetailsPaneForItemAtIndex:(NSUInteger)itemIndex;
 @end
+
+NS_ASSUME_NONNULL_END
+

@@ -109,7 +109,7 @@ public extension Diffable {
             guard !sectionDifference.deletions.contains(indexPath.section) else { return nil }
             
             // UITableView has a problem with drops that cause a row deletion in a moving section, so look for those conflicts and mark them; later, we'll note the problem in our returned Difference's applicability
-            if sectionDifference.moves.any(where: { $0.0 == indexPath.section }) {
+            if sectionDifference.moves.contains(where: { $0.0 == indexPath.section }) {
                 foundConflictingSectionAndItemChanges = true
             }
             
