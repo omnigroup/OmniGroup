@@ -512,7 +512,12 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
 {
     // Infer the result file type from the incoming fromURL's type.
-    NSString *fileType = OFUTIForFileURLPreferringNative(fromURL, NULL);
+    NSError *error;
+    NSString *fileType = OFUTIForFileURLPreferringNative(fromURL, &error);
+    if (!fileType) {
+        completionHandler(nil, error);
+        return;
+    }
     [self addDocumentInFolder:folderItem baseName:baseName fileType:fileType fromURL:fromURL option:option completionHandler:completionHandler];
 }
 

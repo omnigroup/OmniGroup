@@ -1,4 +1,4 @@
-// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ static void filterIntoResults(
                 NSString *nameLowercase,
                 NSString *nameOriginalCase,
                 OFCompletionMatch *completionMatch,
-                NSMutableArray *results);
+                NSMutableArray<OFCompletionMatch *> *results);
 
 + (void)initialize;
 {
@@ -91,10 +91,23 @@ static void filterIntoResults(
     return bestMatch;
 }
 
+NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFCompletionMatch *match2) = ^(OFCompletionMatch *match1, OFCompletionMatch *match2){
+    NSInteger score1 = match1.score;
+    NSInteger score2 = match2.score;
+
+    if (score1 > score2) {
+        return NSOrderedAscending;
+    } else if (score1 < score2) {
+        return NSOrderedDescending;
+    }
+
+    return [match1.string localizedStandardCompare:match2.string];
+};
+
 + (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
 {
-    NSMutableArray *results = [NSMutableArray array];
-    NSMutableArray *matches = shouldUnique ? [[NSMutableArray alloc] init] : nil;
+    NSMutableArray<OFCompletionMatch *> *results = [NSMutableArray array];
+    NSMutableArray<OFCompletionMatch *> *matches = shouldUnique ? [[NSMutableArray alloc] init] : nil;
 
     for (NSString *candidate in candidates) {
         if (shouldUnique) {
@@ -112,18 +125,7 @@ static void filterIntoResults(
     [matches release];
     
     if (shouldSort) {
-        [results sortUsingComparator:^NSComparisonResult(OFCompletionMatch *match1, OFCompletionMatch *match2) {
-            NSInteger score1 = match1.score;
-            NSInteger score2 = match2.score;
-
-            if (score1 > score2) {
-                return NSOrderedAscending;
-            } else if (score1 < score2) {
-                return NSOrderedDescending;
-            }
-            
-            return NSOrderedSame;
-        }];
+        [results sortUsingComparator:OFCompletionMatchComparator];
     }
 
     return results;
@@ -131,12 +133,12 @@ static void filterIntoResults(
 
 + (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name;
 {
-    NSMutableArray *results = [NSMutableArray array];
+    NSMutableArray<OFCompletionMatch *> *results = [NSMutableArray array];
     [self addMatchesForFilter:filter inString:name toResults:results];
     return results;
 }
 
-+ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray *)results;
++ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray<OFCompletionMatch *> *)results;
 {
     NSUInteger filterLength = [filter length];
     NSUInteger lastMatchIndexes[filterLength];
@@ -361,7 +363,7 @@ static void filterIntoResults(
                 NSString *nameLowercase,
                 NSString *nameOriginalCase,
                 OFCompletionMatch *completionMatch,
-                NSMutableArray *results)
+                NSMutableArray<OFCompletionMatch *> *results)
 {
     if (filterIndex == filterLength) {
         // We've matched all the characters in the filter

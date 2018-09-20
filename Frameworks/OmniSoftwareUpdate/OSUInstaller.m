@@ -1,4 +1,4 @@
-// Copyright 2007-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -470,7 +470,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     handler = [handler copy];
     
     void (^localCompletionHandler)(NSInteger result) = ^(NSInteger result) {
-        if (result == NSFileHandlingPanelOKButton) {
+        if (result == NSModalResponseOK) {
             NSURL *resultURL = [[[panel URLs] lastObject] absoluteURL];
             handler(nil, [resultURL path]);
         } else {

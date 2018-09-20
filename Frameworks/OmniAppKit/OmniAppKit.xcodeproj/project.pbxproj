@@ -523,6 +523,7 @@
 		843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */; };
 		843878751AB20BD80069E467 /* OADefaultSettingIndicatorOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */; };
 		843878761AB20BD80069E467 /* OADefaultSettingIndicatorOn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878721AB20BD80069E467 /* OADefaultSettingIndicatorOn@2x.png */; };
+		94B962CA20E42F1900F1E3CE /* OmniAppKit.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */; };
 		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; };
 		9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FFB676B0C18A44000910EEF /* OADatePicker.h */; };
@@ -1417,6 +1418,7 @@
 		843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorOff@2x.png"; sourceTree = "<group>"; };
 		843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorOn.png; sourceTree = "<group>"; };
 		843878721AB20BD80069E467 /* OADefaultSettingIndicatorOn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorOn@2x.png"; sourceTree = "<group>"; };
+		94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = OmniAppKit.xcassets; sourceTree = "<group>"; };
 		94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACloseButtonOverlay.h; sourceTree = "<group>"; };
 		94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACloseButtonOverlay.m; sourceTree = "<group>"; };
 		9FFB676B0C18A44000910EEF /* OADatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePicker.h; sourceTree = "<group>"; };
@@ -2699,6 +2701,7 @@
 				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				BF94281F062222D400B83989 /* Info.plist */,
+				94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */,
 				342F05121B69794C00C7BB34 /* Appearance */,
 				3459EE301B694A8400D4F085 /* Colors */,
 				3FDA413402096AEB0297A14E /* Omni Application Patterns */,
@@ -3842,6 +3845,7 @@
 				4AA1E72908AA764600E2FF6B /* OACautionIcon.png in Resources */,
 				4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */,
 				34AA8B6A1B224DDC00B0AC5A /* OAMiniRemove@2x.png in Resources */,
+				94B962CA20E42F1900F1E3CE /* OmniAppKit.xcassets in Resources */,
 				4AA1E73008AA764600E2FF6B /* OALeftArrow.png in Resources */,
 				4AA1E73108AA764600E2FF6B /* OALeftArrowPressed.png in Resources */,
 				4AA1E73208AA764600E2FF6B /* OARightArrow.png in Resources */,

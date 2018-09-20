@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 
 RCS_ID("$Id$")
 
+OB_REQUIRE_ARC;
+
 @implementation ODOTestCase
 
 - (void)setUp;
@@ -24,7 +26,7 @@ RCS_ID("$Id$")
     
     // Allow tests with 'unconnected' in the name to operate only in memory.
     if ([[self name] rangeOfString:@"unconnected"].length == 0) {
-        _databasePath = [[NSString alloc] initWithFormat:@"%@/%@-%@-%@.sqlite", NSTemporaryDirectory(), NSStringFromClass([self class]), [self name], [OFXMLCreateID() autorelease]];
+        _databasePath = [[NSString alloc] initWithFormat:@"%@/%@-%@-%@.sqlite", NSTemporaryDirectory(), NSStringFromClass([self class]), [self name], OFXMLCreateID()];
 
         NSError *error = nil;
         if (![_database connectToURL:[NSURL fileURLWithPath:_databasePath] error:&error]) {
@@ -44,11 +46,9 @@ RCS_ID("$Id$")
 - (void)tearDown;
 {
     [_editingContext reset];
-    [_editingContext release];
     _editingContext = nil;
     
     [_undoManager removeAllActions];
-    [_undoManager release];
     _undoManager = nil;
     
     if ([_database connectedURL]) {
@@ -56,14 +56,12 @@ RCS_ID("$Id$")
         if (![_database disconnect:&error])
             NSLog(@"Error disconnecting from database at '%@': %@", _databasePath, [error toPropertyList]);
     }
-    [_database release];
     _database = nil;
     
     if (_databasePath) {
         NSError *error = nil;
         if (![[NSFileManager defaultManager] removeItemAtPath:_databasePath error:&error])
             NSLog(@"Error removing database file at '%@': %@", _databasePath, [error toPropertyList]);
-        [_databasePath release];
         _databasePath = nil;
     }
     

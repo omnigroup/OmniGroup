@@ -11,83 +11,12 @@
 	</dict>
 	<key>InspectorSidebarWidth</key>
 	<integer>280</integer>
-	<key>InspectorTabOnStateTintColor</key>
-	<dict>
-		<key>r</key>
-		<real>0.1843</real>
-		<key>g</key>
-		<real>0.5137</real>
-		<key>b</key>
-		<string>0.98431373</string>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>InspectorTabHighlightedTintColor</key>
-	<dict>
-		<key>r</key>
-		<real>0.098039216</real>
-		<key>g</key>
-		<real>0.25490196</real>
-		<key>b</key>
-		<real>0.58431373</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>InspectorTabNormalTintColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.33</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
 	<key>InspectorHeaderSeparatorTopPadding</key>
 	<integer>0</integer>
 	<key>InspectorHeaderSeparatorHeight</key>
 	<integer>4</integer>
 	<key>InspectorHeaderContentHeight</key>
 	<integer>35</integer>
-	<key>DarkInspectorBackgroundColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.125</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>DarkInspectorHeaderSeparatorColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.2</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>DarkInspectorDisclosureTintColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.45</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>LightInspectorBackgroundColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.96</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>LightInspectorHeaderSeparatorColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.92</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
-	<key>LightInspectorDisclosureTintColor</key>
-	<dict>
-		<key>w</key>
-		<real>0.55</real>
-		<key>a</key>
-		<integer>1</integer>
-	</dict>
 	<key>InspectorSnoozeButtonLabelBaselineAdjustment</key>
 	<integer>5</integer>
 </dict>

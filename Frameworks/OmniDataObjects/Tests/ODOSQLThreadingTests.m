@@ -13,6 +13,10 @@
 
 RCS_ID("$Id$");
 
+#if OB_ARC
+#error ODOSQLThreadingTests.m should not be compiled with ARC. It counts on managing the lifecycle of objects explicitly in some test cases.
+#endif
+
 @interface ODOSQLThreadingTests : ODOTestCase <OBMissedDeallocationObserver>
 @end
 

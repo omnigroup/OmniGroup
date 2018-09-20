@@ -35,10 +35,10 @@
 "<Encryption: A password is set>" = "Пароль";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Нет";
+"<Encryption: None>" = "Отсутствует";
 
 /* summary text - document is encrypted using one or more public keys */
-"<Encryption: using %u key(s)>" = "Ключи: %u";
+"<Encryption: using %u key(s)>" = "Ключи %u";
 
 /* approximate time interval: more than one hour */
 "about %.1f hours" = "около %.1f часов";
@@ -93,7 +93,7 @@
 "Could not create directory" = "Не удалось создать каталог";
 
 /* Provisioning profile parsing error general description */
-"Could not parse entitlements from embedded provisioning profile" = "Не удалось выполнить обработку прав из встроенного профиля подготовки";
+"Could not parse entitlements from embedded provisioning profile" = "Не удалось обработать права из встроенного профиля подготовки";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "дн.";
@@ -195,10 +195,10 @@
 "Override Lock" = "Перезаписать блокировку";
 
 /* Provisioning profile parsing error reason – invalid plist */
-"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое архива PKCS#7 встроенного профиля подготовки не является допустимым файлом plist";
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое PKCS#7 встроенного профиля подготовки не являются допустимым файлом plist";
 
 /* alert message format when clicking on a configuration value URL */
-"Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";
+"Restore \"%@\" to its default value" = "Restore “%@” to its default value";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Восстановить для всех внутренних настроек значения по умолчанию";
@@ -213,7 +213,7 @@
 "seconds" = "секунд";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Задать для «%1$@» значение «%2$@»";
+"Set \"%@\" to \"%@\"" = "Задать «%1$@» для «%2$@»";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
 "The encrypted item \"%@\" is missing or unreadable." = "Зашифрованный элемент «%@» отсутствует или не читается.";
@@ -237,10 +237,10 @@
 "This configuration link will make the following changes:" = "Эта ссылка конфигурации внесет следующие изменения:";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ с компьютера %2$@ %3$@ в %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера “%2$@” %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
 
 /* compression error description */
 "Unable to compress data." = "Не удается сжать данные.";
@@ -305,4 +305,4 @@
 "zlib returned error code %d." = "возвращенный код ошибки zlib %d.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";
+"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";

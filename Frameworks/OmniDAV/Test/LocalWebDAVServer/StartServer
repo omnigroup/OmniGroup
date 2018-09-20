@@ -66,6 +66,11 @@ done
 append_user ""
 setopt xtrace
 
+# We'll have a special user for testing password changes, starting with a default password
+mkdir -p "$DOC_DIR/test_pw"
+DIGEST=$(echo -n "test_pw:$REALM:password" | /usr/bin/openssl dgst -md5)
+echo test_pw:$REALM:$DIGEST >> "$CONFIG_DIR/test_pw.passwd"
+
 # Remove all locks when restarting the server
 rm -f "$RUN_DIR"/DavLock.dir
 rm -f "$RUN_DIR"/DavLock.pag

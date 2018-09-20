@@ -597,8 +597,8 @@
 				4AFE726B08A02E9D00ED9F2D /* Headers */,
 				4AFE727E08A02E9D00ED9F2D /* Resources */,
 				4AFE728008A02E9D00ED9F2D /* Sources */,
-				4AFE728E08A02E9D00ED9F2D /* Frameworks */,
 				4AFE729308A02E9D00ED9F2D /* CopyFiles */,
+				4AFE728E08A02E9D00ED9F2D /* Frameworks */,
 			);
 			buildRules = (
 			);

@@ -196,6 +196,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34A5F503184E474C00E8BA9A"
+               BuildableName = "OmniSystemInfo.framework"
+               BlueprintName = "OmniSystemInfo"
+               ReferencedContainer = "container:../Frameworks/OmniSoftwareUpdate/OmniSoftwareUpdate.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
                BuildableName = "OmniUnzip.framework"
                BlueprintName = "OmniUnzip"

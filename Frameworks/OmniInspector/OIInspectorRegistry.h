@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
 
 /// Return all the OIInspectorController instances registered with this registry.
-- (NSArray <OIInspectorController *> *)controllers;
+@property (nonatomic, readonly) NSArray <OIInspectorController *> *controllers;
 - (void)removeInspectorController:(OIInspectorController *)controller;
 
 - (NSArray *)inspectedObjects;

@@ -1718,15 +1718,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		344D562217BD47110049F9E5 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		348628FB19C1F76800EAACD1 /* Copy Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1738,24 +1729,6 @@
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
-		};
-		349E02501649AE5400E466F5 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-		34B2F63917188539000E45DF /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -4680,9 +4653,9 @@
 			buildConfigurationList = 3426920917C578F800B1372F /* Build configuration list for PBXNativeTarget "OFNetStateNotifier" */;
 			buildPhases = (
 				342691CF17C578F600B1372F /* Sources */,
-				342691D017C578F600B1372F /* Frameworks */,
 				342691D117C578F600B1372F /* Resources */,
 				348628FB19C1F76800EAACD1 /* Copy Frameworks */,
+				342691D017C578F600B1372F /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -4717,7 +4690,6 @@
 			buildPhases = (
 				344D562017BD47110049F9E5 /* Sources */,
 				344D562117BD47110049F9E5 /* Frameworks */,
-				344D562217BD47110049F9E5 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -4751,7 +4723,6 @@
 			buildPhases = (
 				349E024E1649AE5400E466F5 /* Sources */,
 				349E024F1649AE5400E466F5 /* Frameworks */,
-				349E02501649AE5400E466F5 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -4790,7 +4761,6 @@
 			buildPhases = (
 				34B2F63717188539000E45DF /* Sources */,
 				34B2F63817188539000E45DF /* Frameworks */,
-				34B2F63917188539000E45DF /* CopyFiles */,
 			);
 			buildRules = (
 			);

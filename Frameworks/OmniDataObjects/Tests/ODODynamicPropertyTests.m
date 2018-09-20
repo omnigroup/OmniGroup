@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import "ODOTestCase.h"
 
 RCS_ID("$Id$")
+
+OB_REQUIRE_ARC;
 
 @interface ODOTestCaseDynamicProperty : ODOObject
 @end
@@ -47,7 +49,7 @@ static void *KVOContext;
 {
     OBFinishPortingLater("update this test to reflect that will/did access are now only automatically called when the object is a fault in order to clear the fault.");
 #if 0
-    ODOTestCaseDynamicProperty *dyn = [[[ODOTestCaseDynamicProperty alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"DynamicProperty"] primaryKey:nil insertingIntoEditingContext:_editingContext] autorelease];
+    ODOTestCaseDynamicProperty *dyn = [[ODOTestCaseDynamicProperty alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"DynamicProperty"] primaryKey:nil insertingIntoEditingContext:_editingContext];
 
     XCTAssertTrue(dyn->willAccess == NO);
     XCTAssertTrue(dyn->didAccess == NO);
@@ -61,7 +63,7 @@ static void *KVOContext;
 
 - (void)testWillDidChange;
 {
-    ODOTestCaseDynamicProperty *dyn = [[[ODOTestCaseDynamicProperty alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"DynamicProperty"] primaryKey:nil insertingIntoEditingContext:_editingContext] autorelease];
+    ODOTestCaseDynamicProperty *dyn = [[ODOTestCaseDynamicProperty alloc] initWithEntity:[ODOTestCaseModel() entityNamed:@"DynamicProperty"] primaryKey:nil insertingIntoEditingContext:_editingContext];
 
     [dyn addObserver:self forKeyPath:@"name" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionPrior context:&KVOContext];
     [dyn setValue:@"foo" forKey:@"name"];

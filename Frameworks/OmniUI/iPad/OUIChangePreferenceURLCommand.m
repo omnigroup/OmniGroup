@@ -50,10 +50,11 @@ RCS_ID("$Id$");
         if ([stringValue isNull])
             stringValue = nil;
         
-        id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
+        NSError *coercionError;
+        id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue error:&coercionError];
         DEBUG_PREFERENCES(@"    using coerced value: %@", coercedValue);
         if (coercedValue == nil) {
-            NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
+            NSLog(@"Unable to update %@: %@", key, coercionError);
             return;
         } else if ([coercedValue isNull]) {
             // Reset this preference

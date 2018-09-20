@@ -1,4 +1,4 @@
-// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,18 +12,20 @@
 @class NSArray;
 @class NSAttributedString;
 @class NSString;
-@class OFIndexPath;
+@class OFCompletionMatch, OFIndexPath;
 
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NSString * _Nonnull (^OFCompletionMatchTransformSubstring)(NSString *string);
+
+extern NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *match1, OFCompletionMatch *match2);
 
 @interface OFCompletionMatch : NSObject
 
 + (nullable OFCompletionMatch *)bestMatchFromMatches:(NSArray<OFCompletionMatch *> *)matches;
 + (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
 + (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name;
-+ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray *)results;
++ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray<OFCompletionMatch *> *)results;
 + (OFCompletionMatch *)completionMatchWithString:(NSString *)string;
 
 - (id)init NS_UNAVAILABLE;

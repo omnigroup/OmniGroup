@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import "ODOTestCase.h"
 
 RCS_ID("$Id$")
+
+OB_REQUIRE_ARC;
 
 @interface ODOUndoTests : ODOTestCase
 @end
@@ -39,10 +41,10 @@ RCS_ID("$Id$")
     NSError *error = nil;
     
     MASTER(master);
-    ODOObjectID *masterID = [[[master objectID] copy] autorelease];
+    ODOObjectID *masterID = [[master objectID] copy];
 
     DETAIL(detail, master);
-    ODOObjectID *detailID = [[[detail objectID] copy] autorelease];
+    ODOObjectID *detailID = [[detail objectID] copy];
 
     OBShouldNotError([self save:&error]);
     
@@ -74,7 +76,6 @@ RCS_ID("$Id$")
     
     // Re-find master after it got deleted and reinserted
     master = (ODOTestCaseMaster *)[_editingContext objectRegisteredForID:masterID];
-    [masterID release];
     XCTAssertTrue(master != nil);
     
     // Crashed prior to the fix

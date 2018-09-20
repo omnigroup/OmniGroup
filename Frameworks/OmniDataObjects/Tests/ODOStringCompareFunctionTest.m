@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import "ODOTestCase.h"
 
 RCS_ID("$Id$")
+
+OB_REQUIRE_ARC;
 
 @interface ODOLikeTests : ODOTestCase
 @end
@@ -25,7 +27,7 @@ RCS_ID("$Id$")
     while (stringIndex--) {
         NSString *string = [strings objectAtIndex:stringIndex];
 
-        ODOTestCaseMaster *master = [[[ODOTestCaseMaster alloc] initWithEntity:entity primaryKey:string insertingIntoEditingContext:_editingContext] autorelease];
+        ODOTestCaseMaster *master = [[ODOTestCaseMaster alloc] initWithEntity:entity primaryKey:string insertingIntoEditingContext:_editingContext];
         [_editingContext processPendingChanges];
         master.name = string;
     }
@@ -37,7 +39,7 @@ RCS_ID("$Id$")
     ODOEntity *entity = [[_database model] entityNamed:ODOTestCaseMasterEntityName];
 
     NSPredicate *predicate = ODOKeyPathCompareToValuePredicate(@"name", type, string);
-    ODOFetchRequest *fetch = [[[ODOFetchRequest alloc] init] autorelease];
+    ODOFetchRequest *fetch = [[ODOFetchRequest alloc] init];
     [fetch setEntity:entity];
     [fetch setPredicate:predicate];
     

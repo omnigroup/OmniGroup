@@ -520,18 +520,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		34824AF71742E55600253D52 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		154070DC1E7B535E00939905 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ko.lproj; path = Localization/iOS/ko.lproj; sourceTree = "<group>"; };
 		154070DD1E7B535E00939905 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "pt-BR.lproj"; path = "Localization/iOS/pt-BR.lproj"; sourceTree = "<group>"; };
@@ -1362,7 +1350,6 @@
 			buildPhases = (
 				34824AF51742E55600253D52 /* Sources */,
 				34824AF61742E55600253D52 /* Frameworks */,
-				34824AF71742E55600253D52 /* CopyFiles */,
 			);
 			buildRules = (
 			);

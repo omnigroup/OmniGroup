@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (id)addObserverForPreference:(nullable OFPreference *)preference usingBlock:(void (^)(OFPreference *preference))block;
 + (void)removeObserver:(id)anObserver forPreference:(OFPreference * _Nullable)aPreference;
 
-+ (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
++ (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue error:(NSError **)outError;
 
 @property(nonatomic,readonly) NSString *key;
 @property(nonatomic,readonly,nullable) OFEnumNameTable *enumeration;

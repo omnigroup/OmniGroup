@@ -418,7 +418,10 @@ static unsigned SyncAgentRunningAccountsContext;
         if (self.awaitedFileItemDownloads == nil) {
             self.awaitedFileItemDownloads = [[NSMutableArray<ODSFileItem *> alloc] init];
         }
-        [[self awaitedFileItemDownloads] addObject:fileItem];
+        BOOL secured = [fileItem.fileURL startAccessingSecurityScopedResource];
+        if (secured) {
+            [[self awaitedFileItemDownloads] addObject:fileItem];
+        }
     }
 }
 
@@ -3069,6 +3072,8 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
         if ([finishedFileItem fileURL] == [awaitedFileItem fileURL]) {
             self.awaitedFileItemDownloads = nil;
             [self openDocument:awaitedFileItem];
+            // we only put it in this queue if we got security access, so we should always stop accessing.
+            [awaitedFileItem.fileURL stopAccessingSecurityScopedResource];
         }
     }
     _updatePreviewForFileItem(self, note);

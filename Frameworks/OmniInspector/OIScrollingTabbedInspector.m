@@ -86,7 +86,9 @@ RCS_ID("$Id$")
     [self _createButtonCellForAllTabs];
     [self _layoutSelectedTabs]; // updates the inspection set in the tabs
     
-    self.tabLabel.textColor = [OIAppearance appearance].InspectorTabOnStateTintColor;
+    if (@available(macOS 10.13, *)) {
+        self.tabLabel.textColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]];
+    } 
     
     NSColor *inspectorBackgroundColor = [[OIAppearance appearance] inspectorBackgroundColorForView:self.inspectorScrollView];
     self.inspectorScrollView.backgroundColor = inspectorBackgroundColor;

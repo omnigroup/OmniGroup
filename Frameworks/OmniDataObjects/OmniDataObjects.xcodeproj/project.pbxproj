@@ -88,7 +88,7 @@
 		341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */; };
 		343BD2DD1B62F35D002D09C6 /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34019F651B62ECB4003A5BE4 /* OmniDataObjects.framework */; };
 		343BD2E31B62F381002D09C6 /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; };
-		343BD2E41B62F384002D09C6 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		343BD2E41B62F384002D09C6 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; };
 		343BD2E51B62F389002D09C6 /* ODOTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DFC0DAAD0EF00BF27F8 /* ODOTestCase.m */; };
 		343BD2E61B62F38E002D09C6 /* ODOUndoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 340D5DEB0DAAD02500BF27F8 /* ODOUndoTests.m */; };
 		343BD2E71B62F391002D09C6 /* ODODeleteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */; };
@@ -129,8 +129,8 @@
 		3465D9F70D89C13B00D0B1D9 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 3465D9F60D89C13B00D0B1D9 /* Errors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346AE8B51909889E00C28CFE /* ODOSnapshotTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 346AE8B41909889E00C28CFE /* ODOSnapshotTests.m */; };
 		3472C2D20DAFD8A800AAD622 /* ODODeleteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3472C2D10DAFD8A800AAD622 /* ODODeleteTests.m */; };
-		3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
-		3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3475A0810DE2356400FB73CC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0800DE2356400FB73CC /* OFTestCase.m */; };
+		3475A0840DE2357400FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0830DE2357400FB73CC /* OBTestCase.m */; };
 		3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 3477F3DB0DA29343001CF280 /* ODOFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3481A9B40D899C210050FC54 /* OmniDataObjects.h in Headers */ = {isa = PBXBuildFile; fileRef = 3481A9B30D899C210050FC54 /* OmniDataObjects.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348409530D89F5EF00E74C9D /* ODOVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 348409510D89F5EF00E74C9D /* ODOVersion.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -225,8 +225,10 @@
 		3EA806CE1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
 		3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
-		3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
-		3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; };
+		3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		5F556C1D20D84E1400D81943 /* ko.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5F556C1C20D84E1400D81943 /* ko.lproj */; };
+		5F556C1F20D84E3900D81943 /* pt-BR.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 5F556C1E20D84E3900D81943 /* pt-BR.lproj */; };
 		5F6A50781F1ED236003BA3A5 /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
 		5F73116C1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
 		5F73116D1F1ECCD1001CC64B /* ODOEditingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */; };
@@ -609,6 +611,8 @@
 		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		5F556C1C20D84E1400D81943 /* ko.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ko.lproj; sourceTree = "<group>"; };
+		5F556C1E20D84E3900D81943 /* pt-BR.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "pt-BR.lproj"; sourceTree = "<group>"; };
 		5F73116B1F1ECCD1001CC64B /* ODOEditingContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODOEditingContext.swift; sourceTree = "<group>"; };
 		5FAA7789193E68F00017D662 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "zh-Hans.lproj"; sourceTree = "<group>"; };
 		5FAA778A193E68F00017D662 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ru.lproj; sourceTree = "<group>"; };
@@ -1014,7 +1018,9 @@
 				5FAA778E193E68F00017D662 /* fr.lproj */,
 				5FAA778D193E68F00017D662 /* it.lproj */,
 				5FAA778C193E68F00017D662 /* ja.lproj */,
+				5F556C1C20D84E1400D81943 /* ko.lproj */,
 				5FAA778B193E68F00017D662 /* nl.lproj */,
+				5F556C1E20D84E3900D81943 /* pt-BR.lproj */,
 				5FAA778A193E68F00017D662 /* ru.lproj */,
 				5FAA7789193E68F00017D662 /* zh-Hans.lproj */,
 			);
@@ -1320,6 +1326,7 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,
+				ko,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniDataObjects */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -1505,6 +1512,8 @@
 				34019FB21B62EDFA003A5BE4 /* it.lproj in Resources */,
 				34019FB51B62EDFA003A5BE4 /* ru.lproj in Resources */,
 				34019FB31B62EDFA003A5BE4 /* ja.lproj in Resources */,
+				5F556C1F20D84E3900D81943 /* pt-BR.lproj in Resources */,
+				5F556C1D20D84E1400D81943 /* ko.lproj in Resources */,
 				34019FB01B62EDFA003A5BE4 /* es.lproj in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1931,6 +1940,7 @@
 			baseConfigurationReference = 343F2CE01D3EB8F600E7C89D /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1949,6 +1959,7 @@
 			baseConfigurationReference = 343F2CE11D3EB8F600E7C89D /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1967,6 +1978,7 @@
 			baseConfigurationReference = 340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
@@ -1984,6 +1996,7 @@
 			baseConfigurationReference = 340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",

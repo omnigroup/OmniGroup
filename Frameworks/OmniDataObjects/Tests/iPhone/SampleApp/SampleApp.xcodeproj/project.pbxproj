@@ -506,8 +506,8 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				34D94F0911A1B2C800A9ACC1 /* Copy Library Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
-				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 				34CAE7F319C11D6C0077998F /* Copy Frameworks */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 			);
 			buildRules = (
 			);

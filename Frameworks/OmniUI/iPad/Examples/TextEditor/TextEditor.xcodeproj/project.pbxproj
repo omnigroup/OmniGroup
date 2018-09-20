@@ -860,8 +860,8 @@
 				1D60588D0D05DD3D006BFB54 /* Resources */,
 				34595697119496C400ECB2B6 /* Copy Library Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
-				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 				34343E5619882F220001E88C /* Copy Frameworks */,
+				1D60588F0D05DD3D006BFB54 /* Frameworks */,
 			);
 			buildRules = (
 			);

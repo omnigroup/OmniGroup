@@ -1619,9 +1619,9 @@
 			buildPhases = (
 				348A78651B583C390082D55D /* Headers */,
 				348A78661B583C390082D55D /* Resources */,
+				348A790C1B5847FE0082D55D /* Build Strings */,
 				348A78631B583C390082D55D /* Sources */,
 				348A78641B583C390082D55D /* Frameworks */,
-				348A790C1B5847FE0082D55D /* Build Strings */,
 			);
 			buildRules = (
 			);
@@ -1638,8 +1638,8 @@
 			buildConfigurationList = 348D92FB1AB798A40093AD35 /* Build configuration list for PBXNativeTarget "OSUCheckService" */;
 			buildPhases = (
 				348D92DE1AB798A30093AD35 /* Sources */,
-				348D92DF1AB798A30093AD35 /* Frameworks */,
 				348D92E01AB798A30093AD35 /* Resources */,
+				348D92DF1AB798A30093AD35 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1661,8 +1661,8 @@
 				34CF60B1184E771100C09946 /* Build Strings Files */,
 				34CF60B0184E76E700C09946 /* Copy trust root */,
 				34A5F4FF184E474C00E8BA9A /* Sources */,
-				34A5F500184E474C00E8BA9A /* Frameworks */,
 				3424EE381AB79C4F005DB3C9 /* Copy XPC Services */,
+				34A5F500184E474C00E8BA9A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1681,8 +1681,8 @@
 			buildPhases = (
 				4912123709D39ED7003DC19F /* Resources */,
 				4912123809D39ED7003DC19F /* Sources */,
-				4912123909D39ED7003DC19F /* Frameworks */,
 				348D92FC1AB798A40093AD35 /* Embed XPC Services */,
+				4912123909D39ED7003DC19F /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1704,8 +1704,8 @@
 				E23AB62115DAF56200B86ED1 /* Build String Files */,
 				A24A971B1249A32A005C98E1 /* Copy trust root */,
 				4A40EBFA08AB009A00E1769D /* Sources */,
-				4A40EBFF08AB009A00E1769D /* Frameworks */,
 				5F1C024C16DC8FA8006F9D51 /* Copy XPC Services */,
+				4A40EBFF08AB009A00E1769D /* Frameworks */,
 				3440A02A1D28790D00298619 /* Check Version Number */,
 			);
 			buildRules = (
@@ -1761,10 +1761,10 @@
 			buildConfigurationList = 5F1C024416DC8D82006F9D51 /* Build configuration list for PBXNativeTarget "OSUInstallerService" */;
 			buildPhases = (
 				5F1C023316DC8D82006F9D51 /* Sources */,
-				5F1C023416DC8D82006F9D51 /* Frameworks */,
 				5F1C023516DC8D82006F9D51 /* Resources */,
 				5F049B0716DE7D5E004F398B /* Copy Helpers */,
 				5FF0FAFD16E80C7C00F87CB7 /* Copy Privileged Helpers */,
+				5F1C023416DC8D82006F9D51 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -2182,7 +2182,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "./OSUInstallerPrivilegedHelper/CheckVersionNumber || (touch OSUInstallerPrivilegedHelper/Info.plist; exit 1)";
+			shellScript = "./OSUInstallerPrivilegedHelper/CheckVersionNumber || (touch OSUInstallerPrivilegedHelper/Info.plist; exit 1)\n";
 			showEnvVarsInLog = 0;
 		};
 		348A790C1B5847FE0082D55D /* Build Strings */ = {

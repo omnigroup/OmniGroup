@@ -378,10 +378,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 34824AB91742E3C200253D52 /* Build configuration list for PBXNativeTarget "OmniCommandLine" */;
 			buildPhases = (
-				34824A9F1742E3C200253D52 /* Sources */,
-				34824AA01742E3C200253D52 /* Frameworks */,
 				34824AA11742E3C200253D52 /* Headers */,
+				34824A9F1742E3C200253D52 /* Sources */,
 				34824AA21742E3C200253D52 /* Resources */,
+				34824AA01742E3C200253D52 /* Frameworks */,
 			);
 			buildRules = (
 			);

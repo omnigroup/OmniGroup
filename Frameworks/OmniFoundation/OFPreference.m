@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -249,8 +249,19 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     [preferenceNotificationCenter removeObserver:anObserver name:OFPreferenceDidChangeNotification object:aPreference];
 }
 
-+ (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
++ (nullable id)coerceStringValue:(nullable NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue error:(NSError **)outError;
 {
+    // This block helper unconditionally returns nil, and populates the given outError with error details specific to the (captured) stringValue and propertyListValue. Parsing code below can use this helper as a one-line return statement: return coercionFailure(outError);
+    id (^coercionFailure)(NSError **) = ^id(NSError **localOutError) { // avoid shadowing
+        if (localOutError != NULL) {
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to parse value", @"OmniFoundation", OMNI_BUNDLE, @"error description");
+            NSString *failureReason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to convert '%@' to the same type as '%@' (%@)", @"OmniFoundation", OMNI_BUNDLE, @"error reason"), stringValue, propertyListValue, [propertyListValue class]];
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : description, NSLocalizedFailureReasonErrorKey : failureReason };
+            *localOutError = [NSError errorWithDomain:OFErrorDomain code:OFValueTypeCoercionFailure userInfo:userInfo];
+        }
+        return nil;
+    };
+    
     if (stringValue == nil || [stringValue isNull]) { // null
         return [NSNull null];
     } else if ([propertyListValue isKindOfClass:[NSString class]]) { // <string>
@@ -273,20 +284,20 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
         return [[[NSDate alloc] initWithXMLString:stringValue] autorelease];
     } else if ([propertyListValue isKindOfClass:[NSData class]]) { // <data> (not yet implemented)
         OBASSERT(![propertyListValue isKindOfClass:[NSData class]]);
-        NSLog(@"+[OFPreference coerceStringValue:toTypeOfPropertyListValue: unimplemented conversion to NSData");
-        return nil;
+        NSLog(@"+[OFPreference coerceStringValue:toTypeOfPropertyListValue:error: unimplemented conversion to NSData");
+        return coercionFailure(outError);
     } else if ([propertyListValue isKindOfClass:[NSArray class]]) { // <array>
         id coercedValue = [stringValue propertyList];
         if (![coercedValue isKindOfClass:[NSArray class]])
-            return nil;
+            return coercionFailure(outError);
         return coercedValue;
     } else if ([propertyListValue isKindOfClass:[NSDictionary class]]) { // <dict>
         id coercedValue = [stringValue propertyList];
         if (![coercedValue isKindOfClass:[NSDictionary class]])
-            return nil;
+            return coercionFailure(outError);
         return coercedValue;
     }
-    return nil;
+    return coercionFailure(outError);
 }
 
 // OFPreference instances must be uniqued, so you should always go through +preferenceForKey:
@@ -785,7 +796,7 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     // Cocoa Scripting should do this for us, or reject the apple event, before we are ever called.
 
     if ([value isKindOfClass:[NSString class]])
-        value = [[self class] coerceStringValue:value toTypeOfPropertyListValue:[self defaultObjectValue]];
+        value = [[self class] coerceStringValue:value toTypeOfPropertyListValue:[self defaultObjectValue] error:NULL];
 
     [self setObjectValue:value];
 }

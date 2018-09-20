@@ -728,6 +728,12 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 - (void)performUndoableEditOnRange:(NSRange)range action:(void (^)(NSMutableAttributedString *))action;
 {
+    [self performUndoableEditOnRange:self.selectedRange selectInsertionPointOnUndoRedo:NO action:action];
+}
+
+// Usually on undo we'll select the replaced text. But in the OmniJS completion suggestion, we want to restore the insertion pointer rather than selecting the replacement prefix.
+- (void)performUndoableEditOnRange:(NSRange)range selectInsertionPointOnUndoRedo:(BOOL)selectInsertionPointOnUndoRedo action:(void (^)(NSMutableAttributedString *))action;
+{
     NSTextStorage *textStorage = self.textStorage.underlyingTextStorage;
     
     OBPRECONDITION(NSMaxRange(range) <= [textStorage length]);
@@ -736,7 +742,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     NSMutableAttributedString *edit = [[textStorage attributedSubstringFromRange:range] mutableCopy];
     action(edit);
     
-    [self _replaceAttributedStringInRange:range withAttributedString:edit isUndo:NO];
+    [self _replaceAttributedStringInRange:range withAttributedString:edit isUndo:NO selectInsertionPointOnUndoRedo:selectInsertionPointOnUndoRedo];
 }
 
 // We expect zero change in the length in this version.
@@ -783,12 +789,12 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     if ([delegate respondsToSelector:@selector(textViewDidChange:)])
         [delegate textViewDidChange:self];
     
-    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:selectedRange withAttributedString:originalString isUndo:YES];
+    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:selectedRange withAttributedString:originalString isUndo:YES selectInsertionPointOnUndoRedo:NO];
 }
 
 - (void)performUndoableReplacementOnSelectedRange:(NSAttributedString *)replacement;
 {
-    [self _replaceAttributedStringInRange:self.selectedRange withAttributedString:replacement isUndo:NO];
+    [self _replaceAttributedStringInRange:self.selectedRange withAttributedString:replacement isUndo:NO selectInsertionPointOnUndoRedo:NO];
 }
 
 // This seems nice, but it doesn't work out since UITextView doesn't draw the selection right if we shorten the text storage out from under the selection. Here we don't know the change in length beforehand, so we can't fix the selection first. So, we've split this into -performUndoableEditToStylesInSelectedRange: and -performUndoableReplacementOnSelectedRange:
@@ -848,21 +854,21 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 }
 #endif
 
-- (void)_replaceAttributedStringInRange:(NSRange)range withAttributedString:(NSAttributedString *)attributedString isUndo:(BOOL)isUndo;
+- (void)_replaceAttributedStringInRange:(NSRange)range withAttributedString:(NSAttributedString *)attributedString isUndo:(BOOL)isUndo selectInsertionPointOnUndoRedo:(BOOL)selectInsertionPointOnUndoRedo;
 {
     id <OUITextViewDelegate> delegate = self.delegate;
     NSTextStorage *textStorage = self.textStorage.underlyingTextStorage;
     
     NSAttributedString *existingAttributedString = [textStorage attributedSubstringFromRange:range];
     NSRange afterEditRange = NSMakeRange(range.location, [attributedString length]);
-    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:afterEditRange withAttributedString:existingAttributedString isUndo:!isUndo];
+    [[self prepareInvocationWithUndoManager: self.undoManager] _replaceAttributedStringInRange:afterEditRange withAttributedString:existingAttributedString isUndo:!isUndo selectInsertionPointOnUndoRedo:selectInsertionPointOnUndoRedo];
 
     NSRange selectedRange = self.selectedRange;
     
     // Direct edits won't send the normal text changing methods
 
     // On undo, we select the range, but on 'do' we select the end of the range. For example, if you have "foo<bar>baz" with <bar> selected and you paste "bonk", you'll send up with "foobonk|bazp range" and on undo back to "foo<bar>baz"
-    if (!isUndo)
+    if (!isUndo || selectInsertionPointOnUndoRedo)
         afterEditRange = NSMakeRange(NSMaxRange(afterEditRange), 0);
     
     if (NSMaxRange(afterEditRange) < NSMaxRange(selectedRange)) {

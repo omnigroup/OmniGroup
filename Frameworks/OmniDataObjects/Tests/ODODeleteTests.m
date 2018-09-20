@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import "ODOTestCaseModel.h"
 
 RCS_ID("$Id$")
+
+OB_REQUIRE_ARC;
 
 @interface ODODeleteTests : ODOTestCase
 @end
@@ -44,7 +46,7 @@ RCS_ID("$Id$")
     OBShouldNotError([_editingContext deleteObject:master2 error:&error]);
 
     // Do a fetch of all the master objects
-    ODOFetchRequest *fetch = [[[ODOFetchRequest alloc] init] autorelease];
+    ODOFetchRequest *fetch = [[ODOFetchRequest alloc] init];
     [fetch setEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName]];
     
     NSArray *results;
@@ -95,7 +97,7 @@ RCS_ID("$Id$")
     MASTER(master1);
     XCTAssertFalse([master1 isUndeletable], @"should not get set");
 
-    ODOTestCaseMaster *master2 = [[[ODOTestCaseMaster alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName] primaryKey:@"master2" insertingIntoEditingContext:_editingContext] autorelease];
+    ODOTestCaseMaster *master2 = [[ODOTestCaseMaster alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName] primaryKey:@"master2" insertingIntoEditingContext:_editingContext];
     XCTAssertFalse([master2 isUndeletable], @"should not get set");
 }
 
@@ -154,7 +156,7 @@ RCS_ID("$Id$")
 {
     MASTER(master_undeletable);
     DETAIL(detail, master_undeletable);
-    ODOObjectID *detailID = [[detail.objectID retain] autorelease];
+    ODOObjectID *detailID = detail.objectID;
     
     NSError *error = nil;
     OBShouldNotError([self save:&error]);

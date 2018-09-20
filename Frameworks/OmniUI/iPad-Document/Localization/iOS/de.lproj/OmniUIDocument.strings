@@ -175,10 +175,10 @@
 "Duplicate %ld Items" = "%ld Objekte duplizieren";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Synchr. Omni-Dokumente mühelos zwischen Geräten. Die Anmeldung ist kostenlos!";
+"Easily sync Omni documents between devices. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos zwischen Geräten. Die Registrierung ist kostenlos!";
 
 /* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "Anmeldeinformationen bearbeiten";
+"Edit Credentials" = "Anmeldedaten bearbeiten";
 
 /* doc picker custom accessibility action name */
 "Edit name" = "Name bearbeiten";
@@ -264,7 +264,7 @@
 "Move…" = "Bewegen …";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
-"My Document" = "Eigenes Dokument";
+"My Document" = "Mein Dokument";
 
 /* Base name for newly created templates. This will have an number appended to it to make it unique. */
 "My Template" = "Meine Vorlage";
@@ -465,7 +465,7 @@
 "This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihre Fotos-Mediathek.";
 
 /* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "Dieser Cloud-Account ist nicht mehr vorhanden.";
+"This Cloud Account no longer exists." = "Dieser Cloudaccount ist nicht mehr vorhanden.";
 
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Auf dieses Dokument kann nicht zugegriffen werden. Die Datei wurde eventuell über iTunes oder einen externen Dokumentanbieter gelöscht, umbenannt oder bewegt. Versuchen Sie, die Datei zu entfernen und sie erneut hinzuzufügen.";
@@ -474,7 +474,7 @@
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht dupliziert werden, weil es nicht vollständig geladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es geladen wurde, bevor Sie es erneut versuchen.";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht exportiert werden, weil es nicht vollständig heruntergeladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es heruntergeladen wurde, bevor Sie es erneut versuchen.";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht exportiert werden, weil es nicht vollständig geladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es geladen wurde, bevor Sie es erneut versuchen.";
 
 /* sort by title */
 "Title" = "Titel";

@@ -118,13 +118,19 @@ NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
         imageRect.origin.x = cellFrame.origin.x + rint((cellFrame.size.width - [image size].width)/2);
         imageRect.origin.y = cellFrame.origin.y + rint((cellFrame.size.height - [image size].height)/2);
     }
-    if ([self state]) {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabOnStateTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
-    } else if ([self isHighlighted]) {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabHighlightedTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
+    NSColor *tabColor;
+    if (@available(macOS 10.13, *)) {
+        if ([self state]) {
+            tabColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+        } else if ([self isHighlighted]) {
+            tabColor = [NSColor colorNamed:@"InspectorTabHighlightedTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+        } else {
+            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+        }
     } else {
-        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabNormalTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
+        tabColor = [NSColor clearColor];
     }
+    [[[self image] imageByTintingWithColor:tabColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
 }
 
 @end

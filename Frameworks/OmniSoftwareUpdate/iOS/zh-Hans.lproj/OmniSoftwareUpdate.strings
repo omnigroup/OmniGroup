@@ -43,7 +43,7 @@
 "Error while checking for updated version." = "检查更新版本时出错。";
 
 /* error reason */
-"Exception raised: %@" = "出现异常 : %@";
+"Exception raised: %@" = "出现异常： %@";
 
 /* software update settings cell detail text */
 "Help The Omni Group decide which devices and iOS versions to support" = "帮助 Omni 团队确定要支持哪些设备和 iOS 版本";
@@ -96,13 +96,13 @@
 "The background software update service failed." = "后台软件更新服务失败。";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "“%@”返回的数据不是有效的 XML 文稿。";
+"The data returned from <%@> was not a valid XML document." = "<%@> 返回的数据不是有效的 XML 文稿。";
 
 /* Settings option title */
 "The following information will be sent:" = "将发送以下信息:";
 
 /* error description - the update information wasn't signed at all, but we require it to be signed */
-"The update information is not signed." = "更新信息未得到签名。";
+"The update information is not signed." = "更新信息未签发。";
 
 /* error description - the checksum or signature didn't match - more info in underlying error */
 "There was a problem checking the signature." = "检查签名时出现问题。";
@@ -117,7 +117,7 @@
 "Tool returned no data" = "工具没有返回任何数据";
 
 /* error description - we have some update information but it doesn't look authentic */
-"Unable to authenticate the response from the software update server." = "无法鉴定软件更新服务器发出的响应。";
+"Unable to authenticate the response from the software update server." = "无法验证软件更新服务器的响应。";
 
 /* error description - will be followed by more detailed error reason */
 "Unable to fetch software update information." = "无法取回软件更新信息。";

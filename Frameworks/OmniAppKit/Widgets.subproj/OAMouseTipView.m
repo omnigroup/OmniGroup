@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,11 +16,6 @@ RCS_ID("$Id$");
 
 #define TEXT_X_INSET (7.0f)
 #define TEXT_Y_INSET (3.0f)
-
-@interface NSColor (PrivateSystemColors)
-+ (NSColor *)toolTipColor;		// tooltip background 
-+ (NSColor *)toolTipTextColor;		// tooltip text
-@end
 
 @implementation OAMouseTipView
 
@@ -60,18 +55,11 @@ static NSParagraphStyle *mousetipParagrphStyle;
         default:
         case OAMouseTipTooltipStyle:
             
-            if ([NSColor respondsToSelector:@selector(toolTipColor)])
-                backgroundColor = [[NSColor toolTipColor] colorWithAlphaComponent:0.9f];
-            else
-                backgroundColor = OARGBA(1.0, 0.98, 0.83, 0.9); // light yellow to match standard tooltip color
+            backgroundColor = [NSColor colorNamed:@"OAMouseTipToolTipBackground" bundle:OMNI_BUNDLE];
             
             cornerRadius = 0.0f;
             
-            if ([NSColor respondsToSelector:@selector(toolTipTextColor)])
-                [newTextAttributes setObject:[NSColor toolTipTextColor] forKey:NSForegroundColorAttributeName];
-            else
-                [newTextAttributes setObject:[NSColor controlTextColor] forKey:NSForegroundColorAttributeName];
-            
+            [newTextAttributes setObject:[NSColor colorNamed:@"OAMouseTipToolTipText" bundle:OMNI_BUNDLE] forKey:NSForegroundColorAttributeName];
             [newTextAttributes setObject:[NSFont toolTipsFontOfSize:[NSFont labelFontSize]] forKey:NSFontAttributeName];
             break;
             

@@ -53,10 +53,8 @@ RCS_ID("$Id$")
             stringValue = nil;
         id oldValue = [preferences valueForKey:key];
         id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
-        id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
+        id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue error:outError];
         if (coercedValue == nil) {
-            NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
-            OBMissingError(outError, @"<bug:///159192> (Mac-OmniFocus Unassigned: Missing outError in +[OAController handleChangePreferenceURL:error:])");
             return NO;
         } else if ([coercedValue isNull]) {
             // Reset this setting

@@ -926,9 +926,9 @@
 			buildConfigurationList = 34637CE5194F448F009B51C5 /* Build configuration list for PBXNativeTarget "OmniBase-iOS" */;
 			buildPhases = (
 				34637CC9194F448F009B51C5 /* Headers */,
+				34637CCA194F448F009B51C5 /* Resources */,
 				34637CC7194F448F009B51C5 /* Sources */,
 				34637CC8194F448F009B51C5 /* Frameworks */,
-				34637CCA194F448F009B51C5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -1054,10 +1054,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5FE81E1E1B62AE980056756C /* Build configuration list for PBXNativeTarget "OmniBase-watchOS" */;
 			buildPhases = (
-				5FE81E121B62AE980056756C /* Sources */,
-				5FE81E131B62AE980056756C /* Frameworks */,
 				5FE81E141B62AE980056756C /* Headers */,
 				5FE81E151B62AE980056756C /* Resources */,
+				5FE81E121B62AE980056756C /* Sources */,
+				5FE81E131B62AE980056756C /* Frameworks */,
 			);
 			buildRules = (
 			);

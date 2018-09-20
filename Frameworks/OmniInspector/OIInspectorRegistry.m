@@ -1087,12 +1087,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row;
 {
     if (tableColumn == [[tableView tableColumns] objectAtIndex:1]) {
-        if ([tableView isRowSelected:row])
-            [cell setTextColor:[NSColor colorWithWhite:0.86f alpha:1]];
-        else
-            [cell setTextColor:[NSColor lightGrayColor]];
-    } else {
-        [cell setTextColor:[NSColor blackColor]];
+            [cell setTextColor:[NSColor secondaryLabelColor]];
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 RCS_ID("$Id$")
 
+OB_REQUIRE_ARC;
+
 @interface ODOAttributeTypeTests : ODOTestCase
 @end
 
@@ -16,7 +18,7 @@ RCS_ID("$Id$")
 
 - (void)testSaveAndLoadAllAttributeTypes;
 {
-    ODOTestCaseAllAttributeTypes *allAttributeTypes = [[[ODOTestCaseAllAttributeTypes alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseAllAttributeTypesEntityName] primaryKey:nil insertingIntoEditingContext:_editingContext] autorelease];
+    ODOTestCaseAllAttributeTypes *allAttributeTypes = [[ODOTestCaseAllAttributeTypes alloc] initWithEntity:[ODOTestCaseModel() entityNamed:ODOTestCaseAllAttributeTypesEntityName] primaryKey:nil insertingIntoEditingContext:_editingContext];
 
     // TODO: We don't currently define any saturation modes for scalar attributes.  We can either be strict and error out or we could be more flexible like SQLite is (though we'd have to bind all ints via the 64-bit path).
     allAttributeTypes.int16 = SHRT_MAX;
@@ -34,7 +36,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     OBShouldNotError([_editingContext saveWithDate:[NSDate date] error:&error]);
     
-    ODOObjectID *objectID = [[[allAttributeTypes objectID] retain] autorelease];
+    ODOObjectID *objectID = [allAttributeTypes objectID];
     
     // Refetch the object
     [_editingContext reset];
