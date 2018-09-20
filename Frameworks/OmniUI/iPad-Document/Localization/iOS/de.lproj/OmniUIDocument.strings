@@ -41,7 +41,7 @@
 "1 Item Selected" = "1 Objekt ausgewählt";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ein Dokument namens „%@“ ist bereits vorhanden. Möchten Sie es ersetzen? Diese Aktion kann nicht widerrufen werden.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ein Dokument namens „%@“ ist bereits vorhanden. Möchten Sie es ersetzen?Diese Aktion kann nicht widerrufen werden.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Accountinformationen";
@@ -80,7 +80,7 @@
 "Cannot Export Item" = "Objekt kann nicht exportiert werden";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail:";
+"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail.:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Vorlagenauswahl";
@@ -258,7 +258,7 @@
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Share menu title */
-"Move to..." = "Bewegen …";
+"Move to..." = "Bewegen nach …";
 
 /* Move document preview action title. */
 "Move…" = "Bewegen …";
@@ -376,7 +376,7 @@
 "Report Error" = "Fehler melden";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Beisp.-Dok. wiederherst.";
+"Restore Sample Documents" = "Beispieldok. wiederherst.";
 
 /* Share menu title */
 "Restore to..." = "Wiederherstellen in …";
@@ -457,6 +457,9 @@
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "Zum Öffnen des Dokuments „%@“ ist ein Kennwort erforderlich.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "Zum Öffnen des Dokuments ist ein Kennwort erforderlich.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Der Vorgang konnte nicht abgeschlossen werden.";

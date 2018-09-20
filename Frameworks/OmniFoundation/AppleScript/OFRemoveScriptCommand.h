@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSScriptCommand.h>
+#import <OmniBase/OBUtilities.h>
 
 @class NSArray;
 
@@ -15,5 +16,10 @@
 @end
 
 @interface NSObject (OFRemoveScriptCommand)
-- (void)removeObjects:(NSArray *)objects fromPropertyWithKey:(NSString *)key;
+- (void)removeObjects:(NSArray *)objects fromPropertyWithKey:(NSString *)key forCommand:(NSScriptCommand *)command;
 @end
+
+@interface NSObject (OFRemoveScriptCommandDeprecated)
+- (void)removeObjects:(NSArray *)objects fromPropertyWithKey:(NSString *)key OB_DEPRECATED_ATTRIBUTE;
+@end
+

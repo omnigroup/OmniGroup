@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ RCS_ID("$Id$");
 
 static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontDescriptor)
 {
-    return  attributesFromFont(fontDescriptor.font);
+    return  OAAttributesFromFont(fontDescriptor.font);
 }
 
 // This just returns every font name on the current system. That's a bit odd for a unit test, since the installed fonts will change the tests. On the other hand, most of the tests in this class depend on the installed fonts; it's the nature of this particular beast.

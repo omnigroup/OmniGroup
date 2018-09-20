@@ -17,7 +17,7 @@
 "Local Documents" = "Documentos locales";
 
 /* Error suggestion when renaming a file to a name that is already in use. */
-"Please choose a different name." = "Elija otro nombre.";
+"Please choose a different name." = "Elige otro nombre.";
 
 /* time display format for today */
 "Today, %@ <day name>" = "Hoy, %@";

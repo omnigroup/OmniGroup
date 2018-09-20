@@ -260,8 +260,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 // or...
 //NSRectFill([self bounds]);
     
-    // draw a white background
-    [[NSColor whiteColor] set];
+    [[NSColor controlBackgroundColor] set];
     NSRectFill(rect);
     
     // draw the month/year

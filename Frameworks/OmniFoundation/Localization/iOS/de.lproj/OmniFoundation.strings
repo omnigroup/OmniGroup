@@ -219,19 +219,19 @@
 "The encrypted item \"%@\" is missing or unreadable." = "Das verschlüsselte Objekt „%@“ fehlt oder ist nicht lesbar.";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Das Serverzertifikat für „%@“ scheint nicht gültig zu sein. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ scheint nicht gültig zu sein. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Das Serverzertifikat für „%@“ hat ein ungültiges Datum. Eventuell ist es abgelaufen oder noch nicht aktiviert. Möchten Sie trotzdem verbinden?";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ hat ein ungültiges Datum. Eventuell ist es abgelaufen oder noch nicht aktiviert. Möchten Sie trotzdem verbinden?";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Das Serverzertifikat für „%@“ wurde nicht von einem Root-Server signiert. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ wurde nicht von einem Root-Server signiert. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Das Serverzertifikat für „%@“ ist noch nicht gültig. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ ist noch nicht gültig. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Das Serverzertifikat für „%@“ wurde von einem nicht vertrauenswürdigen Root-Server signiert. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ wurde von einem nicht vertrauenswürdigen Root-Server signiert. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "Dieser Konfigurationslink führt die folgenden Änderungen aus:";

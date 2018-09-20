@@ -473,6 +473,7 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
         NSWindow *window = [[[NSPanel alloc] initWithContentRect:contentRect styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered defer:NO] autorelease];
         [window setReleasedWhenClosed:NO]; // We'll manage this manually
         [window setLevel:NSFloatingWindowLevel]; // Float above normal windows. This also triggers NSWindowCollectionBehaviorTransient on 10.6.
+        window.backgroundColor = NSColor.clearColor;
         
         if ([window respondsToSelector:@selector(setCollectionBehavior:)]) {
             [window setCollectionBehavior:NSWindowCollectionBehaviorMoveToActiveSpace];
@@ -583,6 +584,7 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
     [_LongOperationWindow orderOut:nil];
     
     if (parentWindow == _RootlessProgressWindow) {
+        [_RootlessProgressWindow close];
         [_RootlessProgressWindow release];
         _RootlessProgressWindow = nil;
     }

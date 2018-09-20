@@ -163,7 +163,7 @@
 "Use your own WebDAV space." = "WebDAV の場所を使用します。";
 
 /* Account validation step description */
-"Validating Account..." = "アカウントを検証中…";
+"Validating Account..." = "アカウントを検証中...";
 
 /* Server account type */
 "WebDAV" = "WebDAV";

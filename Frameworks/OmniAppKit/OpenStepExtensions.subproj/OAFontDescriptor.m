@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,7 +133,7 @@ typedef void(^OAAttributeMutator)(NSMutableDictionary *attributes, NSMutableDict
 }
 
 // Returns the _minimal_ set of attributes (on iOS at least). Primarily useful for testing and debugging.
-NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font)
+NSDictionary *OAAttributesFromFont(OAFontDescriptorPlatformFont font)
 {
 #if OMNI_BUILDING_FOR_IOS
     OBPRECONDITION(font != NULL);
@@ -1052,7 +1052,7 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
     [dict setObject:_attributes forKey:@"attributes"];
     if (_font) {
         [dict setObject:(id)_font forKey:@"font"];
-        [dict setObject:attributesFromFont(_font) forKey:@"attributesFromFont"];
+        [dict setObject:OAAttributesFromFont(_font) forKey:@"OAAttributesFromFont"];
     }
     return dict;
     

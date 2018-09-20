@@ -90,9 +90,7 @@ RCS_ID("$Id$")
         self.tabLabel.textColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]];
     } 
     
-    NSColor *inspectorBackgroundColor = [[OIAppearance appearance] inspectorBackgroundColorForView:self.inspectorScrollView];
-    self.inspectorScrollView.backgroundColor = inspectorBackgroundColor;
-    self.inspectorScrollView.drawsBackground = YES;
+    self.inspectorScrollView.drawsBackground = NO;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
     
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];

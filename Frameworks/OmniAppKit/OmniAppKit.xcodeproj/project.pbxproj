@@ -234,6 +234,7 @@
 		3E80E9F71614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */; };
 		3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */; };
 		3EA3A71A1625FD7300351F0C /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3EE5E54820FE8B3800C2A325 /* NSView-OAExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE5E54720FE8B3800C2A325 /* NSView-OAExtensions.swift */; };
 		3EF5F1BF19104DEF0072ED90 /* OAWebPageViewerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; };
@@ -403,7 +404,7 @@
 		4AA1E78908AA764600E2FF6B /* NSAppleScript-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C71C029F51620097A138 /* NSAppleScript-OAExtensions.m */; };
 		4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E78B08AA764600E2FF6B /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */; };
 		4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F23FE8AB2E911C9CC38 /* NSCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -1296,6 +1297,7 @@
 		34F0995709322EA30001D0D5 /* OAAboutPanel.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OAAboutPanel.xib; sourceTree = "<group>"; };
 		3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientBoxSeparator.h; sourceTree = "<group>"; };
 		3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientBoxSeparator.m; sourceTree = "<group>"; };
+		3EE5E54720FE8B3800C2A325 /* NSView-OAExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSView-OAExtensions.swift"; sourceTree = "<group>"; };
 		3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewerDelegate.h; sourceTree = "<group>"; };
 		3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAExtensions.h"; sourceTree = "<group>"; };
 		3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath-OAExtensions.m"; sourceTree = "<group>"; };
@@ -2427,6 +2429,7 @@
 			children = (
 				00E51F48FE8AB2E911C9CC38 /* NSView-OAExtensions.h */,
 				00E51F32FE8AB2E911C9CC38 /* NSView-OAExtensions.m */,
+				3EE5E54720FE8B3800C2A325 /* NSView-OAExtensions.swift */,
 				27AC122B15BA295400B726A7 /* NSView-OALayerBackedFix.h */,
 				27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */,
 				3FDA4147020972AA0297A14E /* NSControl */,
@@ -3418,7 +3421,7 @@
 						TestTargetID = 34C12AFB194FF90F005CB70B;
 					};
 					4AA1E67A08AA764600E2FF6B = {
-						LastSwiftMigration = "";
+						LastSwiftMigration = 1000;
 					};
 					4AA1E7FA08AA764600E2FF6B = {
 						TestTargetID = 4AA1E67A08AA764600E2FF6B;
@@ -4149,6 +4152,7 @@
 				4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */,
 				4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */,
 				4AA1E7C908AA764600E2FF6B /* OAHierarchicalPopUpController.m in Sources */,
+				3EE5E54820FE8B3800C2A325 /* NSView-OAExtensions.swift in Sources */,
 				4AA1E7CB08AA764600E2FF6B /* OAMouseTipView.m in Sources */,
 				4AA1E7CC08AA764600E2FF6B /* OAMouseTipWindow.m in Sources */,
 				4AA1E7CE08AA764600E2FF6B /* OAOutlineViewEnumerator.m in Sources */,
@@ -4496,8 +4500,11 @@
 			baseConfigurationReference = 4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4507,6 +4514,8 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -4515,8 +4524,11 @@
 			baseConfigurationReference = 4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4526,6 +4538,7 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};

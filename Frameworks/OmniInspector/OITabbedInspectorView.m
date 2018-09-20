@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,14 @@ RCS_ID("$Id$");
 
 - (void)drawRect:(NSRect)r;
 {
-    NSColor *backgroundColor = [[OIAppearance appearance] inspectorBackgroundColorForView:self];
+    NSColor *backgroundColor = [NSColor controlColor];
     [backgroundColor set];
     NSRectFill(r);
+}
+
+- (void)awakeFromNib;
+{
+    self.blendingMode = NSVisualEffectBlendingModeWithinWindow;
 }
 
 @end

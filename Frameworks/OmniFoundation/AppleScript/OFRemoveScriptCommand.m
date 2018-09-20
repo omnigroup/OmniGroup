@@ -1,4 +1,4 @@
-// Copyright 2000-2006, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,9 @@
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$");
+
+
+OBDEPRECATED_METHOD(-removeObjects:fromPropertyWithKey:); // Use -removeObjects:fromPropertyWithKey:forCommand:
 
 @implementation OFRemoveScriptCommand
 
@@ -51,14 +54,14 @@ RCS_ID("$Id$");
 
     NSString *key = [containerSpec key];
     id container = [[containerSpec containerSpecifier] objectsByEvaluatingSpecifier];
-    if (![container respondsToSelector:@selector(removeObjects:fromPropertyWithKey:)]) {
-        NSLog(@"Container doesn't respond to -removeObjects:fromPropertyWithKey: -- container = %@", OBShortObjectDescription(container));
+    if (![container respondsToSelector:@selector(removeObjects:fromPropertyWithKey:forCommand:)]) {
+        NSLog(@"Container doesn't respond to -removeObjects:fromPropertyWithKey:forCommand: -- container = %@", OBShortObjectDescription(container));
         [self setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
         [self setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Specified container doesn't handle the remove command.", @"OmniFoundation", [OFRemoveScriptCommand bundle], @"script exception format")];
         return nil;
     }
 
-    [container removeObjects:evaluatedParameters fromPropertyWithKey:key];
+    [container removeObjects:evaluatedParameters fromPropertyWithKey:key forCommand:self];
     return nil;
 }
 

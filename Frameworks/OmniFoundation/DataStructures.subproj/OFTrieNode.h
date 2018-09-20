@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,8 +18,8 @@
 
 @end
 
-extern NSUInteger trieFindIndex(OFTrieNode *node, unichar aCharacter);
-extern NSUInteger trieChildCount(OFTrieNode *node);
-extern id trieChildAtIndex(OFTrieNode *node, NSUInteger childIndex);
-extern id trieFindChild(OFTrieNode *node, unichar aCharacter);
-extern const unichar *trieCharacters(OFTrieNode *node);
+extern NSUInteger trieFindIndex(OFTrieNode *node, unichar aCharacter) OB_HIDDEN;
+extern NSUInteger trieChildCount(OFTrieNode *node) OB_HIDDEN;
+extern id trieChildAtIndex(OFTrieNode *node, NSUInteger childIndex) OB_HIDDEN;
+extern id trieFindChild(OFTrieNode *node, unichar aCharacter) OB_HIDDEN;
+extern const unichar *trieCharacters(OFTrieNode *node) OB_HIDDEN;

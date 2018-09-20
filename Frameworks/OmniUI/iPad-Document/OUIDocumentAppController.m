@@ -314,33 +314,34 @@ static unsigned SyncAgentRunningAccountsContext;
     [closingDocumentIndicatorView startAnimating];
 
     _document.applicationLock = [OUIInteractionLock applicationLock];
-    [_documentPicker dismissViewControllerAnimated:YES completion:nil];
-    [_documentPicker navigateToBestEffortContainerForItem:_document.fileItem];
-
-    OBStrongRetain(_document);
-    [_document closeWithCompletionHandler:^(BOOL success) {
-        [closingDocumentIndicatorView removeFromSuperview];
+    [_documentPicker dismissViewControllerAnimated:YES completion:^{
+        [_documentPicker navigateToBestEffortContainerForItem:_document.fileItem];
         
-        // Give the document a chance to break retain cycles.
-        [_document didClose];
-        self.launchAction = nil;
-        
-        // Doing the -autorelease in the completion handler wasn't late enough. This may not be either...
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            OBASSERT([NSThread isMainThread]);
-            OBStrongRelease(_document);
-        }];
-        
-        // If the document was saved, it will have already updated *its* previews, if we were launched into a document w/o the document picker ever being visible, we might not have previews loaded for other documents
-        [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
-            [_document.applicationLock unlock];
-            _document.applicationLock = nil;
+        OBStrongRetain(_document);
+        [_document closeWithCompletionHandler:^(BOOL success) {
+            [closingDocumentIndicatorView removeFromSuperview];
             
-            if (completionHandler)
-                completionHandler();
+            // Give the document a chance to break retain cycles.
+            [_document didClose];
+            self.launchAction = nil;
             
-            [self _setDocument:nil];
-            [_previewGenerator documentClosed];
+            // Doing the -autorelease in the completion handler wasn't late enough. This may not be either...
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                OBASSERT([NSThread isMainThread]);
+                OBStrongRelease(_document);
+            }];
+            
+            // If the document was saved, it will have already updated *its* previews, if we were launched into a document w/o the document picker ever being visible, we might not have previews loaded for other documents
+            [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
+                [_document.applicationLock unlock];
+                _document.applicationLock = nil;
+                
+                if (completionHandler)
+                    completionHandler();
+                
+                [self _setDocument:nil];
+                [_previewGenerator documentClosed];
+            }];
         }];
     }];
 }

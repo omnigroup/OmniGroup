@@ -73,7 +73,7 @@
 "Increment" = "Vermeerdering";
 
 /* default special URL confirm button title */
-"Invoke" = "Roep aan";
+"Invoke" = "Aanroepen";
 
 /* button title */
 "Invoke and Quit" = "Roep aan en stop";

@@ -17,6 +17,7 @@ Definitions for script commands in OmniFoundation.  These can be included in you
 			<parameter name="to" code="to  " description="The container to which to add the object.">
 				<cocoa key="ToContainer"/>
 				<type type="specifier"/>
+				<type type="location specifier"/>
 			</parameter>
 		</command>
 		<command name="remove" code="OFssremv" description="Remove the given object(s) from the container.">

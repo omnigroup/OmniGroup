@@ -26,7 +26,7 @@
 "hours" = "ore";
 
 /* modifier, used for scanning user input. Do NOT add whitespace */
-"last" = "l’ultimo";
+"last" = "lo scorso";
 
 /* last month, used for scanning user input. Do NOT add whitespace */
 "last month" = "mese scorso";
@@ -38,7 +38,7 @@
 "last year" = "anno scorso";
 
 /* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
-"m" = "m";
+"m" = "me";
 
 /* month, singular, used for scanning user input. Do NOT add whitespace */
 "month" = "mese";
@@ -74,7 +74,7 @@
 "this week" = "questa settimana";
 
 /* this year, used for scanning user input. Do NOT add whitespace */
-"this year" = "quest’anno";
+"this year" = "quest'anno";
 
 /* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tod" = "oggi";
@@ -86,7 +86,7 @@
 "Today" = "Oggi";
 
 /* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"tom" = "dom";
+"tom" = "dom.";
 
 /* tomorrow */
 "tomorrow" = "domani";
@@ -98,7 +98,7 @@
 "tonight" = "stasera";
 
 /* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
-"w" = "s";
+"w" = "se";
 
 /* week, singular, used for scanning user input. Do NOT add whitespace */
 "week" = "settimana";

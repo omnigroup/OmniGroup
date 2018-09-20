@@ -41,7 +41,7 @@
 "1 Item Selected" = "已选择 1 个项目";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。 是否要予以替换？ 此操作无法撤销。";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "帐户信息";
@@ -161,7 +161,7 @@
 "Document Updated" = "文稿已更新";
 
 /* Toolbar button title for returning to list of documents. */
-"Documents <back button>" = "文稿";
+"Documents <back button>" = "文档";
 
 /* Duplicate document preview action title.
    Duplicate toolbar item accessibility label. */
@@ -261,7 +261,7 @@
 "Move to..." = "移至…";
 
 /* Move document preview action title. */
-"Move…" = "移动…";
+"Move…" = "移动...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
@@ -447,16 +447,19 @@
 "Template:" = "模板：";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@”帐户可能已编辑过未同步至云的文稿。您是否希望放弃所有本地编辑？";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "文稿“%@”需要密码才能打开。";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "此文稿需要密码才能打开。";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "此操作无法完成。";

@@ -5,7 +5,7 @@
 "Expected “%@” element missing in multistatus result from %@" = "%2$@ からのマルチステータス結果に予期されていた “%1$@” 要素がありません";
 
 /* Text for HTTP error code 507 (insufficient storage) */
-"insufficient storage" = "ストレージが足りません";
+"insufficient storage" = "空き領域が足りません";
 
 /* error reason - listing contents of a nonexistent directory */
 "No document exists at \"%@\"." = "“%@” に書類はありません。";
@@ -14,13 +14,13 @@
 "No such file \"%@\"." = "“%@” というファイルはありません。";
 
 /* error suggestion */
-"Please check that the user name and password you provided are correct." = "入力したユーザー名とパスワードが正しいことを確認してください。";
+"Please check that the user name and password you provided are correct." = "入力したユーザ名とパスワードが正しいことを確認してください。";
 
 /* error reason */
 "Please make sure that the account information is correct." = "アカウント情報が正しいことを確認してください。";
 
 /* error reason */
-"Please make sure that the destination folder exists." = "移動先フォルダが存在することを確認してください。";
+"Please make sure that the destination folder exists." = "移動先のフォルダが存在することを確認してください。";
 
 /* error reason */
 "The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対する応答として、%1$@ サーバが “%2$@”（%3$ld）を返しました。";

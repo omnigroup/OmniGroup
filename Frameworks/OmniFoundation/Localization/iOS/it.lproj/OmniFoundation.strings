@@ -198,7 +198,7 @@
 "PKCS#7 contents of embedded provisioning profile were not a valid plist" = "I contenuti PKCS#7 del profilo di provisioning incorporato non costituivano un plist valido";
 
 /* alert message format when clicking on a configuration value URL */
-"Restore \"%@\" to its default value" = "Ripristinare il valore di default per “%@”";
+"Restore \"%@\" to its default value" = "Ripristinare il valore di default per \"%@\"";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Ripristinare i valori di default di tutte le impostazioni di configurazione interne";
@@ -213,10 +213,10 @@
 "seconds" = "secondi";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Impostare “%1$@” su “%2$@”";
+"Set \"%@\" to \"%@\"" = "Impostare \"%1$@\" su \"%2$@\"";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
-"The encrypted item \"%@\" is missing or unreadable." = "L'elemento crittografato \"%@\" è mancante o illeggibile.";
+"The encrypted item \"%@\" is missing or unreadable." = "L'elemento crittigrafato \"%@\" è mancante o illeggibile.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";

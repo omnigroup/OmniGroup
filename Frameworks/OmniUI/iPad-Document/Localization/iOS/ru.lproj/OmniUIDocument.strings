@@ -400,7 +400,7 @@
 "Select a Document" = "Выбрать документ";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Отправить «%@» в программу в виде:";
+"Send \"%@\" to app as:" = "Отправить «%@» в приложение в виде:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Отправка настроек по эл. почте";
@@ -457,6 +457,9 @@
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "Для открытия документа «%@» требуется пароль.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "Для открытия документа требуется пароль.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Не удалось выполнить операцию.";

@@ -41,7 +41,7 @@
 "1 Item Selected" = "1 elemento selezionato";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato “%@”. Sostituirlo? L'operazione non potrà essere annullata.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato \"%@\". Sostituirlo? L'operazione non potrà essere annullata.";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "Info account";
@@ -80,7 +80,7 @@
 "Cannot Export Item" = "Impossibile esportare l'elemento";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail “%@”:";
+"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail \"%@\":";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Scegli un modello";
@@ -92,7 +92,7 @@
 "Choose Format" = "Scegli formato";
 
 /* Clear from Recent Documents container toolbar item accessibility label. */
-"Clear" = "Trasparente";
+"Clear" = "Cancella";
 
 /* clear button title */
 "Clear %ld Documents" = "Cancella %ld documenti";
@@ -187,7 +187,7 @@
 "Edits the document's title." = "Modifica il titolo del documento.";
 
 /* empty trash button title */
-"Empty Trash" = "Svuota cestino";
+"Empty Trash" = "Svuota Cestino";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "Immetti l'indirizzo del tuo spazio WebDAV.";
@@ -203,13 +203,13 @@
 "Export \"%@\" as:" = "Esporta \"%@\" come:";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "Esporta “%1$@” in %2$@ come:";
+"Export \"%@\" to %@ as:" = "Esporta \"%1$@\" in %2$@ come:";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Esporta in WebDAV";
 
 /* Export document preview action title. */
-"Export…" = "Esporta…";
+"Export…" = "Esporta...";
 
 /* finished */
 "Finished" = "Fine";
@@ -261,7 +261,7 @@
 "Move to..." = "Sposta in…";
 
 /* Move document preview action title. */
-"Move…" = "Sposta…";
+"Move…" = "Sposta...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Documento personale";
@@ -400,7 +400,7 @@
 "Select a Document" = "Seleziona un documento";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Invia “%@” all'app come:";
+"Send \"%@\" to app as:" = "Invia \"%@\" all'app come:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Registra impostazioni tramite e-mail";
@@ -423,7 +423,7 @@
 "Server address: %@" = "Indirizzo server: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Imposto “%@”";
+"Setting up \"%@\"" = "Imposto \"%@\"";
 
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Registra nuovo account";
@@ -447,16 +447,19 @@
 "Template:" = "Modello:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%1$@” sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%1$@\" sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%@” è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%@\" è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account “%@” potrebbe aver modificato documenti non ancora sincronizzati nel cloud. Ignorare eventuali modifiche in locale?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account \"%@\" può aver modificato documenti non ancora sincronizzati con il cloud. Ignorare le modifiche locali?";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "È necessaria una password per aprire il documento \"%@\".";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "È necessaria una password per aprire il documento.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Impossibile completare l'operazione.";

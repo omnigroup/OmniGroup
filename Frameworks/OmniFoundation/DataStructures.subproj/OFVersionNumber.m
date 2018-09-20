@@ -36,8 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     static OFVersionNumber *mainBundleVersionNumber = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSString *versionString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
-        mainBundleVersionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
+        mainBundleVersionNumber = [[self versionForBundle:[NSBundle mainBundle]] retain];
     });
     return mainBundleVersionNumber;
 }
@@ -67,6 +66,12 @@ NS_ASSUME_NONNULL_BEGIN
         userVisibleOperatingSystemVersionNumber = [[self alloc] initWithVersionString:versionString];
     });
     return userVisibleOperatingSystemVersionNumber;
+}
+
++ (OFVersionNumber *)versionForBundle:(NSBundle *)bundle;
+{
+    NSString *versionString = [[bundle infoDictionary] objectForKey:@"CFBundleVersion"];
+    return [[[OFVersionNumber alloc] initWithVersionString:versionString] autorelease];
 }
 
 static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString) __attribute__((unused)); // Can end up being unused when we require the latest version available of a platform's OS.

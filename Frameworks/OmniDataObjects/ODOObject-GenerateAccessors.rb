@@ -38,7 +38,7 @@ typedef struct {
     IMP get;
   } to_many;
 } ODOAccessors;
-const ODOAccessors IndexedAccessors[ODOObjectIndexedAccessorCount] = {
+static const ODOAccessors IndexedAccessors[ODOObjectIndexedAccessorCount] = {
 EOS
 
 for slot in 0..SLOT_COUNT-1

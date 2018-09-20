@@ -25,7 +25,8 @@
 /* error description */
 "Unable to open zip archive." = "zip 아카이브를 열 수 없습니다.";
 
-/* error description */
+/* error description
+   error reason */
 "Unable to read zip data." = "zip 데이터를 읽을 수 없습니다.";
 
 /* error description */

@@ -376,7 +376,7 @@
 "Report Error" = "Relatar Erro";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar dos Docs. Amostra";
+"Restore Sample Documents" = "Restaurar Documentos de Amostra";
 
 /* Share menu title */
 "Restore to..." = "Restaurar para…";
@@ -457,6 +457,9 @@
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "O documento “%@” requer uma senha para ser aberto.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "O documento requer uma senha para ser aberto.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "A operação não pôde ser concluída.";

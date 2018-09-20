@@ -45,7 +45,7 @@ static const NSUInteger DeletionTriggerCount = 7;
 
 #pragma mark -
 /// A helper object for tracking the info for a single file.
-@interface StaleFileInfo : NSObject
+@interface ODAVStaleFileInfo : NSObject
 + (instancetype)infoFromPreferencesDictionary:(NSDictionary *)dictionary;
 + (BOOL)validatePreferencesDictionary:(NSDictionary *)dictionary;
 
@@ -58,13 +58,13 @@ static const NSUInteger DeletionTriggerCount = 7;
 @property (nonatomic) NSDate *localDateOfLastCounting;
 @property (nonatomic) NSDate *serverDateOfLastCounting;
 
-- (BOOL)isDistinctFromInfo:(StaleFileInfo *)otherInfo;
-- (void)updateFromPreviousInfo:(StaleFileInfo *)otherInfo localDate:(NSDate *)localDate serverDate:(NSDate *)serverDate;
+- (BOOL)isDistinctFromInfo:(ODAVStaleFileInfo *)otherInfo;
+- (void)updateFromPreviousInfo:(ODAVStaleFileInfo *)otherInfo localDate:(NSDate *)localDate serverDate:(NSDate *)serverDate;
 @end
 
 #pragma mark -
 /// A helper object for tracking the info for a single identifier.
-@interface StaleFileInfosForIdentifier : NSObject
+@interface ODAVStaleFileInfosForIdentifier : NSObject
 + (instancetype)infosFromPreferencesArray:(NSArray *)array;
 + (BOOL)validatePreferencesArray:(NSArray *)array;
 
@@ -74,8 +74,8 @@ static const NSUInteger DeletionTriggerCount = 7;
 @property (nonatomic, nonnull) NSDate *firstCheckedDate;
 @property (nonatomic, nonnull) NSDate *lastCheckedDate;
 
-- (StaleFileInfo *)infoForResourceNamed:(NSString *)resourceName;
-- (void)setInfo:(StaleFileInfo *)info forResourceNamed:(NSString *)resourceName;
+- (ODAVStaleFileInfo *)infoForResourceNamed:(NSString *)resourceName;
+- (void)setInfo:(ODAVStaleFileInfo *)info forResourceNamed:(NSString *)resourceName;
 @end
 
 #pragma mark -
@@ -167,7 +167,7 @@ static const NSUInteger DeletionTriggerCount = 7;
         }
         
         for (NSArray *infosArrayForIdentifier in allInfoByIdentifier.allValues) {
-            if (![StaleFileInfosForIdentifier validatePreferencesArray:infosArrayForIdentifier]) {
+            if (![ODAVStaleFileInfosForIdentifier validatePreferencesArray:infosArrayForIdentifier]) {
                 isInvalid = YES;
                 break;
             }
@@ -180,12 +180,12 @@ static const NSUInteger DeletionTriggerCount = 7;
     }
 }
 
-- (StaleFileInfosForIdentifier *)_storedInfosForCurrentIdentifier
+- (ODAVStaleFileInfosForIdentifier *)_storedInfosForCurrentIdentifier
 {
     [self _validateStoredPreferenceData];
     NSDictionary *allInfoByIdentifier = [[self _defaults] objectForKey:ODAVStaleFilesPreferenceKey];
     NSArray *arrayForCurrentIdentifier = allInfoByIdentifier[self.identifier];
-    StaleFileInfosForIdentifier *result = [StaleFileInfosForIdentifier infosFromPreferencesArray:arrayForCurrentIdentifier];
+    ODAVStaleFileInfosForIdentifier *result = [ODAVStaleFileInfosForIdentifier infosFromPreferencesArray:arrayForCurrentIdentifier];
     return result;
 }
 
@@ -198,7 +198,7 @@ static const NSUInteger DeletionTriggerCount = 7;
 
     for(NSString *identifier in oldFileInfosForAllIdentifiers) {
         NSArray *array = oldFileInfosForAllIdentifiers[identifier];
-        StaleFileInfosForIdentifier *infos = [StaleFileInfosForIdentifier infosFromPreferencesArray:array];
+        ODAVStaleFileInfosForIdentifier *infos = [ODAVStaleFileInfosForIdentifier infosFromPreferencesArray:array];
         NSDate *lastChecked = infos.lastCheckedDate;
         OBASSERT(lastChecked != nil); // annotation says so, but clang isn't paying attention
         if ([lastChecked timeIntervalSinceDate:localDate] >= ( -1 * ODAVStaleFileGroupMaxAge )) {
@@ -209,7 +209,7 @@ static const NSUInteger DeletionTriggerCount = 7;
     return result;
 }
 
-- (void)_updatePreferences:(StaleFileInfosForIdentifier *)fileInfos localDate:(NSDate *)localDate
+- (void)_updatePreferences:(ODAVStaleFileInfosForIdentifier *)fileInfos localDate:(NSDate *)localDate
 {
     NSDictionary *oldFileInfosForAllIdentifiers = [self _filteredStoredInfosForAllIdentifiersLocalDate:localDate];
     
@@ -228,10 +228,10 @@ static const NSUInteger DeletionTriggerCount = 7;
 - (NSArray <ODAVFileInfo *> *)examineDirectoryContents:(NSArray <ODAVFileInfo *> *)currentItems localDate:(NSDate *)localDate serverDate:(NSDate *)serverDate;
 {
     /* Retrieve previous data - will often be nil */
-    StaleFileInfosForIdentifier *previousInfos = [self _storedInfosForCurrentIdentifier];
+    ODAVStaleFileInfosForIdentifier *previousInfos = [self _storedInfosForCurrentIdentifier];
     
     /* Our updated version of the above, generated from the snapshot we're looking at */
-    StaleFileInfosForIdentifier *newInfos = [StaleFileInfosForIdentifier new];
+    ODAVStaleFileInfosForIdentifier *newInfos = [ODAVStaleFileInfosForIdentifier new];
     
     /* And a list of things to tell our caller to delete */
     NSMutableArray *toDelete = [NSMutableArray array];
@@ -253,12 +253,12 @@ static const NSUInteger DeletionTriggerCount = 7;
             }
         }
         
-        StaleFileInfo *updatedEntry = [StaleFileInfo new];
+        ODAVStaleFileInfo *updatedEntry = [ODAVStaleFileInfo new];
         updatedEntry.fileSize = fileInfo.size;
         updatedEntry.eTag = fileInfo.ETag;
         updatedEntry.lastModifiedDate = fileInfo.lastModifiedDate;
         
-        StaleFileInfo *previousEntry = [previousInfos infoForResourceNamed:resourceName];
+        ODAVStaleFileInfo *previousEntry = [previousInfos infoForResourceNamed:resourceName];
         
         if ([updatedEntry isDistinctFromInfo:previousEntry]) {
             updatedEntry.countOfTimesSeen = 0;
@@ -301,11 +301,11 @@ static const NSUInteger DeletionTriggerCount = 7;
 @end
 
 #pragma mark -
-@implementation StaleFileInfo
+@implementation ODAVStaleFileInfo
 
 + (instancetype)infoFromPreferencesDictionary:(NSDictionary *)dictionary;
 {
-    StaleFileInfo *result = [StaleFileInfo new];
+    ODAVStaleFileInfo *result = [ODAVStaleFileInfo new];
     [result.backingDictionary addEntriesFromDictionary:dictionary];
     return result;
 }
@@ -422,7 +422,7 @@ static const NSUInteger DeletionTriggerCount = 7;
 
 #pragma mark Operations
 
-- (BOOL)isDistinctFromInfo:(StaleFileInfo *)otherInfo
+- (BOOL)isDistinctFromInfo:(ODAVStaleFileInfo *)otherInfo
 {
     if (otherInfo == nil) {
         return YES;
@@ -443,7 +443,7 @@ static const NSUInteger DeletionTriggerCount = 7;
     return NO;
 }
 
-- (void)updateFromPreviousInfo:(StaleFileInfo *)otherInfo localDate:(NSDate *)localDate serverDate:(NSDate *)serverDate
+- (void)updateFromPreviousInfo:(ODAVStaleFileInfo *)otherInfo localDate:(NSDate *)localDate serverDate:(NSDate *)serverDate
 {
     NSDate *lcLocal = otherInfo.localDateOfLastCounting;
     NSDate *lcRemote = otherInfo.serverDateOfLastCounting;
@@ -466,10 +466,10 @@ static const NSUInteger DeletionTriggerCount = 7;
 @end
 
 #pragma mark -
-@implementation StaleFileInfosForIdentifier
+@implementation ODAVStaleFileInfosForIdentifier
 + (instancetype)infosFromPreferencesArray:(NSArray *)array
 {
-    StaleFileInfosForIdentifier *result = [StaleFileInfosForIdentifier new];
+    ODAVStaleFileInfosForIdentifier *result = [ODAVStaleFileInfosForIdentifier new];
     result.firstCheckedDate = array[0];
     result.lastCheckedDate = array[1];
     [result.fileInfosDictionary addEntriesFromDictionary:array[2]];
@@ -492,7 +492,7 @@ static const NSUInteger DeletionTriggerCount = 7;
     }
     
     for (NSDictionary *infoDict in dict.allValues) {
-        if (![StaleFileInfo validatePreferencesDictionary:infoDict]) {
+        if (![ODAVStaleFileInfo validatePreferencesDictionary:infoDict]) {
             return NO;
         }
     }
@@ -528,14 +528,14 @@ static const NSUInteger DeletionTriggerCount = 7;
 
 #pragma mark Operations
 
-- (StaleFileInfo *)infoForResourceNamed:(NSString *)resourceName
+- (ODAVStaleFileInfo *)infoForResourceNamed:(NSString *)resourceName
 {
     NSDictionary *dict = self.fileInfosDictionary[resourceName];
-    StaleFileInfo *result = [StaleFileInfo infoFromPreferencesDictionary:dict];
+    ODAVStaleFileInfo *result = [ODAVStaleFileInfo infoFromPreferencesDictionary:dict];
     return result;
 }
 
-- (void)setInfo:(StaleFileInfo *)info forResourceNamed:(NSString *)resourceName;
+- (void)setInfo:(ODAVStaleFileInfo *)info forResourceNamed:(NSString *)resourceName;
 {
     self.fileInfosDictionary[resourceName] = info.preferencesRepresentation;
 }

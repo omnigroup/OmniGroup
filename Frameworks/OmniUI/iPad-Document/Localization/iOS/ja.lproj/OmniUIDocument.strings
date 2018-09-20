@@ -41,7 +41,7 @@
 "1 Item Selected" = "1 個の項目を選択";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "“%@” という名前の書類はすでに存在します。置き換えますか？この操作は元に戻せません。";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "%@” という名前の書類はすでに存在します。置き換えますか？この操作は元に戻せません。";
 
 /* Omni Sync Server account info button title */
 "Account Info" = "アカウント情報";
@@ -80,7 +80,7 @@
 "Cannot Export Item" = "項目を書き出せません";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "“%@” をメールで送信するためのフォーマットを選択してください:";
+"Choose a format for emailing \"%@\":" = "“%@” をメールで送信するためのフォーマットを選択してください：";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "テンプレートを選択";
@@ -203,13 +203,13 @@
 "Export \"%@\" as:" = "“%@” を次の名前で書き出す：";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "%1$@ を次の名前で %2$@ に書き出す:";
+"Export \"%@\" to %@ as:" = "%1$@ を次の名前で %2$@ に書き出す：";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "WebDAV に書き出す";
 
 /* Export document preview action title. */
-"Export…" = "書き出し…";
+"Export…" = "書き出す…";
 
 /* finished */
 "Finished" = "完了";
@@ -379,7 +379,7 @@
 "Restore Sample Documents" = "サンプル書類を復元";
 
 /* Share menu title */
-"Restore to..." = "復元先…";
+"Restore to..." = "復元先...";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "同期を再試行";
@@ -447,16 +447,19 @@
 "Template:" = "テンプレート：";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” には、まだクラウドと同期されていない %2$ld 個の編集済み書類があります。 これらの編集内容を破棄しますか？";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” には、まだクラウドと同期されていない %2$ld 個の編集済み書類があります。これらの編集内容を破棄しますか？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@” には、まだクラウドと同期されていない 1 個の編集済み書類があります。 これらの編集内容を破棄しますか？";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@” には、まだクラウドと同期されていない 1 個の編集済み書類があります。これらの編集内容を破棄しますか？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。 ローカルで行われた編集内容をすべて破棄しますか？";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。ローカルで行われた編集内容をすべて破棄しますか？";
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "書類 “%@” を開くにはパスワードが必要です。";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "この書類を開くにはパスワードが必要です。";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "操作を完了できませんでした。";

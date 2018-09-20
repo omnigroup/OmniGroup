@@ -38,7 +38,7 @@
 "last year" = "去年";
 
 /* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
-"m" = "m";
+"m" = "月";
 
 /* month, singular, used for scanning user input. Do NOT add whitespace */
 "month" = "月";

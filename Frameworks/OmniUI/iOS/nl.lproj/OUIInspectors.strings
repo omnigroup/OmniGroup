@@ -1,27 +1,26 @@
 /* font size label format string in points */
 "%@ points" = "%@ punten";
 
-/* title format for color component slider
-   title format for color component slider - alpha component, 0-100 */
+/* title format for color component slider */
 
-"<alpha title+value>" = "Ondoorzichtigheid: %d%%";
+"<alpha title+value>" = "Doorzichtigheid: %d%%";
 
-/* title format for color component slider - blue component in RGB model, 0-255 */
+/* title format for color component slider */
 "<blue title+value>" = "Blauw: %d";
 
-/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+/* title format for color component slider */
 "<brightness title+value>" = "Helderheid: %d%%";
 
-/* title format for color component slider - green component in RGB model, 0-255 */
+/* title format for color component slider */
 "<green title+value>" = "Groen: %d";
 
-/* title format for color component slider - hue angle in HSV model, degrees */
+/* title format for color component slider */
 "<hue title+value>" = "Tint: %d°";
 
-/* title format for color component slider - red component in RGB model, 0-255 */
+/* title format for color component slider */
 "<red title+value>" = "Rood: %d";
 
-/* title format for color component slider - saturation component in HSV model, 0-100 */
+/* title format for color component slider */
 "<saturation title+value>" = "Verzadiging: %d%%";
 
 /* title format for color component slider */
@@ -42,8 +41,7 @@
 /* edit action title */
 "Edit" = "Wijzig";
 
-/* Inspector slice title for font family
-   Title for the font family list in the inspector */
+/* Title for the font family list in the inspector */
 
 "Font" = "Lettertype";
 
@@ -66,7 +64,7 @@
 "No color selected" = "Geen kleur geselecteerd";
 
 /* popover inspector label title for no selected objects */
-"No Selection" = "Niets geselecteerd";
+"No Selection" = "Geen selectie";
 
 /* Title for section of font list */
 "Recommended Fonts" = "Aanbevolen lettertypen";

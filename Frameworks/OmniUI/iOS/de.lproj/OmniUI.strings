@@ -26,7 +26,7 @@
 "Cannot Email Diagnostics" = "Diagnose kann nicht per E-Mail gesendet werden";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Zentriert ausrichten";
+"Center text align" = "Text zentriert ausrichten";
 
 /* Certificate trust alert title */
 "Certificate Trust" = "Zertifikatvertrauen";
@@ -118,7 +118,7 @@
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni-Newsletter – Registrierung";
+"Omni Newsletter Signup" = "Omni-Newsletter – Anmeldung";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "Kennwort";

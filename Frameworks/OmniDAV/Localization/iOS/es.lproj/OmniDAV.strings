@@ -17,10 +17,10 @@
 "Please check that the user name and password you provided are correct." = "Comprueba que el nombre de usuario y la contraseña son correctos.";
 
 /* error reason */
-"Please make sure that the account information is correct." = "Asegúrate de que la información de la cuenta sea correcta.";
+"Please make sure that the account information is correct." = "Asegúrate de que la información de la cuenta es correcta.";
 
 /* error reason */
-"Please make sure that the destination folder exists." = "Asegúrate de que exista la carpeta de destino.";
+"Please make sure that the destination folder exists." = "Asegúrate de que existe la carpeta de destino.";
 
 /* error reason */
 "The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "El servidor %1$@ ha respondido “%2$@” (%3$ld) a una solicitud de “%4$@ %5$@”.";

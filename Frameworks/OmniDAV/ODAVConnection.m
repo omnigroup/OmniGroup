@@ -1010,6 +1010,12 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     if (_operationReason != nil)
         [request setValue:_operationReason forHTTPHeaderField:@"X-Caused-By"];
 
+    if (_customHeaderValues) {
+        [_customHeaderValues enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+            [request setValue:value forHTTPHeaderField:key];
+        }];
+    }
+
     // On iOS, this will be overridden by the user preference in Settings.app
     request.allowsCellularAccess = YES;
     

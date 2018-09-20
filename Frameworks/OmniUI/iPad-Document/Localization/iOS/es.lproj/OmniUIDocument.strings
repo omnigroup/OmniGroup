@@ -247,7 +247,7 @@
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
-"Move" = "Mover";
+"Move" = "Trasladar";
 
 /* move to trash button title */
 "Move %ld Items to Trash" = "Mover %ld elementos a la papelera";
@@ -261,7 +261,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Mover…";
+"Move…" = "Trasladar...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -298,7 +298,7 @@
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
 
-"OK" = "OK";
+"OK" = "Aceptar";
 
 /* demo disabled message */
 "OmniPresence allows you to use our free sync service or any compatible WebDAV server to automatically share documents between your devices, or to keep copies of your documents in the cloud in case you need to restore your device." = "OmniPresence permite usar nuestro servicio de sincronización gratuito (o cualquier servidor WebDAV compatible) para compartir documentos automáticamente entre dispositivos, o bien para guardar copias de los documentos en la nube por si necesitas restaurar tu dispositivo en algún momento.";
@@ -322,7 +322,7 @@
 "Open External Document" = "Abrir documento externo";
 
 /* Omni Presence config email body */
-"Open this file on another device to configure OmniPresence there." = "Abra este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
+"Open this file on another device to configure OmniPresence there." = "Abre este archivo en otro dispositivo para configurar OmniPresence en el mismo.";
 
 /* home screen button label */
 "Open…" = "Abrir…";
@@ -343,7 +343,7 @@
 "Password" = "Contraseña";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Permiso denegado a la biblioteca de imágenes.";
+"Photo Library permission denied." = "Permiso denegado a la fototeca.";
 
 /* Menu option in the document picker view */
 "Print" = "Imprimir";
@@ -376,7 +376,7 @@
 "Report Error" = "Comunicar error";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar docs. de ejemplo";
+"Restore Sample Documents" = "Restaurar ejemplos";
 
 /* Share menu title */
 "Restore to..." = "Restaurar a…";
@@ -458,11 +458,14 @@
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "El documento “%@” requiere una contraseña para abrirlo.";
 
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "El documento requiere una contraseña para abrirlo.";
+
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "La operación no se ha podido completar.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a su biblioteca de imágenes.";
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a tu fototeca.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";

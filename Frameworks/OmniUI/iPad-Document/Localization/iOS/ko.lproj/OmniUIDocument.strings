@@ -272,7 +272,7 @@
 /* New Document toolbar item accessibility label.
    New Template button title */
 
-"New Document" = "새 도큐멘트";
+"New Document" = "새로운 도큐멘트";
 
 /* Action sheet title for making a new folder from the selected documents */
 "New folder" = "새로운 폴더";
@@ -376,7 +376,7 @@
 "Report Error" = "보고서 오류";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "샘플 도큐멘트에서 복원";
+"Restore Sample Documents" = "샘플 도큐멘트 복원";
 
 /* Share menu title */
 "Restore to..." = "복원 대상...";
@@ -457,6 +457,9 @@
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "“%@” 도큐멘트를 열려면 암호가 필요합니다.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "도큐멘트를 열려면 암호가 필요합니다.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "작업을 완료할 수 없습니다.";

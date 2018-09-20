@@ -59,10 +59,10 @@
 "Easily sync Omni documents. Signup is free!" = "Omni-Dokumente leicht synchronisieren; kostenl. Registrierung";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Nach „%@“ exportieren";
+"Export to \"%@\"" = "Exportieren nach „%@“";
 
 /* iTunes export title */
-"Export to iTunes" = "Nach iTunes exportieren";
+"Export to iTunes" = "Exportieren nach iTunes";
 
 /* Server account type */
 "iTunes" = "iTunes";
@@ -160,7 +160,7 @@
 "Unable to verify login credentials at this time." = "Die Anmeldedaten können zurzeit nicht überprüft werden.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Eigenen WebDAV-Speicher verwenden";
+"Use your own WebDAV space." = "Verwenden Sie Ihren eigenen WebDAV-Speicher.";
 
 /* Account validation step description */
 "Validating Account..." = "Account überprüfen …";

@@ -87,7 +87,7 @@ OB_REQUIRE_ARC
 #pragma mark Pasteboard I/O
 
 static dispatch_once_t utlookup_once;
-NSString *utTypePKIXCert, *utTypePEMFile, *utTypeCERFile;
+static NSString *utTypePKIXCert, *utTypePEMFile, *utTypeCERFile;
 static void utlookup(void *dummy) {
     utTypePKIXCert = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, CFSTR("application/pkix-cert"), kUTTypeData); // Registered with IANA [RFC2585]
     utTypePEMFile = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, CFSTR("pem"), kUTTypeText); // Typical file extension

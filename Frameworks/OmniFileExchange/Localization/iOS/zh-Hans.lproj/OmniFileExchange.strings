@@ -23,7 +23,7 @@
 "Add WebDAV Server" = "添加 WebDAV 服务器";
 
 /* error description */
-"Another account is syncing to this folder already." = "已有另一个帐户同步到该文件夹。";
+"Another account is syncing to this folder already." = "已有其他帐户同步到该文件夹。";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "无法定位已同步文稿文件夹。";

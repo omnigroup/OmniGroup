@@ -1,4 +1,4 @@
-// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (OFVersionNumber *)mainBundleVersionNumber;
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
+
++ (OFVersionNumber *)versionForBundle:(NSBundle *)bundle;
 
 // Convenience methods for testing the current operating system.  One nice thing about using these (rather than looking up the operating system and comparing it by hand) is that we can remove these methods when they become irrelevant (e.g. when we require Snow Leopard), helping us find and update any code which is unnecessarily trying to support an older operating system.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE

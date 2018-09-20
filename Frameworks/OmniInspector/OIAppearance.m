@@ -125,6 +125,16 @@ static BOOL _isDarkAppearance(NSAppearance *appearance)
     return [self._currentColor colorUsingColorSpace:space];
 }
 
+- (NSColorType)type NS_AVAILABLE_MAC(10_13);
+{
+    return NSColorTypeComponentBased;
+}
+
+- (nullable NSColor *)colorUsingType:(NSColorType)type NS_AVAILABLE_MAC(10_13);
+{
+    return [self._currentColor colorUsingType:type];
+}
+
 - (nullable NSColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(NSColor *)color;
 {
     return [self._currentColor blendedColorWithFraction:fraction ofColor:color];

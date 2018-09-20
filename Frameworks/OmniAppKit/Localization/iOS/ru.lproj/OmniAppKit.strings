@@ -8,7 +8,7 @@
 "Learn More" = "Дополнительные сведения";
 
 /* button title */
-"OK" = "ОК";
+"OK" = "OK";
 
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "Неожиданное значение ключа «%@»";

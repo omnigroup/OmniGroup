@@ -61,6 +61,8 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @property(nonatomic,copy) NSString *userAgent;
 @property(nonatomic,copy) NSString *operationReason;
 
+@property(nonatomic,copy,nullable) NSDictionary <NSString *, NSString *> *customHeaderValues;
+
 // NOTE: These get called on a private queue, not the queue the connection was created on or the queue the operations were created or started on
 // validateCertificateForChallenge: Decide whether to trust a server (NSURLAuthenticationMethodServerTrust), and return the adjusted SecTrustRef credential if so. Returning nil is equivalent to not setting a callback in the first place, which results in NSURLSessionAuthChallengeRejectProtectionSpace. (TODO: Should it be default handling instead of reject?)
 // This callback should simply apply any stored exceptions or similar overrides, but probably shouldn't prompt the user: if it takes too long the server may drop the connection, and NSURLSession doesn't automatically handle that timeout. Instead, users of OmniDAV should run a trust dialog if an operation fails for a server-trust-related reason.

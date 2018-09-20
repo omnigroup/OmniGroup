@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -340,7 +340,7 @@ static void copyProperty(NSToolbarItem *anItem,
         if ([customImageName containsString:@"/"])
             customImageName = [[customImageName pathComponents] componentsJoinedByString:@":"];
         
-        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle allowingNil:YES]; // <bug:///90891> (AppleScripts in toolbars don't show custom icons) We're passing the AppleScript name as a customImageName here. That most certainly is wrong.
+        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle allowingNil:YES shouldDynamicallyAdjust:YES]; // <bug:///90891> (AppleScripts in toolbars don't show custom icons) We're passing the AppleScript name as a customImageName here. That most certainly is wrong.
     }
     
     if ((value = [itemInfo objectForKey:@"customView"])) {

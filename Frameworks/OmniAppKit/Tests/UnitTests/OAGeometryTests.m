@@ -81,15 +81,15 @@ static void checkOneLineLineIntersection(NSPoint p00, NSPoint p01, NSPoint p10, 
     NSPoint l1[2], l2[2];
     struct intersectionInfo r;
     
-    _parameterizeLine(l1, p00, p01);
-    _parameterizeLine(l2, p10, p11);
+    _OAParameterizeLine(l1, p00, p01);
+    _OAParameterizeLine(l2, p10, p11);
     
     r = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
     
 #ifdef OMNI_ASSERTIONS_ON
     NSInteger count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, &r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, &r);
     OBASSERT(count == 1);    
     OBASSERT(r.leftParameterDistance == 0);
     OBASSERT(r.rightParameterDistance == 0);
@@ -104,15 +104,15 @@ static void checkOneLineLineOverlap(NSPoint p00, NSPoint p01, NSPoint p10, NSPoi
     NSPoint l1[2], l2[2];
     struct intersectionInfo r;
     
-    _parameterizeLine(l1, p00, p01);
-    _parameterizeLine(l2, p10, p11);
+    _OAParameterizeLine(l1, p00, p01);
+    _OAParameterizeLine(l2, p10, p11);
     
     r = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
     
 #ifdef OMNI_ASSERTIONS_ON
     NSInteger count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, &r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, &r);
     OBASSERT(count == 1);    
     OBASSERT(r.leftParameterDistance >= 0);  // rightParameterDistance may be negative, but leftParameterDistance should always be positive the way we've defined it
     checkAtPoint(p00, p01, r.leftParameter, intersectionStart);
@@ -129,57 +129,57 @@ static void linesShouldNotIntersect(double x00, double y00, double x01, double y
     struct intersectionInfo r[1];
 
     // Both lines forward
-    _parameterizeLine(l1, Pt(x00, y00), Pt(x01, y01));
-    _parameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
+    _OAParameterizeLine(l1, Pt(x00, y00), Pt(x01, y01));
+    _OAParameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
 #ifdef OMNI_ASSERTIONS_ON
     NSInteger count;
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, r);
     OBASSERT(count == 0);
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l2, l1, r);
+    OAIntersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 
     // l1 forward, l2 reverse
-    _parameterizeLine(l2, Pt(x11, y11), Pt(x10, y10));
+    _OAParameterizeLine(l2, Pt(x11, y11), Pt(x10, y10));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, r);
     OBASSERT(count == 0);
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l2, l1, r);
+    OAIntersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 
     // Both lines reverse
-    _parameterizeLine(l1, Pt(x01, y01), Pt(x00, y00));
+    _OAParameterizeLine(l1, Pt(x01, y01), Pt(x00, y00));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, r);
     OBASSERT(count == 0);
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l2, l1, r);
+    OAIntersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 
     // l1 reverse, l2 forward
-    _parameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
+    _OAParameterizeLine(l2, Pt(x10, y10), Pt(x11, y11));
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l1, l2, r);
+    OAIntersectionsBetweenLineAndLine(l1, l2, r);
     OBASSERT(count == 0);
 #ifdef OMNI_ASSERTIONS_ON
     count = 
 #endif
-    intersectionsBetweenLineAndLine(l2, l1, r);
+    OAIntersectionsBetweenLineAndLine(l2, l1, r);
     OBASSERT(count == 0);
 }
 
@@ -254,20 +254,20 @@ static void linesDoOverlap(CGFloat x00, CGFloat y00, CGFloat x01, CGFloat y01, C
 }
 
 static
-void dumpFoundIntersections(int foundCount,
+void dumpFoundIntersections(NSInteger foundCount,
                             const char *leftname, const char *rightname,
                             const NSPoint *leftCoeff, const NSPoint *rightCoeff,
                             struct intersectionInfo *r)
 {
-    int ix;
+    NSInteger ix;
     
 #define XY(co, t) (( co[3].x * (t) + co[2].x ) * (t) + co[1].x ) * (t) + co[0].x, \
                   (( co[3].y * (t) + co[2].y ) * (t) + co[1].y ) * (t) + co[0].y
 
     
-    printf("*** Found %d intersections:\n", foundCount);
+    printf("*** Found %ld intersections:\n", foundCount);
     for(ix = 0; ix < foundCount; ix ++) {
-        printf("   %2d: %s t=", ix, leftname);
+        printf("   %2ld: %s t=", ix, leftname);
         if (r[ix].leftParameterDistance == 0)
             printf("%g", r[ix].leftParameter);
         else
@@ -291,28 +291,28 @@ void dumpFoundIntersections(int foundCount,
 }
 
 static
-void dumpExpectedIntersections(int expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
+void dumpExpectedIntersections(NSInteger expectedCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *aentry, const enum OAIntersectionAspect *aexit, BOOL invertAspects)
 {
-    int ix;
+    NSInteger ix;
     
-    printf("*** Expected %d intersections:\n", expectedCount);
+    printf("*** Expected %ld intersections:\n", expectedCount);
     if (l) {
         for(ix = 0; ix < expectedCount; ix ++) {
-            printf("   %2d: (%g,%g) (%g), %s-%s aspect\n", ix, i[ix].x, i[ix].y, l[ix], straspect(invertAspects? ( - aentry[ix] ) : ( aentry[ix] )), straspect(invertAspects? ( - aexit[ix] ) : ( aexit[ix] )));
+            printf("   %2ld: (%g,%g) (%g), %s-%s aspect\n", ix, i[ix].x, i[ix].y, l[ix], straspect(invertAspects? ( - aentry[ix] ) : ( aentry[ix] )), straspect(invertAspects? ( - aexit[ix] ) : ( aexit[ix] )));
         }
     } else {
         for(ix = 0; ix < expectedCount; ix ++) {
-            printf("   %2d: (%g,%g), %s-%s aspect\n", ix, i[ix].x, i[ix].y, straspect(invertAspects? ( - aentry[ix] ) : ( aentry[ix] )), straspect(invertAspects? ( - aexit[ix] ) : ( aexit[ix] )));
+            printf("   %2ld: (%g,%g), %s-%s aspect\n", ix, i[ix].x, i[ix].y, straspect(invertAspects? ( - aentry[ix] ) : ( aentry[ix] )), straspect(invertAspects? ( - aexit[ix] ) : ( aexit[ix] )));
         }
     }
     
 }
 
 /* Verify that the line/curve intersection code finds intersections at the expected location with the expected aspects. */
-static BOOL checkOneLineCurve(OAGeometryTests *tc, unsigned line, const NSPoint *cparams, const NSPoint *lparams, int count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
+static BOOL checkOneLineCurve(OAGeometryTests *tc, unsigned line, const NSPoint *cparams, const NSPoint *lparams, NSInteger count, const NSPoint *i, const enum OAIntersectionAspect *a, BOOL invertAspects)
 {
     struct intersectionInfo r[3];
-    int ix;
+    NSInteger ix;
     
     for(ix = 0; ix < 3; ix++) {
         r[ix] = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
@@ -321,18 +321,18 @@ static BOOL checkOneLineCurve(OAGeometryTests *tc, unsigned line, const NSPoint 
 
     BOOL success = YES;
 
-    ix = intersectionsBetweenCurveAndLine(cparams, lparams, r);
+    ix = OAIntersectionsBetweenCurveAndLine(cparams, lparams, r);
     if (ix != count) {
         dumpFoundIntersections(ix, "curve", "line", cparams, lparams, r);
         dumpExpectedIntersections(count, i, NULL, a, a, invertAspects);
-        [tc recordFailureWithDescription:[NSString stringWithFormat:@"Incorrect number of intersections found; found %d, expected %d", ix, count]
+        [tc recordFailureWithDescription:[NSString stringWithFormat:@"Incorrect number of intersections found; found %ld, expected %ld", ix, count]
                                   inFile:@"" __FILE__ atLine:line expected:NO];
         return NO;
     }
     
     for(ix = 0; ix < count; ix++) {
 #define checkValidParameter(p) if (p < -EPSILON || p > 1+EPSILON) { \
-        [tc recordFailureWithDescription:[NSString stringWithFormat:@"Intersection parameter for ixn %d is invalid: %s = %g = 1+%g = %a, but must be between -EPSILON and 1+EPSILON", ix, #p, p, p-1, p] \
+        [tc recordFailureWithDescription:[NSString stringWithFormat:@"Intersection parameter for ixn %ld is invalid: %s = %g = 1+%g = %a, but must be between -EPSILON and 1+EPSILON", ix, #p, p, p-1, p] \
             inFile:@"" __FILE__ atLine:__LINE__ expected:NO]; \
             success = NO; \
         }
@@ -409,19 +409,19 @@ void checkLineCurve_(OAGeometryTests *tc, unsigned line, const NSPoint *c, const
         rev_aspects[2*(count-ix-1)] = exit;
     }
     
-    _parameterizeCurve(cparams, c[0], c[3], c[1], c[2]);
-    _parameterizeLine(lparams, l[0], l[1]);
+    _OAParameterizeCurve(cparams, c[0], c[3], c[1], c[2]);
+    _OAParameterizeLine(lparams, l[0], l[1]);
     lparams[2] = (NSPoint){0, 0};
     lparams[3] = (NSPoint){0, 0};
     ok[0] = checkOneLineCurve(tc, line, cparams, lparams, count, intersections, aspects, NO);
     
-    _parameterizeLine(lparams, l[1], l[0]);
+    _OAParameterizeLine(lparams, l[1], l[0]);
     ok[1] = checkOneLineCurve(tc, line, cparams, lparams, count, intersections, aspects, YES);
     
-    _parameterizeCurve(cparams, c[3], c[0], c[2], c[1]);
+    _OAParameterizeCurve(cparams, c[3], c[0], c[2], c[1]);
     ok[2] = checkOneLineCurve(tc, line, cparams, lparams, count, rev_intersections, rev_aspects, NO);
     
-    _parameterizeLine(lparams, l[0], l[1]);
+    _OAParameterizeLine(lparams, l[0], l[1]);
     ok[3] = checkOneLineCurve(tc, line, cparams, lparams, count, rev_intersections, rev_aspects, YES);
     
     if (!ok[0] || !ok[1] || !ok[2] || !ok[3]) {
@@ -532,19 +532,19 @@ static
 BOOL checkOneCurveCurve(const NSPoint *leftPoints, const NSPoint *rightPoints, int intersectionCount, const NSPoint *i, const double *l, const enum OAIntersectionAspect *entryAspects, const enum OAIntersectionAspect *exitAspects, BOOL invertAspects, BOOL looseAspects)
 {
     struct intersectionInfo r[MAX_INTERSECTIONS_PER_ELT_PAIR];
-    int ix, found;
+    NSInteger ix, found;
     
     for(ix = 0; ix < 3; ix++) {
         r[ix] = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
     }
     
     NSPoint leftCoefficients[4], rightCoefficients[4];
-    _parameterizeCurve(leftCoefficients, leftPoints[0], leftPoints[3], leftPoints[1], leftPoints[2]);
-    _parameterizeCurve(rightCoefficients, rightPoints[0], rightPoints[3], rightPoints[1], rightPoints[2]);
-    found = intersectionsBetweenCurveAndCurve(leftCoefficients, rightCoefficients, r);
+    _OAParameterizeCurve(leftCoefficients, leftPoints[0], leftPoints[3], leftPoints[1], leftPoints[2]);
+    _OAParameterizeCurve(rightCoefficients, rightPoints[0], rightPoints[3], rightPoints[1], rightPoints[2]);
+    found = OAntersectionsBetweenCurveAndCurve(leftCoefficients, rightCoefficients, r);
     
     if (found != intersectionCount) {
-        NSLog(@"%s:%d Found %d intersections, expecting %d", __func__, __LINE__, found, intersectionCount);
+        NSLog(@"%s:%d Found %ld intersections, expecting %d", __func__, __LINE__, found, intersectionCount);
         dumpFoundIntersections(found, "Curve1", "Curve2", leftCoefficients, rightCoefficients, r);
         dumpExpectedIntersections(intersectionCount, i, l, entryAspects, exitAspects, invertAspects);
         return NO;
@@ -684,15 +684,15 @@ static BOOL checkCurveCurve_(OAGeometryTests *tc, unsigned line, BOOL looseAspec
 static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
 {
     NSPoint c[4];
-    _parameterizeCurve(c, p[0], p[3], p[1], p[2]);
+    _OAParameterizeCurve(c, p[0], p[3], p[1], p[2]);
     struct intersectionInfo r[MAX_INTERSECTIONS_PER_ELT_PAIR];
-    int found;
+    NSInteger found;
     
     r[0] = (struct intersectionInfo){ -1, -1, -1, -1, intersectionEntryBogus, intersectionEntryBogus };
     
-    found = intersectionsBetweenCurveAndSelf(c, r);
+    found = OAIntersectionsBetweenCurveAndSelf(c, r);
     if(found != 1) {
-        NSLog(@"%s:%d Found %d intersections, expecting %d", __func__, __LINE__, found, 1);
+        NSLog(@"%s:%d Found %ld intersections, expecting %d", __func__, __LINE__, found, 1);
         dumpFoundIntersections(found, "Self", "Self", c, c, r);
         printf("*** Expected %d intersections:\n", 1);
         printf("   %2d: (%g,%g), t=%g/%g, %s aspect\n", 1, i.x, i.y, t1, t2, straspect(expectedAspect));
@@ -908,9 +908,9 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
     BOOL modified;
 
     /*
-     tightBoundsOfCurveTo() is returning YES in some cases where it XCTAssertTrue(?) return NO: it computes the answer in double-precision, and sets the modified flag because it extends outside the given rectangle, but when the result is cast to CGFloat to be returned it's equal to the original again.
+     OATightBoundsOfCurveTo() is returning YES in some cases where it XCTAssertTrue(?) return NO: it computes the answer in double-precision, and sets the modified flag because it extends outside the given rectangle, but when the result is cast to CGFloat to be returned it's equal to the original again.
      
-     This shouldn't be a problem in the specific uses we have for tightBoundsOfCurveTo(), where the return value just enables some optimizations, so I've disabled that test here: we no longer fail if tightBounds... spuriously returns YES when we expect NO.
+     This shouldn't be a problem in the specific uses we have for OATightBoundsOfCurveTo(), where the return value just enables some optimizations, so I've disabled that test here: we no longer fail if tightBounds... spuriously returns YES when we expect NO.
      
      To be absolutely strictly correct, I think tightBoundsOfCurve() should extend the bounds rectangle (using nextafter() or the like) if necessary when casting its results back to CGFloat. That's a greater level of care than we need though. (Alternatively, it could return its answers in doubles...)
      */
@@ -937,36 +937,36 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
                                                    expected:NO]
     
     buf = NSZeroRect;
-    modified = tightBoundsOfCurveTo(&buf, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf, s, c1, c2, e, halfwidth);
     checkDidModify(buf);
     checkCloseRect(buf, expected, NO);
     
     NSRect buf2 = buf;
     NSRect buf2_before = buf2;
-    modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidNotModify(buf2_before, buf2);
     checkCloseRect(buf2_before, buf2, YES);
     
     buf2 = NSInsetRect(buf, 1, 1);
-    modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidModify(buf);
     checkCloseRect(buf2, expected, NO);
     
     buf2 = NSInsetRect(buf, -1, -1);
     buf2_before = buf2;
-    modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidNotModify(buf2_before, buf2);
     checkCloseRect(buf2_before, buf2, YES);
     
     buf2 = buf;
     buf2.size.width -= 1;
-    modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidModify(buf2);
     checkCloseRect(buf2, expected, NO);
     
     buf2 = buf;
     buf2.size.height -= 1;
-    modified = tightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
+    modified = OATightBoundsOfCurveTo(&buf2, s, c1, c2, e, halfwidth);
     checkDidModify(buf2);
     checkCloseRect(buf2, expected, NO);    
 }
@@ -1163,10 +1163,6 @@ static void checkClockwise_(OAGeometryTests *self, NSBezierPath *p, BOOL cw, con
     [p closePath];
     checkClockwise(p, YES);
 }
-
-// TODO: Test -getWinding:andHit:forPoint:.
-// Make sure to do rotations and reflections of the underlying path.
-
 
 @end
 

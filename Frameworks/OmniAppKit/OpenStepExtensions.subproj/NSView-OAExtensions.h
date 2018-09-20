@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@
     // Deprecated:  Use -setScrollPositionAsPercentage:
 
 // Finding views
-- (id)enclosingViewOfClass:(Class)cls;
+- (id)enclosingViewOfClass:(Class)cls NS_REFINED_FOR_SWIFT;
 - anyViewOfClass:(Class)cls;
 - (NSView *)lastChildKeyView;
 - (NSView *)subviewContainingView:(NSView *)subSubView;

@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "关于 %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -29,7 +28,7 @@
 "Center text align" = "文本居中对齐";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "信任证书";
+"Certificate Trust" = "证书信任";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
@@ -58,7 +57,7 @@
 "enter password" = "输入密码";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "对于此演示，功能未启用";
+"Feature not enabled for this demo" = "本试用版未启用此功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
@@ -67,13 +66,13 @@
 "Help" = "帮助";
 
 /* Help and Settings toolbar item accessibility label. */
-"Help and Settings" = "帮助和设置";
+"Help and Settings" = "帮助与设置";
 
 /* increment button accessibility label */
 "Increment" = "增加";
 
 /* default special URL confirm button title */
-"Invoke" = "调用";
+"Invoke" = "激活";
 
 /* button title */
 "Invoke and Quit" = "调用并退出";
@@ -109,9 +108,6 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -159,7 +155,7 @@
 "Underline" = "底线";
 
 /* Undo button title */
-"Undo" = "撤销";
+"Undo" = "取消";
 
 /* placeholder text - username field of login/password prompt */
 "username" = "用户名";

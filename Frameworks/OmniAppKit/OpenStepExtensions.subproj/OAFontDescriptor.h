@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ typedef OAPlatformFontClass *OAFontDescriptorPlatformFont;
 @class NSNotification, NSDictionary;
 
 // Returns the _minimal_ set of attributes (on iOS at least). Primarily useful for testing and debugging.
-extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
+extern NSDictionary *OAAttributesFromFont(OAFontDescriptorPlatformFont font);
 
 @interface OAFontDescriptor : OFObject <NSCopying>
 

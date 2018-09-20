@@ -23,7 +23,7 @@
 "Add WebDAV Server" = "Voeg WebDAV-server toe";
 
 /* error description */
-"Another account is syncing to this folder already." = "Er is al een andere account die met deze map synchroniseert.";
+"Another account is syncing to this folder already." = "Er is al een andere account bezig met synchroniseren met deze map.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Kan gesynchroniseerde documentenmap niet vinden.";
@@ -136,7 +136,7 @@
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Deze app vereist een OmniPresence-opmaak %1$@, maar de cloud-account gebruikt de opmaak %2$@. Voer een upgrade uit van de cloud-account.";
 
 /* Error reason */
-"This OmniPresence folder contains another OmniPresence synced folder." = "Deze OmniPresence-map bevat een andere gesynchroniseerde map van OmniPresence.";
+"This OmniPresence folder contains another OmniPresence synced folder." = "Deze OmniPresence-map bevat een andere gesychroniseerde OmniPresence-map.";
 
 /* Error description when syncing will be disabled due to too many recent errors */
 "Too many file transfers encountered errors recently." = "Teveel bestandsoverdrachten hebben onlangs fouten aangetroffen.";

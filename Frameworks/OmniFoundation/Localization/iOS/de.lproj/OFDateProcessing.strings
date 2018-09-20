@@ -77,7 +77,7 @@
 "this year" = "dieses Jahr";
 
 /* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"tod" = "heute";
+"tod" = "heu";
 
 /* today, used for scanning user input. Do NOT add whitespace */
 "today" = "heute";
@@ -86,7 +86,7 @@
 "Today" = "Heute";
 
 /* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"tom" = "morg";
+"tom" = "mor";
 
 /* tomorrow */
 "tomorrow" = "morgen";
@@ -116,7 +116,7 @@
 "years" = "Jahre";
 
 /* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"yes" = "gest";
+"yes" = "gest.";
 
 /* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "gestern";

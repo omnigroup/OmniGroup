@@ -37,7 +37,7 @@
 "Device Information" = "Información del dispositivo";
 
 /* error description */
-"Error fetching software update information." = "Error al buscar información sobre la actualización de software.";
+"Error fetching software update information." = "Error al recoger información sobre la actualización de software.";
 
 /* error description */
 "Error while checking for updated version." = "Error al buscar una versión actualizada.";
@@ -46,10 +46,10 @@
 "Exception raised: %@" = "Excepción: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Ayúdanos a decidir compatibilidades y versiones de iOS";
+"Help The Omni Group decide which devices and iOS versions to support" = "Ayúdanos a decidir compatibilidades con dispositivos y versiones de iOS";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si compartes esta información, nos ayudas con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima. ";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si compartes esta información, nos ayuda con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima.";
 
 /* Software update report entry name */
 "iOS version" = "Versión de iOS";
@@ -111,7 +111,7 @@
 "This version" = "Esta versión";
 
 /* error reason */
-"Timed out waiting for the software update service." = "Se ha excedido el tiempo de espera para el servicio de actualización de software.";
+"Timed out waiting for the software update service." = "Se ha agotado el tiempo de espera del servicio de actualización de software.";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "La herramienta no ha devuelto datos";
@@ -120,7 +120,7 @@
 "Unable to authenticate the response from the software update server." = "No se ha podido autenticar la respuesta del servidor de actualizaciones de software.";
 
 /* error description - will be followed by more detailed error reason */
-"Unable to fetch software update information." = "No se ha podido buscar información sobre la actualización de software.";
+"Unable to fetch software update information." = "No se ha podido recoger información sobre la actualización de software.";
 
 /* error description */
 "Unable to parse response from the software update server." = "No se ha podido analizar la respuesta del servidor de actualizaciones de software.";

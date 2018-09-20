@@ -261,7 +261,7 @@
 "Move to..." = "Verplaats naar…";
 
 /* Move document preview action title. */
-"Move…" = "Verplaats…";
+"Move…" = "Verplaats...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mijn document";
@@ -457,6 +457,9 @@
 
 /* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
 "The document \"%@\" requires a password to open." = "Het document “%@” vereist een wachtwoord om te worden geopend.";
+
+/* dialog box title when prompting for the password/passphrase for an encrypted document - parameter is the display-name of the file being opened */
+"The document requires a password to open." = "Het document vereist een wachtwoord om te worden geopend.";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "De bewerking kan niet worden voltooid.";
