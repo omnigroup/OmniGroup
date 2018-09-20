@@ -15,12 +15,7 @@
 
 RCS_ID("$Id$")
 
-@interface OAWebPageViewer () <OAFindControllerTarget, NSWindowDelegate> {
-  @private
-    BOOL _usesWebPageTitleForWindowTitle;
-    NSMutableDictionary *_scriptObjects;
-}
-
+@interface OAWebPageViewer () <OAFindControllerTarget, NSWindowDelegate>
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, strong) NSView <WebDocumentView> *webDocumentView;
 @property (nonatomic, copy) void (^loadCompletion)(BOOL success, NSURL *url, NSError *error);
@@ -29,6 +24,11 @@ RCS_ID("$Id$")
 #pragma mark -
 
 @implementation OAWebPageViewer
+{
+    BOOL _usesWebPageTitleForWindowTitle;
+    NSMutableDictionary *_scriptObjects;
+    BOOL _showWindowWhenNavigationCompletes;
+}
 
 static NSMutableDictionary *sharedViewerCache = nil;
 
@@ -106,6 +106,7 @@ static NSMutableDictionary *sharedViewerCache = nil;
     if (_name != nil)
         [window setFrameAutosaveName:[NSString stringWithFormat:@"OAWebPageViewer:%@", _name]];
 
+    _showWindowWhenNavigationCompletes = YES;
     [[_webView mainFrame] loadRequest:request];
 }
 
@@ -319,14 +320,22 @@ static NSMutableDictionary *sharedViewerCache = nil;
     if (frame == [sender mainFrame])
         self.webDocumentView = frame.frameView.documentView;
 
-    [self showWindow:nil];
+    [self _showWindowIfDeferred];
     [self _handleLoadCompletionWithSuccess:YES url:[[[frame provisionalDataSource] request] URL] error:nil];
+}
+
+- (void)_showWindowIfDeferred;
+{
+    if (!_showWindowWhenNavigationCompletes)
+        return;
+    _showWindowWhenNavigationCompletes = NO;
+    [self showWindow:nil];
 }
 
 - (void)webView:(WebView *)sender didChangeLocationWithinPageForFrame:(WebFrame *)frame;
 {
     // If the user clicks on a page that is already loaded, we want to show our window even though we didn't get a -webView:didFinishLoadForFrame: message.
-    [self showWindow:nil];
+    [self _showWindowIfDeferred];
 }
 
 - (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame;

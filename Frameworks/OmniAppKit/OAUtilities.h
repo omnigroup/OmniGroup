@@ -72,7 +72,7 @@ static inline NSRect OAInsetRectByEdgeInsets(NSRect rect, NSEdgeInsets insets, B
     rect.size.height -= insets.top + insets.bottom;
     
     if (isFlipped)
-        rect.origin.y -= insets.top;
+        rect.origin.y += insets.top;
     else
         rect.origin.y += insets.bottom;
     

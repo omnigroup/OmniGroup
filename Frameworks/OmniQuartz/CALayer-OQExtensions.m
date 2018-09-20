@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,12 @@
 #import <OmniQuartz/OQDrawing.h>
 
 RCS_ID("$Id$");
+
+//#define OQ_ANIMATION_LOGGING_ENABLED
+#ifdef OQ_ANIMATION_LOGGING_ENABLED
+    #define OQ_LOG_ALL_ANIMATIONS // Enable to unconditionally log animations from all layers
+#endif
+
 
 #if 0 && defined(DEBUG)
 #define LOG_CONTENT_FILLING
@@ -84,18 +90,22 @@ static void replacement_setNeedsDisplayInRect(CALayer *self, SEL _cmd, CGRect fr
 #endif
 
 #if defined(OQ_ANIMATION_LOGGING_ENABLED)
-
 static NSString * const OQAnimationLoggingEnabled = @"OQAnimationLoggingEnabled";
+#endif
 
 // We never remove the key, but always set a boolean. This could allow you to turn this on for a parent layer, but off for individual subtrees
 void OQSetAnimationLoggingEnabledForLayer(CALayer *layer, BOOL enabled)
 {
+#if defined(OQ_ANIMATION_LOGGING_ENABLED)
     // Not that an animation would ever be set up for this key, but let's just avoid even asking.
     [CATransaction begin];
     [CATransaction setDisableActions:YES];
     [layer setValue:enabled ? (id)kCFBooleanTrue : (id)kCFBooleanFalse forKey:OQAnimationLoggingEnabled];
     [CATransaction commit];
+#endif
 }
+
+#if defined(OQ_ANIMATION_LOGGING_ENABLED)
 
 // Right now this doesn't consider the key, but we could make the annotation specify a dictionary of key->BOOL with a default value (so you can enable animations by default but turn off some keys). Haven't needed this yet.
 static BOOL OQIsAnimationLoggingEnabledForLayer(CALayer *layer, NSString *key)

@@ -536,6 +536,8 @@ static BOOL _uncached_isSystemClass(Class cls)
             // Swift runtime-generated classes for generics, it looks like...
         } else if (HAS_PREFIX(className, "ABCD") || HAS_PREFIX(className, "NSManagedObject_ABCD")) {
             // AddressBook CoreData
+        } else if (HAS_PREFIX(className, "__NSXPCInterfaceProxy_")) {
+            // Some internal goop
         } else {
             NSLog(@"Cannot determine library path for class %s", class_getName(cls));
         }

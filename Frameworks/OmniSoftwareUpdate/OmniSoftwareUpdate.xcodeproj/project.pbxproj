@@ -782,7 +782,7 @@
 		348A78871B583C830082D55D /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		348A78881B583C830082D55D /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		348CDD581A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OSUHardwareDescriptionTemplate.html; sourceTree = "<group>"; };
-		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; name = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		348D92E51AB798A40093AD35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		348D92E61AB798A40093AD35 /* OSUCheckServiceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckServiceProtocol.h; sourceTree = "<group>"; };
 		348D92E71AB798A40093AD35 /* OSUCheckService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckService.h; sourceTree = "<group>"; };

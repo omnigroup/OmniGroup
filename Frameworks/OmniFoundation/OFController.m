@@ -44,6 +44,7 @@ typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObs
 
 static OFController *sharedController = nil;
 static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
+static BOOL LogExceptionHandlerShouldLogException = NO;
 static int CrashShouldExitWithCode = 0; // If this is set, OFCrashImmediately will exit with this code.
 
 
@@ -155,6 +156,9 @@ static NSString *ControllerClassName(NSBundle *bundle)
     CrashOnAssertionOrUnhandledException = YES;
     CrashShouldExitWithCode = [[[NSProcessInfo processInfo] environment][@"OFCrashShouldExitWithCode"] intValue];
 
+    // Debugging support which is expected to be a defaults write, not a OFPreference registered default
+    LogExceptionHandlerShouldLogException = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogExceptionHandlerShouldLogException"];
+    
     NSExceptionHandler *handler = [NSExceptionHandler defaultExceptionHandler];
     [handler setDelegate:self];
     [handler setExceptionHandlingMask:[self exceptionHandlingMask]];
@@ -743,6 +747,9 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSException);
 
     /*
+     
+     NOTE: This is no longer the case on 10.14b7
+     
      At some point (10.9?) CFRelease(NULL) (and possibly all such NULL dereferences) started hitting this path:
      
      0x7fff93f5fc71 -- 0   ExceptionHandling                   0x00007fff93f5fc71 NSExceptionHandlerUncaughtSignalHandler + 35
@@ -752,6 +759,11 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
      and sending us NSLogUncaughtSystemExceptionMask. It seems very odd that they are calling into ObjC from a signal handler.
      Without checking for all the 'log uncaught' masks, our process would simply exit instead of bringing up the crash catcher.
      */
+    
+    if (LogExceptionHandlerShouldLogException) {
+        // 10.13.6 and 10.14 b7: uncaught exception mask is still 0x100 (NSLogOtherExceptionMask) since AppKit seems to have a top-level handler.
+        NSLog(@"-exceptionHandler:shouldLogException: %@ mask: 0x%lx", exception, aMask);
+    }
     
     if (CrashOnAssertionOrUnhandledException && (aMask & (NSLogUncaughtExceptionMask|NSLogUncaughtSystemExceptionMask|NSLogUncaughtRuntimeErrorMask))) {
         if (aMask & (NSLogUncaughtSystemExceptionMask|NSLogUncaughtRuntimeErrorMask)) {

@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,17 +98,29 @@ dateString = [super stringForObjectValue:obj]; \
     // construct relative day names
     NSDateComponents *today = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
     
+    NSString * (^lowercaseIfNeeded)(NSString *) = ^NSString * (NSString *relativeDateString) {
+        if (_wantsLowercaseRelativeDayNames) {
+            return [relativeDateString lowercaseString];
+        } else {
+            return relativeDateString;
+        }
+    };
+
     // if today, and no time set, just say "Today", if there is a time, return the time
-    if ([self dateStyle] == NSDateFormatterNoStyle)
+    if ([self dateStyle] == NSDateFormatterNoStyle) {
         DATE_STRING();
-    else if ([today year] == [value year] && [today month] == [value month] && [today day] == [value day])
+    } else if ([today year] == [value year] && [today month] == [value month] && [today day] == [value day]) {
         dateString = NSLocalizedStringFromTableInBundle(@"Today", @"OFDateProcessing", OMNI_BUNDLE, @"Today");
-    else if ([today year] == [value year] && [today month] == [value month] && [today day]+1 == [value day])
+        dateString = lowercaseIfNeeded(dateString);
+    } else if ([today year] == [value year] && [today month] == [value month] && [today day]+1 == [value day]) {
         dateString = NSLocalizedStringFromTableInBundle(@"Tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"Tomorrow");
-    else if ([today year] == [value year] && [today month] == [value month] && [today day]-1 == [value day])
+        dateString = lowercaseIfNeeded(dateString);
+    } else if ([today year] == [value year] && [today month] == [value month] && [today day]-1 == [value day]) {
         dateString = NSLocalizedStringFromTableInBundle(@"Yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"Yesterday");
-    else 
+        dateString = lowercaseIfNeeded(dateString);
+    } else {
         DATE_STRING();
+    }
     
     if (_wantsTruncatedTime)
 	return [[dateString stringByAppendingFormat:@" %@", truncatedTimeString(value, _defaultTimeDateComponents)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
@@ -220,6 +232,7 @@ dateString = [super stringForObjectValue:obj]; \
     copy->_defaultTimeDateComponents = [_defaultTimeDateComponents copy];
     copy->_useEndOfDuration = _useEndOfDuration;
     copy->_useRelativeDayNames = _useRelativeDayNames;
+    copy->_wantsLowercaseRelativeDayNames = _wantsLowercaseRelativeDayNames;
     copy->_wantsTruncatedTime = _wantsTruncatedTime;
     return copy;
 }

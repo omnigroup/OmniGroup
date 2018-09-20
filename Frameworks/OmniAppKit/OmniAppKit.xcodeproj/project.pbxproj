@@ -23,11 +23,8 @@
 		1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1EF6651B1D908DD600B207AA /* OAPassphrasePrompt.xib */; };
 		1EFC4ECA1DB5B7CE006C7922 /* OASecCertificateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EFC4EC81DB5B7CE006C7922 /* OASecCertificateProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1EFC4ECB1DB5B7CE006C7922 /* OASecCertificateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */; };
-		23BB91EC20F7F49200C041FB /* OADropDownTriangleDimmed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */; };
-		23BB91ED20F7F49200C041FB /* OADropDownTriangleDimmed.png in Resources */ = {isa = PBXBuildFile; fileRef = 23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
-		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
 		2730CF3B144E205B007C3A99 /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2730CF39144E205B007C3A99 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2730CF3C144E205B007C3A99 /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2730CF3A144E205B007C3A99 /* OADocument.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		27495032182C955600BCBA6A /* OASubtleScroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 27495030182C955600BCBA6A /* OASubtleScroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -202,11 +199,8 @@
 		348DC6DD1A0828EC002C2CD8 /* OAChangeConfigurationValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 348DC6DB1A0828EC002C2CD8 /* OAChangeConfigurationValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		348DC6DE1A0828EC002C2CD8 /* OAChangeConfigurationValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 348DC6DC1A0828EC002C2CD8 /* OAChangeConfigurationValue.m */; };
 		348DC7511A0835D2002C2CD8 /* OAChangeConfigurationValues.xib in Resources */ = {isa = PBXBuildFile; fileRef = 348DC7501A0835D2002C2CD8 /* OAChangeConfigurationValues.xib */; };
-		34959718211E1CCB003A2582 /* OAAutomatorWorkflowIcon-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 34959714211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite.png */; };
-		34959719211E1CCB003A2582 /* OAAutomatorWorkflowIcon-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34959715211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite@2x.png */; };
-		34959720211E1CD5003A2582 /* OAScriptIcon-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 3495971C211E1CD5003A2582 /* OAScriptIcon-Graphite.png */; };
-		34959721211E1CD5003A2582 /* OAScriptIcon-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3495971D211E1CD5003A2582 /* OAScriptIcon-Graphite@2x.png */; };
 		349BB4B31B604DA2002B88C6 /* OmniAppKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F07FE8AB2E911C9CC38 /* OmniAppKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		349BED68212E250C00C7CE1E /* ScriptIcons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 349BED67212E250C00C7CE1E /* ScriptIcons.xcassets */; };
 		349E07F81B2223CF003DB69B /* OADropDownTriangle@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 349E07F71B2223CF003DB69B /* OADropDownTriangle@2x.png */; };
 		349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; };
@@ -214,9 +208,6 @@
 		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34A896661EC28257003260FC /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A8966A1EC282B4003260FC /* OAParagraphStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A896691EC282B4003260FC /* OAParagraphStyle.m */; };
-		34AA8B681B224DDC00B0AC5A /* OAMiniAction@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34AA8B651B224DDC00B0AC5A /* OAMiniAction@2x.png */; };
-		34AA8B691B224DDC00B0AC5A /* OAMiniAdd@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34AA8B661B224DDC00B0AC5A /* OAMiniAdd@2x.png */; };
-		34AA8B6A1B224DDC00B0AC5A /* OAMiniRemove@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 34AA8B671B224DDC00B0AC5A /* OAMiniRemove@2x.png */; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
 		34BF52CA1EC135E70028AE7E /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34BF52CB1EC135E70028AE7E /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -252,8 +243,6 @@
 		493FE0D61C224F9E00C029B5 /* NSStackView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 493FE0D41C224F9E00C029B5 /* NSStackView-OAExtensions.m */; };
 		4980AFE11BBC9DF1002B43FE /* OAConstraintBasedStackView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4980AFDF1BBC9DF0002B43FE /* OAConstraintBasedStackView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4980AFE21BBC9DF1002B43FE /* OAConstraintBasedStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */; };
-		49B035B0161D02CE0097E384 /* OAGearTemplate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */; };
-		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
 		4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; };
@@ -377,17 +366,9 @@
 		4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70608AA764600E2FF6B /* OAZoomableViewProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F99FE8AB2E911C9CC38 /* OAZoomableViewProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E70808AA764600E2FF6B /* OAAutosizingHorizontalRule.h in Headers */ = {isa = PBXBuildFile; fileRef = 3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */; };
-		4AA1E71A08AA764600E2FF6B /* OAAction.png in Resources */ = {isa = PBXBuildFile; fileRef = E20CCE8D058021200097A12E /* OAAction.png */; };
-		4AA1E72008AA764600E2FF6B /* OAMiniAction.png in Resources */ = {isa = PBXBuildFile; fileRef = 344A49C7055FD29B0097A113 /* OAMiniAction.png */; };
-		4AA1E72108AA764600E2FF6B /* OAMiniAdd.png in Resources */ = {isa = PBXBuildFile; fileRef = 344A49C6055FD29B0097A113 /* OAMiniAdd.png */; };
-		4AA1E72208AA764600E2FF6B /* OAMiniRemove.png in Resources */ = {isa = PBXBuildFile; fileRef = 344A49C8055FD29B0097A113 /* OAMiniRemove.png */; };
 		4AA1E72308AA764600E2FF6B /* Classic Crayons.clr in Resources */ = {isa = PBXBuildFile; fileRef = 7F549877041FECFE0097A14E /* Classic Crayons.clr */; };
 		4AA1E72908AA764600E2FF6B /* OACautionIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 1D0E8F7703FBA2F90097A138 /* OACautionIcon.png */; };
 		4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */ = {isa = PBXBuildFile; fileRef = 6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */; };
-		4AA1E73008AA764600E2FF6B /* OALeftArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BC008EFFB6C697A14B /* OALeftArrow.png */; };
-		4AA1E73108AA764600E2FF6B /* OALeftArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BD008EFFB6C697A14B /* OALeftArrowPressed.png */; };
-		4AA1E73208AA764600E2FF6B /* OARightArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BE008EFFB6C697A14B /* OARightArrow.png */; };
-		4AA1E73308AA764600E2FF6B /* OARightArrowPressed.png in Resources */ = {isa = PBXBuildFile; fileRef = 312A98BF008EFFB6C697A14B /* OARightArrowPressed.png */; };
 		4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */ = {isa = PBXBuildFile; fileRef = 00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */; };
 		4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2D7993406DD0F730097A11C /* CharsetCategories.plist */; };
 		4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */; };
@@ -520,10 +501,6 @@
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
-		5F92995C16A50A9300AA4D18 /* OAScriptIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995A16A50A9300AA4D18 /* OAScriptIcon.png */; };
-		5F92995D16A50A9300AA4D18 /* OAScriptIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995B16A50A9300AA4D18 /* OAScriptIcon@2x.png */; };
-		5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIcon.png */; };
-		5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIcon@2x.png */; };
 		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
 		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
 		792FD7181FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 792FD7161FA28F44003E0F82 /* NSPrintPanel-OAExtensions.h */; };
@@ -595,7 +572,6 @@
 		A2C0C3B10E3596E600773D47 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
 		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; };
 		E228439E115D623700948C13 /* OAStepperTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E228439D115D623700948C13 /* OAStepperTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E234124D1718D0D80009F48E /* OAAction@2x.png */; };
 		E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B46215CC771600E162D6 /* OATrackingLoop.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -604,10 +580,6 @@
 		E23A3F2320ADF95D00ADEB59 /* OADisclosureButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E23A3F1F20ADF95B00ADEB59 /* OADisclosureButton.m */; };
 		E23A3F2420ADF95D00ADEB59 /* OADisclosureButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E23A3F2020ADF95C00ADEB59 /* OADisclosureButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E23A3F2520ADF95D00ADEB59 /* OADisclosureButtonCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E23A3F2120ADF95D00ADEB59 /* OADisclosureButtonCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E23A3F2E20AE07A300ADEB59 /* OADisclosureButtonCollapsed.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */; };
-		E23A3F2F20AE07A600ADEB59 /* OADisclosureButtonCollapsed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */; };
-		E23A3F3020AE07A900ADEB59 /* OADisclosureButtonExpanded.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */; };
-		E23A3F3120AE07A900ADEB59 /* OADisclosureButtonExpanded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */; };
 		E25C440C2075359300660AE6 /* OAImages.m in Sources */ = {isa = PBXBuildFile; fileRef = E25C440B2075359300660AE6 /* OAImages.m */; };
 		E25C4435207535C800660AE6 /* OAImages.h in Headers */ = {isa = PBXBuildFile; fileRef = E25C4434207535C800660AE6 /* OAImages.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2732515211371D900D4D8D2 /* NSArrayController-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = E2732513211371D900D4D8D2 /* NSArrayController-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -615,10 +587,6 @@
 		E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A61BE01D41574900416AB5 /* OAAutosizingSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */; };
 		E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */; };
-		E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */; };
-		E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */; };
-		E2B8AA1315BE06F300B5F26B /* OARightArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */; };
-		E2B8AA1415BE06F300B5F26B /* OARightArrowPressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA1015BE06F300B5F26B /* OARightArrowPressed@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1111,12 +1079,9 @@
 		1EFC4EC91DB5B7CE006C7922 /* OASecCertificateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASecCertificateProxy.m; sourceTree = "<group>"; };
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
-		23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADropDownTriangleDimmed@2x.png"; sourceTree = "<group>"; };
-		23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADropDownTriangleDimmed.png; sourceTree = "<group>"; };
 		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
 		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
-		272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OAInfoTemplate.pdf; sourceTree = "<group>"; };
 		2730CF39144E205B007C3A99 /* OADocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocument.h; sourceTree = "<group>"; };
 		2730CF3A144E205B007C3A99 /* OADocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocument.m; sourceTree = "<group>"; };
 		27495030182C955600BCBA6A /* OASubtleScroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASubtleScroller.h; sourceTree = "<group>"; };
@@ -1127,10 +1092,6 @@
 		27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSView-OALayerBackedFix.m"; sourceTree = "<group>"; };
 		2EAA6AE5FF476391C697A12F /* NSTableView-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTableView-OAExtensions.h"; sourceTree = "<group>"; };
 		2EAA6AE6FF476391C697A12F /* NSTableView-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTableView-OAExtensions.m"; sourceTree = "<group>"; };
-		312A98BC008EFFB6C697A14B /* OALeftArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OALeftArrow.png; sourceTree = "<group>"; };
-		312A98BD008EFFB6C697A14B /* OALeftArrowPressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OALeftArrowPressed.png; sourceTree = "<group>"; };
-		312A98BE008EFFB6C697A14B /* OARightArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OARightArrow.png; sourceTree = "<group>"; };
-		312A98BF008EFFB6C697A14B /* OARightArrowPressed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OARightArrowPressed.png; sourceTree = "<group>"; };
 		34001C4A00325FDBC697A13D /* OAToolbarItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarItem.h; sourceTree = "<group>"; };
 		34001C4B00325FDBC697A13D /* OAToolbarItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarItem.m; sourceTree = "<group>"; };
 		3401161411E516C10016ADB3 /* OATextStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextStorage.h; sourceTree = "<group>"; };
@@ -1220,9 +1181,6 @@
 		34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstructionTitlebarAccessoryViewController.m; sourceTree = "<group>"; };
 		34476AE306DF790B0097A113 /* OAToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbar.h; sourceTree = "<group>"; };
 		34476AE406DF790B0097A113 /* OAToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbar.m; sourceTree = "<group>"; };
-		344A49C6055FD29B0097A113 /* OAMiniAdd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniAdd.png; sourceTree = "<group>"; };
-		344A49C7055FD29B0097A113 /* OAMiniAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniAction.png; sourceTree = "<group>"; };
-		344A49C8055FD29B0097A113 /* OAMiniRemove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniRemove.png; sourceTree = "<group>"; };
 		344B4A6D0537177D0097A113 /* ExtendedText.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ExtendedText.sdef; sourceTree = "<group>"; };
 		344B6E4712A4D3DC00D876CD /* OATextAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachment.h; sourceTree = "<group>"; };
 		344B6E4812A4D3DC00D876CD /* OATextAttachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachment.m; sourceTree = "<group>"; };
@@ -1261,10 +1219,7 @@
 		348DC6DB1A0828EC002C2CD8 /* OAChangeConfigurationValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAChangeConfigurationValue.h; sourceTree = "<group>"; };
 		348DC6DC1A0828EC002C2CD8 /* OAChangeConfigurationValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAChangeConfigurationValue.m; sourceTree = "<group>"; };
 		348DC7501A0835D2002C2CD8 /* OAChangeConfigurationValues.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAChangeConfigurationValues.xib; sourceTree = "<group>"; };
-		34959714211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAutomatorWorkflowIcon-Graphite.png"; sourceTree = SOURCE_ROOT; };
-		34959715211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAutomatorWorkflowIcon-Graphite@2x.png"; sourceTree = SOURCE_ROOT; };
-		3495971C211E1CD5003A2582 /* OAScriptIcon-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAScriptIcon-Graphite.png"; sourceTree = SOURCE_ROOT; };
-		3495971D211E1CD5003A2582 /* OAScriptIcon-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAScriptIcon-Graphite@2x.png"; sourceTree = SOURCE_ROOT; };
+		349BED67212E250C00C7CE1E /* ScriptIcons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ScriptIcons.xcassets; sourceTree = SOURCE_ROOT; };
 		349E07F71B2223CF003DB69B /* OADropDownTriangle@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADropDownTriangle@2x.png"; sourceTree = "<group>"; };
 		349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSResponder-OAExtensions.h"; sourceTree = "<group>"; };
 		349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSResponder-OAExtensions.m"; sourceTree = "<group>"; };
@@ -1272,9 +1227,6 @@
 		34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAlert-OAExtensions.h"; sourceTree = "<group>"; };
 		34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAlert-OAExtensions.m"; sourceTree = "<group>"; };
 		34A896691EC282B4003260FC /* OAParagraphStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAParagraphStyle.m; sourceTree = "<group>"; };
-		34AA8B651B224DDC00B0AC5A /* OAMiniAction@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAMiniAction@2x.png"; sourceTree = "<group>"; };
-		34AA8B661B224DDC00B0AC5A /* OAMiniAdd@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAMiniAdd@2x.png"; sourceTree = "<group>"; };
-		34AA8B671B224DDC00B0AC5A /* OAMiniRemove@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAMiniRemove@2x.png"; sourceTree = "<group>"; };
 		34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorArchivingTests.m; sourceTree = "<group>"; };
 		34B14EEC0572E2820097A113 /* OADataSourceTableColumn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADataSourceTableColumn.h; sourceTree = "<group>"; };
 		34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADataSourceTableColumn.m; sourceTree = "<group>"; };
@@ -1337,8 +1289,6 @@
 		493FE0D41C224F9E00C029B5 /* NSStackView-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSStackView-OAExtensions.m"; sourceTree = "<group>"; };
 		4980AFDF1BBC9DF0002B43FE /* OAConstraintBasedStackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstraintBasedStackView.h; sourceTree = "<group>"; };
 		4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstraintBasedStackView.m; sourceTree = "<group>"; };
-		49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = OAGearTemplate.tiff; sourceTree = "<group>"; };
-		49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "OAGearTemplate@2x.tiff"; sourceTree = "<group>"; };
 		49EF503B15F6EAD000254849 /* OALabelField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OALabelField.h; sourceTree = "<group>"; };
 		49EF503C15F6EAD000254849 /* OALabelField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OALabelField.m; sourceTree = "<group>"; };
 		49F246AD1B1D1E6B00481A96 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OAFindPanel.xib; sourceTree = "<group>"; };
@@ -1388,10 +1338,6 @@
 		5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentPositioningView.h; sourceTree = "<group>"; };
 		5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocumentPositioningView.m; sourceTree = "<group>"; };
 		5F25681A1606CBE5008265EA /* Automator.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Automator.framework; path = System/Library/Frameworks/Automator.framework; sourceTree = SDKROOT; };
-		5F92995A16A50A9300AA4D18 /* OAScriptIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAScriptIcon.png; sourceTree = SOURCE_ROOT; };
-		5F92995B16A50A9300AA4D18 /* OAScriptIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAScriptIcon@2x.png"; sourceTree = SOURCE_ROOT; };
-		5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAutomatorWorkflowIcon.png; sourceTree = SOURCE_ROOT; };
-		5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAutomatorWorkflowIcon@2x.png"; sourceTree = SOURCE_ROOT; };
 		5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppleEventManager-OAExtensions.h"; sourceTree = "<group>"; };
 		5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppleEventManager-OAExtensions.m"; sourceTree = "<group>"; };
 		6389AAF4FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OAChasingArrowsProgressIndicator.h; path = Widgets.subproj/OAChasingArrowsProgressIndicator.h; sourceTree = "<group>"; };
@@ -1515,10 +1461,8 @@
 		B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OABackgroundImageControl.h; sourceTree = "<group>"; };
 		B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABackgroundImageControl.m; sourceTree = "<group>"; };
 		BF94281F062222D400B83989 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
-		E20CCE8D058021200097A12E /* OAAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAction.png; sourceTree = "<group>"; };
 		E228439A115D622F00948C13 /* OAStepperTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStepperTextField.m; sourceTree = "<group>"; };
 		E228439D115D623700948C13 /* OAStepperTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStepperTextField.h; sourceTree = "<group>"; };
-		E234124D1718D0D80009F48E /* OAAction@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAction@2x.png"; sourceTree = "<group>"; };
 		E235B46215CC771600E162D6 /* OATrackingLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATrackingLoop.h; sourceTree = "<group>"; };
 		E235B46315CC771600E162D6 /* OATrackingLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATrackingLoop.m; sourceTree = "<group>"; };
 		E235B69D15CC836000E162D6 /* OAToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarButton.h; sourceTree = "<group>"; };
@@ -1527,10 +1471,6 @@
 		E23A3F1F20ADF95B00ADEB59 /* OADisclosureButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADisclosureButton.m; sourceTree = "<group>"; };
 		E23A3F2020ADF95C00ADEB59 /* OADisclosureButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADisclosureButton.h; sourceTree = "<group>"; };
 		E23A3F2120ADF95D00ADEB59 /* OADisclosureButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADisclosureButtonCell.h; sourceTree = "<group>"; };
-		E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADisclosureButtonCollapsed.png; sourceTree = "<group>"; };
-		E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADisclosureButtonExpanded.png; sourceTree = "<group>"; };
-		E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADisclosureButtonCollapsed@2x.png"; sourceTree = "<group>"; };
-		E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADisclosureButtonExpanded@2x.png"; sourceTree = "<group>"; };
 		E25C440B2075359300660AE6 /* OAImages.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OAImages.m; sourceTree = "<group>"; };
 		E25C4434207535C800660AE6 /* OAImages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAImages.h; sourceTree = "<group>"; };
 		E2732513211371D900D4D8D2 /* NSArrayController-OAExtensions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArrayController-OAExtensions.h"; sourceTree = "<group>"; };
@@ -1539,10 +1479,6 @@
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
 		E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAutosizingSegmentedControl.h; sourceTree = "<group>"; };
 		E2A61BDE1D41574900416AB5 /* OAAutosizingSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingSegmentedControl.m; sourceTree = "<group>"; };
-		E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrow@2x.png"; sourceTree = "<group>"; };
-		E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrowPressed@2x.png"; sourceTree = "<group>"; };
-		E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrow@2x.png"; sourceTree = "<group>"; };
-		E2B8AA1015BE06F300B5F26B /* OARightArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrowPressed@2x.png"; sourceTree = "<group>"; };
 		E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASpringLoadHelper.h; sourceTree = "<group>"; };
 		E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASpringLoadHelper.m; sourceTree = "<group>"; };
 		E2D7993506DD0F730097A11C /* CharsetCategories.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist; name = CharsetCategories.plist; path = en.lproj/CharsetCategories.plist; sourceTree = SOURCE_ROOT; };
@@ -1757,28 +1693,6 @@
 				01563697FFE9F5FAC697A14E /* OAPreferencesIconView.m */,
 			);
 			name = "Icon Views";
-			sourceTree = "<group>";
-		};
-		0CCB22770043258C7F000001 /* General-Use Images */ = {
-			isa = PBXGroup;
-			children = (
-				E20CCE8D058021200097A12E /* OAAction.png */,
-				E234124D1718D0D80009F48E /* OAAction@2x.png */,
-				E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */,
-				E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */,
-				E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */,
-				E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */,
-				49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */,
-				49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */,
-				272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */,
-				344A49C7055FD29B0097A113 /* OAMiniAction.png */,
-				34AA8B651B224DDC00B0AC5A /* OAMiniAction@2x.png */,
-				344A49C6055FD29B0097A113 /* OAMiniAdd.png */,
-				34AA8B661B224DDC00B0AC5A /* OAMiniAdd@2x.png */,
-				344A49C8055FD29B0097A113 /* OAMiniRemove.png */,
-				34AA8B671B224DDC00B0AC5A /* OAMiniRemove@2x.png */,
-			);
-			name = "General-Use Images";
 			sourceTree = "<group>";
 		};
 		159F5E3E1CE503DA003EF102 /* Localization */ = {
@@ -2269,14 +2183,7 @@
 		3FDA413502096BE30297A14E /* Toolbar */ = {
 			isa = PBXGroup;
 			children = (
-				5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIcon.png */,
-				5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIcon@2x.png */,
-				34959714211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite.png */,
-				34959715211E1CCA003A2582 /* OAAutomatorWorkflowIcon-Graphite@2x.png */,
-				5F92995A16A50A9300AA4D18 /* OAScriptIcon.png */,
-				5F92995B16A50A9300AA4D18 /* OAScriptIcon@2x.png */,
-				3495971C211E1CD5003A2582 /* OAScriptIcon-Graphite.png */,
-				3495971D211E1CD5003A2582 /* OAScriptIcon-Graphite@2x.png */,
+				349BED67212E250C00C7CE1E /* ScriptIcons.xcassets */,
 				F57089B301FEA73201B4A65B /* OAScriptToolbarHelper.h */,
 				F57089B401FEA73201B4A65B /* OAScriptToolbarHelper.m */,
 				34476AE306DF790B0097A113 /* OAToolbar.h */,
@@ -2342,14 +2249,6 @@
 			children = (
 				114343E10066D6B4C697A12D /* OACalendarView.h */,
 				114343E20066D6B4C697A12D /* OACalendarView.m */,
-				312A98BC008EFFB6C697A14B /* OALeftArrow.png */,
-				E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */,
-				312A98BD008EFFB6C697A14B /* OALeftArrowPressed.png */,
-				E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */,
-				312A98BE008EFFB6C697A14B /* OARightArrow.png */,
-				E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */,
-				312A98BF008EFFB6C697A14B /* OARightArrowPressed.png */,
-				E2B8AA1015BE06F300B5F26B /* OARightArrowPressed@2x.png */,
 			);
 			name = CalendarView;
 			sourceTree = "<group>";
@@ -2385,8 +2284,6 @@
 		3FDA413F020970820297A14E /* NSPopUpButton */ = {
 			isa = PBXGroup;
 			children = (
-				23BB91EB20F7F49100C041FB /* OADropDownTriangleDimmed.png */,
-				23BB91C320F7F49100C041FB /* OADropDownTriangleDimmed@2x.png */,
 				00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */,
 				00E51F7CFE8AB2E911C9CC38 /* OAPopUpButton.m */,
 				008AB54614032D2B001F29CD /* OATinyPopUpButton.h */,
@@ -2739,7 +2636,6 @@
 				3FDA41320209678F0297A14E /* Widgets */,
 				A25653B20ADDBF7600A2A25B /* Bindings Helpers */,
 				3FDA4133020968290297A14E /* View Containers */,
-				0CCB22770043258C7F000001 /* General-Use Images */,
 				683A0C780033CC98CD999A52 /* Carbon */,
 				1D4D829C0411A15C0097A138 /* Obsolete or Deprecated */,
 				34DBC8C105979AB00097A113 /* Tools */,
@@ -3871,59 +3767,27 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AA1E71A08AA764600E2FF6B /* OAAction.png in Resources */,
-				4AA1E72008AA764600E2FF6B /* OAMiniAction.png in Resources */,
-				E23A3F3120AE07A900ADEB59 /* OADisclosureButtonExpanded@2x.png in Resources */,
 				843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */,
-				4AA1E72108AA764600E2FF6B /* OAMiniAdd.png in Resources */,
-				4AA1E72208AA764600E2FF6B /* OAMiniRemove.png in Resources */,
-				34959721211E1CD5003A2582 /* OAScriptIcon-Graphite@2x.png in Resources */,
 				348DC7511A0835D2002C2CD8 /* OAChangeConfigurationValues.xib in Resources */,
+				349BED68212E250C00C7CE1E /* ScriptIcons.xcassets in Resources */,
 				4AA1E72308AA764600E2FF6B /* Classic Crayons.clr in Resources */,
 				4AA1E72908AA764600E2FF6B /* OACautionIcon.png in Resources */,
 				4AA1E72A08AA764600E2FF6B /* OAChasingArrows.png in Resources */,
-				34959720211E1CD5003A2582 /* OAScriptIcon-Graphite.png in Resources */,
-				34AA8B6A1B224DDC00B0AC5A /* OAMiniRemove@2x.png in Resources */,
 				94B962CA20E42F1900F1E3CE /* OmniAppKit.xcassets in Resources */,
-				4AA1E73008AA764600E2FF6B /* OALeftArrow.png in Resources */,
-				4AA1E73108AA764600E2FF6B /* OALeftArrowPressed.png in Resources */,
-				34959718211E1CCB003A2582 /* OAAutomatorWorkflowIcon-Graphite.png in Resources */,
-				4AA1E73208AA764600E2FF6B /* OARightArrow.png in Resources */,
-				4AA1E73308AA764600E2FF6B /* OARightArrowPressed.png in Resources */,
 				425CC9E31A37BDC000A6760B /* OACrayonNames.strings in Resources */,
 				843878761AB20BD80069E467 /* OADefaultSettingIndicatorOn@2x.png in Resources */,
 				4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */,
 				843878731AB20BD80069E467 /* OADefaultSettingIndicatorOff.png in Resources */,
 				342F051C1B69795F00C7BB34 /* OAAppearance.plist in Resources */,
-				E23A3F3020AE07A900ADEB59 /* OADisclosureButtonExpanded.png in Resources */,
 				349E07F81B2223CF003DB69B /* OADropDownTriangle@2x.png in Resources */,
 				4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */,
 				34F0995809322EA30001D0D5 /* OAAboutPanel.xib in Resources */,
 				4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.xib in Resources */,
 				008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */,
-				272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */,
-				23BB91EC20F7F49200C041FB /* OADropDownTriangleDimmed@2x.png in Resources */,
 				E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */,
-				E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */,
-				23BB91ED20F7F49200C041FB /* OADropDownTriangleDimmed.png in Resources */,
-				E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */,
-				E23A3F2E20AE07A300ADEB59 /* OADisclosureButtonCollapsed.png in Resources */,
-				E2B8AA1315BE06F300B5F26B /* OARightArrow@2x.png in Resources */,
-				E2B8AA1415BE06F300B5F26B /* OARightArrowPressed@2x.png in Resources */,
-				34AA8B691B224DDC00B0AC5A /* OAMiniAdd@2x.png in Resources */,
-				49B035B0161D02CE0097E384 /* OAGearTemplate.tiff in Resources */,
-				49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */,
-				5F92995C16A50A9300AA4D18 /* OAScriptIcon.png in Resources */,
-				5F92995D16A50A9300AA4D18 /* OAScriptIcon@2x.png in Resources */,
 				843878751AB20BD80069E467 /* OADefaultSettingIndicatorOn.png in Resources */,
-				5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIcon.png in Resources */,
-				5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIcon@2x.png in Resources */,
-				E23A3F2F20AE07A600ADEB59 /* OADisclosureButtonCollapsed@2x.png in Resources */,
 				342D1D8F16C9584100692117 /* OAFindPanel.xib in Resources */,
-				E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */,
 				4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */,
-				34AA8B681B224DDC00B0AC5A /* OAMiniAction@2x.png in Resources */,
-				34959719211E1CCB003A2582 /* OAAutomatorWorkflowIcon-Graphite@2x.png in Resources */,
 				1EF6651E1D908DD600B207AA /* OAPassphrasePrompt.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

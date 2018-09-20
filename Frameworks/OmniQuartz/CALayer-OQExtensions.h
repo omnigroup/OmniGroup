@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -66,9 +66,5 @@
 
 @end
 
-//#define OQ_ANIMATION_LOGGING_ENABLED
-#ifdef OQ_ANIMATION_LOGGING_ENABLED
-//#define OQ_LOG_ALL_ANIMATIONS // Enable to unconditionally log animations from all layers
-extern void OQSetAnimationLoggingEnabledForLayer(CALayer *layer, BOOL enabled); // Or only enable it for certain layer trees
-#endif
-
+// When OQ_ANIMATION_LOGGING_ENABLED is enabled in the .m file, can be used to enable logging for certain layers. Otherwise, this is a no-op.
+extern void OQSetAnimationLoggingEnabledForLayer(CALayer *layer, BOOL enabled);

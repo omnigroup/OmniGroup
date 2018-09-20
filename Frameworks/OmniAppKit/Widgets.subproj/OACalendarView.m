@@ -593,7 +593,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [button setTarget:self];
     [button setContinuous:YES];
     [[button cell] setShowsStateBy:(NSPushInCellMask | NSChangeGrayCellMask | NSChangeBackgroundCellMask)];
-    [[button cell] setBackgroundColor:[NSColor whiteColor]];
+    if(@available(macOS 10.14, *)) {
+        // just let the view behind show through.
+    } else {
+        [[button cell] setBackgroundColor:[NSColor whiteColor]];
+    }
     [buttons addObject:button];
     [button release];
 

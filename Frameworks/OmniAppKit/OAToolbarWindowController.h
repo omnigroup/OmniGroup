@@ -43,6 +43,10 @@ typedef NS_ENUM(NSUInteger, OAToolbarDidChangeKind) {
 
 - (nullable OAToolbarItem *)finishSetupForToolbarItem:(OAToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 
+@optional
+
+@property(nonatomic,readonly) Class toolbarItemButtonClass;
+
 @end
 
 @interface OAToolbarWindowController : NSWindowController <OAToolbarDelegate>

@@ -117,6 +117,12 @@ typedef void (^OACrossfadeCompletionBlock)(void);
 
 - (void)expectDeallocationOfViewTreeSoon;
 
+#ifdef DEBUG
+// Slightly easier to remember wrappers for -constraintsAffectingLayoutForOrientation:
+@property(nonatomic,readonly) NSArray <NSLayoutConstraint *> *horizontalConstraints;
+@property(nonatomic,readonly) NSArray <NSLayoutConstraint *> *verticalConstraints;
+#endif
+
 @end
 
 #import <OmniFoundation/OFTransientObjectsTracker.h>

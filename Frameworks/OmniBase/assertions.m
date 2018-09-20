@@ -79,7 +79,7 @@ void OBAssertFailed(const char *message)
     // If the assertion message contains a bug link, allow continuing past it.
     // If you can't immediately fix the problem, please log a bug with steps to hit the problem and associate it with your app.
     if (message == NULL || strstr(message, "bug://") == NULL) {
-        // On this path, the assertion has already been logged -- don't need to pass along the message/etc here.
+        // On this path, the assertion has already been logged -- don't need to pass along the message/etc
         _OBStopInDebuggerWithoutMessage();
     }
 }

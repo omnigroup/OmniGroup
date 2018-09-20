@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isOperatingSystem110OrLater;
 + (BOOL)isOperatingSystem111OrLater;
 #else
++ (BOOL)isOperatingSystemMojaveOrLater; // 10.14
 + (BOOL)isOperatingSystemHighSierraOrLater; // 10.13
 + (BOOL)isOperatingSystemSierraOrLater; // 10.12
 + (BOOL)isOperatingSystemSierraWithTouchBarOrLater; // 10.12.1

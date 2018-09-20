@@ -25,6 +25,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
+@interface _OAScriptToolbarItemButton : OAToolbarItemButton
+@end
+@interface _OAScriptToolbarItemButtonCell : NSButtonCell
+@end
+
+@implementation _OAScriptToolbarItemButton
+
++ (nullable Class)cellClass;
+{
+    Class cellClass = [_OAScriptToolbarItemButtonCell class];
+    OBASSERT([cellClass superclass] == [[self superclass] cellClass]);
+    return cellClass;
+}
+
+@end
+
+@implementation _OAScriptToolbarItemButtonCell
+
+- (NSRect)imageRectForBounds:(NSRect)rect;
+{
+    // We end up with too big of a rect here for arbitrary user supplied images. Our OAScriptIcon.png has built-in padding, but random images might not.
+    // Mojave does a better job here.
+    NSRect imageRect = [super imageRectForBounds:rect];
+        
+    if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
+        imageRect = OAInsetRectBySize(imageRect, NSMakeSize(0, 4));
+        imageRect.origin.y += 2; // Sigh; using the alignmentInsets still not helping enough.
+    }
+
+    return imageRect;
+}
+
+@end
 @implementation OAScriptToolbarHelper {
   @private
     NSMutableDictionary *_pathForItemDictionary;
@@ -153,7 +186,18 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         if (FSGetCatalogInfo(&fsref, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) == noErr) {
             if ((((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kHasCustomIcon) != 0) {
                 hasCustomIcon = YES;
-                [toolbarItem setImage:[[NSWorkspace sharedWorkspace] iconForFile:path]];
+
+                NSImage *image = [[NSWorkspace sharedWorkspace] iconForFile:path];
+
+                NSView *view = toolbarItem.view;
+                if ([view isKindOfClass:[NSButton class]]) {
+                    NSButton *button = (NSButton *)view;
+                    button.imageScaling = NSImageScaleProportionallyDown;
+                    button.image = image;
+                } else {
+                    [toolbarItem setImage:image];
+                }
+
             }
         }
     }
@@ -162,9 +206,9 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         NSString *imageName;
 
         if (isAutomatorWorfklow) {
-            imageName = @"OAAutomatorWorkflowIcon";
+            imageName = @"AutomatorWorkflow";
         } else {
-            imageName = @"OAScriptIcon";
+            imageName = @"Script";
         }
 
         if ([NSColor currentControlTint] == NSGraphiteControlTint) {
@@ -178,18 +222,33 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     return toolbarItem;
 }
 
+- (Class)toolbarItemButtonClass;
+{
+    return [_OAScriptToolbarItemButton class];
+}
+
 - (void)executeScriptItem:(id)sender;
 {
     OBRetainAutorelease(sender);
-    OAToolbarItem *toolbarItem = sender;
+    OAToolbarItem *toolbarItem = nil;
     
+    if ([sender isKindOfClass:[OAToolbarItem class]]) {
+        toolbarItem = sender;
+    } else if ([sender isKindOfClass:[OAToolbarItemButton class]]) {
+        toolbarItem = [sender toolbarItem];
+    } else {
+        OBASSERT_NOT_REACHED("Unexpected sender class.");
+        NSBeep();
+        return;
+    }
+
     OAToolbarWindowController *windowController = OB_CHECKED_CAST_OR_NIL(OAToolbarWindowController, [[toolbarItem toolbar] delegate]);
-    if (!windowController) {
+    if (windowController == nil) {
         OBASSERT_NOT_REACHED("How are we activating a script toolbar item w/o a window controller?");
         return;
     }
-    OBRetainAutorelease(windowController);  // The script may cause the window to be closed
 
+    OBRetainAutorelease(windowController);  // The script may cause the window to be closed
     if ([windowController respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] && ![windowController scriptToolbarItemShouldExecute:sender]) {
 	return;
     }
@@ -200,7 +259,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         }
     };
     
-    NSString *itemPath = [[self pathForItem:sender] stringByExpandingTildeInPath];
+    NSString *itemPath = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
     NSString *typename = [[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:NULL];
 
     // This code only supports 10.8 and later so we always use the sandbox savvy APIs, since they also support unsandboxed applications.

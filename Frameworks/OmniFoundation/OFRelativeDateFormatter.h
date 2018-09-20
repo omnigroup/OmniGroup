@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,strong) NSDate *referenceDate;
 
 @property(nonatomic) BOOL useRelativeDayNames;
+@property(nonatomic) BOOL wantsLowercaseRelativeDayNames;
 @property(nonatomic) BOOL wantsTruncatedTime;
 
 @end

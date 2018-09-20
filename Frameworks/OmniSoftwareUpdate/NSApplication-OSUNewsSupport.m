@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,13 +59,14 @@ OBDidLoad(^{
     [webViewer loadRequest:[NSURLRequest requestWithURL:webURL] onCompletion:^(BOOL success, NSURL *url, NSError *error) {
         if (success
             || ![error.userInfo[NSURLErrorFailingURLStringErrorKey] isEqualToString:[webURL path]]) {  // probably just failed to load an asset
-            [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
             [[NSFileManager defaultManager] removeItemAtURL:cacheURL error:nil]; // now that we've actually shown the real thing, don't want to keep the ugly cached thing around
         } else {
             // do not attempt to show error messages for urls other than the main url, because that will prevent anything being seen when only some small detail may be missing
             [webViewer loadCachedHTML:cacheURL forWebURL:webURL];
-            [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
         }
+
+        [OSUChecker sharedUpdateChecker].unreadNewsAvailable = NO;
+        [NSNotificationCenter.defaultCenter postNotificationName:OSUDidShowNewsNotifiation object:nil];
     }];
 }
 
@@ -120,5 +121,7 @@ OBDidLoad(^{
     
     return html;
 }
+
 @end
 
+NSNotificationName const OSUDidShowNewsNotifiation = @"OSUDidShowNewsNotifiation";
