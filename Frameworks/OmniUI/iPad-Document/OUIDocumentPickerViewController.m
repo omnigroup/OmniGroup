@@ -2720,9 +2720,6 @@ static UIImage *ImageForScope(ODSScope *scope) {
 {
     if (!OUIAppController.controller.shouldEnableCreateNewDocument)
         return NO;
-    OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
-    if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterPlugInIdentifier))
-        return NO;
     return YES;
 }
 
@@ -3400,10 +3397,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             };
 
             OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:self.documentPicker];
-            if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterPlugInIdentifier)) {
-                buttonMessage = NSLocalizedStringFromTableInBundle(@"When plug-ins are installed, they will appear here.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
-                buttonAction = NULL;
-            } else if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterTemplateIdentifier)) {
+            if (OFISEQUAL(filter.identifier, ODSDocumentPickerFilterTemplateIdentifier)) {
                 buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a custom template.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
             } else {
                 buttonTitle = NSLocalizedStringFromTableInBundle(@"Tap here, or on the + in the toolbar, to add a document.", @"OmniUIDocument", OMNI_BUNDLE, @"empty picker button text");
