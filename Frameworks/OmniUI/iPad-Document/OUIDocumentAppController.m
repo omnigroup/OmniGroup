@@ -65,6 +65,7 @@ static NSString * const ODSShortcutTypeOpenRecent = @"com.omnigroup.framework.Om
 
 static NSString * const ODSOpenRecentDocumentShortcutFileKey = @"ODSFileItemURLStringKey";
 
+static NSString * const OpenDocumentURLActivityIdentifier = @"com.OmniGroup.OmniGraffle.OpenDocumentURLActivity";
 
 static OFDeclareDebugLogLevel(OUIApplicationLaunchDebug);
 #define DEBUG_LAUNCH(level, format, ...) do { \
@@ -94,6 +95,8 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 
 @property (nonatomic, strong) NSArray *pendingImportedFileItems;
 @property (nonatomic, strong) NSMutableArray<ODSFileItem *> *awaitedFileItemDownloads;
+
+@property (nonatomic, strong) NSUserActivity *userActivityForCurrentlyOpenDocument;
 
 @end
 
@@ -319,6 +322,8 @@ static unsigned SyncAgentRunningAccountsContext;
         
         OBStrongRetain(_document);
         [_document closeWithCompletionHandler:^(BOOL success) {
+            [self _invalidateCurrentUserActivity];
+            
             [closingDocumentIndicatorView removeFromSuperview];
             
             // Give the document a chance to break retain cycles.
@@ -450,6 +455,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                     [document closeWithCompletionHandler:^(BOOL closeSuccess){
+                        [self _invalidateCurrentUserActivity];
                         [document didClose];
                         
                         if (!saveSuccess) {
@@ -581,6 +587,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                     [document closeWithCompletionHandler:^(BOOL closeSuccess){
+                        [self _invalidateCurrentUserActivity];
                         [document didClose];
 
                         if (!saveSuccess) {
@@ -722,6 +729,8 @@ static unsigned SyncAgentRunningAccountsContext;
             [self _setDocument:document];
             _isOpeningURL = NO;
             
+            [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore];
+            
             UIViewController *presentFromViewController = _documentPicker;
             if (!presentFromViewController)
                 presentFromViewController = _documentPicker;
@@ -815,6 +824,7 @@ static unsigned SyncAgentRunningAccountsContext;
         _document.applicationLock = [OUIInteractionLock applicationLock];
         
         [_document closeWithCompletionHandler:^(BOOL success) {
+            [self _invalidateCurrentUserActivity];
             OUIDocument *localDoc = _document;
             UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
             [self _setDocument:nil];
@@ -834,6 +844,51 @@ static unsigned SyncAgentRunningAccountsContext;
     } else {
         // Just open immediately
         doOpen();
+    }
+}
+
+- (void)_invalidateCurrentUserActivity
+{
+    [self.userActivityForCurrentlyOpenDocument resignCurrent];
+    self.userActivityForCurrentlyOpenDocument = nil;
+}
+
+- (void)_createDocumentUserActivityForURL:(NSURL *)url inStore:(ODSStore *)store
+{
+    if (@available(iOS 12.0, *)) {
+        OBPRECONDITION(self.userActivity == nil, "Need to invalidate the old activity before creating a new one");
+        OBPRECONDITION(self.document != nil, "Need a document before we create the activity");
+        OBPRECONDITION(store != nil);
+        
+        NSUserActivity *activity = [[NSUserActivity alloc] initWithActivityType:OpenDocumentURLActivityIdentifier];
+        
+        NSString *localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
+        activity.title = [NSString stringWithFormat:localizedOpenFormatString, self.document.localizedName];
+        
+        [activity addUserInfoEntriesFromDictionary:@{ @"URL" : url }];
+        activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL"];
+        
+        // Exposes us to Siri Shortcuts
+        [activity setEligibleForPrediction:YES];
+        
+        [activity setPersistentIdentifier:[self _persistentIdentifierForOpenDocumentActivityAtURL:url inStore:store]];
+        
+        // <bug:///108386> (iOS-OmniGraffle Feature: Feature: Handoff support)
+        // Need to determine whether or not this is an iCloud URL. If so, we can make this activity eligible for Handoff. Or, if it's not an  iCloud doc, we can adopt the continuation stream APIs to give the other side the data to replicate our document.
+        activity.eligibleForHandoff = NO;
+        
+        self.userActivityForCurrentlyOpenDocument = activity;
+        [activity becomeCurrent];
+    }
+}
+
+- (void)updateUserActivityState:(NSUserActivity *)activity
+{
+    [super updateUserActivityState:activity];
+    
+    OBPRECONDITION(self.document != nil);
+    if ([activity.activityType isEqualToString:OpenDocumentURLActivityIdentifier]) {
+        [activity addUserInfoEntriesFromDictionary:[NSDictionary dictionaryWithObjects:@[self.document.fileURL] forKeys:@[@"URL"]]];
     }
 }
 
@@ -1868,10 +1923,43 @@ static NSSet *ViewableFileTypes()
 
 - (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(RestorablerObjectsArgumentType _Nullable restorableObjects))restorationHandler;
 {
+    if ([userActivity.activityType isEqualToString:OpenDocumentURLActivityIdentifier]) {
+        NSURL *url = userActivity.userInfo[@"URL"];
+        if (url == nil) {
+            return NO;
+        }
+        ODSFileItem *item;
+        for (ODSScope *aScope in _documentStore.scopes) {
+            item = [aScope fileItemWithURL:url];
+            if (item) {
+                break;
+            }
+        }
+        if (item == nil) {
+            return NO;
+        }
+        if (self.document) {
+            [self closeAndDismissDocumentWithCompletionHandler:^{
+                [self openDocument:item];
+            }];
+        } else {
+            [self openDocument:item];
+        }
+        return YES;
+    }
+    
     NSString *uniqueID = userActivity.userInfo[CSSearchableItemActivityIdentifier];
     if (uniqueID) {
         self.searchResultsURL = [[self class] fileURLForSpotlightID:uniqueID];
-        [self _openDocumentWithURLAfterScan:self.searchResultsURL completion:nil];
+        if (self.document) {
+            [self closeAndDismissDocumentWithCompletionHandler:^{
+                OFAfterDelayPerformBlock(0, ^{
+                    [self _openDocumentWithURLAfterScan:self.searchResultsURL completion:nil];
+                });
+            }];
+        } else {
+            [self _openDocumentWithURLAfterScan:self.searchResultsURL completion:nil];
+        }
         return YES;
     } else {
         return NO;
@@ -2590,6 +2678,24 @@ static NSSet *ViewableFileTypes()
         [dict removeObjectForKey:uniqueID];
         [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
     }
+    
+    if (@available(iOS 12.0, *)) {
+        NSString *identifierForURL = [self _persistentIdentifierForOpenDocumentActivityAtURL:destinationURL inStore:store];
+        [NSUserActivity deleteSavedUserActivitiesWithPersistentIdentifiers:@[identifierForURL] completionHandler:^{}];
+    }
+}
+
+- (NSString *)_persistentIdentifierForOpenDocumentActivityAtURL:(NSURL *)url inStore:(ODSStore *)store
+{
+    NSString *scopeString;
+    for (ODSScope *scope in store.scopes) {
+        if ([scope isFileInContainer:url]) {
+            scopeString = scope.displayName;
+        }
+    }
+    OBASSERT_NOTNULL(scopeString);
+    NSString *identifier = url.lastPathComponent;
+    return [@[scopeString, identifier] componentsJoinedByString:@"."];
 }
 
 static NSMutableDictionary *spotlightToFileURL;

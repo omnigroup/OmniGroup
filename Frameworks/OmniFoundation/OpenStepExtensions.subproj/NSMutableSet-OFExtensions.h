@@ -1,4 +1,4 @@
-// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,14 +13,14 @@
 
 - (void)addObjects:(id)firstObject, ... NS_REQUIRES_NIL_TERMINATION;
 
-- (void) removeObjectsFromArray: (NSArray *) objects;
-/*"
-Removes all objects from the receiver which are in the specified array.
-"*/
+/*!
+ Removes all objects from the receiver which are in the specified array.
+ */
+- (void)removeObjectsFromArray:(NSArray *)objects;
 
-- (void) exclusiveDisjoinSet: (NSSet *) otherSet;
-/*"
-Modifies the receiver to contain only those objects in the receiver or the argument but not the objects originally in both sets. The odd name is for parallelism with Apple's -intersectSet:, -unionSet:, etc.
-"*/
+/*!
+ Modifies the receiver to contain only those objects in the receiver or the argument but not the objects originally in both sets. The odd name is for parallelism with Apple's -intersectSet:, -unionSet:, etc.
+ */
+- (void)exclusiveDisjointSet:(NSSet *)otherSet;
 
 @end

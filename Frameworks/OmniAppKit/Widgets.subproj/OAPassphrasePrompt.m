@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,7 +127,8 @@ OB_REQUIRE_ARC;
     NSView *chain = contentView;
     NSMutableArray *stack = [NSMutableArray array];
     
-    window.title = NSLocalizedStringFromTableInBundle(@"Passphrase Prompt", @"OmniAppKit", bundle, @"dialog box title - password/passphrase prompt dialog");
+    // According to <bug:///165631>, sometimes the version of this without the default value can return nil. Using this version so we can make sure to return the Key if its not found.
+    window.title = NSLocalizedStringWithDefaultValue(@"Passphrase Prompt", @"OmniAppKit", bundle, @"Passphrase Prompt", @"dialog box title - password/passphrase prompt dialog");
     
     self.titleField.maximumNumberOfLines = 0;
     

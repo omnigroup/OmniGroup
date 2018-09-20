@@ -200,6 +200,8 @@ RCS_ID("$Id$");
 {
     [super windowDidLoad];
 
+    self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
+    
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
     

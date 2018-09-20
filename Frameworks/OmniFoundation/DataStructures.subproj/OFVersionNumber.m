@@ -110,6 +110,50 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return isLater;
 }
 
++ (BOOL)isOperatingSystem112OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"11.2");
+    });
+    
+    return isLater;
+}
+
++ (BOOL)isOperatingSystem113OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"11.3");
+    });
+    
+    return isLater;
+}
+
++ (BOOL)isOperatingSystem114OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"11.4");
+    });
+    
+    return isLater;
+}
+
++ (BOOL)isOperatingSystem120OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"12.0");
+    });
+    
+    return isLater;
+}
+
 #else
 
 + (BOOL)isOperatingSystemMojaveOrLater;
@@ -154,6 +198,19 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     });
 
     return isLater;
+}
+
++ (BOOL)isOperatingSystemLikelyToPanicWithCrayonColorPicker;  // 10.13.6, RADAR# 42359231 <bug:///163187> (Mac-OmniGraffle Crasher: [radar and tsi] System hangs when making changes in Pencil Color Picker [10.13.6] (crayon))
+{
+    static BOOL isAtLeast;
+    static BOOL isNotMore;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isAtLeast = isOperatingSystemAtLeastVersionString(@"10.13.6");
+        isNotMore = !isOperatingSystemAtLeastVersionString(@"10.13.7");
+    });
+
+    return isAtLeast && isNotMore;
 }
 
 #endif

@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/NSWindow-OAExtensions.h>
+
+#import <OmniAppKit/NSResponder-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
 #import <OmniAppKit/OAViewPicker.h>
 
@@ -335,6 +337,12 @@ static BOOL displayIfNeededBlocksInProgress = NO;
         OBASSERT_NOT_REACHED("Object %@ does not respond to -_subtreeDescription; either the debugging method is gone or it is not an NSView", view);
 }
 
+- (void)_logResponderChainDescriptionMenuAction:(id)sender;
+{
+    NSView *view = [sender representedObject];
+    NSLog(@"%@", [view responderChainDescription]);
+}
+
 - (void)_copyAddressMenuAction:(id)sender;
 {
     NSString *addressString = [NSString stringWithFormat:@"%p", [sender representedObject]];
@@ -346,7 +354,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 - (BOOL)_showMenuForPickedView:(NSView *)pickedView atScreenLocation:(NSPoint)point;
 {
     static NSMenu *constraintsOptions;
-    static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *intrinsicContentSizeItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *copyAddressItem;
+    static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *intrinsicContentSizeItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *logChainItem, *copyAddressItem;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         constraintsOptions = [[NSMenu alloc] initWithTitle:OBUnlocalized(@"View Debugging")];
@@ -390,6 +398,9 @@ static BOOL displayIfNeededBlocksInProgress = NO;
         
         logSubtreeItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Log subview hierarchy") action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
         [logSubtreeItem setEnabled:YES];
+        
+        logChainItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Log responder chain") action:@selector(_logResponderChainDescriptionMenuAction:) keyEquivalent:@""];
+        [logChainItem setEnabled:YES];
         
         copyAddressItem = [constraintsOptions addItemWithTitle:OBUnlocalized(@"Copy address") action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
         [copyAddressItem setEnabled:YES];

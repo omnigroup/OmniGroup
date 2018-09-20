@@ -299,7 +299,6 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
                 // Verify that we only have keyPathsForValuesAffectingFoo if we also have Foo.
                 char *namebuf = malloc(selNameLength + 5);
                 strcpy(namebuf, selName + strlen(affectingPrefix));
-                namebuf[0] = (char)tolower(namebuf[0]);
                 
                 /* This test can produce false positives on valid code. We can extend it as we run into the exceptions.
                    Some things it doesn't know about:
@@ -308,44 +307,59 @@ static void _checkForCommonClassMethodNameTypos(Class metaClass, Class class, Me
                      valueForUndefinedKey:
                 */
                 
-                objc_property_t propInfo = class_getProperty(metaClass, namebuf);
-                if (propInfo != NULL) {
-                    /* good, there's a property */
-                    /* the docs don't say whether you need to actually use the @property syntax for this function to work --- for most of our KVObservables, class_getProperty() returns nil */
-                    // NSLog(@"property(%s) -> \"%s\"", namebuf, property_getAttributes(propInfo));
-                } else {
-                    SEL seln;
-                    
-                    /* Look for -foo */
-                    if (!((seln = sel_getUid(namebuf)) && class_respondsToSelector(class, seln))) {
+                BOOL (^checkForImplementation)(char *) = ^(char *name)
+                {
+                    objc_property_t propInfo = class_getProperty(metaClass, name);
+                    if (propInfo != NULL) {
+                        /* good, there's a property */
+                        /* the docs don't say whether you need to actually use the @property syntax for this function to work --- for most of our KVObservables, class_getProperty() returns nil */
+                        // NSLog(@"property(%s) -> \"%s\"", name, property_getAttributes(propInfo));
+                    } else {
+                        SEL seln;
                         
-                        /* OK, look for -_foo */
-                        memmove(namebuf+1, namebuf, strlen(namebuf)+1);
-                        namebuf[0] = '_';
-                        if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
+                        /* Look for -foo */
+                        if (!((seln = sel_getUid(name)) && class_respondsToSelector(class, seln))) {
                             
-                            /* Maybe it's a boolean -isFoo ? */
-                            memcpy(namebuf, "is", 2);
-                            strcpy(namebuf+2, selName + strlen(affectingPrefix));
-                            if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
+                            /* OK, look for -_foo */
+                            memmove(name+1, name, strlen(name)+1);
+                            name[0] = '_';
+                            if (!((seln = sel_getUid(name)) && class_getInstanceMethod(class, seln))) {
                                 
-                                /* Well, how about -getFoo ? */
-                                memcpy(namebuf, "get", 3);
-                                strcpy(namebuf+3, selName + strlen(affectingPrefix));
-                                if (!((seln = sel_getUid(namebuf)) && class_getInstanceMethod(class, seln))) {
+                                /* Maybe it's a boolean -isFoo ? */
+                                memcpy(name, "is", 2);
+                                strcpy(name+2, selName + strlen(affectingPrefix));
+                                if (!((seln = sel_getUid(name)) && class_getInstanceMethod(class, seln))) {
                                     
-                                    seln = NULL;
-                                    /* No luck */
-                                    namebuf[3] = (char)tolower(namebuf[3]);
-                                    NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
-                                    OBAssertFailed("");
+                                    /* Well, how about -getFoo ? */
+                                    memcpy(name, "get", 3);
+                                    strcpy(name+3, selName + strlen(affectingPrefix));
+                                    if (!((seln = sel_getUid(name)) && class_getInstanceMethod(class, seln))) {
+                                        
+                                        seln = NULL;
+                                        /* No luck */
+                                        name[3] = (char)tolower(name[3]);
+                                        return NO;
+                                    }
                                 }
                             }
                         }
+                        
+                        // NSLog(@" No @property %s, but found -%@", name, NSStringFromSelector(seln));
+                        (void)seln;
                     }
                     
-                    // NSLog(@" No @property %s, but found -%@", namebuf, NSStringFromSelector(seln));
-                    (void)seln;
+                    return YES;
+                };
+                
+                if (!checkForImplementation(namebuf)) {
+                    if (!islower(namebuf[0])) {
+                        namebuf[0] = (char)tolower(namebuf[0]);
+                        
+                        if (!checkForImplementation(namebuf)) {
+                            NSLog(@"Class %s implements +%s, but instances do not respond to -%s, -_%s, -is%s, or -get%s", class_getName(metaClass), selName, namebuf+3, namebuf+3, selName + strlen(affectingPrefix), selName + strlen(affectingPrefix));
+                            OBAssertFailed("");
+                        }
+                    }
                 }
                 
                 free(namebuf);

@@ -1,4 +1,4 @@
-// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,3 +33,13 @@
 @interface OAToolbarItemButton : NSButton
 @property(nonatomic,weak) OAToolbarItem *toolbarItem;
 @end
+
+@interface OAToolbarItemButtonCell : NSButtonCell
+@end
+
+// Used in cases where user-supplied images might be provided, which might not be appropriately sized.
+@interface OAUserSuppliedImageToolbarItemButton : OAToolbarItemButton
+@end
+@interface OAUserSuppliedImageToolbarItemButtonCell : OAToolbarItemButtonCell
+@end
+

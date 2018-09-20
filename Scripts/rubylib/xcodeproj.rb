@@ -273,6 +273,12 @@ module Xcode
       "AppleScript"
     end
   end
+
+  class PBXJavaArchiveBuildPhase < BuildPhase
+    def self.kind_name
+      "Build Java Resources"
+    end
+  end
   
 end
 

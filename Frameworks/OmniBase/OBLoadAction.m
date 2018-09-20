@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,12 @@
 RCS_ID("$Id$")
 
 #if 0 && defined(DEBUG)
+#define LOADACTION_DEBUG_DEFINED 1
+#else
+#define LOADACTION_DEBUG_DEFINED 0
+#endif
+
+#if LOADACTION_DEBUG_DEFINED
     #define LOADACTION_DEBUG(format, ...) NSLog(@"LOAD ACTION: " format, ## __VA_ARGS__)
 #else
     #define LOADACTION_DEBUG(format, ...) do {} while (0)
@@ -41,15 +47,32 @@ RCS_ID("$Id$")
 
  */
 
+@interface _OFLoadActionRegistration : NSObject
+- initWithName:(NSString *)name action:(OBLoadAction)action;
+@property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) OBLoadAction action;
+@end
+
+@implementation _OFLoadActionRegistration
+
+- initWithName:(NSString *)name action:(OBLoadAction)action;
+{
+    _name = [name copy];
+    _action = [action copy];
+    return self;
+}
+
+@end
+
 static dispatch_once_t LoadActionOnceToken;
 static NSRecursiveLock *LoadActionLock;
 
 // Staging arrays
-static NSMutableArray <OBLoadAction> *PerformPosingActions;
-static NSMutableArray <OBLoadAction> *DidLoadActions;
+static NSMutableArray <_OFLoadActionRegistration *> *PerformPosingActions;
+static NSMutableArray <_OFLoadActionRegistration *> *DidLoadActions;
 
 // Execution
-static NSMutableArray <OBLoadAction> *ExecutableActions;
+static NSMutableArray <_OFLoadActionRegistration *> *ExecutableActions;
 static NSUInteger NextExecutionIndex;
 
 static void _InitializeLoadActions(void)
@@ -80,13 +103,19 @@ void _OBRegisterLoadAction(OBLoadActionKind kind, const char *file, unsigned lin
 
     LOADACTION_DEBUG(@"Register load action of kind %ld from %s:%d", kind, file, line);
 
+    NSString *name;
+#ifdef LOADACTION_DEBUG_DEFINED
+    name = [NSString stringWithFormat:@"%s:%d", file, line];
+#endif
+    _OFLoadActionRegistration *registration = [[_OFLoadActionRegistration alloc] initWithName:name action:action];
+
     // Note: even if we are past the first call of OBInvokeRegisteredLoadActions(), we should buffer these up so that a runtime loaded bundle that uses both kinds of load actions will have its perform-posing actions called, and then its did-load actions.
     switch (kind) {
         case OBLoadActionKindPerformPosing:
-            [PerformPosingActions addObject:action];
+            [PerformPosingActions addObject:registration];
             break;
         case OBLoadActionKindDidLoad:
-            [DidLoadActions addObject:action];
+            [DidLoadActions addObject:registration];
             break;
         default:
             OBASSERT_NOT_REACHED("Unrecognized action kind %ld", kind);
@@ -118,14 +147,16 @@ void OBInvokeRegisteredLoadActions(void)
 
         // Intentionally calling -count on each loop since the action might reeentrantly call us and the reentrant call will finish the work we started.
         while (NextExecutionIndex < [ExecutableActions count]) {
-            OBLoadAction action = ExecutableActions[NextExecutionIndex];
+            _OFLoadActionRegistration *registration = ExecutableActions[NextExecutionIndex];
             NextExecutionIndex++;
 
             @autoreleasepool {
 #ifdef OMNI_ASSERTIONS_ON
                 didExecuteAction = YES;
 #endif
-                action();
+                LOADACTION_DEBUG(@"  >> Invoking %@", registration.name);
+                registration.action();
+                LOADACTION_DEBUG(@"  << Invoking %@", registration.name);
             }
         }
 

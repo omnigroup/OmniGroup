@@ -187,7 +187,7 @@ OBPerformPosing(^{
     return [self imageNamed:imageStem withTint:imageTint inBundle:aBundle allowingNil:NO];
 }
 
-+ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil shouldDynamicallyAdjust:(BOOL)dynamicallyAdjust;
++ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 {
     NSImage *defaultImage = [self imageNamed:imageStem withTint:NSDefaultControlTint inBundle:aBundle allowingNil:allowNil];
     NSImage *graphiteImage = [self imageNamed:imageStem withTint:NSGraphiteControlTint inBundle:aBundle allowingNil:allowNil];
@@ -198,25 +198,6 @@ OBPerformPosing(^{
     OBASSERT(!graphiteImage.isTemplate, "Template tinted images aren't supported");
     if (defaultImage.isTemplate)
         return defaultImage;
-
-    BOOL shouldShift = NO; // in OS's Yosemite -> High Sierra non-retina displays, toolbar images render a point too high, and should be shifted down 1 pt.
-
-    if (@available(macOS 10.14, *)) {
-        shouldShift = NO;
-#ifdef DEBUG_rachael0
-        shouldShift = YES; // testing while dev on mojave
-#endif
-    } else {
-        NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
-        float backingFactor = 0.0;
-        if (keyWindow != nil) {
-            backingFactor = [keyWindow backingScaleFactor];
-        } else {
-            backingFactor = [[NSScreen mainScreen] backingScaleFactor];
-        }
-
-        shouldShift = dynamicallyAdjust && backingFactor == 1.0;
-    }
 
     NSImage *tintedImage = [self tintedImageWithSize:defaultImage.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
         NSRect srcRect = { .origin = NSZeroPoint, .size = defaultImage.size };
@@ -229,9 +210,7 @@ OBPerformPosing(^{
                 sourceImage = defaultImage;
                 break;
         }
-        if (shouldShift) {
-            srcRect.origin.y += 1;
-        }
+
         [sourceImage drawInRect:dstRect fromRect:srcRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:NO hints:nil];
         return YES;
     }];
@@ -241,7 +220,7 @@ OBPerformPosing(^{
 
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
 {
-    return [self tintedImageNamed:imageStem inBundle:aBundle allowingNil:NO shouldDynamicallyAdjust:NO];
+    return [self tintedImageNamed:imageStem inBundle:aBundle allowingNil:NO];
 }
 
 + (NSImage *)tintedImageWithSize:(NSSize)size flipped:(BOOL)drawingHandlerShouldBeCalledWithFlippedContext drawingHandler:(BOOL (^)(NSRect dstRect))drawingHandler;

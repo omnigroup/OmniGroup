@@ -142,9 +142,22 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 - (NSDictionary *)toolbarInfoForItem:(NSToolbarItemIdentifier)identifier;
 {
+    NSObject <OAToolbarHelper> *helper = nil;
+    NSString *extension = [identifier pathExtension];
+
+    if (extension != nil)
+        helper = [helpersByExtension objectForKey:extension];
+
+    NSToolbarItemIdentifier effectiveItemIdentifier;
+    if (helper != nil) {
+        effectiveItemIdentifier = [helper templateItemIdentifier];
+    } else {
+        effectiveItemIdentifier = identifier;
+    }
+
     NSDictionary *toolbarItemInfo = [ToolbarItemInfo objectForKey:[self toolbarConfigurationName]];
     OBASSERT(toolbarItemInfo);
-    NSDictionary *itemInfo = [toolbarItemInfo objectForKey:identifier];
+    NSDictionary *itemInfo = [toolbarItemInfo objectForKey:effectiveItemIdentifier];
     OBPOSTCONDITION(itemInfo);
     return itemInfo;
 }
@@ -340,7 +353,7 @@ static void copyProperty(NSToolbarItem *anItem,
         if ([customImageName containsString:@"/"])
             customImageName = [[customImageName pathComponents] componentsJoinedByString:@":"];
         
-        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle allowingNil:YES shouldDynamicallyAdjust:YES]; // <bug:///90891> (AppleScripts in toolbars don't show custom icons) We're passing the AppleScript name as a customImageName here. That most certainly is wrong.
+        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle allowingNil:YES];
     }
     
     if ((value = [itemInfo objectForKey:@"customView"])) {

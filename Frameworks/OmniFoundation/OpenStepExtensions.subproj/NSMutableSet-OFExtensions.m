@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ RCS_ID("$Id$");
         [self removeObject:object];
 }
 
-- (void)exclusiveDisjoinSet:(NSSet *)otherSet;
+- (void)exclusiveDisjointSet:(NSSet *)otherSet;
 {
     /* special case: avoid modifying set while enumerating over it */
     if (otherSet == self) {

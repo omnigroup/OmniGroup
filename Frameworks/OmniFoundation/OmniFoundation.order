@@ -297,7 +297,7 @@ NSMutableArray-OFExtensions.o:-[NSMutableArray(OFExtensions) insertObject:inArra
 NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) appendString:attributes:]
 NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) mutateRanges:inRange:matchingString:context:]
 NSMutableAttributedString-OFExtensions.o:-[NSMutableAttributedString(OFExtensions) mutateRanges:matchingString:context:]
-NSMutableSet-OFExtensions.o:-[NSMutableSet(OFExtensions) exclusiveDisjoinSet:]
+NSMutableSet-OFExtensions.o:-[NSMutableSet(OFExtensions) exclusiveDisjointSet:]
 NSMutableString-OFExtensions.o:-[NSMutableString(OFExtensions) replaceAllOccurrencesOfCharactersInSet:withString:]
 OFNull.o:-[NSObject(Null) isNull]
 NSObject-OFExtensions.o:-[NSObject(OFExtensions) bundle]

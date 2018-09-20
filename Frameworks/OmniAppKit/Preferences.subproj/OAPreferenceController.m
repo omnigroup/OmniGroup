@@ -1177,32 +1177,33 @@ BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifie
     
     NSData *prefsBundleID = [systemPreferencesBundleID dataUsingEncoding:NSUTF8StringEncoding];
 
-    OSErr err;
-    OSStatus osst;
-    AppleEvent reveal, reply;
-    
-    osst = AEBuildAppleEvent('misc','mvis',
-                      typeApplicationBundleID, [prefsBundleID bytes], [prefsBundleID length],
-                      kAutoGenerateReturnID,
-                      kAnyTransactionID,
-                      &reveal, NULL, "'----':@", [target aeDesc]);
-    if (osst !=  aeBuildSyntaxNoErr)
-        return NO;
-    
+    // Make sure the application is launched an active first. Our AppleEvent will potentially start an animation to the new pane/tab and the activation that NSRunningApplication performs (which isn't an AppleEvent) will leave the UI in confused state in this case.
+    NSRunningApplication *application = [[NSRunningApplication runningApplicationsWithBundleIdentifier:systemPreferencesBundleID] lastObject];
+    if (application) {
+        [application activateWithOptions:0];
+    } else {
+        BOOL ok = [[NSWorkspace sharedWorkspace] launchAppWithBundleIdentifier:systemPreferencesBundleID
+                                                                       options:0
+                                                additionalEventParamDescriptor:nil
+                                                              launchIdentifier:NULL];
+        if (!ok) {
+            return NO;
+        }
+    }
+
     // Send the event with a timeout of 5 seconds. That should be long enough to get a failure response, but not so long that it'll be really annoying if there's a holdup for some reason.
     UInt32 aevtTimeout = 5 * 60;
-    
-    err = AESend(&reveal, &reply, kAEWaitReply|kAEAlwaysInteract|kAECanSwitchLayer, kAENormalPriority, aevtTimeout, NULL, NULL);
-    if (err == procNotFound) {
-        // Prefs hasn't been launched, perhaps.
-        BOOL ok;
-        ok = [[NSWorkspace sharedWorkspace] launchAppWithBundleIdentifier:systemPreferencesBundleID
-                                                                  options:NSWorkspaceLaunchWithoutActivation
-                                           additionalEventParamDescriptor:nil
-                                                         launchIdentifier:NULL];
-        if (ok)
-            err = AESend(&reveal, &reply, kAEWaitReply|kAEAlwaysInteract|kAECanSwitchLayer, kAENormalPriority, aevtTimeout, NULL, NULL);
-    }
+
+    AppleEvent reveal, reply;
+    OSStatus osst = AEBuildAppleEvent('misc','mvis',
+                                      typeApplicationBundleID, [prefsBundleID bytes], [prefsBundleID length],
+                                      kAutoGenerateReturnID,
+                                      kAnyTransactionID,
+                                      &reveal, NULL, "'----':@", [target aeDesc]);
+    if (osst != aeBuildSyntaxNoErr)
+        return NO;
+
+    OSErr err = AESend(&reveal, &reply, kAEWaitReply|kAEAlwaysInteract|kAECanSwitchLayer, kAENormalPriority, aevtTimeout, NULL, NULL);
     AEDisposeDesc(&reveal);
     if (err != noErr)
         return NO;
@@ -1222,10 +1223,6 @@ BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifie
         }
     }
     AEDisposeDesc(&reply);
-    
-    // Finally, bring System Preferences to the foreground
-    NSRunningApplication *application = [[NSRunningApplication runningApplicationsWithBundleIdentifier:systemPreferencesBundleID] lastObject];
-    [application activateWithOptions:0];
 
     return successResponse;
 }

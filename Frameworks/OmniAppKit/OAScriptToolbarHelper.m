@@ -25,39 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
-@interface _OAScriptToolbarItemButton : OAToolbarItemButton
-@end
-@interface _OAScriptToolbarItemButtonCell : NSButtonCell
-@end
-
-@implementation _OAScriptToolbarItemButton
-
-+ (nullable Class)cellClass;
-{
-    Class cellClass = [_OAScriptToolbarItemButtonCell class];
-    OBASSERT([cellClass superclass] == [[self superclass] cellClass]);
-    return cellClass;
-}
-
-@end
-
-@implementation _OAScriptToolbarItemButtonCell
-
-- (NSRect)imageRectForBounds:(NSRect)rect;
-{
-    // We end up with too big of a rect here for arbitrary user supplied images. Our OAScriptIcon.png has built-in padding, but random images might not.
-    // Mojave does a better job here.
-    NSRect imageRect = [super imageRectForBounds:rect];
-        
-    if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
-        imageRect = OAInsetRectBySize(imageRect, NSMakeSize(0, 4));
-        imageRect.origin.y += 2; // Sigh; using the alignmentInsets still not helping enough.
-    }
-
-    return imageRect;
-}
-
-@end
 @implementation OAScriptToolbarHelper {
   @private
     NSMutableDictionary *_pathForItemDictionary;
@@ -224,7 +191,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
 - (Class)toolbarItemButtonClass;
 {
-    return [_OAScriptToolbarItemButton class];
+    return [OAUserSuppliedImageToolbarItemButton class];
 }
 
 - (void)executeScriptItem:(id)sender;

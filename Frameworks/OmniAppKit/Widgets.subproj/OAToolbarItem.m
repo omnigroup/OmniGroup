@@ -180,9 +180,9 @@ RCS_ID("$Id$");
     OFPreference *tintOverride = TINT_PREFERENCE;
     NSControlTint desiredTint = [tintOverride enumeratedValue];
     if (desiredTint == NSDefaultControlTint) {
-        base = [NSImage tintedImageNamed:tintedImageStem inBundle:tintedImageBundle allowingNil:NO shouldDynamicallyAdjust:YES];
+        base = [NSImage tintedImageNamed:tintedImageStem inBundle:tintedImageBundle allowingNil:NO];
         if (tintedOptionImageStem)
-            opt = [NSImage tintedImageNamed:tintedOptionImageStem inBundle:tintedImageBundle allowingNil:NO shouldDynamicallyAdjust:YES];
+            opt = [NSImage tintedImageNamed:tintedOptionImageStem inBundle:tintedImageBundle allowingNil:NO];
         else
             opt = nil;
     } else {
@@ -206,6 +206,106 @@ OB_REQUIRE_ARC // Since we're using weak
 
 @implementation OAToolbarItemButton
 
++ (Class)cellClass;
+{
+    return [OAToolbarItemButtonCell class];
+}
+
 @synthesize toolbarItem = _weak_toolbarItem;
+
+@end
+
+@implementation OAToolbarItemButtonCell
+
+static BOOL _isRetina(NSView *view)
+{
+    NSWindow *window = view.window;
+
+    CGFloat backingFactor;
+    if (window != nil) {
+        backingFactor = [window backingScaleFactor];
+    } else {
+        backingFactor = [[NSScreen mainScreen] backingScaleFactor];
+    }
+
+    return (backingFactor == 2.0);
+}
+
+- (NSRect)imageRectForBounds:(NSRect)rect;
+{
+    NSRect imageRect = [super imageRectForBounds:rect];
+
+    if ([OFVersionNumber isOperatingSystemMojaveOrLater]) {
+        // On Mojave, the image is one point too high on non-Retina.
+        CGFloat imageShift;
+
+        if (_isRetina(self.controlView)) {
+            imageShift = 0.0;
+        } else {
+            imageShift = 1.0;
+        }
+        
+        imageRect.origin.y += imageShift;
+    } else {
+        // On High Sierra, the image is one point too low on Retina.
+        CGFloat imageShift;
+
+        if (_isRetina(self.controlView)) {
+            imageShift = -0.5;
+        } else {
+            imageShift = 0.0;
+        }
+
+        imageRect.origin.y += imageShift;
+    }
+
+    return imageRect;
+}
+
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView;
+{
+    // On 10.13, toolbar button frames render too low, and should be shifted up (the amount differs between Retina and non-Retina).
+    if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
+        CGFloat bezelShift;
+
+        if (_isRetina(controlView)) {
+            bezelShift = -0.5;
+        } else {
+            bezelShift = -1.0;
+        }
+
+        frame.origin.y += bezelShift;
+    }
+
+    [super drawBezelWithFrame:frame inView:controlView];
+}
+
+@end
+
+@implementation OAUserSuppliedImageToolbarItemButton
+
++ (nullable Class)cellClass;
+{
+    Class cellClass = [OAUserSuppliedImageToolbarItemButtonCell class];
+    OBASSERT([cellClass superclass] == [[self superclass] cellClass]);
+    return cellClass;
+}
+
+@end
+
+@implementation OAUserSuppliedImageToolbarItemButtonCell
+
+- (NSRect)imageRectForBounds:(NSRect)rect;
+{
+    NSRect imageRect = [super imageRectForBounds:rect];
+
+    if (![OFVersionNumber isOperatingSystemMojaveOrLater]) {
+        // We end up with too big of a rect here for arbitrary user supplied images. Our OAScriptIcon.png has built-in padding, but random images might not.
+        // Mojave does a better job here.
+        imageRect = OAInsetRectBySize(imageRect, NSMakeSize(0, 3));
+    }
+
+    return imageRect;
+}
 
 @end

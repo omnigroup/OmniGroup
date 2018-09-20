@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -152,6 +152,10 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
         firstFrame.origin.x += WINDOW_TILE_STEP;
         firstFrame.origin.y -= WINDOW_TILE_STEP;
     }
+#ifdef DEBUG_CASCADE
+    NSLog(@"Avoiding %ld windows; starting frame %@", [windowsToAvoid count], NSStringFromRect(startingFrame));
+    NSLog(@"  first frame %@", NSStringFromRect(firstFrame));
+#endif
 
     screen = [OAWindowCascade _screenForPoint:startingFrame.origin];
     screenRect = [screen visibleFrame];
@@ -162,9 +166,6 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 
     // Trim the available rect down based on the windows to avoid
     availableRect = screenRect;
-#ifdef DEBUG_CASCADE
-    NSLog(@"Avoiding %d windows; starting frame %@", [windowsToAvoid count], NSStringFromRect(startingFrame));
-#endif
     for (NSWindow *window in windowsToAvoid) {
         if (![window isVisible] || [window screen] != screen)
             continue;
@@ -250,6 +251,15 @@ static NSRect _OALargestMarginRectInRectAvoidingRectAndFitSize(NSRect containing
 - (void)reset;
 {
     lastStartingFrame = NSZeroRect;
+}
+
+- (void)resetWithStartingFrame:(NSRect)startingFrame;
+{
+#ifdef DEBUG_CASCADE
+    NSLog(@"Reset with frame %@", NSStringFromRect(startingFrame));
+#endif
+    lastStartingFrame = startingFrame;
+    lastWindowOrigin = startingFrame.origin;
 }
 
 #pragma mark - Private

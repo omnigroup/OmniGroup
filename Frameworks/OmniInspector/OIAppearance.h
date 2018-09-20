@@ -20,6 +20,14 @@
 @property (readonly) CGFloat InspectorHeaderSeparatorHeight;
 @property (readonly) CGFloat InspectorSnoozeButtonCornerRounding;
 @property (readonly) NSSize InspectorNoteTextInset;
+@property (readonly) NSColor *InspectorTabOnStateTintColor;
+@property (readonly) NSColor *InspectorTabHighlightedTintColor;
+@property (readonly) NSColor *InspectorTabNormalTintColor;
+
+@property (readonly) NSColor *DarkInspectorBackgroundColor;
+@property (readonly) NSColor *DarkInspectorHeaderSeparatorColor;
+@property (readonly) NSColor *LightInspectorBackgroundColor;
+@property (readonly) NSColor *LightInspectorHeaderSeparatorColor;
 
 - (NSColor *)inspectorBackgroundColorForView:(NSView *)view;
 - (NSColor *)inspectorHeaderSeparatorColorForView:(NSView *)view;

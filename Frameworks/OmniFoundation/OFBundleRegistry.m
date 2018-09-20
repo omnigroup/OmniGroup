@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -543,7 +543,7 @@ static NSString *_normalizedPath(NSString *path)
 
     /* compute differences */
     NSMutableSet *changedNames = [NSMutableSet setWithArray:oldDisabledBundleNames];
-    [changedNames exclusiveDisjoinSet:[NSSet setWithArray:newDisabledBundleNames]];
+    [changedNames exclusiveDisjointSet:[NSSet setWithArray:newDisabledBundleNames]];
 
     [oldDisabledBundleNames release];
     oldDisabledBundleNames = [newDisabledBundleNames copy];

@@ -30,22 +30,30 @@ RCS_ID("$Id$");
 @dynamic InspectorHeaderSeparatorTopPadding;
 @dynamic InspectorHeaderSeparatorHeight;
 @dynamic InspectorNoteTextInset;
+@dynamic InspectorTabOnStateTintColor;
+@dynamic InspectorTabHighlightedTintColor;
+@dynamic InspectorTabNormalTintColor;
+
+@dynamic DarkInspectorBackgroundColor;
+@dynamic DarkInspectorHeaderSeparatorColor;
+@dynamic LightInspectorBackgroundColor;
+@dynamic LightInspectorHeaderSeparatorColor;
 
 - (NSColor *)inspectorBackgroundColorForView:(NSView *)view;
 {
     if (@available(macOS 10.13, *)) {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorBackgroundColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]] lightColor:[NSColor colorNamed:@"LightInspectorBackgroundColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]]];
+        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorBackgroundColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorBackgroundColor" bundle:OMNI_BUNDLE]];
     } else {
-        return [NSColor clearColor];
+        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:self.DarkInspectorBackgroundColor lightColor:self.LightInspectorBackgroundColor];
     }
 }
 
 - (NSColor *)inspectorHeaderSeparatorColorForView:(NSView *)view;
 {
     if (@available(macOS 10.13, *)) {
-        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorHeaderSeparatorColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]] lightColor:[NSColor colorNamed:@"LightInspectorHeaderSeparatorColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]]];
+        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:[NSColor colorNamed:@"DarkInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE] lightColor:[NSColor colorNamed:@"LightInspectorHeaderSeparatorColor" bundle:OMNI_BUNDLE]];
     } else {
-        return [NSColor clearColor];
+        return [OIAppearanceDynamicColor dynamicColorForView:view darkColor:self.DarkInspectorHeaderSeparatorColor lightColor:self.LightInspectorHeaderSeparatorColor];
     }
 }
 

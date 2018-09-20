@@ -210,6 +210,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     OBASSERT([self.installViewInstallButton superview] == self.installButtonsView);
     OBASSERT([self.installViewMessageText superview] == self.installBasicView);
     
+    self.window.collectionBehavior = NSWindowCollectionBehaviorFullScreenAuxiliary;
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     
     NSString *name = [[[_request URL] path] lastPathComponent];
