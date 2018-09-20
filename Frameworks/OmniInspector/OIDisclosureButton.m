@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development. Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,14 +13,13 @@
 
 RCS_ID("$Id$");
 
-@implementation OIDisclosureButton
-{
+@implementation OIDisclosureButton {
     BOOL _hasDarkAppearance;
 }
 
-+ (Class)cellClass;
+static BOOL _isDarkAppearance(NSAppearance *appearance)
 {
-    return [OIDisclosureButtonCell class];
+    return OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
 }
 
 - (id)initWithFrame:(NSRect)frame;
@@ -49,67 +48,13 @@ RCS_ID("$Id$");
 
 - (void)OIDisclosureButton_commonInit;
 {
-#ifdef OMNI_ASSERTIONS_ON
-    Class cellClass = [[self class] cellClass];
-    OBASSERT([[self cell] isKindOfClass:cellClass]);
-#endif
-
-    [self setImagePosition:NSImageOnly];
-    [self setBezelStyle:NSShadowlessSquareBezelStyle];
-    [self setButtonType:NSMomentaryPushInButton];
-    [self setBordered:NO];
-
-    [[self cell] setImageDimsWhenDisabled:NO];
     [self _updateDarkAppearance:_isDarkAppearance(self.effectiveAppearance)];
-}
-
-- (NSImage *)collapsedImage;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    return cell.collapsedImage;
-}
-
-- (void)setCollapsedImage:(NSImage *)collapsedImage;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    cell.collapsedImage = collapsedImage;
-}
-
-- (NSImage *)expandedImage;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    return cell.collapsedImage;
-}
-
-- (void)setExpandedImage:(NSImage *)expandedImage;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    cell.expandedImage = expandedImage;
-}
-
-- (BOOL)showsStateByAlpha;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    return cell.showsStateByAlpha;
-}
-
-- (void)setShowsStateByAlpha:(BOOL)showsStateByAlpha;
-{
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
-    cell.showsStateByAlpha = showsStateByAlpha;
-}
-
-#pragma mark -
-
-static BOOL _isDarkAppearance(NSAppearance *appearance)
-{
-    return OFISEQUAL(appearance.name, NSAppearanceNameVibrantDark);
 }
 
 - (void)viewWillDraw;
 {
     [super viewWillDraw];
-
+    
     BOOL isDarkAppearance = _isDarkAppearance(self.effectiveAppearance);
     if (_hasDarkAppearance != isDarkAppearance) {
         [self _updateDarkAppearance:isDarkAppearance];
@@ -119,7 +64,7 @@ static BOOL _isDarkAppearance(NSAppearance *appearance)
 - (void)_updateDarkAppearance:(BOOL)isDarkAppearance;
 {
     NSString *tintColorThemeKey = isDarkAppearance ? _tintColorDarkThemeKey : _tintColorLightThemeKey;
-    OIDisclosureButtonCell *cell = OB_CHECKED_CAST(OIDisclosureButtonCell, self.cell);
+    OADisclosureButtonCell *cell = OB_CHECKED_CAST(OADisclosureButtonCell, self.cell);
     cell.tintColor = tintColorThemeKey != nil ? [[OIAppearance appearance] colorForKeyPath:tintColorThemeKey] : nil;
     _hasDarkAppearance = isDarkAppearance;
 }

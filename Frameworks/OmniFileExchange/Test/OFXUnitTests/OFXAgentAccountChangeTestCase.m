@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFileExchange/OFXErrors.h>
+#import <OmniFileExchange/OFXAccountClientParameters.h>
 
 #import "OFXServerAccountRegistry-Internal.h"
 
@@ -18,6 +19,23 @@ RCS_ID("$Id$")
 @end
 
 @implementation OFXAgentAccountChangeTestCase
+
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
+{
+    OFXAccountClientParameters *clientParameters = [super accountClientParametersForAgentName:agentName];
+
+    // Speed up metadata updates in a copule casees where we are trying to catch it while it is downloading.
+    SEL testSelector = self.invocation.selector;
+    BOOL fasterMetadataUpdates = NO;
+    fasterMetadataUpdates |= (testSelector == @selector(testRemovingAccountWhileDownloadingDocuments) && [agentName isEqual:@"B"]);
+    fasterMetadataUpdates |= (testSelector == @selector(testRemoveLocalDocumentsDirectoryWhileDownloadingDocuments) && [agentName isEqual:@"B"]);
+
+    if (fasterMetadataUpdates) {
+        clientParameters.metadataUpdateInterval = 0.0001;
+    }
+
+    return clientParameters;
+}
 
 - (NSSet *)automaticallyStartedAgentNames;
 {

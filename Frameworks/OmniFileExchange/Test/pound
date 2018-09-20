@@ -1,6 +1,6 @@
 #!/bin/zsh -u
 
-
+#export OBASSERT_WAIT_FOR_DEBUGGER=YES
 export OBJC_DISABLE_GC=YES
 export OFXTestsRunning=1
 export OBASSERT_NO_BANNER=1
@@ -13,7 +13,7 @@ export ODAVAccountUsername=test
 export ODAVAccountPassword=password
 #export OBASSERT_TIME_TO_WAIT=60
 # 15 works on my rMBP, but my Mac Pro with spinning disks is slower
-export OFXTestWaitTime=60
+export OFXTestWaitTime=15
 
 # Hack to avoid cases where Bonjour (or we) lose a state update
 export OFXAgentSyncInterval=20
@@ -30,6 +30,9 @@ export OFXAgentSyncInterval=20
 #export OFXTransferDebug=1
 #export OFXContentDebug=1
 #export OFXSnapshotDebug=1
+#export OFXLocalRelativePathDebug=1
+#export OFXScanDebug=1
+#export OFXFileCoordinatonDebug=1
 
 XCTEST=`xcrun -find xctest`
 
@@ -58,7 +61,9 @@ while true; do
     # Keep a copy of the output for each run so we can look at failures.
     export OFXTestBaseDirectory="$counter"
     
-    $XCTEST -XCTest OFXDeleteTestCase  "$TEST_BUNDLE" |& tee "$LOG_FILE" | egrep "(^\s*Executed)|(failed)|(OBFinishPorting at )"
+    # -XCTest OFXDeleteTestCase 
+    # -XCTest OFXConflictTestCase/testRenameLoopWhileOffline
+    $XCTEST "$TEST_BUNDLE" |& tee "$LOG_FILE" | egrep "(^\s*Executed)|(failed)|(OBFinishPorting at )|(Waiting for debugger)"
 
     if grep -q failed "$LOG_FILE"; then
         echo "### Failed case in $OFXTestBaseDirectory"

@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,24 @@ RCS_ID("$Id$")
 
 
 @implementation OFXDocumentEditTestCase
+
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
+{
+    OFXAccountClientParameters *clientParameters = [super accountClientParametersForAgentName:agentName];
+
+    // Speed up metadata updates in a copule casees where we are trying to catch it while it is downloading.
+    SEL testSelector = self.invocation.selector;
+    BOOL fasterMetadataUpdates = NO;
+    fasterMetadataUpdates |= (testSelector == @selector(testIncomingUpdateWhileDownloading) && [agentName isEqual:@"B"]);
+    fasterMetadataUpdates |= (testSelector == @selector(testIncomingUpdateOfPreviouslyDownloadedFileWhileDownloading) && [agentName isEqual:@"B"]);
+    fasterMetadataUpdates |= (testSelector == @selector(testLocalUpdateWhileDownloading) && [agentName isEqual:@"B"]);
+
+    if (fasterMetadataUpdates) {
+        clientParameters.metadataUpdateInterval = 0.0001;
+    }
+
+    return clientParameters;
+}
 
 - (BOOL)automaticallyDownloadFileContents
 {
@@ -52,8 +70,7 @@ RCS_ID("$Id$")
     OFXFileMetadata *metadata = [metadataItems anyObject];
     XCTAssertEqualObjects([metadata.fileURL lastPathComponent], @"test.package");
     XCTAssertEqual(34ULL, metadata.fileSize);
-    XCTAssertEqualObjects(metadata.creationDate, metadata.modificationDate);
-    // ... more assertions
+    XCTAssertEqualWithAccuracy(metadata.creationDate.timeIntervalSinceReferenceDate, metadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
 }
 
 - (void)testEditDocument;
@@ -110,7 +127,7 @@ RCS_ID("$Id$")
         }];
         XCTAssertTrue(downloadedMetadata.downloaded);
         XCTAssertEqualObjects(placeholderMetadata.creationDate, downloadedMetadata.creationDate);
-        XCTAssertEqualObjects(downloadedMetadata.creationDate, downloadedMetadata.modificationDate);
+        XCTAssertEqualWithAccuracy(downloadedMetadata.creationDate.timeIntervalSinceReferenceDate, downloadedMetadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
 
         // Make sure we got the right contents
         OFDiffFiles(self, [[self fixtureNamed:@"test.package"] path], [downloadedMetadata.fileURL path], nil);
@@ -124,8 +141,8 @@ RCS_ID("$Id$")
     // Wait until we see the first version
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
     XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
-    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate);
-    
+    XCTAssertEqualWithAccuracy(bFirstSeenMetadata.creationDate.timeIntervalSinceReferenceDate, bFirstSeenMetadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
+
     [self waitForSeconds:1]; // make sure the modification will differ ... the filesystem only stores second resolution
     
     // Update it. We should not have to explicitly tell the agent to upload -- this should happen eagerly when connected to the network (based on autosave or explicit save).
@@ -165,13 +182,13 @@ RCS_ID("$Id$")
     // Wait until we see the first version
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
     XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
-    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate));
-    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate));
-    
+    XCTAssertEqualObjects(firstMetadata.creationDate, bFirstSeenMetadata.creationDate);
+    XCTAssertEqualWithAccuracy(bFirstSeenMetadata.creationDate.timeIntervalSinceReferenceDate, bFirstSeenMetadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
+
     // Download the first version
     OFXFileMetadata *contentDownloadedMetadata = [self downloadWithMetadata:bFirstSeenMetadata agent:self.agentB];
-    XCTAssertEqualObjects(contentDownloadedMetadata.creationDate, contentDownloadedMetadata.modificationDate);
-    
+    XCTAssertEqualWithAccuracy(contentDownloadedMetadata.creationDate.timeIntervalSinceReferenceDate, contentDownloadedMetadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
+
     // Update it. We should not have to explicitly tell the agent to upload -- this should happen eagerly when connected to the network (based on autosave or explicit save).
     [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:firstMetadata];
     
@@ -256,9 +273,10 @@ RCS_ID("$Id$")
     [self.agentB sync:nil];
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
     XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
-    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate);
-    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate);
-    
+    XCTAssertEqualObjects(firstMetadata.creationDate, bFirstSeenMetadata.creationDate);
+    XCTAssertEqualObjects(firstMetadata.modificationDate, bFirstSeenMetadata.modificationDate);
+    XCTAssertEqualWithAccuracy(bFirstSeenMetadata.creationDate.timeIntervalSinceReferenceDate, bFirstSeenMetadata.modificationDate.timeIntervalSinceReferenceDate, 0.01); // Copying files into a package modifies the directory
+
     // Update it. We should not have to explicitly tell the agent to upload -- this should happen eagerly when connected to the network (based on autosave or explicit save).
     OFXFileMetadata *uploadedEditMetadata = [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:firstMetadata];
     XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate);

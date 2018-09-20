@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -582,7 +582,7 @@ void OUILogViewTree(UIView *root)
 #endif
 
 // Allows the caller to conditionally leave animations as they were or disable them. Won't ever force animations on.
-void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void))
+void OUIWithAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void))
 {
     if (disabled)
         OUIWithoutAnimating(actions);
@@ -590,7 +590,7 @@ void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void))
         actions();
 }
 
-void OUIWithoutAnimating(void (^actions)(void))
+void OUIWithoutAnimating(void (NS_NOESCAPE ^actions)(void))
 {
     BOOL wasAnimating = [UIView areAnimationsEnabled];
     @try {
@@ -604,7 +604,7 @@ void OUIWithoutAnimating(void (^actions)(void))
     }
 }
 
-void OUIWithoutLayersAnimating(void (^actions)(void))
+void OUIWithoutLayersAnimating(void (NS_NOESCAPE ^actions)(void))
 {
     [CATransaction begin];
     [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
@@ -612,7 +612,7 @@ void OUIWithoutLayersAnimating(void (^actions)(void))
     [CATransaction commit];
 }
 
-void OUIWithLayerAnimationsDisabled(BOOL disabled, void (^actions)(void))
+void OUIWithLayerAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void))
 {
     if (disabled)
         OUIWithoutLayersAnimating(actions);
@@ -620,7 +620,7 @@ void OUIWithLayerAnimationsDisabled(BOOL disabled, void (^actions)(void))
         actions();
 }
 
-void OUIWithAppropriateLayerAnimations(void (^actions)(void))
+void OUIWithAppropriateLayerAnimations(void (NS_NOESCAPE ^actions)(void))
 {
     BOOL shouldAnimate = [UIView areAnimationsEnabled];
     OUIWithLayerAnimationsDisabled(shouldAnimate == NO, actions);

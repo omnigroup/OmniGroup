@@ -59,6 +59,23 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
 // The message is not logged here, but is used to check if there is a bug logged.
 void OBAssertFailed(const char *message)
 {
+    // Useful when running tests in Terminal repeatedly.
+    if (getenv("OBASSERT_WAIT_FOR_DEBUGGER")) {
+#if OMNI_BUILDING_FOR_MAC
+        [NSTask launchedTaskWithLaunchPath:@"/usr/bin/afplay" arguments:@[@"/System/Library/Sounds/Glass.aiff"]];
+#endif
+        fprintf(stderr, "*** Waiting for debugger to attach, pid %d ***\n", getpid());
+
+        // Calling sleep() isn't sufficient, since this might happen on a background queue, leaving the main queue to continue running further tests.
+        kill(getpid(), SIGSTOP);
+
+        // When Xcode/lldb attaches, it seems to send a SIGCONT or otherwise remove the effect of it.
+        while (1) {
+            fprintf(stderr, "*** Sleeping ***\n");
+            sleep(100);
+        }
+    }
+
     // If the assertion message contains a bug link, allow continuing past it.
     // If you can't immediately fix the problem, please log a bug with steps to hit the problem and associate it with your app.
     if (message == NULL || strstr(message, "bug://") == NULL) {

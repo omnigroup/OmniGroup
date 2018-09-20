@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -980,6 +980,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 #ifdef OMNI_ASSERTIONS_ON
             hadLocalMove = YES;
 #endif
+
             __autoreleasing NSError *renameError;
             if (![downloadedSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath isAutomaticMove:_snapshot.localState.autoMoved error:&renameError]) {
                 cleanup();
@@ -1154,18 +1155,24 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     }
 
     // Check if the incoming snapshot has a rename and perform it (if we have a local document downloaded).
-    if (moved && !self.localState.missing) {
-        __autoreleasing NSError *moveError;
-        if (![self _performDownloadCommitMoveToURL:updatedLocalDocumentURL coordinator:coordinator error:&moveError]) {
-            if (outError)
-                *outError = moveError;
-            [moveError log:@"Error moving %@ to %@ during commit of download.", _localDocumentURL, updatedLocalDocumentURL];
-            return NO;
+    if (moved) {
+
+        NSURL *previousLocalDocumentURL = _localDocumentURL;
+
+        if (!self.localState.missing) {
+            __autoreleasing NSError *moveError;
+            if (![self _performDownloadCommitMoveToURL:updatedLocalDocumentURL coordinator:coordinator error:&moveError]) {
+                if (outError)
+                    *outError = moveError;
+                [moveError log:@"Error moving %@ to %@ during commit of download.", previousLocalDocumentURL, updatedLocalDocumentURL];
+                return NO;
+            }
         }
         
-        OFXNoteContentMoved(self, _localDocumentURL, updatedLocalDocumentURL);
+        OFXNoteContentMoved(self, previousLocalDocumentURL, updatedLocalDocumentURL);
         // We don't poke the container here. It will do it in its 'done' block. This method tries to verify invariants but invariants will be broken briefly while we have our new relative path, but the container doesn't know about it yet.
-        //[container fileAtURL:_localDocumentURL movedToURL:updatedLocalDocumentURL byUser:NO];
+        // Actually, we need to do it here, or at least somewhere that knows the right original URL. Otherwise we can encounter <bug:///159654> (Tools-OmniPresence Unassigned: Assertion failure when running -[OFXConflictTestCase testRenamesWhileUploadingLotsOfFiles]). We currently allow up to two concurrent downloads. Say we have files "a.txt", "b.txt", and "c.txt" and start two downloads, one that will rename a->b and one that will rename b->c. Here we can end up capturing originalLocalRelativePath = "b.txt". Then let's say that the a->b download finishes first. This moves "b.txt" aside to a "b (conflict xxx).txt" auto-moved file and moves "a.txt" to "b.txt". Then, when the download of b->c finishes, we'll realize it is a move, but when we try to update _documentIndex, we'll pass an out of date old relative path ("b.txt").
+        [container fileItemMoved:self fromURL:previousLocalDocumentURL toURL:updatedLocalDocumentURL byUser:NO];
     }
     
     if (downloadContents) {
@@ -1322,9 +1329,12 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                 // In this case, we also go ahead and remove our local snapshot. The container will clean up after us and on the next sync we'll download the fresh copy. This is easier than trying to resurrect ourselves here (especially since our metadata is out of date and the remote file might have been renamed).
                 removeSnapshot(NULL);
             } else {
-                OBASSERT([errorOrNil underlyingErrorWithDomain:NSURLErrorDomain]);
-                // Maybe offline? We have a delete note, so we'll just try later.
-                [errorOrNil log:@"Error deleting snapshot with identifier %@", _identifier];
+                OBASSERT([errorOrNil underlyingErrorWithDomain:NSURLErrorDomain] || [errorOrNil underlyingErrorWithDomain:ODAVHTTPErrorDomain]);
+
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    // Maybe offline, or might be racing deletion from another client. We have a delete note, so we'll just try later.
+                    [errorOrNil log:@"Error deleting snapshot with identifier %@", _identifier];
+                }];
             }
         } else {
             // We no longer meet our invariants since _snapshot's localSnapshotURL doesn't exist on disk. We are should get discarded by our container now, though.
@@ -1342,7 +1352,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     // We might have a pending transfer. If we get here, it should end up failing due to the incoming delete (the validateCommit blocks on those transfers check for deletion and bail).
     //OBPRECONDITION(self.isDownloading == NO);
     //OBPRECONDITION(self.isUploading == NO);
-    OBPRECONDITION(self.hasBeenLocallyDeleted == NO);
     
     OBINVARIANT([self _checkInvariants]);
     
@@ -1359,6 +1368,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     
     if (self.localState.missing) {
         // We've never downloaded the file and someone else has removed it now.
+    } else if (self.localState.deleted) {
+        // We were trying to delete it, and it has gone missing on the server -- racing deletes.
     } else {
         __autoreleasing NSError *error;
         
@@ -1432,7 +1443,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     OFCreateRegularExpression(ConflictRegularExpression, NSLocalizedStringFromTableInBundle(@"^(.*) \\(conflict( [0-9+])? from .*\\)$", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file regular expression"));
 
     NSURL *folderURL = [_localDocumentURL URLByDeletingLastPathComponent];
-    NSString *lastComponent = [_localDocumentURL lastPathComponent];
+    NSString *lastComponent = [self.intendedLocalRelativePath lastPathComponent]; // [_localDocumentURL lastPathComponent];
     NSString *baseName = [lastComponent stringByDeletingPathExtension];
     NSString *pathExtension = [lastComponent pathExtension];
 
@@ -1668,7 +1679,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 
 - (NSString *)shortDescription;
 {
-    return [NSString stringWithFormat:@"<%@:%p %@ %@ %@ %@/%@>", NSStringFromClass([self class]), self, self.debugName, _identifier, _localRelativePath, self.localState, self.remoteState];
+    NSString *pathInfo;
+
+    if (!self.localState.deleted && OFNOTEQUAL(_localRelativePath, self.intendedLocalRelativePath)) {
+        pathInfo = [NSString stringWithFormat:@"\"%@\" (wants \"%@\")", _localRelativePath, self.intendedLocalRelativePath];
+    } else {
+        pathInfo = _localRelativePath;
+    }
+    return [NSString stringWithFormat:@"<%@:%p %@ %@ %@ %@/%@>", NSStringFromClass([self class]), self, self.debugName, _identifier, pathInfo, self.localState, self.remoteState];
 }
 
 - (NSString *)debugName;

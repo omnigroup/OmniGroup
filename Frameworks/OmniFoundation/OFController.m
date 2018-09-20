@@ -665,7 +665,15 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         
         /* bug reporter #37539192 <bug:///155090> (Mac-OmniGraffle Crasher: Crash trying to Add People to a file recently saved to iCloud on a Touchbar Mac) */
         IGNORE_CRASH(@"SHKRemoteView", @selector(_mapPerProcessIdentifiers:of:))
-        
+
+        // <bug:///154432> (Mac-OmniGraffle Crasher: High Sierra: Crash contacting Omni from a full screen window)
+        if ([OFVersionNumber isOperatingSystemHighSierraOrLater]) {
+            IGNORE_CRASH(@"NSToolbarFullScreenWindow", @selector(startRectForSheet:))
+        }
+
+        // <bug:///159503> (Mac-OmniGraffle Crasher: [needs repro] [7.7.1] -[GraphicView(NSTouchBar) _colorPickerTouchBarItemChanged:] (in OmniGraffle) (GraphicView-TouchBar.m:797))
+        IGNORE_CRASH(@"NSScrollingBehaviorLegacy", @selector(scrollView:panGestureRecognizerEndedOrFailed:))
+
 #undef IGNORE_CRASH
 
         // XPC services (like the 'define' service) sometimes time out:

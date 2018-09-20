@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,6 +111,7 @@ static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
     
     BOOL _hasRegisteredAsFilePresenter;
     BOOL _hasRelinquishedToWriter;
+    uint64_t _filePresenterNotifications; // Read and written with @synchronized(self) {...}
     NSOperationQueue *_presentedItemOperationQueue;
     
     // If we've responded to all our file edit notifications, but had an error, then the next sync needs to scan first.
@@ -314,12 +315,13 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     // NOTE: We should take care to never create our documents directory as part of creating ancestor directories for containers; otherwise we might transform a missing documents directory into a delete of a whole bunch of documents");
     _localDocumentsDirectoryHandle = opendir([[localDocumentsURL path] UTF8String]);
     if (!_localDocumentsDirectoryHandle) {
+        int err = errno;
         __autoreleasing NSError *documentsError;
         
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open documents folder.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description");
-        OBErrorWithErrno(&documentsError, errno, "opendir", [localDocumentsURL path], description);
+        OBErrorWithErrno(&documentsError, err, "opendir", [localDocumentsURL path], description);
         
-        if (errno == ENOENT) {
+        if (err == ENOENT) {
             // Stack a specific error here that lets the UI know it could ask the user to reconnect to the account.
             OFXError(&documentsError, OFXLocalAccountDocumentsDirectoryMissing,
                      NSLocalizedStringFromTableInBundle(@"Cannot start syncing.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"),
@@ -1337,8 +1339,12 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     if (_hasRegisteredAsFilePresenter == NO)
         return;
 
+    @synchronized(self) {
+        _filePresenterNotifications += 1;
+    }
+
     DEBUG_FILE_COORDINATION(1, @"presentedSubitemAtURL:%@ didMoveToURL:%@", oldURL, newURL);
-    
+
     // On OS X, at least, we sometimes get file reference URLs here. This seems a bit goofy since they update their path in response to file system changes, but this method is to tell us about such changes. Also, I've seen cases were they stop working after a coordinated move of a file in Finder (the -path starts returning nil).
     if ([newURL isFileReferenceURL]) {
         newURL = [newURL filePathURL];
@@ -1362,9 +1368,13 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
     if (_hasRegisteredAsFilePresenter == NO)
         return;
 
+    @synchronized(self) {
+        _filePresenterNotifications += 1;
+    }
+
     // This method can be received when doing a case-only rename ("foo" to "Foo"), on both Mac and iOS, *instead* of -presentedSubitemAtURL:didMoveToURL:. The old URL is passed, but we don't have a great way to intuit the rename from this. So, we do renames with a file presenter registered and publish the rename ourselves via -[OFXFileItem didMoveToURL:].
     DEBUG_FILE_COORDINATION(1, @"presentedSubitemDidChangeAtURL: %@", [url absoluteString]);
-    
+
     if (_edits.relinquishToWriter) {
         DEBUG_SYNC(1, @"  Inside writer; delay handling change");
         _edits.changed = YES; // Defer until we reacquire
@@ -1511,8 +1521,14 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     
+    // Do a weak check that there aren't concurrent edits going on. If there are a flurry of renames happening, our approach to scanning can end up missing files (possibly treating them as deletes and then readding them later). This is where access to APFS snapshots would be very nice.
+    uint64_t startingFilePresenterVersion;
+    @synchronized(self) {
+        startingFilePresenterVersion = _filePresenterNotifications;
+    }
+    DEBUG_SCAN(1, @"Scan starting with file presenter version %llu", startingFilePresenterVersion);
     DEBUG_SCAN(2, @"Performing contents changed update with containers %@", _containerIdentifierToContainerAgent);
-    
+
     NSMutableSet *knownPackagePathExtensions = [NSMutableSet setWithSet:_localPackagePathExtensions];
     
     NSMutableDictionary *containerIdentifierToScan = [NSMutableDictionary new];
@@ -1558,7 +1574,17 @@ static NSSet <NSString *> *_lowercasePathExtensions(id <NSFastEnumeration> pathE
         [_account reportError:scanError format:@"Error scanning local documents directory"];
         return;
     }
-    
+
+    uint64_t endingFilePresenterVersion;
+    @synchronized(self) {
+        endingFilePresenterVersion = _filePresenterNotifications;
+    }
+    if (endingFilePresenterVersion != startingFilePresenterVersion) {
+        DEBUG_SCAN(1, "File presenter version has changed to %llu; ignore this scan", endingFilePresenterVersion);
+        [self _queueContentsChanged];
+        return;
+    }
+
     OBASSERT([_containerIdentifierToContainerAgent count] == [containerIdentifierToScan count]);
     [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
         OFXContainerScan *scan = containerIdentifierToScan[identifier];

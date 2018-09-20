@@ -40,6 +40,7 @@
     /// called after updating button items.
     @objc optional func didUpdateDisplayButtonItems(_ multiPaneController: MultiPaneController)
     
+    @objc optional func wantsUnpinnedPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController) -> Bool
     @objc optional func willPinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     @objc optional func didPinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
     @objc optional func willUnpinPane(at location: MultiPaneLocation, multiPaneController: MultiPaneController)
@@ -180,7 +181,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     fileprivate var visibleCompactPane: MultiPaneLocation = .center
-    fileprivate var pinState: PinState?
+    fileprivate var pinRequest: PinRequest?
     fileprivate var pinningLayoutPass: Bool = false
     
     // ordered array of panes from Left to Right
@@ -239,6 +240,14 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     @objc public var rightPanePinButton: UIBarButtonItem {
         return multiPanePresenter.rightPinButton
     }
+    
+    private func pinButton(forPaneAt location: MultiPaneLocation) -> UIBarButtonItem {
+        switch location {
+        case .left: return leftPanePinButton
+        case .right: return rightPanePinButton
+        case .center: fatalError("Don't request the pin button for the center pane. It doesn't exist.")
+        }
+    }
 
     private var panes: Set<Pane> = [] // the order of the panes is determined by the Pane.location value, so actual storage order isn't relevant
     private var deferChildControllerContainment = false
@@ -255,7 +264,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     private var widthOfPanes: CGFloat {
         let center = pane(withLocation: .center)!
-        let minWidth = (center.configuration as! Content).preferredMinimumWidth
+        let minWidth = center.centerPanePinWidthThreshold
+        #if DEBUG_kc
+        print("DEBUG: minWidth=\(minWidth) widthOfSidebars=\(widthOfSidebars)")
+        #endif
         return minWidth + widthOfSidebars
     }
     
@@ -528,6 +540,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
         
         displayMode = preferredMode
+        
+        updatePinButtonItems()
     }
     
     private func canUpdateDisplayMode() -> Bool {
@@ -554,7 +568,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         
         UIView.performWithoutAnimation {
             orderedPanes.forEach { (pane) in
-                // print("DEBUG: pane \(pane.location) presentationMode=\(pane.presentationMode) and MultiPaneDisplayMode \(mode)")
+                #if DEBUG_kc
+                print("DEBUG: pane \(pane.location) presentationMode=\(pane.presentationMode) and MultiPaneDisplayMode \(mode)")
+                #endif
+
                 switch pane.location {
                 case .left:
                     leftIsVisible = pane.environment?.presentationMode == .embedded
@@ -572,63 +589,65 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
 
         if displayMode == .multi {
+
             let left = self.pane(withLocation: .left)
             let center = self.pane(withLocation: .center)
             let right = pane(withLocation: .right)
-            
+
+            if left?.environment?.presentationMode == .embedded && (layoutDelegate?.wantsUnpinnedPane?(at: .left, multiPaneController: self) ?? false) {
+                left?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+            }
+            if right?.environment?.presentationMode == .embedded && (layoutDelegate?.wantsUnpinnedPane?(at: .right, multiPaneController: self) ?? false) {
+                right?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+            }
+
             if widthOfPanes > size.width && self.pinningLayoutPass == false {
-                if let locationToBecomeOverlay = layoutDelegate?.locationToBecomeOverlay?(displayMode: mode, multiPaneController: self, viewSize: size) {
-                    let pane = self.pane(withLocation: locationToBecomeOverlay)
-                    pane?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
-                    paneLocationToUnpin = pane?.location
-                    
-                    if locationToBecomeOverlay == .left {
-                        rightIsVisible = true
-                    } else if locationToBecomeOverlay == .right {
-                        leftIsVisible = true
-                    }
-                }
-                else {
-                    left?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
-                    paneLocationToUnpin = left?.location
-                }
+                #if DEBUG_kc
+                print("DEBUG: widthOfPanes \(widthOfPanes) > size.width \(size.width)")
+                #endif
+
+                let locationToBecomeOverlay = layoutDelegate?.locationToBecomeOverlay?(displayMode: mode, multiPaneController: self, viewSize: size) ?? .left
+                let pane = self.pane(withLocation: locationToBecomeOverlay)
+                pane?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
             }
             
             // adjust for pinning changes.
             if self.pinningLayoutPass {
                 let centerWidth = center?.centerPanePinWidthThreshold ?? size.width
-                
-                if let pinState = self.pinState {
-                    
-                    switch pinState {
+
+                if let pinRequest = self.pinRequest {
+                    switch pinRequest {
                     case .pin(let pane):
                         // Check if pinning this pane would cause our center width pin threshold to be exceeded. 
-                        // dissmiss that pane.
+                        // dismiss that pane.
                         if (size.width - self.widthOfSidebars) < centerWidth {
-                            let oppositePane = pane.location == .left ? right : left
-                            oppositePane?.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
-                            paneLocationToUnpin = oppositePane?.location
+                            if let oppositePane = pane.location == .left ? right : left {
+                                oppositePane.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
+                                oppositePane.configuration.isPinned = false
+                                paneLocationToUnpin = oppositePane.location
+                            }
                         }
                         
                         // we want to pin this pane, so embedded it.
                         pane.environment = RegularEnvironment(withPresentationMode: .embedded, containerSize: size)
+                        paneLocationToPin = pane.location
+
                         if pane.location == .left {
                             leftIsVisible = true
-                            paneLocationToPin = pane.location
                         }
                         
                         if pane.location == .right {
                             rightIsVisible = true
                         }
+
+                        pane.configuration.isPinned = true
                         
                     case .unpin(let pane):
                         pane.environment = RegularEnvironment(withPresentationMode: .overlaid, containerSize: size)
                         paneLocationToUnpin = pane.location
+                        pane.configuration.isPinned = false
                     }
                 }
-                
-                left?.configuration.isPinned = left?.environment?.presentationMode == .embedded ? true : false
-                right?.configuration.isPinned = right?.environment?.presentationMode == .embedded ? true : false
             }
             
             // Try to restore the last visibility state. This can be overriden later with the layout delegate.
@@ -654,9 +673,10 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         notifyDelegateDidUnpin(location: paneLocationToUnpin)
         notifyDelegateDidPin(location: paneLocationToPin)
 
+        updatePinButtonItems()
 
         self.pinningLayoutPass = false
-        self.pinState = nil
+        self.pinRequest = nil
     }
     
     /// Only notifies the delegate if location is non-nil.
@@ -694,8 +714,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
                 if displayMode == .compact {
                     pane.visibleWhenEmbedded = true
                 } else {
-                    if let pinState = pinState, case let .pin(associatedPane) = pinState, associatedPane == pane {
-                        return // Out of this iteration of the `forEach`; This would normally be a `continue`
+                    if let pinRequest = pinRequest, case let .pin(associatedPane) = pinRequest, associatedPane == pane {
+                        return // Return out of this iteration of the `forEach`; this would normally be a `continue`
                     }
 
                     // only used in non-compact environments.
@@ -760,6 +780,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             leftPaneDisplayButton.title = nil
         }
         layoutDelegate?.didUpdateDisplayButtonItems?(self)
+    }
+    
+    private func updatePinButtonItems() {
+        leftPanePinButton.image = UIImage(multiPanePinButtonPinnedState: pane(withLocation: .left)?.isPinned ?? false)
+        rightPanePinButton.image = UIImage(multiPanePinButtonPinnedState: pane(withLocation: .right)?.isPinned ?? false)
     }
     
     private func setupDividerIfNeeded(onPane pane: Pane) {
@@ -841,7 +866,8 @@ extension MultiPaneController: MultiPanePresenterDelegate {
     
     @objc /**REVIEW**/ func presenterWantsToPin(pane: Pane) {
         self.pinningLayoutPass = true
-        self.pinState = .pin(pane)
+        self.pinRequest = .pin(pane)
+        self.pinButton(forPaneAt: pane.location).image = UIImage(multiPanePinButtonPinnedState: true)
         multiPanePresenter.dismiss(fromViewController: self, animated: false, completion: { [weak self] in
             // we update the displaymode after the presenter has dismissed, otherwise we will get crazy drawing issues.
             self?.displayMode = .multi
@@ -851,7 +877,8 @@ extension MultiPaneController: MultiPanePresenterDelegate {
     @objc /**REVIEW**/ func presenterWantsToUnpin(pane: Pane) {
         // the presenter can't pass us the pinned pane, so we need to try to find it for ourseleves.
         self.pinningLayoutPass = true
-        self.pinState = .unpin(pane)
+        self.pinRequest = .unpin(pane)
+        self.pinButton(forPaneAt: pane.location).image = UIImage(multiPanePinButtonPinnedState: false)
         self.multiPanePresenter.addSnapshot(to: self.view!, for: pane)
         self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
     
@@ -1101,7 +1128,7 @@ public final class MultiPaneConfiguration: NSObject {
 }
 
 // Wraps up what pinning state to apply to a given pane.
-fileprivate enum PinState {
+fileprivate enum PinRequest {
     case pin(Pane)
     case unpin(Pane)
 }

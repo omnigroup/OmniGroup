@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development. Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,14 +7,11 @@
 //
 // $Id$
 
-#import <AppKit/NSButton.h>
+#import <OmniAppKit/OADisclosureButton.h>
 
-@interface OIDisclosureButton : NSButton
+@interface OIDisclosureButton : OADisclosureButton
 
-@property (nonatomic, strong) IBInspectable NSImage *collapsedImage;
-@property (nonatomic, strong) IBInspectable NSImage *expandedImage;
 @property (nonatomic, strong) IBInspectable NSString *tintColorDarkThemeKey;
 @property (nonatomic, strong) IBInspectable NSString *tintColorLightThemeKey;
-@property (nonatomic) IBInspectable BOOL showsStateByAlpha;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -113,7 +113,9 @@ static BOOL _shouldLogError(NSError *error)
 - (void)finished:(NSError *)errorOrNil;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
-    OBPRECONDITION(_finished == NO, "Don't call -finished: multiple times");
+
+    // We can end up racing with the normal completion of a DAV operation and cancelling it and might get called with a cancellation error twice. In the case of a cancelled DAV operation, -causedByUserCancelling won't be YES (see the implementation).
+    OBPRECONDITION(_finished == NO || [errorOrNil hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled], "Don't call -finished: multiple times");
 
     _finished = YES;
     

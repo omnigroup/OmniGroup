@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,8 @@ ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(ODAVConnect
             // Create the directory so that we can get a snapshot of the server date.
             [connection makeCollectionAtURL:directoryURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
                 if (createError && (![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_METHOD_NOT_ALLOWED] &&
-                                    ![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_CONFLICT])) {
+                                    ![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_CONFLICT] &&
+                                    ![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_FORBIDDEN])) {
                     // Some non-racing error.
                     [createError log:@"Error creating directory at %@", directoryURL];
                     resultError = createError;

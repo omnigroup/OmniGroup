@@ -49,6 +49,109 @@ OBDEPRECATED_METHOD(-canPerformEditingAction:forTextView:withSender:);
 
 NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewInsertionPointDidChangeNotification";
 
+static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<NSString *> *types)
+{
+    if (type == nil) {
+        return nil;
+    }
+
+    for (NSString *checkType in types) {
+        if (UTTypeConformsTo((__bridge CFStringRef)type, (__bridge CFStringRef)checkType)) {
+            return checkType;
+        }
+    }
+    return nil;
+}
+
+@interface _OUITextViewPasteboardProcessor : NSObject
+{
+    NSArray <NSString *> *_requestedTypes;
+    void (^_completionHandler)(NSArray <NSData *> *);
+
+    NSMutableArray <NSData *> *_collectedDatas;
+
+    NSMutableArray <NSItemProvider *> *_remainingProviders;
+    NSItemProvider *_itemProvider;
+    NSMutableArray <NSString *> *_remainingAvailableTypes;
+}
+
+- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSData *> *))completionHandler;
+- (void)run;
+
+@end
+
+@implementation _OUITextViewPasteboardProcessor
+
+- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSData *> *))completionHandler;
+{
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+    
+    _requestedTypes = [requestedTypes copy];
+    _remainingProviders = [pasteboard.itemProviders mutableCopy];
+    _collectedDatas = [[NSMutableArray alloc] init];
+    _completionHandler = [completionHandler copy];
+
+    return self;
+}
+
+- (void)run;
+{
+    [self _nextProvider];
+}
+
+- (void)_nextProvider;
+{
+    _itemProvider = [_remainingProviders firstObject];
+    if (!_itemProvider) {
+        typeof(_completionHandler) handler = _completionHandler;
+        _completionHandler = nil;
+        handler(_collectedDatas);
+        return;
+    }
+
+    [_remainingProviders removeObjectAtIndex:0];
+
+    _remainingAvailableTypes = [_itemProvider.registeredTypeIdentifiers mutableCopy];
+    [self _nextType];
+}
+
+- (void)_nextType;
+{
+    NSString *availableType = [_remainingAvailableTypes firstObject];
+    if (!availableType) {
+        [self _nextProvider];
+        return;
+    }
+    [_remainingAvailableTypes removeObjectAtIndex:0];
+
+    NSString *typeIdentifier = _preferredTypeConformingToTypesInArray(availableType, _requestedTypes);
+    if (typeIdentifier == nil) {
+        [self _nextType];
+        return;
+    }
+
+    [_itemProvider loadDataRepresentationForTypeIdentifier:typeIdentifier completionHandler:^(NSData *data, NSError *error) {
+        if (!data) {
+            // Not logging since com.apple.rtfd is messed up in 11.3; it is a zip file instead of a serialized NSFileWrapper.
+            // [error log:@"Error loading data for type %@", typeIdentifier];
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _nextType];
+            }];
+            return;
+        }
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [_collectedDatas addObject:data];
+            [self _nextProvider];
+        }];
+    }];
+}
+
+@end
+
 @interface OUITextViewSelectedTextHighlightView : UIView
 @property (nonatomic, copy) UIColor *selectionColor;
 @end
@@ -1391,18 +1494,25 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
 // If this pattern ends up being correct, maybe move this to UIPasteboard as a category method
 static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types, void (^applier)(NSData *))
 {
-    NSIndexSet *itemSet = [pasteboard itemSetWithPasteboardTypes:types];
-    [itemSet enumerateIndexesUsingBlock:^(NSUInteger itemIndex, BOOL *stop) {
-        for (NSString *type in types) {
-            NSArray *datas = [pasteboard dataForPasteboardType:type inItemSet:[NSIndexSet indexSetWithIndex:itemIndex]];
-            OBASSERT([datas count] <= 1);
-            NSData *data = [datas lastObject];
-            if (OFNOTNULL(data)) {
-                applier(data);
-                break;
-            }
-        }
+    __block BOOL done = NO;
+    __block NSArray <NSData *> *datas = nil;
+    _OUITextViewPasteboardProcessor *processor = [[_OUITextViewPasteboardProcessor alloc] initWithPasteboard:pasteboard requestedTypes:types completionHandler:^(NSArray <NSData *> *results){
+        datas = results;
+        done = YES;
     }];
+
+    [processor run];
+
+    BOOL finished = OFRunLoopRunUntil(10.0, OFRunLoopRunTypePolling, ^{
+        return done;
+    });
+    if (!finished) {
+        return;
+    }
+
+    for (NSData *data in datas) {
+        applier(data);
+    }
 }
 
 - (void)paste:(nullable id)sender;

@@ -1,4 +1,4 @@
-// Copyright 2013-2014,2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,7 +111,7 @@ RCS_ID("$Id$")
         }
     }];
     
-    DEBUG_LOCAL_RELATIVE_PATH(1, @"Copy intended local relative path to file items %@", results);
+    DEBUG_LOCAL_RELATIVE_PATH(2, @"Copy intended local relative path to file items %@", results);
     return [results copy];
 }
 
@@ -263,6 +263,8 @@ static void _forgetItemByLocalRelativePath(OFXContainerDocumentIndex *self, OFXF
 // Bulk by-user move
 - (void)fileItemsMoved:(NSArray <OFXContainerDocumentIndexMove *> *)moves; // Bulk move; array of OFXContainerDocumentIndexMove instances
 {
+    DEBUG_LOCAL_RELATIVE_PATH(1, "Performing bulk move with initial state: %@", _localRelativePathToFileItem);
+
     // De-register all the moving items (so we can deal with swapping moves).
     for (OFXContainerDocumentIndexMove *move in moves) {
         OFXFileItem *fileItem = move.fileItem;
@@ -280,12 +282,16 @@ static void _forgetItemByLocalRelativePath(OFXContainerDocumentIndex *self, OFXF
         
         _forgetItemByLocalRelativePath(self, fileItem, originalRelativePath);
         
-        DEBUG_LOCAL_RELATIVE_PATH(1, @"Move %@", [move shortDescription]);
+        DEBUG_LOCAL_RELATIVE_PATH(1, @"Deregister path \"%@\" for %@", originalRelativePath, fileItem);
     }
 
+    DEBUG_LOCAL_RELATIVE_PATH(1, "After deregistering: %@", _localRelativePathToFileItem);
+
     // Re-register all the moved items under their new paths.
-    for (OFXContainerDocumentIndexMove *move in moves)
+    for (OFXContainerDocumentIndexMove *move in moves) {
+        DEBUG_LOCAL_RELATIVE_PATH(1, @"Register path \"%@\" for %@", move.updatedRelativePath, move.fileItem);
         _registerFileItemByLocalRelativePath(self, move.fileItem, move.updatedRelativePath);
+    }
     
     OBPOSTCONDITION([self _checkInvariants]);
 }
@@ -317,9 +323,11 @@ static void _forgetItemByLocalRelativePath(OFXContainerDocumentIndex *self, OFXF
     [_localRelativePathToFileItem enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
         OBINVARIANT(OFISEQUAL(localRelativePath, fileItem.localRelativePath));
         
-        if (fileItem.localState.missing)
+        if (fileItem.localState.missing) {
             OBINVARIANT(fileItem.inode == nil, "Missing files aren't on disk and don't have an inode");
-        else {
+        } else if (fileItem.localState.userMoved) {
+            // If we have a sequence of moves between items, and some items haven't been snapshotted yet, we can temporarily have file items with the same inode (for example, +[OFXConflictTestCase testRenameLoopWhileOffline]).
+        } else {
             OBINVARIANT([inodes member:fileItem.inode] == nil, "Each file item should have a unique inode");
             [inodes addObject:fileItem.inode];
         }

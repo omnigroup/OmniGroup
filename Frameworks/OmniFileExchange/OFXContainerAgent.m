@@ -622,25 +622,13 @@ tryAgain:
         
         return nil;
     };
-    
-    NSString *originalLocalRelativePath = fileItem.localRelativePath;
+
     [downloadTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         DEBUG_SYNC(1, @"Finished download of %@ (committed:%d)", fileItem, (errorOrNil == nil));
         
         OFXAccountAgent *accountAgent = _weak_accountAgent;
         if (errorOrNil == nil) {
-            NSString *updatedLocalRelativePath = fileItem.localRelativePath;
-            if (OFNOTEQUAL(originalLocalRelativePath, updatedLocalRelativePath)) {
-                if (fileItem.localState.autoMoved) {
-                    // The file was locally moved as part of conflict resoluation
-                    OBASSERT([_documentIndex fileItemWithLocalRelativePath:updatedLocalRelativePath] == fileItem);
-                } else {
-                    // The file moved as part of the download.
-                    [_documentIndex fileItemMoved:fileItem fromLocalRelativePath:originalLocalRelativePath toLocalRelativePath:updatedLocalRelativePath];
-                }
-            }
-            
             // Check if another download request came in that wanted contents with this download only being for metadata.
             if (fileItem.contentsRequested) {
                 OFXFileState *localState = fileItem.localState;
@@ -881,7 +869,10 @@ tryAgain:
                 NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&hasSameContentsError];
                 if (same == nil) {
                     // The file might have been renamed or deleted and we need to rescan. Or, there might be a sandbox-induced permission error, in which case we should hopefully pause on the next rescan due to the error.
-                    [hasSameContentsError log:@"While scanning, error checking for changes in contents for %@", fileURL];
+                    NSError *strongError = hasSameContentsError;
+                    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                        [strongError log:@"While scanning, error checking for changes in contents for %@", fileURL];
+                    }];
 
                     NSString *reason = [NSString stringWithFormat:@"Error checking for changes in local file at %@.", fileURL];
                     OFXError(outError, OFXLocalAccountDirectoryPossiblyModifiedWhileScanning, @"Local account directory may been modified since scan began.", reason);
@@ -998,7 +989,9 @@ tryAgain:
     
     if ([fileItemToUpdatedURL count] == 0)
         return;
-    
+
+    DEBUG_LOCAL_RELATIVE_PATH(1, @"Preparing bulk moves for %@", fileItemToUpdatedURL);
+
     NSMutableArray *fileItemMoves = [[NSMutableArray alloc] init];
     [fileItemToUpdatedURL enumerateKeysAndObjectsUsingBlock:^(OFXFileItem *fileItem, NSURL *updatedFileURL, BOOL *stop) {
         NSString *updatedRelativePath = [self _localRelativePathForFileURL:updatedFileURL];
@@ -1011,6 +1004,8 @@ tryAgain:
         move.originalRelativePath = fileItem.localRelativePath;
         move.updatedRelativePath = updatedRelativePath;
         [fileItemMoves addObject:move];
+
+        DEBUG_LOCAL_RELATIVE_PATH(1, @"  %@ -> %@", move.originalRelativePath, move.updatedRelativePath);
 
         // If the file item is being moved by the user to its original non-conflict operation, this isn't a publishable move.
         OFXFileItemMoveSource moveSource = OFXFileItemMoveSourceLocalUser;
@@ -1277,17 +1272,26 @@ tryAgain:
     OBPRECONDITION(fileURL);
     OBPRECONDITION(fileItem);
     OBPRECONDITION(coordinator);
-    
-    NSURL *conflictURL = [fileItem fileURLForConflictVersion]; // This file item has the same URL as otherItem, if any, so it can generate a conflict URL.
-    OBASSERT(conflictURL);
-    DEBUG_CONFLICT(1, @"Making way for incoming document by moving published document aside to %@", conflictURL);
+
+    DEBUG_CONFLICT(1, @"Making way for incoming document at %@", fileURL);
+    DEBUG_CONFLICT(1, @"  fileItem moving there %@", [fileItem shortDescription]);
 
     OFXFileItem *otherItem = [self fileItemWithURL:fileURL];
+    DEBUG_CONFLICT(1, @"  otherItem currently there %@", [otherItem shortDescription]);
     if (otherItem == fileItem) {
         // There is something in the way of this item, which is the registered owner for this path.
         otherItem = nil;
     }
-    
+
+    NSURL *conflictURL;
+    if (otherItem) {
+        // Call -fileURLForConflictVersion on this item, since that will use the receiver's intended relative path, which might differ.
+        conflictURL = [otherItem fileURLForConflictVersion];
+    } else {
+        conflictURL = [fileItem fileURLForConflictVersion];
+    }
+    OBASSERT(conflictURL);
+
     if (!otherItem) {
         // The thing in our way appeared very recently (possibly as a result of our provoking autosave, as in -[OFXConflictTestCase testIncomingMoveVsLocalAutosaveCreation]).
         // Make a file item for it right now and mark it as auto-moved immediately, so that we record the user's intended name, rather than doing a conflict move here and promoting that name to the user intended name).

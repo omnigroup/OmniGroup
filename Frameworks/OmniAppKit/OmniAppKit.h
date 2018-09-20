@@ -104,6 +104,8 @@
 #import <OmniAppKit/OADataSourceTableColumn.h>
 #import <OmniAppKit/OADatePickerTextField.h>
 #import <OmniAppKit/OADefaultSettingIndicatorButton.h>
+#import <OmniAppKit/OADisclosureButton.h>
+#import <OmniAppKit/OADisclosureButtonCell.h>
 #import <OmniAppKit/OADocument.h>
 #import <OmniAppKit/OADocumentPositioningView.h>
 #import <OmniAppKit/OADottedLine.h>

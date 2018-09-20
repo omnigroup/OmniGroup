@@ -15,10 +15,15 @@
 
 RCS_ID("$Id$");
 
-@implementation OUIKeyboardLock
-{
+@interface OUIKeyboardLock () <UITextFieldDelegate> {
     UITextField *hackTextField;
 }
+
+@end
+
+#pragma mark -
+
+@implementation OUIKeyboardLock
 
 + (OUIKeyboardLock *)keyboardLockForView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType;
 {
@@ -30,6 +35,7 @@ RCS_ID("$Id$");
     self = [super init];
     if (self) {
         hackTextField = [[UITextField alloc] initWithFrame:CGRectZero];
+        hackTextField.delegate = self;
         hackTextField.keyboardType = keyboardType;
         hackTextField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
         [parentView addSubview:hackTextField];
@@ -50,6 +56,14 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(![hackTextField isFirstResponder]);
     [hackTextField removeFromSuperview];
+}
+
+- (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
+{
+#if 0 && defined(DEBUG_correia)
+    NSLog(@"OUIKeyboardLock text field will end editing.");
+#endif
+    return YES;
 }
 
 @end

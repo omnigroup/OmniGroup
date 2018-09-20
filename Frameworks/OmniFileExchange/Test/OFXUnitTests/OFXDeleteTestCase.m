@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,8 +51,23 @@ RCS_ID("$Id$")
 {
     OFXAccountClientParameters *clientParameters = [super accountClientParametersForAgentName:agentName];
     
-    if (self.invocation.selector == @selector(testRaceBetweenDownloadUpdateAndLocalDeletion) && [agentName isEqual:@"B"]) {
-        // Speed up the metadata updates since we are trying to catch it while it is downloading.
+    // Speed up metadata updates in a copule casees where we are trying to catch it while it is downloading.
+    SEL testSelector = self.invocation.selector;
+    BOOL fasterMetadataUpdates = NO;
+
+    if ([agentName isEqual:@"A"]) {
+        fasterMetadataUpdates |= (testSelector == @selector(testDeleteWhileStillUploadingForFirstTime));
+    }
+
+    if ([agentName isEqual:@"B"]) {
+        fasterMetadataUpdates |= (testSelector == @selector(testRaceBetweenDownloadUpdateAndLocalDeletion));
+        fasterMetadataUpdates |= (testSelector == @selector(testIncomingDeleteOfFlatFileWhileStillDownloading));
+        fasterMetadataUpdates |= (testSelector == @selector(testIncomingDeleteOfPackageWhileStillDownloading));
+        fasterMetadataUpdates |= (testSelector == @selector(testLocalDeleteOfFlatFileWhileStillDownloading));
+        fasterMetadataUpdates |= (testSelector == @selector(testLocalDeleteOfPackageWhileStillDownloading));
+    }
+
+    if (fasterMetadataUpdates) {
         clientParameters.metadataUpdateInterval = 0.0001;
     }
     
@@ -172,7 +187,7 @@ RCS_ID("$Id$")
     OBASSERT(account);
 
     // Make a large random file, and start uploading it. Our local deletion is racing against this, so if it is too small we can get random failures below where we check that we didn't commit the upload.
-    [self copyRandomTextFileOfLength:256*1024*1024 toPath:@"random.txt" ofAccount:account];
+    [self copyRandomTextFileOfLength:64*1024*1024 toPath:@"random.txt" ofAccount:account];
 
     // Wait for the file to make some progress, so we know the transfer was really going.
     [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {
@@ -238,11 +253,13 @@ RCS_ID("$Id$")
     [self waitForFileMetadataItems:agent where:^BOOL(NSSet *metadataItems) {
         return [metadataItems count] == 0;
     }];
-    
-    // And make sure we do a "delete" to clean up the local snapshot.
-    OFXTraceWait(@"OFXFileSnapshotDeleteTransfer.finished");
-    OFXTraceWait(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot");
-    
+
+    [NSError suppressingLogsWithUnderlyingDomain:NSPOSIXErrorDomain code:ENOENT action:^{
+        // And make sure we do a "delete" to clean up the local snapshot.
+        OFXTraceWait(@"OFXFileSnapshotDeleteTransfer.finished");
+        OFXTraceWait(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot");
+    }];
+
     XCTAssertTrue(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"We should have deleted the remote URL");
 }
 

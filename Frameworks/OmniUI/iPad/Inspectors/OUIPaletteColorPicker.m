@@ -146,7 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
     CGFloat horizontalInset = (CGRectGetWidth(self.view.bounds) - _swatchPickerLayoutWidth) / 2.0;
     
     UIScrollView *scrollView = (UIScrollView *)self.view;
-    scrollView.contentInset = UIEdgeInsetsMake(0, horizontalInset, 0, 0);
+    scrollView.contentInset = UIEdgeInsetsMake(0, horizontalInset, 0, horizontalInset);
 }
 
 #pragma mark Receiving Control Events from Swatch Pickers
@@ -234,7 +234,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    view.contentSize = CGSizeMake(viewBounds.size.width, yOffset - kInterThemeSpacing);
+    view.contentSize = CGSizeMake(_swatchPickerLayoutWidth, yOffset - kInterThemeSpacing);
 
     _themeViews = [themeViews copy];
 }

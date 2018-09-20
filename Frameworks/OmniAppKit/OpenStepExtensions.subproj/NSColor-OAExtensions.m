@@ -501,18 +501,18 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         NSColor *colorAsComponentBased = [color colorUsingType:NSColorTypeComponentBased];
 
         if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
-            return NO;
+            // perhaps we can convert colorspaces between colors & have the same color, but only if both colors actually convert to colors that HAVE colorspaces.
+            if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
+                colorAsComponentBased = [colorAsComponentBased colorUsingColorSpace:selfAsComponentBased.colorSpace];
+                if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
+                    return NO;
+                }
+            } else {
+                return NO;
+            }
         }
 
         if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
-            NSColorSpace *colorSpace = self.colorSpace;
-            NSColorSpace *otherColorSpace = color.colorSpace;
-            if (!OFISEQUAL(colorSpace, otherColorSpace)) {
-                if (self.colorSpace.colorSpaceModel != color.colorSpace.colorSpaceModel) {
-                    return NO;
-                }
-            }
-
             switch (selfAsComponentBased.colorSpace.colorSpaceModel) {
                 case NSColorSpaceModelRGB:
                     return (fabs([selfAsComponentBased redComponent]-[colorAsComponentBased redComponent]) < 0.001) && (fabs([selfAsComponentBased greenComponent]-[colorAsComponentBased greenComponent]) < 0.001) && (fabs([selfAsComponentBased blueComponent]-[colorAsComponentBased blueComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);

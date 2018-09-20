@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,10 @@ RCS_ID("$Id$");
 @implementation OUIDocumentPickerGroupItemView
 {
     CGSize _lastKnownBoundsSize;
+
+    NSArray *_cachedPreviewedItems;
+    OUIDocumentPickerFilter *_cachedPreviewItemsFilter;
+    NSArray <NSSortDescriptor *> *_cachedPreviewItemsSortDescriptors;
 }
 
 static id _commonInit(OUIDocumentPickerGroupItemView *self)
@@ -54,6 +58,8 @@ static unsigned GroupItemContext;
 
 - (void)startObservingItem:(id)item;
 {
+    OBPRECONDITION(_cachedPreviewedItems == nil, "Should be cleared in -stopObservingItem:");
+
     [super startObservingItem:item];
     [item addObserver:self forKeyPath:ODSFolderItemChildItemsBinding options:0 context:&GroupItemContext];
 }
@@ -62,6 +68,8 @@ static unsigned GroupItemContext;
 {
     [super stopObservingItem:item];
     [item removeObserver:self forKeyPath:ODSFolderItemChildItemsBinding context:&GroupItemContext];
+
+    _cachedPreviewedItems = nil;
 }
 
 - (OUIDocumentPreviewArea)previewArea;
@@ -73,16 +81,25 @@ static unsigned GroupItemContext;
 {
     ODSFolderItem *item = (ODSFolderItem *)self.item;
     OBASSERT(!item || [item isKindOfClass:[ODSFolderItem class]]);
-    
+
     OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:[[OUIDocumentAppController controller] documentPicker]];
-    
+    NSArray <NSSortDescriptor *> *sortDescriptors = [OUIDocumentPickerViewController sortDescriptors];
+
+    if (_cachedPreviewedItems && _cachedPreviewItemsFilter == filter && OFISEQUAL(_cachedPreviewItemsSortDescriptors, sortDescriptors)) {
+        return _cachedPreviewedItems;
+    }
+
     NSSet *filteredItems;
     if (filter)
         filteredItems = [item.childItems filteredSetUsingPredicate:filter.predicate];
     else
         filteredItems = item.childItems;
-    NSArray *sortedItems = [filteredItems sortedArrayUsingDescriptors:[OUIDocumentPickerViewController sortDescriptors]];
-    return sortedItems;
+
+    _cachedPreviewItemsFilter = filter;
+    _cachedPreviewItemsSortDescriptors = [sortDescriptors copy];
+    _cachedPreviewedItems = [filteredItems sortedArrayUsingDescriptors:sortDescriptors];
+
+    return _cachedPreviewedItems;
 }
 
 - (void)layoutSubviews;
@@ -145,9 +162,10 @@ static unsigned GroupItemContext;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &GroupItemContext) {
-        if (OFISEQUAL(keyPath, ODSFolderItemChildItemsBinding))
+        if (OFISEQUAL(keyPath, ODSFolderItemChildItemsBinding)) {
+            _cachedPreviewedItems = nil;
             [self previewedItemsChanged];
-        else
+        } else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
         return;
     }

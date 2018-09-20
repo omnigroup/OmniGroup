@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,16 +71,16 @@ extern void OUILogViewTree(UIView *root);
 #endif
 
 // Fiddles the UIView animation enabledness
-extern void OUIWithAnimationsDisabled(BOOL disabled, void (^actions)(void));
-extern void OUIWithoutAnimating(void (^actions)(void));
+extern void OUIWithAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void));
+extern void OUIWithoutAnimating(void (NS_NOESCAPE ^actions)(void));
 
 // Fiddles the CALayer animation enabledness
-extern void OUIWithoutLayersAnimating(void (^actions)(void));
-extern void OUIWithLayerAnimationsDisabled(BOOL disabled, void (^actions)(void));
+extern void OUIWithoutLayersAnimating(void (NS_NOESCAPE ^actions)(void));
+extern void OUIWithLayerAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void));
 
 // Need a better name for this. This checks if +[UIView areAnimationsEnabled]. If not, then it performs the block inside a CATransation that disables implicit animations.
 // Useful for when a setter on your UI view adjusts animatable properties on its layer.
-extern void OUIWithAppropriateLayerAnimations(void (^actions)(void));
+extern void OUIWithAppropriateLayerAnimations(void (NS_NOESCAPE ^actions)(void));
 
 extern void OUIDisplayNeededViews(void);
 

@@ -40,6 +40,13 @@ enum MultiPanePresentationMode {
     case overlaid
 }
 
+extension UIImage {
+    convenience init?(multiPanePinButtonPinnedState pinned: Bool) {
+        let name = pinned ? "OUIMultiPanePinDownButton" : "OUIMultiPanePinUpButton"
+        self.init(named: name, in: OmniUIBundle, compatibleWith: nil)
+    }
+}
+
 class MultiPanePresenter: NSObject {
    
     private var overlayPresenter: MultiPaneSlidingOverlayPresenter? // keep this around until the presentation has completed, otherwise the overlaid panes will get generic dismiss animation.
@@ -49,21 +56,26 @@ class MultiPanePresenter: NSObject {
     @objc public var animatesSidebarLayout: Bool = true
     
     @objc lazy var rightPinButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPanePinUpButton", in: OmniUIBundle, compatibleWith: nil)
+        let image = UIImage(multiPanePinButtonPinnedState: false)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "RightPinButton"
         return button
     }()
     
     @objc lazy var leftPinButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPanePinUpButton", in: OmniUIBundle, compatibleWith: nil)
+        let image = UIImage(multiPanePinButtonPinnedState: false)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "LeftPinButton"
         return button
     }()
     
     @objc /**REVIEW**/ func present(pane: Pane, fromViewController presentingController: UIViewController, usingDisplayMode displayMode: MultiPaneDisplayMode, interactivelyWith gesture: UIScreenEdgePanGestureRecognizer? = nil, animated: Bool = true) {
-        
+
+        // Ensure layout is up to date before we build up the animation and new constraints
+        if animated {
+            presentingController.view.layoutIfNeeded()
+        }
+
         switch (pane.presentationMode, displayMode) {
         case (.overlaid, _):
             self.overlay(pane: pane, presentingController: presentingController, gesture: gesture, animated: animated)
@@ -91,19 +103,23 @@ class MultiPanePresenter: NSObject {
             }
             
             if gesture != nil { return } // TODO: decide if we want to bail here, or try to support this gesture to drive the expand/collapse animation. It might be confusing for users that they can gesture sometimes, but not others.
+
             let operation: MultiPanePresenterOperation = pane.isVisible ? .collapse : .expand
             let animator = pane.sidebarAnimator(forOperation: operation, animate:animatesSidebarLayout)
             var additionalAnimations: (()->())?
+
             if operation == .collapse {
                 additionalAnimations = self.delegate?.animationsToPerformAlongsideEmbeddedSidebarHiding?(atLocation: pane.location, withWidth: pane.width)
             } else {
                 additionalAnimations = self.delegate?.animationsToPerformAlongsideEmbeddedSidebarShowing?(atLocation: pane.location, withWidth: pane.width)
             }
+
             if let additionalAnimations = additionalAnimations {
                 animator.addAnimations {
                     additionalAnimations()
                 }
             }
+
             self.animate(pane: pane, withAnimator: animator, forOperation: operation)
             
             break
@@ -383,6 +399,7 @@ extension MultiPaneAnimator {
                 assertionFailure("unexpected pane location for expand/collapse animation \(location)")
             }
         }
+
         if (animate) {
             animator.addAnimations {
                 superview.layoutIfNeeded()

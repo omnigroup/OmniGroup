@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import "OFXTrace.h"
 
 #import <OmniFoundation/OFNull.h>
+@import OmniDAV;
 
 RCS_ID("$Id$")
 
@@ -159,7 +160,7 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     // Reenable syncing on B -- it should delete its old snapshot and then resurrect the file by syncing again.
     agentB.syncSchedule = OFXSyncScheduleAutomatic;
     OFXFileMetadata *restoredFile = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
-        return metadata.isDownloaded;
+        return [metadata.fileIdentifier isEqual:originalMetadata.fileIdentifier] && ![metadata.editIdentifier isEqual:originalMetadata.editIdentifier] && metadata.isDownloaded;
     }];
     
     XCTAssertTrue(OFXTraceHasSignal(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot"), @"should have removed the old snapshot");
@@ -327,23 +328,26 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     BOOL (^predicate)(NSSet *metadataItems) = ^BOOL(NSSet *metadataItems){
         return [metadataItems count] == 0;
     };
+
+    // Apache reports a 500 when attempting to MOVE a snapshot into tmp in preparation for deletion, but it isn't there (when racing with another client).
+    [NSError suppressingLogsWithUnderlyingDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_INTERNAL_SERVER_ERROR action:^{
+        // Delete the file on both sides.
+        [self deletePath:@"test.package" inAgent:agentA];
+        [self deletePath:@"test.package" inAgent:agentB];
+
+        // Wait for both to locally acknowledge the delete
+        [self waitForFileMetadataItems:agentA where:predicate];
+        [self waitForFileMetadataItems:agentB where:predicate];
+
+        // Take both accounts online and wait a while. They should both state at zero files and no error should be registered.
+        agentA.syncSchedule = OFXSyncScheduleAutomatic;
+        agentB.syncSchedule = OFXSyncScheduleAutomatic;
+
+        [self waitForSeconds:1];
     
-    // Delete the file on both sides.
-    [self deletePath:@"test.package" inAgent:agentA];
-    [self deletePath:@"test.package" inAgent:agentB];
-    
-    // Wait for both to locally acknowledge the delete
-    [self waitForFileMetadataItems:agentA where:predicate];
-    [self waitForFileMetadataItems:agentB where:predicate];
-    
-    // Take both accounts online and wait a while. They should both state at zero files and no error should be registered.
-    agentA.syncSchedule = OFXSyncScheduleAutomatic;
-    agentB.syncSchedule = OFXSyncScheduleAutomatic;
-    
-    [self waitForSeconds:1];
-    
-    [self waitForFileMetadataItems:agentA where:predicate];
-    [self waitForFileMetadataItems:agentB where:predicate];
+        [self waitForFileMetadataItems:agentA where:predicate];
+        [self waitForFileMetadataItems:agentB where:predicate];
+    }];
 
     XCTAssertNil([self lastErrorInAgent:agentA]);
     XCTAssertNil([self lastErrorInAgent:agentB]);
@@ -535,6 +539,58 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     }
 }
 
+- (void)testRenameLoopWhileOffline;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+
+    OFXServerAccount *accountA = [self singleAccountInAgent:agentA];
+
+    // Get a few files on both sides.
+    [self copyRandomTextFileOfLength:10 toPath:@"a.txt" ofAccount:accountA];
+    [self copyRandomTextFileOfLength:10 toPath:@"b.txt" ofAccount:accountA];
+    [self copyRandomTextFileOfLength:10 toPath:@"c.txt" ofAccount:accountA];
+    [self copyRandomTextFileOfLength:10 toPath:@"d.txt" ofAccount:accountA];
+
+    [self waitForFileMetadataItems:agentB where:^BOOL(NSSet <OFXFileMetadata *> *metadataItems) {
+        if ([metadataItems count] != 4) {
+            return NO;
+        }
+        for (OFXFileMetadata *metadata in metadataItems) {
+            if (!metadata.isDownloaded) {
+                return NO;
+            }
+        }
+        return YES;
+    }];
+
+    agentA.syncSchedule = OFXSyncScheduleManual;
+    agentB.syncSchedule = OFXSyncScheduleManual;
+    [self waitForSeconds:0.5];
+
+    for (NSInteger try = 0; try < 10; try++) {
+        // move 'd' aside, move the rest one spot and move 'e' back to close the loop.
+        // The quick move of d->e->a can cause a transient error while scanning.
+        [NSError suppressingLogsWithUnderlyingDomain:NSPOSIXErrorDomain code:ENOENT action:^{
+            [self movePath:@"d.txt" toPath:@"e.txt" ofAccount:accountA];
+            [self movePath:@"c.txt" toPath:@"d.txt" ofAccount:accountA];
+            [self movePath:@"b.txt" toPath:@"c.txt" ofAccount:accountA];
+            [self movePath:@"a.txt" toPath:@"b.txt" ofAccount:accountA];
+            [self movePath:@"e.txt" toPath:@"a.txt" ofAccount:accountA];
+
+            [self waitForSeconds:0.5];
+            [self waitForSync:agentA];
+        }];
+
+        // Wake up B
+        [self waitForSync:agentB];
+        [self waitForSeconds:0.5];
+        
+        [self waitForAgentsEditsToAgree];
+        [self requireAgentsToHaveSameFilesByName];
+    }
+}
+
 // Trying to provoke <bug:///91387> (Continual conflicts being generated when they shouldn't be)
 // A is the only editor but B was generating conflicts based on the incoming renames.
 - (void)testRenamesWhileUploadingLotsOfFiles;
@@ -544,7 +600,7 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     
     OFXServerAccount *accountA = [self singleAccountInAgent:agentA];
     
-    // Get two files on both sides
+    // Get some files on both sides
     [self uploadFixture:@"flat1.txt" as:@"a.txt" replacingMetadata:nil];
     [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.downloaded;
@@ -558,18 +614,20 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
     for (NSUInteger fileIndex = 0; fileIndex < 300; fileIndex++)
         [self copyFixtureNamed:@"flat1.txt" toPath:[NSString stringWithFormat:@"x/%ld.txt", fileIndex] ofAccount:accountA];
 
+    [NSError suppressingLogsWithUnderlyingDomain:NSPOSIXErrorDomain code:ENOENT action:^{
     // Rename the two starting files back and forth a few times
-    for (NSUInteger renameIndex = 0; renameIndex < 20; renameIndex++) {
-        [self movePath:@"a.txt" toPath:@"c.txt" ofAccount:accountA];
-        [self waitForSeconds:1];
-        
-        [self movePath:@"b.txt" toPath:@"a.txt" ofAccount:accountA];
-        [self waitForSeconds:1];
-        
-        [self movePath:@"c.txt" toPath:@"b.txt" ofAccount:accountA];
-        [self waitForSeconds:1];
-    }
-    
+        for (NSUInteger renameIndex = 0; renameIndex < 40; renameIndex++) {
+            [self movePath:@"a.txt" toPath:@"c.txt" ofAccount:accountA];
+            [self waitForSeconds:1];
+
+            [self movePath:@"b.txt" toPath:@"a.txt" ofAccount:accountA];
+            [self waitForSeconds:1];
+
+            [self movePath:@"c.txt" toPath:@"b.txt" ofAccount:accountA];
+            [self waitForSeconds:1];
+        }
+    }];
+
     // Wait for all the uploads to finish. We don't know how long this will take, so just make sure we keep making progress.
     __block NSUInteger remaining = NSUIntegerMax;
     while (remaining > 0) {
@@ -705,7 +763,10 @@ static void _waitForAndResolveLateConflictByRenaming(OFXConflictTestCase *self,
     NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
     NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentC]];
 
-    _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+    // A scan can fail due to conflict resolution renaming things during the scan.
+    [NSError suppressingLogsWithUnderlyingDomain:NSPOSIXErrorDomain code:ENOENT action:^{
+        _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+    }];
 }
 
 - (void)testLateAppearanceOfAnotherConflictByEditing;
@@ -728,8 +789,11 @@ static void _waitForAndResolveLateConflictByRenaming(OFXConflictTestCase *self,
     NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
     NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
     NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentC]];
-    
-    _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+
+    // Conflict files may be moved around while scanning.
+    [NSError suppressingLogsWithUnderlyingDomain:NSPOSIXErrorDomain code:ENOENT action:^{
+        _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+    }];
 }
 
 // -testLateAppearanceOfAnotherConflictByCreation and -testLateAppearanceOfAnotherConflictByEditing handle the renaming case

@@ -402,7 +402,9 @@ extension Int: DifferenceIndex {
 
     public static func movesAreOrderedByIncreasingImpact(_ left: (Int, Int), _ right: (Int, Int), context: Int) -> Bool {
         // impact is distance moved
-        return abs(left.0 - left.1) < abs(right.0 - right.1)
+        let leftDistance: Int = abs(left.0 - left.1)
+        let rightDistance: Int = abs(right.0 - right.1)
+        return leftDistance < rightDistance
     }
     
     public static func moveIsFilterable(_ move: (Int, Int)) -> Bool {

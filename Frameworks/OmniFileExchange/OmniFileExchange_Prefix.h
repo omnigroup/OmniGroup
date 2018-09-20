@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@
 OB_HIDDEN extern NSInteger OFXFileCoordinatonDebug;
 #define DEBUG_FILE_COORDINATION(level, format, ...) do { \
     if (OFXFileCoordinatonDebug >= (level)) \
-        NSLog(@"FILE COORD %@: " format, [self shortDescription], ## __VA_ARGS__); \
+        NSLog(@"FILE COORD %@ <%llu>: " format, [self shortDescription], _filePresenterNotifications, ## __VA_ARGS__); \
     } while (0)
 
 OB_HIDDEN extern NSInteger OFXSyncDebug;

@@ -4,12 +4,15 @@
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
 
-#import "OIDisclosureButtonCell.h"
+#import <AppKit/NSButton.h>
 
-RCS_ID("$Id$");
+@interface OADisclosureButton : NSButton
 
-#import <OmniAppKit/NSImage-OAExtensions.h>
+@property (nonatomic, strong) IBInspectable NSImage *collapsedImage;
+@property (nonatomic, strong) IBInspectable NSImage *expandedImage;
+@property (nonatomic) IBInspectable BOOL showsStateByAlpha;
 
-@implementation OIDisclosureButtonCell
 @end

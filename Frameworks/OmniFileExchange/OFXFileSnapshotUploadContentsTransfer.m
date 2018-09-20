@@ -1,4 +1,4 @@
-// Copyright 2013-2015,2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,8 +123,12 @@ RCS_ID("$Id$")
     
     if (errorOrNil) {
         __autoreleasing NSError *cleanupError;
-        if (![[NSFileManager defaultManager] removeItemAtURL:_uploadingSnapshot.localSnapshotURL error:&cleanupError])
-            [cleanupError log:@"Error removing temporary snapshot created for uploading at %@", _uploadingSnapshot.localSnapshotURL];
+        if (![[NSFileManager defaultManager] removeItemAtURL:_uploadingSnapshot.localSnapshotURL error:&cleanupError]) {
+            NSError *strongError = cleanupError;
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [strongError log:@"Error removing temporary snapshot created for uploading at %@", _uploadingSnapshot.localSnapshotURL];
+            }];
+        }
     }
     
     [super finished:errorOrNil];

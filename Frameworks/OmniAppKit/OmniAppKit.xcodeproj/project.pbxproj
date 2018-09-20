@@ -590,6 +590,14 @@
 		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B69E15CC836000E162D6 /* OAToolbarButton.m */; };
+		E23A3F2220ADF95D00ADEB59 /* OADisclosureButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E23A3EF720ADF95A00ADEB59 /* OADisclosureButtonCell.m */; };
+		E23A3F2320ADF95D00ADEB59 /* OADisclosureButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E23A3F1F20ADF95B00ADEB59 /* OADisclosureButton.m */; };
+		E23A3F2420ADF95D00ADEB59 /* OADisclosureButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E23A3F2020ADF95C00ADEB59 /* OADisclosureButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E23A3F2520ADF95D00ADEB59 /* OADisclosureButtonCell.h in Headers */ = {isa = PBXBuildFile; fileRef = E23A3F2120ADF95D00ADEB59 /* OADisclosureButtonCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E23A3F2E20AE07A300ADEB59 /* OADisclosureButtonCollapsed.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */; };
+		E23A3F2F20AE07A600ADEB59 /* OADisclosureButtonCollapsed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */; };
+		E23A3F3020AE07A900ADEB59 /* OADisclosureButtonExpanded.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */; };
+		E23A3F3120AE07A900ADEB59 /* OADisclosureButtonExpanded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */; };
 		E25C440C2075359300660AE6 /* OAImages.m in Sources */ = {isa = PBXBuildFile; fileRef = E25C440B2075359300660AE6 /* OAImages.m */; };
 		E25C4435207535C800660AE6 /* OAImages.h in Headers */ = {isa = PBXBuildFile; fileRef = E25C4434207535C800660AE6 /* OAImages.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A61BDF1D41574900416AB5 /* OAAutosizingSegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A61BDD1D41574900416AB5 /* OAAutosizingSegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1495,6 +1503,14 @@
 		E235B46315CC771600E162D6 /* OATrackingLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATrackingLoop.m; sourceTree = "<group>"; };
 		E235B69D15CC836000E162D6 /* OAToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarButton.h; sourceTree = "<group>"; };
 		E235B69E15CC836000E162D6 /* OAToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarButton.m; sourceTree = "<group>"; };
+		E23A3EF720ADF95A00ADEB59 /* OADisclosureButtonCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADisclosureButtonCell.m; sourceTree = "<group>"; };
+		E23A3F1F20ADF95B00ADEB59 /* OADisclosureButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADisclosureButton.m; sourceTree = "<group>"; };
+		E23A3F2020ADF95C00ADEB59 /* OADisclosureButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADisclosureButton.h; sourceTree = "<group>"; };
+		E23A3F2120ADF95D00ADEB59 /* OADisclosureButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADisclosureButtonCell.h; sourceTree = "<group>"; };
+		E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADisclosureButtonCollapsed.png; sourceTree = "<group>"; };
+		E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADisclosureButtonExpanded.png; sourceTree = "<group>"; };
+		E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADisclosureButtonCollapsed@2x.png"; sourceTree = "<group>"; };
+		E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADisclosureButtonExpanded@2x.png"; sourceTree = "<group>"; };
 		E25C440B2075359300660AE6 /* OAImages.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OAImages.m; sourceTree = "<group>"; };
 		E25C4434207535C800660AE6 /* OAImages.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAImages.h; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
@@ -1727,6 +1743,10 @@
 			children = (
 				E20CCE8D058021200097A12E /* OAAction.png */,
 				E234124D1718D0D80009F48E /* OAAction@2x.png */,
+				E23A3F2A20AE069800ADEB59 /* OADisclosureButtonCollapsed.png */,
+				E23A3F2C20AE069A00ADEB59 /* OADisclosureButtonCollapsed@2x.png */,
+				E23A3F2B20AE069900ADEB59 /* OADisclosureButtonExpanded.png */,
+				E23A3F2D20AE069B00ADEB59 /* OADisclosureButtonExpanded@2x.png */,
 				49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */,
 				49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */,
 				272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */,
@@ -2139,6 +2159,10 @@
 				345057E606F209090097A113 /* OAContextControl.m */,
 				345057E106F207DD0097A113 /* OAContextPopUpButton.h */,
 				345057E206F207DD0097A113 /* OAContextPopUpButton.m */,
+				E23A3F2020ADF95C00ADEB59 /* OADisclosureButton.h */,
+				E23A3F1F20ADF95B00ADEB59 /* OADisclosureButton.m */,
+				E23A3F2120ADF95D00ADEB59 /* OADisclosureButtonCell.h */,
+				E23A3EF720ADF95A00ADEB59 /* OADisclosureButtonCell.m */,
 				662681AD00DFECA50097A13D /* OADottedLine.h */,
 				662681AE00DFECA50097A13D /* OADottedLine.m */,
 				34E46E9B0CDEB7330066E943 /* OAFlippedView.h */,
@@ -3067,6 +3091,7 @@
 				4AA1E69C08AA764600E2FF6B /* OAScriptToolbarHelper.h in Headers */,
 				4AA1E69E08AA764600E2FF6B /* OAToolbarWindowController.h in Headers */,
 				4AA1E69F08AA764600E2FF6B /* OAUtilities.h in Headers */,
+				E23A3F2520ADF95D00ADEB59 /* OADisclosureButtonCell.h in Headers */,
 				4AA1E6A008AA764600E2FF6B /* OAVersion.h in Headers */,
 				4AA1E6A108AA764600E2FF6B /* OmniAppKit.h in Headers */,
 				4AA1E6A208AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.h in Headers */,
@@ -3116,6 +3141,7 @@
 				4AA1E6CF08AA764600E2FF6B /* OAAquaButton.h in Headers */,
 				27495032182C955600BCBA6A /* OASubtleScroller.h in Headers */,
 				4AA1E6D008AA764600E2FF6B /* OABackgroundImageControl.h in Headers */,
+				E23A3F2420ADF95D00ADEB59 /* OADisclosureButton.h in Headers */,
 				4AA1E6D108AA764600E2FF6B /* OABrowserCell.h in Headers */,
 				4AA1E6D208AA764600E2FF6B /* OACalendarView.h in Headers */,
 				4AA1E6D308AA764600E2FF6B /* OAChasingArrowsProgressIndicator.h in Headers */,
@@ -3807,6 +3833,7 @@
 			files = (
 				4AA1E71A08AA764600E2FF6B /* OAAction.png in Resources */,
 				4AA1E72008AA764600E2FF6B /* OAMiniAction.png in Resources */,
+				E23A3F3120AE07A900ADEB59 /* OADisclosureButtonExpanded@2x.png in Resources */,
 				843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */,
 				4AA1E72108AA764600E2FF6B /* OAMiniAdd.png in Resources */,
 				4AA1E72208AA764600E2FF6B /* OAMiniRemove.png in Resources */,
@@ -3824,6 +3851,7 @@
 				4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */,
 				843878731AB20BD80069E467 /* OADefaultSettingIndicatorOff.png in Resources */,
 				342F051C1B69795F00C7BB34 /* OAAppearance.plist in Resources */,
+				E23A3F3020AE07A900ADEB59 /* OADisclosureButtonExpanded.png in Resources */,
 				349E07F81B2223CF003DB69B /* OADropDownTriangle@2x.png in Resources */,
 				4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */,
 				34F0995809322EA30001D0D5 /* OAAboutPanel.xib in Resources */,
@@ -3835,6 +3863,7 @@
 				E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */,
 				E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */,
 				E2EF49081B9F799A003C3900 /* calendar@2x.png in Resources */,
+				E23A3F2E20AE07A300ADEB59 /* OADisclosureButtonCollapsed.png in Resources */,
 				E2B8AA1315BE06F300B5F26B /* OARightArrow@2x.png in Resources */,
 				E2B8AA1415BE06F300B5F26B /* OARightArrowPressed@2x.png in Resources */,
 				34AA8B691B224DDC00B0AC5A /* OAMiniAdd@2x.png in Resources */,
@@ -3845,6 +3874,7 @@
 				843878751AB20BD80069E467 /* OADefaultSettingIndicatorOn.png in Resources */,
 				5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png in Resources */,
 				5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */,
+				E23A3F2F20AE07A600ADEB59 /* OADisclosureButtonCollapsed@2x.png in Resources */,
 				342D1D8F16C9584100692117 /* OAFindPanel.xib in Resources */,
 				E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */,
 				4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */,
@@ -4120,6 +4150,7 @@
 				4AA1E7D708AA764600E2FF6B /* OAStackView.m in Sources */,
 				27495033182C955600BCBA6A /* OASubtleScroller.m in Sources */,
 				4AA1E7DA08AA764600E2FF6B /* OASwoopView.m in Sources */,
+				E23A3F2320ADF95D00ADEB59 /* OADisclosureButton.m in Sources */,
 				4AA1E7DB08AA764600E2FF6B /* OATabView.m in Sources */,
 				4AA1E7DC08AA764600E2FF6B /* OATabViewController.m in Sources */,
 				4AA1E7DD08AA764600E2FF6B /* OATabbedWindowController.m in Sources */,
@@ -4152,6 +4183,7 @@
 				348293EC1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */,
 				4A785F680B040D2E00B513F3 /* OASteppableTextField.m in Sources */,
 				3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */,
+				E23A3F2220ADF95D00ADEB59 /* OADisclosureButtonCell.m in Sources */,
 				9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */,
 				345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */,
 				420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */,
