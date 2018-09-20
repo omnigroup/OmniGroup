@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,7 +77,7 @@ enum OWStringEncodingProvenance {
 - (void)setWriteEncoding:(CFStringEncoding)anEncoding;
 - (void)writeData:(NSData *)newData;
 - (void)writeString:(NSString *)string;
-- (void)writeFormat:(NSString *)formatString, ...;
+- (void)writeFormat:(NSString *)formatString, ... NS_FORMAT_FUNCTION(1,2);
 
 - (NSUInteger)appendToUnderlyingBuffer:(void **)returnedBufferPtr;
     // Returns the number of bytes which can be safely written to the returned pointer (always >0)

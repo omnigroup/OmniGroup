@@ -1,4 +1,4 @@
-// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,6 +56,7 @@ RCS_ID("$Id$")
         id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
         if (coercedValue == nil) {
             NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
+            OBMissingError(outError, @"<bug:///159192> (Mac-OmniFocus Unassigned: Missing outError in +[OAController handleChangePreferenceURL:error:])");
             return NO;
         } else if ([coercedValue isNull]) {
             // Reset this setting

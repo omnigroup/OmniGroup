@@ -1,4 +1,4 @@
-// Copyright 2005-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,8 @@
 #import <OmniBase/macros.h>
 
 OB_REQUIRE_ARC
+
+NS_ASSUME_NONNULL_BEGIN
 
 RCS_ID("$Id$");
 
@@ -35,7 +37,7 @@ static NSMutableDictionary *_createUserInfo(NSString *firstKey, va_list args)
     return userInfo;
 }
 
-static NSError *_OBWrapUnderlyingErrorv(NSError *underlyingError, NSString *domain, NSInteger code, const char *fileName, unsigned int line, NSString *firstKey, va_list args)
+static NSError *_OBWrapUnderlyingErrorv(NSError * _Nullable underlyingError, NSString *domain, NSInteger code, const char *fileName, unsigned int line, NSString *firstKey, va_list args)
 {
     NSMutableDictionary *userInfo = _createUserInfo(firstKey, args);
     
@@ -56,7 +58,7 @@ static NSError *_OBWrapUnderlyingErrorv(NSError *underlyingError, NSString *doma
 
 
 /*" Convenience function, invoked by the OBError macro, that allows for creating error objects with user info objects without creating a dictionary object.  The keys and values list must be terminated with a nil key. "*/
-NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domain, NSInteger code, const char *fileName, unsigned int line, NSString *firstKey, ...)
+NSError *_OBWrapUnderlyingError(NSError * _Nullable underlyingError, NSString *domain, NSInteger code, const char *fileName, unsigned int line, NSString * _Nullable firstKey, ...)
 {
     OBPRECONDITION(domain != nil && [domain length] > 0);
     
@@ -69,7 +71,7 @@ NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domain, NSIn
 
 
 // Returns the first error that isn't one of the errors created by OBChainError. This will likely have some more useful information for reporting to the user.
-NSError *OBFirstUnchainedError(NSError *error)
+NSError * _Nullable OBFirstUnchainedError(NSError * _Nullable error)
 {
     while (error) {
         if (![[error domain] isEqualToString:OBErrorDomain] || [error code] != OBErrorChained)
@@ -86,7 +88,7 @@ NSError *_OBChainedError(NSError *error, const char *fileName, unsigned line)
     return chainedError;
 }
 
-NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...)
+NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char * _Nullable function, NSString * _Nullable argument, NSString * _Nullable localizedDescription, ...)
 {
     NSMutableString *description = [[NSMutableString alloc] init];
     if (function)
@@ -134,3 +136,4 @@ enum OBErrorWellKnownInfoKey OBErrorWellKnownInfoKey(NSString *key)
         return OBErrorKeyUnknown;
 }
 
+NS_ASSUME_NONNULL_END

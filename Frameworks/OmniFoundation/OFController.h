@@ -1,4 +1,4 @@
-// Copyright 1998-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,8 +76,8 @@ typedef NS_ENUM(NSInteger, OFControllerTerminateReply) {
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 
 // NSAssertionHandler customization
-- (void)handleFailureInMethod:(SEL)selector object:(id)object file:(NSString *)fileName lineNumber:(int)line description:(NSString *)format,...;
-- (void)handleFailureInFunction:(NSString *)functionName file:(NSString *)fileName lineNumber:(int)line description:(NSString *)format,...;
+- (void)handleFailureInMethod:(SEL)selector object:(id)object file:(NSString *)fileName lineNumber:(int)line description:(NSString *)format,... NS_FORMAT_FUNCTION(5,6);
+- (void)handleFailureInFunction:(NSString *)functionName file:(NSString *)fileName lineNumber:(int)line description:(NSString *)format,... NS_FORMAT_FUNCTION(4,5);
 
 // varargs aware versions of the methods above.
 - (void)handleFailureInMethod:(SEL)selector object:(id)object file:(NSString *)fileName lineNumber:(int)line format:(NSString *)format arguments:(va_list)args;

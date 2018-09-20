@@ -10,10 +10,9 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 #import <OmniFoundation/OFCMS.h>
+#import <OmniBase/macros.h>
 
 NS_ASSUME_NONNULL_BEGIN
-
-#define NANNP * __nullable __autoreleasing * __nonnull  // Nullable autoreleasing object, non-nullable pointer
 
 /* PBE functions callable from Swift */
 NSData *OFGeneratePBKDF2AlgorithmInfo(NSUInteger keyLength, unsigned int iterations) OB_HIDDEN;
@@ -33,10 +32,10 @@ NSData * __nullable OFUnwrapRIForCMSKeyAgreement(SecKeyRef secretKey, NSData *or
 NSData *_OFCMSRIDFromIssuerSerial(NSData *issuer, NSData *serial) OB_HIDDEN;
 NSData *_OFCMSRIDFromSKI(NSData *ski) OB_HIDDEN;
 /* PKCS#7 recipient parsing */
-NSError * __nullable _OFASN1ParseCMSRecipient(NSData *buf, enum OFCMSRecipientType *outType, NSData NANNP outWho, NSData NANNP outEncryptedKey) /* OB_HIDDEN */;
+NSError * __nullable _OFASN1ParseCMSRecipient(NSData *buf, enum OFCMSRecipientType *outType, NSData OB_NANNP outWho, NSData OB_NANNP outEncryptedKey) /* OB_HIDDEN */;
 NSArray <NSArray *> * __nullable _OFASN1UnzipKeyAgreementRecipients(NSData *originatorFragment, NSData *seq, NSError **outError) OB_HIDDEN;
 enum OFCMSRecipientIdentifierType { OFCMSRIDIssuerSerial, OFCMSRIDSubjectKeyIdentifier };
-NSError * __nullable _OFASN1ParseCMSRecipientIdentifier(NSData *buf, enum OFCMSRecipientIdentifierType *outType, NSData NANNP blob1, NSData NANNP blob2) OB_HIDDEN;
+NSError * __nullable _OFASN1ParseCMSRecipientIdentifier(NSData *buf, enum OFCMSRecipientIdentifierType *outType, NSData OB_NANNP blob1, NSData OB_NANNP blob2) OB_HIDDEN;
 
 /* Functions for creating portions of a CMS message */
 dispatch_data_t __nullable OFCMSCreateCompressedData(NSData *ctype, NSData *content, NSError **outError) DISPATCH_RETURNS_RETAINED OB_HIDDEN;
@@ -52,15 +51,15 @@ NSData *OFCMSHintAttribute(NSData *cid) OB_HIDDEN;
 dispatch_data_t OFCMSWrapIdentifiedContent(enum OFCMSContentType ct, NSData *content, NSData *cid) DISPATCH_RETURNS_RETAINED OB_HIDDEN;  // A convenience on top of OFCMSCreateAttributedContent()
 
 /* CMS content parsing */
-int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent, NSArray NANNP outUnprotectedAttributes) OB_HIDDEN;
-int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData NANNP algorithm, NSData NANNP innerContent, NSArray NANNP outAuthAttrs, NSData NANNP mac, NSArray NANNP outUnauthenticatedAttrs) OB_HIDDEN;
+int OFASN1ParseCMSEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData OB_NANNP algorithm, NSData OB_NANNP innerContent, NSArray OB_NANNP outUnprotectedAttributes) OB_HIDDEN;
+int OFASN1ParseCMSAuthEnvelopedData(NSData *buf, NSRange range, int *cmsVersion, NSMutableArray *outRecipients, enum OFCMSContentType *innerContentType, NSData OB_NANNP algorithm, NSData OB_NANNP innerContent, NSArray OB_NANNP outAuthAttrs, NSData OB_NANNP mac, NSArray OB_NANNP outUnauthenticatedAttrs) OB_HIDDEN;
 int OFASN1ParseCMSSignedData(NSData *pkcs7, NSRange range, int *cmsVersion, NSMutableArray * __nullable outCertificates, NSMutableArray * __nullable outSignatures, enum OFCMSContentType *innerContentType, NSRange *innerContentObjectLocation) /* OB_HIDDEN */;
 int OFASN1ParseCMSCompressedData(NSData *pkcs7, NSRange range, int *outSyntaxVersion, enum OFASN1Algorithm *outCompressionAlgorithm, enum OFCMSContentType *outContentType, NSRange *outContentRange) OB_HIDDEN;
 
 int OFASN1ParseCMSMultipartData(NSData *pkcs7, NSRange range, int (NS_NOESCAPE ^cb)(enum OFCMSContentType innerContentType, NSRange innerContentRange)) OB_HIDDEN;
 int OFASN1ParseCMSAttributedContent(NSData *pkcs7, NSRange range, enum OFCMSContentType *outContentType, NSRange *outContentRange, NSArray * __nullable __autoreleasing * __nullable outAttrs) OB_HIDDEN;
 int OFASN1ParseCMSContent(NSData *buf, enum OFCMSContentType *innerContentType, NSRange * __nullable innerContentRange) /* OB_HIDDEN */;
-NSError * __nullable OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned int *outRelevantIndex, NSData NANNP outRelevantData) OB_HIDDEN;
+NSError * __nullable OFCMSParseAttribute(NSData *buf, enum OFCMSAttribute *outAttr, unsigned int *outRelevantIndex, NSData OB_NANNP outRelevantData) OB_HIDDEN;
 
 /* Decryption helper. Most of the file format logic is in Swift, but the bit-wrangling lives in C. */
 dispatch_data_t __nullable OFCMSDecryptContent(NSData *contentEncryptionAlgorithm, NSData *contentEncryptionKey, NSData *encryptedContent, NSArray * __nullable authenticatedAttributes, NSData * __nullable mac, NSError **outError)  DISPATCH_RETURNS_RETAINED OB_HIDDEN;
@@ -77,8 +76,6 @@ static inline dispatch_data_t OFConcatDispatchData(dispatch_data_t left, dispatc
     // For some reason, concat isn't exposed to Swift either
     return dispatch_data_create_concat(left, right);
 }
-
-#undef NANNP
 
 NS_ASSUME_NONNULL_END
 

@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "Kan rechten niet analyseren van ingebed voorzieningenprofiel";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "d";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "dag";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "dagen";
 
 /* invalid bundle reason */
@@ -152,13 +152,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Vergrendelingsbestand kan niet worden geschreven.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "u";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "uur";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "uren";
 
 /* formatter input error */
@@ -167,22 +167,22 @@
 /* local bundle path readable string */
 "local configuration file" = "lokaal configuratiebestand";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minuut";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minuten";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "md";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "maand";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "maanden";
 
 /* error reason */
@@ -203,13 +203,13 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Herstel alle interne configuratie-instellingen naar de standaardwaarden";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "seconde";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "seconden";
 
 /* alert message format when clicking on a configuration value URL */
@@ -280,25 +280,25 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "Niet-ondersteund coderingsalgoritme";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "w";
 
 /* error description */
 "Warning encountered while loading XML." = "Waarschuwing bij laden van XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "week";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "weken";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "j";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "jaar";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "jaren";
 
 /* zlib error reason */

@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,7 @@ static const char *nameOfSlotType(enum OFSDocumentKeySlotType tp)
     OFSSegmentEncryptWorker *reusableEncryptionWorker;
 }
 
-- (instancetype)initWithData:(NSData *)unwrappedKeyTable error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)unwrappedKeyTable error:(NSError **)outError;
 {
     if (!(self = [super init])) {
         return nil;
@@ -87,7 +87,7 @@ static const char *nameOfSlotType(enum OFSDocumentKeySlotType tp)
     return self;
 }
 
-- (instancetype)initWithData:(NSData *)wrappedKeyTable wrappedWithKey:(const uint8_t *)keyBytes length:(size_t)keyLength error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)wrappedKeyTable wrappedWithKey:(const uint8_t *)keyBytes length:(size_t)keyLength error:(NSError **)outError;
 {
     NSData *unwrapped = unwrapData(keyBytes, keyLength, wrappedKeyTable, outError);
     if (!unwrapped)

@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@
 - (NSString *)peekLine;  // equivalent to readLineAndAdvance:NO
 
 - (void)writeString:(NSString *)aString;
-- (void)writeFormat:(NSString *)aFormat, ...;
+- (void)writeFormat:(NSString *)aFormat, ... NS_FORMAT_FUNCTION(1,2);
 
 - (NSStringEncoding)stringEncoding;
 - (void)setStringEncoding:(NSStringEncoding)aStringEncoding;

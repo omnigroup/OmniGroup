@@ -140,6 +140,15 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
+- (void)sizeToFit;
+{
+    [self sizeHeightToFit];
+
+    CGRect frame = self.frame;
+    frame.size.width = _layoutWidth;
+    self.frame = frame;
+}
+
 - (void)sizeHeightToFit;
 {
     [self layoutIfNeeded];
@@ -287,6 +296,8 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OAColor *color, CG
         OBASSERT(swatchsPerRow >= 2); // not wrapping here.
     }
     
+    _layoutWidth = 0;
+    
     for (colorIndex = 0; colorIndex < colorCount; colorIndex++) {
         OAColor *color = [_colors objectAtIndex:colorIndex];
         
@@ -295,6 +306,10 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OAColor *color, CG
 
         OUIColorSwatch *swatch = _newSwatch(self, color, &offset, swatchSize);
         [_colorSwatches addObject:swatch];
+        
+        if (CGRectGetMaxX(swatch.frame) > _layoutWidth) {
+            _layoutWidth = CGRectGetMaxX(swatch.frame);
+        }
         
         swatch.selected = _colorsMatch(color, _swatchSelectionColor);
 

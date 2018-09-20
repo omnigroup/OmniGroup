@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "Se esperaba un valor de tipo “%@”";
 
 /* button title */
+"Learn More" = "Más información";
+
+/* button title */
 "OK" = "Aceptar";
 
 /* style validation error message for {key} */

@@ -50,7 +50,7 @@
 "No such file \"%@\"." = "Datei „%@“ nicht vorhanden.";
 
 /* encryption access method description - key derivation from password */
-"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+"Password (%@; %@ rounds; %@)" = "Kennwort (%1$@; %2$@ Runden; %3$@)";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Überprüfen Sie, ob der Zielordner vorhanden ist.";

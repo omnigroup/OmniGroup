@@ -232,11 +232,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return button
     }()
     
-    @objc /**REVIEW**/ public var leftPanePinButton: UIBarButtonItem {
+    @objc public var leftPanePinButton: UIBarButtonItem {
         return multiPanePresenter.leftPinButton
     }
     
-    @objc /**REVIEW**/ public var rightPanePinButton: UIBarButtonItem {
+    @objc public var rightPanePinButton: UIBarButtonItem {
         return multiPanePresenter.rightPinButton
     }
 

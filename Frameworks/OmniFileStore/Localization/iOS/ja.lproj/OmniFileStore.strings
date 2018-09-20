@@ -50,7 +50,7 @@
 "No such file \"%@\"." = "“%@” というファイルはありません。";
 
 /* encryption access method description - key derivation from password */
-"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+"Password (%@; %@ rounds; %@)" = "パスワード（%1$@; %2$@ ラウンド; %3$@)";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "移動先のフォルダが存在することを確認してください。";

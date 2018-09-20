@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "Impossibile analizzare le adesioni dal profilo di provisioning incorporato";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "g";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "giorno";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "giorni";
 
 /* invalid bundle reason */
@@ -152,13 +152,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "Scrittura del documento di blocco non riuscita.  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "o";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "ora";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "ore";
 
 /* formatter input error */
@@ -167,22 +167,22 @@
 /* local bundle path readable string */
 "local configuration file" = "documento configurazione locale";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "m";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "minuto";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "minuti";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "mm";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "mese";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "mesi";
 
 /* error reason */
@@ -198,25 +198,25 @@
 "PKCS#7 contents of embedded provisioning profile were not a valid plist" = "I contenuti PKCS#7 del profilo di provisioning incorporato non costituivano un plist valido";
 
 /* alert message format when clicking on a configuration value URL */
-"Restore \"%@\" to its default value" = "Ripristinare il valore di default per “%@”";
+"Restore \"%@\" to its default value" = "Ripristinare il valore di default per \"%@\"";
 
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "Ripristinare i valori di default di tutte le impostazioni di configurazione interne";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "s";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "secondo";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "secondi";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Impostare “%1$@” su “%2$@”";
+"Set \"%@\" to \"%@\"" = "Impostare \"%1$@\" su \"%2$@\"";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
-"The encrypted item \"%@\" is missing or unreadable." = "L'elemento crittografato \"%@\" è mancante o illeggibile.";
+"The encrypted item \"%@\" is missing or unreadable." = "L'elemento crittigrafato \"%@\" è mancante o illeggibile.";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
@@ -280,25 +280,25 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "Algoritmo di crittografia non supportato";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "s";
 
 /* error description */
 "Warning encountered while loading XML." = "Rilevato un avviso durante il caricamento di XML.";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "settimana";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "settimane";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "a";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "anno";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "anni";
 
 /* zlib error reason */

@@ -307,7 +307,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
         [observerLock unlock];
         block();
     } else {
-        NSNumber *key = [NSNumber numberWithInt:state];
+        NSNumber *key = [NSNumber numberWithInteger:state];
         NSMutableArray *queue = [_queues objectForKey:key];
         if (queue == nil) {
             if (_queues == nil)
@@ -468,6 +468,8 @@ static void OFCrashImmediately(void)
     if (CrashShouldExitWithCode != 0) {
         exit(CrashShouldExitWithCode);
     }
+
+    OBAnalyzerNotReached();
 
     unsigned int *bad = (unsigned int *)sizeof(unsigned int);
     bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!

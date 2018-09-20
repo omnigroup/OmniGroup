@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "%@ 정보";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "취소";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "진단 정보를 이메일로 전송할 수 없음";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "텍스트 가운데 정렬";
@@ -108,6 +109,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 

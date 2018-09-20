@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -145,7 +145,7 @@ NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *cha
     return _OFCertificateTrustPromptForErrorCode([error code], failedURLString);
 }
 
-NSString *OFCertificateTrustPromptForError(NSError *error)
+NSString * _Nullable OFCertificateTrustPromptForError(NSError * _Nullable error)
 {
     error = [error underlyingErrorWithDomain:NSURLErrorDomain];
     NSString *failedURLString = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];

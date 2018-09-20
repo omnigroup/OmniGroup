@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Over %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "Annuleer";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "Kan geen diagnose via e-mail verzenden";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "Tekst centreren";
@@ -72,7 +73,7 @@
 "Increment" = "Vermeerdering";
 
 /* default special URL confirm button title */
-"Invoke" = "Roep aan";
+"Invoke" = "Aanroepen";
 
 /* button title */
 "Invoke and Quit" = "Roep aan en stop";
@@ -90,7 +91,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail is niet ingesteld op deze %@.";
+"Mail has not been set up on this %@." = "E-mail is niet ingesteld op deze %@.";
 
 /* News menu item
    News view title */
@@ -108,13 +109,16 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonneren op nieuwsbrief";
+"Omni Newsletter Signup" = "Abonneren op Omni-nieuwsbrief";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "wachtwoord";

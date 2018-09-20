@@ -23,10 +23,10 @@
 "Could not find \"%@\"." = "No se encuentra “%@”.";
 
 /* error description */
-"Ensure that the address is correct and please try again." = "Asegúrese de que la dirección es correcta e inténtelo de nuevo.";
+"Ensure that the address is correct and please try again." = "Asegúrate de que la dirección sea correcta e inténtalo de nuevo.";
 
 /* error description */
-"Ensure that the server address, user name, and password are correct and please try again." = "Asegúrese de que la dirección del servidor, el nombre de usuario y la contraseña son correctos e inténtelo de nuevo.";
+"Ensure that the server address, user name, and password are correct and please try again." = "Asegúrate de que la dirección del servidor, el nombre de usuario y la contraseña sean correctos e inténtalo de nuevo.";
 
 /* error reason */
 "Failed to delete \"%@\"." = "Error al borrar “%@”.";
@@ -50,10 +50,10 @@
 "No such file \"%@\"." = "No existe el archivo “%@”.";
 
 /* encryption access method description - key derivation from password */
-"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+"Password (%@; %@ rounds; %@)" = "Contraseña (%1$@; %2$@ rondas; %3$@)";
 
 /* error reason */
-"Please make sure that the destination folder exists." = "Asegúrese de que existe la carpeta de destino.";
+"Please make sure that the destination folder exists." = "Asegúrate de que existe la carpeta de destino.";
 
 /* error reason - token is filename */
 "Unable to decrypt contents of file “%@”." = "No se ha podido desencriptar el contenido del archivo “%@”.";

@@ -1,4 +1,4 @@
-// Copyright 2017 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,8 +13,8 @@ RCS_ID("$Id$")
 #include <fcntl.h>
 #include <err.h>
 
-static void closeAndError(int fds[2], NSError **outError, NSString *errfunc);
-static void posixError(NSError **outError, int errcode, NSString *errfunc);
+static id closeAndError(int fds[2], NSError **outError, NSString *errfunc);
+static id posixError(NSError **outError, int errcode, NSString *errfunc);
 
 @implementation NSFileHandle (OFExtensions)
 
@@ -37,20 +37,17 @@ static void posixError(NSError **outError, int errcode, NSString *errfunc);
 {
     int fds[2];
     if (pipe(fds)) {
-        posixError(outError, errno, @"pipe");
-        return nil;
+        return posixError(outError, errno, @"pipe");
     }
     
     int oldfd0, oldfd1;
     if ((oldfd0 = fcntl(fds[0], F_GETFD, 0) < 0) ||
         (oldfd1 = fcntl(fds[1], F_GETFD, 0) < 0)) {
-        closeAndError(fds, outError, @"fcntl(F_GETFD)");
-        return nil;
+        return closeAndError(fds, outError, @"fcntl(F_GETFD)");
     }
     if (fcntl(fds[0], F_SETFD, oldfd0 | FD_CLOEXEC) < 0 ||
         fcntl(fds[1], F_SETFD, oldfd1 | FD_CLOEXEC) < 0) {
-        closeAndError(fds, outError, @"fcntl(F_SETFD)");
-        return nil;
+        return closeAndError(fds, outError, @"fcntl(F_SETFD)");
     }
     
     dispatch_source_t reader = OFReadFDToBlock(fds[0], dataCb, endCb, invocationQueue);
@@ -134,17 +131,18 @@ dispatch_source_t OFReadFDToBlock(int readableFd, void (^dataCb)(dispatch_data_t
     return reader;
 }
 
-static void closeAndError(int fds[2], NSError **outError, NSString *errfunc)
+static id closeAndError(int fds[2], NSError **outError, NSString *errfunc)
 {
-    posixError(outError, errno, errfunc);
     close(fds[0]);
     close(fds[1]);
+    return posixError(outError, errno, errfunc);
 }
 
-static void posixError(NSError **outError, int errcode, NSString *errfunc)
+static id posixError(NSError **outError, int errcode, NSString *errfunc)
 {
     if (outError) {
         NSDictionary *userInfo = errfunc ? @{ @"function": errfunc } : nil;
         *outError = [NSError errorWithDomain:NSPOSIXErrorDomain code:errcode userInfo:userInfo];
     }
+    return nil;
 }

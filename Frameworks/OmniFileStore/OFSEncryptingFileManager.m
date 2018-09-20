@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -215,7 +215,7 @@ static BOOL errorIndicatesPlaintext(NSError *err);
 {
     if ([self maskingFileAtURL:url]) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Cannot create directory.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such directory \"%@\"", @"OmniFileStore", OMNI_BUNDLE, @"error reason")];
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such directory \"%@\"", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
         OFSError(outError, OFSCannotCreateDirectory, description, reason);
         return nil;
     }

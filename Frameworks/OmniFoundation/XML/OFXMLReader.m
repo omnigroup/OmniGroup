@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -183,8 +183,7 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
 
 - initWithInputStream:(NSInputStream *)inputStream startingInternedNames:(OFXMLInternedNameTable)startingInternedNames error:(NSError **)outError;
 {
-    if (!(self = [super init]))
-        return nil;
+    self = [super init];
     
     LIBXML_TEST_VERSION
 

@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -275,7 +275,7 @@ static __unsafe_unretained NSObject **_getValues(OFMutableKnownKeyDictionary *se
                                                                             owner:self] autorelease];
 }
 
-- (void)enumerateKeysAndObjectsUsingBlock:(void (^)(id, id, BOOL *))block;
+- (void)enumerateKeysAndObjectsUsingBlock:(void (^ NS_NOESCAPE)(id, id, BOOL *))block;
 /*" Calls the block for each key/value pair with non-nil value.  Much faster than using a keyEnumerator. Unlike normal dictionaries, the block may modify the value for the key being processed (but still should not modify values for other keys). "*/
 {
     if (!block)

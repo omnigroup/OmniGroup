@@ -48,15 +48,15 @@ class MultiPanePresenter: NSObject {
     // Doing a live resize of the sidebar seems to result in UIBarButtonItem's with customViews bounding around. Provide an opt out. <bug:///156110> (iOS-OmniPlan Bug: Undo button in the tool bar bounces when opening Inspector and might be related to this crasher)
     @objc public var animatesSidebarLayout: Bool = true
     
-    @objc /**REVIEW**/ lazy var rightPinButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPaneRightPinButton", in: OmniUIBundle, compatibleWith: nil)
+    @objc lazy var rightPinButton: UIBarButtonItem = {
+        let image = UIImage(named: "OUIMultiPanePinUpButton", in: OmniUIBundle, compatibleWith: nil)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "RightPinButton"
         return button
     }()
     
-    @objc /**REVIEW**/ lazy var leftPinButton: UIBarButtonItem = {
-        let image = UIImage(named: "OUIMultiPaneLeftPinButton", in: OmniUIBundle, compatibleWith: nil)
+    @objc lazy var leftPinButton: UIBarButtonItem = {
+        let image = UIImage(named: "OUIMultiPanePinUpButton", in: OmniUIBundle, compatibleWith: nil)
         let button = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handlePinButton(_:)))
         button.accessibilityIdentifier = "LeftPinButton"
         return button

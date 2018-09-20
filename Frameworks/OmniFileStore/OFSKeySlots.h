@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@
  
  Note that these numbers are part of the file format: don't change them! Also, don't reuse old numbers. (Unless you assign a new file magic number.)
  */
-enum OFSDocumentKeySlotType {
+enum OFSDocumentKeySlotType : uint8_t {
     SlotTypeNone                 = 0,    // Trailing padding
     
     /* Note that AESWRAP keys are no longer generated (the direct CTR+HMAC method is better). We have them around for compatibility right now, but next time we rev the file magic number we can drop them. */
@@ -55,8 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OFSKeySlots : NSObject <NSCopying,NSMutableCopying>
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithData:(NSData *)unwrappedKeyTable error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithData:(NSData *)wrappedKeyTable wrappedWithKey:(const uint8_t *)keyBytes length:(size_t)keyLength error:(NSError **)outError;
+- (nullable instancetype)initWithData:(NSData *)unwrappedKeyTable error:(NSError **)outError NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(NSData *)wrappedKeyTable wrappedWithKey:(const uint8_t *)keyBytes length:(size_t)keyLength error:(NSError **)outError;
 
 @property (readonly,nonatomic) NSIndexSet *retiredKeySlots, *keySlots;
 - (enum OFSDocumentKeySlotType)typeOfKeySlot:(NSUInteger)slot; // Returns SlotTypeNone if not found / invalid

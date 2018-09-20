@@ -947,7 +947,7 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
 
 - (NSString *)copyLargeRandomTextFileToPath:(NSString *)destinationPath ofAccount:(OFXServerAccount *)account;
 {
-    return [self copyRandomTextFileOfLength:16*1024*1024 toPath:destinationPath ofAccount:account];
+    return [self copyRandomTextFileOfLength:256*1024*1024 toPath:destinationPath ofAccount:account];
 }
 
 - (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName toPath:(NSString *)toPath waitingForAgentsToDownload:(NSArray *)otherAgents;

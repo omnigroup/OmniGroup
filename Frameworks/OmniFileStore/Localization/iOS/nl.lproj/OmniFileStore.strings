@@ -50,7 +50,7 @@
 "No such file \"%@\"." = "Geen dergelijk bestand “%@”.";
 
 /* encryption access method description - key derivation from password */
-"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+"Password (%@; %@ rounds; %@)" = "Wachtwoord (%1$@; %2$@ ronden; %3$@)";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Controleer of de doelmap bestaat.";

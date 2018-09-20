@@ -39,8 +39,8 @@ extern const CFStringRef kSecAttrKeyTypeECSECPrimeRandom __attribute__((weak_imp
 static unsigned kekLengthOfWrapAlgorithm(enum OFASN1Algorithm wrapAlg, NSData *buf, NSRange parameterRange) __attribute__((unused));
 static NSData *rsaTransportKey(NSData *payload, SecKeyRef publicKey, NSError **outError);
 static NSData *rsaReceiveKey(NSData *encrypted, SecKeyRef secretKey, NSError **outError);
-static NSError *unsupportedCMSFeature(NSString *fmt, ...) __attribute__((cold));
-static NSError *cmsFormatError(NSString *detail);
+static NSError * _Nonnull unsupportedCMSFeature(NSString *fmt, ...) __attribute__((cold));
+static NSError * _Nonnull cmsFormatError(NSString *detail);
 #if HAVE_APPLE_ECDH_SUPPORT
 static NSData *cmsECCSharedInfo(NSData *wrapAlg, NSData *ukm, uint32_t kekSizeBytes);
 #endif

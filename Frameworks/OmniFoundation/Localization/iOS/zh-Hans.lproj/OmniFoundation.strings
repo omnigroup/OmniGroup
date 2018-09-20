@@ -65,13 +65,13 @@
 "Bundle requires additional software" = "包要求附加软件";
 
 /* compression error reason */
-"bzip2 library returned error code %d when finishing compression. %s." = "bzip2 资源库在完成压缩时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when finishing compression. %s." = "bzip2 资源库在完成压缩时返回错误代码 %1$d。%2$s。";
 
 /* decompression error reason */
-"bzip2 library returned error code %d when reading data. %s." = "bzip2 资源库在读取数据时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when reading data. %s." = "bzip2 资源库在读取数据时返回错误代码 %1$d。%2$s。";
 
 /* compression error reason */
-"bzip2 library returned error code %d when writing data. %s." = "bzip2 资源库在写入数据时返回错误代码 %1$d。 %2$s。";
+"bzip2 library returned error code %d when writing data. %s." = "bzip2 资源库在写入数据时返回错误代码 %1$d。%2$s。";
 
 /* OFLockFile recovery option */
 "Cancel" = "取消";
@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "无法从嵌入式配置文件解析权限";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "天";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "天";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "天";
 
 /* invalid bundle reason */
@@ -117,7 +117,7 @@
 "eh" = "已用小时";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "以下路径不允许元素“%1$@”：%2$@";
+"Element '%@' not allowed at path: %@" = "元素 '%1$@' 不允许以下路径： %2$@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "em" = "已用分钟";
@@ -152,13 +152,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "小时";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "小时";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "小时";
 
 /* formatter input error */
@@ -167,22 +167,22 @@
 /* local bundle path readable string */
 "local configuration file" = "本地配置文件";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "分钟";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分钟";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "分钟";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "月";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "月";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "月";
 
 /* error reason */
@@ -203,13 +203,13 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "秒";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "秒";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "秒";
 
 /* alert message format when clicking on a configuration value URL */
@@ -219,19 +219,19 @@
 "The encrypted item \"%@\" is missing or unreadable." = "缺少加密项“%@”或无法读取。";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书似乎无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。该证书可能已过期，或尚未激活。是否仍要连接？";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@”服务器证书的日期无效。 该证书可能已过期，或尚未激活。 是否仍要连接？";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书未得到任何根服务器的签名。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书无效。 此站点不受信任。 是否仍要连接？";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。此站点不受信任。是否仍要连接？";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@”的服务器证书由不受信任的根服务器签名。 此站点不受信任。 是否仍要连接？";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "本配置链接会进行以下更改：";
@@ -280,25 +280,25 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "不支持的加密算法";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "周";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "周";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "周";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "年";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "年";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "年";
 
 /* zlib error reason */

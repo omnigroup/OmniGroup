@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "“%@” 유형의 예상 값";
 
 /* button title */
+"Learn More" = "자세히 알아보기";
+
+/* button title */
 "OK" = "양호";
 
 /* style validation error message for {key} */

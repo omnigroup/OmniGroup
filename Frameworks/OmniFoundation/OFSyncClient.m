@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -466,8 +466,7 @@ NSDictionary *OFSyncClientRequiredState(OFSyncClientParameters *parameters, NSSt
     OBPRECONDITION(clientURL);
     OBPRECONDITION(propertyList);
     
-    if (!(self = [super init]))
-        return nil;
+    self = [super init];
     
     _clientURL = clientURL;
     _propertyList = [propertyList copy];

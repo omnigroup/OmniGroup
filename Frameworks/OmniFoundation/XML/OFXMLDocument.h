@@ -106,7 +106,7 @@ typedef void (^OFXMLDocumentPrepareParser)(__kindof OFXMLDocument *document, OFX
 // Writing conveniences
 - (OFXMLElement *) pushElement: (NSString *) elementName;
 - (void) popElement;
-- (void) addElement:(NSString *)elementName childBlock:(void (__attribute__((noescape)) ^)(void))block;
+- (void) addElement:(NSString *)elementName childBlock:(void (NS_NOESCAPE ^)(void))block;
 
 @property(nonatomic,readonly) OFXMLElement *topElement;
 - (void) appendString: (NSString *) string;

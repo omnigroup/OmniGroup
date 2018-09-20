@@ -1,4 +1,4 @@
-// Copyright 2014-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <Security/Security.h>
+#import <OmniBase/macros.h>
+
 
 enum OFASN1ErrorCodes {
     OFASN1Success                  = 0,
@@ -20,7 +22,7 @@ enum OFASN1ErrorCodes {
     OFASN1UnexpectedIndefinite,
     OFASN1TrailingData,
 };
-NSError *OFNSErrorFromASN1Error(int errCode, NSString *extra) __attribute__((cold)) OB_HIDDEN;
+NSError * _Nonnull OFNSErrorFromASN1Error(int errCode, NSString *extra) __attribute__((cold)) OB_HIDDEN;
 
 #define CLASS_MASK             0xC0
 #define CLASS_UNIVERSAL        0x00
@@ -96,7 +98,7 @@ enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, N
 enum OFASN1ErrorCodes OFASN1UnDERSmallInteger(NSData *buf, const struct parsedTag *v, int *resultp) OB_HIDDEN;
 enum OFASN1ErrorCodes OFASN1ParseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL) OB_HIDDEN;
 enum OFASN1ErrorCodes OFASN1EnumerateMembersAsBERRanges(NSData *buf, struct parsedTag obj, enum OFASN1ErrorCodes (NS_NOESCAPE ^cb)(NSData *samebuf, struct parsedTag item, NSRange berRange)) OB_HIDDEN;
-enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData **outData) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData OB_NANNP outData) OB_HIDDEN;
 #define OFASN1ParseItemsInObject(b, p, der, i, v)    ({ SAME_LENGTH(i, v); OFASN1ParseBERSequence(b, (p).content.location, ((p).indefinite && !(p).content.length)? 0 : NSMaxRange((p).content), der,  (i), (v), ARRAYLENGTH(i)); })
 
 enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum OFASN1Algorithm algid, NSRange range, NSData **outNonce, int *outTagSize) OB_HIDDEN;

@@ -65,13 +65,13 @@
 "Bundle requires additional software" = "バンドルには追加のソフトウェアが必要です";
 
 /* compression error reason */
-"bzip2 library returned error code %d when finishing compression. %s." = "圧縮処理の終了時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+"bzip2 library returned error code %d when finishing compression. %s." = "圧縮処理の終了時に、bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
 
 /* decompression error reason */
-"bzip2 library returned error code %d when reading data. %s." = "データの読み取り時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+"bzip2 library returned error code %d when reading data. %s." = "データ読み取り時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
 
 /* compression error reason */
-"bzip2 library returned error code %d when writing data. %s." = "データの書き込み時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+"bzip2 library returned error code %d when writing data. %s." = "データ書き込み時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
 
 /* OFLockFile recovery option */
 "Cancel" = "キャンセル";
@@ -95,13 +95,13 @@
 /* Provisioning profile parsing error general description */
 "Could not parse entitlements from embedded provisioning profile" = "埋め込まれているプロビジョニングプロファイルのエンタイトルメントを解析できませんでした";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "日";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "day" = "日";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "days" = "日間";
 
 /* invalid bundle reason */
@@ -117,7 +117,7 @@
 "eh" = "eh";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "'%1$@' 要素は次のパスでは許可されていません： %2$@";
+"Element '%@' not allowed at path: %@" = "エレメント '%1$@' は次のパスへアクセスできません: %2$@";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "em" = "em";
@@ -144,7 +144,7 @@
 "ey" = "ey";
 
 /* error reason */
-"Failed to create directory for lock file at \"%@\"." = "“%@” でのロックファイル用ディレクトリの作成に失敗しました。";
+"Failed to create directory for lock file at \"%@\"." = "“%@” でロックされたファイルのディレクトリの作成に失敗しました。";
 
 /* error reason */
 "Failed to serialize lock information." = "ロック情報をシリアル化できませんでした。";
@@ -152,13 +152,13 @@
 /* error reason */
 "Failed to write lock file.  %@" = "ロックされたファイルの書き込みに失敗しました。%@";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "h" = "時間";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hour" = "時間";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "hours" = "時間";
 
 /* formatter input error */
@@ -167,22 +167,22 @@
 /* local bundle path readable string */
 "local configuration file" = "ローカル設定ファイル";
 
-/* time span formatter span (minute) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (minute) */
 "m" = "分";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minute" = "分";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "minutes" = "分間";
 
-/* time span formatter span (month) */
+/* time span formatter span - DO NOT add leading or trailing whitespace (month) */
 "mo" = "カ月";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "month" = "カ月";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "months" = "カ月";
 
 /* error reason */
@@ -203,13 +203,13 @@
 /* alert title when clicking on a configuration value URL */
 "Restore all internal configuration settings to defaults" = "すべての内部構成設定をデフォルトに戻す";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "s" = "秒";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "秒";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "seconds" = "秒間";
 
 /* alert message format when clicking on a configuration value URL */
@@ -219,28 +219,28 @@
 "The encrypted item \"%@\" is missing or unreadable." = "暗号化された項目 “%@” がないか、または読み込めません。";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバ証明書は無効のようです。このサイトは信頼できない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書が無効のようです。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@” に対するサーバ証明書は無効のようです。有効期限が切れるか、まだアクティブでない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@” に対するサーバの証明書の日付が無効です。有効期限が切れたか、まだ有効ではない可能性があります。それでも接続しますか？";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバ証明書には、どのルートサーバによる署名もありません。このサイトは信頼できない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書にはいずれのルートサーバからも署名がありません。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバ証明書はまだ有効ではないようです。このサイトは信頼できない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書がまだ有効になっていません。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバ証明書は、信頼できないルートサーバによって署名されています。このサイトは信頼できない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書には信頼されていないルートサーバからの署名があります。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "この構成リンクにより、以下の変更が行われます：";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "この書類は %3$@ %4$@ に %1$@ が “%2$@” コンピュータを使用してロックしました。";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "この書類は %3$@ %4$@ にコンピュータ “%2$@” の %1$@ によってロックされました。";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "この書類は %3$@ %4$@ に %1$@ が “%2$@” コンピュータを使用してロックしました。\n\nこのロックは無効にできますが、他のアプリケーションが実行中の場合には、データを失う可能性があります。";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "この書類は %3$@ %4$@ にコンピュータ “%2$@” の %1$@ によってロックされました。\n\nこのロックを上書きできますが、他のアプリケーションが実行中の場合には、データを失う可能性があります。";
 
 /* compression error description */
 "Unable to compress data." = "データを圧縮できません。";
@@ -280,25 +280,25 @@
 /* error message - CMS object has an unknown algorithm identifier for encryption of its content */
 "Unsupported encryption algorithm" = "サポートされていない暗号化アルゴリズム";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "w" = "週間";
 
 /* error description */
 "Warning encountered while loading XML." = "XML 読み込み中に警告に遭遇しました。";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "week" = "週間";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "weeks" = "週間";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "y" = "年";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "year" = "年";
 
-/* time span formatter span */
+/* time span formatter span - DO NOT add leading or trailing whitespace */
 "years" = "年間";
 
 /* zlib error reason */

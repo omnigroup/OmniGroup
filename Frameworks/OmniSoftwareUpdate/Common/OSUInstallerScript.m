@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,9 +61,6 @@ RCS_ID("$Id$")
 - (id)initWithArguments:(NSArray *)arguments localizationBundle:(NSBundle *)localizationBundle error:(NSError **)error;
 {
     self = [super init];
-    if (self == nil) {
-        return nil;
-    }
     
     NSAssert(arguments != nil, @"arguments is a required parameter");
     if (arguments == nil) {

@@ -5,7 +5,10 @@
 "Expected value of type “%@”" = "Ожидаемое значение типа «%@»";
 
 /* button title */
-"OK" = "OK";
+"Learn More" = "Дополнительные сведения";
+
+/* button title */
+"OK" = "ОК";
 
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "Неожиданное значение ключа «%@»";

@@ -151,6 +151,18 @@ const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 //#endif
 }
 
+static NSParagraphStyle *_placeholderParagraphStyle(void)
+{
+    static NSParagraphStyle *_paragraphStyle;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+        paragraphStyle.alignment = NSTextAlignmentCenter;
+        _paragraphStyle = [paragraphStyle copy];
+    });
+    return _paragraphStyle;
+}
+
 - (void)drawRect:(CGRect)clipRect;
 {
     [super drawRect:clipRect];
@@ -161,15 +173,15 @@ const CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
         NSDictionary *attributes = @{
             NSFontAttributeName: placeholderFont,
             NSForegroundColorAttributeName: [self _placeholderTextColor],
+            NSParagraphStyleAttributeName: _placeholderParagraphStyle(),
         };
 
-        CGSize size = self.bounds.size;
-        CGRect boundingRect = [placeholder boundingRectWithSize:size options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil];
         CGRect textRect = self.bounds;
         textRect = UIEdgeInsetsInsetRect(textRect, self.contentInset);
         textRect = UIEdgeInsetsInsetRect(textRect, self.textContainerInset);
+        CGRect boundingRect = [placeholder boundingRectWithSize:textRect.size options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil];
 
-        // Draw the placeholder if we have a comformtable amount of vertical space
+        // Draw the placeholder if we have a comfortable amount of vertical space
         if (CGRectGetHeight(textRect) >= 88) {
             textRect.origin.x += (CGRectGetWidth(textRect) - CGRectGetWidth(boundingRect)) / 2.0;
             textRect.origin.y += -1 * self.contentOffset.y - self.contentInset.top;

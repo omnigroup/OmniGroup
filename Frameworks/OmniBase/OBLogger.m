@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ RCS_ID("$Id$");
     #define REMOVE_OLD_LOG_FILES 0
 #endif
 
-inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...)
+void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...)
 {
     if (logger == nil || messageLevel < logger.level)
         return;
@@ -34,8 +34,8 @@ inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ..
 }
 
 // should only be called from OBLogger.swift
-inline void OBLogSwiftVariadicCover(OBLogger *logger, NSInteger messageLevel, NSString *message) {
-    OBLog(logger, messageLevel, message);
+void OBLogSwiftVariadicCover(OBLogger *logger, NSInteger messageLevel, NSString *message) {
+    OBLog(logger, messageLevel, @"%@", message);
 }
 
 void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile)

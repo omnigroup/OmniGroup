@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,11 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUIPaletteTheme
 
-+ (NSArray *)defaultThemes;
++ (NSArray<OUIPaletteTheme *> *)defaultThemes;
 {
     NSString *path = [OMNI_BUNDLE pathForResource:@"OUIDefaultPaletteThemes" ofType:@"plist"];
     if (!path) {
@@ -25,13 +27,13 @@ RCS_ID("$Id$");
     NSData *data = [NSData dataWithContentsOfFile:path options:0 error:&error];
     if (!data) {
         NSLog(@"Unable to load theme file %@: %@", path, [error toPropertyList]);
-        return nil;
+        return @[];
     }
     
     NSArray *dictionaries = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:&error];
     if (!dictionaries) {
         NSLog(@"Unable to parse theme file %@: %@", path, [error toPropertyList]);
-        return nil;
+        return @[];
     }
     
     NSMutableArray *themes = [NSMutableArray array];
@@ -47,7 +49,7 @@ RCS_ID("$Id$");
     return themes;
 }
 
-- initWithDictionary:(NSDictionary *)dict stringTable:(NSString *)stringTable bundle:(NSBundle *)bundle;
+- (instancetype)initWithDictionary:(NSDictionary *)dict stringTable:(NSString *)stringTable bundle:(NSBundle *)bundle;
 {
     if (!(self = [super init]))
         return nil;
@@ -85,3 +87,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

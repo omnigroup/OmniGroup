@@ -46,16 +46,6 @@ private struct TestDiffable: Diffable {
 
 class DiffableTests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
     // MARK: Section Tests
     
     func testUnchangedSections() {
@@ -664,6 +654,48 @@ class DiffableTests: XCTestCase {
         XCTAssert(difference.itemChanges.moves.contains(where: { pre, post in
             return pre == IndexPath(row: 1, section: 0) && post == IndexPath(row: 0, section: 1)
         }))
+    }
+    
+    // MARK: Move Suppression Tests
+    
+    func testSuppressSingleMoveSource() {
+        let before = TestDiffable(values: [
+            (IDWithPayload("A", 0), [
+                IDWithPayload("X", 0),
+                IDWithPayload("Y", 0),
+                ]),
+            ])
+        let after = TestDiffable(values: [
+            (IDWithPayload("A", 0), [
+                IDWithPayload("Y", 0),
+                IDWithPayload("X", 0),
+                ]),
+            ])
+        let difference = after.difference(from: before, suppressedMovePositions: (sources: [IndexPath(row: 0, section: 0)], destinations: []))
+        
+        XCTAssert(difference.itemChanges.moves.isEmpty)
+        XCTAssertEqual([IndexPath(row: 1, section: 0)], difference.itemChanges.insertions)
+        XCTAssertEqual([IndexPath(row: 0, section: 0)], difference.itemChanges.deletions)
+    }
+    
+    func testSuppressSingleMoveDestination() {
+        let before = TestDiffable(values: [
+            (IDWithPayload("A", 0), [
+                IDWithPayload("X", 0),
+                IDWithPayload("Y", 0),
+                ]),
+            ])
+        let after = TestDiffable(values: [
+            (IDWithPayload("A", 0), [
+                IDWithPayload("Y", 0),
+                IDWithPayload("X", 0),
+                ]),
+            ])
+        let difference = after.difference(from: before, suppressedMovePositions: (sources: [], destinations: [IndexPath(row: 1, section: 0)]))
+        
+        XCTAssert(difference.itemChanges.moves.isEmpty)
+        XCTAssertEqual([IndexPath(row: 1, section: 0)], difference.itemChanges.insertions)
+        XCTAssertEqual([IndexPath(row: 0, section: 0)], difference.itemChanges.deletions)
     }
 
     // MARK: Regression Tests

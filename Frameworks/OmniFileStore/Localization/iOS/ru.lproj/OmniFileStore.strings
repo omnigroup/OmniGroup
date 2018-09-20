@@ -50,7 +50,7 @@
 "No such file \"%@\"." = "Файл %@ не найден.";
 
 /* encryption access method description - key derivation from password */
-"Password (%@; %@ rounds; %@)" = "Password (%1$@; %2$@ rounds; %3$@)";
+"Password (%@; %@ rounds; %@)" = "Пароль (%1$@; округление %2$@; %3$@)";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Убедитесь, что папка назначения существует.";

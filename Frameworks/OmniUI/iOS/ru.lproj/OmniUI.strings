@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "О программе %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "Отмена";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "Не удается отправить данные диагностики";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "Выравнивание по центру";
@@ -31,7 +32,7 @@
 "Certificate Trust" = "Доверительные сертификаты";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@» изменено с «%2$@» на «%3$@»";
+"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
 
 /* placeholder text - password/passphrase confirmation field in prompt */
 "confirm" = "подтвердить";
@@ -40,7 +41,7 @@
 "Continue" = "Продолжить";
 
 /* increment button accessibility label */
-"Decrement" = "Убывание";
+"Decrement" = "Дециметр";
 
 /* Accessibility label for dismissing a sliding overlay pane */
 "Dismiss overlay" = "Отменить наложение";
@@ -98,7 +99,7 @@
 "News" = "Новости";
 
 /* empty value cell placeholder */
-"None" = "Нет";
+"None" = "Отсутствует";
 
 /* Full screen note editor title */
 "Note" = "Примечание";
@@ -108,6 +109,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -167,7 +171,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Вы нажали ссылку, вызывающую следующую команду отладки:\n\n«%@»\n\nЕсли вы не получали такие инструкции от службы поддержки Omni, не делайте этого.\nЗапустить эту команду?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы нажали ссылку настройки Omni:\n\n«%@»\n\nВыполнить эту команду?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы коснулись специальной URL-ссылки Omni:\n\n«%@»\n\nВыполнить эту команду?";
 
 /* zoom label */
 "Zoom" = "Масштаб";

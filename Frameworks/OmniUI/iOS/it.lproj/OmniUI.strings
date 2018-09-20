@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ di %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Info su %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "Annulla";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "Impossibile inviare la diagnostica via email";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "Testo allineato al centro";
@@ -40,7 +41,7 @@
 "Continue" = "Continua";
 
 /* increment button accessibility label */
-"Decrement" = "Decremento";
+"Decrement" = "Riduci";
 
 /* Accessibility label for dismissing a sliding overlay pane */
 "Dismiss overlay" = "Ignora overlay";
@@ -69,7 +70,7 @@
 "Help and Settings" = "Aiuto e impostazioni";
 
 /* increment button accessibility label */
-"Increment" = "Incremento";
+"Increment" = "Aumenta";
 
 /* default special URL confirm button title */
 "Invoke" = "Richiama";
@@ -90,7 +91,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le restrizioni di Safari nelle Impostazioni.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail non configurata su questo %@.";
+"Mail has not been set up on this %@." = "Mail non configurato su questo %@.";
 
 /* News menu item
    News view title */
@@ -108,13 +109,16 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Registrazione alla newsletter";
+"Omni Newsletter Signup" = "Registrazione alla newsletter di Omni";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "password";
@@ -167,7 +171,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL di Omni speciale:\n\n\"%@\"\n\nEseguire questo comando?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL speciale di Omni:\n\n“%@”\n\nEseguire questo comando?";
 
 /* zoom label */
 "Zoom" = "Ridimensiona";

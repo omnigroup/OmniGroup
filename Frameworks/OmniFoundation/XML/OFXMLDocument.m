@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,8 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 {
     OBPRECONDITION(rootElement);
 
-    if (!(self = [super init]))
-        return nil;
+    self = [super init];
+
     [self _preInit];
 
     if (!whitespaceBehavior)
@@ -209,8 +209,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable instancetype)initWithInputStream:(NSInputStream *)inputStream whitespaceBehavior:(nullable OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior prepareParser:(nullable NS_NOESCAPE OFXMLDocumentPrepareParser)prepareParser error:(NSError **)outError;
 {
-    if (!(self = [super init]))
-        return nil;
+    self = [super init];
+
     [self _preInit];
 
     if (!whitespaceBehavior)
@@ -449,7 +449,7 @@ NS_ASSUME_NONNULL_BEGIN
     [_elementStack removeLastObject];
 }
 
-- (void) addElement:(NSString *)elementName childBlock:(void (^)(void))block;
+- (void) addElement:(NSString *)elementName childBlock:(void (NS_NOESCAPE ^)(void))block;
 {
     [self pushElement:elementName];
     block();

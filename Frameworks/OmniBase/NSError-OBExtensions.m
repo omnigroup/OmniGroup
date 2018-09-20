@@ -338,11 +338,13 @@ static NSString * const OFSuppressedErrorCode = @"code";
     
     NSMutableArray *suppressionStack = [[NSThread currentThread] threadDictionary][OFSuppressedErrorStack];
     if (suppressionStack) {
-        NSString *domain = self.domain;
-        NSNumber *code = @(self.code);
         for (NSDictionary *suppression in suppressionStack) {
-            if ([domain isEqual:suppression[OFSuppressedErrorDomain]] && [code isEqual:suppression[OFSuppressedErrorCode]])
+            NSString *domain = suppression[OFSuppressedErrorDomain];
+            NSInteger code = [suppression[OFSuppressedErrorCode] integerValue];
+
+            if ([self hasUnderlyingErrorDomain:domain code:code]) {
                 return;
+            }
         }
     }
     

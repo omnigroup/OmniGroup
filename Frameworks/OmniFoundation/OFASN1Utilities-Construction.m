@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -460,7 +460,7 @@ static struct computedSizes ofASN1ComputePieceSizes(const char *fmt, va_list arg
     };
 }
 
-NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...)
+NSMutableData *OFASN1AppendStructure(NSMutableData * _Nullable buffer, const char *fmt, ...)
 {
     /* Parse the format string and compute offsets */
     va_list argList;
@@ -534,7 +534,7 @@ static inline dispatch_data_t accumulatePiece(dispatch_data_t accum, NSMutableDa
     return dispatch_data_create_concat(accum, segment);
 }
 
-dispatch_data_t OFASN1MakeStructure(const char *fmt, ...)
+dispatch_data_t _Nonnull OFASN1MakeStructure(const char *fmt, ...)
 {
     /* Parse the format string and compute offsets */
     va_list argList;

@@ -5,6 +5,9 @@
 "Expected value of type “%@”" = "类型“%@”的期望值";
 
 /* button title */
+"Learn More" = "了解更多";
+
+/* button title */
 "OK" = "好";
 
 /* style validation error message for {key} */

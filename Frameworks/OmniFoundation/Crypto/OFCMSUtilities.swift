@@ -614,7 +614,7 @@ class OFCMSUnwrapper {
             if fromContentInfo {
                 switch contentType {
                 case OFCMSContentType_XML, OFCMSContentType_data:
-                    return OFASN1UnwrapOctetString(cms_, contentRange);
+                    return OFASN1UnwrapOctetString(cms_, contentRange)!
                 default:
                     // fallthrough
                     break

@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /* Password-based encryption */
 @property (readonly,nonatomic) BOOL hasPassword;
-- (OFSDocumentKeyDerivationParameters *)passwordDerivationParameters:(NSError **)outError;
+- (nullable OFSDocumentKeyDerivationParameters *)passwordDerivationParameters:(NSError **)outError;
 - (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
 - (BOOL)deriveWithWrappingKey:(NSData *)wrappingKey error:(NSError **)outError;
 + (nullable NSData *)wrappingKeyFromPassword:(NSString *)password parameters:(OFSDocumentKeyDerivationParameters *)parameters error:(NSError **)outError;

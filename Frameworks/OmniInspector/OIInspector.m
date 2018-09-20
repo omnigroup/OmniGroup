@@ -372,7 +372,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     NSMutableDictionary *dict = [super debugDictionary];
     [dict setObject:_inspectorIdentifier forKey:@"identifier"];
     [dict setObject:_displayName forKey:@"displayName"];
-    [dict setObject:[NSNumber numberWithInt:_defaultVisibilityState] forKey:@"defaultVisibilityState"];
+    [dict setObject:@(_defaultVisibilityState) forKey:@"defaultVisibilityState"];
     if (_shortcutKey)
         [dict setObject:_shortcutKey forKey:@"shortcutKey"];
     if (_shortcutModifierFlags) {

@@ -347,26 +347,33 @@
     "comment": "9.7 inch; 2018; LTE; education event"
   },
   "N45AP": {
-    "name": "iPod Touch 1G"
+    "name": "iPod Touch 1G",
+    "platform": "iPod1,1"
   },
   "N72AP": {
-    "name": "iPod Touch 2G"
+    "name": "iPod Touch 2G",
+    "platform": "iPod2,1"
   },
   "N18AP": {
-    "name": "iPod Touch 3G"
+    "name": "iPod Touch 3G",
+    "platform": "iPod3,1"
   },
   "N81AP": {
-    "name": "iPod Touch 4G"
+    "name": "iPod Touch 4G",
+    "platform": "iPod4,1"
   },
   "N78AP": {
-    "name": "iPod Touch 5G"
+    "name": "iPod Touch 5G",
+    "platform": "iPod5,1"
   },
   "N78aAP": {
     "name": "iPod Touch 5G",
+    "platform": "iPod5,1",
     "comment": "Smaller flash"
   },
   "N102AP": {
-    "name": "iPod Touch 6G"
+    "name": "iPod Touch 6G",
+    "platform": "iPod7,1"
   },
   "K66AP": {
     "name": "Apple TV 2G"

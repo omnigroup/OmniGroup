@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,19 +16,48 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUIPaletteColorPicker
 {
     NSArray *_themeViews;
+    NSNumber *_showThemeDisplayNames;
+    CGFloat _swatchPickerLayoutWidth; // includes margins
 }
 
-- (void)setThemes:(NSArray *)themes;
+- (instancetype)init;
+{
+    return [self initWithNibName:@"OUIPaletteColorPicker" bundle:OMNI_BUNDLE];
+}
+
+- (void)setThemes:(NSArray<OUIPaletteTheme *> *)themes;
 {
     if (OFISEQUAL(_themes, themes))
         return;
+
     _themes = [themes copy];
     
     if (self.isViewLoaded)
         [self.view setNeedsLayout];
+}
+
+- (BOOL)showThemeDisplayNames;
+{
+    if (_showThemeDisplayNames != nil) {
+        return [_showThemeDisplayNames boolValue];
+    } else {
+        return self.themes.count != 1;
+    }
+}
+
+- (void)setShowThemeDisplayNames:(BOOL)showThemeDisplayNames;
+{
+    if (_showThemeDisplayNames == nil || [_showThemeDisplayNames boolValue] != showThemeDisplayNames) {
+        _showThemeDisplayNames = @(showThemeDisplayNames);
+        if ([self isViewLoaded]) {
+            [self _rebuildThemesViews];
+        }
+    }
 }
 
 #pragma mark - OUIColorPicker subclass
@@ -112,6 +141,14 @@ RCS_ID("$Id$");
     [view flashScrollIndicators];
 }
 
+- (void)viewDidLayoutSubviews;
+{
+    CGFloat horizontalInset = (CGRectGetWidth(self.view.bounds) - _swatchPickerLayoutWidth) / 2.0;
+    
+    UIScrollView *scrollView = (UIScrollView *)self.view;
+    scrollView.contentInset = UIEdgeInsetsMake(0, horizontalInset, 0, 0);
+}
+
 #pragma mark Receiving Control Events from Swatch Pickers
 
 - (void)_colorSelectionChanged:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
@@ -131,11 +168,14 @@ RCS_ID("$Id$");
 
 - (void)_rebuildThemesViews;
 {
-    if (!_themes)
+    if (_themes == nil) {
         _themes = [[OUIPaletteTheme defaultThemes] copy];
+    }
     
     [_themeViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
     _themeViews = nil;
+    
+    _swatchPickerLayoutWidth = 0;
 
     const CGFloat kLabelToPaletteSpacing = 5;
     const CGFloat kInterThemeSpacing = 12;
@@ -154,7 +194,7 @@ RCS_ID("$Id$");
     CGFloat yOffset = kInterThemeSpacing;
     NSMutableArray *themeViews = [NSMutableArray array];
     for (OUIPaletteTheme *theme in _themes) {
-        {
+        if (self.showThemeDisplayNames) {
             UILabel *label = [[UILabel alloc] initWithFrame:CGRectZero];
             label.text = theme.displayName;
             label.textColor = self.textColor;
@@ -170,6 +210,8 @@ RCS_ID("$Id$");
             yOffset = CGRectGetMaxY(labelFrame) + kLabelToPaletteSpacing;
             [themeViews addObject:label];
             [view addSubview:label];
+        } else {
+            yOffset += kLabelToPaletteSpacing;
         }
         
         {
@@ -178,17 +220,22 @@ RCS_ID("$Id$");
             swatchPicker.target = self;
             swatchPicker.wraps = YES;
             swatchPicker.colors = theme.colors;
-            [swatchPicker sizeHeightToFit];
+            [swatchPicker sizeToFit];
             [swatchPicker setSwatchSelectionColor:singleSelectedColor];
-
+            
             yOffset = CGRectGetMaxY(swatchPicker.frame) + kInterThemeSpacing;
             [themeViews addObject:swatchPicker];
             [view addSubview:swatchPicker];
+
+            CGFloat layoutWidth = CGRectGetMaxX(swatchPicker.frame) + xOffset;
+            if (layoutWidth > _swatchPickerLayoutWidth) {
+                _swatchPickerLayoutWidth = layoutWidth;
+            }
         }
     }
 
-    view.contentSize = CGSizeMake(viewBounds.size.width, yOffset);
-    
+    view.contentSize = CGSizeMake(viewBounds.size.width, yOffset - kInterThemeSpacing);
+
     _themeViews = [themeViews copy];
 }
 
@@ -226,3 +273,6 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+

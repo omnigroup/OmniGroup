@@ -61,6 +61,10 @@
     #define OB_REQUIRE_ARC ARC_must_be_enabled_for_this_file
 #endif
 
+
+#define OB_NANP * __nullable OB_AUTORELEASING * __nullable  // Nullable autoreleasing object, nullable pointer
+#define OB_NANNP * __nullable OB_AUTORELEASING * __nonnull  // Nullable autoreleasing object, nonnullable pointer
+
 // These macros are expanded out because if you do something like MIN(MIN(A,B),C), you'll get a shadowed local variable warning. It's harmless in that case but the warning does occasionally point out bad code elsewhere, so I want to avoid causing it spuriously.
 
 #define MIN3(A, B, C) ({ __typeof__(A) __temp1 = (A); __typeof__(B) __temp2 = (B); if (__temp2 < __temp1) { __temp1 = __temp2; } __temp2 = (C); (__temp2 < __temp1)? __temp2 : __temp1; }) 

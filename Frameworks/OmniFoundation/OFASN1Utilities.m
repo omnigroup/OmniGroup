@@ -1,4 +1,4 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 struct asnWalkerState {
     NSUInteger startPosition;        // The position at which 'v' was parsed
     struct parsedTag v;              // Tag and length of the "current" object
@@ -31,12 +33,12 @@ static enum OFASN1ErrorCodes objectAt(NSData *buffer, NSUInteger pos, struct asn
 static enum OFASN1ErrorCodes enterObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState);
 static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState, BOOL allowTrailing);
 
-static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v);
-static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange *outParameterRange);
+static NSDateComponents * _Nullable OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v);
+static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange * _Nullable outParameterRange);
 
 #define MAX_BER_INDEFINITE_OBJECT_DEPTH 127 // Arbitrary. In practice we should never exceed a half-dozen or so.
 
-static const CFStringRef asn1ErrorCodeStrings[] = {
+static const CFStringRef _Nonnull asn1ErrorCodeStrings[] = {
 #define E(x) [ OFASN1 ## x ] = CFSTR( #x )
     E(Success),
     E(EndOfObject),
@@ -488,7 +490,7 @@ enum OFASN1ErrorCodes OFASN1ParseBERSequence(NSData *buf, NSUInteger position, N
 
 #pragma mark - ASN.1 scanning and creation utility functions
 
-int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value))
+int OFASN1CertificateExtractFields(NSData *cert, NSData OB_NANP serialNumber, NSData OB_NANP issuer, NSData OB_NANP subject, NSArray OB_NANP validity, NSData OB_NANP subjectKeyInformation, void (NS_NOESCAPE ^ _Nullable extensions_cb)(NSData *oid, BOOL critical, NSData *value))
 {
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState stx;
@@ -892,15 +894,15 @@ BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(
 static uint8_t id_ct_signedData_der[]    = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x02};  /* RFC 5652 aka PKCS#7 - 1.2.840.113549.1.7.2 */
 // static uint8_t id_ct_data_der[]    = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x07, 0x01};  /* RFC 5652 aka PKCS#7 - 1.2.840.113549.1.7.1 */
 
-static NSData *_pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentType);
+static NSData * _Nullable _pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentType);
 
-NSData *OFPKCS7PluckContents(NSData *pkcs7)
+NSData * _Nullable OFPKCS7PluckContents(NSData *pkcs7)
 {
     return _pluckContents(pkcs7, NULL);
 }
 
 /* This attempts to return the contents of something. The walker state, on entry, should be pointing at the SEQUENCE which is either a ContentInfo or EncapsulatedContentInfo. */
-static NSData *_pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentType)
+static NSData * _Nullable _pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentType)
 {
     struct asnWalkerState pkcs7St, inner1St, inner2St, inner3St, inner4St, inner5St;
 
@@ -957,7 +959,7 @@ static NSData *_pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentTy
 
 #endif
 
-int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL expectTrailing, enum OFASN1Algorithm *outAlg, NSRange *outParameterRange)
+int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL expectTrailing, enum OFASN1Algorithm *outAlg, NSRange * _Nullable outParameterRange)
 {
     NSRange oidRange;
     int rc = OFASN1ParseIdentifierAndParameter(buf, expectTrailing, &oidRange, outParameterRange);
@@ -967,7 +969,7 @@ int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL expectTrailing, enum OFASN1
     return 0;
 }
 
-int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL expectTrailing, NSRange *outOIDRange, NSRange *outParameterRange)
+int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL expectTrailing, NSRange *outOIDRange, NSRange * _Nullable outParameterRange)
 {
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState stx;
@@ -991,7 +993,7 @@ int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL expectTrailing, NSRange 
 }
 
 /** Parses a structure of the form SEQUENCE { OBJECT IDENTIFIER, ANY OPTIONAL } */
-static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange *outParameterRange)
+static enum OFASN1ErrorCodes parseIdentifierAndValue(NSData *buf, struct asnWalkerState *stx, NSRange *outOIDRange, NSRange * _Nullable outParameterRange)
 {
     enum OFASN1ErrorCodes rc;
     
@@ -1234,7 +1236,7 @@ enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NS
 }
 
 /* Extracts the contents of a string type (OCTET STRING, BIT STRING, etc.) into an NSData. For a definite-length string this is just -subdataWithRange:, but for indefinite encodings it concatenates the successive fragments. */
-enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData **outData)
+enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData OB_NANNP outData)
 {
     if (!(s.indefinite)) {
         *outData = [buf subdataWithRange:s.content];
@@ -1361,7 +1363,7 @@ enum OFASN1ErrorCodes OFASN1EnumerateMembersAsBERRanges(NSData *buf, struct pars
 #pragma mark Primitive value helpers
 
 /* Convert a DER-encoded string to an NSString. Intended for the strings found in PKIX certificates. */
-NSString *OFASN1UnDERString(NSData *derString)
+NSString * _Nullable OFASN1UnDERString(NSData *derString)
 {
     struct parsedTag tl;
     NSUInteger len = [derString length];
@@ -1446,7 +1448,7 @@ static int v2digits(const char *cp)
     return h * 10 + l;
 }
 
-static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v)
+static NSDateComponents * _Nullable OFASN1UnDERDateContents(NSData *buf, const struct parsedTag *v)
 {
     BOOL fourDigitYear;
     
@@ -1469,7 +1471,7 @@ static NSDateComponents *OFASN1UnDERDateContents(NSData *buf, const struct parse
     [buf getBytes:value range:v->content];
     value[len] = 0;
 
-    NSTimeZone *tz;
+    NSTimeZone * _Nullable tz;
     
     if (value[len-1] == 'Z') {
         tz = [NSTimeZone timeZoneWithName:@"UTC"];
@@ -1596,7 +1598,7 @@ enum OFASN1ErrorCodes OFASN1UnDERSmallInteger(NSData *buf, const struct parsedTa
     return OFASN1Success;
 }
 
-NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
+NSData * _Nullable OFASN1UnwrapOctetString(NSData *buf, NSRange r)
 {
     struct parsedTag tagged;
     if (parseTagAndLength(buf, r.location, NSMaxRange(r), NO, &tagged) != OFASN1Success)
@@ -1625,7 +1627,7 @@ NSData *OFASN1UnwrapOctetString(NSData *buf, NSRange r)
 }
 
 /* Convert a DER-encoded OID to its conventional text representation (e.g. "1.3.12.42") */
-NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
+NSString * _Nullable OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 {
     if (!bytes)
         return nil;
@@ -1665,7 +1667,7 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 }
 
 /* Convert a textual numeric OID to its DER-encoded form */
-NSData *OFASN1OIDFromString(NSString *s)
+NSData * _Nullable OFASN1OIDFromString(NSString *s)
 {
     NSArray<NSString *> *parts = [s componentsSeparatedByString:@"."];
     NSUInteger partCount = [parts count];
@@ -1752,7 +1754,7 @@ static unsigned bitSizeOfInteger(NSData *buffer, const struct parsedTag *st)
  If an elliptic curve key has explicit curve parameters or a named curve which we don't recognize, we just return (0, 0). These situations are forbidden by PKIX, though.
 
 */
-enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize, NSData **outAlgorithmIdentifier)
+enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int * _Nullable outKeySize, unsigned int * _Nullable outOtherSize, NSData OB_NANP outAlgorithmIdentifier)
 {
     /*  Like this (expanded):
         subjectPublicKeyInfo  :=    SEQUENCE {
@@ -1919,5 +1921,4 @@ NSError *OFNSErrorFromASN1Error(int errCode_, NSString *extra)
     return [NSError errorWithDomain:OFErrorDomain code:OFASN1Error userInfo: detail ? @{NSLocalizedDescriptionKey: detail} : nil];
 }
 
-
-
+NS_ASSUME_NONNULL_END

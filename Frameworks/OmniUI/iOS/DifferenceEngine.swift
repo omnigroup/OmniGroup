@@ -44,7 +44,7 @@ public extension Diffable {
     }
     
     /// Returns a difference value that can be used to update the table or collection view.
-    public func difference(from old: Self) -> Difference {
+    public func difference(from old: Self, suppressedMovePositions: (sources: Set<IndexPath>, destinations: Set<IndexPath>)? = nil) -> Difference {
         let oldSectionIdentifiers = old.sections.map({ $0.differenceIdentifier })
         let sectionIdentifiers = sections.map({ $0.differenceIdentifier })
         precondition(Set(oldSectionIdentifiers).count == oldSectionIdentifiers.count, "Old sections must have unique section identifiers to compute a difference")
@@ -66,7 +66,7 @@ public extension Diffable {
         let newWrappedItems = wrappedItems
         let oldWrappedItems = old.wrappedItems
         let itemDifference: CollectionDifference<IndexPath>
-        let itemDifferenceFast = WrappedDifferenceComparable.difference(from: oldWrappedItems, to: newWrappedItems, metaMutator: MetaMutator(sectionDifference: sectionDifference))
+        let itemDifferenceFast = WrappedDifferenceComparable.difference(from: oldWrappedItems, to: newWrappedItems, metaMutator: MetaMutator(sectionDifference: sectionDifference), suppressedMovePositions: suppressedMovePositions)
         switch itemDifferenceFast {
         case .reload:
             return Difference(sectionChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), itemChanges: CollectionDifference(insertions: [], deletions: [], updates: [], moves: []), changeKind: .hasChangeButCannotApply)
@@ -553,16 +553,15 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
         return value.diff(from: preState.value)
     }
     
-    static func difference(from old: [WrappedDifferenceComparable<Index, Value>], to new: [WrappedDifferenceComparable<Index, Value>], metaMutator: MetaMutator? = nil) -> FastCollectionDifferenceWrapper<Index> {
+    static func difference(from old: [WrappedDifferenceComparable<Index, Value>], to new: [WrappedDifferenceComparable<Index, Value>], metaMutator: MetaMutator? = nil, suppressedMovePositions: (sources: Set<Index>, destinations: Set<Index>)? = nil) -> FastCollectionDifferenceWrapper<Index> {
         let newSet = Set(new)
         let oldSet = Set(old)
         
         let insertedSet = newSet.subtracting(oldSet)
         let deletedSet = oldSet.subtracting(newSet)
-        let potentiallyUpdatedSet = newSet.intersection(oldSet)
         
-        let inserted = Set<Index>(insertedSet.map({ $0.index }))
-        let deleted = Set<Index>(deletedSet.map({ $0.index }))
+        var inserted = Set<Index>(insertedSet.map({ $0.index }))
+        var deleted = Set<Index>(deletedSet.map({ $0.index }))
         
         if old.isEmpty { // avoid remaining work, only inserting in this case
             return .applyDifference(CollectionDifference(insertions: inserted, deletions: deleted, updates: [], moves: []))
@@ -577,7 +576,7 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
         var possibleMoves: [(WrappedDifferenceComparable<Index, Value>, WrappedDifferenceComparable<Index, Value>)] = []
         
         for oldWrapped in old {
-            if potentiallyUpdatedSet.contains(oldWrapped) {
+            if !deletedSet.contains(oldWrapped) {
                 guard let setIndex = newSet.index(of: oldWrapped) else { continue }
                 let newWrapped = newSet[setIndex]
                 switch newWrapped.diff(from: oldWrapped) {
@@ -586,7 +585,14 @@ private struct WrappedDifferenceComparable<Index: DifferenceIndex, Value: Differ
                     fallthrough // updated items might also have moved
                 case .unchanged:
                     if newWrapped.index != oldWrapped.index {
-                        possibleMoves.append((oldWrapped, newWrapped))
+                        if let suppressed = suppressedMovePositions, suppressed.sources.contains(oldWrapped.index) || suppressed.destinations.contains(newWrapped.index) {
+                            deleted.insert(oldWrapped.index)
+                            simulatedState.delete([oldWrapped.index])
+                            inserted.insert(newWrapped.index)
+                            simulatedState.insert([newWrapped])
+                        } else {
+                            possibleMoves.append((oldWrapped, newWrapped))
+                        }
                     }
                 case .incomparable:
                     assertionFailure("implementation of `DifferenceComparable` protocol for `\(String(describing: oldWrapped))` violates a protocol invariant")
@@ -763,8 +769,10 @@ public struct SimulatedTableView<Index: DifferenceIndex, Value: DifferenceCompar
     
     private mutating func reindex(metaMutator: MetaMutator?) {
         let newIndexes = Index.indexesReindexing(orderedItems.map({ $0.index }), metaMutator: metaMutator)
-        for (arrayIndex, index) in zip(orderedItems.indices, newIndexes) {
-            orderedItems[arrayIndex].index = index
+        orderedItems = zip(orderedItems, newIndexes).map() { item, index in
+            var changedItem = item
+            changedItem.index = index
+            return changedItem
         }
     }
     

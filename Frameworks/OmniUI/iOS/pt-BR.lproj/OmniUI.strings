@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "Sobre o %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "Cancelar";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "Impossível Enviar Diagnósticos por E-mail";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "Alinhamento de texto centralizado";
@@ -108,6 +109,9 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 

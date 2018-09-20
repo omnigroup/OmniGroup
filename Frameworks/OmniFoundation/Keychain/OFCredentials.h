@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ extern NSURLCredential * __nullable OFTryApplyingTrustExceptions(NSURLAuthentica
 
 // Helpers for configuring a SFCertificateTrustPanel
 extern NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *challenge);
-extern NSString *OFCertificateTrustPromptForError(NSError *error);
+extern NSString * _Nullable OFCertificateTrustPromptForError(NSError * _Nullable error);
 
 // Posted on the main queue after OFAddTrustForChallenge() makes a change.
 extern NSString * const OFCertificateTrustUpdatedNotification;

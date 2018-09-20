@@ -9,26 +9,28 @@
 
 #import <OmniFoundation/OFSecurityUtilities.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class NSData, NSMutableData, NSString;
 
 /* These routines parse out interesting parts of some common DER/BER-encoded objects, which is especially useful on iOS where we can't rely on Security.framework to do it for us. */
 /* The routines which return 'int' actually return an enum OFASN1ErrorCodes, but Swift can't import declarations involving forward-declared enums (and C++ can't include headers involving them), so we declare them all as int. The int can be passed to OFNSErrorFromASN1Error(), or compared against 0 (success). */
-int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSArray **validity, NSData **subjectKeyInformation, void (NS_NOESCAPE ^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
+int OFASN1CertificateExtractFields(NSData *cert, NSData OB_NANP serialNumber, NSData OB_NANP issuer, NSData OB_NANP subject, NSArray OB_NANP validity, NSData OB_NANP subjectKeyInformation, void (NS_NOESCAPE ^ _Nullable extensions_cb)(NSData *oid, BOOL critical, NSData *value));
 BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (NS_NOESCAPE ^callback)(NSData *a, NSData *v, unsigned ix, BOOL *stop));
 BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (NS_NOESCAPE ^callback)(int attributeType, int attributeVersion, NSRange valueRange));
 
 /* PKCS#7 parsing */
 #if TARGET_OS_IPHONE
-NSData *OFPKCS7PluckContents(NSData *pkcs7);  /* (On OSX, use CMSDecoder) */
+NSData * _Nullable OFPKCS7PluckContents(NSData *pkcs7);  /* (On OSX, use CMSDecoder) */
 #endif
 
 /* Converting between NSString and PKIX-profile DER */
-NSString *OFASN1UnDERString(NSData *derString);
+NSString * _Nullable OFASN1UnDERString(NSData *derString);
 NSData *OFASN1EnDERString(NSString *str);
 
 /* OIDs */
-NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
-NSData *OFASN1OIDFromString(NSString *s);  // Return DER-encoded OID from a dotted-integers string - not really intended for user-supplied strings
+NSString * _Nullable OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
+NSData * _Nullable OFASN1OIDFromString(NSString *s);  // Return DER-encoded OID from a dotted-integers string - not really intended for user-supplied strings
 
 /* DER unsigned integers */
 NSData *OFASN1EnDERInteger(uint64_t i);
@@ -37,10 +39,10 @@ NSData *OFASN1EnDERInteger(uint64_t i);
 // NSDate *OFASN1UnDERDate(NSData *derString);
 
 /* Octet strings */
-NSData *OFASN1UnwrapOctetString(NSData *derValue, NSRange r);
+NSData * _Nullable OFASN1UnwrapOctetString(NSData *derValue, NSRange r);
 
 /* This determines the algorithm and key size from an X.509 public key info structure */
-extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize, NSData **outAlgorithmIdentifier);
+extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int * _Nullable outKeySize, unsigned int * _Nullable outOtherSize, NSData OB_NANP outAlgorithmIdentifier);
 
 /* Used for constructing DER-encoded objects */
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount);
@@ -64,7 +66,7 @@ void OFASN1AppendInteger(NSMutableData *buffer, uint64_t i);
     '<...>' BER_TAG_BIT_STRING [stuffs bytes]
 */
 
-NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...);
+NSMutableData *OFASN1AppendStructure(NSMutableData * _Nullable buffer, const char *fmt, ...);
 dispatch_data_t OFASN1MakeStructure(const char *fmt, ...);
 void OFASN1AppendSet(NSMutableData *buffer, unsigned char tagByte, NSArray *derElements);
 
@@ -136,6 +138,8 @@ enum OFCMSAttribute {
 };
 
 /* Parsing helper for some Algorithm structures */
-int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL allowTrailing, enum OFASN1Algorithm *outAlg, NSRange *outParameterRange);
-int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL allowTrailing, NSRange *outOIDRange, NSRange *outParameterRange);
+int OFASN1ParseAlgorithmIdentifier(NSData *buf, BOOL allowTrailing, enum OFASN1Algorithm *outAlg, NSRange * _Nullable outParameterRange);
+int OFASN1ParseIdentifierAndParameter(NSData *buf, BOOL allowTrailing, NSRange *outOIDRange, NSRange * _Nullable outParameterRange);
+
+NS_ASSUME_NONNULL_END
 

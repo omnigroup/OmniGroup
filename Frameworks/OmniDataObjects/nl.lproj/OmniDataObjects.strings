@@ -2,70 +2,19 @@
 "Attempted to disconnect while not connected." = "U wilt de verbinding verbreken, maar er is geen verbinding.";
 
 /* error reason */
-"Attribute %@.%@ has type %d with unknown SQL column type." = "Kenmerk %1$@.%2$@ is van type %3$d met onbekend type SQL-kolom.";
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "Kenmerk %1$@.%2$@ is van type %3$ld met onbekend type SQL-kolom.";
 
 /* error reason */
-"Attribute %@.%@ has unknown value type but isn't transient." = "Kenmerk %1$@.%2$@ heeft onbekend waardetype maar is geen tijdelijk kenmerk.";
-
-/* error reason */
-"Attribute %@.%@ specified a transient or optional primary key." = "Kenmerk %1$@.%2$@ bevat een tijdelijke of optionele primaire sleutel.";
-
-/* error reason */
-"Attribute has type unsupported type %d." = "Kenmerk is van niet-ondersteund type %d.";
-
-/* error reason */
-"Attribute specified default value '%@' for attribute of type of '%@'." = "Kenmerk bevat standaardwaarde '%1$@' voor kenmerk van type '%2$@'.";
-
-/* error reason */
-"Attribute specified invalid type of '%@'." = "Kenmerk bevat ongeldig type '%@'.";
-
-/* error reason */
-"Attribute specified no type." = "Kenmerk bevat geen type.";
+"Attribute has type unsupported type %ld." = "Kenmerk is van niet-ondersteund type %ld.";
 
 /* error reason */
 "Cannot connect to '%@' since the database is already connected to '%@'." = "Kan geen verbinding maken met '%1$@' omdat de database al is verbonden met '%2$@'.";
-
-/* error reason */
-"Cannot disconnect from database at '%@'." = "Kan verbinding niet verbreken met database op '%@'.";
 
 /* error reason */
 "Cannot open database at '%@'." = "Kan database op '%@' niet openen.";
 
 /* error reason */
 "Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "Kan fetch niet voorbereiden voor sleutel %1$@ voor query %2$@ als er geen verbinding met een database is.";
-
-/* error reason */
-"Couldn't create OFXMLDocument." = "OFXMLDocument kan niet worden aangemaakt.";
-
-/* error reason */
-"Entity '%@' has multiple primary key attributes." = "Entiteit '%@' heeft een primaire sleutel met meerdere kenmerken.";
-
-/* error reason */
-"Entity '%@' has multiple properties named '%@'." = "Entiteit '%1$@' heeft meerdere eigenschappen met de naam '%2$@'.";
-
-/* error reason */
-"Entity '%@' has no instance class name." = "Entiteit '%@' bevat geen instance-klassenaam.";
-
-/* error reason */
-"Entity '%@' has no primary key attributes." = "Entiteit '%@' heeft een primaire sleutel zonder kenmerken.";
-
-/* error reason */
-"Entity '%@' specified instance class name of '%@', but no such class was found." = "Entiteit '%1$@' bevat een instance-klasse met de naam '%2$@', maar deze klasse is niet gevonden.";
-
-/* error reason */
-"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "Entiteit '%1$@' bevat een instance-klasse met de naam '%2$@', maar deze klasse is geen subklasse van ODOObject.";
-
-/* error reason */
-"Entity '%@' specified primary key attribute '%@' with a default value." = "Primaire sleutel van entiteit '%1$@' bevat kenmerk '%2$@' met een standaardwaarde.";
-
-/* error reason */
-"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "Primaire sleutel van entiteit '%1$@' bevat kenmerk '%2$@' van type %3$d, maar alleen tekenreeksen worden ondersteund.";
-
-/* error reason */
-"Entity has no name." = "Entiteit heeft geen naam.";
-
-/* error reason */
-"Entity name '%@' is reserved." = "Entiteitsnaam '%@' is gereserveerd.";
 
 /* error description */
 "Error disconnecting from database." = "Fout bij verbreken van verbinding met database.";
@@ -85,9 +34,6 @@
 /* error reason */
 "Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "Fetch voor fout retourneert object met ID '%@', maar de fout voor dat object is al opgelost.";
 
-/* error reason */
-"Model '%@' has multiple properties named '%@'." = "Model '%1$@' heeft meerdere eigenschappen met de naam '%2$@'.";
-
 /* Multiple Delete Errors */
 "Multiple Errors" = "Meerdere fouten";
 
@@ -95,31 +41,19 @@
 "Multiple validation errors occurred while saving." = "Er zijn verschillende validatiefouten opgetreden tijdens het bewaren.";
 
 /* error reason */
+"No object with id %@ exists." = "Er bestaat geen object met id %@.";
+
+/* error description */
+"Object is scheduled for deletion." = "Object is gepland voor verwijdering.";
+
+/* error reason */
 "Object with ID '%@' is inaccessible." = "Object met ID '%@' is niet toegankelijk.";
 
 /* error reason */
-"Property has no name." = "Eigenschap heeft geen naam.";
-
-/* error reason */
-"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "Relatie '%1$@.%2$@' bevat doelentiteit '%3$@', maar deze entiteit bestaat niet.";
-
-/* error reason */
-"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "Relatie '%1$@.%2$@' bevat omgekeerde relatie '%3$@.%4$@', maar deze relatie bestaat niet.";
-
-/* error reason */
-"Relationship %@.%@ specified invalid type of '%@'." = "Relatie '%1$@.%2$@' bevat ongeldige type '%3$@'.";
-
-/* error reason */
-"Relationship %@.%@ specified no destination entity." = "Relatie '%1$@.%2$@' bevat geen doelentiteit.";
-
-/* error reason */
-"Relationship %@.%@ specified no inverse relationship." = "Relatie '%1$@.%2$@' bevat geen omgekeerde relatie.";
-
-/* error reason */
-"Relationship %@.%@ specified no type." = "Relatie '%1$@.%2$@' bevat geen type.";
-
-/* error reason */
 "The cache database was removed while it was still open. Close and reopen the database to recover." = "De cache-database werd verwijderd terwijl deze open was. Sluit en open de database opnieuw voor herstel.";
+
+/* error reason */
+"The object with id %@ is scheduled for deletion." = "Het object met id %@ is gepland voor verwijdering.";
 
 /* error reason */
 "Tried 100 times to settle -willSave, but edits kept being made." = "100 keer geprobeerd -willSave uit te voeren, maar er worden steeds wijzigingen aangebracht.";
@@ -138,6 +72,9 @@
 
 /* error reason */
 "Unable bind float64 to slot %d of statement with SQL '%@'." = "Kan float64 niet binden aan slot %1$d van instructie met SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int16 to slot %d of statement with SQL '%@'." = "Kan int16 niet binden aan sleuf %1$d van instructie met SQL ‘%2$@’.";
 
 /* error reason */
 "Unable bind int32 to slot %d of statement with SQL '%@'." = "Kan int32 niet binden aan slot %1$d van instructie met SQL '%2$@'.";
@@ -164,7 +101,7 @@
 "Unable convert predicate of type %lu (%@)." = "Kan predicaat van type %1$lu (%2$@) niet omzetten.";
 
 /* error reason */
-"Unable get value of type %d for result column %d of '%@'." = "Kan waarde van type %1$d niet opvragen voor resultaatkolom %2$d van '%3$@'.";
+"Unable get value of type %ld for result column %d of '%@'." = "Kan waarde van type %1$ld niet opvragen voor resultaatkolom %2$d van '%3$@'.";
 
 /* error reason */
 "Unable prepare statement for SQL '%@'." = "Kan instructie niet voorbereiden voor SQL '%@'.";
@@ -194,19 +131,16 @@
 "Unable to create SQL statement." = "SQL-instructie kan niet worden aangemaakt.";
 
 /* error description */
-"Unable to disconnect from database." = "Kan verbinding met database niet verbreken.";
+"Unable to execute SQL." = "SQL kan niet worden uitgevoerd.";
 
 /* error description */
-"Unable to execute SQL." = "SQL kan niet worden uitgevoerd.";
+"Unable to find object." = "Kan object niet vinden.";
 
 /* faulting exception */
 "Unable to fulfill fault: %@" = "Fout kan niet worden opgelost: %@";
 
 /* error description */
 "Unable to fulfill fault." = "Fout kan niet worden opgelost.";
-
-/* error description */
-"Unable to load model." = "Model kan niet worden geladen.";
 
 /* error description */
 "Unable to open database." = "Database kan niet worden geopend.";
@@ -222,9 +156,3 @@
 
 /* error description */
 "Unable to save." = "Bewaren is niet mogelijk.";
-
-/* error reason */
-"Wrong root element name.  Was expecting '%@' but found '%@'." = "Onjuiste naam rootelement. '%1$@' verwacht, maar '%2$@' gevonden.";
-
-/* error reason */
-"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Onjuiste naamruimte rootelement. '%1$@' verwacht, maar '%2$@' gevonden.";

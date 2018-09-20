@@ -1,4 +1,4 @@
-// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -137,6 +137,8 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
             *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
         }
         return NULL;
+    } else {
+        OBASSERT_NOTNULL(authorizationRef);
     }
     
     return authorizationRef;

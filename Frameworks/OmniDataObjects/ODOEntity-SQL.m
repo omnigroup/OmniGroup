@@ -1,4 +1,4 @@
-// Copyright 2008-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,7 +92,7 @@ static BOOL _appendColumnWithNameAndType(NSMutableString *str, ODOEntity *entity
             break;
             
         default: {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute %@.%@ has type %d with unknown SQL column type.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [entity name], name, type];
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute %@.%@ has type %ld with unknown SQL column type.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), [entity name], name, type];
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create schema.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             ODOError(outError, ODOUnableToCreateSchema, description, reason);
             return NO;
@@ -211,7 +211,7 @@ static BOOL _bindAttributeValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
             OBASSERT([value isKindOfClass:[NSNumber class]]);
             return ODOSQLStatementBindFloat64(sqlite, statement, oneBasedPropertyIndex, [value doubleValue], outError);
         default: {
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute has type unsupported type %d.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type];
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Attribute has type unsupported type %ld.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type];
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind attribute value to SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             ODOError(outError, ODOUnableToSave, description, reason);
             return NO;

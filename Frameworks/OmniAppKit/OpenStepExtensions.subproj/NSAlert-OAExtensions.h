@@ -1,4 +1,4 @@
-// Copyright 1997-2009, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,4 +11,4 @@
 
 typedef void (^OAAlertSheetCompletionHandler)(NSModalResponse returnCode);
 
-extern void OABeginAlertSheet(NSString *title, NSString *defaultButton, NSString *alternateButton, NSString *otherButton, NSWindow *docWindow, OAAlertSheetCompletionHandler completionHandler, NSString *msgFormat, ...);
+extern void OABeginAlertSheet(NSString *title, NSString *defaultButton, NSString *alternateButton, NSString *otherButton, NSWindow *docWindow, OAAlertSheetCompletionHandler completionHandler, NSString *msgFormat, ...) NS_FORMAT_FUNCTION(7,8);

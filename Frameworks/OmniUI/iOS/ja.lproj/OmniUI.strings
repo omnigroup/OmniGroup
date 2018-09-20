@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@／%2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "%@ について";
 
 /* MultiPane Back button title, when system is compact */
@@ -22,7 +23,7 @@
 "Cancel" = "キャンセル";
 
 /* alert title */
-"Cannot Email Diagnostics" = "Cannot Email Diagnostics";
+"Cannot Email Diagnostics" = "診断をメールで送信できません";
 
 /* Center Text Align button accessibility label. */
 "Center text align" = "テキストの中央揃え";
@@ -90,7 +91,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
 
 /* message format */
-"Mail has not been set up on this %@." = "この %@ にはメールがセットアップされていません。";
+"Mail has not been set up on this %@." = "この %@ では、メールがセットアップされていません。";
 
 /* News menu item
    News view title */
@@ -108,13 +109,16 @@
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni ニュースレターの登録";
+"Omni Newsletter Signup" = "Omni ニュースレターのサインアップ";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "パスワード";

@@ -470,7 +470,7 @@ BOOL ODOSQLStatementCreateValue(struct sqlite3 *sqlite, ODOSQLStatement *stateme
 
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable get value of type %d for result column %d of '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, columnIndex, statement->_sql];
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable get value of type %ld for result column %d of '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, columnIndex, statement->_sql];
             ODOError(outError, ODOUnableToExecuteSQL, description, reason);
             return NO;
         }
@@ -543,7 +543,7 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
         totalTime += delta;
         totalRowCount += rowCount;
         
-        ODOSQLStatementLogSQL(@"/* ... %d rows fetched, %d rows changed, %g sec, total now %g sec, %d rows */\n", rowCount, sqlite3_changes(sqlite), delta, totalTime, totalRowCount);
+        ODOSQLStatementLogSQL(@"/* ... %ld rows fetched, %d rows changed, %g sec, total now %g sec, %d rows */\n", rowCount, sqlite3_changes(sqlite), delta, totalTime, totalRowCount);
     }
     
     if (callbacks.atEnd && !callbacks.atEnd(sqlite, statement, context, outError))

@@ -137,7 +137,7 @@ typedef enum {
 - (void)setStatus:(OWProcessorStatus)newStatus;
 - (OWProcessorStatus)status;
 - (void)setStatusString:(NSString *)newStatusString;
-- (void)setStatusFormat:(NSString *)aFormat, ...;
+- (void)setStatusFormat:(NSString *)aFormat, ... NS_FORMAT_FUNCTION(1, 2);
 - (void)setStatusStringWithClassName:(NSString *)newStatus;
 - (NSString *)statusString;
 

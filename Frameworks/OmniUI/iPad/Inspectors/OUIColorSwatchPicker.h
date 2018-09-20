@@ -31,6 +31,7 @@ extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 @property(assign,nonatomic) BOOL showsNavigationSwatch; // If set, the last swatch is reserved for the detail color picker
 
 - (void)sizeHeightToFit;
+@property (nonatomic, readonly) CGFloat layoutWidth;
 
 - (BOOL)hasMatchForColor:(OAColor *)color;
 - (void)setSwatchSelectionColor:(OAColor *)color;

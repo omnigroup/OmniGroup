@@ -364,7 +364,8 @@ static NSDateFormatter *HttpDateFormatter;
                     
                 // Might have been racing against another creator.
                 if (![makeCollectionError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_METHOD_NOT_ALLOWED] &&
-                    ![makeCollectionError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_CONFLICT]) {
+                    ![makeCollectionError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_CONFLICT] &&
+                    ![makeCollectionError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_FORBIDDEN]) {
                     COMPLETE_AND_RETURN(nil, makeCollectionError);
                 }
                 

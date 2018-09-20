@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ typedef void(^OBLogFileHandler)(NSURL *url);
  \param format a format string, as in -[NSString initWithFormat:]
  \param ... additional arguments to format string
  */
-extern void OBLog(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *format, ...);
+extern void OBLog(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *format, ...) NS_FORMAT_FUNCTION(3,4);
 
 /// Log just the given message, without any format arguments. (Useful for Swift compatibility.)
 extern void OBLogSwiftVariadicCover(OBLogger * _Nullable logger, NSInteger messageLevel, NSString *message);
