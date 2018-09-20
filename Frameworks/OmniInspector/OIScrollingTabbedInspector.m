@@ -88,8 +88,12 @@ RCS_ID("$Id$")
     
     if (@available(macOS 10.13, *)) {
         self.tabLabel.textColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OIAppearance class]]];
-    } 
-    
+    }
+#if defined(MAC_OS_X_VERSION_10_14)
+    if (@available(macOS 10.14, *)) {
+        self.tabLabel.textColor = [NSColor controlAccentColor];
+    }
+#endif
     self.inspectorScrollView.drawsBackground = NO;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
     

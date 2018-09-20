@@ -23,6 +23,11 @@ RCS_ID("$Id$");
 - (void)awakeFromNib;
 {
     self.blendingMode = NSVisualEffectBlendingModeWithinWindow;
+#if defined(MAC_OS_X_VERSION_10_14)
+    if(@available(macOS 10.14, *)) {
+        self.material = NSVisualEffectMaterialWindowBackground;
+    }
+#endif
 }
 
 @end

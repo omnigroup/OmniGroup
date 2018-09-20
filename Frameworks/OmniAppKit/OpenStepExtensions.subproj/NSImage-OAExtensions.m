@@ -208,7 +208,15 @@ OBPerformPosing(^{
         shouldShift = YES; // testing while dev on mojave
 #endif
     } else {
-        shouldShift = dynamicallyAdjust && [[[NSApplication sharedApplication] keyWindow] backingScaleFactor] == 1.0;
+        NSWindow *keyWindow = [[NSApplication sharedApplication] keyWindow];
+        float backingFactor = 0.0;
+        if (keyWindow != nil) {
+            backingFactor = [keyWindow backingScaleFactor];
+        } else {
+            backingFactor = [[NSScreen mainScreen] backingScaleFactor];
+        }
+
+        shouldShift = dynamicallyAdjust && backingFactor == 1.0;
     }
 
     NSImage *tintedImage = [self tintedImageWithSize:defaultImage.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
@@ -223,7 +231,7 @@ OBPerformPosing(^{
                 break;
         }
         if (shouldShift) {
-            srcRect.origin.y -= 1;
+            srcRect.origin.y += 1;
         }
         [sourceImage drawInRect:dstRect fromRect:srcRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:NO hints:nil];
         return YES;

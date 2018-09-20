@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -804,6 +804,25 @@ static ODAVTestServer *srv;
 + (void)tearDown;
 {
     [srv stop];
+
+#if 0
+    // Dump the log files to try to see if they help in figuring out <bug:///149897> (iOS-OmniFocus Engineering: Intermittent HTTP 412 precondition failure in -[OFSEncryptedDAVTests testTastingLarge])
+    NSLog(@"=== apache log files ====");
+
+    NSString *varPath = [srv substitutions][@"VAR_PATH"];
+    NSArray *logPaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:varPath error:NULL];
+    for (NSString *logPath in logPaths) {
+        if (![[logPath pathExtension] isEqualToString:@"log"]) {
+            continue;
+        }
+
+        NSData *logData = [NSData dataWithContentsOfFile:[varPath stringByAppendingPathComponent:logPath]];
+        NSString *logString = [NSString stringWithData:logData encoding:NSUTF8StringEncoding];
+
+        NSLog(@"=== %@ ====\n%@\n", logPath, logString);
+    }
+#endif
+
     srv = nil;
 }
 
@@ -1011,7 +1030,15 @@ static ODAVTestServer *srv;
     OFSEncryptingFileManager *efm = [self initializedWrapper:fm];
     if (!efm)
         return;
-    
+
+    // Try to provoke the 412 Precondition failure in <bug:///149897> (iOS-OmniFocus Engineering: Intermittent HTTP 412 precondition failure in -[OFSEncryptedDAVTests testTastingLarge]) by starting the test at the beginning of a second.
+    if (0) {
+        NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval fraction = ceil(now) - now;
+        usleep((int)(fraction * 1e6));
+    }
+
+
     NSError * __autoreleasing error;
     NSMutableData *testData1 = [NSMutableData dataWithCapacity:100000];
     for(int i = 0; i < 10000; i++) {

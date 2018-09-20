@@ -510,13 +510,17 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     __weak OSUChecker *weakSelf = self;
     NSURLSessionTask *newsCacheTask = [[NSURLSession sharedSession] dataTaskWithURL:[self currentNewsURL] completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         OSUChecker *strongSelf = weakSelf;
-        if (!data) {
+        if (!data || !strongSelf) {
             return;
         }
         [data writeToURL:[strongSelf cachedNewsURL] atomically:YES];
-        [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementNotification
-                                                            object:strongSelf
-                                                          userInfo:@{@"OSUNewsAnnouncementURL":[strongSelf cachedNewsURL]}];
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:OSUNewsAnnouncementNotification
+                                                                object:strongSelf
+                                                              userInfo:@{@"OSUNewsAnnouncementURL":[strongSelf cachedNewsURL]}];
+        }];
+
         strongSelf.newsCacheTask = nil;
     }];
     self.newsCacheTask = newsCacheTask;

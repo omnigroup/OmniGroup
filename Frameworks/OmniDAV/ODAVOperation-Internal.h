@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 // $Id$
 
 #import <OmniDAV/ODAVOperation.h>
+
+@class ODAVConnection;
 
 @interface ODAVOperation ()
 
@@ -19,7 +21,7 @@
 @property(nonatomic,readonly) NSOperationQueue *callbackQueue;
 
 - (void)_credentialsNotFoundForChallenge:(NSURLAuthenticationChallenge *)challenge disposition:(NSURLSessionAuthChallengeDisposition)disposition;
-- (void)_didCompleteWithError:(NSError *)error;
+- (void)_didCompleteWithError:(NSError *)error connection:(ODAVConnection *)connection;
 - (void)_didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend;
 - (void)_didReceiveResponse:(NSURLResponse *)response;
 - (void)_didReceiveData:(NSData *)data;

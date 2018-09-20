@@ -9,7 +9,7 @@
 
 RCS_ID("$Id$");
 
-@interface OIAppearanceDynamicColor : NSObject
+@interface OIAppearanceDynamicColor : NSColor
 + (NSColor *)dynamicColorForView:(NSView *)view darkColor:(NSColor *)darkColor lightColor:(NSColor *)lightColor;
 @property (nonatomic, weak) NSView *view;
 @property (nonatomic) NSColor *darkColor;

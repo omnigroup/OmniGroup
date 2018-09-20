@@ -1,4 +1,4 @@
-// Copyright 2002-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -159,11 +159,19 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     }
 
     if (!hasCustomIcon) {
+        NSString *imageName;
+
         if (isAutomatorWorfklow) {
-            [toolbarItem setImage:[NSImage imageNamed:@"OAAutomatorWorkflowIconTemplate" inBundle:OMNI_BUNDLE]];
+            imageName = @"OAAutomatorWorkflowIcon";
         } else {
-            [toolbarItem setImage:[NSImage imageNamed:@"OAScriptIconTemplate" inBundle:OMNI_BUNDLE]];
+            imageName = @"OAScriptIcon";
         }
+
+        if ([NSColor currentControlTint] == NSGraphiteControlTint) {
+            imageName = [imageName stringByAppendingString:@"-Graphite"];
+        }
+
+        [toolbarItem setImage:[NSImage imageNamed:imageName inBundle:OMNI_BUNDLE]];
     }
 #pragma clang diagnostic pop
 

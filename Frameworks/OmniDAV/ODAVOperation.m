@@ -8,6 +8,8 @@
 #import "ODAVOperation-Internal.h"
 
 #import <OmniDAV/ODAVErrors.h>
+#import "ODAVConnection-Subclass.h"
+
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
@@ -247,6 +249,8 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     } \
 } while(0)
 
+@synthesize shouldRetry = _shouldRetry;
+@synthesize willRetry = _willRetry;
 @synthesize didFinish = _didFinish;
 @synthesize didReceiveData = _didReceiveData;
 @synthesize didReceiveBytes = _didReceiveBytes;
@@ -333,7 +337,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     _authChallengeCancelled = (disposition == NSURLSessionAuthChallengeCancelAuthenticationChallenge);
 }
 
-- (void)_didCompleteWithError:(NSError *)error;
+- (void)_didCompleteWithError:(NSError *)error connection:(ODAVConnection *)connection;
 {
     OBASSERT(!_finished);
     OBASSERT(_error == nil);
@@ -353,7 +357,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         OBASSERT(expectedContentLength == NSURLResponseUnknownLength || _bytesReceived <= (unsigned long long)expectedContentLength); // should have gotten all the content if we are to be considered successfully finised
 #endif
     }
-    [self _finish];
+    [self _finish:connection];
 }
 
 - (void)_didSendBodyData:(int64_t)bytesSent totalBytesSent:(int64_t)totalBytesSent totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend;
@@ -434,9 +438,9 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         // NSURLConnection presumably notices there is no Location header in the 301/302 response and doesn't do its redirection path.
         // We can't recover from this easily here, so it is an error.
         if (statusCode < 400) {
-#ifdef DEBUG_bungi
-            OBASSERT(NO, "This is likely a bug in the calling code");
-#endif
+//#ifdef DEBUG_bungi
+//            OBASSERT(NO, "This is likely a bug in the calling code");
+//#endif
             OBASSERT([[_request HTTPMethod] isEqual:@"COPY"] || [[_request HTTPMethod] isEqual:@"MOVE"]);
 #ifdef OMNI_ASSERTIONS_ON
             NSDictionary *responseHeaders = [(NSHTTPURLResponse *)response allHeaderFields];
@@ -746,10 +750,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     }
 }
 
-- (void)_finish;
+#define MaximumRetries (5)
+
+
+- (void)_finish:(ODAVConnection *)connection;
 {
     OBPRECONDITION(!_finished);
-    
+
     if (_shouldCollectDetailsForError) {
         // If we've already recorded a cancellation error in _error, don't overwrite that. In that case, include the detailed error response as the underlying error.
         if (_error != nil && ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication] || ([_error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled] && _authChallengeCancelled))) {
@@ -762,21 +769,68 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     
     if (_error != nil) {
         [self _logError:_error];
+
+        DEBUG_DAV(3, @"did fail with error %@", _error);
+
+        id <ODAVAsynchronousOperation> retry;
+
+        if (_shouldRetry) {
+            retry = _shouldRetry(self, _response);
+            OBASSERT(retry != self);
+        } else if ([_error hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost]) {
+            if (!self.retryable || _didReceiveBytes || _didReceiveData || _didSendBytes) {
+                // Retry will need to be handled at a higher level, possibly via a `shouldRetry` block, since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over (assuming this is a repeatable operation like a GET/PROPFIND). If this is a PUT/POST or other mutating command, we can't know here whether the operation actually happened on the server.
+            } else  if (_retryIndex < MaximumRetries) {
+                // Try again -- server shut down the remote side of a HTTP 1.1 connection, maybe?
+                ODAVOperation *retryOp = [(id <ODAVConnectionSubclass>)connection _makeOperationForRequest:_request];
+
+                DEBUG_DAV(2, @"connection lost");
+                retry = retryOp;
+            }
+        }
+
+        if (retry) {
+            typeof(_willRetry) willRetry = _willRetry;
+
+            retry.didFinish = _didFinish;
+
+            if ([retry isKindOfClass:[ODAVOperation class]]) {
+                ODAVOperation *davOp = (ODAVOperation *)retry;
+                davOp.retryIndex = davOp.retryIndex + 1;
+            }
+
+            // On a retry, we don't want the original operation's didFinish block to be called.
+            [self _clearCallbacks];
+
+            // Invoke this before starting the new operation so listeners can attach callbacks.
+            PERFORM_CALLBACK(willRetry, self, retry);
+
+            DEBUG_DAV(2, @"retrying with new op: %@", OBShortObjectDescription(retry));
+            [retry startWithCallbackQueue:_callbackQueue];
+            return;
+        }
     } else {
         DEBUG_DAV(3, @"%@: did finish", [self shortDescription]);
     }
-    
+
     // Do this before calling the 'did finish' hook so that we are marked as finished when the target (possibly) calls our -resultData.
     _finished = YES;
     
     // Clear all our block pointers to help avoid retain cycles, now that we are done and need to go away.
     typeof(_didFinish) didFinish = _didFinish;
+    [self _clearCallbacks];
+
+    PERFORM_CALLBACK(didFinish, self, _error);
+}
+
+- (void)_clearCallbacks;
+{
+    _shouldRetry = nil;
+    _willRetry = nil;
     _didFinish = nil;
     _didReceiveBytes = nil;
     _didReceiveData = nil;
     _didSendBytes = nil;
-        
-    PERFORM_CALLBACK(didFinish, self, _error);
 }
 
 #pragma mark - Debugging

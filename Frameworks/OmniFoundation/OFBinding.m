@@ -1,4 +1,4 @@
-// Copyright 2004-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ static unsigned int _OFBindingObservationContext;
     BOOL _registered;
     id        _sourceObject;
     NSString *_sourceKeyPath;
-    id        _nonretained_destinationObject; // We assume the destantion owns us
+    __weak id _weak_destinationObject; // We assume the destination owns us
     NSString *_destinationKeyPath;
 }
 
@@ -68,7 +68,7 @@ static unsigned int _OFBindingObservationContext;
 
     _sourceObject = [sourceObject retain];
     _sourceKeyPath = [sourceKeyPath copy];
-    _nonretained_destinationObject = destinationObject;
+    _weak_destinationObject = destinationObject;
     _destinationKeyPath = [destinationKeyPath copy];
     
     [self enable];
@@ -110,7 +110,7 @@ static unsigned int _OFBindingObservationContext;
     [_destinationKeyPath release];
     _destinationKeyPath = nil;
     
-    _nonretained_destinationObject = nil;
+    _weak_destinationObject = nil;
 }
 
 - (BOOL)isEnabled;
@@ -160,12 +160,16 @@ static unsigned int _OFBindingObservationContext;
 
 - (OFBindingPoint *)destinationPoint;
 {
-    return OFBindingPointMake(_nonretained_destinationObject, _destinationKeyPath);
+    id destination = _weak_destinationObject;
+    OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+    return OFBindingPointMake(destination, _destinationKeyPath);
 }
 
 - (id)destinationObject;
 {
-    return _nonretained_destinationObject;
+    id destination = _weak_destinationObject;
+    OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+    return destination;
 }
 
 - (NSString *)destinationKeyPath;
@@ -180,7 +184,10 @@ static unsigned int _OFBindingObservationContext;
 
 - (void)propagateCurrentValue;
 {
-    [_nonretained_destinationObject setValue:[_sourceObject valueForKeyPath:_sourceKeyPath] forKeyPath:_destinationKeyPath];
+    id destination = _weak_destinationObject;
+    OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+
+    [destination setValue:[_sourceObject valueForKeyPath:_sourceKeyPath] forKeyPath:_destinationKeyPath];
 }
 
 - (NSString *)humanReadableDescription;
@@ -224,7 +231,12 @@ static unsigned int _OFBindingObservationContext;
     NSMutableDictionary *dict = [super debugDictionary];
     [dict setValue:_sourceObject forKey:@"sourceObject"];
     [dict setValue:_sourceKeyPath forKey:@"sourceKeyPath"];
-    [dict setValue:_nonretained_destinationObject forKey:@"destinationObject"];
+    
+    id destination = _weak_destinationObject;
+    OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+    if (destination) {
+        [dict setValue:destination forKey:@"destinationObject"];
+    }
     [dict setValue:_destinationKeyPath forKey:@"destinationKeyPath"];
     return dict;
 }
@@ -243,7 +255,7 @@ static unsigned int _OFBindingObservationContext;
     OBPRECONDITION(_sourceObject);
     OBPRECONDITION(_sourceKeyPath);
     OBPRECONDITION(_destinationKeyPath);
-    OBPRECONDITION(_nonretained_destinationObject);
+    OBPRECONDITION(_weak_destinationObject);
     
     OBPRECONDITION(!_registered);
     if (_registered) // don't double-register if there is a programming error
@@ -300,9 +312,15 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
         OBPRECONDITION(object == _sourceObject);
         
+        id destination = _weak_destinationObject;
+        OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+        if (!destination) {
+            return;
+        }
+        
 #if DEBUG_KVO
         //if (![_sourceObject isKindOfClass:[ODEventPlaybackEventSource class]] && ![_sourceObject isKindOfClass:[ODTimeParametricEventSource class]])
-        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKeyPath, [_nonretained_destinationObject shortDescription], _destinationKeyPath, change);
+        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKeyPath, [destination shortDescription], _destinationKeyPath, change);
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
@@ -311,7 +329,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
             case NSKeyValueChangeSetting: {
-                _handleSetValue(_sourceObject, _sourceKeyPath, _nonretained_destinationObject, _destinationKeyPath, change);
+                _handleSetValue(_sourceObject, _sourceKeyPath, destination, _destinationKeyPath, change);
                 break;
             }
             default: {
@@ -342,9 +360,15 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
         OBPRECONDITION(object == _sourceObject);
         
+        id destination = _weak_destinationObject;
+        OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+        if (!destination) {
+            return;
+        }
+
 #if DEBUG_KVO
         //if (![_sourceObject isKindOfClass:[ODEventPlaybackEventSource class]] && ![_sourceObject isKindOfClass:[ODTimeParametricEventSource class]])
-        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKey, [_nonretained_destinationObject shortDescription], _destinationKeyPath, change);
+        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKey, [destination shortDescription], _destinationKeyPath, change);
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
@@ -353,7 +377,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
             case NSKeyValueChangeSetting: {
-                _handleSetValue(_sourceObject, _sourceKeyPath, _nonretained_destinationObject, _destinationKeyPath, change);
+                _handleSetValue(_sourceObject, _sourceKeyPath, destination, _destinationKeyPath, change);
                 break;
             }
             case NSKeyValueChangeInsertion: {
@@ -363,14 +387,14 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
                 OBASSERT(indexes);
                 OBASSERT([inserted count] == [indexes count]);
                 
-                [[_nonretained_destinationObject mutableArrayValueForKeyPath:_destinationKeyPath] insertObjects:inserted atIndexes:indexes];
+                [[destination mutableArrayValueForKeyPath:_destinationKeyPath] insertObjects:inserted atIndexes:indexes];
                 break;
             }
             case NSKeyValueChangeRemoval: {
                 NSIndexSet *indexes = [change objectForKey:NSKeyValueChangeIndexesKey];
                 OBASSERT(indexes);
                 
-                [[_nonretained_destinationObject mutableArrayValueForKeyPath:_destinationKeyPath] removeObjectsAtIndexes:indexes];
+                [[destination mutableArrayValueForKeyPath:_destinationKeyPath] removeObjectsAtIndexes:indexes];
                 break;
             }
             default: {
@@ -404,9 +428,15 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         OBPRECONDITION([keyPath isEqualToString:_sourceKeyPath]);
         OBPRECONDITION(object == _sourceObject);
         
+        id destination = _weak_destinationObject;
+        OBASSERT_NOTNULL(destination, "Destination has been deallocated");
+        if (!destination) {
+            return;
+        }
+
 #if DEBUG_KVO
         //if (![_sourceObject isKindOfClass:[ODEventPlaybackEventSource class]] && ![_sourceObject isKindOfClass:[ODTimeParametricEventSource class]])
-        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKey, [_nonretained_destinationObject shortDescription], _destinationKeyPath, change);
+        NSLog(@"binding %p observe %@.%@ -- propagating to %@.%@, change %@", self, [_sourceObject shortDescription], _sourceKey, [destination shortDescription], _destinationKeyPath, change);
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
@@ -415,7 +445,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
             case NSKeyValueChangeSetting: {
-                _handleSetValue(_sourceObject, _sourceKeyPath, _nonretained_destinationObject, _destinationKeyPath, change);
+                _handleSetValue(_sourceObject, _sourceKeyPath, destination, _destinationKeyPath, change);
                 break;
             }
             case NSKeyValueChangeInsertion: {
@@ -423,7 +453,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
                 OBASSERT(inserted);
                 OBASSERT([inserted count] > 0);
                 
-                [[_nonretained_destinationObject mutableSetValueForKeyPath:_destinationKeyPath] unionSet:inserted];
+                [[destination mutableSetValueForKeyPath:_destinationKeyPath] unionSet:inserted];
                 break;
             }
             case NSKeyValueChangeRemoval: {
@@ -431,7 +461,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
                 OBASSERT(removed);
                 OBASSERT([removed count] > 0);
                 
-                [[_nonretained_destinationObject mutableSetValueForKeyPath:_destinationKeyPath] minusSet:removed];
+                [[destination mutableSetValueForKeyPath:_destinationKeyPath] minusSet:removed];
                 break;
             }
             case NSKeyValueChangeReplacement: {
@@ -442,7 +472,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
                 
                 OBASSERT(![removed intersectsSet:inserted]); // If these intersect, then we'll publish a remove of some objects followed by an add; better for the object to not be in the sets at all.
                 
-                NSMutableSet *proxy = [_nonretained_destinationObject mutableSetValueForKeyPath:_destinationKeyPath];
+                NSMutableSet *proxy = [destination mutableSetValueForKeyPath:_destinationKeyPath];
                 if ([removed count] > 0)
                     [proxy minusSet:removed];
                 if ([inserted count] > 0)

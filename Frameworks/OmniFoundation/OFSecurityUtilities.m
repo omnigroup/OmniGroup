@@ -1,4 +1,4 @@
-// Copyright 2009-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -376,9 +376,10 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFS
     enum OFKeyAlgorithm keyType;
     
     /* We use kSecUseItemList+kSecMatchItemList because it sometimes works, although the documentation suggests we should use kSecMatchItemList (kSecUseItemList is in "Other Constants", which isn't listed as one of the sets of constants SecItemCopyMatching() looks at). This set of parameters is chosen because it tickles SecItemCopyMatching()'s bugs in a detectable way--- it tends to return information about the wrong key, and we'd rather fail here than return garbage. */
+    // As of Xcode 10.0b5, kSecUseItemList has been marked unavailable; switch back to kSecMatchItemList
     NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSArray arrayWithObject:(__bridge id)aKey], (id)kSecUseItemList,
-                           //[NSArray arrayWithObject:(__bridge id)aKey], (id)kSecMatchItemList,
+                           //[NSArray arrayWithObject:(__bridge id)aKey], (id)kSecUseItemList,
+                           [NSArray arrayWithObject:(__bridge id)aKey], (id)kSecMatchItemList,
                            (id)kCFBooleanTrue, (id)kSecReturnAttributes,
                            (id)kCFBooleanTrue, (id)kSecReturnRef,
                            (id)kSecMatchLimitAll, (id)kSecMatchLimit,

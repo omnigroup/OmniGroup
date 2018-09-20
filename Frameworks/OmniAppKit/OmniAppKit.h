@@ -40,6 +40,7 @@
 #import <OmniAppKit/NSAppleEventDescriptor-OAExtensions.h>
 #import <OmniAppKit/NSAppleScript-OAExtensions.h>
 #import <OmniAppKit/NSApplication-OAExtensions.h>
+#import <OmniAppKit/NSArrayController-OAExtensions.h>
 #import <OmniAppKit/NSBezierPath-OAExtensions.h>
 #import <OmniAppKit/NSBundle-OAExtensions.h>
 #import <OmniAppKit/NSCell-OAExtensions.h>

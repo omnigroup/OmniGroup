@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11198.2" systemVersion="16A313a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14313.3.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11198.2"/>
-        <plugIn identifier="com.apple.WebKitIBPlugin" version="11198.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.3.2"/>
+        <plugIn identifier="com.apple.WebKitIBPlugin" version="14313.3.2"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OSUAvailableUpdateController">
@@ -43,7 +44,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="424" y="252" width="480" height="550"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1418"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
             <view key="contentView" verticalHuggingPriority="750" verticalCompressionResistancePriority="1000" id="226" userLabel="Content View">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="550"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -105,7 +106,7 @@
                                                         </binding>
                                                     </connections>
                                                 </tableColumn>
-                                                <tableColumn identifier="" editable="NO" width="80" minWidth="40" maxWidth="1000" id="Hp4-Xd-pwp">
+                                                <tableColumn editable="NO" width="80" minWidth="40" maxWidth="1000" id="Hp4-Xd-pwp">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="right">
                                                         <font key="font" metaFont="smallSystem"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -137,11 +138,11 @@
                                 <constraints>
                                     <constraint firstAttribute="height" priority="725" constant="66" identifier="item-tableview-height" id="Ki9-vv-1Zg"/>
                                 </constraints>
-                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="odA-Jr-aQL">
+                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="odA-Jr-aQL">
                                     <rect key="frame" x="-100" y="-100" width="223" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
-                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="dPc-Yf-2vr">
+                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="dPc-Yf-2vr">
                                     <rect key="frame" x="-14" y="1" width="15" height="0.0"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -158,7 +159,7 @@
                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="NSCaution" id="s9K-Ar-e7f"/>
                                     </imageView>
                                     <button verticalHuggingPriority="750" ambiguous="YES" tag="2" translatesAutoresizingMaskIntoConstraints="NO" id="255">
-                                        <rect key="frame" x="151" y="30" width="121" height="19"/>
+                                        <rect key="frame" x="149" y="30" width="122" height="19"/>
                                         <buttonCell key="cell" type="roundRect" title="(DNL) Ignore Track" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="256">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="cellTitle"/>
@@ -174,7 +175,7 @@
                                         </connections>
                                     </button>
                                     <button horizontalHuggingPriority="249" verticalHuggingPriority="750" ambiguous="YES" tag="3" translatesAutoresizingMaskIntoConstraints="NO" id="253">
-                                        <rect key="frame" x="299" y="30" width="121" height="19"/>
+                                        <rect key="frame" x="298" y="30" width="122" height="19"/>
                                         <buttonCell key="cell" type="roundRect" title="Ignore All but Final" bezelStyle="roundedRect" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="254">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="cellTitle"/>
@@ -362,12 +363,12 @@ Gw
                                             <outlet property="nextKeyView" destination="234" id="281"/>
                                         </connections>
                                     </textField>
-                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="308" translatesAutoresizingMaskIntoConstraints="NO" id="234" customClass="OSUAvailableUpdateControllerMessageTextField">
+                                    <textField horizontalHuggingPriority="249" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" preferredMaxLayoutWidth="308" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="234" customClass="OSUAvailableUpdateControllerMessageTextField">
                                         <rect key="frame" x="82" y="9" width="312" height="27"/>
                                         <constraints>
                                             <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="27" id="FhK-Mw-dJf"/>
                                         </constraints>
-                                        <textFieldCell key="cell" controlSize="small" selectable="YES" sendsActionOnEndEditing="YES" allowsEditingTextAttributes="YES" id="235">
+                                        <textFieldCell key="cell" controlSize="small" allowsUndo="NO" sendsActionOnEndEditing="YES" id="235">
                                             <font key="font" metaFont="smallSystemBold"/>
                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -454,6 +455,6 @@ Gw
     </objects>
     <resources>
         <image name="NSApplicationIcon" width="128" height="128"/>
-        <image name="NSCaution" width="32" height="32"/>
+        <image name="NSCaution" width="128" height="128"/>
     </resources>
 </document>

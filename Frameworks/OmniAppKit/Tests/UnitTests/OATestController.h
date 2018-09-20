@@ -4,13 +4,12 @@
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
 
-#import "OATestCase.h"
-
-#import <OmniBase/OmniBase.h>
-
-RCS_ID("$Id$");
-
-@implementation OATestCase
-
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <OmniAppKit/OAController.h>
+#import <AppKit/NSApplication.h>
+@interface OATestController : OAController <NSApplicationDelegate>
 @end
+#endif

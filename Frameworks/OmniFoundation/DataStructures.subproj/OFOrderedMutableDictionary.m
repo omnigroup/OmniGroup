@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,8 +98,8 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
     
-    _dictionary = [[NSMutableDictionary dictionaryWithCapacity:numItems] retain];
-    _orderedKeys = [[NSMutableArray arrayWithCapacity:numItems] retain];
+    _dictionary = [[NSMutableDictionary alloc] initWithCapacity:numItems];
+    _orderedKeys = [[NSMutableArray alloc] initWithCapacity:numItems];
     
     return self;
 }
@@ -122,11 +122,14 @@ RCS_ID("$Id$");
 
 - (id)initWithObjects:(NSArray *)objects forKeys:(NSArray *)keys;
 {
-    if (!(self = [self initWithCapacity:[keys count]]))
+    if (!(self = [self initWithCapacity:0]))
         return nil;
+
+    [_dictionary release];
+    [_orderedKeys release];
     
     _dictionary = [[NSMutableDictionary alloc] initWithObjects:objects forKeys:keys];
-    _orderedKeys = OFISNULL(keys) ? [[NSMutableArray array] retain] : [keys mutableCopy];
+    _orderedKeys = OFISNULL(keys) ? [[NSMutableArray alloc] init] : [keys mutableCopy];
     
     return self;
 }

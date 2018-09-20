@@ -283,7 +283,41 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     /* Attempt to use Range requests for longer files */
     size_t tasteLength = [OFSSegmentDecryptWorker maximumSlotOffset];
     if (file.size > (off_t)(512 + tasteLength) && [underlying respondsToSelector:@selector(asynchronousReadContentsOfFile:range:)]) {
-        readOp = [underlying asynchronousReadContentsOfFile:file range:[NSString stringWithFormat:@"bytes=0-%zu", tasteLength]];
+        NSString *range = [NSString stringWithFormat:@"bytes=0-%zu", tasteLength];
+
+        readOp = [underlying asynchronousReadContentsOfFile:file range:range];
+
+        __block NSUInteger retries = 0;
+
+        // See also the notes on -[ODAVConnection asynchronousGetContentsOfURL:withETag:range:] about why we might get a 412 Precondition failure here.
+        readOp.shouldRetry = ^id <ODAVAsynchronousOperation>(id <ODAVAsynchronousOperation> op, NSHTTPURLResponse *response){
+            if (response.statusCode != ODAV_HTTP_PRECONDITION_FAILED) {
+                return nil;
+            }
+
+            // Has the source been modified during this second?
+            NSString *DateHeader = [response allHeaderFields][@"Date"];
+            NSString *ModifiedHeader = [response allHeaderFields][@"Last-Modified"];
+            if (![DateHeader isEqual:ModifiedHeader]) {
+                return nil;
+            }
+
+            // Did the server indicate this by returning a weak validator?
+            NSString *ETag = [response allHeaderFields][@"ETag"];
+            if (![ETag isEqualToString:[NSString stringWithFormat:@"W/%@", file.ETag]]) {
+                return nil;
+            }
+
+            // Don't flood the server; wait a bit before trying again.
+            if (retries > 5) {
+                OBASSERT_NOT_REACHED("Continual modification of the resource, or server Date header not updating?");
+                return nil;
+            }
+            retries++;
+
+            usleep(250000); // Wait a 1/4 second
+            return [underlying asynchronousReadContentsOfFile:file range:range];
+        };
     }
     
     if (!readOp) {
@@ -487,61 +521,15 @@ static BOOL errorIndicatesPlaintext(NSError *err);
     
     ODAVOperation *reader = _readerOp;
 
+    reader.willRetry = ^(id <ODAVAsynchronousOperation> __nonnull original, id <ODAVAsynchronousOperation> __nonnull retry){
+        OBASSERT(original == _readerOp);
+
+        _readerOp = retry;
+        OBASSERT(retry.didFinish != NULL); // The didFinish we assigned to the original should have been copied over.
+    };
+
     reader.didFinish = ^(id <ODAVAsynchronousOperation> op, NSError *errorOrNil){
-        OBINVARIANT(op == _readerOp);
-        OBPRECONDITION([self isExecuting]);
-        _readerOp = nil;
-        BOOL gotSubrange = NO;
-        
-        /* Validate the range response */
-        if (!errorOrNil && [op respondsToSelector:@selector(statusCode)]) {
-            ODAVOperation *davOp = (ODAVOperation *)op;
-            NSInteger statusCode = [davOp statusCode];
-            if (statusCode == ODAV_HTTP_OK /* 200 */) {
-                // OK
-            } else if (statusCode == ODAV_HTTP_PARTIAL_CONTENT /* 206 */) {
-                NSString *header = [davOp valueForResponseHeader:@"Content-Range"];
-                unsigned long long firstByte, lastByte;
-                gotSubrange = YES;
-                if (ODAVParseContentRangeBytes(header, &firstByte, &lastByte, NULL)) {
-                    if (firstByte != 0 || lastByte < firstByte || lastByte+1 != [davOp.resultData length]) {
-                        errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": header }];
-                    }
-                } else {
-                    errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": (header?header:@"(missing)") }];
-                }
-            } else {
-                errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"statusCode": @(statusCode) }];
-            }
-        }
-        
-        if (errorOrNil) {
-            _storedError = errorOrNil;
-        } else {
-            NSError * __autoreleasing error = nil;
-            NSRange blobLocation = { 0, 0 };
-            if (![OFSSegmentDecryptWorker parseHeader:op.resultData truncated:gotSubrange wrappedInfo:&blobLocation dataOffset:NULL error:&error]) {
-                
-                // We couldn't parse the encryption header. See if there was a flag indicating that we are allowed to let old plaintext files show through. If so, and this is one such, then we've tasted that slot.
-                int maskSlot = self.plaintextSlot;
-                if (maskSlot >= 0 && errorIndicatesPlaintext(error)) {
-                    _storedKeySlot = maskSlot;
-                } else {
-                    _storedError = error;
-                }
-            } else {
-                /* Get the key slot index from this file. This slightly breaks the encapsulation of OFSDocumentKey; elsewhere, the fact that the key blob starts with a key slot index is internal to that class. But the fact that key slots *exist* is part of its API, so this isn't too bad. */
-                if (blobLocation.length >= 2) {
-                    char buf[2];
-                    [op.resultData getBytes:buf range:(NSRange){blobLocation.location, 2}];
-                    _storedKeySlot = OSReadBigInt16(buf, 0);
-                } else {
-                    _storedError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:@{ NSLocalizedFailureReasonErrorKey: @"undersized info field"}];
-                }
-            }
-        }
-        
-        [self finish];
+        [self _didFinish:op error:errorOrNil];
     };
 
     [reader startWithCallbackQueue:nil];
@@ -551,6 +539,64 @@ static BOOL errorIndicatesPlaintext(NSError *err);
 {
     [_readerOp cancel];
     [super cancel];
+}
+
+- (void)_didFinish:(id <ODAVAsynchronousOperation>)op error:(NSError *)errorOrNil;
+{
+    OBINVARIANT(op == _readerOp);
+    OBPRECONDITION([self isExecuting]);
+    _readerOp = nil;
+    BOOL gotSubrange = NO;
+
+    /* Validate the range response */
+    if (!errorOrNil && [op respondsToSelector:@selector(statusCode)]) {
+        ODAVOperation *davOp = (ODAVOperation *)op;
+        NSInteger statusCode = [davOp statusCode];
+        if (statusCode == ODAV_HTTP_OK /* 200 */) {
+            // OK
+        } else if (statusCode == ODAV_HTTP_PARTIAL_CONTENT /* 206 */) {
+            NSString *header = [davOp valueForResponseHeader:@"Content-Range"];
+            unsigned long long firstByte, lastByte;
+            gotSubrange = YES;
+            if (ODAVParseContentRangeBytes(header, &firstByte, &lastByte, NULL)) {
+                if (firstByte != 0 || lastByte < firstByte || lastByte+1 != [davOp.resultData length]) {
+                    errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": header }];
+                }
+            } else {
+                errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"Content-Range": (header?header:@"(missing)") }];
+            }
+        } else {
+            errorOrNil = [NSError errorWithDomain:ODAVErrorDomain code:ODAVInvalidPartialResponse userInfo:@{ @"statusCode": @(statusCode) }];
+        }
+    }
+
+    if (errorOrNil) {
+        _storedError = errorOrNil;
+    } else {
+        NSError * __autoreleasing error = nil;
+        NSRange blobLocation = { 0, 0 };
+        if (![OFSSegmentDecryptWorker parseHeader:op.resultData truncated:gotSubrange wrappedInfo:&blobLocation dataOffset:NULL error:&error]) {
+
+            // We couldn't parse the encryption header. See if there was a flag indicating that we are allowed to let old plaintext files show through. If so, and this is one such, then we've tasted that slot.
+            int maskSlot = self.plaintextSlot;
+            if (maskSlot >= 0 && errorIndicatesPlaintext(error)) {
+                _storedKeySlot = maskSlot;
+            } else {
+                _storedError = error;
+            }
+        } else {
+            /* Get the key slot index from this file. This slightly breaks the encapsulation of OFSDocumentKey; elsewhere, the fact that the key blob starts with a key slot index is internal to that class. But the fact that key slots *exist* is part of its API, so this isn't too bad. */
+            if (blobLocation.length >= 2) {
+                char buf[2];
+                [op.resultData getBytes:buf range:(NSRange){blobLocation.location, 2}];
+                _storedKeySlot = OSReadBigInt16(buf, 0);
+            } else {
+                _storedError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:@{ NSLocalizedFailureReasonErrorKey: @"undersized info field"}];
+            }
+        }
+    }
+
+    [self finish];
 }
 
 @end

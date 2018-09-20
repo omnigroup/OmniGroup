@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -422,9 +422,12 @@ static NSString *windowFrameSaveName = @"Preferences";
 
     // Hook up the pane's keyView loop to ours.  returnToOriginalValuesButton is always present, but the help button might get removed if there is no help URL for this pane.
     [[_currentClient lastKeyView] setNextKeyView:self.returnToOriginalValuesButton];
+    NSView *initialFirstResponder = [_currentClient initialFirstResponder];
     if (self.helpButton) {
-	OBASSERT([self.returnToOriginalValuesButton nextKeyView] == self.helpButton); // set in nib
-	[self.helpButton setNextKeyView:[_currentClient initialFirstResponder]];
+        [self.returnToOriginalValuesButton setNextKeyView:self.helpButton]; // We used to simply assert that this was true because it was set in the .nib, but at some point that stopped being the case
+        [self.helpButton setNextKeyView:initialFirstResponder];
+    } else {
+        [self.returnToOriginalValuesButton setNextKeyView:initialFirstResponder];
     }
     
     // As above, don't do this unless we are onscreen to avoid double become/resigns.

@@ -98,32 +98,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - NSURLConnectionDelegate
 
-#define MaximumRetries (5)
-
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 {
     ODAVOperation *op = [self _operationForConnection:connection andRemove:YES];
     
-    DEBUG_DAV(3, @"did fail with error %@", error);
-    
-    if ([error hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost]) {
-        if (!op.retryable || op.didReceiveBytes || op.didReceiveData || op.didSendBytes) {
-            // Retry will need to be handled at a higher level since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over (assuming this is a repeatable operation like a GET/PROPFIND). If this is a PUT/POST or other mutating command, we can't know here whether the operation actually happened on the server.
-        } else  if (op.retryIndex < MaximumRetries) {
-            // Try again -- server shut down the remote side of a HTTP 1.1 connection, maybe?
-            ODAVOperation *retry = [self _makeOperationForRequest:op.request];
-            
-            retry.didFinish = op.didFinish;
-            retry.retryIndex = op.retryIndex + 1;
-            
-            DEBUG_DAV(2, @"connection lost; retrying with new op: %@", OBShortObjectDescription(retry));
-            
-            [retry startWithCallbackQueue:op.callbackQueue];
-            return;
-        }
-    }
-    
-    [op _didCompleteWithError:error];
+    [op _didCompleteWithError:error connection:self];
 }
 
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
@@ -179,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection;
 {
-    [[self _operationForConnection:connection andRemove:YES] _didCompleteWithError:nil];
+    [[self _operationForConnection:connection andRemove:YES] _didCompleteWithError:nil connection:self];
 }
 
 - (nullable NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;

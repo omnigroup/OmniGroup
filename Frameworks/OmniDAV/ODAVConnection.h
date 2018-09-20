@@ -84,7 +84,7 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 - (void)getContentsOfURL:(NSURL *)url ETag:(nullable NSString *)ETag completionHandler:(ODAVConnectionOperationCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url; // Returns an unstarted operation
-- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(nullable NSString *)ETag range:(NSString *)range;
+- (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url withETag:(nullable NSString *)ETag range:(nullable NSString *)range;
 
 - (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 

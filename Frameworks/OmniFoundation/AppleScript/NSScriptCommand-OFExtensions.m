@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,7 +125,9 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
             // Trying to get rid of the subject targetting nonsense. It can spuriously "work" when doing something like "every tree of tree "foo" of content of ..." and end up skipping the inner tree "foo" component.
             id receiver = [[self receiversSpecifier] objectsByEvaluatingSpecifier];
             arguments = [argumentSpecifier objectsByEvaluatingSpecifier];
-            if (!arguments) {
+
+            // In 10.13.6, and probably earlier, we can get an empty array with the argument specifier having an evaluation error, so we can't just check for arguments == nil
+            if (!arguments || ([arguments isKindOfClass:[NSArray class]] && [arguments count] == 0 && [argumentSpecifier evaluationErrorNumber] == NSUnknownKeySpecifierError)) {
                 [argumentSpecifier resetEvaluationError]; // Otherwise it won't try again.
                 arguments = [argumentSpecifier objectsByEvaluatingWithContainers:receiver];
             }

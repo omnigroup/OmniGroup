@@ -23,6 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (void)dealloc;
+{
+    [_actions release];
+    [super dealloc];
+}
+
 - (void)append:(ODOObjectPropertyChangeAction)action;
 {
     [_actions addObject:[[action copy] autorelease]];

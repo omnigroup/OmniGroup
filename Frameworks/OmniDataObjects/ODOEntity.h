@@ -23,8 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *instanceClassName;
 @property (nonatomic, readonly) Class instanceClass;
 
-@property (nonatomic, readonly) NSArray *properties;
-@property (nonatomic, readonly) NSDictionary *propertiesByName;
+@property (nonatomic, readonly) NSArray <ODOProperty *> *properties;
+@property (nonatomic, readonly) NSDictionary <NSString *, ODOProperty *> *propertiesByName;
 
 - (nullable ODOProperty *)propertyNamed:(NSString *)name;
 - (nullable ODOProperty *)propertyWithGetter:(SEL)getter;

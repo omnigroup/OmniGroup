@@ -705,5 +705,13 @@
   "MacBookPro14,3": {
     "name": "MacBook Pro",
     "comment": "15-inch, mid 2017, Touch Bar"
+  },
+  "MacBookPro15,1": {
+    "name": "MacBook Pro",
+    "comment": "15-inch, 2018"
+  },
+  "MacBookPro15,2": {
+    "name": "MacBook Pro",
+    "comment": "13-inch, 2018, Touch Bar, four TB3 ports"
   }
 }

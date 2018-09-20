@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -180,9 +180,9 @@ RCS_ID("$Id$");
     OFPreference *tintOverride = TINT_PREFERENCE;
     NSControlTint desiredTint = [tintOverride enumeratedValue];
     if (desiredTint == NSDefaultControlTint) {
-        base = [NSImage tintedImageNamed:tintedImageStem inBundle:tintedImageBundle];
+        base = [NSImage tintedImageNamed:tintedImageStem inBundle:tintedImageBundle allowingNil:NO shouldDynamicallyAdjust:YES];
         if (tintedOptionImageStem)
-            opt = [NSImage tintedImageNamed:tintedOptionImageStem inBundle:tintedImageBundle];
+            opt = [NSImage tintedImageNamed:tintedOptionImageStem inBundle:tintedImageBundle allowingNil:NO shouldDynamicallyAdjust:YES];
         else
             opt = nil;
     } else {

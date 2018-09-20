@@ -133,7 +133,8 @@ NS_ASSUME_NONNULL_BEGIN
      */
 
     ODAVOperation *op = [self _operationForTask:task isCompleting:YES];
-    [op _didCompleteWithError:error];
+
+    [op _didCompleteWithError:error connection:self];
 
     @synchronized(self) {
         DEBUG_TASK(1, @"Removing operation %@ for task %@", op, task);

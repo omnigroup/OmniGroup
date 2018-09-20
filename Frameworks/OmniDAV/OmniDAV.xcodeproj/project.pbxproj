@@ -1608,7 +1608,7 @@
 		};
 		349F979D15DEA87B00D7677C /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3421AE880F71F89C0096AADB /* Omni-Bundle-Debug.xcconfig */;
+			baseConfigurationReference = 34E88F591EC11731007B918E /* Omni-XCTest-Debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1625,7 +1625,7 @@
 		};
 		349F979E15DEA87B00D7677C /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3421AE890F71F89C0096AADB /* Omni-Bundle-Release.xcconfig */;
+			baseConfigurationReference = 34E88F5A1EC11731007B918E /* Omni-XCTest-Release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (

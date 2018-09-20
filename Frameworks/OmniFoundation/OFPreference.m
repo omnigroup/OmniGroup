@@ -391,8 +391,10 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 {
-    [[NSUserDefaults standardUserDefaults] registerDefaults:@{key: value}];
-    [self recacheRegisteredKeys];
+    if (![[self registeredKeys] containsObject:key]) {
+        [[NSUserDefaults standardUserDefaults] registerDefaults:@{key: value}];
+        [self recacheRegisteredKeys];
+    }
     return [self preferenceForKey:key];
 }
 
