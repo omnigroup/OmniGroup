@@ -41,4 +41,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#pragma mark -
+
+@interface UIBarButtonItem (OUIPopoverPresentationExtensions)
+
+@property (nonatomic) BOOL OUI_enabledStateIsManagedByPopoverPresentationController;
+
+@end
+
 NS_ASSUME_NONNULL_END

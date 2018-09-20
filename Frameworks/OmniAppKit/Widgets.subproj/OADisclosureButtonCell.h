@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <Cocoa/Cocoa.h>
+#import <AppKit/NSButtonCell.h>
 
 @interface OADisclosureButtonCell : NSButtonCell
 

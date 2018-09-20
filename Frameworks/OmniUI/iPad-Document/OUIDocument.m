@@ -1833,8 +1833,7 @@ typedef NSString * (^MessageProvider)(void);
             [self finish];
         };
 
-        [strongDoc.applicationLock unlock];
-        strongDoc.applicationLock = nil;
+        [[OUIInteractionLock activeLocks] makeObjectsPerformSelector:@selector(unlock)];
         [presenter presentViewController:dialog animated:YES completion:nil];
     });
 }

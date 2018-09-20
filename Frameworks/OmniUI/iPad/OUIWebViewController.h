@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,13 @@ NS_EXTENSION_UNAVAILABLE_IOS("OUIWebViewController not available in app extensio
 @property (nonatomic, copy) void (^reloadBlock)(OUIWebViewController *webViewController, NSURL *url);
 @property (nonatomic, copy) void (^callbackBlock)(OUIWebViewController *webViewController, NSString *callback);
 
+// Return YES if the navigation has been handled (either by allowing it or by cancelling and then loading some other request).
+@property (nonatomic, copy) BOOL (^localAnchorNavigationBlock)(OUIWebViewController *webViewController, void (^decisionHandler)(WKNavigationActionPolicy), NSString *anchor);
+
 @property (nonatomic, copy) NSURL *URL; // loads URL as a side effect of setting it
 @property (nonatomic, readonly, strong) WKWebView *webView;
+
+- (WKWebViewConfiguration *)makeConfiguration;
 
 - (void)_updateBarButtonItems;
 

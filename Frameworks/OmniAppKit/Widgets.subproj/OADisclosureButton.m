@@ -5,12 +5,10 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OADisclosureButton.h"
-
 #import <OmniAppKit/OADisclosureButton.h>
 #import <OmniAppKit/OADisclosureButtonCell.h>
 
-RCS_ID("$$");
+RCS_ID("$Id$");
 
 @implementation OADisclosureButton
 

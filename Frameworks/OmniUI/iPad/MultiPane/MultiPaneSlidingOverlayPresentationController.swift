@@ -66,8 +66,10 @@ protocol SldingOverlayPresentationControllerDelegate: class {
     func slidingOverlayPresentationController(_ controller: SldingOverlayPresentationController, didDismiss pane: Pane)
 }
 
+private class _DismissOverlayButton: UIButton {}
+
 class SldingOverlayPresentationController: UIPresentationController {
-    private let shieldingView = UIButton(type: .custom)
+    private let shieldingView = _DismissOverlayButton(type: .custom)
     @objc /**REVIEW**/ var pane: Pane
     weak var sldingOverlayPresentationControllerDelegate: SldingOverlayPresentationControllerDelegate?
     

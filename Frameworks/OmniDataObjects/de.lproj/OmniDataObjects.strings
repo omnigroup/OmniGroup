@@ -2,10 +2,10 @@
 "Attempted to disconnect while not connected." = "Verbindungstrennung bei nicht bestehender Verbindung nicht möglich.";
 
 /* error reason */
-"Attribute %@.%@ has type %ld with unknown SQL column type." = "Eigenschaft %1$@.%2$@ hat Typ %3$ld mit unbekanntem SQL-Spaltentyp.";
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "Attribut %1$@.%2$@ hat Typ %3$ld mit unbekanntem SQL-Spaltentyp.";
 
 /* error reason */
-"Attribute has type unsupported type %ld." = "Eigenschaft hat nicht unterstützten Typ %ld.";
+"Attribute has type unsupported type %ld." = "Attribut hat nicht unterstützten Typ %ld.";
 
 /* error reason */
 "Cannot connect to '%@' since the database is already connected to '%@'." = "Verbindung zu „%1$@“ nicht möglich, da die Datenbank bereits mit „%2$@“ verbunden ist.";
@@ -101,7 +101,7 @@
 "Unable convert predicate of type %lu (%@)." = "Prädikatstyp %1$lu (%2$@) kann nicht konvertiert werden.";
 
 /* error reason */
-"Unable get value of type %ld for result column %d of '%@'." = "Wert von Typ %1$ld konnte nicht für Ergebnisspalte %2$d von „%3$@“ abgefragt werden.";
+"Unable get value of type %ld for result column %d of '%@'." = "Wert vom Typ %1$ld konnte nicht für Ergebnisspalte %2$d von „%3$@“ abgefragt werden.";
 
 /* error reason */
 "Unable prepare statement for SQL '%@'." = "Befehl für SQL „%@“ konnte nicht vorbereitet werden.";

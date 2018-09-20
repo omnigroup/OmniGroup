@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,6 +61,16 @@ UIImage *OUIStepperPlusImage(void)
 UIImage *OUIToolbarUndoImage(void)
 {
     return [UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+UIImage *OUIToolbarForwardImage(void)
+{
+    return [UIImage imageNamed:@"OUIToolbarForward" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+UIImage *OUIToolbarBackImage(void)
+{
+    return [UIImage imageNamed:@"OUIToolbarBack" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 UIImage *disclosureIndicatorFallbackImage(void)

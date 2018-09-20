@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,7 @@
 
 @class NSRegularExpression;
 @class OFCharacterSet;
+@class OFRegularExpressionMatch;
 
 /* A note on deferred string decoding.
 
@@ -95,6 +96,7 @@ enum {
 - (NSString *)stringByReplacingAllOccurrencesOfRegularExpressionPattern:(NSString *)pattern withString:(NSString *)newString;
     // Note: Useful, but fairly expensive!
 - (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withString:(NSString *)newString;
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withAction:(NSString *(^)(OFRegularExpressionMatch *))action;
 
 - (NSString *)stringByReplacingOccurancesOfString:(NSString *)targetString withObjectsFromArray:(NSArray *)sourceArray;
 

@@ -226,17 +226,19 @@ struct CompactEnvironment: PaneEnvironment {
 extension UIViewController {
     @objc var isVisible: Bool {
         guard self.isViewLoaded else { return false }
-        
-        let hasWindow = (self.view.window != nil)
+        guard let view = self.view else { return false }
+
+        let hasWindow = (view.window != nil)
         var hasFullscreenPresentedViewController: Bool = false
         if let presented = presentedViewController, presented.modalPresentationStyle == .currentContext || presented.modalPresentationStyle == .fullScreen {
             hasFullscreenPresentedViewController = true
         }
         guard hasWindow || hasFullscreenPresentedViewController else { return false }
         
-        if let superView = self.view.superview {
-            let contains = superView.bounds.contains(self.view.frame)
-            let intersects = superView.bounds.intersects(self.view.frame)
+        if let superView = view.superview {
+            let frame = view.frame
+            let contains = superView.bounds.contains(frame)
+            let intersects = superView.bounds.intersects(frame)
             return contains || intersects // may be at the start or middle of a rotation when this is called, so checking the intersection is also necessary to determine visibility
         }
         return false

@@ -8,4 +8,8 @@
  - Discoverability title identifier is configured in Foo.keycommands. If a discoverability title is desired for the key command, it should have an entry here.
  */
 
-// Currently no discoverability titles for OmniUI.keycommmands.
+"reload" = "Reload";
+"goBack" = "Back";
+"goForward" = "Forward";
+"stopLoading" = "Stop Loading";
+

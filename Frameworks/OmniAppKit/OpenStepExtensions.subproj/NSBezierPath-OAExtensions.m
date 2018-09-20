@@ -3319,7 +3319,11 @@ unsigned intersectionsBetweenCurveAndCurve(const NSPoint *c1coefficients, const 
         
         // Used to be (a[1].x == 0), but that caused problems if a[1].x was very close to zero.
         // Instead we use whichever is larger.
-        if (fabs(a[1].x) < fabs(a[1].y)) {
+        // ^circa 2003
+        // Then, it used to only be the first condition. But, that caused false positives when the magnitude of x and y were almost equal.
+        // The parameters that display that aberrant behavior can be found in <bug:///161189> (Mac-OmniGraffle Bug: Example Diagram: 252513 (line connection location))
+        // ^circa 2018
+        if (fabs(a[1].x) < fabs(a[1].y) || OFFloatEqualToFloatWithAccuracy(fabs(a[1].x), fabs(a[1].y), 0.0001)) {
             t = c[0].y + u * (c[1].y + u * (c[2].y + u * c[3].y));
             t -= a[0].y;
             t /= a[1].y;

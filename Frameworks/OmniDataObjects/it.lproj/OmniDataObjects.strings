@@ -2,7 +2,7 @@
 "Attempted to disconnect while not connected." = "Tentativo di disconnessione quando non connesso.";
 
 /* error reason */
-"Attribute %@.%@ has type %ld with unknown SQL column type." = "L'attributo %1$@.%2$@ possiede il tipo %3$ld con tipo colonna SQL sconosciuto.";
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "L'attributo %1$@.%2$@ possiede il tipo %3$ld con tipo di colonna SQL sconosciuto.";
 
 /* error reason */
 "Attribute has type unsupported type %ld." = "L'attributo possiede il tipo non supportato %ld.";
@@ -101,7 +101,7 @@
 "Unable convert predicate of type %lu (%@)." = "Impossibile convertire il predicato del tipo %1$lu (%2$@).";
 
 /* error reason */
-"Unable get value of type %ld for result column %d of '%@'." = "Impossibile ottenere il valore del tipo %1$ld per la colonna risultato %2$d di '%3$@'.";
+"Unable get value of type %ld for result column %d of '%@'." = "Impossibile ottenere il valore del tipo %1$ld per la colonna risultato %2$d di \"%3$@\".";
 
 /* error reason */
 "Unable prepare statement for SQL '%@'." = "Impossibile preparare l'istruzione per SQL '%@'.";

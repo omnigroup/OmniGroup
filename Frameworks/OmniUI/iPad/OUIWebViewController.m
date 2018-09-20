@@ -16,10 +16,13 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
+#import <OmniUI/OUIKeyCommands.h>
 
 RCS_ID("$Id$")
 
-@interface OUIWebViewController () <MFMailComposeViewControllerDelegate>
+static NSString * const InvalidScheme = @"x-invalid";
+
+@interface OUIWebViewController () <MFMailComposeViewControllerDelegate, OUIKeyCommandProvider>
 
 @property (nonatomic, strong) OFOrderedMutableDictionary *onLoadJavaScripts;
 @property (nonatomic, strong) UIActivityIndicatorView *spinner;
@@ -74,6 +77,42 @@ RCS_ID("$Id$")
             _closeBlock(self);
         }
     }];
+}
+
+#pragma mark - UIResponder
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+{
+    if (action == @selector(reload:)) {
+        NSURL *URL = self.webView.URL;
+        if (!URL || [[URL scheme] isEqual:InvalidScheme]) {
+            return NO;
+        }
+        return YES;
+    }
+    if (action == @selector(goBack:)) {
+        return self.webView.canGoBack;
+    }
+    if (action == @selector(goForward:)) {
+        return self.webView.canGoForward;
+    }
+    if (action == @selector(stopLoading:)) {
+        return self.webView.isLoading;
+    }
+
+    return [super canPerformAction:action withSender:sender];
+}
+
+#pragma mark - OUIKeyCommandProvider
+
+- (nullable NSOrderedSet<NSString *> *)keyCommandCategories;
+{
+    return [[NSOrderedSet<NSString *> alloc] initWithObjects:@"webView", nil];
+}
+
+- (nullable NSArray<UIKeyCommand *> *)keyCommands;
+{
+    return [OUIKeyCommands keyCommandsForCategories:self.keyCommandCategories];
 }
 
 #pragma mark - API
@@ -219,10 +258,17 @@ RCS_ID("$Id$")
         // Our load request should be handled locally
         BOOL isLoadRequest = [requestURL isEqual:self.URL] && (navigationAction.navigationType == WKNavigationTypeOther);
 
+        NSString *fragment = requestURL.fragment;
+        BOOL isLocalAnchor = !OFIsEmptyString(fragment);
+        if (isLocalAnchor && _localAnchorNavigationBlock) {
+            BOOL handled = _localAnchorNavigationBlock(self, decisionHandler, fragment);
+            if (handled) {
+                return;
+            }
+        }
+
         // Implicitly kick web all URLs over to Safari
-        BOOL isLocalAnchor = [scheme isEqualToString:@"x-invalid"];
         BOOL isWebURL = !isLoadRequest && !isLocalAnchor && ![requestURL isFileURL];
-        
         if (isWebURL) {
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
                 NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");
@@ -333,15 +379,28 @@ RCS_ID("$Id$")
 
 #pragma mark - UIViewController subclass
 
-- (void)loadView
+- (WKWebViewConfiguration *)makeConfiguration;
 {
     WKWebViewConfiguration *configuration = [WKWebViewConfiguration new];
     configuration.suppressesIncrementalRendering = YES;
     configuration.allowsInlineMediaPlayback = YES;
+    return configuration;
+}
+
+- (void)loadView
+{
+    WKWebViewConfiguration *configuration = [self makeConfiguration];
     WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
     webView.navigationDelegate = self;
     
     self.view = webView;
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [self _updateBarButtonItems];
+
+    [super viewWillAppear:animated];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;

@@ -2,7 +2,7 @@
 "Attempted to disconnect while not connected." = "尝试在未连接的情况下断开连接。";
 
 /* error reason */
-"Attribute %@.%@ has type %ld with unknown SQL column type." = "属性 %1$@.%2$@ 的 类型 %3$ld 具有未知的 SQL 栏类型。";
+"Attribute %@.%@ has type %ld with unknown SQL column type." = "属性 %1$@.%2$@ 的类型 %3$ld 具有未知的 SQL 栏类型。";
 
 /* error reason */
 "Attribute has type unsupported type %ld." = "属性的类型不支持类型 %ld。";

@@ -170,7 +170,9 @@ static void _PerformPosing(void)
     NSMutableSet *disabledManagedBarButtonItems = [NSMutableSet set];
     for (UIBarButtonItem *barButtonItem in self.managedBarButtonItems) {
         if ([barButtonItem isEnabled]) {
-            [barButtonItem setEnabled:NO];
+            barButtonItem.enabled = NO;
+            barButtonItem.OUI_enabledStateIsManagedByPopoverPresentationController = YES;
+
             [disabledManagedBarButtonItems addObject:barButtonItem];
         }
     }
@@ -188,7 +190,8 @@ static void _PerformPosing(void)
     original_dismissalTransitionWillBegin(self, _cmd);
     
     for (UIBarButtonItem *barButtonItem in self.disabledManagedBarButtonItems) {
-        [barButtonItem setEnabled:YES];
+        barButtonItem.OUI_enabledStateIsManagedByPopoverPresentationController = NO;
+        barButtonItem.enabled = YES;
     }
     
     self.disabledManagedBarButtonItems = nil;
@@ -200,6 +203,32 @@ static void _PerformPosing(void)
 }
 
 @end
+
+#pragma mark -
+
+static unsigned int _EnabledStateIsManagedByPopoverPresentationControllerKey;
+
+
+@implementation UIBarButtonItem (OUIPopoverPresentationExtensions)
+
+- (BOOL)OUI_enabledStateIsManagedByPopoverPresentationController;
+{
+    id value = objc_getAssociatedObject(self, &_EnabledStateIsManagedByPopoverPresentationControllerKey);
+
+    if (value != nil && [value isKindOfClass:[NSNumber class]]) {
+        return [value boolValue];
+    } else {
+        return NO;
+    }
+}
+
+- (void)setOUI_enabledStateIsManagedByPopoverPresentationController:(BOOL)enabledStateIsManagedByPopoverPresentationController;
+{
+    objc_setAssociatedObject(self, &_EnabledStateIsManagedByPopoverPresentationControllerKey, @(enabledStateIsManagedByPopoverPresentationController), OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+@end
+
 
 NS_ASSUME_NONNULL_END
 

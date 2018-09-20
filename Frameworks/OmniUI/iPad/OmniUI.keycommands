@@ -17,4 +17,11 @@
         ("^e","moveToEndOfParagraph:"),
         ("$^e","moveToEndOfParagraphAndModifySelection:"),
     );
+	
+	"webView" = (
+		("@r","reload:", "reload"),
+		("@[","goBack:", "goBack"),
+		("@]","goForward:", "goForward"),
+		("@.","stopLoading:", "stopLoading"),
+	);
 }

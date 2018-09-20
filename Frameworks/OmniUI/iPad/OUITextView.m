@@ -66,23 +66,23 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
 @interface _OUITextViewPasteboardProcessor : NSObject
 {
     NSArray <NSString *> *_requestedTypes;
-    void (^_completionHandler)(NSArray <NSData *> *);
+    void (^_completionHandler)(NSArray <NSAttributedString *> *);
 
-    NSMutableArray <NSData *> *_collectedDatas;
+    NSMutableArray <NSAttributedString *> *_collectedAttributedStrings;
 
     NSMutableArray <NSItemProvider *> *_remainingProviders;
     NSItemProvider *_itemProvider;
     NSMutableArray <NSString *> *_remainingAvailableTypes;
 }
 
-- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSData *> *))completionHandler;
+- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSAttributedString *> *))completionHandler;
 - (void)run;
 
 @end
 
 @implementation _OUITextViewPasteboardProcessor
 
-- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSData *> *))completionHandler;
+- (instancetype)initWithPasteboard:(UIPasteboard *)pasteboard requestedTypes:(NSArray <NSString *> *)requestedTypes completionHandler:(void (^)(NSArray <NSAttributedString *> *))completionHandler;
 {
     self = [super init];
     if (self == nil) {
@@ -91,7 +91,7 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
     
     _requestedTypes = [requestedTypes copy];
     _remainingProviders = [pasteboard.itemProviders mutableCopy];
-    _collectedDatas = [[NSMutableArray alloc] init];
+    _collectedAttributedStrings = [[NSMutableArray alloc] init];
     _completionHandler = [completionHandler copy];
 
     return self;
@@ -108,7 +108,7 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
     if (!_itemProvider) {
         typeof(_completionHandler) handler = _completionHandler;
         _completionHandler = nil;
-        handler(_collectedDatas);
+        handler(_collectedAttributedStrings);
         return;
     }
 
@@ -135,18 +135,26 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
 
     [_itemProvider loadDataRepresentationForTypeIdentifier:typeIdentifier completionHandler:^(NSData *data, NSError *error) {
         if (!data) {
-            // Not logging since com.apple.rtfd is messed up in 11.3; it is a zip file instead of a serialized NSFileWrapper.
-            // [error log:@"Error loading data for type %@", typeIdentifier];
+            [error log:@"Error loading data for type %@", typeIdentifier];
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 [self _nextType];
             }];
             return;
         }
 
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [_collectedDatas addObject:data];
-            [self _nextProvider];
-        }];
+        NSError *attributedStringError;
+        NSAttributedString *str = [NSAttributedString objectWithItemProviderData:data typeIdentifier:typeIdentifier error:&attributedStringError];
+        if (str) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [_collectedAttributedStrings addObject:str];
+                [self _nextProvider];
+            }];
+        } else {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _nextType];
+            }];
+        }
+
     }];
 }
 
@@ -1199,12 +1207,7 @@ static BOOL _rangeContainsPosition(id <UITextInput> input, UITextRange *range, U
 
 static NSArray *_readableTypes(void)
 {
-    // The system currently adds RTFD, UTF plain text, and WebKit archives. If we just specify kUTTypeText, we'll only get back the plain text (also, WebKit doesn't conform to text at all). So, we'll add types for everything that NSAttributedString can supposedly read, based off <UIKit/NSAttributedString.h>
-    return @[(OB_BRIDGE id)kUTTypeRTFD,
-             (OB_BRIDGE id)kUTTypeFlatRTFD,
-             (OB_BRIDGE id)kUTTypeHTML,
-             (OB_BRIDGE id)kUTTypeRTF,
-             (OB_BRIDGE id)kUTTypeText];
+    return [NSAttributedString readableTypeIdentifiersForItemProvider];
 }
 
 static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
@@ -1491,13 +1494,12 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
     pasteboard.items = items;
 }
 
-// If this pattern ends up being correct, maybe move this to UIPasteboard as a category method
-static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types, void (^applier)(NSData *))
+static void _readAttributedStrings(UIPasteboard *pasteboard, NSArray *types, void (^applier)(NSAttributedString *))
 {
     __block BOOL done = NO;
-    __block NSArray <NSData *> *datas = nil;
-    _OUITextViewPasteboardProcessor *processor = [[_OUITextViewPasteboardProcessor alloc] initWithPasteboard:pasteboard requestedTypes:types completionHandler:^(NSArray <NSData *> *results){
-        datas = results;
+    __block NSArray <NSAttributedString *> *attributedStrings = nil;
+    _OUITextViewPasteboardProcessor *processor = [[_OUITextViewPasteboardProcessor alloc] initWithPasteboard:pasteboard requestedTypes:types completionHandler:^(NSArray <NSAttributedString *> *results){
+        attributedStrings = results;
         done = YES;
     }];
 
@@ -1510,8 +1512,8 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
         return;
     }
 
-    for (NSData *data in datas) {
-        applier(data);
+    for (NSAttributedString *str in attributedStrings) {
+        applier(str);
     }
 }
 
@@ -1564,14 +1566,8 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     if (!attributedString) {
         // Handle our default readable types.
         NSMutableAttributedString *result = [NSMutableAttributedString new];
-        _enumerateBestDataForTypes(pasteboard, _readableTypes(), ^(NSData *data){
-            __autoreleasing NSError *error = nil;
-            NSAttributedString *str = [[NSAttributedString alloc] initWithData:data options:@{} documentAttributes:NULL error:&error];
-            if (!str)
-                [error log:@"Error reading pasteboard item"];
-            else {
-                [result appendAttributedString:str];
-            }
+        _readAttributedStrings(pasteboard, _readableTypes(), ^(NSAttributedString *str){
+            [result appendAttributedString:str];
         });
         
         [result enumerateAttribute:NSFontAttributeName inRange:NSMakeRange(0, [result length]) options:0 usingBlock:^(UIFont *font, NSRange range, BOOL *stop) {

@@ -97,14 +97,24 @@ public extension Diffable {
             return !omitMove
         }
 
+        var foundConflictingSectionAndItemChanges: Bool = false
+        
         // Exclude items that are covered by existing section deltas:
         let survivingInsertions = itemDifference.insertions.union(convertedInsertions).filter { indexPath in
             // No need to insert items if we're inserting the whole section
             return !sectionDifference.insertions.contains(indexPath.section)
         }
-        let survivingDeletions = itemDifference.deletions.union(convertedDeletions).filter { indexPath in
+        let survivingDeletions = itemDifference.deletions.union(convertedDeletions).compactMap { (indexPath) -> IndexPath? in
             // No need to delete items if we're deleting the whole section
-            return !sectionDifference.deletions.contains(indexPath.section)
+            guard !sectionDifference.deletions.contains(indexPath.section) else { return nil }
+            
+            // UITableView has a problem with drops that cause a row deletion in a moving section, so look for those conflicts and mark them; later, we'll note the problem in our returned Difference's applicability
+            if sectionDifference.moves.any(where: { $0.0 == indexPath.section }) {
+                foundConflictingSectionAndItemChanges = true
+            }
+            
+            // All other deletions are to be performed unchanged
+            return indexPath
         }
         let survivingUpdates = itemDifference.updates.filter { indexPaths in
             // No need to update items if we're deleting their sections.
@@ -136,11 +146,15 @@ public extension Diffable {
         let survivingItemDifference = CollectionDifference<IndexPath>(insertions: Set(survivingInsertions), deletions: Set(survivingDeletions), updates: survivingUpdates, moves: survivingMoves)
 
         let applicability: Difference.ChangeKind
-        switch (sectionDifferenceFast, itemDifferenceFast) {
-        case (.reload, _): fallthrough
-        case (_, .reload): applicability = .hasChangeButCannotApply
-        case let (.applyDifference(sectionDiff), .applyDifference(itemDiff)):
-            applicability = (sectionDiff.isEmpty && itemDiff.isEmpty) ? .noChange : .hasChangeAndCanApply
+        if foundConflictingSectionAndItemChanges {
+            applicability = .hasChangeButCannotApply
+        } else {
+            switch (sectionDifferenceFast, itemDifferenceFast) {
+            case (.reload, _): fallthrough
+            case (_, .reload): applicability = .hasChangeButCannotApply
+            case let (.applyDifference(sectionDiff), .applyDifference(itemDiff)):
+                applicability = (sectionDiff.isEmpty && itemDiff.isEmpty) ? .noChange : .hasChangeAndCanApply
+            }
         }
         
         return Difference(sectionChanges: sectionDifference, itemChanges: survivingItemDifference, changeKind: applicability)

@@ -199,25 +199,35 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         return presenter
     }()
     
-    @objc /**REVIEW**/ open weak var keyCommandProvider: OUIKeyCommandProvider?
-    open override var keyCommands: [UIKeyCommand]? {
-        return keyCommandProvider?.keyCommands
-    }
-    
     /// Backing property so we can force re-creation of leftEdgePanGesture.
+
     private var _leftEdgePanGesture: UIScreenEdgePanGestureRecognizer? = nil
+
+    @discardableResult
+    private func resetLeftEdgePanGesture() -> UIScreenEdgePanGestureRecognizer {
+        if let recognizer = _leftEdgePanGesture {
+            if self.isViewLoaded {
+                self.view.removeGestureRecognizer(recognizer)
+            }
+        }
+
+        let gesture = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(MultiPaneController.handleScreenEdgePanGesture))
+        gesture.edges = .left
+        gesture.delegate = self
+        gesture.debugIdentifier = "MultiPane left edge swipe"
+        _leftEdgePanGesture = gesture
+
+        if self.isViewLoaded {
+            self.view.addGestureRecognizer(gesture)
+        }
+
+        return gesture
+    }
+
+    // TODO: This gets replaced at random intervals, so it shouldn't be public (otherwise a caller might latch onto a recognizer that is no longer in use).
     @objc open var leftEdgePanGesture: UIScreenEdgePanGestureRecognizer {
         get {
-            if let existing = _leftEdgePanGesture {
-                return existing
-            }
-            
-            let gesture = UIScreenEdgePanGestureRecognizer(target: self, action: #selector(MultiPaneController.handleScreenEdgePanGesture))
-            gesture.edges = .left
-            gesture.delegate = self
-            gesture.debugIdentifier = "MultiPane left edge swipe"
-            _leftEdgePanGesture = gesture
-            return gesture
+            return _leftEdgePanGesture ?? resetLeftEdgePanGesture()
         }
     }
     
@@ -282,8 +292,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         }
         
         updateDisplayMode(forSize: currentSize, traitCollection: traitCollection)
-        
-        view.addGestureRecognizer(leftEdgePanGesture)
+
+        resetLeftEdgePanGesture()
     }
     
     override open func viewWillLayoutSubviews() {
@@ -373,21 +383,38 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     
     @objc(addPane:)
     open func add(pane: Pane) {
-        if !panes.contains(pane) {
-            panes.insert(pane)
-            insertPane(pane: pane)
+        guard !panes.contains(pane) else { return }
+        panes.insert(pane)
+        insertPane(pane: pane)
+
+        if isViewLoaded {
+            self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
         }
     }
     
     /// Removes the pane, if it exists, at the given location. Returns nil if the pane doesn't exist, otherwise returns the removed pane.
     /// The view controller associated with this pane will no longer be managed by the MultiPaneController and will be completely be rmoved from the view controller and view hierarchy.
+    @discardableResult
     @objc open func removePane(at location: MultiPaneLocation) -> Pane? {
         guard let pane = self.pane(withLocation: location) else { return nil }
         self.removePane(pane: pane)
+
+        // removePane(pane:) takes the child view controller out of the view (but leaves it in panes in case it is shown again later); this step absolves us of ownership entirely.
+        panes.remove(pane)
+
         self.updateDisplayMode(forSize: self.currentSize, traitCollection: self.traitCollection)
         return pane
     }
-    
+
+    @discardableResult
+    @objc open func replace(at location: MultiPaneLocation, viewController: UIViewController) -> Pane {
+        // In particular, replacing the center pane is OK, but a remove/add with public API will hit errors.
+        if let pane = self.pane(withLocation: location) {
+            removePane(pane: pane)
+        }
+        return add(viewController: viewController, at: location)
+    }
+
     /// Convenience method for returning the UIViewController currently installed in the pane at the given location.
     @objc public final func viewController(atLocation location: MultiPaneLocation) -> UIViewController? {
         return pane(withLocation: location)?.viewController
@@ -432,21 +459,19 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
         guard pane.isVisible else { return }
         
         switch pane.presentationMode {
-        case .none:
-            break
-            
         case .embedded:
             // N.B. present(pane:fromViewController:usingDisplayMode:) is poorly named; it will actually toggle visibility in some cases, such as this one.
             multiPanePresenter.present(pane: pane, fromViewController: self, usingDisplayMode: displayMode)
             
-        case .overlaid:
+        case .overlaid, .none:
             multiPanePresenter.dismiss(fromViewController: self, animated: true, completion: nil)
         }
     }
     
     /// Dismisses the overlay sidebar if necessary; otherwise a no-op
     @objc open func dismissSidebarIfNecessary(sidebar location: MultiPaneLocation) {
-        if let pane = pane(withLocation: location), pane.presentationMode == .overlaid && pane.isVisible {
+        guard let pane = pane(withLocation: location) else { return }
+        if (pane.presentationMode != .embedded) && pane.isVisible {
             hideSidebar(atLocation: location)
         }
     }
@@ -494,8 +519,8 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
             // We need to let nav controller's back gesture have precedence over our own. Sadly implementing the gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) delegate method doesn't work. We're never consulted about the system's recognizer. Maybe UIKit is doing something “smart” with edge pan recognizers? bug:///142212 (iOS-OmniFocus Regression: Swipe navigation no longer works in the sidebar [interactive back gesture])
             if pane.location == .left, let navigationController = viewController as? UINavigationController, let navPop = navigationController.interactivePopGestureRecognizer {
                 // Clear our existing recognizer so it doesn't keep accumulating a list of failure requirements. Then get a new recognizer.
-                _leftEdgePanGesture = nil
-                leftEdgePanGesture.require(toFail: navPop)
+                let gesture = resetLeftEdgePanGesture()
+                gesture.require(toFail: navPop)
             }
         }
     }

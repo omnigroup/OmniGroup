@@ -101,7 +101,7 @@
 "Unable convert predicate of type %lu (%@)." = "No se ha podido convertir el predicado de tipo %1$lu (%2$@).";
 
 /* error reason */
-"Unable get value of type %ld for result column %d of '%@'." = "No se ha podido obtener el valor de tipo %1$ld para la columna de resultados %2$d de '%3$@'.";
+"Unable get value of type %ld for result column %d of '%@'." = "No se ha podido obtener el valor de tipo %1$ld para la columna de resultados %2$d de “%3$@”.";
 
 /* error reason */
 "Unable prepare statement for SQL '%@'." = "No se ha podido preparar la sentencia para SQL '%@'.";

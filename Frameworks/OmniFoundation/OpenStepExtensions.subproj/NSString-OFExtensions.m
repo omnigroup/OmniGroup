@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -449,13 +449,19 @@ OBDidLoad(^{
 
 - (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withString:(NSString *)newString;
 {
+    return [self stringByReplacingAllOccurrencesOfRegularExpression:matchExpression withAction:^(OFRegularExpressionMatch *match){
+        return newString;
+    }];
+}
+
+- (NSString *)stringByReplacingAllOccurrencesOfRegularExpression:(NSRegularExpression *)matchExpression withAction:(NSString *(^)(OFRegularExpressionMatch *))action;
+{
     if (!matchExpression) {
         OBASSERT_NOT_REACHED("Bad pattern");
         return self;
     }
-    
-    OFRegularExpressionMatch *match = [matchExpression of_firstMatchInString:self];
 
+    OFRegularExpressionMatch *match = [matchExpression of_firstMatchInString:self];
     if (match == nil) {
         return self;
     }
@@ -466,7 +472,12 @@ OBDidLoad(^{
         NSRange nextMatchRange = [match matchRange];
         NSRange copyRange = NSMakeRange(lastPosition, nextMatchRange.location - lastPosition);
         [replacementString appendString:[self substringWithRange:copyRange]];
-        [replacementString appendString:newString];
+
+        NSString *newString = action(match);
+        if (newString) {
+            [replacementString appendString:newString];
+        }
+
         NSUInteger newPosition = NSMaxRange(nextMatchRange);
         if (newPosition == lastPosition)
             noProgressCount++;

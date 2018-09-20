@@ -159,7 +159,7 @@
 "Underline" = "底线";
 
 /* Undo button title */
-"Undo" = "还原";
+"Undo" = "取消";
 
 /* placeholder text - username field of login/password prompt */
 "username" = "用户名";

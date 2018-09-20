@@ -5,7 +5,7 @@
 "Attribute %@.%@ has type %ld with unknown SQL column type." = "L’attribut %1$@.%2$@ possède le type %3$ld et un type de colonne SQL inconnu.";
 
 /* error reason */
-"Attribute has type unsupported type %ld." = "L’attribut possède un type %ld  qui n’est pas pris en charge.";
+"Attribute has type unsupported type %ld." = "L’attribut possède un type %ld qui n’est pas pris en charge.";
 
 /* error reason */
 "Cannot connect to '%@' since the database is already connected to '%@'." = "Impossible de se connecter à « %1$@ », car la base de données est déjà connectée à « %2$@ ».";
