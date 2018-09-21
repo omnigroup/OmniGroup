@@ -1,4 +1,4 @@
-// Copyright 2012-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,16 +15,16 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  This allows classes to form collections of weak references. OS X 10.8 adds weak support for NSMapTable, but this class will work on 10.7 and will support other collections. Note that -hash and -isEqual: are not currently bridged to the contained object (and we'd need to cache the hash in case the weak object reference was nullified). For now we just get the default -hash (pointer based) so this is just useful for arrays and dictionary values.
  */
-@interface OFWeakReference OB_GENERIC1(ObjectType) : NSObject
+@interface OFWeakReference <ObjectType> : NSObject
 
-- (instancetype)initWithObject:(OB_GENERIC_ARG(ObjectType))object;
+- (instancetype)initWithObject:(ObjectType)object;
 - (instancetype)initWithDeallocatingObject:(id)object;
 - (BOOL)referencesObject:(void *)objectPointer;
 
 #if OB_ARC
-@property(nonatomic,nullable,weak) OB_GENERIC_ARG(ObjectType) object;
+@property(nonatomic,nullable,weak) ObjectType object;
 #else
-@property(nonatomic,nullable,assign) OB_GENERIC_ARG(ObjectType) object;
+@property(nonatomic,nullable,assign) ObjectType object;
 #endif
 
 // Conveniences that do the common work of removing references that have been nullified, and ensuring that any object is added only once.

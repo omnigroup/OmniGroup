@@ -360,7 +360,7 @@ RCS_ID("$Id$")
             }
         }
         
-        popoverPresentationController.managedBarButtonItems = [[NSSet alloc] initWithArray:barButtonItems];
+        [popoverPresentationController setManagedBarButtonItemsFromArray:barButtonItems];
     }
     
     [super presentViewController:viewControllerToPresent animated:flag completion:completion];

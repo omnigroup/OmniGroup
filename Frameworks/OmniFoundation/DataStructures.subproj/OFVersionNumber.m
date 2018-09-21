@@ -88,28 +88,6 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystem110OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"11.0");
-    });
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystem111OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"11.1");
-    });
-
-    return isLater;
-}
-
 + (BOOL)isOperatingSystem112OrLater;
 {
     static BOOL isLater;
@@ -164,39 +142,6 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
         isLater = isOperatingSystemAtLeastVersionString(@"10.14");
     });
     
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemHighSierraOrLater; // 10.13
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"10.13");
-    });
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemSierraOrLater; // 10.12
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"10.12");
-    });
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemSierraWithTouchBarOrLater; // 10.12.1 with Touch Bar support (build 12B2657 or later)
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = NSClassFromString(@"NSTouchBar") != nil; // Apple's ToolbarSample app tests for NSClassFromString(@"NSTouchBar"), so that's what we do too. (We can't just test for 10.12.1, because the first App Store update that called itself 10.12.1 didn't include Touch Bar support.)
-    });
-
     return isLater;
 }
 

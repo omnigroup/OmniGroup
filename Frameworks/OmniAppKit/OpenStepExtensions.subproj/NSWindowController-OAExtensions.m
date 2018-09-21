@@ -612,7 +612,7 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
     //
     // rdar://problem/34468617
 
-    return [OFVersionNumber isOperatingSystemHighSierraOrLater];
+    return YES;
 }
 
 - (NSImage *)omni_imageRepresentation;

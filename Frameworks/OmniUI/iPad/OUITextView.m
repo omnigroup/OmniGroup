@@ -1644,47 +1644,6 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     _textInspector.delegate = nil;
     _textInspector = nil;
 }
-#pragma mark - UITextDragDelegate
-// <rdar://34420183> UITextView does not automatically include attributed strings in its drags
-// Register our attributed text so that we can drop it both within our app and in other apps
-- (nullable id<UITextDragDelegate>)textDragDelegate
-{
-    if ([OFVersionNumber isOperatingSystem111OrLater])
-        return nil; // This issue was fixed in iOS 11.1: it provides com.apple.uikit.attributedstring, com.apple.rtfd, com.apple.flat-rtfd, and public.utf8-plain-text
-
-    if (self.shouldDragAttributedText)
-        return self;
-    else
-        return nil;
-}
-
-- (NSArray<UIDragItem *> *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView itemsForDrag:(id<UITextDragRequest>)dragRequest;
-{
-    if (self.shouldDragAttributedText) {
-        NSAttributedString *selectedString = [self.attributedText attributedSubstringFromRange:self.selectedRange];
-        NSItemProvider *provider = [[NSItemProvider alloc] initWithObject:selectedString];
-        return @[[[UIDragItem alloc] initWithItemProvider:provider]];
-    } else {
-        NSString *selectedString = [[self.attributedText attributedSubstringFromRange:self.selectedRange] string];
-        NSItemProvider *provider = [[NSItemProvider alloc] initWithObject:selectedString];
-        return @[[[UIDragItem alloc] initWithItemProvider:provider]];
-    }
-    
-}
-
-- (nullable UITargetedDragPreview *)textDraggableView:(UIView<UITextDraggable> *)textDraggableView dragPreviewForLiftingItem:(UIDragItem *)item session:(id<UIDragSession>)session
-{
-    if (self.selectedTextRange.empty)
-        return nil;
-
-    NSArray *rects = [self selectionRectsForRange:self.selectedTextRange];
-    NSMutableArray *values = [NSMutableArray array];
-    for (UITextSelectionRect *rect in rects) {
-        [values addObject:[NSValue valueWithCGRect:rect.rect]];
-    }
-    UIDragPreviewParameters *parameters = [[UIDragPreviewParameters alloc] initWithTextLineRects:values];
-    return [[UITargetedDragPreview alloc] initWithView:self parameters:parameters];
-}
 
 #pragma mark - OUIThemedAppearanceClient
 

@@ -18,21 +18,6 @@
 
 RCS_ID("$Id$")
 
-// Use Extended sRGB internally where we can. If a color is tagged with a color space, we should use it, but using the extended colorspace lets us represent untagged 'generic' colors better (though we'll still potentially write them out as sRGB).
-static NSColorSpace *_preferredInternalRGBColorSpace(void)
-{
-    static NSColorSpace *colorSpace = nil;
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        if ([OFVersionNumber isOperatingSystemSierraOrLater]) {
-            colorSpace = [NSColorSpace extendedSRGBColorSpace];
-        } else {
-            colorSpace = [NSColorSpace sRGBColorSpace];
-        }
-    });
-    return colorSpace;
-}
-
 static NSColorList *classicCrayonsColorList(void)
 {
     static NSColorList *classicCrayonsColorList = nil;
@@ -41,7 +26,7 @@ static NSColorList *classicCrayonsColorList(void)
 	NSString *colorListName = NSLocalizedStringFromTableInBundle(@"Classic Crayons", @"OmniAppKit", OMNI_BUNDLE, "color list name");
 	NSColorList *originalColorList = [[NSColorList alloc] initWithName:colorListName fromFile:[OMNI_BUNDLE pathForResource:@"Classic Crayons" ofType:@"clr"]];
         classicCrayonsColorList = [[NSColorList alloc] initWithName:colorListName];
-        NSColorSpace *sRGBColorSpace = _preferredInternalRGBColorSpace();
+        NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
         for (NSString *colorName in originalColorList.allKeys) {
             NSColor *originalColor = [originalColorList colorWithKey:colorName];
             NSColor *sRGBColor = [originalColor colorUsingColorSpace:sRGBColorSpace];
@@ -237,15 +222,15 @@ static NSColorSpace *_defaultGrayColorSpace(void)
     if (RGB) {
         BOOL isDefault = colorSpace == nil;
         if (isDefault)
-            colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericRGBColorSpace] : _preferredInternalRGBColorSpace();
+            colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericRGBColorSpace] : [NSColorSpace extendedSRGBColorSpace];
         else if (colorSpace.colorSpaceModel != NSRGBColorSpaceModel)
-            colorSpace = _preferredInternalRGBColorSpace();
+            colorSpace = [NSColorSpace extendedSRGBColorSpace];
 
         // Using sSRGB here results in corruption if we are reading a 'generic' blue (0 0 1), since sRGB can't represent this color in the 0..1 range for the components. If we use extended sRGB, we get (0.0168042 0.198351 1.00141), but sRGB clamps the blue to 1.0. Then, if we save the color back out as 'generic' (for older file formats that expect it), we get (0.000110865 0.00176024 0.998218). If we use extended sRGB, our round-tripped color has components (2.16067e-07 0 1), which is close enough.
         CGFloat components[4] = {v0,v1,v2,alpha};
         NSColor *archivedColor = [NSColor colorWithColorSpace:colorSpace components:components count:4];
         if (isDefault && shouldDefaultToGenericSpace)
-            return [archivedColor colorUsingColorSpace:_preferredInternalRGBColorSpace()];
+            return [archivedColor colorUsingColorSpace:[NSColorSpace extendedSRGBColorSpace]];
         else
             return archivedColor;
     }
@@ -434,7 +419,7 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     }
     
     if (archiveConvertedColor) {
-        NSColor *rgbColor = [self colorUsingColorSpace:_preferredInternalRGBColorSpace()];
+        NSColor *rgbColor = [self colorUsingColorSpace:[NSColorSpace extendedSRGBColorSpace]];
         if (!rgbColor)
             rgbColor = [NSColor colorWithRed:1 green:1 blue:1 alpha:1];
         [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues withColorSpaceManager:manager];
@@ -662,7 +647,7 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NS
     
     // Make room for the extra entries
     colorEntries = (OANamedColorEntry *)realloc(colorEntries, sizeof(*colorEntries)*(*entryCount + colorCount));
-    NSColorSpace *sRGBColorSpace = _preferredInternalRGBColorSpace();
+    NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
     for (colorIndex = 0; colorIndex < colorCount; colorIndex++) {
 	NSString *colorKey = [allColorKeys objectAtIndex:colorIndex];
 	NSColor *color = [colorList colorWithKey:colorKey];
@@ -733,14 +718,11 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
         return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
     }
 
-    NSColorSpace *sRGBColorSpace = _preferredInternalRGBColorSpace();
+    NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
     if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace]) {
         NSColorSpace *myColorSpace = self.colorSpace;
         if (OFNOTEQUAL(myColorSpace, sRGBColorSpace)) {
-            BOOL colorSpaceIsSafeSubset = NO;
-            if ([OFVersionNumber isOperatingSystemSierraOrLater]) {
-                colorSpaceIsSafeSubset = OFISEQUAL(myColorSpace, [NSColorSpace sRGBColorSpace]) && OFISEQUAL(sRGBColorSpace, [NSColorSpace extendedSRGBColorSpace]);
-            }
+            BOOL colorSpaceIsSafeSubset = OFISEQUAL(myColorSpace, [NSColorSpace sRGBColorSpace]) && OFISEQUAL(sRGBColorSpace, [NSColorSpace extendedSRGBColorSpace]);
             if (!colorSpaceIsSafeSubset) {
                 return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
             }
@@ -833,7 +815,7 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
 
 + (NSColor *)_adjustColor:(NSColor *)aColor withAdjective:(NSString *)adjective;
 {
-    NSColorSpace *sRGBColorSpace = _preferredInternalRGBColorSpace();
+    NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
     CGFloat hue, saturation, brightness, alpha;
     [[aColor colorUsingColorSpace:sRGBColorSpace] getHue:&hue saturation:&saturation brightness:&brightness alpha:&alpha];
 

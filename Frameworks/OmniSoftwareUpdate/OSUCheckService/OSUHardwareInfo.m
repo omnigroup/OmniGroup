@@ -588,13 +588,11 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
 
                 // We could report the color space name, but if someone has made a custom color profile, it might have identifying information in the name... Let's not.
                 // -canRepresentDisplayGamut: is 10.12 only.
-                if ([OFVersionNumber isOperatingSystemSierraOrLater]) {
-                    CFStringRef sRGB = [screen canRepresentDisplayGamut: NSDisplayGamutSRGB] ? CFSTR("1") : CFSTR("0");
-                    CFDictionarySetValue(info, CFSTR("sRGB"), sRGB);
+                CFStringRef sRGB = [screen canRepresentDisplayGamut: NSDisplayGamutSRGB] ? CFSTR("1") : CFSTR("0");
+                CFDictionarySetValue(info, CFSTR("sRGB"), sRGB);
 
-                    CFStringRef p3 = [screen canRepresentDisplayGamut: NSDisplayGamutP3] ? CFSTR("1") : CFSTR("0");
-                    CFDictionarySetValue(info, CFSTR("p3"), p3);
-                }
+                CFStringRef p3 = [screen canRepresentDisplayGamut: NSDisplayGamutP3] ? CFSTR("1") : CFSTR("0");
+                CFDictionarySetValue(info, CFSTR("p3"), p3);
             }
         }
 #endif // OSU_MAC

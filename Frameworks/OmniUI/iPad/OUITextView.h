@@ -101,7 +101,6 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (void)performUndoableReplacementOnSelectedRange:(NSAttributedString *)replacement;
 
 @property (nonatomic, assign) BOOL alwaysHighlightSelectedText;
-@property (nonatomic, assign) BOOL shouldDragAttributedText;
 
 @end
 

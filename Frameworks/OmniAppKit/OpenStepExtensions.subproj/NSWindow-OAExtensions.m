@@ -499,43 +499,7 @@ static void *RecalculateKeyViewLoopScheduledKey = &RecalculateKeyViewLoopSchedul
 
 #pragma mark -
 
-static BOOL (*original_validateUserInterfaceItem)(NSWindow *self, SEL _cmd, id <NSValidatedUserInterfaceItem>) = NULL;
-
 @implementation NSWindow (NSWindowTabbingExtensions)
-
-OBPerformPosing(^{
-    Class self = objc_getClass("NSWindow");
-    original_validateUserInterfaceItem = (typeof(original_validateUserInterfaceItem))OBReplaceMethodImplementation(self, @selector(validateUserInterfaceItem:), (IMP)[[self class] instanceMethodForSelector:@selector(_replacement_validateUserInterfaceItem:)]);
-});
-
-- (BOOL)_replacement_validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item;
-{
-    BOOL result = original_validateUserInterfaceItem(self, _cmd, item);
-    
-    // AppKit puts a checkmark on the menu item title, rather than toggling between Show/Hide as is the convention for other AppKit provided menu items.
-    // rdar://problem/28569216
-    //
-    // This is fixed on 10.13 and later
-    BOOL isHighSierraOrLater = [OFVersionNumber isOperatingSystemHighSierraOrLater];
-    if (!isHighSierraOrLater && item.action == @selector(toggleTabBar:)) {
-        // Why doesn't NSValidatedUserInterfaceItem conform to NSObject?
-        if ([(id)item isKindOfClass:[NSMenuItem class]]) {
-            NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, item);
-            NSString *title = nil;
-            
-            if (menuItem.state) {
-                title = NSLocalizedStringFromTableInBundle(@"Hide Tab Bar", @"OmniAppKit", OMNI_BUNDLE, "menu item title");
-            } else {
-                title = NSLocalizedStringFromTableInBundle(@"Show Tab Bar", @"OmniAppKit", OMNI_BUNDLE, "menu item title");
-            }
-
-            menuItem.title = title;
-            menuItem.state = 0;
-        }
-    }
-    
-    return result;
-}
 
 - (void)withTabbingMode:(NSWindowTabbingMode)tabbingMode performBlock:(void (^)(void))block;
 {
