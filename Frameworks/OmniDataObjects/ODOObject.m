@@ -26,6 +26,69 @@
 
 RCS_ID("$Id$")
 
+@class _ODOObjectEmptyToManySetEnumerator;
+
+NSSet *_ODOEmptyToManySet;
+static _ODOObjectEmptyToManySetEnumerator *_ODOEmptyToManySetEnumerator;
+
+@interface _ODOObjectEmptyToManySetEnumerator : NSEnumerator
+@end
+@implementation _ODOObjectEmptyToManySetEnumerator
+
+- (id)nextObject;
+{
+    return nil;
+}
+@end
+
+@interface _ODOObjectEmptyToManySet : NSSet
+@end
+@implementation _ODOObjectEmptyToManySet
+
+// Declared to be required
+
+- (NSUInteger)count;
+{
+    return 0;
+}
+- (id)member:(id)object;
+{
+    return nil;
+}
+- (NSEnumerator *)objectEnumerator;
+{
+    return _ODOEmptyToManySetEnumerator;
+}
+
+// Other methods that we can implement to be more efficient than by letting the base class methods run.
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id [])buffer count:(NSUInteger)len;
+{
+    return 0;
+}
+
+- (id)copyWithZone:(NSZone *)zone;
+{
+    return [self retain];
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone;
+{
+    return [[NSMutableSet alloc] init];
+}
+
+- (NSArray *)allObjects;
+{
+    return @[];
+}
+
+- (void)enumerateObjectsUsingBlock:(void (NS_NOESCAPE ^)(id, BOOL *))block;
+{
+}
+
+@end
+
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOObject
@@ -41,6 +104,9 @@ static IMP OFObjectDidChangeValueForKey;
     OBPRECONDITION([ODOObject superclass] == [OFObject class]);
     OFObjectWillChangeValueForKey = [OFObject instanceMethodForSelector:@selector(willChangeValueForKey:)];
     OFObjectDidChangeValueForKey = [OFObject instanceMethodForSelector:@selector(didChangeValueForKey:)];
+
+    _ODOEmptyToManySet = [[_ODOObjectEmptyToManySet alloc] init];
+    _ODOEmptyToManySetEnumerator = [[_ODOObjectEmptyToManySetEnumerator alloc] init];
 }
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;
@@ -162,7 +228,7 @@ static IMP OFObjectDidChangeValueForKey;
     OBPRECONDITION(objectID);
     OBPRECONDITION(ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER == nil); // since we use calloc to start our _values
     OBPRECONDITION(snapshot);
-    OBPRECONDITION([[[objectID entity] snapshotProperties] count] == ODOObjectSnapshotValueCount(snapshot));
+    OBPRECONDITION(objectID.entity == ODOObjectSnapshotGetEntity(snapshot));
     
     self = [super init];
     if (self == nil) {
@@ -459,18 +525,21 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
     if ([self isDeleted] || [self isInvalid]) {
         return;
     }
-    
-    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
-    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
+
+    ODOEntity *entity = _objectID.entity;
+    ODOProperty *prop = [entity propertyNamed:key];
 
 #ifdef OMNI_ASSERTIONS_ON
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     OBASSERT(!flags.relationship && flags.transient && flags.calculated);
 #endif
-    
+
+    // Ensure the property can store a nil by either either being object typed (implicitly optional) or an optional scalars.
+    OBASSERT(flags.optional || prop->_storageKey.type == ODOStorageTypeObject);
+
     // If this value has never been computed, we don't need to compute it now.
     OBASSERT(self->_valueStorage != NULL);
-    id oldValue = _ODOObjectValueAtIndex(self, snapshotIndex);
+    id oldValue = ODOStorageGetObjectValue(entity, _valueStorage, prop->_storageKey);
     if (oldValue == nil) {
         return;
     }
@@ -496,7 +565,7 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
 
     OBASSERT(!_flags.changeProcessingDisabled);
     [self willChangeValueForKey:key];
-    _ODOObjectSetValueAtIndex(self, snapshotIndex, nil);
+    ODOStorageSetObjectValue(entity, _valueStorage, prop->_storageKey, nil);
     [self didChangeValueForKey:key];
 }
 
@@ -629,10 +698,8 @@ void ODOObjectSetValueForKey(ODOObject *self, id _Nullable value, ODOProperty *p
         if (flags.relationship && flags.toMany) {
             ODORelationship *rel = (ODORelationship *)prop;
             
-            // Give it an empty set.  If we don't, then the first time the to-many is accessed, the nil will be promoted to a fault and clearing it will perform a useless fetch.
-            NSMutableSet *dest = [[NSMutableSet alloc] init];
-            ODOObjectSetInternalValueForProperty(self, dest, rel); // Can't directly set to-many, so set via the primitive, non-fault-clearing setter.
-            [dest release];
+            // Give it an empty marker. If we don't, then the first time the to-many is accessed, the nil will be promoted to a fault and clearing it will perform a useless fetch. We don't want to create an empty NSMutableSet, though, since many will remain empty forever but using extra memory.
+            _ODOObjectSetObjectValueForProperty(self, rel, _ODOEmptyToManySet); // Can't directly set to-many, so set via the primitive, non-fault-clearing setter.
         }
     }
 }
@@ -782,7 +849,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         
         // Directly accessing the values rather than going through the will/did lookup.  We aren't "accessing" the values.
-        id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex);
+        id value = _ODOObjectGetObjectValueForProperty(self, prop);
         
         // Not localizing these validation errors right now.  OmniFocus expects users to never see these, and we don't have CoreData's human-readability mappings right now.
         
@@ -893,8 +960,8 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     if (flags.toMany) {
         return ODOObjectToManyRelationshipIsFault(self, relationship);
     }
-    
-    id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
+
+    id value = _ODOObjectGetObjectValueForProperty(self, relationship);
     if (value && ![value isKindOfClass:[ODOObject class]]) {
         OBASSERT([value isKindOfClass:relationship.destinationEntity.primaryKeyAttribute.valueClass]);
         return YES;
@@ -929,8 +996,8 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     if (!flags.relationship || flags.toMany) {
         return NO;
     }
-    
-    id value = _ODOObjectValueAtIndex(self, flags.snapshotIndex); // to-ones are stored as the primary key if they are lazy faults
+
+    id value = _ODOObjectGetObjectValueForProperty(self, relationship); // to-ones are stored as the primary key if they are lazy faults
     
     // Several early-outs could be done here if it turns out to be useful; not doing them for now.
     
@@ -1035,19 +1102,21 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         OBASSERT_NOT_REACHED("Why do you ask?");
         return YES;
     }
-    
-    ODOProperty *prop = [[_objectID entity] propertyNamed:key];
-    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX)
+
+    ODOEntity *entity = _objectID.entity;
+    ODOProperty *prop = [entity propertyNamed:key];
+    ODOStorageKey storageKey = prop->_storageKey;
+
+    if (storageKey.snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX)
         return NO; // can't change
     
     if ([prop isTransient]) {
         OBASSERT_NOT_REACHED("Shouldn't ask this since we aren't required to keep track of it (though we do...).  CoreData only supports querying persistent properties");
         return NO;
     }
-    
-    id oldValue = ODOObjectSnapshotGetValueAtIndex(snapshot, snapshotIndex);
-    
+
+    id oldValue = ODOStorageGetObjectValue(entity, ODOObjectSnapshotGetStorageBase(snapshot), storageKey);
+
     [self willAccessValueForKey:key];
     id newValue = ODOObjectPrimitiveValueForProperty(self, prop);
     
@@ -1121,8 +1190,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         if (flags.transient)
             continue;
 
-        id oldValue = snapshot ? ODOObjectSnapshotGetValueAtIndex(snapshot, flags.snapshotIndex) : nil;
-        id newValue = _ODOObjectValueAtIndex(self, flags.snapshotIndex);
+        ODOStorageKey storageKey = prop->_storageKey;
+        
+        id oldValue = snapshot ? ODOStorageGetObjectValue(entity, ODOObjectSnapshotGetStorageBase(snapshot), storageKey) : nil;
+        id newValue = ODOStorageGetObjectValue(entity, _valueStorage, storageKey);
         
         // early bail on equality
         if (OFISEQUAL(oldValue, newValue))
@@ -1210,7 +1281,7 @@ _Nullable id ODOObjectSnapshotValueForKey(ODOObject *self, ODOEditingContext *ed
         return ODOObjectPrimitiveValueForProperty(self, prop);
     }
     
-    id value = ODOObjectSnapshotGetValueAtIndex(snapshot, flags.snapshotIndex);
+    id value = ODOObjectSnapshotGetValueForProperty(snapshot, prop);
 
     if (value != nil && flags.relationship && !flags.toMany) {
         if (![value isKindOfClass:[ODOObject class]]) {
@@ -1372,11 +1443,10 @@ static BOOL _changedPropertyNotInSet(ODOObject *self, NSSet *ignoredPropertySet,
         NSMutableDictionary *valueDict = [[NSMutableDictionary alloc] init];
         [dict setObject:valueDict forKey:@"values"];
         [valueDict release];
-        
-        NSArray *props = [[_objectID entity] snapshotProperties];
-        for (ODOProperty *prop in props) {
-            NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-            id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+
+        ODOEntity *entity = _objectID.entity;
+        for (ODOProperty *prop in entity.snapshotProperties) {
+            id value = ODOStorageGetObjectValue(entity, _valueStorage, prop->_storageKey);
             if (value == nil) {
                 value = [NSNull null];
             } else if ([value isKindOfClass:[NSSet class]]) {

@@ -28,14 +28,21 @@ NS_ASSUME_NONNULL_BEGIN
 BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snapshot)
 {
     // The snapshot should have no to-manys and all to-ones should be just primary keys.
-    // All values shoudl be of the proper class
-    NSArray *properties = [[self->_objectID entity] snapshotProperties];
-    NSUInteger propertyIndex = [properties count];
-    while (propertyIndex--) {
-        ODOProperty *property = [properties objectAtIndex:propertyIndex];
+    // All values should be of the proper class
+    ODOEntity *entity = self->_objectID.entity;
+    OBASSERT(ODOObjectSnapshotGetEntity(snapshot) == entity);
+
+    for (ODOProperty *property in entity.snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(property);
+        ODOStorageKey storageKey = property->_storageKey;
         
-        id value = ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex);
+        // Non-object properties can't have the "wrong type".
+        if (storageKey.type != ODOStorageTypeObject) {
+            continue;
+        }
+
+        id value = ODOStorageGetObject(entity, ODOObjectSnapshotGetStorageBase(snapshot), storageKey);
+
         if (flags.relationship) {
             ODORelationship *rel = (ODORelationship *)property;
             
@@ -189,26 +196,40 @@ ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self)
 
     ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
-    NSUInteger propCount = [snapshotProperties count];
-    
+
     // We do store the full array for snapshots, one slot per snapshot property, even though we don't really need the slots for to-manys.  One optimization would be to pack/unpack them as needed.
-    ODOObjectSnapshot *snapshot = ODOObjectSnapshotCreate(propCount);
+    ODOObjectSnapshot *snapshot = ODOObjectSnapshotCreate(entity);
+
+    // Do a bit-wise copy of our storage into the snapshot storage. Any objects will not be retained in the snapshot at this point.
+    void *snapshotBase = ODOObjectSnapshotGetStorageBase(snapshot);
+    _ODOStorageCheckBase(snapshotBase);
+    
+    memcpy(snapshotBase, self->_valueStorage, entity.snapshotSize);
+
     Class instanceClass = [self class];
 
-    for (NSUInteger propIndex = 0; propIndex < propCount; propIndex++) {
-        ODOProperty *prop = [snapshotProperties objectAtIndex:propIndex];
+    // Loop over the properties and update/clear or retain the object-valued ones.
+    for (ODOProperty *prop in snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        
-        id value = _ODOObjectValueAtIndex(self, propIndex);
-        
+        ODOStorageKey storageKey = prop->_storageKey;
+
+        // Don't look up the value for this property unless needed (needlessly making boxed copies of scalars).
+        // We only read the `value` variable if we also set `shouldUpdate`.
+        id value;
+        BOOL shouldUpdate = NO;
+
         if (flags.relationship) {
             if (flags.toMany) {
                 // Don't care what the current value is, but we need to insert a placeholder.  We use the lazy to-many fault representation so that any insertion based on the snapshot will start out with a fault.
                 value = ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER;
+                shouldUpdate = YES;
             } else {
                 // We want the primary key if the relationship has already been faulted.
-                if ([value isKindOfClass:[ODOObject class]])
-                    value = [[(ODOObject *)value objectID] primaryKey];
+                id destination = ODOStorageGetObject(entity, self->_valueStorage, storageKey);
+                if ([destination isKindOfClass:[ODOObject class]]) {
+                    value = [[(ODOObject *)destination objectID] primaryKey];
+                    shouldUpdate = YES;
+                }
             }
         }
 
@@ -216,12 +237,17 @@ ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self)
         // This is necessary in the case that the transient calculated property is holding pointers to ODOObject instances.
         if (flags.calculated && flags.transient && ![instanceClass shouldIncludeSnapshotForTransientCalculatedProperty:prop]) {
             value = nil;
+            shouldUpdate = YES;
         }
 
-        ODOObjectSnapshotSetValueAtIndex(snapshot, propIndex, value);
+        // Here we should be ensuring each object-typed value in the snapshot ends up retained after our memcpy() above.
+        if (shouldUpdate) {
+            ODOStorageSetObjectWithoutReleasingOldValue(entity, snapshotBase, storageKey, value);
+        } else if (storageKey.type == ODOStorageTypeObject) {
+            ODOStorageRetainObject(entity, snapshotBase, storageKey);
+        }
     }
-    
-    OBASSERT(ODOObjectSnapshotValueCount(snapshot) == propCount);
+
     OBASSERT(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
     return snapshot;
@@ -262,8 +288,7 @@ static void _validateRelationshipDestination(const void *value, void *context)
     
     // Can't call -primitiveValueForKey: since that would cause lazy fault creation to fire.
     OBASSERT([[[dest entity] snapshotProperties] containsObject:ctx->toOne]);
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(ctx->toOne);
-    id relationshipValue = _ODOObjectValueAtIndex(dest, flags.snapshotIndex);
+    id relationshipValue = _ODOObjectGetObjectValueForProperty(dest, ctx->toOne);
 
     // If this is a lazy to-one fault, it will be the primary key of the owner instead of a pointer to the owner
     if ([relationshipValue isKindOfClass:[ODOObject class]]) {
@@ -296,7 +321,6 @@ static void _validateRelationshipDestination(const void *value, void *context)
         BOOL fault = [self isFault];
 
         NSArray *snapshotProperties = [[self entity] snapshotProperties];
-        NSUInteger propertyIndex = [snapshotProperties count];
         
         if (fault) {
             OBASSERT(!inserted);
@@ -322,10 +346,10 @@ static void _validateRelationshipDestination(const void *value, void *context)
             OBASSERT(mods <= 1);
             
             // All our values should be reasonable
-            while (propertyIndex--) {
-                ODOProperty *prop = [snapshotProperties objectAtIndex:propertyIndex];
+            for (ODOProperty *prop in snapshotProperties) {
                 struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-                id value = _ODOObjectValueAtIndex(self, propertyIndex);
+
+                id value = _ODOObjectGetObjectValueForProperty(self, prop);
 
                 if (flags.relationship) {
                     if (flags.toMany) {
@@ -361,21 +385,6 @@ static void _validateRelationshipDestination(const void *value, void *context)
 }
 
 #endif
-
-void ODOObjectClearValues(ODOObject *self, BOOL deleting)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    OBPRECONDITION(!self->_flags.isFault);
-    OBPRECONDITION(!self->_flags.invalid);
-    OBPRECONDITION(self->_editingContext);
-    OBPRECONDITION(self->_objectID);
-    OBPRECONDITION(deleting || ![self isInserted]);
-    OBPRECONDITION(deleting || ![self isUpdated]);
-    // allow deleted objects -- we clear values from objects as soon as they are snapshoted prior to being put in the deleted set.
-
-    if (_ODOObjectHasValues(self))
-        _ODOObjectSetValuesToNull(self);
-}
 
 // -awakeFromFetch support functions.  When awaking objects, we need to first prepare them, awake them and finally finalize the awake.  The awake function is *also* called in -valueForKey: if _flags.needsAwakeFromFetch is still set.  If a bunch of objects are fetched at the same time (say, all the assignable contexts in OmniFocus) and awoken, one object might try to reference another when it awakes (say, children trying to compute their transient rank path or hierarchical name properties).
 void ODOObjectPrepareForAwakeFromFetch(ODOObject *self)
@@ -460,8 +469,7 @@ BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel)
     OBPRECONDITION([rel entity] == [self entity]);
     OBPRECONDITION([rel isToMany]);
     
-    NSUInteger offset = ODOPropertySnapshotIndex(rel);
-    id value = _ODOObjectValueAtIndex(self, offset);
+    id value = _ODOObjectGetObjectValueForProperty(self, rel);
     return ODOObjectValueIsLazyToManyFault(value);
 }
 
@@ -475,9 +483,8 @@ NSMutableSet * _Nullable ODOObjectToManyRelationshipIfNotFault(ODOObject *self, 
     if (self->_flags.isFault) {
         return nil;
     }
-    
-    NSUInteger offset = ODOPropertySnapshotIndex(rel);
-    NSMutableSet *set = _ODOObjectValueAtIndex(self, offset);
+
+    NSMutableSet *set = _ODOObjectGetObjectValueForProperty(self, rel);
 
     if (ODOObjectValueIsLazyToManyFault(set)) {
         return nil;
@@ -515,13 +522,13 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
     
     ODOEntity *entity = [self->_objectID entity];
     NSArray *snapshotProperties = [entity snapshotProperties];
-    OBASSERT(ODOObjectSnapshotValueCount(snapshot) == [snapshotProperties count]);
-    
-    NSUInteger propertyIndex, propertyCount = [snapshotProperties count];
-    for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++) {
-        ODOProperty *prop = [snapshotProperties objectAtIndex:propertyIndex];
+    OBASSERT(ODOObjectSnapshotGetEntity(snapshot) == entity);
+
+    void *snapshotStorageBase = ODOObjectSnapshotGetStorageBase(snapshot);
+
+    for (ODOProperty *prop in snapshotProperties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        
+
         if (flags.relationship && flags.toMany) {
             continue;
         }
@@ -529,9 +536,12 @@ _Nullable CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self
         if (flags.transient && flags.calculated && ![[entity instanceClass] shouldIncludeSnapshotForTransientCalculatedProperty:prop]) {
             continue;
         }
+
+        // If this shows up as a performance issue someday, we could have a path that compares the storage contents w/o extracting the values (it'd need to also handle the nonNull bit for optional scalars).
+        ODOStorageKey storageKey = prop->_storageKey;
         
-        id oldValue = ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex);
-        id newValue = _ODOObjectValueAtIndex(self, propertyIndex);
+        id oldValue = ODOStorageGetObjectValue(entity, snapshotStorageBase, storageKey);
+        id newValue = ODOStorageGetObjectValue(entity, self->_valueStorage, storageKey);
 
         if (flags.relationship) {
             OBASSERT(flags.toMany == NO); // checked above

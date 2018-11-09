@@ -31,7 +31,8 @@ typedef NS_ENUM(NSUInteger, ODOAwakeEvent) {
     ODOObjectID *_objectID;
     void *_observationInfo;
 
-    OB_STRONG id *_valueStorage; // One for each -snapshotProperty on the ODOEntity.
+    // Packed buffer of scalar- and object-typed values
+    void *_valueStorage;
 }
 
 + (BOOL)objectIDShouldBeUndeletable:(ODOObjectID *)objectID;

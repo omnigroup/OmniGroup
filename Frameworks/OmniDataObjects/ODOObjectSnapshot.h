@@ -12,7 +12,7 @@
 
 #import <OmniBase/macros.h>
 
-@class ODOProperty;
+@class ODOProperty, ODOEntity;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,11 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable id)valueForProperty:(ODOProperty *)property;
 @end
 
-extern ODOObjectSnapshot *ODOObjectSnapshotCreate(NSUInteger propertyCount) OB_HIDDEN;
-extern NSUInteger ODOObjectSnapshotValueCount(ODOObjectSnapshot *snapshot) OB_HIDDEN;
+extern ODOObjectSnapshot *ODOObjectSnapshotCreate(ODOEntity *entity) OB_HIDDEN;
+extern void *ODOObjectSnapshotGetStorageBase(ODOObjectSnapshot *snapshot) OB_HIDDEN;
 
-extern void ODOObjectSnapshotSetValueAtIndex(ODOObjectSnapshot *snapshot, NSUInteger propertyIndex, id _Nullable value) OB_HIDDEN;
-extern id _Nullable ODOObjectSnapshotGetValueAtIndex(ODOObjectSnapshot *snapshot, NSUInteger propertyIndex) OB_HIDDEN;
+extern ODOEntity *ODOObjectSnapshotGetEntity(ODOObjectSnapshot *snapshot) OB_HIDDEN;
+
+extern id _Nullable ODOObjectSnapshotGetValueForProperty(ODOObjectSnapshot *snapshot, ODOProperty *property) OB_HIDDEN;
 
 NS_ASSUME_NONNULL_END
 

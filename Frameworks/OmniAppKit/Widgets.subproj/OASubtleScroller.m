@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,7 @@ RCS_ID("$Id$");
 {
     BOOL _visibleEdgeSpecified;
     NSRectEdge _specifiedVisibleEdge;
+    NSColor *_scrollerBackgroundColor;
 }
 
 #pragma mark - API
@@ -48,6 +49,18 @@ RCS_ID("$Id$");
     _specifiedVisibleEdge = edge;
     
     [self setNeedsDisplay:YES];
+}
+
+- (void)setScrollerBackgroundColor:(NSColor *)scrollerBackgroundColor
+{
+    _scrollerBackgroundColor = scrollerBackgroundColor;
+    
+    [self setNeedsDisplay];
+}
+
+- (NSColor *)scrollerBackgroundColor
+{
+    return _scrollerBackgroundColor;
 }
 
 #pragma mark - NSScroller subclass

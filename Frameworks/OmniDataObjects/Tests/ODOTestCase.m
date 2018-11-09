@@ -106,6 +106,46 @@ ODOTestCaseDetail_DynamicProperties;
 @implementation ODOTestCaseAllAttributeTypes
 ODOTestCaseAllAttributeTypes_DynamicProperties;
 @end
+@implementation ODOTestCaseOptionalScalarTypes
+ODOTestCaseOptionalScalarTypes_DynamicProperties;
+@end
+@implementation ODOTestCaseMultipleBooleans
+ODOTestCaseMultipleBooleans_DynamicProperties;
+@end
+@implementation ODOTestCaseInterleavedSizeScalars
+ODOTestCaseInterleavedSizeScalars_DynamicProperties;
+@end
+@implementation ODOTestCaseCalculatedProperty
+ODOTestCaseCalculatedProperty_DynamicProperties;
+
++ (void)addChangeActionsForProperty:(ODOProperty *)property_ willActions:(ODOChangeActions *)willActions didActions:(ODOChangeActions *)didActions;
+{
+    [super addChangeActionsForProperty:property_ willActions:willActions didActions:didActions];
+
+    NSString *key = property_.name;
+
+    if ([key isEqual:ODOTestCaseCalculatedPropertyB0] || [key isEqual:ODOTestCaseCalculatedPropertyB0]) {
+        [didActions append:^(ODOTestCaseCalculatedProperty *object, ODOProperty *property){
+            [object invalidateCalculatedValueForKey:ODOTestCaseCalculatedPropertyXor];
+        }];
+    } else if ([key isEqual:ODOTestCaseCalculatedPropertyStr0] || [key isEqual:ODOTestCaseCalculatedPropertyStr1]) {
+        [didActions append:^(ODOTestCaseCalculatedProperty *object, ODOProperty *property){
+            [object invalidateCalculatedValueForKey:ODOTestCaseCalculatedPropertyConcat];
+        }];
+    }
+}
+
+- (id)calculateValueForXor;
+{
+    return @(self.b0 ^ self.b1);
+}
+
+- (id)calculateValueForConcat;
+{
+    return [self.str0 stringByAppendingString:self.str1];
+}
+
+@end
 @implementation ODOTestCaseLeftHand
 ODOTestCaseLeftHand_DynamicProperties;
 @end

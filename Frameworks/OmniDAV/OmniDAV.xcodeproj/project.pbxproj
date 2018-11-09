@@ -29,6 +29,9 @@
 		3428DB681B2A949C00B01297 /* ODAVConnection-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 3428DB671B2A949C00B01297 /* ODAVConnection-Subclass.h */; };
 		342F10B415E2B1E600A3DBEC /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F10B315E2B1E600A3DBEC /* OFTestCase.m */; };
 		342F10B715E2B1FB00A3DBEC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F10B615E2B1FB00A3DBEC /* OBTestCase.m */; };
+		3435BF2421751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435BF2321751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3435BF2521751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435BF2321751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3435BF2621751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435BF2321751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3436626216697A6800EEB146 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		3444B06C0F71FFFF005CFD59 /* ODAVOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05E0F71FFFF005CFD59 /* ODAVOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3444B06D0F71FFFF005CFD59 /* ODAVOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05F0F71FFFF005CFD59 /* ODAVOperation.m */; };
@@ -411,6 +414,7 @@
 		342F10B315E2B1E600A3DBEC /* OFTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFTestCase.m; path = ../../../OmniFoundation/Tests/OFTestCase.m; sourceTree = "<group>"; };
 		342F10B515E2B1FB00A3DBEC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		342F10B615E2B1FB00A3DBEC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
+		3435BF2321751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODAVConnectionTimeoutDelegate.h; sourceTree = "<group>"; };
 		3444B05E0F71FFFF005CFD59 /* ODAVOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = ODAVOperation.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3444B05F0F71FFFF005CFD59 /* ODAVOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVOperation.m; sourceTree = "<group>"; };
 		3444B0620F71FFFF005CFD59 /* ODAVFileInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVFileInfo.h; sourceTree = "<group>"; };
@@ -634,6 +638,7 @@
 				3428DB5F1B2A86DD00B01297 /* ODAVConnection_URLSession.m */,
 				3428DB581B2A86CD00B01297 /* ODAVConnection_URLConnection.h */,
 				3428DB591B2A86CD00B01297 /* ODAVConnection_URLConnection.m */,
+				3435BF2321751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h */,
 				349369A916B0438200244879 /* ODAVConformanceTest.h */,
 				34AF4BF216AF3865005CB08F /* ODAVConformanceTest.m */,
 				3444B05E0F71FFFF005CFD59 /* ODAVOperation.h */,
@@ -896,6 +901,7 @@
 				34D621CD1B3880F300DCE250 /* ODAVConnection_URLSession.h in Headers */,
 				34D621D81B38811600DCE250 /* ODAVAsynchronousOperation.h in Headers */,
 				34D621D61B38811100DCE250 /* ODAVFileInfo.h in Headers */,
+				3435BF2521751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */,
 				34D621D11B3880FE00DCE250 /* ODAVConformanceTest.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -917,6 +923,7 @@
 				34E88F801EC1173E007B918E /* ODAVFeatures.h in Headers */,
 				34E88F811EC1173E007B918E /* ODAVUpload.h in Headers */,
 				34E88F821EC1173E007B918E /* ODAVConformanceTest.h in Headers */,
+				3435BF2621751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */,
 				34E88F831EC1173E007B918E /* ODAVConnection.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -938,6 +945,7 @@
 				34201EE21464897900A45403 /* ODAVFeatures.h in Headers */,
 				3498626E1A71B3C200EA7437 /* ODAVUpload.h in Headers */,
 				349369AA16B0438200244879 /* ODAVConformanceTest.h in Headers */,
+				3435BF2421751E2400C3ACE5 /* ODAVConnectionTimeoutDelegate.h in Headers */,
 				34C2E79116BAF7E500D6CA1C /* ODAVConnection.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

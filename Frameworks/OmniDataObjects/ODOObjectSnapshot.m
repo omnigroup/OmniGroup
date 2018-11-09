@@ -8,6 +8,8 @@
 #import <OmniDataObjects/ODOObjectSnapshot.h>
 
 #import "ODOProperty-Internal.h"
+#import "ODOEntity-Internal.h"
+#import "ODOStorage.h"
 
 @import OmniBase;
 
@@ -17,62 +19,58 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation ODOObjectSnapshot
 {
-    NSUInteger _propertyCount;
+    ODOEntity *_entity;
 }
 
 - (nullable id)valueForProperty:(ODOProperty *)property;
 {
-    NSUInteger propertyIndex = ODOPropertySnapshotIndex(property);
-    OBASSERT(propertyIndex < _propertyCount);
-    return ODOObjectSnapshotGetValueAtIndex(self, propertyIndex);
+    return ODOStorageGetObjectValue(_entity, ODOObjectSnapshotGetStorageBase(self), property->_storageKey);
 }
 
 - (void)dealloc;
 {
-    id *values = object_getIndexedIvars(self);
+    void *storageBase = ODOObjectSnapshotGetStorageBase(self);
 
-    NSUInteger propertyIndex = _propertyCount;
-    while (propertyIndex--) {
-        [values[propertyIndex] release];
+    NSUInteger snapshotPropertyCount = _entity->_snapshotPropertyCount;
+    for (NSUInteger snapshotIndex = 0; snapshotIndex < snapshotPropertyCount; snapshotIndex++) {
+        ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(_entity, snapshotIndex);
+        if (storageKey.type == ODOStorageTypeObject) {
+            ODOStorageReleaseObject(_entity, storageBase, storageKey);
+        }
     }
+
+    [_entity release];
 
     [super dealloc];
 }
 
-ODOObjectSnapshot *ODOObjectSnapshotCreate(NSUInteger propertyCount)
+ODOObjectSnapshot *ODOObjectSnapshotCreate(ODOEntity *entity)
 {
-    ODOObjectSnapshot *snapshot = NSAllocateObject([ODOObjectSnapshot class], sizeof(id)*propertyCount, NULL);
-    snapshot->_propertyCount = propertyCount;
+    size_t storageSize = entity.snapshotSize;
+    ODOObjectSnapshot *snapshot = NSAllocateObject([ODOObjectSnapshot class], storageSize, NULL);
+    snapshot->_entity = [entity retain];
     return snapshot;
 }
 
-NSUInteger ODOObjectSnapshotValueCount(ODOObjectSnapshot *snapshot)
+void *ODOObjectSnapshotGetStorageBase(ODOObjectSnapshot *snapshot)
 {
-    OBPRECONDITION(snapshot);
-
-    return snapshot->_propertyCount;
+    return object_getIndexedIvars(snapshot);
 }
 
-void ODOObjectSnapshotSetValueAtIndex(ODOObjectSnapshot *snapshot, NSUInteger propertyIndex, id _Nullable value)
+ODOEntity *ODOObjectSnapshotGetEntity(ODOObjectSnapshot *snapshot)
 {
     OBPRECONDITION(snapshot);
-    OBPRECONDITION(propertyIndex < snapshot->_propertyCount);
 
-    id *values = object_getIndexedIvars(snapshot);
-    if (values[propertyIndex] != value) {
-        OBASSERT(values[propertyIndex] == nil); // We should be setting these up once
-        [values[propertyIndex] release];
-        values[propertyIndex] = [value retain];
-    }
+    return snapshot->_entity;
 }
 
-id _Nullable ODOObjectSnapshotGetValueAtIndex(ODOObjectSnapshot *snapshot, NSUInteger propertyIndex)
+id _Nullable ODOObjectSnapshotGetValueForProperty(ODOObjectSnapshot *snapshot, ODOProperty *property)
 {
     OBPRECONDITION(snapshot);
-    OBPRECONDITION(propertyIndex < snapshot->_propertyCount);
+    OBPRECONDITION(snapshot->_entity == property.entity);
 
-    id *values = object_getIndexedIvars(snapshot);
-    return values[propertyIndex];
+    void *storageBase = ODOObjectSnapshotGetStorageBase(snapshot);
+    return ODOStorageGetObjectValue(snapshot->_entity, storageBase, property->_storageKey);
 }
 
 @end

@@ -107,6 +107,14 @@ RCS_ID("$Id$");
     return _shownMenu;
 }
 
+- (BOOL)accessibilityPerformPress {
+    if (_showsMenu) {
+        [self _popUpContextMenu];
+    }
+
+    return YES;
+}
+
 #pragma mark - API
 
 @synthesize delegate = _weak_delegate;

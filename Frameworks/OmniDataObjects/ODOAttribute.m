@@ -71,15 +71,15 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, 
 
     struct _ODOPropertyFlags baseFlags;
     memset(&baseFlags, 0, sizeof(baseFlags));
-    baseFlags.snapshotIndex = ODO_NON_SNAPSHOT_PROPERTY_INDEX; // start out not being in the snapshot properties; this'll get updated later if we are
+
+    ODOPropertyInit(attr, name, baseFlags, optional, transient, get, set);
 
     if (attr->_isPrimaryKey) {
         // The primary key isn't in the snapshot, but has a special marker for that.
-        baseFlags.snapshotIndex = ODO_PRIMARY_KEY_SNAPSHOT_INDEX;
+        attr->_storageKey.snapshotIndex = ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX;
+        OBASSERT(optional == NO);
     }
     
-    ODOPropertyInit(attr, name, baseFlags, optional, transient, get, set);
-
     attr->_type = type;
     attr->_valueClass = valueClass;
     attr->_defaultValue = [defaultValue copy];

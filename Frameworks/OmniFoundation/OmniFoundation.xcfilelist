@@ -139,6 +139,7 @@ OFSyncClient.m
 OFUtilities.m
 OFWeakReference.m
 OpenStepExtensions.subproj/Collection-OFExtensions.swift
+OpenStepExtensions.subproj/Data-OFExtensions.swift
 OpenStepExtensions.subproj/NSArray-OFExtensions.m
 OpenStepExtensions.subproj/NSAttributedString-OFExtensions.m
 OpenStepExtensions.subproj/NSBundle-OFExtensions.m

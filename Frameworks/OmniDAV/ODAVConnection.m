@@ -187,6 +187,17 @@ static NSString *StandardUserAgentString;
 #endif
 }
 
+static __weak id <ODAVConnectionTimeoutDelegate> TimeoutDelegate = nil;
+
++ (nullable id <ODAVConnectionTimeoutDelegate>)timeoutDelegate;
+{
+    return TimeoutDelegate;
+}
++ (void)setTimeoutDelegate:(nullable id <ODAVConnectionTimeoutDelegate>)timeoutDelegate;
+{
+    TimeoutDelegate = timeoutDelegate;
+}
+
 - init;
 {
     OBRejectUnusedImplementation(self, _cmd);
@@ -1012,9 +1023,17 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
 
 - (NSTimeInterval)_timeoutForURL:(NSURL *)url;
 {
-    static const NSTimeInterval DefaultTimeoutInterval = 300.0;
-    
-    return DefaultTimeoutInterval;
+    NSTimeInterval timeout;
+    id <ODAVConnectionTimeoutDelegate> timeoutDelegate = TimeoutDelegate;
+    if (timeoutDelegate) {
+        timeout = [timeoutDelegate connection:self requestTimeoutForURL:url];
+    } else {
+        static const NSTimeInterval DefaultTimeoutInterval = 300.0;
+
+        timeout = DefaultTimeoutInterval;
+    }
+
+    return timeout;
 }
 
 - (void)_runRequest:(NSURLRequest *)request completionHandler:(void (^)(ODAVOperation *operation))completionHandler;

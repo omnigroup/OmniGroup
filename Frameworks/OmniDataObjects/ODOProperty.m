@@ -97,6 +97,14 @@ void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags
     self->_sel.get = get;
     self->_sel.set = set;
 
+    // Start out not being in the snapshot properties; this'll get updated later if we are
+    self->_storageKey = (ODOStorageKey){
+        ODOStorageTypeObject,
+        ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX,
+        ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX,
+        0
+    };
+    
     // Could move this to the model generator...
     if (self->_flags.transient && self->_flags.calculated) {
         NSString *selectorString = [NSString stringWithFormat:@"calculateValueFor%@%@", [name substringToIndex:1].capitalizedString, [name substringFromIndex:1]];
@@ -221,11 +229,12 @@ BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name)
     return property->_name == name;
 }
 
-void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, NSUInteger snapshotIndex)
+void ODOPropertySnapshotAssignStorageKey(ODOProperty *property, ODOStorageKey storageKey)
 {
-    OBPRECONDITION(property->_flags.snapshotIndex == ODO_NON_SNAPSHOT_PROPERTY_INDEX); // shouldn't have been assigned yet.
-    property->_flags.snapshotIndex = (unsigned)snapshotIndex;
-    OBASSERT(property->_flags.snapshotIndex == snapshotIndex); // make sure it didn't get truncated.
+    OBPRECONDITION(property->_storageKey.snapshotIndex == ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX); // shouldn't have been assigned yet.
+    OBPRECONDITION(property->_storageKey.nonNullIndex == ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX);
+
+    property->_storageKey = storageKey;
 }
 
 static void _ODOPropertyFindChangeActions(ODOProperty *property)

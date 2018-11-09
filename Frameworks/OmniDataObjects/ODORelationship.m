@@ -85,7 +85,6 @@ ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL trans
     
     struct _ODOPropertyFlags baseFlags;
     memset(&baseFlags, 0, sizeof(baseFlags));
-    baseFlags.snapshotIndex = ODO_NON_SNAPSHOT_PROPERTY_INDEX; // start out not being in the snapshot properties; this'll get updated later if we are
     
     // Add relationship-specific info to the flags
     baseFlags.relationship = YES;

@@ -42,8 +42,6 @@ const char * ODOPropertyAttributesForProperty(ODOProperty *prop) OB_HIDDEN;
 IMP ODOGetterForProperty(ODOProperty *prop) OB_HIDDEN;
 IMP ODOSetterForProperty(ODOProperty *prop) OB_HIDDEN;
 
-void ODOObjectSetInternalValueForProperty(ODOObject *self, _Nullable id value, ODOProperty *prop) OB_HIDDEN;
-
 #if !LAZY_DYNAMIC_ACCESSORS
 void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity) OB_HIDDEN;
 #endif

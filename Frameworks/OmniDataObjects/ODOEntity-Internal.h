@@ -10,8 +10,12 @@
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODOObject.h> // For ODOObjectSetDefaultAttributeValues
 
+#import "ODOStorageType.h"
+
+#include <assert.h>
+
 @interface ODOEntity () {
-@private
+@package
     ODOModel *_nonretained_model; // We are retained by the model.
     NSString *_name;
     
@@ -36,9 +40,13 @@
     NSDictionary *_attributesByName;
     ODOAttribute *_primaryKeyAttribute;
     
+    size_t _snapshotSize;
     NSArray <__kindof ODOProperty *> *_snapshotProperties;
     NSArray <__kindof ODOProperty *> *_nonDerivedSnapshotProperties;
     NSArray <ODOAttribute *> *_snapshotAttributes;
+    
+    NSUInteger _snapshotPropertyCount;
+    ODOStorageKey *_snapshotStorageKeys;
     
     NSArray *_schemaProperties;
     NSString *_insertStatementKey;
@@ -57,12 +65,21 @@
 
 #pragma mark -
 
+static inline ODOStorageKey ODOEntityStorageKeyForSnapshotIndex(ODOEntity *self, NSUInteger snapshotIndex)
+{
+    assert(snapshotIndex < self->_snapshotPropertyCount);
+    return self->_snapshotStorageKeys[snapshotIndex];
+}
+
 @interface ODOEntity (Internal)
 
 - (void)finalizeModelLoading;
 
+@property(readonly) size_t snapshotSize;
+
 @property(readonly) NSArray <__kindof ODOProperty *> *snapshotProperties;
 @property(readonly) NSArray <__kindof ODOProperty *> *nonDerivedSnapshotProperties;
+
 - (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;
 
 @property(readonly) NSArray <__kindof ODOAttribute *> *snapshotAttributes;

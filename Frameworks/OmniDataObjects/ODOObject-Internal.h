@@ -8,6 +8,7 @@
 // $Id$
 
 #import <OmniDataObjects/ODOObject.h>
+#import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODOObjectSnapshot.h>
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODOAttribute.h>
@@ -16,6 +17,8 @@
 #import <Foundation/NSUndoManager.h>
 
 #import "ODOEntity-Internal.h"
+#import "ODOProperty-Internal.h"
+#import "ODOStorage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -70,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+extern NSSet *_ODOEmptyToManySet OB_HIDDEN;
 extern ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self) OB_HIDDEN;
 
 // Make it more clear what we mean when we compare to nil.
@@ -93,10 +97,11 @@ static inline void _ODOObjectCreateNullValues(ODOObject *self)
     OBPRECONDITION(![self isUpdated]);
     OBPRECONDITION(![self isDeleted]);
     
-    NSUInteger snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
-    OBASSERT(snapshotPropertyCount > 0);
+    size_t snapshotSize = self->_objectID.entity.snapshotSize;
+    OBASSERT(snapshotSize > 0);
     
-    self->_valueStorage = (id *)calloc(sizeof(id), snapshotPropertyCount);
+    self->_valueStorage = calloc(1, snapshotSize);
+    _ODOStorageCheckBase(self->_valueStorage);
 }
 
 static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, ODOObjectSnapshot *snapshot)
@@ -106,17 +111,14 @@ static inline void _ODOObjectCreateValuesFromSnapshot(ODOObject *self, ODOObject
     OBPRECONDITION(self->_valueStorage == NULL); // but not already envalued
     OBPRECONDITION(_ODOAssertSnapshotIsValidForObject(self, snapshot));
 
-    NSUInteger snapshotPropertyCount = [[[self->_objectID entity] snapshotProperties] count];
-    OBASSERT(snapshotPropertyCount == ODOObjectSnapshotValueCount(snapshot));
-    
-    // Not clearing the array via calloc; will fill it w/o releasing the old values here.
-    self->_valueStorage = (id *)malloc(sizeof(id) * snapshotPropertyCount);
-        
-    // Extract and retain the values.  We expect that the values in the snapshot are already immutable copies.  Otherwise we'd have to do "x = copy(x)" for each slot (which'd be slightly slower).
-    NSUInteger propertyIndex = snapshotPropertyCount;
-    while (propertyIndex--) {
-        self->_valueStorage[propertyIndex] = [ODOObjectSnapshotGetValueAtIndex(snapshot, propertyIndex) retain];
-    }
+    ODOEntity *entity = self->_objectID.entity;
+    size_t storageSize = entity.snapshotSize;
+
+    // Not clearing the array via calloc; will overwrite it with memcpy from the snapshot storage.
+    self->_valueStorage = malloc(storageSize);
+    _ODOStorageCheckBase(self->_valueStorage);
+
+    ODOStorageCopy(entity, self->_valueStorage, ODOObjectSnapshotGetStorageBase(snapshot), storageSize);
 }
 
 static inline BOOL _ODOObjectHasValues(ODOObject *self)
@@ -130,9 +132,15 @@ static inline void _ODOObjectReleaseValues(ODOObject *self)
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
     
     // We don't know the count since this isn't an array any longer.
-    NSUInteger valueIndex = [[[self->_objectID entity] snapshotProperties] count];
-    while (valueIndex--)
-        [self->_valueStorage[valueIndex] release]; // Not clearing the slot since we are about to...
+    ODOEntity *entity = self->_objectID.entity;
+    for (ODOProperty *property in entity.snapshotProperties) {
+        ODOStorageKey storageKey = property->_storageKey;
+        if (storageKey.type != ODOStorageTypeObject) {
+            continue;
+        }
+        
+        ODOStorageReleaseObject(entity, self->_valueStorage, storageKey);
+    }
 
     free(self->_valueStorage);
     self->_valueStorage = NULL;
@@ -147,39 +155,31 @@ static inline void _ODOObjectReleaseValuesIfPresent(ODOObject *self)
     _ODOObjectReleaseValues(self);
 }
 
-static inline void _ODOObjectSetValuesToNull(ODOObject *self)
+static inline id _Nullable _ODOObjectGetObjectValueForProperty(ODOObject *self, ODOProperty *property)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    
-    id *valueStorage = self->_valueStorage;
-    if (valueStorage) {
-        NSUInteger valueIndex = [[[self->_objectID entity] snapshotProperties] count];
-        while (valueIndex--) {
-            [valueStorage[valueIndex] release];
-            valueStorage[valueIndex] = nil; // could remember the count and memset after the loop
-        }
-    }
-}
+    OBPRECONDITION(self.entity == property.entity);
+    OBPRECONDITION(!self->_flags.invalid);
+    OBPRECONDITION(self->_editingContext);
+    OBPRECONDITION(self->_objectID);
 
-static inline id _Nullable _ODOObjectValueAtIndex(ODOObject *self, NSUInteger snapshotIndex)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);
     OBPRECONDITION(self->_valueStorage != NULL); // This is the case if the object is invalidated either due to deletion or the editing context being reset.  In CoreData, messaging an dead object will sometimes get an exception, sometimes get a crash or sometimes (if you are in the middle of invalidation) get you a stale value.  In ODO, it gets you dead.  Hopefully we won't have to relax this since it makes tracking down these (very real) problems easier.
 
-    return self->_valueStorage[snapshotIndex];
+    return ODOStorageGetObjectValue(self->_objectID.entity, self->_valueStorage, property->_storageKey);
 }
 
-static inline void _ODOObjectSetValueAtIndex(ODOObject *self, NSUInteger snapshotIndex, id _Nullable value)
+
+static inline void _ODOObjectSetObjectValueForProperty(ODOObject *self, ODOProperty *property, id _Nullable value)
 {
     OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    OBPRECONDITION(snapshotIndex < [[[self->_objectID entity] snapshotProperties] count]);
-    
-    if (value == self->_valueStorage[snapshotIndex])
-        return;
-    
-    [self->_valueStorage[snapshotIndex] release];
-    self->_valueStorage[snapshotIndex] = [value retain];
+    OBPRECONDITION(self.entity == property.entity);
+    OBPRECONDITION(!self->_flags.invalid);
+    OBPRECONDITION(self->_editingContext);
+    OBPRECONDITION(self->_objectID);
+
+    ODOEntity *entity = self->_objectID.entity;
+
+    ODOStorageSetObjectValue(entity, self->_valueStorage, property->_storageKey, value);
 }
 
 static inline BOOL _ODOObjectIsUndeletable(ODOObject *self)
@@ -189,8 +189,6 @@ static inline BOOL _ODOObjectIsUndeletable(ODOObject *self)
 }
 
 @class ODORelationship;
-
-void ODOObjectClearValues(ODOObject *self, BOOL deleting) OB_HIDDEN;
 
 void ODOObjectPrepareForAwakeFromFetch(ODOObject *self) OB_HIDDEN;
 void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self) OB_HIDDEN;

@@ -13,6 +13,7 @@
 #import <OmniFoundation/NSArray-OFExtensions.h>
 
 #import "ODOProperty-Internal.h"
+#import "ODOEntity-Internal.h"
 #import "ODOEntity-SQL.h"
 #import "ODOSQLStatement.h"
 
@@ -471,25 +472,160 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     self->_nonretained_model = model;
 }
 
+static size_t ODOPropertyStorageSize(ODOProperty *prop)
+{
+    if (prop->_flags.relationship) {
+        return sizeof(intptr_t);
+    }
+    ODOAttribute *attribute = OB_CHECKED_CAST(ODOAttribute, prop);
+    ODOAttributeType type = attribute.type;
+
+    switch (type) {
+        case ODOAttributeTypeUndefined: // Transient objects
+        case ODOAttributeTypeString:
+        case ODOAttributeTypeDate:
+        case ODOAttributeTypeData:
+            return sizeof(intptr_t);
+
+        case ODOAttributeTypeBoolean:
+            // We don't use a full byte for booleans, but as noted below we temporarily track our used bits in the bytesUsed local in ODOEntityAssignSnapshotStorageKeys.
+            return 1;
+
+        case ODOAttributeTypeInt16:
+            return sizeof(int16_t);
+
+        case ODOAttributeTypeInt32:
+            return sizeof(int32_t);
+
+        case ODOAttributeTypeInt64:
+            return sizeof(int64_t);
+
+        case ODOAttributeTypeFloat32:
+            return sizeof(float);
+
+        case ODOAttributeTypeFloat64:
+            return sizeof(double);
+
+        default:
+            OBASSERT_NOT_REACHED("Unknown type %ld!", type);
+            return 0;
+    }
+}
+
+static void ODOEntityAssignSnapshotStorageKeys(ODOEntity *self, NSArray <__kindof ODOProperty *> *snapshotProperties)
+{
+    // Check for optional scalars and set aside that many bits for their isNull flags.
+    NSUInteger nonNullIndexNeeded = 0;
+    for (ODOProperty *prop in snapshotProperties) {
+        if (ODOPropertyUseScalarStorage(prop) && prop->_flags.optional) {
+            nonNullIndexNeeded++;
+        }
+    }
+
+    /*
+     Each property that is part of the snapshotted properties has a ODOStorageKey that specifies how to pack the value for that property into a storage buffer.
+     
+     To make this easier to reason about, we'll loop over the properties and set up the storage key starting with the smallest type and going to larger and larger types. We could sort the properties by size and try to be clever about stepping through the array, but that seems not worth the effort to write and verify.
+     
+     We pack properties with the smallest size first (BOOL values going into individual bits), and we assume that all types must be aligned the same as their size.
+     For each set of scalar or object accessor functions the storage key's storageIndex argument is as if the entire snapshot was of that type. For example, if we have one bit, one int32 and one object, we'd pack like:
+     
+     [B:xxx xxxx][xxxx xxxx][xxxx xxxx][xxxx xxxx][IIII IIII IIII IIII IIII IIII IIII IIII][OOOO OOOO OOOO .... 64 bits ... OOOO OOOO OOOO OOOO]
+     
+     The storageIndex of the bit (B) would be 0, for the int32 (I) it would be 1 since the first 32 bits were used by the one bit and padding to align I to a 4 byte boundary. Likewise, the storageIndex of the object (O) would be 2.
+    */
+    
+    __block size_t bytesUsed = nonNullIndexNeeded; // As noted elsewhere, while we are doing bits, the bytesUsed is actually the bits used.
+
+    void (^roundUp)(size_t align) = ^(size_t align){
+        if ((bytesUsed % align) != 0) {
+            bytesUsed = ((bytesUsed / align) + 1) * align;
+        }
+    };
+
+    __block NSUInteger nextNonNullIndex = 0;
+    
+    void (^assignStorage)(size_t) = ^(size_t size) {
+        
+        // Snap to this new size's alignment.
+        roundUp(size);
+        
+        // Handle each property with this size/alignment
+        [snapshotProperties enumerateObjectsUsingBlock:^(ODOProperty *property, NSUInteger snapshotIndex, BOOL *stop) {
+            if (ODOPropertyStorageSize(property) != size) {
+                return;
+            }
+            
+            // For the BOOL case, the calculation of storageIndex is fine (but depends on our temporary miscalculation of bytesUsed).
+            OBASSERT((bytesUsed % size) == 0);
+            NSUInteger storageIndex = bytesUsed / size;
+            NSUInteger nonNullIndex;
+            
+            // If this is a nullable scalar property, take one of the previously reserved bits set aside for this purpose.
+            if (ODOPropertyUseScalarStorage(property) && property->_flags.optional) {
+                OBASSERT(nextNonNullIndex < nonNullIndexNeeded);
+                nonNullIndex = nextNonNullIndex;
+                nextNonNullIndex++;
+            } else {
+                nonNullIndex = ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX;
+            }
+            
+            ODOStorageKey storageKey = (ODOStorageKey){
+                ODOPropertyGetStorageType(property),
+                snapshotIndex,
+                nonNullIndex,
+                storageIndex
+            };
+            
+            // Make sure nothing got truncated.
+            OBASSERT(storageKey.type == ODOPropertyGetStorageType(property));
+            OBASSERT(storageKey.snapshotIndex == snapshotIndex);
+            OBASSERT(storageKey.nonNullIndex == nonNullIndex);
+            OBASSERT(storageKey.storageIndex == storageIndex);
+
+            ODOPropertySnapshotAssignStorageKey(property, storageKey);
+
+            bytesUsed += size;
+        }];
+    };
+
+    assignStorage(1);
+    
+    // As noted above, bytesUsed will be the number of bits used here. Round it to the number of bytes needed for this number of bits.
+    bytesUsed = (bytesUsed + 7) / 8;
+
+    assignStorage(2);
+    assignStorage(4);
+    assignStorage(8);
+
+    self->_snapshotPropertyCount = [snapshotProperties count];
+    self->_snapshotStorageKeys = malloc(self->_snapshotPropertyCount * sizeof(*self->_snapshotStorageKeys));
+    
+    [snapshotProperties enumerateObjectsUsingBlock:^(ODOProperty *property, NSUInteger snapshotIndex, BOOL *stop) {
+        OBASSERT(property->_storageKey.snapshotIndex != ODO_STORAGE_KEY_NON_SNAPSHOT_PROPERTY_INDEX, "All snapshot properties should have gotten a snapshot index");
+        
+        self->_snapshotStorageKeys[snapshotIndex] = property->_storageKey;
+    }];
+    
+    self->_snapshotSize = bytesUsed;
+}
+
 - (void)finalizeModelLoading;
 {
     [self _buildSchemaProperties];
     
     // Build a list of snapshot properties.  These are all the properties that the ODOObject stores internally; everything but the primary key.  CoreData doesn't seem to snapshot the transient properties.  Also, it is unclear whether relationships are supported for CoreData actual snapshots, but they do need to be stored by ODOObject, so this is easy for now.
-    NSMutableArray *snapshotProperties = [[NSMutableArray alloc] initWithArray:_properties];
+    NSMutableArray <__kindof ODOProperty *> *snapshotProperties = [[NSMutableArray alloc] initWithArray:_properties];
     [snapshotProperties removeObject:_primaryKeyAttribute];
-    
-    // Sort them by name and assign snapshot indexes
-    [snapshotProperties sortUsingSelector:@selector(compareByName:)];
-    {
-        NSUInteger snapshotIndex = [snapshotProperties count];
-        while (snapshotIndex--)
-            ODOPropertySnapshotAssignSnapshotIndex([snapshotProperties objectAtIndex:snapshotIndex], snapshotIndex);
-    }
-    
+
+    // Sort by name for binary search when looking up by name.
+
     _snapshotProperties = [[NSArray alloc] initWithArray:snapshotProperties];
     [snapshotProperties release];
+
     
+    ODOEntityAssignSnapshotStorageKeys(self, _snapshotProperties);
+
     _snapshotAttributes = [[_snapshotProperties arrayByPerformingBlock:^(ODOProperty *prop){
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         if (!flags.relationship) {
@@ -552,6 +688,11 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
     OBASSERT(ODOPropertySetterImpl(_primaryKeyAttribute) == NULL);
 }
 
+- (size_t)snapshotSize;
+{
+    return _snapshotSize;
+}
+
 - (NSArray <__kindof ODOProperty *> *)snapshotProperties;
 {
     OBPRECONDITION(_snapshotProperties);
@@ -572,9 +713,7 @@ void ODOEntityBind(ODOEntity *self, ODOModel *model)
 
 - (ODOProperty *)propertyWithSnapshotIndex:(NSUInteger)snapshotIndex;
 {
-    ODOProperty *prop = [_snapshotProperties objectAtIndex:snapshotIndex];
-    OBASSERT(ODOPropertySnapshotIndex(prop) == snapshotIndex);
-    return prop;
+    return _snapshotProperties[snapshotIndex];
 }
 
 - (NSArray <ODOObjectSetDefaultAttributeValues> *)defaultAttributeValueActions;

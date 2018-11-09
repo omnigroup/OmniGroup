@@ -592,7 +592,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
             title = NSLocalizedStringFromTableInBundle(@"Help", @"OmniAppKit", [OAApplication bundle], "Help window default title");
         }
 
-        OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Help"];
+        OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Help" options:OAWebPageViewerOptionsStandardHelpOptions];
         viewer.usesWebPageTitleForWindowTitle = NO;
 
         CGFloat startingWidth = [infoDict floatForKey:@"OAHelpWidth" defaultValue:800.0f];
@@ -606,7 +606,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         [window setContentMinSize:(NSSize) {.height = minHeight, .width = minWidth}];
         [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = maxWidth}];
         [window setContentSize:(NSSize) {.height = startingHeight, .width = startingWidth}];
-        [window setLevel:NSFloatingWindowLevel];
         [window center];
 
         NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];

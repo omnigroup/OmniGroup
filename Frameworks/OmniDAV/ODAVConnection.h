@@ -10,6 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSURLSession.h>
 #import <OmniDAV/ODAVFeatures.h>
+#import <OmniDAV/ODAVConnectionTimeoutDelegate.h>
 #import <OmniBase/macros.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -43,6 +44,8 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @end
 
 @interface ODAVConnection : NSObject
+
+@property(class,nonatomic,weak) id <ODAVConnectionTimeoutDelegate> timeoutDelegate;
 
 - (instancetype)init NS_UNAVAILABLE;
 - initWithSessionConfiguration:(ODAVConnectionConfiguration *)configuration baseURL:(NSURL *)baseURL NS_DESIGNATED_INITIALIZER;

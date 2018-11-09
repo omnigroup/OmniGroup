@@ -205,6 +205,9 @@ module OmniDataObjects
       when :float64
         "[[NSNumber alloc] initWithDouble:#{default_value}]"
       when :boolean
+        if !(TrueClass === default_value || FalseClass === default_value)
+          fail "The default value for boolean property \"#{name}\" must be either `true` or `false`"
+        end
         default_value ? "(id)kCFBooleanTrue" : "(id)kCFBooleanFalse"
       when :string
         "@\"#{default_value}\""

@@ -130,20 +130,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark -
 
-static inline void ODOASSERT_ATTRIBUTE_OF_TYPE(ODOProperty *prop, ODOAttributeType attrType)
-{
-#ifdef OMNI_ASSERTIONS_ON
-    OBPRECONDITION(prop != nil);
-    OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
-    struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-    OBASSERT(flags.relationship == NO);
-    
-    ODOAttribute *attr = (ODOAttribute *)prop;
-    OBASSERT(![attr isPrimaryKey]);
-    OBASSERT(attr.type == attrType);
-#endif
-}
-
 // Pass a key of nil if you don't know or care what the key is and just want to clear the fault.  Right now we short circuit on the primary key attribute name.
 static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key)
 {
@@ -176,17 +162,18 @@ void ODOObjectWillAccessValueForKey(ODOObject *self, NSString * _Nullable key)
 static ODORelationship *_ODOLookupRelationshipBySnapshotIndex(ODOObject *self, NSUInteger snapshotIndex, BOOL toMany, ODORelationship * _Nullable rel)
 {
     OBPRECONDITION(rel == nil || [rel isKindOfClass:[ODORelationship class]]);
-    OBPRECONDITION(rel == nil || ODOPropertySnapshotIndex(rel) == snapshotIndex);
+    OBPRECONDITION(rel == nil || rel->_storageKey.snapshotIndex == snapshotIndex);
     
     if (rel == nil) {
         // Caller needs us to look it up; not sure if this will be rare or not.
         rel = (ODORelationship *)[[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+        OBASSERT(rel->_storageKey.type == ODOStorageTypeObject);
         OBASSERT([rel isKindOfClass:[ODORelationship class]]);
         OBASSERT([rel isToMany] == toMany);
     }
     
     OBPOSTCONDITION([rel isKindOfClass:[ODORelationship class]]);
-    OBPOSTCONDITION(ODOPropertySnapshotIndex(rel) == snapshotIndex);
+    OBPOSTCONDITION(rel->_storageKey.snapshotIndex == snapshotIndex);
     return rel;
 }
 
@@ -214,7 +201,7 @@ static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id va
         [destID release];
         
         // Replace the pk with the real fault.
-        _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
+        ODOStorageSetObject(self->_objectID.entity, self->_valueStorage, rel->_storageKey, value);
     } else {
         // to-one to nil; just fine
     }
@@ -227,7 +214,7 @@ static inline id _ODOObjectCheckForLazyToManyFaultCreation(ODOObject *self, id v
         // When asking for the to-many relationship the first time, we fetch it.  We assume that the caller is going to do something useful with it, otherwise they shouldn't even ask.  If you want to conditionally avoid faulting, we could add a -isFaultForKey: or some such.
         rel = _ODOLookupRelationshipBySnapshotIndex(self, snapshotIndex, YES/*toMany*/, rel);
         value = ODOFetchSetFault(self->_editingContext, self, rel);
-        _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
+        _ODOObjectSetObjectValueForProperty(self, rel, value);
     }
     return value;
 }
@@ -244,12 +231,12 @@ id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *p
     OBPRECONDITION(!self->_flags.isFault || prop == [[self->_objectID entity] primaryKeyAttribute]);
     
     // Could maybe have extra info in this lookup (attr vs. rel, to-one vs. to-many)?
-    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
+    ODOStorageKey storageKey = prop->_storageKey;
+    if (storageKey.snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX) {
         return self.objectID.primaryKey;
     }
     
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
+    id value = _ODOObjectGetObjectValueForProperty(self, prop);
     
     struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
     
@@ -257,10 +244,10 @@ id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *p
         ODORelationship *rel = (ODORelationship *)prop;
         if (flags.toMany) {
             // TODO: Use something like __builtin_expect to tell the inline that rel != nil?  This is the slow path, so I'm not sure it matters...
-            value = _ODOObjectCheckForLazyToManyFaultCreation(self, value, snapshotIndex, rel);
+            value = _ODOObjectCheckForLazyToManyFaultCreation(self, value, storageKey.snapshotIndex, rel);
         } else {
             // TODO: Use something like __builtin_expect to tell the inline that rel != nil?  This is the slow path, so I'm not sure it matters...
-            value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, snapshotIndex, rel);
+            value = _ODOObjectCheckForLazyToOneFaultCreation(self, value, storageKey.snapshotIndex, rel);
         }
     } else if (value == nil && flags.transient && flags.calculated && ((options & ODOObjectPrimitiveValueForPropertyOptionAllowCalculationOfLazyTransientValues) != 0)) {
         BOOL isAlreadyCalculatingValue = [self _isCalculatingValueForProperty:prop];
@@ -272,7 +259,7 @@ id ODOObjectPrimitiveValueForPropertyWithOptions(ODOObject *self, ODOProperty *p
                     value = [[value copy] autorelease];
                 }
                 
-                _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
+                _ODOObjectSetObjectValueForProperty(self, prop, value);
             }
         }
     }
@@ -292,103 +279,88 @@ static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotI
 {
 #ifdef OMNI_ASSERTIONS_ON
     {
-        ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+        // This can be called for both object-typed properties and optional scalars (where the external interface is a nullable NSNumber).
+        ODOProperty *prop = [self->_objectID.entity propertyWithSnapshotIndex:snapshotIndex];
         OBASSERT([prop isKindOfClass:[ODOAttribute class]]);
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         OBASSERT(flags.relationship == NO);
-        
+
         ODOAttribute *attr = (ODOAttribute *)prop;
         OBASSERT(![attr isPrimaryKey]);
     }
 #endif
-    
+
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
+    // As noted above, we could be looking up an optional scalar, so call the boxing getter.
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectValueAtIndex(self, snapshotIndex);
+    return ODOStorageGetObjectValue(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static BOOL _ODOObjectBoolAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeBoolean);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value boolValue];
+    return ODOStorageGetBoolean(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static int16_t _ODOObjectInt16AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt16);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value shortValue];
+    return ODOStorageGetInt16(entity, self->_valueStorage, storageKey);
 }
 
 static int32_t _ODOObjectInt32AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt32);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value intValue];
+    return ODOStorageGetInt32(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static int64_t _ODOObjectInt64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeInt64);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value longLongValue];
+    return ODOStorageGetInt64(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static float _ODOObjectFloat32AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat32);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value floatValue];
+    return ODOStorageGetFloat32(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static double _ODOObjectFloat64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
-#ifdef OMNI_ASSERTIONS_ON
-    ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
-    ODOASSERT_ATTRIBUTE_OF_TYPE(prop, ODOAttributeTypeFloat64);
-#endif
-    
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    id value = _ODOObjectValueAtIndex(self, snapshotIndex);
-    OBASSERT(value != nil);
-    return [value doubleValue];
+    return ODOStorageGetFloat64(self->_objectID.entity, self->_valueStorage, storageKey);
 }
 
 static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
 #ifdef OMNI_ASSERTIONS_ON
     {
-        ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+        ODOProperty *prop = [entity propertyWithSnapshotIndex:snapshotIndex];
+        OBASSERT(prop->_storageKey.type == ODOStorageTypeObject);
         OBASSERT([prop isKindOfClass:[ODORelationship class]]);
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         OBASSERT(flags.relationship == YES);
@@ -411,14 +383,18 @@ static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NS
     }
     
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectCheckForLazyToOneFaultCreation(self, _ODOObjectValueAtIndex(self, snapshotIndex), snapshotIndex, nil/*relationship == we has it not!*/);
+    return _ODOObjectCheckForLazyToOneFaultCreation(self, ODOStorageGetObject(self->_objectID.entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
 }
 
 static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
 {
+    ODOEntity *entity = self->_objectID.entity;
+    ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
+
 #ifdef OMNI_ASSERTIONS_ON
     {
-        ODOProperty *prop = [[self->_objectID entity] propertyWithSnapshotIndex:snapshotIndex];
+        ODOProperty *prop = [entity propertyWithSnapshotIndex:snapshotIndex];
+        OBASSERT(prop->_storageKey.type == ODOStorageTypeObject);
         OBASSERT([prop isKindOfClass:[ODORelationship class]]);
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
         OBASSERT(flags.relationship == YES);
@@ -427,7 +403,7 @@ static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger 
 #endif
     
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectCheckForLazyToManyFaultCreation(self, _ODOObjectValueAtIndex(self, snapshotIndex), snapshotIndex, nil/*relationship == we has it not!*/);
+    return _ODOObjectCheckForLazyToManyFaultCreation(self, ODOStorageGetObject(self->_objectID.entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
 }
 
 // Generic property setter; for now we aren't doing specific-index setters (we are already a little faster than CoreData here, but we could still add them if it ends up showing up on a profile).
@@ -449,7 +425,7 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
                 ODORelationship *rel = (ODORelationship *)prop;
                 
                 if (flags.toMany) {
-                    // We allow mutables sets consisting of instances of the destination entity's instance class.
+                    // We allow mutable sets consisting of instances of the destination entity's instance class.
                     OBASSERT([value isKindOfClass:[NSMutableSet class]]); // Not sure the mutable will take effect...
                     NSEnumerator *destEnum = [value objectEnumerator];
                     ODOObject *dest;
@@ -477,7 +453,8 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
     }
 #endif
     
-    if (flags.snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
+    ODOStorageKey storageKey = prop->_storageKey;
+    if (storageKey.snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX) {
         OBASSERT_NOT_REACHED("Ignoring attempt to set the primary key");
         return;
     }
@@ -520,7 +497,14 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
                 if (newValue) {
                     NSMutableSet *inverseSet = ODOObjectToManyRelationshipIfNotFault(newValue, inverse);
                     OBASSERT(![inverseSet member:self]);
-                    
+
+                    if (inverseSet == _ODOEmptyToManySet) {
+                        // Promote to a real mutable set now that we are adding something.
+                        inverseSet = [[NSMutableSet alloc] init];
+                        _ODOObjectSetObjectValueForProperty(newValue, inverse, inverseSet);
+                        [inverseSet release];
+                    }
+
                     // Add to the new set.  Have to send KVO even if we've not created the to-many relationship set.  Also, this will possibly put the to-many holder in the updated objects so that it'll get a -willUpdate (if it isn't inserted).
                     [newValue willChangeValueForKey:inverseKey withSetMutation:NSKeyValueUnionSetMutation usingObjects:change];
                     [inverseSet addObject:self];
@@ -592,7 +576,7 @@ void ODOObjectSetPrimitiveValueForProperty(ODOObject *self, _Nullable id value, 
         }
     }
 
-    _ODOObjectSetValueAtIndex(self, flags.snapshotIndex, value);
+    _ODOObjectSetObjectValueForProperty(self, prop, value);
     
     [valueCopy release];
 }
@@ -1021,8 +1005,8 @@ const char * ODOPropertyAttributesForProperty(ODOProperty *prop)
 
 IMP ODOGetterForProperty(ODOProperty *prop)
 {
-    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    if (snapshotIndex == ODO_PRIMARY_KEY_SNAPSHOT_INDEX) {
+    NSUInteger snapshotIndex = prop->_storageKey.snapshotIndex;
+    if (snapshotIndex == ODO_STORAGE_KEY_PRIMARY_KEY_SNAPSHOT_INDEX) {
         return (IMP)_ODOObjectPrimaryKeyGetter;
     }
     
@@ -1166,18 +1150,6 @@ IMP ODOSetterForProperty(ODOProperty *prop)
     }
     
     return Setters[attrType];
-}
-
-void ODOObjectSetInternalValueForProperty(ODOObject *self, _Nullable id value, ODOProperty *prop)
-{
-    OBPRECONDITION([self isKindOfClass:[ODOObject class]]);
-    //OBPRECONDITION(!self->_flags.isFault); // Might be a fault if we are just clearing it.  TODO: Swap the order of filling in the values and clearing the fault flag?
-    OBPRECONDITION(!self->_flags.invalid);
-    OBPRECONDITION(self->_editingContext);
-    OBPRECONDITION(self->_objectID);
-    
-    NSUInteger snapshotIndex = ODOPropertySnapshotIndex(prop);
-    _ODOObjectSetValueAtIndex(self, snapshotIndex, value);
 }
 
 // See the disabled implementation of +[ODOObject resolveInstanceMethod:].

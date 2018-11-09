@@ -1,4 +1,4 @@
-// Copyright 2007-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,18 @@
 #import <OmniAppKit/OAWebPageViewerDelegate.h>
 @class WebView;
 
+typedef NS_OPTIONS(NSUInteger, OAWebPageViewerOptions) {
+    OAWebPageViewerOptionsNone                          = 0,
+    OAWebPageViewerOptionsAuxilliaryWindow              = (1 << 0),
+
+    OAWebPageViewerOptionsStandardHelpOptions           = (OAWebPageViewerOptionsAuxilliaryWindow),
+    OAWebPageViewerOptionsStandardNewsOptions           = (OAWebPageViewerOptionsAuxilliaryWindow),
+    OAWebPageViewerOptionsStandardReleaseNotesOptions   = (OAWebPageViewerOptionsAuxilliaryWindow),
+};
+
 @interface OAWebPageViewer : NSWindowController
 
-+ (OAWebPageViewer *)sharedViewerNamed:(NSString *)name;
++ (OAWebPageViewer *)sharedViewerNamed:(NSString *)name options:(OAWebPageViewerOptions)options;
 
 @property (nonatomic, strong) WebView *webView;
 

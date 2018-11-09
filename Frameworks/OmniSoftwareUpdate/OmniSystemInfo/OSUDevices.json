@@ -122,6 +122,24 @@
       "name": "iPhone X",
       "platform": "iPhone10,6"
   },
+  "N841AP": {
+      "name": "iPhone XR",
+      "platform": "iPhone11,8"
+  },
+  "D321AP": {
+      "name": "iPhone XS",
+      "platform": "iPhone11,2"
+  },
+  "D331AP": {
+      "name": "iPhone XS Max",
+      "platform": "iPhone11,4",
+      "comment": "China; two physical SIM slots"
+  },
+  "D331pAP": {
+      "name": "iPhone XS Max",
+      "platform": "iPhone11,6",
+      "comment": "Global"
+  },
   "N27aAP": {
     "name": "Apple Watch (1st generation)",
     "platform": "Watch1,1",

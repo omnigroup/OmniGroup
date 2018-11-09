@@ -64,7 +64,6 @@ OpenStepExtensions.subproj/NSObject-NSDraggingInfo-OAExtensions.m
 OpenStepExtensions.subproj/NSOutlineView-OAExtensions.m
 OpenStepExtensions.subproj/NSPasteboard-OAExtensions.m
 OpenStepExtensions.subproj/NSPopUpButton-OAExtensions.m
-OpenStepExtensions.subproj/NSPrintPanel-OAExtensions.m
 OpenStepExtensions.subproj/NSResponder-OAExtensions.m
 OpenStepExtensions.subproj/NSScriptCommand-OAExtensions.m
 OpenStepExtensions.subproj/NSScrollView-OAExtensions.m

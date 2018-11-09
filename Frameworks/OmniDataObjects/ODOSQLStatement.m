@@ -618,7 +618,7 @@ BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sq
             OBASSERT(!ODOObjectChangeProcessingEnabled(object)); // this should be off anyway since we haven't yet awoken from fetch.
             
             // Set the internal value directly
-            ODOObjectSetInternalValueForProperty(object, value, prop);
+            _ODOObjectSetObjectValueForProperty(object, prop, value);
             [value release];
             
             OBASSERT(![object isUpdated]); // In this case, mutating the object should not have marked it edited

@@ -41,6 +41,22 @@
 @end
 #import "ODOTestCaseAllAttributeTypes-Properties.h"
 
+@interface ODOTestCaseOptionalScalarTypes : ODOTestCaseObject
+@end
+#import "ODOTestCaseOptionalScalarTypes-Properties.h"
+
+@interface ODOTestCaseMultipleBooleans : ODOTestCaseObject
+@end
+#import "ODOTestCaseMultipleBooleans-Properties.h"
+
+@interface ODOTestCaseInterleavedSizeScalars : ODOTestCaseObject
+@end
+#import "ODOTestCaseInterleavedSizeScalars-Properties.h"
+
+@interface ODOTestCaseCalculatedProperty : ODOTestCaseObject
+@end
+#import "ODOTestCaseCalculatedProperty-Properties.h"
+
 @interface ODOTestCaseLeftHand : ODOTestCaseObject
 @end
 #import "ODOTestCaseLeftHand-Properties.h"

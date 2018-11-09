@@ -134,6 +134,13 @@ void OBInvokeRegisteredLoadActions(void)
 
     [LoadActionLock lock];
 
+    static BOOL isAlreadyInvokingRegisteredLoadActions = NO;
+    if (isAlreadyInvokingRegisteredLoadActions) {
+        [LoadActionLock unlock];
+        return;
+    }
+    isAlreadyInvokingRegisteredLoadActions = YES;
+
     LOADACTION_DEBUG(@"Sequence point with %ld perform-posing and %ld did-load actions", [PerformPosingActions count], [DidLoadActions count]);
 
     [ExecutableActions addObjectsFromArray:PerformPosingActions];
@@ -172,6 +179,7 @@ void OBInvokeRegisteredLoadActions(void)
         }
     }
 
+    isAlreadyInvokingRegisteredLoadActions = NO;
     [LoadActionLock unlock];
 
 #ifdef OMNI_ASSERTIONS_ON

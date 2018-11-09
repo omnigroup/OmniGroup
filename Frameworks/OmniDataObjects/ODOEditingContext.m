@@ -517,12 +517,9 @@ static void _validateForDeleteApplier(const void *value, void *context)
     
 #ifdef OMNI_ASSERTIONS_ON
     // All the to-one relationships must be nil at this point. Otherwise, observation across a keyPath won't trigger due to objects along that keyPath being deleted and we might leak observation info.  Additionally, when a 'did delete' notification goes out and the observer removes its observed keyPath, the crossings of to-one relationships can return nil and be correct w/o asserting about asserting that we aren't doing KVC on deleted objects.
-    {
-        for (ODORelationship *rel in object.entity.toOneRelationships) {
-            struct _ODOPropertyFlags flags = ODOPropertyFlags(rel);
-            ODOObject *destination = _ODOObjectValueAtIndex(object, flags.snapshotIndex);
-            OBASSERT(destination == nil);
-        }
+    for (ODORelationship *rel in object.entity.toOneRelationships) {
+        ODOObject *destination = _ODOObjectGetObjectValueForProperty(object, rel);
+        OBASSERT(destination == nil);
     }
 #endif
     
@@ -1215,7 +1212,6 @@ BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext 
         
         // Deleted objects currently get -willDelete, but no -didSave.
         if (deleted != nil) {
-            // _processedDeletedObjects was moved aside above so that ODOObjectClearValues() doesn't assert on the passed in object being -isDeleted.
             ODOEditingContextDidDeleteObjects(self, deleted);
             [deleted release];
         }

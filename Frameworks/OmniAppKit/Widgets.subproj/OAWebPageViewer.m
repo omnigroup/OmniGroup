@@ -32,17 +32,20 @@ RCS_ID("$Id$")
 
 static NSMutableDictionary *sharedViewerCache = nil;
 
-+ (OAWebPageViewer *)sharedViewerNamed:(NSString *)name;
++ (OAWebPageViewer *)sharedViewerNamed:(NSString *)name options:(OAWebPageViewerOptions)options;
 {
-    if (name == nil)
+    if (name == nil) {
         return nil;
+    }
 
-    if (sharedViewerCache == nil)
+    if (sharedViewerCache == nil) {
         sharedViewerCache = [[NSMutableDictionary alloc] init];
+    }
 
     OAWebPageViewer *cachedViewer = sharedViewerCache[name];
-    if (cachedViewer != nil)
+    if (cachedViewer != nil) {
         return cachedViewer;
+    }
 
     OAWebPageViewer *newViewer = [[self alloc] init];
     newViewer.name = name;
@@ -53,7 +56,11 @@ static NSMutableDictionary *sharedViewerCache = nil;
     newViewer.plugInsEnabled = NO;
     
     newViewer.usesWebPageTitleForWindowTitle = YES;
-
+    
+    if ((options & OAWebPageViewerOptionsAuxilliaryWindow) != 0) {
+        newViewer.window.collectionBehavior = (NSWindowCollectionBehaviorMoveToActiveSpace | NSWindowCollectionBehaviorFullScreenAuxiliary);
+    }
+    
     return newViewer;
 }
 

@@ -19,11 +19,86 @@ model "ODOTestCase" do
     attribute "float32", :float32, :default => 0
     attribute "float64", :float64, :default => 0
     attribute "string", :string
-    attribute "boolean", :boolean, :default => 0, :objc_is_getter => false
+    attribute "boolean", :boolean, :default => false, :objc_is_getter => false
     attribute "date", :date
     attribute "data", :data
   end
 
+  entity "OptionalScalarTypes" do
+      attribute "pk", :string, :primary => true
+      attribute "int16", :int16, :optional => true
+      attribute "int32", :int32, :optional => true
+      attribute "int64", :int64, :optional => true
+      attribute "float32", :float32, :optional => true
+      attribute "float64", :float64, :optional => true
+      attribute "boolean", :boolean, :optional => true
+  end
+
+  entity "MultipleBooleans" do
+    attribute "pk", :string, :primary => true
+    attribute "b0", :boolean, :default => false
+    attribute "b1", :boolean, :default => false
+    attribute "b2", :boolean, :default => false
+    attribute "b3", :boolean, :default => false
+    attribute "b4", :boolean, :default => false
+    attribute "b5", :boolean, :default => false
+    attribute "b6", :boolean, :default => false
+    attribute "b7", :boolean, :default => false
+    attribute "b8", :boolean, :default => false
+    attribute "b9", :boolean, :default => false
+    
+    attribute "b10", :boolean, :default => false
+    attribute "b11", :boolean, :default => false
+    attribute "b12", :boolean, :default => false
+    attribute "b13", :boolean, :default => false
+    attribute "b14", :boolean, :default => false
+    attribute "b15", :boolean, :default => false
+    attribute "b16", :boolean, :default => false
+    attribute "b17", :boolean, :default => false
+    attribute "b18", :boolean, :default => false
+    attribute "b19", :boolean, :default => false
+    
+    attribute "i0", :int32, :default => 0
+  end
+  
+  entity "InterleavedSizeScalars" do
+    attribute "pk", :string, :primary => true
+    
+    attribute "s0", :int16, :default => 0
+    attribute "b0", :boolean, :default => false
+    attribute "f0", :float64, :default => 0
+    attribute "i0", :int32, :default => 0
+        
+    attribute "s1", :int16, :default => 0
+    attribute "f1", :float64, :default => 0
+    attribute "b1", :boolean, :default => false
+    attribute "i1", :int32, :default => 0
+        
+    attribute "f2", :float64, :default => 0
+    attribute "i2", :int32, :default => 0
+    attribute "s2", :int16, :default => 0
+    attribute "b2", :boolean, :default => false
+    
+    attribute "of2", :float64, :default => 0, :optional => true
+    attribute "oi2", :int32, :default => 0, :optional => true
+    attribute "os2", :int16, :default => 0, :optional => true
+    attribute "ob2", :boolean, :default => false, :optional => true
+    
+  end
+  
+  entity "CalculatedProperty" do
+    attribute "pk", :string, :primary => true
+    
+    attribute "b0", :boolean, :default => false
+    attribute "b1", :boolean, :default => true
+    attribute "xor", :boolean, :optional => true, :transient => true, :calculated => true
+    
+    attribute "str0", :string, :default => "a"
+    attribute "str1", :string, :default => "b"
+    attribute "concat", :string, :transient => true, :calculated => true
+    
+  end
+  
   entity "DynamicProperty" do
     attribute "pk", :string, :primary => true
     attribute "name", :string, :optional => true

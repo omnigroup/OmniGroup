@@ -45,7 +45,7 @@ OBDidLoad(^{
     }
     NSURL *webURL = [OSUChecker sharedUpdateChecker].currentNewsURL;
     
-    OAWebPageViewer *webViewer = [OAWebPageViewer sharedViewerNamed:@"News"];
+    OAWebPageViewer *webViewer = [OAWebPageViewer sharedViewerNamed:@"News" options:OAWebPageViewerOptionsStandardNewsOptions];
     
     // don't go fullscreen
     NSRect frame = [[webViewer window] frame];
@@ -53,7 +53,6 @@ OBDidLoad(^{
     [[webViewer window] setFrame:frame display:NO];
     [[webViewer window] setMinSize:NSMakeSize(800, 400)];
     [[webViewer window] setMaxSize:NSMakeSize(800, FLT_MAX)];
-    [[webViewer window] setLevel:NSFloatingWindowLevel];
     
     webViewer.usesWebPageTitleForWindowTitle = NO;
     webViewer.mediaStyle = @"release-notes";

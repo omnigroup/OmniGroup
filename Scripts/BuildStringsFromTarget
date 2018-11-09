@@ -16,17 +16,26 @@
 
 SCRIPTS_DIR=$0:h
 
-# Require the caller to provide a list of expected string table names. This prevents cases where NSLocalizedStringXXX calls are moved from one framework to another without fixing the table name (and thus possibly resulting in collisions)
-# Localizable nib filenames should _not_ be passed on the command line; they will be determined automatically. (This means it is valid to have a BuildStringsFromTarget step that has no arguments if the only localizable resources are nibs.)
-typeset -a EXPECTED_STRINGS_FILES
-EXPECTED_STRINGS_FILES=($*)
-
 # Always build strings into en.lproj.
 DEVELOPMENT_REGION="en"
 
 # Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below). Don’t move the file list into place unless building it succeeds.
 STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
 TMP_OUTPUT="$STRINGS_DIR/$DEVELOPMENT_REGION".lproj
+
+if [ "${SCRIPT_INPUT_FILE_LIST_COUNT:-0}" != "1" ] && [ "$OMNI_BUILD_STRINGS_INPUT_MISSING" = "warn" ]; then
+    echo "** No inputs declared for BuildStringsFromTarget; running older version **"
+    exec "$SCRIPTS_DIR/BuildStringsFromTarget-Old" $*
+else
+    # If we are just switching from the old script to the new, there might be a stray file.
+    rm -f "$TMP_OUTPUT"/files
+fi
+
+# Require the caller to provide a list of expected string table names. This prevents cases where NSLocalizedStringXXX calls are moved from one framework to another without fixing the table name (and thus possibly resulting in collisions)
+# Localizable nib filenames should _not_ be passed on the command line; they will be determined automatically. (This means it is valid to have a BuildStringsFromTarget step that has no arguments if the only localizable resources are nibs.)
+typeset -a EXPECTED_STRINGS_FILES
+EXPECTED_STRINGS_FILES=($*)
+
 LOCALIZABLE_FILE_LIST="$TMP_OUTPUT"/localizable-files
 
 mkdir -p "$STRINGS_DIR"
@@ -41,11 +50,6 @@ $SCRIPTS_DIR/ListSourceFilesInTarget --keep-variables "$TARGET_NAME" c,m,swift,x
 SYMBOLIC_LOCALIZABLE_FILE_LIST="$SRCROOT/$TARGET_NAME.xcfilelist"
 
 if [ "${SCRIPT_INPUT_FILE_LIST_COUNT:-0}" != "1" ] || ! cmp --quiet "$LOCALIZABLE_FILE_LIST" "$SYMBOLIC_LOCALIZABLE_FILE_LIST"; then
-    
-    if [ "$OMNI_BUILD_STRINGS_INPUT_MISSING" = "warn" ]; then
-        echo "** No inputs declared for BuildStringsFromTarget; running older verion **"
-        exec "$SCRIPTS_DIR/BuildStringsFromTarget-Old" $*
-    fi
     
     # Xcode copies the xcfilelist input to a temporary spot and rewrites it with all absolute paths (and variables replaced).
     # We expect a particular naming scheme for these files to make the build phases easy to set up.

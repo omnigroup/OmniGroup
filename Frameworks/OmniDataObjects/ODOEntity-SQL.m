@@ -12,6 +12,7 @@
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 
+#import "ODOEntity-Internal.h"
 #import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODODatabase-Internal.h"

@@ -12,40 +12,7 @@
 
 @class ODOEntity, ODOObject;
 
-#define ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH (26)
-struct _ODOPropertyFlags {
-    unsigned int optional : 1;
-    unsigned int transient : 1;
-    unsigned int calculated : 1;
-    unsigned int relationship : 1;
-    unsigned int toMany : 1;
-    unsigned int scalarAccessors : 1;
-    unsigned int snapshotIndex : ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH;
-};
-
-@interface ODOProperty : OBObject <NSCopying> {
-  @package
-    ODOEntity *_nonretained_entity;
-    NSString *_name;
-    
-    // Getter/setter selectors are defined no matter what.
-    struct {
-        SEL get;
-        SEL set;
-
-        SEL calculate; // For transient/calculated properties
-    } _sel;
-    
-    // IMPs are cached when needed.  Setter might be NULL (someday) if the property is @dynamic and read-only.
-    struct {
-        IMP get;
-        IMP set;
-
-        IMP calculate;
-    } _imp;
-    
-    struct _ODOPropertyFlags _flags;
-}
+@interface ODOProperty : OBObject <NSCopying>
 
 @property (nonatomic, readonly) ODOEntity *entity;
 @property (nonatomic, readonly) NSString *name;

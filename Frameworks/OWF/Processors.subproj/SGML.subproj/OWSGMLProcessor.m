@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -261,10 +261,7 @@ static size_t remainingStackSize(void)
     return debugDictionary;
 }
 
-@end
-
-
-@implementation OWSGMLProcessor (Tags)
+#pragma mark - Tags
 
 static OWSGMLTagType *anchorTagType;
 static OWSGMLTagType *baseTagType;
@@ -287,16 +284,13 @@ static NSUInteger metaHTTPEquivAttributeIndex;
 static NSUInteger metaCharSetAttributeIndex;
 
 OBDidLoad(^{
-    Class self = [OWSGMLProcessor class];
-    
-    OWSGMLMethods *methods;
-    OWSGMLDTD *dtd;
-
     // NOTE:
     //
     // You CANNOT add any tags here which aren't also applicable to frameset pages, because the SGMLFrameRecognizer subclass depends on any non-frame tags being unrecognized in its superclass (us) so it can switch the document to HTML.
 
-    dtd = [self dtd];
+    Class self = [OWSGMLProcessor class];
+    OWSGMLDTD *dtd = [self dtd];
+    assert(dtd != nil);
 
     anchorTagType = [dtd tagTypeNamed:@"a"];
     baseTagType = [dtd tagTypeNamed:@"base"];
@@ -321,7 +315,7 @@ OBDidLoad(^{
     metaHTTPEquivAttributeIndex = [metaTagType addAttributeNamed:@"http-equiv"];
     metaCharSetAttributeIndex = [metaTagType addAttributeNamed:@"charset"];
 
-    methods = [self sgmlMethods];
+    OWSGMLMethods *methods = [self sgmlMethods];
 
     OWSGMLMethodStartHandler(OWSGMLProcessor, Meaningless, html);
     OWSGMLMethodStartHandler(OWSGMLProcessor, Meaningless, head);
@@ -333,6 +327,8 @@ OBDidLoad(^{
 
 - (OWAddress *)addressForAnchorTag:(OWSGMLTag *)anchorTag;
 {
+    OBPRECONDITION(anchorTagType != nil);
+
     NSString *href = sgmlTagValueForAttributeAtIndex(anchorTag, anchorHrefAttributeIndex);
     if (href == nil)
 	return nil;

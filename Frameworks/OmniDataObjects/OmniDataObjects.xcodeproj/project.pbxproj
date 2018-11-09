@@ -593,6 +593,8 @@
 		34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Accessors.m"; sourceTree = "<group>"; };
 		34CBB3292004190400B471F6 /* ODOObjectSnapshot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODOObjectSnapshot.h; sourceTree = "<group>"; };
 		34CBB34120041A1000B471F6 /* ODOObjectSnapshot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOObjectSnapshot.m; sourceTree = "<group>"; };
+		34CF08CA21632A6E001A9D65 /* ODOStorageType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODOStorageType.h; sourceTree = "<group>"; };
+		34CF08DF2163C215001A9D65 /* ODOStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ODOStorage.h; sourceTree = "<group>"; };
 		34D5FB1B0E9F20890055E958 /* ODOModel-Creation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-Creation.h"; sourceTree = "<group>"; };
 		34D5FB8F0EA06D910055E958 /* ODOTestCase.odomodel */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; fileEncoding = 4; path = ODOTestCase.odomodel; sourceTree = "<group>"; };
 		34D94D4C11A1AD5600A9ACC1 /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
@@ -1014,6 +1016,8 @@
 				34CBB34120041A1000B471F6 /* ODOObjectSnapshot.m */,
 				34F34580201134970058D760 /* ODOChangeActions.h */,
 				34F34581201134970058D760 /* ODOChangeActions.m */,
+				34CF08DF2163C215001A9D65 /* ODOStorage.h */,
+				34CF08CA21632A6E001A9D65 /* ODOStorageType.h */,
 			);
 			name = "Object Graph";
 			sourceTree = "<group>";
@@ -1611,6 +1615,13 @@
 				"$(DERIVED_FILE_DIR)/ODOTestCasePeerB-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseRightHand-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseRightHandRequired-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalScalarTypes-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalScalarTypes-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseMultipleBooleans-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1673,6 +1684,13 @@
 				"$(DERIVED_FILE_DIR)/ODOTestCasePeerB-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseRightHand-Properties.h",
 				"$(DERIVED_FILE_DIR)/ODOTestCaseRightHandRequired-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalScalarTypes-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseOptionalScalarTypes-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseMultipleBooleans-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseCalculatedProperty-Properties.swift",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.h",
+				"$(DERIVED_FILE_DIR)/ODOTestCaseInterleavedSizeScalars-Properties.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

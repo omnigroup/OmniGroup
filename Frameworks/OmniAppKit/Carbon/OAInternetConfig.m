@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,12 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 #ifdef OMNI_ASSERTIONS_ON
 
 OBDidLoad(^{
+    // Plug-ins don't ask for these entitlements, so don't check for them.
+    NSString *pathExtension = NSBundle.mainBundle.bundleURL.pathExtension;
+    if ([pathExtension isEqualToString:@"appex"]) {
+        return;
+    }
+    
     if ([[NSProcessInfo processInfo] isSandboxed]) {
         NSDictionary *entitlements = [[NSProcessInfo processInfo] effectiveCodeSigningEntitlements:NULL];
         
