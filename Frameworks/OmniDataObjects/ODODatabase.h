@@ -15,6 +15,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// A marker URL indicating that an ODODatabase is using an in-memory SQLite store rather than creating a file on disk. A URL constructed from this value is legal to pass to -connectToURL:error:, and may be returned from -connectedURL.
+extern NSString * const ODODatabaseInMemoryFileURLString;
+
 extern NSInteger ODOSQLDebugLogLevel;
 
 @interface ODODatabase : OFObject

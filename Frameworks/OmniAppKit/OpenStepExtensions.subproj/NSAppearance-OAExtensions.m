@@ -9,29 +9,36 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSAppearance (OAExtensions)
 
 - (BOOL)OA_isDarkAppearance;
 {
-    static NSSet *darkAppearanceNames = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSMutableSet *names = [NSMutableSet setWithObject:NSAppearanceNameVibrantDark];
-        
-#if defined(MAC_OS_X_VERSION_10_14) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_14
-        if (@available(macOS 10.14, *)) {
-            [names addObjectsFromArray:@[
-                                         NSAppearanceNameAccessibilityHighContrastVibrantDark,
-                                         NSAppearanceNameDarkAqua,
-                                         NSAppearanceNameAccessibilityHighContrastDarkAqua,
-                                         ]];
+    if (@available(macOS 10.14, *)) {
+        NSString *matchingAppearanceName = [self bestMatchFromAppearancesWithNames:@[NSAppearanceNameAqua, NSAppearanceNameDarkAqua]];
+        if (matchingAppearanceName != nil && [matchingAppearanceName isEqualToString:NSAppearanceNameDarkAqua]) {
+            return YES;
+        } else {
+            return NO;
         }
-#endif
-        
-        darkAppearanceNames = [names copy];
-    });
+    } else {
+        return [self.name isEqualToString:NSAppearanceNameVibrantDark];
+    }
+}
 
-    return [darkAppearanceNames containsObject:self.name];
++ (void)withAppearance:(NSAppearance *)overrideAppearance performActions:(void (^ NS_NOESCAPE)(void))actions;
+{
+    NSAppearance *previousAppearance = self.currentAppearance;
+    
+    @try {
+        self.currentAppearance = overrideAppearance;
+        actions();
+    } @finally {
+        self.currentAppearance = previousAppearance;
+    }
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

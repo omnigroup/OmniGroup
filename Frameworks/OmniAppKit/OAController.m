@@ -240,6 +240,7 @@ RCS_ID("$Id$")
     [[viewer window] setFrame:frame display:NO];
     [[viewer window] setMinSize:NSMakeSize(800, 400)];
     [[viewer window] setMaxSize:NSMakeSize(800, FLT_MAX)];
+    [[viewer window] setLevel:NSFloatingWindowLevel];
 
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [viewer setMediaStyle:@"release-notes"];

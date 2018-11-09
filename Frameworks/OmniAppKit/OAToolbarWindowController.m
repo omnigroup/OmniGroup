@@ -379,7 +379,7 @@ static void copyProperty(NSToolbarItem *anItem,
         OBASSERT(OBClassIsSubclassOfClass(buttonClass, [OAToolbarItemButton class]));
 
         // Yosemite-style toolbar buttons
-        NSSize buttonSize = NSMakeSize(44, 24); //height updated from 32 to 24 in response to <bug:///162819> (Mac-OmniGraffle Bug: High Sierra Only: OmniGraffle: Plug-In icons not displayed correctly on toolbar). it matches the height of the lossenge borders we draw.
+        NSSize buttonSize = NSMakeSize(44, 32); //Matches Apple's size in Numbers and Pages as of 14 Nov. 2014
         OAToolbarItemButton *button = [[buttonClass alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.width, buttonSize.height)];
         button.buttonType = NSMomentaryChangeButton;
         button.bezelStyle = NSTexturedRoundedBezelStyle;

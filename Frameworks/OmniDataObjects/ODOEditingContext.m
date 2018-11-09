@@ -103,6 +103,8 @@ NS_ASSUME_NONNULL_BEGIN
     [_recentlyUpdatedObjects release];
     [_recentlyDeletedObjects release];
     
+    [_label release];
+    
     [super dealloc];
 }
 
@@ -1524,6 +1526,13 @@ NSString * const ODODeletedObjectPropertySnapshotsKey = @"ODODeletedObjectProper
 
 NSNotificationName const ODOEditingContextWillResetNotification = @"ODOEditingContextWillReset";
 NSNotificationName const ODOEditingContextDidResetNotification = @"ODOEditingContextDidReset";
+
+#pragma mark - NSObject subclass
+
+- (NSString *)debugDescription;
+{
+    return [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([self class]), self, self.label ?: @"(null)"];
+}
 
 #pragma mark - Private
 

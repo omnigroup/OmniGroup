@@ -416,13 +416,11 @@ void OBTrap(void)
 
 void _OBStopInDebuggerWithoutMessage(void)
 {
-#if 0
     BOOL isBeingDebugged = OBIsBeingDebugged();
     if (isBeingDebugged) {
         // N.B. This should not use OBTrap. The intent here is to stop in the debugger if we are being debugged, but in non-fatally, such that you can to continue and debug the application in it's current state.
         kill(getpid(), SIGTRAP);
     }
-#endif
 }
 
 void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message)

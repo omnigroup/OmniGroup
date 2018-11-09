@@ -43,6 +43,7 @@ static BOOL OUIInspectorAppearanceEnabled = NO;
 }
 
 @dynamic InspectorBarStyle;
+@dynamic NavigationBarAccessoryBlurEffectStyle;
 
 @dynamic InspectorBackgroundColor;
 @dynamic InspectorSeparatorColor;

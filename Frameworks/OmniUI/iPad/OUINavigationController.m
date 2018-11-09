@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,9 @@
 RCS_ID("$Id$")
 
 @interface OUINavigationController ()
+
+@property (strong, nonatomic) UIVisualEffectView *accessoryAndBackgroundBar;
+@property (strong, nonatomic) UIView *accessory;
 
 @property (nonatomic, strong) NSLayoutConstraint *accessoryAndBackgroundBarTopConstraint;
 @property (nonatomic, strong) NSArray *topAndBottomConstraints;
@@ -31,8 +34,10 @@ RCS_ID("$Id$")
 {
     [super viewDidLoad];
     
-    self.accessoryAndBackgroundBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+    self.accessoryAndBackgroundBar = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
     self.accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
+
     [self.view addSubview:_accessoryAndBackgroundBar];
     [self _constrainAccessoryAndBackgroundView];
     self.accessoryAndBackgroundBar.hidden = YES;
@@ -77,8 +82,8 @@ RCS_ID("$Id$")
 
 - (void)_animateSwitchFromOldAccessory:(UIView *)oldOne toNewAccessory:(UIView *)newOne {
     newOne.alpha = 0.0;
+    [self.accessoryAndBackgroundBar layoutIfNeeded];
     [[self transitionCoordinator] animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
-        [self.accessoryAndBackgroundBar layoutIfNeeded];
         newOne.alpha = 1.0;
         oldOne.alpha = 0.0;
     } completion:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
@@ -116,7 +121,7 @@ RCS_ID("$Id$")
     if (newAccessory) {
         newAccessory.translatesAutoresizingMaskIntoConstraints = NO;
         
-        [self.accessoryAndBackgroundBar addSubview:newAccessory];
+        [self.accessoryAndBackgroundBar.contentView addSubview:newAccessory];
         [self _constrainNewAccessoryView:newAccessory];
         self.accessoryAndBackgroundBar.hidden = NO;
 
@@ -195,9 +200,9 @@ RCS_ID("$Id$")
     OUIInspectorAppearance *appearance = OB_CHECKED_CAST_OR_NIL(OUIInspectorAppearance, changedAppearance);
     
     self.navigationBar.barStyle = appearance.InspectorBarStyle;
-
-    _accessoryAndBackgroundBar.barStyle = appearance.InspectorBarStyle;
-    _accessoryAndBackgroundBar.backgroundColor = appearance.InspectorBackgroundColor;
+    
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:appearance.NavigationBarAccessoryBlurEffectStyle];
+    self.accessoryAndBackgroundBar.effect = blurEffect;
 }
 
 @end

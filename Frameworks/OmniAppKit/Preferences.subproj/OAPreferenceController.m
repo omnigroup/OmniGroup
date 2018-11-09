@@ -168,11 +168,27 @@ static NSString *windowFrameSaveName = @"Preferences";
     [self _registerClassName:itemName inCategoryNamed:categoryName description:description];
 }
 
-+ (OAPreferenceController *)sharedPreferenceController;
++ (Class)preferenceControllerClass;
+{
+    NSBundle *bundle = OFControllingBundle();
+    NSString *classname = [[bundle infoDictionary] objectForKey:@"OAPreferenceControllerClass"];
+    
+    if (![NSString isEmptyString:classname]) {
+        Class cls = NSClassFromString(classname);
+        OBASSERT(cls != Nil && [cls isSubclassOfClass:[OAPreferenceController class]]);
+        return cls;
+    }
+    
+    return [OAPreferenceController class];
+}
+
++ (instancetype)sharedPreferenceController;
 {
     static OAPreferenceController *sharedPreferenceController = nil;
-    if (sharedPreferenceController == nil)
-        sharedPreferenceController = [[self alloc] init];
+    if (sharedPreferenceController == nil) {
+        Class cls = [self preferenceControllerClass];
+        sharedPreferenceController = [[cls alloc] init];
+    }
     
     return sharedPreferenceController;
 }

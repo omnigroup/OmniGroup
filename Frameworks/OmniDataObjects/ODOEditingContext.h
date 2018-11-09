@@ -60,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (__kindof ODOObject *)insertObjectWithEntityName:(NSString *)entityName;
 - (nullable __kindof ODOObject *)fetchObjectWithObjectID:(ODOObjectID *)objectID error:(NSError **)outError NS_REFINED_FOR_SWIFT;
 
+/// Debugging label for differentiating between multiple editing contexts.
+@property (nonatomic, copy) NSString *label;
+
 @end
 
 extern NSNotificationName const ODOEditingContextObjectsWillBeDeletedNotification;

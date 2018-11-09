@@ -225,6 +225,8 @@
 		3EA806CE1EA7B58C008DE258 /* ODOSQLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3EA806CF1EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
 		3EA806D01EA7B58C008DE258 /* ODOSQLConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */; };
+		3ED87D46215C3F8F006E343A /* ODOSQLStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */; };
+		3ED87D47215C3F8F006E343A /* ODOSQLStorageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */; };
 		3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3EE81749211A286900AD48A7 /* ODOEditingContextTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EE81748211A286900AD48A7 /* ODOEditingContextTests.m */; };
@@ -609,6 +611,7 @@
 		34F34581201134970058D760 /* ODOChangeActions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOChangeActions.m; sourceTree = "<group>"; };
 		3EA806CB1EA7B58C008DE258 /* ODOSQLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOSQLConnection.h; sourceTree = "<group>"; };
 		3EA806CC1EA7B58C008DE258 /* ODOSQLConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLConnection.m; sourceTree = "<group>"; };
+		3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOSQLStorageTests.m; sourceTree = "<group>"; };
 		3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOSQLThreadingTests.m; sourceTree = "<group>"; };
 		3EE81748211A286900AD48A7 /* ODOEditingContextTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ODOEditingContextTests.m; sourceTree = "<group>"; };
 		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -813,6 +816,7 @@
 				341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */,
 				3EDF28881EA9322B00AA6824 /* ODOSQLThreadingTests.m */,
 				3EE81748211A286900AD48A7 /* ODOEditingContextTests.m */,
+				3ED87D45215C3F8F006E343A /* ODOSQLStorageTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1723,6 +1727,7 @@
 				341646DB0E970192006BF255 /* ODOAttributeTypeTests.m in Sources */,
 				3EDF28891EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */,
 				341647620E971390006BF255 /* ODODynamicPropertyTests.m in Sources */,
+				3ED87D46215C3F8F006E343A /* ODOSQLStorageTests.m in Sources */,
 				346AE8B51909889E00C28CFE /* ODOSnapshotTests.m in Sources */,
 				341FC8180FDF203E0097EA13 /* ODOStringCompareFunctionTest.m in Sources */,
 			);
@@ -1741,6 +1746,7 @@
 				343BD2E31B62F381002D09C6 /* OBTestCase.m in Sources */,
 				3EDF288A1EA9322B00AA6824 /* ODOSQLThreadingTests.m in Sources */,
 				343BD2EB1B62F39D002D09C6 /* ODOStringCompareFunctionTest.m in Sources */,
+				3ED87D47215C3F8F006E343A /* ODOSQLStorageTests.m in Sources */,
 				343BD2E91B62F398002D09C6 /* ODODynamicPropertyTests.m in Sources */,
 				343BD2E81B62F394002D09C6 /* ODOAttributeTypeTests.m in Sources */,
 			);

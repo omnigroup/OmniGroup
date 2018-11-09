@@ -8,6 +8,7 @@
 #import <OmniDataObjects/ODOSQLConnection.h>
 
 #import <OmniDataObjects/Errors.h>
+#import <OmniDataObjects/ODODatabase.h> // for ODODatabaseInMemoryFileURLString
 #import <OmniDataObjects/ODOSQLStatement.h>
 
 #import <OmniFoundation/OFXMLIdentifier.h> // for OFXMLCreateID
@@ -174,7 +175,13 @@ RCS_ID("$Id$");
 - (BOOL)_init_connectWithOptions:(ODOSQLConnectionOptions)options error:(NSError **)outError;
 {
     OBPRECONDITION(_URL != nil);
-    NSString *path = [_URL path];
+    NSString *path;
+    if ([[_URL absoluteString] isEqualToString:ODODatabaseInMemoryFileURLString]) {
+        path = @":memory:"; // special value for SQLite
+    } else {
+        path = [_URL path];
+        OBASSERT_NOTNULL(path);
+    }
     
     // Even on error the output sqlite will supposedly be set and we need to close it.
     sqlite3 *sql = NULL;

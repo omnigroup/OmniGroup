@@ -606,6 +606,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         [window setContentMinSize:(NSSize) {.height = minHeight, .width = minWidth}];
         [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = maxWidth}];
         [window setContentSize:(NSSize) {.height = startingHeight, .width = startingWidth}];
+        [window setLevel:NSFloatingWindowLevel];
         [window center];
 
         NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
@@ -989,8 +990,8 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 + (void)_setupOmniApplication;
 {
-    [OBObject self]; // Trigger OBInvokeRegisteredLoadActions()
-    
+    OBInvokeRegisteredLoadActions();
+
     // Wait until defaults are registered via OBInvokeRegisteredLoadActions() to look this up.
     OATargetSelection = [[NSUserDefaults standardUserDefaults] boolForKey:@"OATargetSelection"];
 

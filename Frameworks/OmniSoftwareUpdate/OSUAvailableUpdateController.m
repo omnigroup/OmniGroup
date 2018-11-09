@@ -761,11 +761,14 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)_loadBlankPage;
 {
-    NSAppearance *savedAppearance = NSAppearance.currentAppearance;
-    NSAppearance.currentAppearance = self.effectiveAppearance;
-    NSColor *backgroundColor = NSColor.textBackgroundColor;
-    NSString *backgroundColorHexString = [OAColorPalette stringForColor:backgroundColor];
-    NSAppearance.currentAppearance = savedAppearance;
+    __block NSColor *backgroundColor = nil;
+    __block NSString *backgroundColorHexString = nil;
+
+    [NSAppearance withAppearance:self.effectiveAppearance performActions:^{
+        backgroundColor = NSColor.textBackgroundColor;
+        backgroundColorHexString = [OAColorPalette stringForColor:backgroundColor];
+    }];
+
     NSString *blankHTML = [NSString stringWithFormat:@"<body bgcolor=%@ />", backgroundColorHexString];
     [[_releaseNotesWebView mainFrame] loadHTMLString:blankHTML baseURL:nil];
 }

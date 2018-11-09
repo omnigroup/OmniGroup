@@ -1313,7 +1313,7 @@ static void fudgeTrust(SecTrustRef tref)
     }
     
     NSOperation *finish;
-    if (findOp) {
+    if (findOp && challenge.previousFailureCount <= 3) {
         finish = [NSBlockOperation blockOperationWithBlock:^{
             OBPRECONDITION(findOp.finished);
             

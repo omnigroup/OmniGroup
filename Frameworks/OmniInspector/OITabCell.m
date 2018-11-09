@@ -141,20 +141,32 @@ NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
         } else if ([self isHighlighted]) {
             tabColor = [[NSColor controlAccentColor] colorWithSystemEffect:NSColorSystemEffectPressed];
         } else {
-            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:OMNI_BUNDLE];
         }
+
+        image = [image imageByTintingWithColor:tabColor];
     } else if (@available(macOS 10.13, *)) {
         if ([self state]) {
-            tabColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+            tabColor = [NSColor colorNamed:@"InspectorTabOnStateTintColor" bundle:OMNI_BUNDLE];
         } else if ([self isHighlighted]) {
-            tabColor = [NSColor colorNamed:@"InspectorTabHighlightedTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+            tabColor = [NSColor colorNamed:@"InspectorTabHighlightedTintColor" bundle:OMNI_BUNDLE];
         } else {
-            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:[NSBundle bundleForClass:[OITabCell class]]];
+            tabColor = [NSColor colorNamed:@"InspectorTabNormalTintColor" bundle:OMNI_BUNDLE];
         }
+        
+        image = [image imageByTintingWithColor:tabColor];
     } else {
-        tabColor = [NSColor clearColor];
+        NSColor *InspectorTabOnStateTintColor = [NSColor colorWithCalibratedRed:0.1843 green:0.5137 blue:0.98431373 alpha:1];
+        NSColor *InspectorTabHighlightedTintColor = [NSColor colorWithCalibratedRed:0.098039216 green:0.25490196 blue:0.58431373 alpha:1];
+
+        if ([self state]) {
+            image = [image imageByTintingWithColor:InspectorTabOnStateTintColor];
+        } else if ([self isHighlighted]) {
+            image = [image imageByTintingWithColor:InspectorTabHighlightedTintColor];
+        }
     }
-    [[[self image] imageByTintingWithColor:tabColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
+    
+    [image drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositingOperationSourceOver fraction:1];
 }
 
 @end

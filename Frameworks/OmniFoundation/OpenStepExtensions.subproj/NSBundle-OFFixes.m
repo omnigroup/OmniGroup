@@ -1,4 +1,4 @@
-// Copyright 1999-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,12 +61,36 @@ static NSBundle *(*original_bundleWithIdentifier)(id self, SEL _cmd, NSString *i
  As part of this, it allocates and then deallocates a CFBundleRef for the other bundle.
  The deallocation of the duplicate bundle deregisters the running bundle!
  We've seen this happen for the main bundle, <bug://bugs/26790>.
+ 
+ 2018-09-28: +bundleWithIdentifier: also gets called a *ton* by dynamic color resolution when drawing, instead of them caching the bundle or color values.
  */
 + (NSBundle *)replacement_bundleWithIdentifier:(NSString *)identifier;
 {
-    NSBundle *bundle = original_bundleWithIdentifier(self, _cmd, identifier);
-    if (bundle)
+    static dispatch_once_t onceToken;
+    static NSMutableDictionary <NSString *, NSBundle *> *bundleCache;
+    dispatch_once(&onceToken, ^{
+        bundleCache = [[NSMutableDictionary alloc] init];
+    });
+    
+    NSBundle *bundle;
+    @synchronized (bundleCache) {
+        bundle = bundleCache[identifier];
+    }
+    if (bundle) {
+        return bundle;
+    }
+    if (!identifier || [identifier isEqual:@"(null)"]) {
+        // It is distressingly common for the system frameworks to pass nil or "(null)". The latter doesn't seem to happen on Mojave.
+        return nil;
+    }
+
+    bundle = original_bundleWithIdentifier(self, _cmd, identifier);
+    if (bundle) {
+        @synchronized (bundleCache) {
+            bundleCache[identifier] = bundle;
+        }
 	return bundle;
+    }
     
     NSBundle *mainBundle = [NSBundle mainBundle];
     if ([identifier isEqualToString:[mainBundle bundleIdentifier]])

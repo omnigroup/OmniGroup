@@ -73,16 +73,15 @@ fi
 # Now that we know our symbolic list of input files matches, read the preprocessed version that Xcode built
 source_files=()
 cat "$SCRIPT_INPUT_FILE_LIST_0" | while read f; do
-    case "$f:x" in
-    xib,storyboard)
+    if [ "$f:e" = "xib" -o "$f:e" = "storyboard" ]; then
         # Build English strings for every xib using base localizations
-        xib_basename=`basename $x`
-        if [[ "$x" =~ "Base.lproj/$xib_basename\$" ]]; then
+        xib_basename=`basename $f`
+        if [[ "$f" =~ "Base.lproj/$xib_basename\$" ]]; then
             string_table_name="${xib_basename%.*}"
-            echo "Creating string table '$string_table_name' from $x" # without this line here, zsh segfaults. (!?)
+            echo "Creating string table '$string_table_name' from $f" # without this line here, zsh segfaults. (!?)
 		
     		# Extract the strings
-            ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$SRCROOT/$x"
+            ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$f"
 		
     		# ibtool writes UTF-16 and doesn't seem to have a switch to requested a string encoding. Also, when it emits 'empty' strings files, they have a single newline.
     		echo "  -- converting to utf-8"
@@ -97,11 +96,9 @@ cat "$SCRIPT_INPUT_FILE_LIST_0" | while read f; do
     			echo "  -- ignoring since it is empty"
     		fi
         fi
-        ;;
-    *)
+    else
         source_files+=($f)
-        ;;
-    esac
+    fi
 done
 
 # Generate strings from the other source files

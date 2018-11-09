@@ -9,6 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <Quartz/Quartz.h>
+#import <OmniAppKit/NSAppearance-OAExtensions.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
@@ -70,6 +71,8 @@ static void _DisplayWindow(NSWindow *window)
     NSProgressIndicator *_progressIndicator;
     NSImageView *_progressIndicatorImageView;
     NSTextField *_label;
+    NSColor *_backgroundColor;
+    NSColor *_borderColor;
 }
 
 - (id)initWithFrame:(NSRect)frame controlSize:(NSControlSize)controlSize progressStyle:(NSProgressIndicatorStyle)progressStyle;
@@ -90,6 +93,8 @@ static void _DisplayWindow(NSWindow *window)
     [_progressIndicator release];
     [_progressIndicatorImageView release];
     [_label release];
+    [_backgroundColor release];
+    [_borderColor release];
 
     [super dealloc];
 }
@@ -109,6 +114,9 @@ static void _DisplayWindow(NSWindow *window)
     _progressIndicator.indeterminate = (progressStyle == NSProgressIndicatorSpinningStyle);
     _progressIndicator.displayedWhenStopped = YES;
     
+    _backgroundColor = [[NSColor colorWithCalibratedWhite:0.95 alpha:1.0] copy];
+    _borderColor = [[NSColor colorWithWhite:0.0 alpha:0.05] copy];
+
 #if 0 && defined(DEBUG_correia)
     _progressIndicator.wantsLayer = YES;
     _progressIndicator.layer.backgroundColor = [NSColor.yellowColor colorWithAlphaComponent:0.5].CGColor;
@@ -195,6 +203,8 @@ static void _DisplayWindow(NSWindow *window)
         [NSLayoutConstraint activateConstraints:constraints];
     }
     
+    [self _OALongOperationIndicatorView_updateForCurrentAppearance];
+
     return self;
 }
 
@@ -238,8 +248,8 @@ static void _DisplayWindow(NSWindow *window)
     CGFloat radius = 7.0f;
     NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:radius yRadius:radius];
     
-    [[NSColor colorWithCalibratedWhite:0.95 alpha:1.0] setFill];
-    [[NSColor colorWithWhite:0.0 alpha:0.05] setStroke];
+    [_backgroundColor setFill];
+    [_borderColor setStroke];
     
     [path fill];
     [path stroke];
@@ -248,6 +258,31 @@ static void _DisplayWindow(NSWindow *window)
     [NSColor.redColor set];
     NSFrameRect(_progressIndicator.frame);
 #endif
+}
+
+- (void)viewDidChangeEffectiveAppearance;
+{
+    [super viewDidChangeEffectiveAppearance];
+    [self _OALongOperationIndicatorView_updateForCurrentAppearance];
+}
+
+- (void)_OALongOperationIndicatorView_updateForCurrentAppearance;
+{
+    [_backgroundColor release];
+    _backgroundColor = nil;
+    
+    [_borderColor release];
+    _borderColor = nil;
+    
+    if ([self.effectiveAppearance OA_isDarkAppearance]) {
+        _backgroundColor = [[NSColor colorWithCalibratedWhite:0.17 alpha:1.0] copy];
+        _borderColor = [[NSColor colorWithWhite:1.0 alpha:0.05] copy];
+        _label.textColor = [NSColor.whiteColor colorWithAlphaComponent:0.85];
+    } else {
+        _backgroundColor = [[NSColor colorWithCalibratedWhite:0.95 alpha:1.0] copy];
+        _borderColor = [[NSColor colorWithWhite:0.0 alpha:0.05] copy];
+        _label.textColor = [NSColor.blackColor colorWithAlphaComponent:0.85];
+    }
 }
 
 @end
@@ -612,7 +647,7 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
     //
     // rdar://problem/34468617
 
-    return YES;
+    return ![OFVersionNumber isOperatingSystemMojaveOrLater];
 }
 
 - (NSImage *)omni_imageRepresentation;

@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ typedef void (^OAPreferenceClientChangeCompletion)(__kindof OAPreferenceClient *
 
 @interface OAPreferenceController : OFObject <NSToolbarDelegate>
 
-+ (OAPreferenceController *)sharedPreferenceController;
++ (instancetype)sharedPreferenceController;
 + (NSArray *)allClientRecords;
 + (OAPreferenceClientRecord *)clientRecordWithShortTitle:(NSString *)shortTitle;
 + (OAPreferenceClientRecord *)clientRecordWithIdentifier:(NSString *)identifier;

@@ -880,6 +880,7 @@ static unsigned SyncAgentRunningAccountsContext;
         
         NSUserActivity *activity;
         NSString *localizedOpenFormatString;
+        NSString *localizedFileName = url.URLByDeletingPathExtension.lastPathComponent;
         if (url == nil) {
             activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
             activity.title = NSLocalizedStringFromTableInBundle(@"Create New Document", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
@@ -887,12 +888,14 @@ static unsigned SyncAgentRunningAccountsContext;
             if (isCreatingFromTemplate) {
                 activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
                 localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Create New Document From %@", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
+                localizedFileName = [self localizedNameForSampleDocumentNamed:localizedFileName];
             } else {
                 activity = [[NSUserActivity alloc] initWithActivityType:[[self class] openDocumentUserActivityType]];
                 localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
             }
 
-            activity.title = [NSString stringWithFormat:localizedOpenFormatString, url.URLByDeletingPathExtension.lastPathComponent];
+
+            activity.title = [NSString stringWithFormat:localizedOpenFormatString, localizedFileName];
         }
         
         if (url != nil) {
@@ -2026,6 +2029,10 @@ static NSSet *ViewableFileTypes()
                         if (item) {
                             break;
                         }
+                    }
+                    if (!item) {
+                        // we have a URL but it's not in any scope.
+                        item = [_externalScopeManager fileItemFromExternalDocumentURL:fileURL];
                     }
                 }
                 if (isOpenDocumentActivity) {

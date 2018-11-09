@@ -27,6 +27,8 @@
 
 RCS_ID("$Id$")
 
+NSString * const ODODatabaseInMemoryFileURLString = @"file::memory:";
+
 NSString * const ODODatabaseMetadataTableName = @"ODOMetadata";
 NSString * const ODODatabaseMetadataKeyColumnName = @"key";
 NSString * const ODODatabaseMetadataPlistColumnName = @"value";
@@ -220,8 +222,12 @@ static BOOL ODOVacuumOnDisconnect = NO;
     }
     
     // SQLite will silently create the database file if it didn't exist already.  Check if it exists before trying (alternatively, we could do some select to see if it is empty after opening).
-    NSString *path = [[fileURL absoluteURL] path];
-    BOOL existed = [[NSFileManager defaultManager] fileExistsAtPath:path];
+    NSString *path = nil;
+    BOOL existed = NO;
+    if (![[fileURL absoluteString] isEqualToString:ODODatabaseInMemoryFileURLString]) {
+        path = [[fileURL absoluteURL] path];
+        existed = [[NSFileManager defaultManager] fileExistsAtPath:path];
+    }
     
     ODOSQLConnectionOptions options = 0;
     if (ODOAsynchronousWrites) {
@@ -300,9 +306,11 @@ static BOOL ODOVacuumOnDisconnect = NO;
             [self _disconnectWithoutNotifying:NULL];
             
             // Since we created the file and it is bogus; blow it away.
-            NSError *removeError = nil;
-            if (![[NSFileManager defaultManager] removeItemAtPath:path error:&removeError]) {
-                NSLog(@"Unable to remove '%@' - %@", path, [removeError toPropertyList]);
+            if (path != nil) {
+                NSError *removeError = nil;
+                if (![[NSFileManager defaultManager] removeItemAtPath:path error:&removeError]) {
+                    NSLog(@"Unable to remove '%@' - %@", path, [removeError toPropertyList]);
+                }
             }
             
             return NO;
