@@ -2,4 +2,4 @@
 
 # For now, at least, convert $Id$ to $Id$ since git supports the latter (as the hash of the commit).  Still doesn't contain the file name in the Id...
 
-find . -name .git -prune -o \( -type f -a \! -name "ConvertRCSIDs" -print0 \) | xargs -0 perl -spi -e 's/\$Header[^\$]*\$/\$Id\$/g'
+find . -name .git -prune -o -name "*.xcassets" -prune -o \( -type f -a \! -name "ConvertRCSIDs" -print0 \) | xargs -0 -n 20 perl -spi -e 's/\$Header[^\$]*\$/\$Id\$/g'
