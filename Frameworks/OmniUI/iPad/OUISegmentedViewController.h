@@ -10,7 +10,7 @@
 #import <UIKit/UIViewController.h>
 #import <UIKit/UINavigationController.h>
 
-@interface OUISegmentedViewController : UIViewController
+@interface OUISegmentedViewController : UIViewController <UIBarPositioningDelegate>
 
 - (void)oui_invalidate;
 

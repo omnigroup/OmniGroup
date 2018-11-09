@@ -530,7 +530,7 @@ static void _validateForDeleteApplier(const void *value, void *context)
     
     // Turn the object into a fault.  This is what CoreData does, and our OFMTask/OFMProjectInfo mirroring expects this.
     // This also clears our properties.  Some of these may have already been cleared due to delete propagation, but not all of them.  Also, in the case that we are undoing an assertion, delete propagation won't clear any relationships for us in the deleted objects.
-    [object _turnIntoFault:YES/*deleting*/];
+    [object _turnIntoFault:ODOFaultEventDeletion];
 }
 
 static void _removeDenyApplier(const void *value, void *context)

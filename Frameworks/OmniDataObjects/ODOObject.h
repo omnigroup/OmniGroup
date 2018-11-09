@@ -25,6 +25,12 @@ typedef NS_ENUM(NSUInteger, ODOAwakeEvent) {
     ODOAwakeEventUndoneDeletion, // deleted an object, then performed an undo
 };
 
+typedef NS_ENUM(NSUInteger, ODOFaultEvent) {
+    ODOFaultEventGeneric = 0, // some caller just wanted the object to be faulted
+    ODOFaultEventDeletion, // deleted an object (possibly by cascading)
+    ODOFaultEventInvalidation, // invalidated the associated OmniDataObjects stack
+};
+
 @interface ODOObject : OFObject {
   @package
     ODOEditingContext *_editingContext;
@@ -97,8 +103,8 @@ typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
 
 @property (nonatomic, readonly, getter=isFault) BOOL fault;
 
-- (void)willTurnIntoFault;
-- (void)didTurnIntoFault;
+- (void)willTurnIntoFault:(ODOFaultEvent)faultEvent NS_REQUIRES_SUPER;
+- (void)didTurnIntoFault:(ODOFaultEvent)faultEvent NS_REQUIRES_SUPER;
 
 - (void)turnIntoFault;
 

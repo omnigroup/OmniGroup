@@ -924,12 +924,12 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return _flags.isFault;
 }
 
-- (void)willTurnIntoFault;
+- (void)willTurnIntoFault:(ODOFaultEvent)faultEvent;
 {
     // Nothing; for subclasses
 }
 
-- (void)didTurnIntoFault;
+- (void)didTurnIntoFault:(ODOFaultEvent)faultEvent;
 {
     // Nothing; for subclasses
 }
@@ -941,7 +941,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     OBPRECONDITION(![self isUpdated]);
     OBPRECONDITION(![self isDeleted]);
     
-    [self _turnIntoFault:NO/*deleting*/];
+    [self _turnIntoFault:ODOFaultEventGeneric];
 }
 
 - (BOOL)hasFaultForRelationship:(ODORelationship *)relationship;

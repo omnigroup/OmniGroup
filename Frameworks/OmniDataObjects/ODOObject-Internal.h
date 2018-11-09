@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_setIsAwakingFromInsert:(BOOL)isAwakingFromInsert;
 - (void)_setIsAwakingFromReinsertionAfterUndoneDeletion:(BOOL)isAwakingFromReinsertionAfterUndoneDeletion;
 - (void)_setIsFault:(BOOL)isFault;
-- (void)_turnIntoFault:(BOOL)deleting;
+- (void)_turnIntoFault:(ODOFaultEvent)faultEvent;
 - (void)_invalidate;
 
 - (BOOL)_isCalculatingValueForProperty:(ODOProperty *)property;

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,21 +16,15 @@
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet
 
-@interface OAPreferenceClient : NSUserDefaultsController
-{
-@private
-    NSArray *_topLevelObjects;
-    NSView *_controlBox;
-    NSView *_initialFirstResponder;
-    NSView *_lastKeyView;
-    
-    OAPreferenceController *_nonretained_controller;
-    NSString *_title;
-    NSMutableArray *_preferences;
-}
+NS_ASSUME_NONNULL_BEGIN
 
-- initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
-- initWithTitle:(NSString *)newTitle defaultsArray:(NSArray *)newDefaultsArray controller:(OAPreferenceController *)controller;
+@interface OAPreferenceClient : NSUserDefaultsController
+
+- (instancetype)initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
+- (instancetype)initWithTitle:(NSString *)title defaultsArray:(NSArray *)defaultsArray controller:(OAPreferenceController *)controller NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithDefaults:(nullable NSUserDefaults *)defaults initialValues:(nullable NSDictionary<NSString *, id> *)initialValues NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 + (NSString *)resetPreferencesMainPromptString;
 + (NSString *)resetPreferencesSecondaryPromptString;
@@ -73,3 +67,5 @@
 @property (nonatomic, readonly) BOOL wantsAutosizing;
 
 @end
+
+NS_ASSUME_NONNULL_END

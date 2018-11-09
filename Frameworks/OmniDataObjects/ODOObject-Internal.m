@@ -95,7 +95,7 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snap
     _flags.isFault = isFault;
 }
 
-- (void)_turnIntoFault:(BOOL)deleting;
+- (void)_turnIntoFault:(ODOFaultEvent)faultEvent;
 {
     OBPRECONDITION([_editingContext objectRegisteredForID:_objectID] == self);
     OBPRECONDITION(!_flags.isFault);
@@ -107,20 +107,20 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snap
     }
     
     OBASSERT(_ODOObjectHasValues(self));
-    [self willTurnIntoFault];
+    [self willTurnIntoFault:faultEvent];
     
     _ODOObjectReleaseValues(self);
 
     _flags.isFault = YES;
     
-    [self didTurnIntoFault];
+    [self didTurnIntoFault:faultEvent];
 }
 
 - (void)_invalidate;
 {
     // First, become a fault
     if (!_flags.isFault) {
-        [self _turnIntoFault:NO/*deleting*/];
+        [self _turnIntoFault:ODOFaultEventInvalidation];
     }
     
     // Cleared in _turnIntoFault: and we have no way of ever becoming valid again.

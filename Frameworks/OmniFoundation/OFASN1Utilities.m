@@ -808,6 +808,18 @@ static const struct { int tp; int ver; } decodables[] = {
     { 18, 1 }, // String (looks like an ISO8601 date)
     { 20, 1 }, // String
     { 25, 1 }, // INTEGER
+    
+    /* These are custom fields added by Omni / found in Omni generated receipt data only */
+    { 9301, 1001 }, // String Omni UUID
+    { 9302, 1001 }, // String Omni ID Email Address
+    { 9303, 1001 }, // String License Owner Name
+    { 9304, 1001 }, // String License Number
+    { 9305, 1001 }, // String Omni Product SKU
+    { 9306, 1001 }, // String Grant Experation
+    { 9307, 1001 }, // String Grant Session Renewal
+    { 9320, 1001 }, // String Enterprise ID
+    { 9321, 1001 }, // String Enterprise Name
+    
 };
 #endif
 

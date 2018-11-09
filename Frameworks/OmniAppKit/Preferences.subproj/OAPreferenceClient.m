@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,9 +18,27 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface OAPreferenceClient () {
+  @private
+    NSArray *_topLevelObjects;
+    NSView *_controlBox;
+    NSView *_initialFirstResponder;
+    NSView *_lastKeyView;
+    
+    OAPreferenceController *_nonretained_controller;
+    NSString *_title;
+    NSMutableArray *_preferences;
+}
+
+@end
+
+#pragma mark -
+
 @implementation OAPreferenceClient
 
-- initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
+- (instancetype)initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
 {
     NSMutableArray *defaultsArray = [[[[clientRecord defaultsDictionary] allKeys] mutableCopy] autorelease];
     if (!defaultsArray)
@@ -46,9 +64,9 @@ RCS_ID("$Id$")
 }
 
 /*" Creates a new preferences client (with the specified title), which manipulates the specified defaults. "*/
-- initWithTitle:(NSString *)newTitle defaultsArray:(NSArray *)newDefaultsArray controller:(OAPreferenceController *)controller;
+- (instancetype)initWithTitle:(NSString *)title defaultsArray:(NSArray *)defaultsArray controller:(OAPreferenceController *)controller;
 {
-    OBPRECONDITION(![NSString isEmptyString:newTitle]);
+    OBPRECONDITION(![NSString isEmptyString:title]);
     OBPRECONDITION(controller);
     
     NSString *defaultKeySuffix = [controller defaultKeySuffix];
@@ -57,7 +75,7 @@ RCS_ID("$Id$")
         NSMutableArray *clonedKeys = [NSMutableArray array];
         NSMutableDictionary *clonedDefaultRegistration = [NSMutableDictionary dictionary];
         
-        for (NSString *key in newDefaultsArray) {
+        for (NSString *key in defaultsArray) {
             // Register default values for the cloned preferences
             OFPreference *basePreference = [OFPreference preferenceForKey:key];
             id defaultValue = [basePreference defaultObjectValue];
@@ -71,7 +89,7 @@ RCS_ID("$Id$")
         [OFPreference recacheRegisteredKeys];
         keys = clonedKeys;
     } else {
-        keys = newDefaultsArray;
+        keys = defaultsArray;
     }
     
     NSMutableArray *preferences = [NSMutableArray array];
@@ -106,10 +124,22 @@ RCS_ID("$Id$")
         return nil;
 
     _nonretained_controller = controller;
-    _title = [newTitle copy];
+    _title = [title copy];
     _preferences = [preferences mutableCopy];
     
     return self;
+}
+
+- (instancetype)initWithDefaults:(nullable NSUserDefaults *)defaults initialValues:(nullable NSDictionary<NSString *, id> *)initialValues NS_UNAVAILABLE;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return nil;
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return nil;
 }
 
 - (void)dealloc;
@@ -253,3 +283,4 @@ RCS_ID("$Id$")
 
 @end
 
+NS_ASSUME_NONNULL_END

@@ -43,6 +43,9 @@ extension UIViewController: MultiPaneContentController {
 }
 
 public extension UIViewController {
+
+    // This doesn't work when the left pane is displayed as an overlay -- in that case the `parent` of the sidebar navigation controller is nil and instead the multi-pane controller is its presenting view controller.
+    
     @objc public var multiPaneController: MultiPaneController? {
         if let mulitPane = self as? MultiPaneController {
             return mulitPane
