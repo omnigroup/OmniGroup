@@ -76,7 +76,7 @@ RCS_ID("$Id$")
 #pragma mark Creation
 
 ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
-                                       BOOL toMany, ODORelationshipDeleteRule deleteRule)
+                                       BOOL toMany, ODORelationshipDeleteRule deleteRule, NSString *queryByForeignKeyStatementKey)
 {
     OBPRECONDITION(deleteRule > ODORelationshipDeleteRuleInvalid);
     OBPRECONDITION(deleteRule < ODORelationshipDeleteRuleCount);
@@ -93,6 +93,7 @@ ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL trans
     ODOPropertyInit(rel, name, baseFlags, optional, transient, get, set);
     
     rel->_deleteRule = deleteRule;
+    rel->_queryByForeignKeyStatementKey = [queryByForeignKeyStatementKey copy];
     
     return rel;
 }

@@ -793,38 +793,4 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     [_cachedStatements setObject:statement forKey:key];
 }
 
-// Selects only primary key of the relationship destination.  Has a single bind parameter which is for the destination's foreign key pointing back at the source entity.
-- (ODOSQLStatement *)_queryForDestinationPrimaryKeysByDestinationForeignKeyStatement:(ODORelationship *)rel error:(NSError **)outError;
-{
-    ODOSQLStatement *query = [self _cachedStatementForKey:rel];
-    if (query)
-        return query;
-
-    ODORelationship *inverseRel = [rel inverseRelationship];
-    OBASSERT(inverseRel);
-    OBASSERT([inverseRel isToMany] == NO);
-    
-    ODOEntity *destEntity = [rel destinationEntity];
-    ODOAttribute *destPrimaryKey = [destEntity primaryKeyAttribute];
-    
-    NSPredicate *predicate = ODOKeyPathEqualToValuePredicate([inverseRel name], @"something"); // Fake up a constant for the build.  Don't use nil/null since that'd get translated to 'IS NULL'.
-    
-    query = [[ODOSQLStatement alloc] initSelectProperties:[NSArray arrayWithObject:destPrimaryKey] fromEntity:destEntity connection:self.connection predicate:predicate error:outError];
-    if (query == nil) {
-        return nil;
-    }
-    
-    BOOL prepareSuccess = [self.connection performSQLAndWaitWithError:outError block:^BOOL(struct sqlite3 *sqlite, NSError **blockError) {
-        return [query prepareIfNeededWithSQLite:sqlite error:blockError];
-    }];
-    if (!prepareSuccess) {
-        [query release];
-        return nil;
-    }
-    
-    [self _setCachedStatement:query forKey:rel];
-    
-    return [query autorelease];
-}
-
 @end

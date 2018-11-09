@@ -7,7 +7,7 @@
     },
     {
       "idiom" : "mac",
-      "filename" : "OAminiAction-DarkMode.png",
+      "filename" : "OAMiniAction-DarkMode.png",
       "appearances" : [
         {
           "appearance" : "luminosity",
@@ -23,7 +23,7 @@
     },
     {
       "idiom" : "mac",
-      "filename" : "OAminiAction-DarkMode@2x.png",
+      "filename" : "OAMiniAction-DarkMode@2x.png",
       "appearances" : [
         {
           "appearance" : "luminosity",

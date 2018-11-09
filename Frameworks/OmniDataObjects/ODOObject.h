@@ -120,8 +120,8 @@ typedef void (^ODOObjectSetDefaultAttributeValues)(__kindof ODOObject *object);
 - (BOOL)hasBeenDeletedOrInvalidated;
 
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key NS_SWIFT_NAME(hasChangedKeySinceLastSave(_:));
-@property (nonatomic, nullable, readonly) NSDictionary *changedValues;
-@property (nonatomic, nullable, readonly) NSDictionary *changedNonDerivedValues;
+@property (nonatomic, nullable, readonly) NSDictionary<NSString *, id> *changedValues;
+@property (nonatomic, nullable, readonly) NSDictionary<NSString *, id> *changedNonDerivedValues;
 
 - (nullable id)lastProcessedValueForKey:(NSString *)key;
 - (nullable id)committedValueForKey:(NSString *)key;

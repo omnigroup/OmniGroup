@@ -611,6 +611,11 @@ static void __iOS7B5CleanConsoleOutput(void)
     return menuImage(@"OUIMenuItemRegister.png");
 }
 
+- (UIImage *)specialLicensingImage;
+{
+    return menuImage(@"OUIMenuItemLicensing");
+}
+
 - (UIImage *)quickStartMenuImage {
     return menuImage(@"OUIMenuItemQuickStart.png");
 }
@@ -656,6 +661,13 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
 {
     completionBlock(self.canCreateNewDocument);
+}
+
+- (void)checkTemporaryLicensingStateWithCompletionHandler:(void (^)(void))completionHandler;
+{
+    if (completionHandler) {
+        completionHandler();
+    }
 }
 
 #pragma mark - App menu support
@@ -758,8 +770,11 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
         _appMenuController = [[OUIMenuController alloc] init];
     
     _appMenuController.topOptions = [self _appMenuTopOptions];
+    
     _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
-
+    _appMenuController.menuOptionBackgroundColor = UIColor.whiteColor; // White menu option backgrounds
+    _appMenuController.menuBackgroundColor = UIColor.groupTableViewBackgroundColor; // Gray separator and scroll-bounce region
+    
     [_appMenuController setSizesToOptionWidth:YES];
     
     UIBarButtonItem *appropriatePresenter = nil;
@@ -771,6 +786,10 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     }
     OBASSERT(appropriatePresenter != nil);
     OBASSERT([appropriatePresenter isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
+    
+    _appMenuController.title = [OUIAppController applicationName];
+    _appMenuController.alwaysShowsNavigationBar = YES;
+    
     _appMenuController.popoverPresentationController.barButtonItem = appropriatePresenter;
     [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
 }
@@ -1055,11 +1074,27 @@ static UIImage *menuImage(NSString *name)
     return image;
 }
 
+- (OUIMenuOption *)specialFirstAppMenuOption;
+{
+    // For subclass override
+    return nil;
+}
+
 - (NSArray <OUIMenuOption *> *)_appMenuTopOptions NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSMutableArray *options = [NSMutableArray array];
     OUIMenuOption *option;
     NSArray *additionalOptions;
+    
+    // Space at the top
+    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
+    
+    option = [self specialFirstAppMenuOption];
+    if (option) {
+        // The special option (if it exists) gets spacers on either side of it. The title must be non-empty for the spacer to have non-zero height, so just make it a space.
+        [options addObject:option];
+        [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
+    }
     
     NSString *aboutMenuTitle = [self aboutMenuTitle];
     if (![NSString isEmptyString:aboutMenuTitle]) {
@@ -1118,6 +1153,9 @@ static UIImage *menuImage(NSString *name)
     additionalOptions = [self additionalAppMenuOptionsAtPosition:OUIAppMenuOptionPositionAtEnd];
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
+    
+    // Space at the bottom
+    [options addObject:[OUIMenuOption separatorWithTitle:@" "]];
     
     return options;
 }

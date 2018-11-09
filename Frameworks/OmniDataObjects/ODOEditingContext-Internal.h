@@ -80,6 +80,7 @@ void ODOUpdateResultSetForInMemoryChanges(ODOEditingContext *self, NSMutableArra
 
 void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object) OB_HIDDEN;
 NSMutableSet * ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel) OB_HIDDEN;
+NSMutableArray <__kindof ODOObject *> * _Nullable ODOFetchObjects(ODOEditingContext *self, ODOEntity *entity, NSPredicate *predicate, NSString *reason, NSError **outError) OB_HIDDEN;
 
 BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext *self, ODOObject *object) OB_HIDDEN;
 

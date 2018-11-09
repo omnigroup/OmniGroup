@@ -95,8 +95,19 @@ module OmniDataObjects
     def emitSwiftInterface(f)
     end
 
+    def statementKey(k)
+        return nil if many
+        "@\"#{k.to_s}:#{name}\""
+    end
+
     def emitCreation(f)
-      f << "    #{objcClassName} *#{varName} = ODORelationshipCreate(#{property_init_args}, #{objcBool(many)}/*toMany*/, #{objcDeleteRuleEnum});\n"
+        if many
+            statementKey = "nil"
+        else
+            statementKey = "@\"FK:#{entity.name}.#{name}\""
+        end
+
+        f << "    #{objcClassName} *#{varName} = ODORelationshipCreate(#{property_init_args}, #{objcBool(many)}/*toMany*/, #{objcDeleteRuleEnum}, #{statementKey});\n"
     end
 
     def emitBinding(f)

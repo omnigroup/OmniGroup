@@ -411,27 +411,41 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     return ODOSQLStatementRun(sqlite, statement, callbacks, NULL, outError);
 }
 
-- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite;
+- (ODOSQLStatement *)_queryByProperty:(ODOProperty *)property statementKey:(NSString *)statementKey database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite error:(NSError **)outError;
 {
+    OBPRECONDITION(property);
+    OBPRECONDITION(statementKey);
     OBPRECONDITION([database.connection checkExecutingOnDispatchQueue]);
     OBPRECONDITION([database.connection checkIsManagedSQLite:sqlite]);
-    
-    ODOSQLStatement *queryByPrimaryKeyStatement = [database _cachedStatementForKey:_queryByPrimaryKeyStatementKey];
-    if (!queryByPrimaryKeyStatement) {
-        NSPredicate *predicate = ODOKeyPathEqualToValuePredicate([_primaryKeyAttribute name], @"something"); // Fake up a constant for the build.  Don't use nil/null since that'd get translated to 'IS NULL'.
-        queryByPrimaryKeyStatement = [[ODOSQLStatement alloc] initSelectProperties:[self _schemaProperties] fromEntity:self connection:database.connection predicate:predicate error:outError];
-        if (queryByPrimaryKeyStatement == nil) {
+
+    ODOSQLStatement *statement = [database _cachedStatementForKey:statementKey];
+    if (!statement) {
+        NSPredicate *predicate = ODOKeyPathEqualToValuePredicate(property.name, @"something"); // Fake up a constant for the build.  Don't use nil/null since that'd get translated to 'IS NULL'.
+        statement = [[ODOSQLStatement alloc] initSelectProperties:[self _schemaProperties] fromEntity:self connection:database.connection predicate:predicate error:outError];
+        if (statement == nil) {
             return nil;
         }
-        if (![queryByPrimaryKeyStatement prepareIfNeededWithSQLite:sqlite error:outError]) {
-            [queryByPrimaryKeyStatement release];
+        if (![statement prepareIfNeededWithSQLite:sqlite error:outError]) {
+            [statement release];
             return nil;
         }
-        
-        [database _setCachedStatement:queryByPrimaryKeyStatement forKey:_queryByPrimaryKeyStatementKey];
-        [queryByPrimaryKeyStatement release];
+
+        [database _setCachedStatement:statement forKey:statementKey];
+        [statement release];
     }
-    return queryByPrimaryKeyStatement;
+    return statement;
+}
+
+- (ODOSQLStatement *)_queryByPrimaryKeyStatement:(NSError **)outError database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite;
+{
+    return [self _queryByProperty:_primaryKeyAttribute statementKey:_queryByPrimaryKeyStatementKey database:database sqlite:sqlite error:outError];
+}
+
+- (ODOSQLStatement *)_queryByForeignKeyStatement:(NSError **)outError relationship:(ODORelationship *)relationship database:(ODODatabase *)database sqlite:(struct sqlite3 *)sqlite;
+{
+    OBPRECONDITION(relationship.isToMany == NO);
+
+    return [self _queryByProperty:relationship statementKey:relationship->_queryByForeignKeyStatementKey database:database sqlite:sqlite error:outError];
 }
 
 @end

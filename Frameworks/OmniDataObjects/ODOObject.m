@@ -1147,17 +1147,17 @@ static void _validateRelatedObjectClass(const void *value, void *context)
  
  */
 
-- (nullable NSDictionary *)changedValues;
+- (nullable NSDictionary<NSString *, id> *)changedValues;
 {
     return [self changedValuesIncludingDerived:YES];
 }
 
-- (nullable NSDictionary *)changedNonDerivedValues;
+- (nullable NSDictionary<NSString *, id> *)changedNonDerivedValues;
 {
     return [self changedValuesIncludingDerived:NO];
 }
 
-- (nullable NSDictionary *)changedValuesIncludingDerived:(BOOL)includeDerived;
+- (nullable NSDictionary<NSString *, id> *)changedValuesIncludingDerived:(BOOL)includeDerived;
 {
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);

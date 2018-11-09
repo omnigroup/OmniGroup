@@ -123,7 +123,13 @@ private class OBLogLevelMaintainer: NSObject {
         
         super.init()
         
-        UserDefaults.standard.register(defaults: [key: 0])
+        // Only register 0 for the log level a value hasn't already registered a value; we don't want to stop an existing registration.
+        let registrationDomain = UserDefaults.standard.volatileDomain(forName: UserDefaults.registrationDomain)
+        let registeredValue = registrationDomain[key]
+        if registeredValue == nil {
+            UserDefaults.standard.register(defaults: [key: 0])
+        }
+
         UserDefaults.standard.addObserver(self, forKeyPath: key, options: [.new], context: observerContext)
     }
     

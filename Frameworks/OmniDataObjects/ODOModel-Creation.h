@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ extern ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL tran
                                         ODOAttributeType type, Class valueClass, NSObject <NSCopying> *defaultValue, BOOL isPrimaryKey);
 
 extern ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
-                                              BOOL toMany, ODORelationshipDeleteRule deleteRule);
+                                              BOOL toMany, ODORelationshipDeleteRule deleteRule, NSString *queryByForeignKeyStatementKey);
 extern void ODORelationshipBind(ODORelationship *self, ODOEntity *sourceEntity, ODOEntity *destinationEntity, ODORelationship *inverse);
 
 extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,

@@ -125,7 +125,10 @@ static NSString * const OIWorkspacesHelpURLKey = @"OIWorkspacesHelpURL";
         [(OITabbedInspector *)parent registerInspectorDictionary:descriptionDictionary inspectorRegistry:registry bundle:bundle];
     } else {
         OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:descriptionDictionary inspectorRegistry:registry bundle:bundle];
-        [registry _registerInspector:inspector];
+        // Handle possibility that +[OIInspector inspectorWithDictionary:inspectorRegistry:bundle:] returns nil (e.g. insufficient minimumOSVersion)
+        if (inspector != nil) {
+            [registry _registerInspector:inspector];
+        }
     }
 }
 
@@ -403,8 +406,11 @@ static NSString * const OIWorkspacesHelpURLKey = @"OIWorkspacesHelpURL";
     for (NSDictionary *inspectorPlist in inspectorPlists) {
         @try {
             OIInspector <OIConcreteInspector> *inspector = [OIInspector inspectorWithDictionary:inspectorPlist inspectorRegistry:self bundle:nil];
-            [inspector setDefaultOrderingWithinGroup:inspectorOrder++];
-            [self _registerInspector:inspector];
+            // Handle possibility that +[OIInspector inspectorWithDictionary:inspectorRegistry:bundle:] returns nil (e.g. insufficient minimumOSVersion)
+            if (inspector != nil) {
+                [inspector setDefaultOrderingWithinGroup:inspectorOrder++];
+                [self _registerInspector:inspector];
+            }
         } @catch (NSException *exc) {
             NSLog(@"Exception raised while creating inspector from plist %@: %@", [inspectorPlist objectForKey:@"class"], exc);
         }

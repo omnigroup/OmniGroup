@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface OFXMLElementParser : NSObject <OFXMLParserTarget>
 
-@property(nonatomic,weak) id <OFXMLElementParserDelegate> delegate;
+// This is strong since it gets looked up many times during a parse, and each lookup of a weak variable introduces a -retain and -autorelease.
+@property(nonatomic,nullable,strong) id <OFXMLElementParserDelegate> delegate;
 
 // Partial OFXMLParserTarget
 - (void)parser:(OFXMLParser *)parser startElementWithQName:(OFXMLQName *)qname multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;

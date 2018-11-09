@@ -73,16 +73,4 @@ BOOL ODOSQLStatementCheckForSingleChangedRow(struct sqlite3 *sqlite, ODOSQLState
 BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOSQLStatementCallbacks callbacks, void *context, NSError **outError) OB_HIDDEN;
 BOOL ODOSQLStatementRunWithoutResults(struct sqlite3 *sqlite, ODOSQLStatement *statement, NSError **outError) OB_HIDDEN;
 
-// Fetching
-typedef struct {
-    ODOEntity *entity;
-    Class instanceClass;
-    NSArray *schemaProperties;
-    ODOAttribute *primaryKeyAttribute;
-    NSUInteger primaryKeyColumnIndex;
-    ODOEditingContext *editingContext;
-    NSMutableArray *results; // objects that resulted from the fetch.  some might have been previously fetched
-    NSMutableArray *fetched; // objects included in the results that are newly fetched and need -awakeFromFetch
-} ODORowFetchContext;
-
-BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, ODORowFetchContext *ctx, NSError **outError) OB_HIDDEN;
+BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSArray <ODOProperty *> *schemaProperties, NSUInteger primaryKeyColumnIndex, NSError **outError) OB_HIDDEN;

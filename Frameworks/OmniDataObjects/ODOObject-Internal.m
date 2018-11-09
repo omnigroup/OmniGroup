@@ -22,6 +22,15 @@ RCS_ID("$Id$")
 
 NS_ASSUME_NONNULL_BEGIN
 
+@implementation NSObject (ODOIsObject)
+
+- (BOOL)_isODOObject;
+{
+    return NO;
+}
+
+@end
+
 @implementation ODOObject (Internal)
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -60,6 +69,11 @@ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, ODOObjectSnapshot *snap
     return YES;
 }
 #endif
+
+- (BOOL)_isODOObject;
+{
+    return YES;
+}
 
 - (BOOL)_isAwakingFromInsert;
 {
@@ -417,7 +431,9 @@ void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self)
     self->_flags.isAwakingFromFetch = YES;
     @try {
         // Could possibly raise
-        [self awakeFromFetch];
+        @autoreleasepool {
+            [self awakeFromFetch];
+        }
     } @finally {
         self->_flags.isAwakingFromFetch = NO;
     }

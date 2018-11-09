@@ -629,226 +629,230 @@ static unsigned SyncAgentRunningAccountsContext;
     [self _openDocument:fileItem fileItemToRevealFrom:nil isOpeningFromPeek:YES willPresentHandler:willPresentHandler completionHandler:completionHandler];
 }
 
-- (void)_openDocument:(ODSFileItem *)fileItemToOpen fileItemToRevealFrom:(nullable ODSFileItem *)fileItemToRevealFrom isOpeningFromPeek:(BOOL)isOpeningFromPeek willPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
+- (void)_openDocument:(ODSFileItem *)fileItemToOpen fileItemToRevealFrom:(nullable ODSFileItem *)fileItemToRevealFrom isOpeningFromPeek:(BOOL)isOpeningFromPeek willPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresent completionHandler:(void (^)(void))completion;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(fileItemToOpen);
     OBPRECONDITION(fileItemToOpen.isDownloaded);
 
-    if (_document != nil && _document.fileItem == fileItemToOpen) {
-        // The document we're supposed to open is already open. Let's not do anything, eh?
-        if (completionHandler) {
-            completionHandler();
+    __block void (^willPresentHandler)(OUIDocumentOpenAnimator *openAnimator) = [willPresent copy];
+    __block void (^completionHandler)(void) = [completion copy];
+    
+    [self checkTemporaryLicensingStateWithCompletionHandler:^{
+        if (_document != nil && _document.fileItem == fileItemToOpen) {
+            // The document we're supposed to open is already open. Let's not do anything, eh?
+            if (completionHandler) {
+                completionHandler();
+            }
+            return;
         }
-        return;
-    }
-
-    
-    if (!isOpeningFromPeek) {
-        [_documentPicker navigateToContainerForItem:fileItemToOpen dismissingAnyOpenDocument:YES animated:NO];
-        [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
-    }
-    
-    void (^onFail)(void) = ^{
+        
+        
         if (!isOpeningFromPeek) {
-            [self _fadeInDocumentPickerScrollingToFileItem:fileItemToOpen];
+            [_documentPicker navigateToContainerForItem:fileItemToOpen dismissingAnyOpenDocument:YES animated:NO];
+            [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
         }
-        _isOpeningURL = NO;
-    };
-    onFail = [onFail copy];
-
-    NSString *originalPath = fileItemToOpen.fileURL.path;
-    NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:originalPath error:NULL];
-    if (symlinkDestination != nil) {
-        NSString *targetPath = [originalPath stringByResolvingSymlinksInPath];
-        if (targetPath == nil || OFISEQUAL(targetPath, originalPath)) {
-            onFail();
-            return;
-        }
-
-        // Look for the target in the fileItem's scope
-        NSURL *targetURL = [NSURL fileURLWithPath:targetPath];
-        ODSScope *originalScope = fileItemToOpen.scope;
-        if (![originalScope isFileInContainer:targetURL]) {
-            onFail();
-            return;
-        }
-
-        ODSFileItem *targetItem = [originalScope fileItemWithURL:targetURL];
-        [self _openDocument:targetItem fileItemToRevealFrom:targetItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
-        return;
-    }
-    
-    OUIActivityIndicator *activityIndicator = nil;
-    if (!isOpeningFromPeek) {
-        OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
-        if (fileItemView) {
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
-        }
-        else if (self.window.rootViewController == _documentPicker) {
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:UIColor.whiteColor];
-        }
-    }
-    
-    onFail = [onFail copy];
-    willPresentHandler = [willPresentHandler copy];
-    completionHandler = [completionHandler copy];
-    
-    void (^doOpen)(void) = ^{
-        NSURL *fileURL = fileItemToOpen.fileURL;
-        Class cls = [self documentClassForURL:fileURL];
-        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
-
-        if ([cls shouldImportFileAtURL:fileURL]) {
-            [self importDocumentFromURL:fileURL];
-            [activityIndicator hide];
-            return;
-        }
-
-        __autoreleasing NSError *error = nil;
-        OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItemToOpen error:&error];
         
-        if (!document) {
-            OUI_PRESENT_ERROR_FROM(error, self.window.rootViewController);
-            onFail();
-            return;
-        }
-
-        document.applicationLock = [OUIInteractionLock applicationLock];
-
-        // Can't call this in the open completion handler, the user info comes back empty if we call this there. It's generally ok if our user activity posts as available a bit early, so let's do it here.
-        [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore isCreatingFromTemplate:NO];
+        void (^onFail)(void) = ^{
+            if (!isOpeningFromPeek) {
+                [self _fadeInDocumentPickerScrollingToFileItem:fileItemToOpen];
+            }
+            _isOpeningURL = NO;
+        };
+        onFail = [onFail copy];
         
-        [document openWithCompletionHandler:^(BOOL success){
-            if (!success) {
-                OUIDocumentHandleDocumentOpenFailure(document, nil);
-
-                [activityIndicator hide];
-                [document.applicationLock unlock];
-                document.applicationLock = nil;
-
+        NSString *originalPath = fileItemToOpen.fileURL.path;
+        NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:originalPath error:NULL];
+        if (symlinkDestination != nil) {
+            NSString *targetPath = [originalPath stringByResolvingSymlinksInPath];
+            if (targetPath == nil || OFISEQUAL(targetPath, originalPath)) {
                 onFail();
                 return;
             }
             
-            OBASSERT([NSThread isMainThread]);
-            [self _setDocument:document];
-            _isOpeningURL = NO;
-            
-            UIViewController *presentFromViewController = _documentPicker;
-            if (!presentFromViewController)
-                presentFromViewController = _documentPicker;
-            UIViewController <OUIDocumentViewController> *documentViewController = _document.documentViewController;
-            UIViewController *toPresent = _document.viewControllerToPresent;
-            UIView *view = [documentViewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
-            
-            [UIView performWithoutAnimation:^{
-                [view setFrame:presentFromViewController.view.bounds];
-                //[view layoutIfNeeded];  // this seems to be unnecessary and appears to screw up the initial positioning of the canvas
-                // We shouldn't setup toPresent.view here, before it knows how it's going to display. We should wait for the presentation and adaptability mechanisms to cause layout.
-                //        [toPresent.view setFrame:presentFromViewController.view.bounds];
-                //        [toPresent.view layoutIfNeeded];
-            }];
-            
-            OBASSERT(![document hasUnsavedChanges]); // We just loaded our document and created our view, we shouldn't have any view state that needs to be saved. If we do, we should probably investigate to prevent bugs like <bug:///80514> ("Document Updated" on (null) alert is still hanging around), perhaps discarding view state changes if we can't prevent them.
-
-            [self mainThreadFinishedLoadingDocument:document];
-            
-            // Might be a newly created document that was never edited and trivially returns YES to saving. Make sure there is an item before overwriting our last default value.
-            NSURL *url = _document.fileURL;
-            ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
-            if (fileItem != nil) {
-                self.launchAction = [self _launchActionForOpeningURL:url];
+            // Look for the target in the fileItem's scope
+            NSURL *targetURL = [NSURL fileURLWithPath:targetPath];
+            ODSScope *originalScope = fileItemToOpen.scope;
+            if (![originalScope isFileInContainer:targetURL]) {
+                onFail();
+                return;
             }
             
-            // Wait until the document is opened to do this, which will let cache entries from opening document A be used in document B w/o being flushed.
-            [OAFontDescriptor forgetUnusedInstances];
-            
-            // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
-            OBASSERT([_document undoManager] == [_document.documentViewController undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)");
-            OBASSERT([_document undoManager] == [_document.documentViewController.view undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)"); // Does your view controller implement -undoManager? We don't do this for you right now.
-            
-            if ([documentViewController respondsToSelector:@selector(restoreDocumentViewState:)]) {
-                OFFileEdit *fileEdit = fileItem.fileEdit;
-                if (fileEdit) // New document
-                    [documentViewController restoreDocumentViewState:[OUIDocumentAppController documentStateForFileEdit:fileEdit]];
-            }
-            
-            BOOL animateDocument = YES;
-            if (_window.rootViewController != _documentPicker) {
-                [_documentPicker showDocuments];
-                _window.rootViewController = _documentPicker;
-                [_window makeKeyAndVisible];
-                
-                [self handleCachedSpecialURLIfNeeded];
-                animateDocument = NO;
-            }
-            
-            OUIDocumentOpenAnimator *animator = [OUIDocumentOpenAnimator sharedAnimator];
-            animator.documentPicker = _documentPicker;
-            animator.fileItem = fileItemToRevealFrom;
-            animator.actualFileItem = fileItem;
-            
-            animator.isOpeningFromPeek = isOpeningFromPeek;
-            animator.backgroundSnapshotView = nil;
-            animator.previewSnapshotView = nil;
-            animator.previewRect = CGRectZero;
-            
-            if (isOpeningFromPeek && willPresentHandler) {
-                willPresentHandler(animator);
-            }
-            
-            OBASSERT_NOTNULL(toPresent);
-            toPresent.transitioningDelegate = animator;
-            toPresent.modalPresentationStyle = UIModalPresentationFullScreen;
-            
-            [presentFromViewController presentViewController:toPresent animated:animateDocument completion:^{
-                if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
-                    [documentViewController documentFinishedOpening];
-                [activityIndicator hide];
-                [document.applicationLock unlock];
-                document.applicationLock = nil;
-                
-                // Ensure that when the document is closed we'll be using a filter that shows it.
-                [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
-                
-                if (completionHandler) {
-                    completionHandler();
-                }
-            }];
-        }];
-    };
-    
-    if (_document) {
-        // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail or Files.
-
-        doOpen = [doOpen copy];
-
-        OBASSERT(_document.applicationLock == nil);
-        _document.applicationLock = [OUIInteractionLock applicationLock];
+            ODSFileItem *targetItem = [originalScope fileItemWithURL:targetURL];
+            [self _openDocument:targetItem fileItemToRevealFrom:targetItem isOpeningFromPeek:NO willPresentHandler:nil completionHandler:nil];
+            return;
+        }
         
-        [_document closeWithCompletionHandler:^(BOOL success) {
-            [self _invalidateCurrentUserActivity];
-            OUIDocument *localDoc = _document;
-            UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
-            [self _setDocument:nil];
-
-            if ([topLevelNavController presentedViewController] && [[topLevelNavController presentedViewController] isBeingDismissed] == NO) {
-                [topLevelNavController dismissViewControllerAnimated:NO completion:^{
+        OUIActivityIndicator *activityIndicator = nil;
+        if (!isOpeningFromPeek) {
+            OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
+            if (fileItemView) {
+                activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:UIColor.whiteColor bezelColor:[UIColor.darkGrayColor colorWithAlphaComponent:0.9]];
+            }
+            else if (self.window.rootViewController == _documentPicker) {
+                activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:UIColor.whiteColor];
+            }
+        }
+        
+        onFail = [onFail copy];
+        
+        
+        void (^doOpen)(void) = ^{
+            NSURL *fileURL = fileItemToOpen.fileURL;
+            Class cls = [self documentClassForURL:fileURL];
+            OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+            
+            if ([cls shouldImportFileAtURL:fileURL]) {
+                [self importDocumentFromURL:fileURL];
+                [activityIndicator hide];
+                return;
+            }
+            
+            __autoreleasing NSError *error = nil;
+            OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItemToOpen error:&error];
+            
+            if (!document) {
+                OUI_PRESENT_ERROR_FROM(error, self.window.rootViewController);
+                onFail();
+                return;
+            }
+            
+            document.applicationLock = [OUIInteractionLock applicationLock];
+            
+            // Can't call this in the open completion handler, the user info comes back empty if we call this there. It's generally ok if our user activity posts as available a bit early, so let's do it here.
+            [self _createDocumentUserActivityForURL:fileURL inStore:fileItemToOpen.scope.documentStore isCreatingFromTemplate:NO];
+            
+            [document openWithCompletionHandler:^(BOOL success){
+                if (!success) {
+                    OUIDocumentHandleDocumentOpenFailure(document, nil);
+                    
+                    [activityIndicator hide];
+                    [document.applicationLock unlock];
+                    document.applicationLock = nil;
+                    
+                    onFail();
+                    return;
+                }
+                
+                OBASSERT([NSThread isMainThread]);
+                [self _setDocument:document];
+                _isOpeningURL = NO;
+                
+                UIViewController *presentFromViewController = _documentPicker;
+                if (!presentFromViewController)
+                    presentFromViewController = _documentPicker;
+                UIViewController <OUIDocumentViewController> *documentViewController = _document.documentViewController;
+                UIViewController *toPresent = _document.viewControllerToPresent;
+                UIView *view = [documentViewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
+                
+                [UIView performWithoutAnimation:^{
+                    [view setFrame:presentFromViewController.view.bounds];
+                    //[view layoutIfNeeded];  // this seems to be unnecessary and appears to screw up the initial positioning of the canvas
+                    // We shouldn't setup toPresent.view here, before it knows how it's going to display. We should wait for the presentation and adaptability mechanisms to cause layout.
+                    //        [toPresent.view setFrame:presentFromViewController.view.bounds];
+                    //        [toPresent.view layoutIfNeeded];
+                }];
+                
+                OBASSERT(![document hasUnsavedChanges]); // We just loaded our document and created our view, we shouldn't have any view state that needs to be saved. If we do, we should probably investigate to prevent bugs like <bug:///80514> ("Document Updated" on (null) alert is still hanging around), perhaps discarding view state changes if we can't prevent them.
+                
+                [self mainThreadFinishedLoadingDocument:document];
+                
+                // Might be a newly created document that was never edited and trivially returns YES to saving. Make sure there is an item before overwriting our last default value.
+                NSURL *url = _document.fileURL;
+                ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
+                if (fileItem != nil) {
+                    self.launchAction = [self _launchActionForOpeningURL:url];
+                }
+                
+                // Wait until the document is opened to do this, which will let cache entries from opening document A be used in document B w/o being flushed.
+                [OAFontDescriptor forgetUnusedInstances];
+                
+                // UIWindow will automatically create an undo manager if one isn't found along the responder chain. We want to be darn sure that don't end up getting two undo managers and accidentally splitting our registrations between them.
+                OBASSERT([_document undoManager] == [_document.documentViewController undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)");
+                OBASSERT([_document undoManager] == [_document.documentViewController.view undoManager], "bug:///144566 (Frameworks-iOS Unassigned: TextEditor sample app uses UITextView's undoManager for viewController's -undoManager)"); // Does your view controller implement -undoManager? We don't do this for you right now.
+                
+                if ([documentViewController respondsToSelector:@selector(restoreDocumentViewState:)]) {
+                    OFFileEdit *fileEdit = fileItem.fileEdit;
+                    if (fileEdit) // New document
+                        [documentViewController restoreDocumentViewState:[OUIDocumentAppController documentStateForFileEdit:fileEdit]];
+                }
+                
+                BOOL animateDocument = YES;
+                if (_window.rootViewController != _documentPicker) {
+                    [_documentPicker showDocuments];
+                    _window.rootViewController = _documentPicker;
+                    [_window makeKeyAndVisible];
+                    
+                    [self handleCachedSpecialURLIfNeeded];
+                    animateDocument = NO;
+                }
+                
+                OUIDocumentOpenAnimator *animator = [OUIDocumentOpenAnimator sharedAnimator];
+                animator.documentPicker = _documentPicker;
+                animator.fileItem = fileItemToRevealFrom;
+                animator.actualFileItem = fileItem;
+                
+                animator.isOpeningFromPeek = isOpeningFromPeek;
+                animator.backgroundSnapshotView = nil;
+                animator.previewSnapshotView = nil;
+                animator.previewRect = CGRectZero;
+                
+                if (isOpeningFromPeek && willPresentHandler) {
+                    willPresentHandler(animator);
+                }
+                
+                OBASSERT_NOTNULL(toPresent);
+                toPresent.transitioningDelegate = animator;
+                toPresent.modalPresentationStyle = UIModalPresentationFullScreen;
+                
+                [presentFromViewController presentViewController:toPresent animated:animateDocument completion:^{
+                    if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
+                        [documentViewController documentFinishedOpening];
+                    [activityIndicator hide];
+                    [document.applicationLock unlock];
+                    document.applicationLock = nil;
+                    
+                    // Ensure that when the document is closed we'll be using a filter that shows it.
+                    [_documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
+                    
+                    if (completionHandler) {
+                        completionHandler();
+                    }
+                }];
+            }];
+        };
+        
+        if (_document) {
+            // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail or Files.
+            
+            doOpen = [doOpen copy];
+            
+            OBASSERT(_document.applicationLock == nil);
+            _document.applicationLock = [OUIInteractionLock applicationLock];
+            
+            [_document closeWithCompletionHandler:^(BOOL success) {
+                [self _invalidateCurrentUserActivity];
+                OUIDocument *localDoc = _document;
+                UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
+                [self _setDocument:nil];
+                
+                if ([topLevelNavController presentedViewController] && [[topLevelNavController presentedViewController] isBeingDismissed] == NO) {
+                    [topLevelNavController dismissViewControllerAnimated:NO completion:^{
+                        doOpen();
+                        [localDoc.applicationLock unlock];
+                        localDoc.applicationLock = nil;
+                    }];
+                } else {
                     doOpen();
                     [localDoc.applicationLock unlock];
                     localDoc.applicationLock = nil;
-                }];
-            } else {
-                doOpen();
-                [localDoc.applicationLock unlock];
-                localDoc.applicationLock = nil;
-            }
-        }];
-    } else {
-        // Just open immediately
-        doOpen();
-    }
+                }
+            }];
+        } else {
+            // Just open immediately
+            doOpen();
+        }
+    }];
 }
 
 - (void)_invalidateCurrentUserActivity
@@ -2195,6 +2199,9 @@ static NSSet *ViewableFileTypes()
                     [strongSelf->_window layoutIfNeeded];
 
                     [activity finished];
+                                                                 
+                    // If we have an expired temporary license, we likely want to notify the user. Do this after the activity finishes so that any UI we bring up does not appear in the snapshot
+                    [strongSelf checkTemporaryLicensingStateWithCompletionHandler:nil];
                 }];
             }];
 

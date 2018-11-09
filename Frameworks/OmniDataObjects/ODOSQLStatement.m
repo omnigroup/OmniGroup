@@ -585,14 +585,13 @@ BOOL ODOSQLStatementRunWithoutResults(struct sqlite3 *sqlite, ODOSQLStatement *s
 }
 
 
-BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, ODORowFetchContext *ctx, NSError **outError)
+BOOL ODOExtractNonPrimaryKeySchemaPropertiesFromRowIntoObject(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOObject *object, NSArray <ODOProperty *> *schemaProperties, NSUInteger primaryKeyColumnIndex, NSError **outError)
 {
     ODOObjectSetChangeProcessingEnabled(object, NO);
     @try {
-        NSArray *schemaProperties = ctx->schemaProperties;
         NSUInteger propertyIndex = [schemaProperties count];
         while (propertyIndex--) {
-            if (propertyIndex == ctx->primaryKeyColumnIndex)
+            if (propertyIndex == primaryKeyColumnIndex)
                 continue;
             
             ODOProperty *prop = [schemaProperties objectAtIndex:propertyIndex];

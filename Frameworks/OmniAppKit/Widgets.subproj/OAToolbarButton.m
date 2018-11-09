@@ -10,6 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/rcsid.h>
 #import <OmniAppKit/OATrackingLoop.h>
+#import <OmniAppKit/OAToolbarItem.h>
 
 RCS_ID("$Id$");
 
@@ -18,6 +19,11 @@ RCS_ID("$Id$");
 @end
 
 @implementation OAToolbarButton
+
++ (Class)cellClass;
+{
+    return [OAToolbarItemButtonCell class];
+}
 
 - (void)dealloc;
 {

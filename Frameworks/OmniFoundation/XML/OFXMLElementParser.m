@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation OFXMLElementParser
 {
-    __weak id <OFXMLElementParserDelegate> _weak_delegate;
-
     OFXMLElement *_rootElement; // of our parse, not necessarily the whole document.
     NSMutableArray *_elementStack; // Maybe just use a counter
 }
@@ -36,14 +34,14 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
-- (void)dealloc {
-
+- (void)dealloc;
+{
     [_rootElement release];
     [_elementStack release];
+    [_delegate release];
+
     [super dealloc];
 }
-
-@synthesize delegate = _weak_delegate;
 
 - (OFXMLElement *)topElement;
 {
@@ -159,14 +157,14 @@ NS_ASSUME_NONNULL_BEGIN
 
         [_elementStack removeAllObjects];
 
-        [_weak_delegate elementParser:self parser:parser parsedElement:element];
+        [_delegate elementParser:self parser:parser parsedElement:element];
         [element release];
     }
 }
 
 - (OFXMLParserElementBehavior)parser:(OFXMLParser *)parser behaviorForElementWithQName:(OFXMLQName *)name multipleAttributeGenerator:(id <OFXMLParserMultipleAttributeGenerator>)multipleAttributeGenerator singleAttributeGenerator:(id <OFXMLParserSingleAttributeGenerator>)singleAttributeGenerator;
 {
-    id <OFXMLElementParserDelegate> delegate = _weak_delegate;
+    id <OFXMLElementParserDelegate> delegate = _delegate;
     if (!delegate) {
         // ...  though we have no way to report our results, so maybe we should return 'skip'.
         return OFXMLParserElementBehaviorParse;

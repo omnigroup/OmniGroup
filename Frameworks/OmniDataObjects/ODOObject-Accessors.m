@@ -183,7 +183,7 @@ static inline id _ODOObjectCheckForLazyToOneFaultCreation(ODOObject *self, id va
     OBPRECONDITION(rel == nil || [rel isKindOfClass:[ODORelationship class]]);
     OBASSERT(rel == nil || [rel isToMany] == NO);
     
-    if ([value isKindOfClass:[ODOObject class]]) {
+    if ([value _isODOObject]) {
 #ifdef OMNI_ASSERTIONS_ON
         rel = _ODOLookupRelationshipBySnapshotIndex(self, snapshotIndex, NO/*toMany*/, rel);
         OBASSERT([value isKindOfClass:[[rel destinationEntity] instanceClass]]);

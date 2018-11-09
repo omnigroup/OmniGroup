@@ -124,6 +124,15 @@ NS_ASSUME_NONNULL_BEGIN
     [super viewWillAppear:animated];
 }
 
+- (void)_setOptionsControllerBarButtonItemOnNavigationItem:(UINavigationItem *)navItem;
+{
+    if (self.presentingViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+        navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
+    } else {
+        navItem.rightBarButtonItem = nil;
+    }
+}
+
 - (OUIMenuOptionsController *)_makeTopMenu;
 {
     OUIMenuOptionsController *topMenu = [[OUIMenuOptionsController alloc] initWithController:self options:_topOptions];
@@ -134,8 +143,8 @@ NS_ASSUME_NONNULL_BEGIN
     topMenu.title = self.title;
     
     UINavigationItem *navItem = topMenu.navigationItem;
-    navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
     navItem.title = self.title;
+    [self _setOptionsControllerBarButtonItemOnNavigationItem:navItem];
     
     (void)[topMenu view]; // So we can ask it its preferred content size
     
@@ -173,13 +182,7 @@ NS_ASSUME_NONNULL_BEGIN
             }
         };
 
-#if TARGET_IPHONE_SIMULATOR
-        // With Xcode 9.2, the simulator fails to invoke the completion handler most of the time, so we'll just invoke by hand
-        [_menuNavigationController dismissViewControllerAnimated:YES completion:NULL];
-        actionBlock();
-#else
         [_menuNavigationController dismissViewControllerAnimated:YES completion:actionBlock];
-#endif
 
     } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
         if ((option.action != nil) && option.isEnabled) {

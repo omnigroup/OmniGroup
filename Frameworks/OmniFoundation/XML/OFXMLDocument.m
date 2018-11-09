@@ -679,6 +679,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     _stringEncoding = parser.encoding;
 
+    _elementParser.delegate = nil;
     [_elementParser release];
     _elementParser = nil;
 

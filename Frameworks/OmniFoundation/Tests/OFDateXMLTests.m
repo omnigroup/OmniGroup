@@ -371,4 +371,83 @@ static NSDateFormatter *HttpDateFormatter(void) {
     XCTAssertEqualObjects(dateString, @"2001-01-02T01:00:00.000Z");
 }
 
+// A NSCalendar-based version for -xmlString
+static NSString *_xmlStyleDateStringWithFormat(NSDate *self)
+{
+    NSString *formatString = @"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ";
+    NSCalendar *calendar = [NSDate gregorianUTCCalendar];
+    NSDateComponents *components = [calendar componentsInTimeZone:calendar.timeZone fromDate:self];
+
+    // Figure out the milliseconds portion
+    NSTimeInterval fractionalSeconds = components.nanosecond * 1e-9;
+    OBASSERT(fractionalSeconds >= 0.0);
+
+    // Convert the milliseconds to an integer.  If this rolls over to the next second due to rounding, deal with it.
+    unsigned milliseconds = (unsigned)round(fractionalSeconds * 1000.0);
+    if (milliseconds >= 1000) {
+        milliseconds = 0;
+
+        NSDateComponents *secondComponents = [[NSDateComponents alloc] init];
+        secondComponents.second = 1;
+
+        NSDate *date = [calendar dateByAddingComponents:secondComponents toDate:self options:0];
+
+        components = [calendar componentsInTimeZone:calendar.timeZone fromDate:date];
+    }
+
+    return [NSString stringWithFormat:formatString, components.year, components.month, components.day, components.hour, components.minute, components.second, milliseconds];
+}
+
+- (void)testRoundingBeforeReferenceDate;
+{
+    NSTimeInterval ti = -61213924.841500; // ... which is actually -61213924.841499999, but NSCalendar rounds as if it is the typed value.
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+
+    NSString *oldString = _xmlStyleDateStringWithFormat(date); // 1999-01-23T12:07:55.158Z
+    NSString *newString = [date xmlString];
+    XCTAssertEqualObjects(oldString, newString);
+}
+- (void)testRoundingBeforeReferenceDate2;
+{
+    NSTimeInterval ti = -91566632.182315856;
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+
+    NSString *oldString = _xmlStyleDateStringWithFormat(date); // 1998-02-06T04:49:27.818Z
+    NSString *newString = [date xmlString];
+    XCTAssertEqualObjects(oldString, newString);
+}
+- (void)testRoundingBeforeReferenceDate3;
+{
+    NSTimeInterval ti = -150304740.64349997;
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+
+    NSString *oldString = _xmlStyleDateStringWithFormat(date); // 1996-03-28T08:40:59.357Z
+    NSString *newString = [date xmlString];
+    XCTAssertEqualObjects(oldString, newString);
+}
+
+- (void)testXMLStringVsPreviousImplementation;
+{
+    // Test +/- about 5 years around the NSDate epoch
+    NSTimeInterval magnitude = 60*60*24*365*5;
+
+    for (NSUInteger test = 0; test < 100000; test++) {
+        NSTimeInterval ti = -magnitude + (2*magnitude)*OFRandomNextDouble();
+
+        @autoreleasepool {
+            NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+            NSString *oldString = _xmlStyleDateStringWithFormat(date);
+            NSString *newString = [date xmlString];
+            XCTAssertEqualObjects(oldString, newString, @"Failed for time interval %lf", ti);
+        }
+    }
+}
+
+- (void)testOmnifocusSyncTransactionDateString;
+{
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:239687680.999502]; // 2008-08-05 20:54:41 -0700
+    NSString *string = [date omnifocusSyncTransactionDateString];
+    XCTAssertEqualObjects(string, @"20080806035441");
+}
+
 @end

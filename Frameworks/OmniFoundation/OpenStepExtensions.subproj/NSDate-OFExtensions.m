@@ -484,35 +484,177 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     return [result retain];
 }
 
-static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString, BOOL currentTimeZone)
+typedef NS_OPTIONS(NSUInteger, OFXMLDateStringOptions) {
+    OFXMLDateStringOptionsLocalTimeZone     = 1 << 0,
+    OFXMLDateStringOptionsIncludeTime       = 1 << 1, // include time components
+    OFXMLDateStringOptionsSkipTimeSeparator = 1 << 2, // skip the 'T' before the time components
+    OFXMLDateStringOptionsDateSeparators    = 1 << 3, // '-' between date components
+    OFXMLDateStringOptionsTimeSeparators    = 1 << 4, // ':' between time components
+    OFXMLDateStringOptionsMilliseconds      = 1 << 5, // '.' and three digits of milliseconds
+    OFXMLDateStringOptionsUTCTimeZone       = 1 << 6, // Trailing 'Z'
+};
+
+static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, OFXMLDateStringOptions options)
 {
     DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
-    
-    NSCalendar *calendar = currentTimeZone ? [[self class] gregorianLocalCalendar] : [[self class] gregorianUTCCalendar];
-    NSDateComponents *components = [calendar componentsInTimeZone:calendar.timeZone fromDate:self];
 
-    DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%d nanosecond:%d", (int)components.year, components.month, components.day, components.hour, components.minute, components.second, components.nanosecond);
+    static CFCalendarRef gregorianUTCCalendar;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        CFTimeZoneRef utc = CFTimeZoneCreateWithName(kCFAllocatorDefault, CFSTR("UTC"), true);
+        OBASSERT(utc);
+        gregorianUTCCalendar = CFCalendarCreateWithIdentifier(kCFAllocatorDefault, kCFGregorianCalendar);
+        CFCalendarSetTimeZone(gregorianUTCCalendar, utc);
+        CFRelease(utc);
+    });
+
+    CFCalendarRef calendar;
+    BOOL releaseCalendar = NO;
+    if (options & OFXMLDateStringOptionsLocalTimeZone) {
+        releaseCalendar = YES;
+        calendar = CFCalendarCreateWithIdentifier(kCFAllocatorDefault, kCFGregorianCalendar);
+        CFTimeZoneRef timeZone = CFTimeZoneCopySystem();
+        CFCalendarSetTimeZone(calendar, timeZone);
+        CFRelease(timeZone);
+    } else {
+        calendar = gregorianUTCCalendar;
+    }
+
+    NSTimeInterval timeInterval = self.timeIntervalSinceReferenceDate;
+    int year, month, day, hour, minute, second; // CFCalendarDecomposeAbsoluteTime is documented to require int arguments.
+    Boolean ok;
+    ok = CFCalendarDecomposeAbsoluteTime(calendar, timeInterval, "yMdHms", &year, &month, &day, &hour, &minute, &second);
+    OBASSERT(ok); (void)ok;
+
+    DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%d", year, month, day, hour, minute, second);
     
-    // Figure out the milliseconds portion
-    NSTimeInterval fractionalSeconds = components.nanosecond * 1e-9;
-    OBASSERT(fractionalSeconds >= 0.0);
-    DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
-    
-    // Convert the milliseconds to an integer.  If this rolls over to the next second due to rounding, deal with it.
-    unsigned milliseconds = (unsigned)rint(fractionalSeconds * 1000.0);
+    // Figure out the fractional seconds portion.
+    unsigned milliseconds;
+    double dummy;
+
+    if (timeInterval < 0) {
+        NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
+        OBASSERT(fractionalSeconds < 0.0);
+        DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
+
+        milliseconds = 1000 + (unsigned)round(fractionalSeconds * 1000.0);
+    } else {
+        NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
+        OBASSERT(fractionalSeconds >= 0.0);
+        DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
+
+        milliseconds = (unsigned)round(fractionalSeconds * 1000.0);
+    }
+
+    // If the milliseconds rolled over to the next second due to rounding, deal with it.
     if (milliseconds >= 1000) {
         milliseconds = 0;
-        
-        NSDateComponents *secondComponents = [[NSDateComponents alloc] init];
-        secondComponents.second = 1;
-        
-        NSDate *date = [calendar dateByAddingComponents:secondComponents toDate:self options:0];
-        [secondComponents release];
-        
-        components = [calendar componentsInTimeZone:calendar.timeZone fromDate:date];
+
+        ok = CFCalendarAddComponents(calendar, &timeInterval, 0/*options*/, "s", 1);
+        OBASSERT(ok); (void)ok;
+
+        ok = CFCalendarDecomposeAbsoluteTime(calendar, timeInterval, "yMdHms", &year, &month, &day, &hour, &minute, &second);
+        OBASSERT(ok); (void)ok;
     }
-    
-    NSString *result = [NSString stringWithFormat:formatString, components.year, components.month, components.day, components.hour, components.minute, components.second, milliseconds];
+
+    if (releaseCalendar) {
+        CFRelease(calendar); // Better would be to keep this until the system time zone changes.
+    }
+
+    // +stringWithFormat: is relatively expensive here, since this path gets called a lot in some cases.
+    char buf[100];
+    unsigned offset = 0;
+
+#define WRITE_CHAR(c) do { \
+    buf[offset] = (c); \
+    offset++; \
+} while(0)
+
+#define WRITE_DIGIT(d) do { \
+    WRITE_CHAR('0' + (d)); \
+} while(0);
+
+#define WRITE_4INT(d) do { \
+    NSInteger v = (d); \
+    OBASSERT(v >= 0); \
+    OBASSERT(v <= 9999); \
+    NSInteger c0 = (v % 10); v /= 10; \
+    NSInteger c1 = (v % 10); v /= 10; \
+    NSInteger c2 = (v % 10); v /= 10; \
+    NSInteger c3 = v; \
+    OBASSERT(c3 <= 9); \
+    WRITE_DIGIT(c3); \
+    WRITE_DIGIT(c2); \
+    WRITE_DIGIT(c1); \
+    WRITE_DIGIT(c0); \
+} while(0);
+
+#define WRITE_3INT(d) do { \
+    NSInteger v = (d); \
+    OBASSERT(v >= 0); \
+    OBASSERT(v <= 999); \
+    NSInteger c0 = (v % 10); v /= 10; \
+    NSInteger c1 = (v % 10); v /= 10; \
+    NSInteger c2 = v; \
+    OBASSERT(c2 <= 9); \
+    WRITE_DIGIT(c2); \
+    WRITE_DIGIT(c1); \
+    WRITE_DIGIT(c0); \
+} while(0);
+
+#define WRITE_2INT(d) do { \
+    NSInteger v = (d); \
+    OBASSERT(v >= 0); \
+    OBASSERT(v <= 99); \
+    NSInteger c0 = (v % 10); v /= 10; \
+    NSInteger c1 = v; \
+    OBASSERT(c1 <= 9); \
+    WRITE_DIGIT(c1); \
+    WRITE_DIGIT(c0); \
+} while(0);
+
+    // With all options enabled, we'd get %04d-%02d-%02dT%02d:%02d:%02d.%03dZ
+
+    WRITE_4INT(year);
+    if (options & OFXMLDateStringOptionsDateSeparators) {
+        WRITE_CHAR('-');
+    }
+    WRITE_2INT(month);
+    if (options & OFXMLDateStringOptionsDateSeparators) {
+        WRITE_CHAR('-');
+    }
+    WRITE_2INT(day);
+
+    if (options & OFXMLDateStringOptionsIncludeTime) {
+        if ((options & OFXMLDateStringOptionsSkipTimeSeparator) == 0) {
+            WRITE_CHAR('T');
+        }
+
+        WRITE_2INT(hour);
+        if (options & OFXMLDateStringOptionsTimeSeparators) {
+            WRITE_CHAR(':');
+        }
+        WRITE_2INT(minute);
+        if (options & OFXMLDateStringOptionsTimeSeparators) {
+            WRITE_CHAR(':');
+        }
+        WRITE_2INT(second);
+        if (options & OFXMLDateStringOptionsMilliseconds) {
+            WRITE_CHAR('.');
+            WRITE_3INT(milliseconds);
+        }
+        if (options & OFXMLDateStringOptionsUTCTimeZone) {
+            WRITE_CHAR('Z');
+        }
+    }
+
+#undef WRITE_CHAR
+#undef WRITE_DIGIT
+#undef WRITE_4INT
+#undef WRITE_3INT
+#undef WRITE_2INT
+
+    NSString *result = [[[NSString alloc] initWithBytes:buf length:offset encoding:NSASCIIStringEncoding] autorelease];
     DEBUG_XML_STRING(@"result: %@", result);
     return result;
 }
@@ -520,13 +662,15 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 // date
 - (NSString *)xmlDateString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02d", YES);
+    // %04d-%02d-%02d
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsLocalTimeZone|OFXMLDateStringOptionsDateSeparators);
 }
 
 // dateTime
 - (NSString *)xmlString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", NO);
+    // %04d-%02d-%02dT%02d:%02d:%02d.%03dZ
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsIncludeTime|OFXMLDateStringOptionsDateSeparators|OFXMLDateStringOptionsTimeSeparators|OFXMLDateStringOptionsMilliseconds|OFXMLDateStringOptionsUTCTimeZone);
 }
 
 // Expects a string in the ICS format: YYYYMMdd.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
@@ -573,7 +717,8 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 
 - (NSString *)icsDateOnlyString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d", YES);
+    // %04d%02d%02d
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsLocalTimeZone);
 }
 
 // Expects a string in the ICS format: YYYYMMddTHHmmssZ.  This doesn't attempt to be very forgiving in parsing; the goal should be to feed in either nil/empty or a conforming string.
@@ -624,12 +769,14 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 
 - (NSString *)icsDateString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02dT%02d%02d%02dZ", NO);
+    // %04d%02d%02dT%02d%02d%02dZ
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsIncludeTime|OFXMLDateStringOptionsUTCTimeZone);
 }
 
 - (NSString *)omnifocusSyncTransactionDateString;
 {
-    return _xmlStyleDateStringWithFormat(self, _cmd, @"%04d%02d%02d%02d%02d%02d", NO);
+    // %04d%02d%02d%02d%02d%02d
+    return _xmlStyleDateStringWithFormat(self, _cmd, OFXMLDateStringOptionsIncludeTime|OFXMLDateStringOptionsSkipTimeSeparator);
 }
 
 @end

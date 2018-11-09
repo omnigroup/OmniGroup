@@ -73,6 +73,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+// Faster than isKindOfClass:
+@interface NSObject (ODOIsObject)
+- (BOOL)_isODOObject;
+@end
+
 extern NSSet *_ODOEmptyToManySet OB_HIDDEN;
 extern ODOObjectSnapshot *_ODOObjectCreatePropertySnapshot(ODOObject *self) OB_HIDDEN;
 

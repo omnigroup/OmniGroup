@@ -16,6 +16,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class UIBarButtonItem;
+@class OUIMenuOption;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ERROR_FROM(error, viewController) [[[OUIAppController controller] class] presentError:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
@@ -125,6 +126,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (NSString *)appSpecificDebugInfo;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
+- (nullable OUIMenuOption *)specialFirstAppMenuOption; // Override to place an option at the top of the list, separate from the rest
 - (void)sendFeedbackWithSubject:(NSString * _Nullable)subject body:(NSString * _Nullable)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 - (IBAction)sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 - (IBAction)signUpForOmniNewsletter:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
@@ -143,6 +145,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 @property(nonatomic,readonly) UIImage *trialModeMenuImage;
 @property(nonatomic,readonly) UIImage *introVideoMenuImage;
 @property(nonatomic,readonly) UIImage *registerMenuImage;
+@property(nonatomic,readonly) UIImage *specialLicensingImage;
 
 @property(nonatomic,readonly) BOOL useCompactBarButtonItemsIfApplicable; // will allow for possible compact versions of navbar items
 
@@ -157,6 +160,8 @@ extern NSNotificationName const OUISystemIsSnapshottingNotification;
 @property (readonly) BOOL canCreateNewDocument;
 @property (readonly) BOOL shouldEnableCreateNewDocument;
 - (void)unlockCreateNewDocumentWithCompletion:(void (^ __nonnull)(BOOL isUnlocked))completionBlock;
+
+- (void)checkTemporaryLicensingStateWithCompletionHandler:(void (^ __nullable)(void))completionHandler;
 
 @end
 

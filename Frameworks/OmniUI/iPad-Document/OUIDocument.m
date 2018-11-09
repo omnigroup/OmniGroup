@@ -136,10 +136,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 + (BOOL)shouldShowAutosaveIndicator;
 {
-#if 1 && defined(DEBUG)
-    return YES;
-#endif
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
+    return [[OFPreference preferenceForKey:@"OUIDocumentShouldShowAutosaveIndicator" defaultValue:@(NO)] boolValue];
 }
 
 // existing document
