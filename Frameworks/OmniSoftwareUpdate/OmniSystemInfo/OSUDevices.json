@@ -364,6 +364,46 @@
     "platform": "iPad7,6",
     "comment": "9.7 inch; 2018; LTE; education event"
   },
+  "J317AP": {
+    "name": "iPad Pro (11-inch)",
+    "platform": "iPad8,1",
+    "comment": "2018"
+  },
+  "J317xAP": {
+    "name": "iPad Pro (11-inch)",
+    "platform": "iPad8,2",
+    "comment": "2018; 1TB"
+  },
+  "J318AP": {
+    "name": "iPad Pro (11-inch)",
+    "platform": "iPad8,3",
+    "comment": "2018"
+  },
+  "J318xAP": {
+    "name": "iPad Pro (11-inch)",
+    "platform": "iPad8,4",
+    "comment": "2018; 1TB"
+  },
+  "J320AP": {
+    "name": "iPad Pro (12.9-inch) (3rd generation)",
+    "platform": "iPad8,5",
+    "comment": "2018"
+  },
+  "J320xAP": {
+    "name": "iPad Pro (12.9-inch) (3rd generation)",
+    "platform": "iPad8,6",
+    "comment": "2018; 1TB"
+  },
+  "J321AP": {
+    "name": "iPad Pro (12.9-inch) (3rd generation)",
+    "platform": "iPad8,7",
+    "comment": "2018"
+  },
+  "J321xAP": {
+    "name": "iPad Pro (12.9-inch) (3rd generation)",
+    "platform": "iPad8,8",
+    "comment": "2018; 1TB"
+  },
   "N45AP": {
     "name": "iPod Touch 1G",
     "platform": "iPod1,1"
@@ -529,6 +569,10 @@
   },
   "Macmini7,1": {
     "name": "Mac mini"
+  },
+  "Macmini8,1": {
+    "name": "Mac mini",
+    "comment": "Late 2018"
   },
   "MacPro1,1*": {
     "name": "Mac Pro"

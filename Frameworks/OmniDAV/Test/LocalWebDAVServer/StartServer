@@ -13,10 +13,12 @@ set -x
 : ${ROOT:=/Users/Shared/$USER/LocalWebDAVServer}
 : ${REALM="My Test Realm"}
 
-if [ -x /usr/local/apache2/bin/httpd ]; then
+if [[ -z "${HTTPD:+foo}" ]]; then
+    if [ -x /usr/local/apache2/bin/httpd ]; then
 	HTTPD=/usr/local/apache2/bin/httpd
-else
-	: ${HTTPD=`which httpd`}
+    else
+	HTTPD=`which httpd`
+    fi
 fi
 
 RUN_DIR="$ROOT/Run"
@@ -25,31 +27,71 @@ CONFIG_DIR="$ROOT/Configuration"
 LOG_DIR="$ROOT/Logs"
 mkdir -p "$ROOT" "$RUN_DIR" "$DOC_DIR" "$CONFIG_DIR" "$LOG_DIR"
 
+openssl_conffile=`mktemp`
 
+function makereq () {
+  subjsection="$1"
+  shift
+  (
+    echo 'HOST = "'"$HOST"'"'
+    echo 'REALM = "'"$REALM"'"'
+    echo 'DATE = "'`date`'"'
+    echo
+    sed -e 's/distinguished_name = .*$/distinguished_name = '"$subjsection"'/' < template-openssl.conf
+  ) > "$openssl_conffile"
+  /usr/bin/openssl req -config "$openssl_conffile" -new "$@"
+}
 
+CA_KEY_PATH="$CONFIG_DIR/ca.key"
+CA_CRT_PATH="$CONFIG_DIR/ca.crt"
+CA_SERIAL_PATH="$CONFIG_DIR/ca-serial.txt"
 KEY_PATH="$CONFIG_DIR/server.key"
 CRT_PATH="$CONFIG_DIR/server.crt"
-if [ ! -f "$KEY_PATH" -o ! -f "$CRT_PATH" ]; then
-  SUBJECT="/O=My Full Name/OU=$REALM/CN=$HOST"
-  /usr/bin/openssl req -new -x509 -days 3650 -sha1 -newkey rsa:2048 -nodes -keyout "$KEY_PATH" -out "$CRT_PATH" -subj "$SUBJECT"
+
+if [ ! -f "$CA_KEY_PATH" -o ! -f "$CA_KEY_PATH" ]; then
+  makereq ca_subject -x509 -extensions ca_cert_extensions -keyout "$CA_KEY_PATH" -out "$CA_CRT_PATH"
+  if [ -f "$CRT_PATH" ]; then rm "$CRT_PATH"; fi
+  /usr/bin/openssl x509 -inform PEM -in "$CA_CRT_PATH" -outform DER -out "$CA_CRT_PATH.der"
+  security add-certificate "$CA_CRT_PATH.der"
+  security add-trusted-cert -p ssl "$CA_CRT_PATH.der"
+  rm "$CA_CRT_PATH.der"
 fi
 
-cat template-httpd.conf |
-perl -pe "s|RUN_DIR|$RUN_DIR|g;" |
-perl -pe "s|DOC_DIR|$DOC_DIR|g;" |
-perl -pe "s|CONFIG_DIR|$CONFIG_DIR|g;" |
-perl -pe "s|LOG_DIR|$LOG_DIR|g;" |
-perl -pe "s|SERVER_NAME|$HOST|g;" |
-perl -pe "s|LOCAL_PORT|8001|g;" > "$CONFIG_DIR/httpd.conf"
+if [ ! -f "$KEY_PATH" -o ! -f "$CRT_PATH" ]; then
+  makereq leaf_subject -keyout "$KEY_PATH" -outform PEM | /usr/bin/openssl x509 -inform PEM -req -CA "$CA_CRT_PATH" -CAkey "$CA_KEY_PATH" -CAserial "$CA_SERIAL_PATH" -CAcreateserial -sha256 -extfile "$openssl_conffile" -extensions leaf_cert_extensions -out "$CRT_PATH"
+fi
+
+rm "$openssl_conffile"
+
+HTTPD_ROOT=`$HTTPD -V | perl -ne 'print "$1" if m|-D\s*HTTPD_ROOT="(/.*)"\s*$|;'`
+if [[ -z "$HTTPD_ROOT" ]]; then
+    echo "Cannot determine HTTPD_ROOT?" >&2
+    exit 1
+fi
+
+if [ -d "$HTTPD_ROOT/lib/httpd/modules" ]; then
+   MODULES='lib/httpd/modules'
+else
+   MODULES='modules'
+fi
+
+< template-httpd.conf sed \
+	-e "s|RUN_DIR|$RUN_DIR|g;" \
+	-e "s|DOC_DIR|$DOC_DIR|g;" \
+	-e "s|CONFIG_DIR|$CONFIG_DIR|g;" \
+	-e "s|LOG_DIR|$LOG_DIR|g;" \
+	-e "s|SERVER_NAME|$HOST|g;" \
+	-e "s|LoadModule \([^ ]*\) modules/|LoadModule \1 $MODULES/|g;" \
+	-e "s|LOCAL_PORT|8001|g;" > "$CONFIG_DIR/httpd.conf"
 
 # Generate 100 test users (mostly so we don't hit NSURLConnection's credential cache)
 rm -f "$CONFIG_DIR/user.passwd"
 
 function append_user {
-    cat template-user.conf |
-    perl -pe "s|USER_NUMBER|$1|g;" |
-    perl -pe "s|CONFIG_DIR|$CONFIG_DIR|g;" |
-    perl -pe "s|DOC_DIR|$DOC_DIR|g;" >> "$CONFIG_DIR/httpd.conf"
+    < template-user.conf sed \
+	-e "s|USER_NUMBER|$1|g;" \
+	-e "s|CONFIG_DIR|$CONFIG_DIR|g;" \
+	-e "s|DOC_DIR|$DOC_DIR|g;" >> "$CONFIG_DIR/httpd.conf"
     mkdir -p "$DOC_DIR/test$1"
     mkdir -p "$DOC_DIR/test$1/redirect-dst"
 

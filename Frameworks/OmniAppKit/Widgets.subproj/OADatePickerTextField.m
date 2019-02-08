@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -118,12 +118,6 @@ static id _commonInit(OADatePickerTextField *self)
     
 #pragma mark -
 #pragma mark NSView subclass
-
-// This empty implementation impacts the way the view is rendered in layer world, and works around <bug:///121230> (Bug: Calendar Icons are Not displayed until click in box)
-- (void)drawRect:(NSRect)dirtyRect
-{
-    [super drawRect:dirtyRect];
-}
 
 - (void)didAddSubview:(NSView *)subview;
 {

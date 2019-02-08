@@ -123,6 +123,8 @@ extern NSString *const OUIAboutScreenBindingsDictionaryCopyrightStringKey; // @"
 extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"feedbackAddress"
 
 - (NSString *)feedbackMenuTitle;
+- (NSString *)currentSKU;
+- (NSString *)purchaseDateString;
 - (NSString *)appSpecificDebugInfo;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions

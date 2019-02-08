@@ -29,6 +29,8 @@ RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
+NSString * const OFSKeySlotUserInfoKey = @"keySlot";
+
 static BOOL validateSlots(NSData *slots);
 static BOOL traverseSlots(NSData *slots, BOOL (^cb)(enum OFSDocumentKeySlotType tp, uint16_t sn, const void *start, size_t len));
 static uint16_t chooseUnusedSlot(NSIndexSet *used);
@@ -521,7 +523,7 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
     })) {
         NSString *msg = [NSString stringWithFormat:@"No key in slot %u", keyslot];
         if (outError)
-            *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSLocalizedDescriptionKey: msg }];
+            *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSLocalizedDescriptionKey: msg, OFSKeySlotUserInfoKey: @(keyslot) }];
         return -1;
     }
     if (result < 0) {

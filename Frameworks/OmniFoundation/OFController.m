@@ -680,6 +680,20 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         // <bug:///159503> (Mac-OmniGraffle Crasher: [needs repro] [7.7.1] -[GraphicView(NSTouchBar) _colorPickerTouchBarItemChanged:] (in OmniGraffle) (GraphicView-TouchBar.m:797))
         IGNORE_CRASH(@"NSScrollingBehaviorLegacy", @selector(scrollView:panGestureRecognizerEndedOrFailed:))
 
+        // <bug:///154165> (Mac-OmniGraffle Crasher: [needs repro] [7.9.2] +[NSXPCSharedListener connectionForListenerNamed:fromServiceNamed:] (in ViewBridge))
+
+        /*
+         Assertion Failed:
+         ---------------------------
+         Object: <NSVBOpenPanel:0x7fc740d81ec0>
+         Selector: viewWillInvalidate:
+         File: /BuildRoot/Library/Caches/com.apple.xbs/Sources/AppKit/AppKit-1671/Nav.subproj/OpenAndSavePanelRemote/NSVBOpenAndSavePanels.m
+         Line: 374
+         Description: bridge absent
+         ---------------------------
+         */
+        IGNORE_CRASH(@"NSVBOpenPanel", @selector(viewWillInvalidate:))
+        
 #undef IGNORE_CRASH
 
         // XPC services (like the 'define' service) sometimes time out:

@@ -102,5 +102,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define OFSDocKeyDescription_Key_Active    @"active"
 #define OFSDocKeyDescription_Key_Identifier @"slot"
 
+// Error userInfo keys
+extern NSString * const OFSKeySlotUserInfoKey;
+
 NS_ASSUME_NONNULL_END
 

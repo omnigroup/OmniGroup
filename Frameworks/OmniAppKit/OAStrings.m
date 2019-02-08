@@ -42,3 +42,13 @@ NSString *OALearnMore(void)
     });
     return string;
 }
+
+NSString *OARetry(void)
+{
+    static NSString *string;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        string = NSLocalizedStringFromTableInBundle(@"Retry", @"OmniAppKit", OMNI_BUNDLE, @"button title");
+    });
+    return string;
+}

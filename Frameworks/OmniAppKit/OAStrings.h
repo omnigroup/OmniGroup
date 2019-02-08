@@ -13,3 +13,4 @@
 extern NSString * _Nonnull OAOK(void);
 extern NSString * _Nonnull OACancel(void);
 extern NSString * _Nonnull OALearnMore(void);
+extern NSString * _Nonnull OARetry(void);

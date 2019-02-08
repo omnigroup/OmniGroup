@@ -246,7 +246,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 // OUIScalingScrollViewDelegate
 - (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
 {
-    return scalingScrollView.bounds;
+    return UIEdgeInsetsInsetRect(scalingScrollView.bounds, scalingScrollView.safeAreaInsets);
 }
 
 // By default, assume that a view's scaled size should be simply its unscaledContentSize * scale.

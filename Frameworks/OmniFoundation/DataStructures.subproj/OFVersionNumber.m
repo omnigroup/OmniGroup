@@ -88,28 +88,6 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystem112OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"11.2");
-    });
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystem113OrLater;
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemAtLeastVersionString(@"11.3");
-    });
-    
-    return isLater;
-}
-
 + (BOOL)isOperatingSystem114OrLater;
 {
     static BOOL isLater;

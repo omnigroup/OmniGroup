@@ -518,13 +518,35 @@ static void __iOS7B5CleanConsoleOutput(void)
     return NO;
 }
 
+- (NSString *)currentSKU
+{
+    return @"";
+}
+
+- (NSString *)purchaseDateString
+{
+    return @"";
+}
+
 - (NSString *)fullReleaseString;
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *testFlightString = [[self class] inSandboxStore] ? @" TestFlight" : @"";
     NSString *appEdition = [[self class] applicationEdition];
     NSString *editionString = [NSString isEmptyString:appEdition] ? @"" : [@" " stringByAppendingString:appEdition];
-    return [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [[self class] applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    
+    NSString *baseString = [NSString stringWithFormat:@"%@ %@%@%@ (v%@)", [[self class] applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], editionString, testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
+    
+    NSString *currentSKU = [self currentSKU];
+    if (![NSString isEmptyString:currentSKU]) {
+        baseString = [baseString stringByAppendingString:[NSString stringWithFormat:@": %@", currentSKU]];
+        NSString *purchaseDateString = [self purchaseDateString];
+        if (![NSString isEmptyString:purchaseDateString]) {
+            baseString = [baseString stringByAppendingString:[NSString stringWithFormat:@"/%@", purchaseDateString]];
+        }
+    }
+    
+    return baseString;
 }
 
 - (NSString *)_feedbackAddress;

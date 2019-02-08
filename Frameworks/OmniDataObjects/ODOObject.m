@@ -453,8 +453,8 @@ void ODOObjectDidChangeValueForProperty(ODOObject *object, ODOProperty *property
     if ([[self->_objectID entity] propertyNamed:key])
         OBASSERT(!_flags.isFault); // Cleared in 'will'
     [super didChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
-}
-#endif    
+    }
+#endif
 
 
 - (void)setObservationInfo:(nullable void *)inObservationInfo;
