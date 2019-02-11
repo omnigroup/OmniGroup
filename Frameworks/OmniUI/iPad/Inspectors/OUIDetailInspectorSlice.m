@@ -68,11 +68,25 @@ NS_ASSUME_NONNULL_BEGIN
     } else {
         self.valueImageView.hidden = YES;
     }
-    
+#ifdef DEBUG_rachael0
+    self.detailTextLabel.backgroundColor = [UIColor redColor];
+#endif
     CGRect detailFrame = self.detailTextLabel.frame;
     detailFrame.size = self.detailTextLabel.intrinsicContentSize;
-    // The detail label should start where it will fit the whole label in front of the arrow
-    detailFrame.origin.x = CGRectGetMaxX(self.contentView.bounds) - detailFrame.size.width;
+    // The detail label should start where it will fit the whole label in front of the arrow, without obscuring the rest of the row.
+
+    // MAGIC NUMBERS AHOY
+    CGFloat leftSideSpacing = 3.0;
+    CGFloat minimumLeftLabelLength = 35;
+
+    CGFloat rightmostPoint = CGRectGetMaxX(self.contentView.bounds);
+    CGFloat possibleX = rightmostPoint - detailFrame.size.width;
+    CGFloat smallestAllowableX = self.imageView.image == nil ? 0 : CGRectGetMaxX(self.imageView.frame) + leftSideSpacing;
+    if (self.textLabel.text.length > 0) {
+        smallestAllowableX += MIN(minimumLeftLabelLength, self.textLabel.frame.size.width) + leftSideSpacing;
+    }
+    detailFrame.origin.x = MAX(possibleX, smallestAllowableX);
+    detailFrame.size.width = rightmostPoint - detailFrame.origin.x;
     self.detailTextLabel.frame = detailFrame;
     CGRect textFrame = self.textLabel.frame;
     CGSize contentSize = self.textLabel.intrinsicContentSize;

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,8 @@
 
 @property (nonatomic, weak) UIView *accessoryToolbarView;
 
-- (CGFloat) getMinYOfLastKnownKeyboardInView:(UIView *)view;
+/// Returns the minimum Y coordinate of the last known keyboard rect, translated to the coordinate space of the given view. The return value for this method is useful in calculating visible areas for an arbitrarily deep view in the hierarchy (e.g. for avoiding the keyboard or updating scroll insets).
+- (CGFloat)minimumYPositionOfLastKnownKeyboardInView:(UIView *)view;
 
 @end
 

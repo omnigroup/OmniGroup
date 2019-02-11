@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11762"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -17,7 +17,7 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="169" customClass="OAPreferencesWindow">
+        <window title="Preferences" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="169" customClass="OAPreferencesWindow">
             <windowStyleMask key="styleMask" titled="YES" closable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="608" y="171" width="595" height="327"/>
@@ -58,7 +58,7 @@
                     </connections>
                 </button>
                 <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="175">
-                    <rect key="frame" x="637" y="17" width="25" height="25"/>
+                    <rect key="frame" x="637" y="16" width="25" height="25"/>
                     <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="176">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -73,6 +73,7 @@
                 <constraint firstItem="173" firstAttribute="top" secondItem="172" secondAttribute="top" constant="20" symbolic="YES" id="4n1-Ce-Ag3"/>
                 <constraint firstItem="175" firstAttribute="top" secondItem="173" secondAttribute="top" id="8Lh-oL-mbN"/>
                 <constraint firstAttribute="trailing" secondItem="175" secondAttribute="trailing" constant="20" symbolic="YES" id="8nm-ta-837"/>
+                <constraint firstItem="175" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="173" secondAttribute="trailing" constant="12" symbolic="YES" id="EfD-Yk-xK7"/>
                 <constraint firstAttribute="bottom" secondItem="173" secondAttribute="bottom" constant="20" symbolic="YES" id="Yfq-Rj-5VZ"/>
                 <constraint firstItem="173" firstAttribute="leading" secondItem="172" secondAttribute="leading" constant="20" symbolic="YES" id="nDM-an-1Ru"/>
             </constraints>

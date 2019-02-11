@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,11 +65,15 @@ extern NSString * const OUIAttentionSeekingForNewsKey;
 
 - (NSOperationQueue *)backgroundPromptQueue;
 
+@property(nonatomic,nullable,retain) IBOutlet UIWindow *window;
+
 // Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
+// Implicitly includes Done as the right bar button
 - (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("");
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("");
 @property(nonatomic,readonly) BOOL hasOnlineHelp;
 - (void)showOnlineHelp:(nullable id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 

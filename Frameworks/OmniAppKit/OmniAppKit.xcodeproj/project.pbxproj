@@ -60,6 +60,8 @@
 		341991881950022B00BA8113 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C3DAB31ECA03E5002AB1B9 /* OmniFoundation.framework */; };
 		341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		341F021A21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341F021921BEE55700C78CF9 /* OADocumentFileTypes.swift */; };
+		341F021B21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341F021921BEE55700C78CF9 /* OADocumentFileTypes.swift */; };
 		3425ABB41ECA27E700E56839 /* OATextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 341876E41EC24F8700954EF3 /* OATextStorage.m */; };
 		3425ABDB1ECA27E800E56839 /* OATextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 341876E41EC24F8700954EF3 /* OATextStorage.m */; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -90,7 +92,7 @@
 		3435EF881DEE4CFE002CB3F9 /* OAStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435EF861DEE4CFE002CB3F9 /* OAStrings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3435EF891DEE4CFE002CB3F9 /* OAStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3435EF861DEE4CFE002CB3F9 /* OAStrings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3435EF8A1DEE4CFE002CB3F9 /* OAStrings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3435EF871DEE4CFE002CB3F9 /* OAStrings.m */; };
-		3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3435EF871DEE4CFE002CB3F9 /* OAStrings.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3435EF871DEE4CFE002CB3F9 /* OAStrings.m */; };
 		34471AC109D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */; };
 		34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */; };
 		344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -111,6 +113,8 @@
 		346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		346DB94B0D74BDAD00CA37DE /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */; };
 		3473992311947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3473B3EE21B99C9500A9CAF0 /* OALaunchServices.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473B3EC21B99C9500A9CAF0 /* OALaunchServices.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3473B3EF21B99C9500A9CAF0 /* OALaunchServices.m in Sources */ = {isa = PBXBuildFile; fileRef = 3473B3ED21B99C9500A9CAF0 /* OALaunchServices.m */; };
 		3475A09F0DE235EA00FB73CC /* OBTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A09D0DE235EA00FB73CC /* OBTestCase.h */; };
 		3475A0A00DE235EA00FB73CC /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A09E0DE235EA00FB73CC /* OBTestCase.m */; };
 		3475A0A30DE235FE00FB73CC /* OFTestCase.h in Headers */ = {isa = PBXBuildFile; fileRef = 3475A0A10DE235FE00FB73CC /* OFTestCase.h */; };
@@ -1136,6 +1140,7 @@
 		341991861950021800BA8113 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		341AB85711935816005E6F74 /* OAFontDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFontDescriptor.h; sourceTree = "<group>"; };
 		341AB85811935816005E6F74 /* OAFontDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptor.m; sourceTree = "<group>"; };
+		341F021921BEE55700C78CF9 /* OADocumentFileTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OADocumentFileTypes.swift; sourceTree = "<group>"; };
 		3420BBDF214C696D00E7A60D /* OmniAppKit.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniAppKit.xcfilelist; sourceTree = "<group>"; };
 		3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSLayoutManager-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.h"; sourceTree = "<group>"; };
 		3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSLayoutManager-OAExtensions.m"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.m"; sourceTree = "<group>"; };
@@ -1202,6 +1207,8 @@
 		346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAnimationContext-OAExtensions.m"; sourceTree = "<group>"; };
 		346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = System/Library/Frameworks/ExceptionHandling.framework; sourceTree = SDKROOT; };
 		3473992111947194002DF726 /* OAParagraphStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAParagraphStyle.h; sourceTree = "<group>"; };
+		3473B3EC21B99C9500A9CAF0 /* OALaunchServices.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OALaunchServices.h; sourceTree = "<group>"; };
+		3473B3ED21B99C9500A9CAF0 /* OALaunchServices.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OALaunchServices.m; sourceTree = "<group>"; };
 		3475A09D0DE235EA00FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		3475A09E0DE235EA00FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
 		3475A0A10DE235FE00FB73CC /* OFTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFTestCase.h; path = ../../../OmniFoundation/Tests/OFTestCase.h; sourceTree = "<group>"; };
@@ -1749,6 +1756,7 @@
 				2730CF39144E205B007C3A99 /* OADocument.h */,
 				42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */,
 				2730CF3A144E205B007C3A99 /* OADocument.m */,
+				341F021921BEE55700C78CF9 /* OADocumentFileTypes.swift */,
 			);
 			name = Documents;
 			sourceTree = "<group>";
@@ -2774,6 +2782,8 @@
 			children = (
 				683A0C790033CCD0CD999A52 /* OAInternetConfig.h */,
 				683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */,
+				3473B3EC21B99C9500A9CAF0 /* OALaunchServices.h */,
+				3473B3ED21B99C9500A9CAF0 /* OALaunchServices.m */,
 			);
 			path = Carbon;
 			sourceTree = "<group>";
@@ -3162,6 +3172,7 @@
 				2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */,
 				4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */,
 				348DC6DD1A0828EC002C2CD8 /* OAChangeConfigurationValue.h in Headers */,
+				3473B3EE21B99C9500A9CAF0 /* OALaunchServices.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3324,6 +3335,7 @@
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
+						LastSwiftMigration = 1010;
 					};
 					34C12B05194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
@@ -3919,6 +3931,7 @@
 			files = (
 				4A2ED86E1F454152000F2513 /* OAColorPalette.m in Sources */,
 				3459EE3C1B694A8400D4F085 /* OAColor.m in Sources */,
+				341F021B21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */,
 				3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */,
 				3459EE381B694A8400D4F085 /* OAColor-Archiving.m in Sources */,
 				3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */,
@@ -3981,6 +3994,7 @@
 				3425ABB41ECA27E700E56839 /* OATextStorage.m in Sources */,
 				4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */,
 				4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */,
+				341F021A21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */,
 				4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */,
 				4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */,
 				4AA1E79108AA764600E2FF6B /* NSControl-OAExtensions.m in Sources */,
@@ -4018,6 +4032,7 @@
 				4AA1E7AF08AA764600E2FF6B /* OAPreferenceController.m in Sources */,
 				4AA1E7B008AA764600E2FF6B /* OAPreferencesIconView.m in Sources */,
 				4AA1E7B108AA764600E2FF6B /* OAPreferencesToolbar.m in Sources */,
+				3473B3EF21B99C9500A9CAF0 /* OALaunchServices.m in Sources */,
 				4AA1E7B208AA764600E2FF6B /* OAPreferencesWindow.m in Sources */,
 				4AA1E7B508AA764600E2FF6B /* OAAquaButton.m in Sources */,
 				E2732516211371D900D4D8D2 /* NSArrayController-OAExtensions.m in Sources */,
@@ -4386,15 +4401,8 @@
 			baseConfigurationReference = 4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4404,8 +4412,6 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -4414,15 +4420,8 @@
 			baseConfigurationReference = 4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/Frameworks",
-				);
 				MODULEMAP_FILE = OmniAppKit.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -4432,7 +4431,6 @@
 					__text,
 					"$(PRODUCT_NAME).order",
 				);
-				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};

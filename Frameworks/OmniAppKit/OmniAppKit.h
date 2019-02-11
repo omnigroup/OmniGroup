@@ -122,6 +122,7 @@
 #import <OmniAppKit/OAImages.h>
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/OALabelField.h>
+#import <OmniAppKit/OALaunchServices.h>
 #import <OmniAppKit/OAMouseTipWindow.h>
 #import <OmniAppKit/OAOutlineViewEnumerator.h>
 #import <OmniAppKit/OAPageSelectableDocumentProtocol.h>

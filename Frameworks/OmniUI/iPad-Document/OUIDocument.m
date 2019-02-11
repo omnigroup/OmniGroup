@@ -217,8 +217,10 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
     
     self.undoManager = undoManager;
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateUndoIndicator) name:OFUndoManagerEnablednessDidChangeNotification object:self.undoManager];
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
+    [center addObserver:self selector:@selector(_updateUndoIndicator) name:OFUndoManagerEnablednessDidChangeNotification object:self.undoManager];
+
 
     return self;
 }
@@ -1637,6 +1639,7 @@ static OFPreference *LastEditsPreference;
 {
     [self finishUndoGroup];
 }
+
 
 ///  A block that is envoked on the main thread that returns any type of 'update' message to be displayed. (Ex. last updated date/time or if the documet is moved/renamed.)
 typedef NSString * (^MessageProvider)(void);

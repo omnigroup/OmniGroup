@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniDataObjects/ODOObject.h>
 
 #import "ODOAttribute-Internal.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 /*
  Raw accessors for packed storage for use by ODOObject and ODOObjectSnapshot.
@@ -74,7 +76,7 @@ static inline void ODOStorageReleaseObject(ODOEntity *entity, void *storageBase,
     [*storage release];
 }
 
-static inline void ODOStorageSetObjectWithoutReleasingOldValue(ODOEntity *entity, void *storageBase, ODOStorageKey storageKey, id value)
+static inline void ODOStorageSetObjectWithoutReleasingOldValue(ODOEntity *entity, void *storageBase, ODOStorageKey storageKey, id _Nullable value)
 {
     _ODOStorageCheckBase(storageBase);
     _ODOStorageCheckObjectType(entity, storageKey);
@@ -172,7 +174,7 @@ static inline void ODOStorageSetNonNull(ODOEntity *entity, void *storageBase, NS
 
 // Getters
 
-static inline id ODOStorageGetObject(ODOEntity *entity, const void *storageBase, ODOStorageKey storageKey)
+static inline id _Nullable ODOStorageGetObject(ODOEntity *entity, const void *storageBase, ODOStorageKey storageKey)
 {
     _ODOStorageCheckBase(storageBase);
     _ODOStorageCheckObjectType(entity, storageKey);
@@ -236,7 +238,7 @@ static inline double ODOStorageGetFloat64(ODOEntity *entity, const void *storage
 
 // Setters
 
-static inline void ODOStorageSetObject(ODOEntity *entity, void *storageBase, ODOStorageKey storageKey, id value)
+static inline void ODOStorageSetObject(ODOEntity *entity, void *storageBase, ODOStorageKey storageKey, id _Nullable value)
 {
     _ODOStorageCheckBase(storageBase);
     _ODOStorageCheckObjectType(entity, storageKey);
@@ -392,4 +394,6 @@ static inline void ODOStorageSetObjectValue(ODOEntity *entity, void *storageBase
             abort();
     }
 }
+
+NS_ASSUME_NONNULL_END
 

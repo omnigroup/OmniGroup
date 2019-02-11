@@ -123,6 +123,7 @@
 #import <OmniUI/OUISegmentedControlInspectorSlice.h>
 #import <OmniUI/OUISegmentedViewController.h>
 #import <OmniUI/OUISendFeedbackURLCommand.h>
+#import <OmniUI/OUISettingsButtonTableViewCell.h>
 #import <OmniUI/OUIShieldView.h>
 #import <OmniUI/OUISingleViewInspectorPane.h>
 #import <OmniUI/OUISplitViewController.h>

@@ -1,4 +1,4 @@
-// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
@@ -32,3 +32,5 @@ WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error
 // For Info.plists in frameworks that are shared between Mac/iOS targets
 OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_MAC
 
+// Enable the hardened runtime by default in all our build products
+ENABLE_HARDENED_RUNTIME = YES

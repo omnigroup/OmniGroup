@@ -11,7 +11,7 @@
 "^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(Konflikt( [0-9+])? von .*\\)$";
 
 /* account credentials missing suggestion */
-"Account is missing login credentials." = "Dem Account fehlen Anmeldedaten.";
+"Account is missing login credentials." = "Dem Account fehlen Anmeldeinformationen.";
 
 /* account validation error description */
 "Account not configured" = "Account nicht konfiguriert";
@@ -41,7 +41,7 @@
 "Cannot sync with account." = "Mit dem Account kann nicht synchronisiert werden.";
 
 /* Account validation step description */
-"Checking Credentials" = "Anmeldedaten werden überprüft";
+"Checking Credentials" = "Anmeldeinformationen werden überprüft";
 
 /* iTunes import title */
 "Copy from iTunes" = "Aus iTunes kopieren";
@@ -56,7 +56,7 @@
 "Documents" = "Dokumente";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Omni-Dokumente leicht synchronisieren; kostenl. Registrierung";
+"Easily sync Omni documents. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos. Kostenlose Anmeldung!";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportieren nach „%@“";
@@ -97,7 +97,7 @@
 "Server location not found" = "Serverort nicht gefunden";
 
 /* error description */
-"Sync failed: cloud account needs to be upgraded." = "Synchronisierung fehlgeschlagen: Upgrade für den Cloudaccount ist erforderlich.";
+"Sync failed: cloud account needs to be upgraded." = "Synchronisierung fehlgeschlagen: Upgrade für den Cloud-Account ist erforderlich.";
 
 /* error description */
 "Sync failed: OmniPresence upgrade required." = "Synchronisierung fehlgeschlagen: OmniPresence-Upgrade ist erforderlich.";
@@ -109,10 +109,10 @@
 "Testing Server for Compatibility" = "Server wird auf Kompatibilität getestet";
 
 /* error reason */
-"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Der Cloudaccount erfordert das OmniPresence-Format %1$@, aber dieses Gerät verwendet das Format %2$@. Führen Sie für diese Kopie von OmniPresence ein Upgrade durch.";
+"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Der Cloud-Account erfordert das OmniPresence-Format %1$@, aber dieses Gerät verwendet das Format %2$@. Führen Sie für diese Kopie von OmniPresence ein Upgrade durch.";
 
 /* Error description */
-"The document \"%@\" is not fully downloaded." = "Das Dokument „%@“ ist nicht vollständig geladen.";
+"The document \"%@\" is not fully downloaded." = "Das Dokument „%@“ ist nicht vollständig heruntergeladen.";
 
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Der vorgeschlagene lokale Dokumentordner enthält bereits Dateien. Geben Sie einen leeren Ordner oder einen nicht vorhandenen Ordner an.";
@@ -133,7 +133,7 @@
 "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "Der ausgewählte lokale Ordner ist auf Ihrem Schreibtisch, der unter Sierra von iCloud Drive synchronisiert werden kann. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.";
 
 /* error reason */
-"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Diese App erfordert das OmniPresence-Format %1$@, aber der Cloudaccount verwendet das Format %2$@. Führen Sie für den Cloudaccount ein Upgrade durch.";
+"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Diese App erfordert das OmniPresence-Format %1$@, aber der Cloud-Account verwendet das Format %2$@. Führen Sie für den Cloud-Account ein Upgrade durch.";
 
 /* Error reason */
 "This OmniPresence folder contains another OmniPresence synced folder." = "Dieser OmniPresence-Ordner enthält einen weiteren Ordner, der mit OmniPresence synchronisiert wird.";
@@ -154,10 +154,10 @@
 "Unable to open documents folder." = "Der Dokumentordner kann nicht geöffnet werden.";
 
 /* error reason */
-"Unable to update device registration on the cloud server." = "Die Geräteregistrierung auf dem Cloudserver kann nicht aktualisiert werden.";
+"Unable to update device registration on the cloud server." = "Die Geräteregistrierung auf dem Cloud-Server kann nicht aktualisiert werden.";
 
 /* account validation error suggestion */
-"Unable to verify login credentials at this time." = "Die Anmeldedaten können zurzeit nicht überprüft werden.";
+"Unable to verify login credentials at this time." = "Die Anmeldeinformationen können zurzeit nicht überprüft werden.";
 
 /* Add server account description */
 "Use your own WebDAV space." = "Verwenden Sie Ihren eigenen WebDAV-Speicher.";

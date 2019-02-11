@@ -117,5 +117,5 @@ echo test_pw:$REALM:$DIGEST >> "$CONFIG_DIR/test_pw.passwd"
 rm -f "$RUN_DIR"/DavLock.dir
 rm -f "$RUN_DIR"/DavLock.pag
 
-# Run in debug mode (-X) so that this won't detach from the console
-$HTTPD -X -f "$CONFIG_DIR/httpd.conf"
+# Run in foreground mode so that this won't detach from the console
+$HTTPD -D FOREGROUND -f "$CONFIG_DIR/httpd.conf"

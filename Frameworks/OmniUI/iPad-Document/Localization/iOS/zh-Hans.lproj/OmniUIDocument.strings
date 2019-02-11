@@ -1,5 +1,5 @@
 /* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
-" (Copy)" = "（拷贝）";
+" (Copy)" = " （复制）";
 
 /* bytes */
 "%@ B" = "%@ B";
@@ -77,7 +77,7 @@
 "Cannot Duplicate Item" = "无法复制项目";
 
 /* item not fully downloaded error title */
-"Cannot Export Item" = "无法导出项目";
+"Cannot Export Item" = "无法输出项目";
 
 /* email action description */
 "Choose a format for emailing \"%@\":" = "选择格式以邮寄“%@”：";
@@ -119,13 +119,19 @@
 "Connecting" = "连接";
 
 /* Menu option in the document picker view */
-"Copy as Image" = "拷贝为图像";
+"Copy as Image" = "复制为图像";
 
 /* gear menu item */
-"Copy from WebDAV" = "从 WebDAV 拷贝";
+"Copy from WebDAV" = "从 WebDAV 复制";
 
 /* gear menu item */
-"Copy from…" = "拷贝自…";
+"Copy from…" = "复制自…";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "新建文稿";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "新建文稿自 %@";
 
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ 自定义";
@@ -197,19 +203,19 @@
    Export toolbar item accessibility label. */
 
 
-"Export" = "导出";
+"Export" = "输出";
 
 /* export to description */
 "Export \"%@\" as:" = "将“%@”导出为:";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "将“%1$@”导出至 %2$@ 的方式：";
+"Export \"%@\" to %@ as:" = "将“%1$@”输出至 %2$@ 的方式：";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "导出至 WebDAV";
 
 /* Export document preview action title. */
-"Export…" = "导出…";
+"Export…" = "输出…";
 
 /* finished */
 "Finished" = "已完成";
@@ -218,7 +224,7 @@
 "Folder" = "文件夹";
 
 /* import sheet title */
-"Import" = "导入";
+"Import" = "输入";
 
 /* Info item accessibility label */
 "Info" = "信息";
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "我的 iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "打开 %@";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "打开文稿可将其添加至此视图。";
@@ -477,7 +486,7 @@
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法复制。再次尝试前，请轻按项目并等待下载。";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法导出。 再次尝试前，请轻按项目并等待下载。";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法输出。 再次尝试前，请轻按项目并等待下载。";
 
 /* sort by title */
 "Title" = "标题";

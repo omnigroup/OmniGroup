@@ -144,6 +144,9 @@
 "ey" = "已用年";
 
 /* error reason */
+"Failed to convert '%@' to the same type as '%@' (%@)" = "未能将“%1$@”转换为与 “%2$@”（%3$@）相同的类型";
+
+/* error reason */
 "Failed to create directory for lock file at \"%@\"." = "针对位于“%@”的锁定文件创建目录失败。";
 
 /* error reason */
@@ -259,6 +262,9 @@
 
 /* error description */
 "Unable to lock document." = "不能锁定文稿。";
+
+/* error description */
+"Unable to parse value" = "无法解析值";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */

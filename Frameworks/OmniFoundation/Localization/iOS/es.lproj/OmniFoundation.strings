@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Contraseña";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Ninguno";
+"<Encryption: None>" = "Ninguna";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "%u claves";
@@ -59,7 +59,7 @@
 "Another application has overridden the lock at \"%@\"." = "Otra aplicación ha anulado el bloqueo en “%@”.";
 
 /* invalid bundle reason */
-"Bundle is obsolete" = "Este paquete es obsoleto";
+"Bundle is obsolete" = "Este paquete está obsoleto";
 
 /* invalid bundle reason */
 "Bundle requires additional software" = "Este paquete requiere software adicional";
@@ -142,6 +142,9 @@
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "ey" = "at";
+
+/* error reason */
+"Failed to convert '%@' to the same type as '%@' (%@)" = "No se ha podido convertir “%1$@” al mismo tipo que “%2$@” (%3$@)";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "No se ha podido crear el directorio del archivo de bloqueo en “%@”.";
@@ -259,6 +262,9 @@
 
 /* error description */
 "Unable to lock document." = "No se puede bloquear el documento.";
+
+/* error description */
+"Unable to parse value" = "No se ha podido analizar el valor";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */

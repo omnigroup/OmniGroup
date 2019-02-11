@@ -339,7 +339,7 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     }
     
     override open var preferredStatusBarStyle: UIStatusBarStyle {
-        return (self.appearanceDelegate?.preferredStatusBarStyle?(for: self)) ?? UIStatusBarStyle.default
+        return (self.appearanceDelegate?.preferredStatusBarStyle?(for: self)) ?? super.preferredStatusBarStyle
     }
     
     open override var transitionCoordinator: UIViewControllerTransitionCoordinator? {

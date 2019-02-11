@@ -133,7 +133,7 @@
 "The selected local folder is on your Desktop, which can be synchronized by iCloud Drive on Sierra. Using two file synchronization systems on the same folder can result in data loss." = "Выбранная локальная папка находится на вашем рабочем столе, который можно синхронизировать с помощью iCloud Drive в ОС Sierra. Использование для одной папки двух служб синхронизации может привести к потере данных.";
 
 /* error reason */
-"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Для этой программы требуется формат OmniPresence %1$@, а в облачной учетной записи используется формат %2$@. Обновите облачную учетную запись.";
+"This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Для этого приложения требуется формат OmniPresence %1$@, а в облачной учетной записи используется формат %2$@. Обновите облачную учетную запись.";
 
 /* Error reason */
 "This OmniPresence folder contains another OmniPresence synced folder." = "Эта папка OmniPresence содержит другую папку синхронизации OmniPresence.";

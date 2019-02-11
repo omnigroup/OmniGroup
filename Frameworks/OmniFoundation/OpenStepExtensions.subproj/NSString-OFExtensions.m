@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1263,6 +1263,24 @@ static inline unichar hex(int i)
     }
     
     return [NSString stringWithFormat:@"%@…", [self substringWithRange:chosenRange]];
+}
+
+- (BOOL)isEmailAddress
+{
+    static NSDataDetector *detector;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        detector = [[NSDataDetector alloc] initWithTypes:NSTextCheckingTypeLink error:nil];
+    });
+    
+    NSRange range = NSMakeRange(0, self.length);
+    NSArray *results = [detector matchesInString:self options:0 range:range];
+    
+    if (results.count == 1 && [[[results[0] URL] absoluteString] containsString:@"mailto:"]) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 /// Create a dictionary for use with CSLocalizedString (for example)

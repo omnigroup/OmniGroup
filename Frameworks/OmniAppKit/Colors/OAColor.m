@@ -1,4 +1,4 @@
-// Copyright 2003-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1161,7 +1161,8 @@ static NSColorSpace *_grayscaleColorSpace(void)
     }
 
     OBASSERT_NOT_REACHED("Unknown color space %@, model %ld", colorSpace, colorSpaceModel);
-    return [OAColor blackColor];
+    NSColor *rgbColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+    return rgbColor ? [self colorWithPlatformColor:rgbColor] : [OAColor blackColor];
 }
 #endif
 

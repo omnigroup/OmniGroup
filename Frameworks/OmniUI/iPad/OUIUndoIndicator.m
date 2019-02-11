@@ -116,6 +116,7 @@ static OUIUndoIndicator *_sharedIndicator;
 - (void)loadView;
 {
     OUIUndoIndicatorView *view = [[OUIUndoIndicatorView alloc] init];
+    view.userInteractionEnabled = NO; // Allow clicking through it.
     view.layer.zPosition = FLT_MAX;
     self.view = view;
     _indicatorDot = [CALayer layer];

@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,6 +58,21 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (void)setBounds:(CGRect)bounds {
     CGRect oldBounds = self.bounds;
+    
+    OBASSERT(!isnan(bounds.origin.x) && !isnan(bounds.origin.y) && !isnan(bounds.size.width) && !isnan(bounds.size.height), "Attempted to set non-numerical value to bounds");
+    if (isnan(bounds.origin.x)) {
+        bounds.origin.x = oldBounds.origin.x;
+    }
+    if (isnan(bounds.origin.y == NAN)) {
+        bounds.origin.y = oldBounds.origin.y;
+    }
+    if (isnan(bounds.size.width == NAN)) {
+        bounds.size.width = oldBounds.size.width;
+    }
+    if (isnan(bounds.size.height == NAN)) {
+        bounds.size.height = oldBounds.size.height;
+    }
+    
     [super setBounds:bounds];
     if (!CGSizeEqualToSize(oldBounds.size, self.bounds.size) && [self.delegate respondsToSelector:@selector(scrollViewDidChangeFrame)]) {
         [self.delegate scrollViewDidChangeFrame];

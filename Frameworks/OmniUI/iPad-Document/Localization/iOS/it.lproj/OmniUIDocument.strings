@@ -127,6 +127,12 @@
 /* gear menu item */
 "Copy from…" = "Copia da…";
 
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "Crea nuovo documento";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "Crea nuovo documento da %@";
+
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ personalizzato";
 
@@ -187,7 +193,7 @@
 "Edits the document's title." = "Modifica il titolo del documento.";
 
 /* empty trash button title */
-"Empty Trash" = "Svuota Cestino";
+"Empty Trash" = "Svuota cestino";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "Immetti l'indirizzo del tuo spazio WebDAV.";
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "Su iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "Apri %@";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Apri un documento per aggiungerlo a questa visualizzazione.";

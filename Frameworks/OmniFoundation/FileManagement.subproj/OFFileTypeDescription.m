@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ OB_REQUIRE_ARC
 {
     // TODO: Update this to prefer the application's built-in UTTypes instead of depending on LaunchServices to do the right thing.
 
-    _fileType = [fileType copy];
+    _fileType = [[fileType lowercaseString] copy];
 
     _pathExtensions = [CFBridgingRelease(UTTypeCopyAllTagsWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension)) copy];
     if (_pathExtensions == nil) {
@@ -49,6 +49,10 @@ OB_REQUIRE_ARC
     return [_fileType isEqual:otherDesc.fileType];
 }
 
++ (OFFileTypeDescription *)plainText;
+{
+    return [[OFFileTypeDescription alloc] initWithFileType:(__bridge NSString *)kUTTypePlainText];
+}
 
 @end
 

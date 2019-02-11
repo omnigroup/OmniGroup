@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 /**
  \brief creates _and activates_ a waiting indicator using the view's tint color
  \param view indicator will be centered on this view
- \param disable
+ \param disable whether the returned indicator disables user interaction while it is active
  */
 + (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 
@@ -23,7 +23,7 @@
  \param view indicator will be centered on this view
  \param color color for indicator, or nil for view's tint color
  \param drawShadingView whether to hide view behind a translucent shading view while spinning
- \param disable
+ \param disable whether the returned indicator disables user interaction while it is active
 */
 + (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view withColor:(UIColor *)color drawShadingView:(BOOL)drawShadingView shouldDisableAllInteraction:(BOOL)disable NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 

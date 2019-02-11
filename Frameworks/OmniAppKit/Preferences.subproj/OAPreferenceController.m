@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,6 +172,12 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSBundle *bundle = OFControllingBundle();
     NSString *classname = [[bundle infoDictionary] objectForKey:@"OAPreferenceControllerClass"];
+    
+    // If the controlling bundle doesn't specify a custom class and we are running unit tests, check the test host.
+    if (OFIsRunningUnitTests() && [NSString isEmptyString:classname]) {
+        bundle = [NSBundle mainBundle];
+        classname = [[bundle infoDictionary] objectForKey:@"OAPreferenceControllerClass"];
+    }
     
     if (![NSString isEmptyString:classname]) {
         Class cls = NSClassFromString(classname);
@@ -707,6 +713,19 @@ static NSString *windowFrameSaveName = @"Preferences";
 #pragma mark -
 #pragma mark Private
 
++ (CGFloat)idealWindowWidth;
+{
+    NSBundle *bundle = OFControllingBundle();
+    NSString *windowWidthString = [[bundle infoDictionary] objectForKey:@"OAPreferenceControllerIdealWindowWidth"];
+    CGFloat windowWidth = (windowWidthString != nil) ? windowWidthString.doubleValue : -1;
+    
+    if (windowWidth > 0) {
+        return windowWidth;
+    } else {
+        return 680;
+    }
+}
+
 - (void)_loadInterface;
 {
     if (_window != nil)
@@ -723,7 +742,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     [self.containerView setAutoresizesSubviews:YES];
 
     globalControlsHeight = NSHeight(_globalControlsView.frame);
-    idealWidth = NSWidth(_globalControlsView.frame);
+    idealWidth = [[self class] idealWindowWidth];
 
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];

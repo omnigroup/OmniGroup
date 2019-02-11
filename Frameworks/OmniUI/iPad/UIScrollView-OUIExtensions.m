@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -177,7 +177,7 @@ static CGRect _nonautoscrollBounds(UIScrollView *self, NSUInteger allowedDirecti
 - (void)scrollRectToVisibleAboveLastKnownKeyboard:(CGRect)rect animated:(BOOL)animated completion:(void (^)(BOOL))completion;
 {
     OUIKeyboardNotifier *sharedNotifier = [OUIKeyboardNotifier sharedNotifier];
-    CGFloat yPointOfKeyboardTop = [sharedNotifier getMinYOfLastKnownKeyboardInView:self.superview];
+    CGFloat yPointOfKeyboardTop = [sharedNotifier minimumYPositionOfLastKnownKeyboardInView:self.superview];
     CGFloat yOffset = [self minOffsetToScrollRectToVisible:rect aboveMinY:yPointOfKeyboardTop];
     UIEdgeInsets workableInsets = self.contentInset;
     if (workableInsets.bottom < [sharedNotifier lastKnownKeyboardHeight]) {

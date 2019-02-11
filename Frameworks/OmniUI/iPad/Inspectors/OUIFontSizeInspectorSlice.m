@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,7 +72,15 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
             newSize = _normalizeFontSize(newSize);
             fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
         }
-        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:self.undoManager];
+        NSUndoManager *undoManager = nil;
+        if ([object respondsToSelector:@selector(undoManager)]) {
+            undoManager = [object performSelector:@selector(undoManager)];
+        }
+        if (undoManager == nil) {
+            undoManager = self.undoManager;
+        }
+
+        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:undoManager];
     }
     //    FinishUndoGroup();  // I think this should be here for Graffle iOS, but our build dependencies won't allow it and testing shows this isn't currently a problem
 
@@ -192,7 +200,15 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
             UIFont *font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
             fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
         }
-        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:self.undoManager];
+        NSUndoManager *undoManager = nil;
+        if ([object respondsToSelector:@selector(undoManager)]) {
+            undoManager = [object performSelector:@selector(undoManager)];
+        }
+        if (undoManager == nil) {
+            undoManager = self.undoManager;
+        }
+
+        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self undoManager:undoManager];
     }
     
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];

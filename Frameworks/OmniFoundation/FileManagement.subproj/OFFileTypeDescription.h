@@ -1,4 +1,4 @@
-// Copyright 2010-2016 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *fileType;
 @property (nonatomic, readonly) NSString *displayName;
 @property (nonatomic, readonly) NSArray <NSString *> *pathExtensions;
+
+// Some well-known types
+@property(class,nonatomic,readonly) OFFileTypeDescription *plainText;
 
 @end
 

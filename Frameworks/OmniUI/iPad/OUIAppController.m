@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,6 +63,8 @@ NSString * const OUIAttentionSeekingForNewsKey = @"OUIAttentionSeekingForNewsKey
 
 @implementation OUIAppController
 {
+    UIWindow *_window;
+
     NSMutableArray *_launchActions;
     OUIMenuController *_appMenuController;
     NSOperationQueue *_backgroundPromptQueue;
@@ -199,6 +201,9 @@ static void __iOS7B5CleanConsoleOutput(void)
 }
 
 
+// UIApplicationDelegate has an @optional window property.
+@synthesize window = _window;
+
 - (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     if (!(self = [super init])) {
@@ -284,11 +289,13 @@ static void __iOS7B5CleanConsoleOutput(void)
 {
     UIApplication *sharedApplication = [UIApplication sharedApplication];
     NSString *scheme = [[url scheme] lowercaseString];
-    if ([self canHandleURLScheme:scheme]) {
+
+    // +canHandleURLScheme: is for special URLs; check for file URLs too, but should maybe just remove this check.
+    if ([url isFileURL] || [self canHandleURLScheme:scheme]) {
         id <UIApplicationDelegate> appDelegate = [sharedApplication delegate];
         if ([appDelegate respondsToSelector:@selector(application:openURL:options:)]) {
             BOOL success = [appDelegate application:sharedApplication openURL:url options:@{
-                UIApplicationOpenURLOptionsOpenInPlaceKey: @(NO),
+                UIApplicationOpenURLOptionsOpenInPlaceKey: @([url isFileURL]),
                 UIApplicationOpenURLOptionsSourceApplicationKey: [[NSBundle mainBundle] bundleIdentifier],
             }];
             if (completion != NULL)
@@ -296,6 +303,7 @@ static void __iOS7B5CleanConsoleOutput(void)
             return;
         }
     }
+
     [sharedApplication openURL:url options:options completionHandler:completion];
 }
 
@@ -850,6 +858,11 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden NS_EXTENSION_UNAVAILABLE_IOS("")
 {
+    return [self showWebViewWithURL:url title:title modalPresentationStyle:presentationStyle modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:animated navigationBarHidden:navigationBarHidden withDoneButton:YES];
+}
+
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title modalPresentationStyle:(UIModalPresentationStyle)presentationStyle modalTransitionStyle:(UIModalTransitionStyle)transitionStyle animated:(BOOL)animated navigationBarHidden:(BOOL)navigationBarHidden withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
+{
     UINavigationController *webNavigationController = [[UINavigationController alloc] init];
     webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     webNavigationController.navigationBarHidden = navigationBarHidden;
@@ -857,11 +870,17 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webNavigationController.modalTransitionStyle = transitionStyle;
 
     OUIWebViewController *webController = [self showWebViewWithURL:url title:title animated:NO /* will animate the presentation of webNavigationController instead */ navigationController:webNavigationController];
+    webController.wantsDoneButton = withDoneButton;
     [self.window.rootViewController presentViewController:webNavigationController animated:animated completion:nil];
     return webController;
 }
 
 - (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
+{
+    return [self showWebViewWithURL:url title:title animated:animated navigationController:navigationController withDoneButton:YES];
+}
+
+- (nullable OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(nullable NSString *)title animated:(BOOL)animated navigationController:(UINavigationController *)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OBASSERT(url != nil); //Seems like it would be a mistake to ask to show nothing. —LM
     if (url == nil) {
@@ -872,6 +891,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webController.delegate = self;
     webController.title = title;
     webController.URL = url;
+    webController.wantsDoneButton = withDoneButton;
     
     assert(navigationController != nil); // This is no longer nullable
     [navigationController pushViewController:webController animated:animated];
@@ -967,13 +987,13 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     return jsonBindingsString;
 }
 
-- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController withDoneButton:(BOOL)withDoneButton NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OUIWebViewController *webViewController;
     if (navigationController == nil)
-        webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES navigationBarHidden:NO];
+    webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] modalPresentationStyle:UIModalPresentationFormSheet modalTransitionStyle:UIModalTransitionStyleCoverVertical animated:YES navigationBarHidden:NO withDoneButton:withDoneButton];
     else
-        webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] animated:YES navigationController:navigationController];
+    webViewController = [self showWebViewWithURL:[self aboutScreenURL] title:[self aboutScreenTitle] animated:YES navigationController:navigationController withDoneButton:withDoneButton];
     [webViewController invokeJavaScriptBeforeLoad:[self _aboutPanelJSONBindingsString]];
 }
 

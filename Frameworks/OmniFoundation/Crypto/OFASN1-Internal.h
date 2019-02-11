@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Security/Security.h>
 #import <OmniBase/macros.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
 enum OFASN1ErrorCodes {
     OFASN1Success                  = 0,
@@ -22,7 +23,7 @@ enum OFASN1ErrorCodes {
     OFASN1UnexpectedIndefinite,
     OFASN1TrailingData,
 };
-NSError * _Nonnull OFNSErrorFromASN1Error(int errCode, NSString *extra) __attribute__((cold)) OB_HIDDEN;
+NSError *OFNSErrorFromASN1Error(int errCode, NSString * _Nullable extra) __attribute__((cold)) OB_HIDDEN;
 
 #define CLASS_MASK             0xC0
 #define CLASS_UNIVERSAL        0x00
@@ -101,5 +102,7 @@ enum OFASN1ErrorCodes OFASN1EnumerateMembersAsBERRanges(NSData *buf, struct pars
 enum OFASN1ErrorCodes OFASN1ExtractStringContents(NSData *buf, struct parsedTag s, NSData OB_NANNP outData) OB_HIDDEN;
 #define OFASN1ParseItemsInObject(b, p, der, i, v)    ({ SAME_LENGTH(i, v); OFASN1ParseBERSequence(b, (p).content.location, ((p).indefinite && !(p).content.length)? 0 : NSMaxRange((p).content), der,  (i), (v), ARRAYLENGTH(i)); })
 
-enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum OFASN1Algorithm algid, NSRange range, NSData **outNonce, int *outTagSize) OB_HIDDEN;
-enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData **outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum OFASN1Algorithm algid, NSRange range, NSData OB_NANNP outNonce, int *outTagSize) OB_HIDDEN;
+enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData OB_NANNP outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF) OB_HIDDEN;
+
+NS_ASSUME_NONNULL_END

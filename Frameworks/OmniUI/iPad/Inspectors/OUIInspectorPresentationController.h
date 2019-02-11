@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN;
 
 @protocol OUIInspectorPresentationControllerDismissalDelegate;
 
+/**
+ @param inspectorHeight Distance from bottom of screen that the inspector's view will cover. Useful to add bottom content inset to scroll views.
+ */
 typedef void (^OUIInspectorPresentationControllerAlongsidePresentationBlock)(CGFloat inspectorHeight);
 typedef void (^OUIInspectorPresentationControllerTransitionBlock)(void);
 
@@ -28,13 +31,11 @@ typedef void (^OUIInspectorPresentationControllerTransitionBlock)(void);
  */
 @property (nullable, nonatomic, readonly) UIView *seeThroughView;
 
-/// These all get set to nil at the end of -[UIPresentationController dismissalTransitionDidEnd:]
-/**
- @param inspectorHeight Distance from bottom of screen that the inspector's view will cover. Useful to add bottom content inset to scroll views.
- */
+// These all get set to nil at the end of -[UIPresentationController dismissalTransitionDidEnd:]
+
 @property (nullable, nonatomic, copy) OUIInspectorPresentationControllerAlongsidePresentationBlock animationsToPerformAlongsidePresentation;
 @property (nullable, nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock presentInspectorCompletion;
-/// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
+// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
 @property (nullable, nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock animationsToPerformAlongsideDismissal;
 @property (nullable, nonatomic, copy) OUIInspectorPresentationControllerTransitionBlock dismissInspectorCompletion;
 

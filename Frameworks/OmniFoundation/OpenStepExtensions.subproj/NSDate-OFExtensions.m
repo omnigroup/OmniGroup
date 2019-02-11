@@ -531,15 +531,14 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, OFXMLDate
     // Figure out the fractional seconds portion.
     unsigned milliseconds;
     double dummy;
+    NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
 
-    if (timeInterval < 0) {
-        NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
+    if (timeInterval < 0 && fractionalSeconds != -0.0) { // Don't step negative integral second time intervals by one second. See -test1970.
         OBASSERT(fractionalSeconds < 0.0);
         DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
 
         milliseconds = 1000 + (unsigned)round(fractionalSeconds * 1000.0);
     } else {
-        NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
         OBASSERT(fractionalSeconds >= 0.0);
         DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
 

@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@
 
 // If set and an error response is returned, this can decide whether to retry the operation by returning a *new* operation.
 // If a new block is returned, the original block's didFinish will *not* be called.
-@property(nonatomic,copy,nonnull) id <ODAVAsynchronousOperation> __nullable (^shouldRetry)(id <ODAVAsynchronousOperation> __nonnull op, NSHTTPURLResponse *response);
+@property(nonatomic,copy,nonnull) id <ODAVAsynchronousOperation> __nullable (^shouldRetry)(id <ODAVAsynchronousOperation> __nonnull op, NSHTTPURLResponse * _Null_unspecified response);
 
 // If set, this is called when a retry is going to take over for an operation. This is called both for operations returned from `shouldRetry` and possibly internally generated retry operations on network loss. By default, the didFinish from the original operation will have already been assigned to the new operation when `willRetry` is called.
 @property(nonatomic,copy,nonnull) void (^willRetry)(id <ODAVAsynchronousOperation> __nonnull original, id <ODAVAsynchronousOperation> __nonnull retry);

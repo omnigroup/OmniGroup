@@ -144,6 +144,9 @@
 "ey" = "ey";
 
 /* error reason */
+"Failed to convert '%@' to the same type as '%@' (%@)" = "'%1$@' を '%2$@' と同じタイプに変換できませんでした（%3$@）";
+
+/* error reason */
 "Failed to create directory for lock file at \"%@\"." = "“%@” でロックされたファイルのディレクトリの作成に失敗しました。";
 
 /* error reason */
@@ -259,6 +262,9 @@
 
 /* error description */
 "Unable to lock document." = "書類をロックできません。";
+
+/* error description */
+"Unable to parse value" = "値を解析できません";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */

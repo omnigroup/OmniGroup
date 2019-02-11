@@ -172,6 +172,8 @@
 		343BFCFF1D59201D0074DFAD /* OFXMLParserNamespaceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BFCF51D591DF20074DFAD /* OFXMLParserNamespaceTests.m */; };
 		343E5FBB0F77E69500F9982D /* OFXMLQName.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E5FB90F77E69500F9982D /* OFXMLQName.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343E5FBC0F77E69500F9982D /* OFXMLQName.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E5FBA0F77E69500F9982D /* OFXMLQName.m */; };
+		3444468A21C745AE003C45DB /* OFBinding-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444468921C745AE003C45DB /* OFBinding-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3444468B21C745AE003C45DB /* OFBinding-Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444468921C745AE003C45DB /* OFBinding-Subclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3448244D17AB148200889E8F /* OFBackgroundActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 3448244B17AB148200889E8F /* OFBackgroundActivity.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3448244F17AB148200889E8F /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; };
 		344AD00C172740D2004B30B1 /* NSURL-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -2138,6 +2140,7 @@
 		343F2CD91D3EB2BA00E7C89D /* Omni-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
 		343F2CDA1D3EB2BA00E7C89D /* Omni-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
 		343F2CDB1D3EB2BA00E7C89D /* Omni-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
+		3444468921C745AE003C45DB /* OFBinding-Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OFBinding-Subclass.h"; sourceTree = "<group>"; };
 		3448244B17AB148200889E8F /* OFBackgroundActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBackgroundActivity.h; sourceTree = "<group>"; };
 		3448244C17AB148200889E8F /* OFBackgroundActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBackgroundActivity.m; sourceTree = "<group>"; };
 		344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL-OFExtensions.h"; sourceTree = "<group>"; };
@@ -3200,6 +3203,7 @@
 				34E576C10E245BEB00C1F5FB /* OFRelativeDateParser-Internal.h */,
 				5FE978E81912CED5003029CA /* OFRelativeDateParser-Internal.m */,
 				34850C820A71491100675995 /* OFBinding.h */,
+				3444468921C745AE003C45DB /* OFBinding-Subclass.h */,
 				34850C830A71491100675995 /* OFBinding.m */,
 				345272C514F092EF003151CA /* OFBindingPoint.h */,
 				345272C614F092EF003151CA /* OFBindingPoint.m */,
@@ -4342,6 +4346,7 @@
 				34F16B5E194F6E6000AD9C4D /* OFRelativeDateParser.h in Headers */,
 				34F16B6E194F6EA200AD9C4D /* OFPreference.h in Headers */,
 				34F16B6A194F6E8F00AD9C4D /* OFCompletionMatch.h in Headers */,
+				3444468B21C745AE003C45DB /* OFBinding-Subclass.h in Headers */,
 				34F16B77194F6ECC00AD9C4D /* OFUnicodeUtilities.h in Headers */,
 				34F16C29194F796500AD9C4D /* OFXMLElement.h in Headers */,
 				34F16C1C194F77B200AD9C4D /* OFXMLIdentifierRegistryObject.h in Headers */,
@@ -4415,6 +4420,7 @@
 				4A4E061608AA72B10098FF0F /* OFEnumNameTable.h in Headers */,
 				4A4E061808AA72B10098FF0F /* OFHeap.h in Headers */,
 				1EEA8E291D35C93D002EF965 /* GeneratedOIDs.h in Headers */,
+				3444468A21C745AE003C45DB /* OFBinding-Subclass.h in Headers */,
 				4A4E061908AA72B10098FF0F /* OFKnownKeyDictionaryTemplate.h in Headers */,
 				4A4E061B08AA72B10098FF0F /* OFMatrix.h in Headers */,
 				4A4E061C08AA72B10098FF0F /* OFMultiValueDictionary.h in Headers */,
@@ -6443,7 +6449,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080A08AA73400098FF0F /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -6470,7 +6475,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080B08AA73400098FF0F /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

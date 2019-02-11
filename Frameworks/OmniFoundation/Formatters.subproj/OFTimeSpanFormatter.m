@@ -1,4 +1,4 @@
-// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -304,8 +304,24 @@ static NSArray *TimeSpanUnits = nil;
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-    OFTimeSpanFormatter *copy = [super copyWithZone:zone];
+    OFTimeSpanFormatter *copy = [[[self class] alloc] init];
+    
     copy->numberFormatter = [numberFormatter copyWithZone:zone];
+    
+    copy->shouldUseVerboseFormat = shouldUseVerboseFormat;
+    copy->hoursPerDay = hoursPerDay;
+    copy->hoursPerWeek = hoursPerWeek;
+    copy->hoursPerMonth = hoursPerMonth;
+    copy->hoursPerYear = hoursPerYear;
+    copy->roundingInterval = roundingInterval;
+    
+    copy->_flags.returnNumber = _flags.returnNumber;
+    copy->_flags.displayUnmodifiedTimeSpan = _flags.displayUnmodifiedTimeSpan;
+    copy->_flags.floatValuesInSeconds = _flags.floatValuesInSeconds;
+    copy->_flags.displayUnits = _flags.displayUnits;
+    copy->_flags.usesArchiveUnitStrings = _flags.usesArchiveUnitStrings;
+    copy->_flags.allowsElapsedUnits = _flags.allowsElapsedUnits;
+
     return copy;
 }
 

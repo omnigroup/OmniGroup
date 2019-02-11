@@ -126,6 +126,7 @@
 
 - (void)accessSecurityScopedResourcesForBlock:(void (^ NS_NOESCAPE)(void))block;
 
+
 @end
 
 extern OFSaveType OFSaveTypeForUIDocumentSaveOperation(UIDocumentSaveOperation saveOperation);

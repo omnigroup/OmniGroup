@@ -127,6 +127,12 @@
 /* gear menu item */
 "Copy from…" = "Copiar desde…";
 
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "Crear un documento nuevo";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "Crear un documento nuevo desde %@";
+
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ (personalizado)";
 
@@ -261,7 +267,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Trasladar...";
+"Move…" = "Trasladar…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "Abrir %@";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Abre un documento para añadirlo a esta vista.";
@@ -376,7 +385,7 @@
 "Report Error" = "Comunicar error";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar ejemplos";
+"Restore Sample Documents" = "Restaurar docs. de ejemplo";
 
 /* Share menu title */
 "Restore to..." = "Restaurar a…";

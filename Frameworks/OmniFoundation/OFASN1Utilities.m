@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -811,7 +811,7 @@ static const struct { int tp; int ver; } decodables[] = {
     
     /* These are custom fields added by Omni / found in Omni generated receipt data only */
     { 9301, 1001 }, // String Omni UUID
-    { 9302, 1001 }, // String Omni ID Email Address
+    { 9302, 1001 }, // String Omni Account Email Address
     { 9303, 1001 }, // String License Owner Name
     { 9304, 1001 }, // String License Number
     { 9305, 1001 }, // String Omni Product SKU
@@ -823,7 +823,7 @@ static const struct { int tp; int ver; } decodables[] = {
 };
 #endif
 
-BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(int att_type, int att_version, NSRange value))
+BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (NS_NOESCAPE ^callback)(int att_type, int att_version, NSRange value))
 {
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState payloadSt, attrSt, valueSt;
@@ -1162,7 +1162,7 @@ enum OFASN1ErrorCodes OFASN1ParseSymmetricEncryptionParameters(NSData *buf, enum
 }
 
 /* This is essentially the reverse of OFProduceDEKForCMSPWRIPBKDF2(). */
-enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData **outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF)
+enum OFASN1ErrorCodes OFASN1ParsePBKDF2Parameters(NSData *buf, NSRange range, NSData OB_NANNP outSalt, int *outIterations, int *outKeyLength, enum OFASN1Algorithm *outPRF)
 {
     /*
      PBKDF2-params ::= SEQUENCE {
@@ -1911,7 +1911,7 @@ enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsi
 
 #pragma mark Error helpers
 
-NSError *OFNSErrorFromASN1Error(int errCode_, NSString *extra)
+NSError *OFNSErrorFromASN1Error(int errCode_, NSString * _Nullable extra)
 {
     NSString *detail;
     int errCode = errCode_;

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -192,7 +192,7 @@ RCS_ID("$Id$");
     
     // try to make sure we won't be going below the keyboard
     CGFloat bottomOfLargeFrame = CGRectGetMaxY(frame);
-    CGFloat lowerBoundOkForLargeFrame = [notifier getMinYOfLastKnownKeyboardInView:itemView.superview];
+    CGFloat lowerBoundOkForLargeFrame = [notifier minimumYPositionOfLastKnownKeyboardInView:itemView.superview];
     CGFloat diff = bottomOfLargeFrame - lowerBoundOkForLargeFrame;
     if (diff > 0) {
         // try a horizontal layout instead

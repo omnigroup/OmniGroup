@@ -12,6 +12,8 @@
 #import <OmniBase/OBObject.h>
 #import <OmniBase/macros.h>
 
+#import <OmniFoundation/OFBinding-Subclass.h>
+
 //#define DEBUG_KVO 1
 
 RCS_ID("$Id$");
@@ -33,8 +35,6 @@ static unsigned int _OFBindingObservationContext;
     NSString *_destinationKeyPath;
 }
 
-- (void)_register;
-- (void)_deregister;
 
 @end
 

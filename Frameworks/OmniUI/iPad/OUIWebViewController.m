@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -119,11 +119,13 @@ static NSString * const InvalidScheme = @"x-invalid";
 
 - (void)_updateBarButtonItems;
 {
-    NSMutableArray <UIBarButtonItem *> *items = [NSMutableArray array];
+    if (_wantsDoneButton) {
+        NSMutableArray <UIBarButtonItem *> *items = [NSMutableArray array];
 
-    [items addObject: [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)]];
+        [items addObject: [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)]];
 
-    self.navigationItem.rightBarButtonItems = items;
+        self.navigationItem.rightBarButtonItems = items;
+    }
 }
 
 - (void)setURL:(NSURL *)aURL;

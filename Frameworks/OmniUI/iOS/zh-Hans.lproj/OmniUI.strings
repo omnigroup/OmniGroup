@@ -1,7 +1,8 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item */
+/* Default title for the About menu item
+   title for in app purchase - placeholder is product title */
 "About %@" = "关于 %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -101,13 +102,16 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "备注";
+"Note" = "注释";
 
 /* Text letting the user know why nothing is showing in the inspector */
 "Nothing to Inspect" = "没有可检查的内容";
 
 /* button title
    button title - password/passphrase prompt
+   Dismiss alert
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
@@ -155,7 +159,7 @@
 "Underline" = "底线";
 
 /* Undo button title */
-"Undo" = "取消";
+"Undo" = "还原";
 
 /* placeholder text - username field of login/password prompt */
 "username" = "用户名";

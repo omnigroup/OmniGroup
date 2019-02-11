@@ -44,7 +44,7 @@
 "Checking Credentials" = "正在检查凭证";
 
 /* iTunes import title */
-"Copy from iTunes" = "从 iTunes 拷贝";
+"Copy from iTunes" = "从 iTunes 复制";
 
 /* error reason */
 "Could not access synchronized documents folder." = "无法访问有已同步文稿文件夹。";
@@ -59,10 +59,10 @@
 "Easily sync Omni documents. Signup is free!" = "轻松同步 Omni 文稿。 注册免费！";
 
 /* Server account export title format */
-"Export to \"%@\"" = "导出至“%@”";
+"Export to \"%@\"" = "\"输出至“%@”";
 
 /* iTunes export title */
-"Export to iTunes" = "导出至 iTunes";
+"Export to iTunes" = "输出至 iTunes";
 
 /* Server account type */
 "iTunes" = "iTunes";

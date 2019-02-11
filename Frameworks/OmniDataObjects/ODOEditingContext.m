@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -951,6 +951,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet * _Nullable inse
     // As our final act, post the notification (since we have now processed the changes).  Additionally, this means that listeners can provoke further changes.
     //NSLog(@"note = %@", note);
 
+    _objectDidChangeCounter++;
     [[NSNotificationCenter defaultCenter] postNotification:notification];
     
     return YES;

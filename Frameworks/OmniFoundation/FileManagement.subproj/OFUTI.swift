@@ -73,7 +73,8 @@ public struct UTI {
     }
 
     public init(_ fileType:String) {
-        self.rawFileType = fileType
+        // See our Equatable conformance
+        self.rawFileType = fileType.lowercased()
     }
 
     public static func fileTypePreperringNative(_ fileExtension: String) -> String? {
@@ -146,8 +147,12 @@ extension UTI: ExpressibleByStringLiteral {
     }
 }
 
-extension UTI: Equatable {
+extension UTI: Equatable, Hashable {
     public static func ==(type1:UTI, type2:UTI) -> Bool {
+        // We should have lowercased these when initialized. Otherwise we may violate hashing invariants.
+        assert(type1.rawFileType == type1.rawFileType.lowercased())
+        assert(type2.rawFileType == type2.rawFileType.lowercased())
+
         return UTTypeEqual(type1.rawFileType as CFString, type2.rawFileType as CFString)
     }
 }

@@ -127,6 +127,12 @@
 /* gear menu item */
 "Copy from…" = "Kopieren von …";
 
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "Neues Dokument erstellen";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "Neues Dokument von %@ erstellen";
+
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ angepasst";
 
@@ -175,10 +181,10 @@
 "Duplicate %ld Items" = "%ld Objekte duplizieren";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos zwischen Geräten. Die Registrierung ist kostenlos!";
+"Easily sync Omni documents between devices. Signup is free!" = "Synchr. Omni-Dokumente mühelos zwischen Geräten. Die Anmeldung ist kostenlos!";
 
 /* When displaying a sync error, this is the option to change the username and password. */
-"Edit Credentials" = "Anmeldedaten bearbeiten";
+"Edit Credentials" = "Anmeldeinformationen bearbeiten";
 
 /* doc picker custom accessibility action name */
 "Edit name" = "Name bearbeiten";
@@ -258,13 +264,13 @@
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Share menu title */
-"Move to..." = "Bewegen nach …";
+"Move to..." = "Bewegen …";
 
 /* Move document preview action title. */
 "Move…" = "Bewegen …";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
-"My Document" = "Mein Dokument";
+"My Document" = "Eigenes Dokument";
 
 /* Base name for newly created templates. This will have an number appended to it to make it unique. */
 "My Template" = "Meine Vorlage";
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "Auf meinem iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "%@ öffnen";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Öffnen Sie ein Dokument, um es dieser Ansicht hinzuzufügen.";
@@ -376,7 +385,7 @@
 "Report Error" = "Fehler melden";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Beispieldok. wiederherst.";
+"Restore Sample Documents" = "Beisp.-Dok. wiederherst.";
 
 /* Share menu title */
 "Restore to..." = "Wiederherstellen in …";
@@ -468,7 +477,7 @@
 "This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihre Fotos-Mediathek.";
 
 /* empty picker because of removed account text */
-"This Cloud Account no longer exists." = "Dieser Cloudaccount ist nicht mehr vorhanden.";
+"This Cloud Account no longer exists." = "Dieser Cloud-Account ist nicht mehr vorhanden.";
 
 /* Error reason for a document operation failing due to a missing file. */
 "This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Auf dieses Dokument kann nicht zugegriffen werden. Die Datei wurde eventuell über iTunes oder einen externen Dokumentanbieter gelöscht, umbenannt oder bewegt. Versuchen Sie, die Datei zu entfernen und sie erneut hinzuzufügen.";
@@ -477,7 +486,7 @@
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht dupliziert werden, weil es nicht vollständig geladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es geladen wurde, bevor Sie es erneut versuchen.";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht exportiert werden, weil es nicht vollständig geladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es geladen wurde, bevor Sie es erneut versuchen.";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht exportiert werden, weil es nicht vollständig heruntergeladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es heruntergeladen wurde, bevor Sie es erneut versuchen.";
 
 /* sort by title */
 "Title" = "Titel";

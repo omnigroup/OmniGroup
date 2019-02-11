@@ -443,6 +443,21 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self)
     }
 }
 
+- (void)test1970;
+{
+    NSString *oldString = _xmlStyleDateStringWithFormat([NSDate dateWithTimeIntervalSince1970:0]);
+    NSString *newString = [[NSDate dateWithTimeIntervalSince1970:0] xmlString];
+
+    XCTAssertEqualObjects(newString, oldString);
+    XCTAssertEqualObjects(newString, @"1970-01-01T00:00:00.000Z");
+
+    NSString *slightlyBefore1970 = [[NSDate dateWithTimeIntervalSince1970: -0.001] xmlString];
+    XCTAssertEqualObjects(slightlyBefore1970, @"1969-12-31T23:59:59.999Z");
+
+    NSString *slightlyAfter1970 = [[NSDate dateWithTimeIntervalSince1970: +0.001] xmlString];
+    XCTAssertEqualObjects(slightlyAfter1970, @"1970-01-01T00:00:00.001Z");
+}
+
 - (void)testOmnifocusSyncTransactionDateString;
 {
     NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:239687680.999502]; // 2008-08-05 20:54:41 -0700

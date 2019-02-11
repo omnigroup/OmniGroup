@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -516,12 +516,12 @@ static inline NSError *do_AESUNWRAP(const uint8_t *keydata, size_t keylength, co
         if (slotTypeName) {
             msg = [NSString stringWithFormat:@"Unexpected key type (%s/%d) for encryption slot %u", slotTypeName, tp, sn];
         } else {
-            msg = [NSString stringWithFormat:@"Unknown key type (%d) for slot %u", tp, sn];
+            msg = [NSString stringWithFormat:@"Unknown key type (%d) for encryption slot %u", tp, sn];
         }
         localError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionBadFormat userInfo:@{ NSLocalizedDescriptionKey: msg }];
         return YES;
     })) {
-        NSString *msg = [NSString stringWithFormat:@"No key in slot %u", keyslot];
+        NSString *msg = [NSString stringWithFormat:@"Missing key for encryption slot %u", keyslot];
         if (outError)
             *outError = [NSError errorWithDomain:OFSErrorDomain code:OFSEncryptionNeedAuth userInfo:@{ NSLocalizedDescriptionKey: msg, OFSKeySlotUserInfoKey: @(keyslot) }];
         return -1;

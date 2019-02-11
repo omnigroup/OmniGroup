@@ -316,7 +316,14 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
-                [object setFontDescriptor:fontDescriptor fromInspectorSlice:parentSlice undoManager:self.undoManager];
+                NSUndoManager *undoManager = nil;
+                if ([object respondsToSelector:@selector(undoManager)]) {
+                    undoManager = [object performSelector:@selector(undoManager)];
+                }
+                if (undoManager == nil) {
+                    undoManager = self.undoManager;
+                }
+                [object setFontDescriptor:fontDescriptor fromInspectorSlice:parentSlice undoManager:undoManager];
             }
         }
     }

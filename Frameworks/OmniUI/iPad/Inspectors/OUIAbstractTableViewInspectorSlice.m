@@ -128,7 +128,10 @@ static NSString *_doneActionButtonTitle;
 
     if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
         [headerView themedAppearanceDidChange:OUIInspectorAppearance.appearance];
+    } else {
+        headerView.backgroundColor = UIColor.whiteColor;
     }
+    OBASSERT(headerView.backgroundColor != nil, "Clear backgrounds cause the header view's text to overlap the font names, and that looks bad.");
     
     return headerView;
 }

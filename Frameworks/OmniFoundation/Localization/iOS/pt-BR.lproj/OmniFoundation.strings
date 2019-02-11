@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Senha";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Nenhum";
+"<Encryption: None>" = "Nenhum(a)";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "%u Chaves";
@@ -142,6 +142,9 @@
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "ey" = "ad";
+
+/* error reason */
+"Failed to convert '%@' to the same type as '%@' (%@)" = "Falha ao converter '%1$@' no mesmo tipo como '%2$@' (%3$@)";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Falha ao criar o diretório do arquivo de bloqueio em “%@”.";
@@ -259,6 +262,9 @@
 
 /* error description */
 "Unable to lock document." = "Não foi possível bloquear o documento.";
+
+/* error description */
+"Unable to parse value" = "Não foi possível analisar o valor";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */

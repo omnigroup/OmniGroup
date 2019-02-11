@@ -316,13 +316,13 @@ static NSString *_normalizedPath(NSString *path)
 #endif
 
 #ifdef DEBUG
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-                    // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
-                    // (But don't look here if we're sandboxed, because that won't work.)
-                    if (![[NSProcessInfo processInfo] isSandboxed])
-                        [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
-#endif
+// This breaks assertions in OmniFoundation about only loading things from inside the bundle; add the plugins to a copy files build phase.
+//#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+//                    // Also look next to the controlling bundle in DEBUG builds. This allows us to find locally built copies of plugins in development.
+//                    // (But don't look here if we're sandboxed, because that won't work.)
+//                    if (![[NSProcessInfo processInfo] isSandboxed])
+//                        [newPath addObject:[_normalizedPath([[OFController controllingBundle] bundlePath]) stringByDeletingLastPathComponent]];
+//#endif
 #endif
                 } else
                     [newPath addObject:path];

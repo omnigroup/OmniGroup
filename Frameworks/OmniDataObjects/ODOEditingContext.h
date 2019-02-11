@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,6 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Debugging label for differentiating between multiple editing contexts.
 @property (nonatomic, copy) NSString *label;
+
+// Incremented each time ODOEditingContextObjectsDidChangeNotification is posted.
+@property(nonatomic,readonly) NSUInteger objectDidChangeCounter;
 
 @end
 

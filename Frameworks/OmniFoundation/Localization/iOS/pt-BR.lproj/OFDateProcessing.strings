@@ -1,11 +1,8 @@
 /* modifier, used for scanning user input. Do NOT add whitespace */
-"-" = "-";
-
-/* modifier, used for scanning user input. Do NOT add whitespace */
 "+" = "+";
 
 /* modifier, used for scanning user input. Do NOT add whitespace */
-"~" = "~";
+"-" = "-";
 
 /* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
 "d" = "d";
@@ -79,11 +76,11 @@
 /* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tod" = "hoj";
 
-/* today, used for scanning user input. Do NOT add whitespace */
-"today" = "hoje";
-
 /* Today */
 "Today" = "Hoje";
+
+/* today, used for scanning user input. Do NOT add whitespace */
+"today" = "hoje";
 
 /* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tom" = "ama";
@@ -116,10 +113,13 @@
 "years" = "anos";
 
 /* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"yes" = "ont";
+"yes" = "sim";
+
+/* Yesterday */
+"Yesterday" = "Ontem";
 
 /* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "ontem";
 
-/* Yesterday */
-"Yesterday" = "Ontem";
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"~" = "~";

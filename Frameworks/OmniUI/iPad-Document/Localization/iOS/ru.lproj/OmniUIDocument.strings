@@ -127,6 +127,12 @@
 /* gear menu item */
 "Copy from…" = "Копировать из…";
 
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "Создать новый документ";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "Создать новый документ из %@";
+
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ настроено";
 
@@ -315,6 +321,9 @@
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "На iPhone";
 
+/* Open Document Shortcut Title */
+"Open %@" = "Открыть %@";
+
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Откройте документ, чтобы добавить его в это представление.";
 
@@ -406,7 +415,7 @@
 "Send Settings via Email" = "Отправка настроек по эл. почте";
 
 /* Menu option in the document picker view */
-"Send to App" = "Отправить в программу";
+"Send to App" = "Отправить в приложение";
 
 /* Menu option in the document picker view */
 "Send to Files" = "Отправить в «Файлы»";

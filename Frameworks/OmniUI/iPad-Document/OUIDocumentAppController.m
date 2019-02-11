@@ -10,7 +10,7 @@
 @import UIKit;
 @import MobileCoreServices;
 @import CoreSpotlight;
-@import OmniAppKit.OAFontDescriptor;
+@import OmniAppKit;
 @import OmniBase;
 @import OmniDAV;
 @import OmniDocumentStore;
@@ -103,10 +103,6 @@ static unsigned SyncAgentRunningAccountsContext;
 
 @implementation OUIDocumentAppController
 {
-    UIWindow *_window;
-    
-    NSArray *_editableFileTypes;
-
     OUIDocument *_document;
     
     BOOL _didFinishLaunching;
@@ -170,9 +166,6 @@ static unsigned SyncAgentRunningAccountsContext;
 {
     [self _setDocument:nil];
 }
-
-// UIApplicationDelegate has an @optional window property. Our superclass conforms to this protocol, so clang assumes we already have the property, it seems (even though we redeclare it).
-@synthesize window = _window;
 
 // Called at app startup if the main xib didn't have a window outlet hooked up.
 - (UIWindow *)makeMainWindow;
@@ -288,8 +281,9 @@ static unsigned SyncAgentRunningAccountsContext;
     completionHandler = [completionHandler copy]; // capture scope
     
     OUIWithoutAnimating(^{
-        [_window endEditing:YES];
-        [_window layoutIfNeeded];
+        UIWindow *window = self.window;
+        [window endEditing:YES];
+        [window layoutIfNeeded];
         
         // Make sure -setNeedsDisplay calls (provoked by -endEditing:) have a chance to get flushed before we invalidate the document contents
         OUIDisplayNeededViews();
@@ -778,10 +772,11 @@ static unsigned SyncAgentRunningAccountsContext;
                 }
                 
                 BOOL animateDocument = YES;
-                if (_window.rootViewController != _documentPicker) {
+                UIWindow *window = self.window;
+                if (window.rootViewController != _documentPicker) {
                     [_documentPicker showDocuments];
-                    _window.rootViewController = _documentPicker;
-                    [_window makeKeyAndVisible];
+                    window.rootViewController = _documentPicker;
+                    [window makeKeyAndVisible];
                     
                     [self handleCachedSpecialURLIfNeeded];
                     animateDocument = NO;
@@ -883,33 +878,38 @@ static unsigned SyncAgentRunningAccountsContext;
         }
         
         NSUserActivity *activity;
-        NSString *localizedOpenFormatString;
         NSString *localizedFileName = url.URLByDeletingPathExtension.lastPathComponent;
         if (url == nil) {
             activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
             activity.title = NSLocalizedStringFromTableInBundle(@"Create New Document", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
         } else {
+            NSString *localizedOpenFormatString;
             if (isCreatingFromTemplate) {
                 activity = [[NSUserActivity alloc] initWithActivityType:[[self class] createDocumentFromTemplateUserActivityType]];
                 localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Create New Document From %@", @"OmniUIDocument", OMNI_BUNDLE, @"Create Document From Template Document Shortcut Title");
                 localizedFileName = [self localizedNameForSampleDocumentNamed:localizedFileName];
             } else {
-                activity = [[NSUserActivity alloc] initWithActivityType:[[self class] openDocumentUserActivityType]];
-                localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
+                if (![self.userActivityForCurrentlyOpenDocument.activityType isEqualToString:[[self class] createDocumentFromTemplateUserActivityType]]) {
+                    // Don't make an open document activity if we're opening the document from a template
+                    activity = [[NSUserActivity alloc] initWithActivityType:[[self class] openDocumentUserActivityType]];
+                    localizedOpenFormatString = NSLocalizedStringFromTableInBundle(@"Open %@", @"OmniUIDocument", OMNI_BUNDLE, @"Open Document Shortcut Title");
+                }
             }
 
-
-            activity.title = [NSString stringWithFormat:localizedOpenFormatString, localizedFileName];
+            if (localizedOpenFormatString) {
+                activity.title = [NSString stringWithFormat:localizedOpenFormatString, localizedFileName];
+            }
         }
         
         if (url != nil) {
             NSError *bookmarkError = nil;
             NSData *urlBookmark = [url bookmarkDataWithOptions:NSURLBookmarkCreationMinimalBookmark includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
-            if (urlBookmark == nil && bookmarkError != nil) {
+            if (urlBookmark == nil) {
                 NSLog(@"error creating bookmark from url %@ - %@", url, bookmarkError);
+            } else {
+                [activity addUserInfoEntriesFromDictionary:@{ @"URL_bookmark" : urlBookmark }];
+                activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL_bookmark"];
             }
-            [activity addUserInfoEntriesFromDictionary:@{ @"URL_bookmark" : urlBookmark }];
-            activity.requiredUserInfoKeys = [NSSet setWithObject:@"URL_bookmark"];
         }
         // Exposes us to Siri Shortcuts
         [activity setEligibleForPrediction:YES];
@@ -1244,7 +1244,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)importFromExternalContainer:(id)sender;
 {
-    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self _viewableFileTypes]] inMode:UIDocumentPickerModeImport];
+    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self viewableFileTypes]] inMode:UIDocumentPickerModeImport];
     [self _presentExternalDocumentPicker:pickerViewController completionBlock:^(NSURL *url) {
         [_externalScopeManager importExternalDocumentFromURL:url];
     }];
@@ -1393,55 +1393,14 @@ static unsigned SyncAgentRunningAccountsContext;
     return expandedTypes;
 }
 
-- (NSArray *)editableFileTypes;
+- (NSArray <NSString *> *)editableFileTypes;
 {
-    if (!_editableFileTypes) {
-        NSMutableArray *editableFileTypes = [NSMutableArray array];
-        
-        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-        for (NSDictionary *documentType in documentTypes) {
-            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-            if ([role isEqualToString:@"Editor"]) {
-                NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-                for (NSString *contentType in contentTypes)
-                    [editableFileTypes addObject:[contentType lowercaseString]];
-            }
-        }
-
-        _editableFileTypes = [editableFileTypes copy];
-    }
-    
-    return _editableFileTypes;
+    return OADocumentFileTypes.main.writableTypeIdentifiers;
 }
 
-- (NSArray *)_viewableFileTypes;
+- (NSArray <NSString *> *)viewableFileTypes;
 {
-    return [[RoleByFileType() keyEnumerator] allObjects];
-}
-
-static NSDictionary *RoleByFileType()
-{
-    static dispatch_once_t onceToken;
-    static NSDictionary *roleByFileType;
-
-    dispatch_once(&onceToken, ^{
-        // Make a fast index of all our declared UTIs
-        NSMutableDictionary *contentTypeRoles = [[NSMutableDictionary alloc] init];
-        NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
-        for (NSDictionary *documentType in documentTypes) {
-            NSString *role = [documentType objectForKey:@"CFBundleTypeRole"];
-            if (![role isEqualToString:@"Editor"] && ![role isEqualToString:@"Viewer"])
-                continue;
-            
-            NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
-            for (NSString *contentType in contentTypes)
-                [contentTypeRoles setObject:role forKey:[contentType lowercaseString]];
-        }
-        
-        roleByFileType = [contentTypeRoles copy];
-    });
-    OBPOSTCONDITION(roleByFileType != nil);
-    return roleByFileType;
+    return OADocumentFileTypes.main.readableTypeIdentifiers;
 }
 
 static NSSet *ViewableFileTypes()
@@ -1451,8 +1410,7 @@ static NSSet *ViewableFileTypes()
 
     dispatch_once(&onceToken, ^{
         // Make a set all our declared UTIs, for fast contains-checking in canViewFileTypeWithIdentifier.
-        NSDictionary *roleByFileType = RoleByFileType();
-        viewableFileTypes = [NSSet setWithArray:roleByFileType.allKeys];
+        viewableFileTypes = [NSSet setWithArray:OADocumentFileTypes.main.readableTypeIdentifiers];
     });
 
     return viewableFileTypes;
@@ -1698,7 +1656,7 @@ static NSSet *ViewableFileTypes()
 
 - (UIColor *)emptyOverlayViewTextColor;
 {
-    return _window.tintColor;
+    return self.window.tintColor;
 }
 
 - (Class)documentExporterClass
@@ -1741,7 +1699,7 @@ static NSSet *ViewableFileTypes()
 }
 
 - (UIColor *)launchActivityIndicatorColor {
-    return _window.tintColor;
+    return self.window.tintColor;
 }
 
 
@@ -2105,11 +2063,13 @@ static NSSet *ViewableFileTypes()
         DEBUG_LAUNCH(1, @"Did launch with options %@", launchOptions);
         
         // If our window wasn't loaded from a xib, make one.
-        if (!_window) {
-            _window = [self makeMainWindow];
+        UIWindow *window = self.window;
+        if (window == nil) {
+            window = [self makeMainWindow];
+            self.window = window;
         } else {
             // resize xib window to the current screen size
-            [_window setFrame:[[UIScreen mainScreen] bounds]];
+            [window setFrame:[[UIScreen mainScreen] bounds]];
         }
 
         _documentStore = [[ODSStore alloc] initWithDelegate:self];
@@ -2119,8 +2079,8 @@ static NSSet *ViewableFileTypes()
         
         OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge color:[self launchActivityIndicatorColor]];
         UINavigationController *launchNavController = [[UINavigationController alloc] initWithRootViewController:launchViewController];
-        _window.rootViewController = launchNavController;
-        [_window makeKeyAndVisible];
+        window.rootViewController = launchNavController;
+        [window makeKeyAndVisible];
         
         
         // Pump the runloop once so that the -viewDidAppear: messages get sent before we muck with the view containment again. Otherwise, we never get -viewDidAppear: on the root view controller, and thus the OUILaunchViewController, causing assertions.
@@ -2196,7 +2156,7 @@ static NSSet *ViewableFileTypes()
                     }];
 
                     // Without this, if we are launched in the background on 7.0b4, the snapshot image saved will not have our laid-out view contents.
-                    [strongSelf->_window layoutIfNeeded];
+                    [strongSelf.window layoutIfNeeded];
 
                     [activity finished];
                                                                  
@@ -2213,7 +2173,7 @@ static NSSet *ViewableFileTypes()
         _didFinishLaunching = YES;
 
         // Possibly want to allow finer control over this, but it does the right thing for now.
-        OUIDocumentPreview.previewTemplateImageTintColor = _window.tintColor;
+        OUIDocumentPreview.previewTemplateImageTintColor = window.tintColor;
 
         // Start real preview generation any time we are missing one.
         [[NSNotificationCenter defaultCenter] addObserverForName:OUIDocumentPickerItemViewPreviewsDidLoadNotification object:nil queue:nil usingBlock:^(NSNotification *note){
@@ -2360,10 +2320,11 @@ static NSSet *ViewableFileTypes()
     };
 
     // Doing this during launch?
-    if (_window.rootViewController != _documentPicker) {
+    UIWindow *window = self.window;
+    if (window.rootViewController != _documentPicker) {
         [_documentPicker showDocuments];
-        _window.rootViewController = _documentPicker;
-        [_window makeKeyAndVisible];
+        window.rootViewController = _documentPicker;
+        [window makeKeyAndVisible];
         
         [self handleCachedSpecialURLIfNeeded];
     }
@@ -3211,8 +3172,8 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     DEBUG_LAUNCH(1, @"Showing picker, showing item %@", [fileItem shortDescription]);
     
     [_documentPicker showDocuments];
-    _window.rootViewController = _documentPicker;
-    [_window makeKeyAndVisible];
+    self.window.rootViewController = _documentPicker;
+    [self.window makeKeyAndVisible];
     
     [self handleCachedSpecialURLIfNeeded];
     

@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -259,7 +259,7 @@ RCS_ID("$Id$");
         NSRange clippedGlyphRange = lineGlyphRange;
         if (lineCharRange.length) {
             unichar c = [[textStorage string] characterAtIndex:lineCharRange.location + lineCharRange.length - 1];
-            if (c == '\n' || c == '\r') { // Other Unicode newline characters?
+            if (c == '\n' || c == '\r' || c == '\f' || c == 8232) { // Other Unicode newline characters?
 					  // Shorten the character range and get the new glyph range
                 lineCharRange.length--;
                 clippedGlyphRange = [self glyphRangeForCharacterRange:lineCharRange actualCharacterRange:NULL];

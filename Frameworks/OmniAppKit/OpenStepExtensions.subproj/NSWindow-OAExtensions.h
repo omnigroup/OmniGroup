@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (class, nonatomic, readonly) BOOL hasTabbedWindowSupport;
 
-+ (NSArray *)windowsInZOrder;
+@property(class,nonatomic,readonly) NSArray <NSWindow *> *windowsInZOrder;
 
 @property (class, nonatomic, readonly, getter=isPerformingDisplayIfNeededBlocks) BOOL performingDisplayIfNeededBlocks;
 

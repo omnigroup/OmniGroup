@@ -125,7 +125,13 @@
 "Copy from WebDAV" = "Kopieer van WebDAV";
 
 /* gear menu item */
-"Copy from…" = "Kopieer van…";
+"Copy from…" = "Kopieer van …";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "Maak nieuw document";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "Maak nieuw document vanaf %@";
 
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ aangepast";
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "Op mijn iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "Open %@";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "Open een document om het toe te voegen aan deze weergave.";

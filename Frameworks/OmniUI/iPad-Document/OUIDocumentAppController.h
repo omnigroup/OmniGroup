@@ -19,7 +19,6 @@
 
 @interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate>
 
-@property(nonatomic,retain) IBOutlet UIWindow *window;
 - (UIWindow *)makeMainWindow; // Called at app startup if the main xib didn't have a window outlet hooked up.
 
 @property(nonatomic,retain) OUIDocumentPicker *documentPicker;
@@ -33,7 +32,9 @@
 
 @property(nonatomic,retain) NSURL *searchResultsURL; // document URL from continue user activity
 
-- (NSArray *)editableFileTypes;
+- (NSArray <NSString *> *)editableFileTypes;
+- (NSArray <NSString *> *)viewableFileTypes;
+
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
 - (IBAction)makeNewDocument:(id)sender;

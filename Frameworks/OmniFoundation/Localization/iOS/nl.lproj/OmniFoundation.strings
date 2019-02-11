@@ -144,6 +144,9 @@
 "ey" = "vj";
 
 /* error reason */
+"Failed to convert '%@' to the same type as '%@' (%@)" = "Kan '%1$@' niet converteren naar hetzelfde type als '%2$@' (%3$@)";
+
+/* error reason */
 "Failed to create directory for lock file at \"%@\"." = "Map voor vergrendelingsbestand op '%@' kan niet worden gemaakt.";
 
 /* error reason */
@@ -259,6 +262,9 @@
 
 /* error description */
 "Unable to lock document." = "Document kan niet worden vergrendeld.";
+
+/* error description */
+"Unable to parse value" = "Kan waarde niet ontleden";
 
 /* Document decryption error - unexpected content-type found while unwrapping a Cryptographic Message Syntax object
    Document decryption error - unknown content-type found while unwrapping a Cryptographic Message Syntax object */

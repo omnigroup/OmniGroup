@@ -4,6 +4,7 @@ Appearance/OAAppearancePropertyListCoder.m
 Base.lproj/OAFindPanel.xib
 Bindings/OAControlTextColorTransformer.m
 Carbon/OAInternetConfig.m
+Carbon/OALaunchServices.m
 ColorSync/NSColor-ColorSyncExtensions.m
 ColorSync/NSImage-ColorSyncExtensions.m
 ColorSync/OAColorProfile-Deprecated.m
@@ -23,6 +24,7 @@ OAChangeConfigurationValues.xib
 OAColorPalette.m
 OAController.m
 OADocument.m
+OADocumentFileTypes.swift
 OAFindController.m
 OAFindPattern.m
 OAFontCache.m

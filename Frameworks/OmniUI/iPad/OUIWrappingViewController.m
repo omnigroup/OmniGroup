@@ -90,12 +90,16 @@ RCS_ID("$Id$")
 
 - (UIViewController *)childViewControllerForStatusBarHidden;
 {
-    return self.wrappedViewController.childViewControllerForStatusBarHidden;
+    UIViewController *wrappedViewController = self.wrappedViewController;
+    
+    return wrappedViewController.childViewControllerForStatusBarHidden ?: wrappedViewController;
 }
 
 - (UIViewController *)childViewControllerForStatusBarStyle;
 {
-    return self.wrappedViewController.childViewControllerForStatusBarStyle;
+    UIViewController *wrappedViewController = self.wrappedViewController;
+    
+    return wrappedViewController.childViewControllerForStatusBarHidden ?: wrappedViewController;
 }
 
 - (BOOL)shouldAutorotate;
@@ -107,11 +111,6 @@ RCS_ID("$Id$")
     else {
         return YES;
     }
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle;
-{
-    return self.wrappedViewController.preferredStatusBarStyle;
 }
 
 @end

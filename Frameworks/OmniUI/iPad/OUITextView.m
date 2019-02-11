@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@
 #import <OmniUI/OUIFontUtilities.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
 
 
 RCS_ID("$Id$");
@@ -115,6 +116,31 @@ static NSString *_preferredTypeConformingToTypesInArray(NSString *type, NSArray<
     [_remainingProviders removeObjectAtIndex:0];
 
     _remainingAvailableTypes = [_itemProvider.registeredTypeIdentifiers mutableCopy];
+    
+    // Make sure to prefer the highest priority types
+    [_remainingAvailableTypes sortUsingComparator:^NSComparisonResult(NSString *  _Nonnull type1, NSString * _Nonnull type2) {
+        NSInteger type1Index = NSNotFound;
+        NSInteger type2Index = NSNotFound;
+        for (NSUInteger i = 0; i < _requestedTypes.count; i++) {
+            NSString *requestedType = _requestedTypes[i];
+            if ([requestedType isEqualToString:type1]) {
+                type1Index = i;
+                if (type2Index != NSNotFound)
+                    break;
+            }
+            if ([requestedType isEqualToString:type2]) {
+                type2Index = i;
+                if (type1Index != NSNotFound)
+                    break;
+            }
+        }
+        if (type1Index == type2Index) {
+            return NSOrderedSame;
+        } else {
+            return type1Index < type2Index ? NSOrderedAscending : NSOrderedDescending;
+        }
+    }];
+    
     [self _nextType];
 }
 
@@ -277,6 +303,32 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
 // TODO: Close the inspector before a mutation happens, unless the mutation is only attributes
 // TODO: Close the inspector when we end editing
 // TODO: Don't end editing if the inspector is up and we get -resignFirstResponder
+
+#if 1 && defined(DEBUG_shannon)
+- (void)drawRect:(CGRect)rect;
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    [[UIColor grayColor] setStroke];
+    CGContextSetLineWidth(ctx, 4);
+    CGContextStrokeRect(ctx, self.bounds);
+
+    CGContextSetLineWidth(ctx, 2);
+    
+    CGRect leftMargin = CGRectMake(0, 0, self.textContainer.lineFragmentPadding, self.bounds.size.height);
+    [[[UIColor orangeColor] colorWithAlphaComponent:0.5] setFill];
+    CGContextFillRect(ctx, leftMargin);
+    CGRect rightMargin = CGRectMake(self.bounds.size.width - self.textContainer.lineFragmentPadding, 0, self.textContainer.lineFragmentPadding, self.bounds.size.height);
+    CGContextFillRect(ctx, rightMargin);
+
+    for (UIBezierPath *path in self.textContainer.exclusionPaths) {
+        [path stroke];
+    }
+
+    [[UIColor redColor] setStroke];
+    CGRect containerRect = CGRectMake(0, 8.0 /*oui_defaultTopAndBottomPadding*/, self.textContainer.size.width, self.textContainer.size.height);
+    CGContextStrokeRect(ctx, containerRect);
+}
+#endif
 
 - (void)dealloc;
 {

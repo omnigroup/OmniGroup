@@ -466,6 +466,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     self.sliceStackView.axis = UILayoutConstraintAxisVertical;
     self.sliceStackView.distribution = UIStackViewDistributionEqualSpacing;
     self.sliceStackView.spacing = 0;
+    self.sliceStackView.layoutMarginsRelativeArrangement = YES;
     [view addSubview:self.sliceStackView];
 
     [NSLayoutConstraint activateConstraints:

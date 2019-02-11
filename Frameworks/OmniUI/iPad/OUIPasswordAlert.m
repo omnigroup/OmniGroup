@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,6 +92,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
             __strong typeof(weakSelf) strongSelf = weakSelf;
             strongSelf.usernameTextField = textField;
             strongSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text - username field of login/password prompt");
+            strongSelf.usernameTextField.textContentType = UITextContentTypeUsername;
         }];
     }
     
@@ -282,6 +283,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     textField.delegate = self;
     textField.secureTextEntry = YES;
     textField.placeholder = placeholder;
+    textField.textContentType = [self _passwordFieldTextContentType];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:textField];
 }
@@ -367,6 +369,19 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
     [[OUIPasswordAlert _visibleAlerts] removeObject:self]; // balance the retain in -show
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:nil];
+}
+
+- (UITextContentType)_passwordFieldTextContentType;
+{
+    if ((_options & OUIPasswordAlertOptionRequiresPasswordConfirmation) != 0) {
+        if (@available(iOS 12.0, *)) {
+            return UITextContentTypeNewPassword;
+        } else {
+            return nil;
+        }
+    }
+    
+    return UITextContentTypePassword;
 }
 
 @end

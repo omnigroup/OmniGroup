@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,7 +127,7 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     _updateAccessoryToolbarViewFrame(self);
 }
 
-- (CGFloat)getMinYOfLastKnownKeyboardInView:(UIView *)view;
+- (CGFloat)minimumYPositionOfLastKnownKeyboardInView:(UIView *)view;
 {
     CGRect keyboardFrame = ((NSValue*)self.lastKnownKeyboardInfo[UIKeyboardFrameEndUserInfoKey]).CGRectValue;
     if (CGRectEqualToRect(keyboardFrame, CGRectZero)) {
@@ -184,9 +184,10 @@ static OUIKeyboardNotifier *sharedNotifier = nil;
     
 //    OBPOSTCONDITION(_lastKnownKeyboardHeight == 0);
     _lastKnownKeyboardHeight = 0;
-    
+
     NSDictionary *userInfo = [note userInfo];
     _postNotification(self, OUIKeyboardNotifierKeyboardDidHideNotification, userInfo);
+    _lastKnownKeyboardInfo = nil;
 }
 
 - (void)_keyboardWillChangeFrame:(NSNotification *)note;

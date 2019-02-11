@@ -1,11 +1,8 @@
 /* modifier, used for scanning user input. Do NOT add whitespace */
-"-" = "-";
-
-/* modifier, used for scanning user input. Do NOT add whitespace */
 "+" = "+";
 
 /* modifier, used for scanning user input. Do NOT add whitespace */
-"~" = "~";
+"-" = "-";
 
 /* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
 "d" = "일";
@@ -41,10 +38,10 @@
 "m" = "월";
 
 /* month, singular, used for scanning user input. Do NOT add whitespace */
-"month" = "월";
+"month" = "개월";
 
 /* months, plural, used for scanning user input. Do NOT add whitespace */
-"months" = "월";
+"months" = "개월";
 
 /* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
 "next" = "다음";
@@ -79,11 +76,11 @@
 /* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tod" = "오늘";
 
-/* today, used for scanning user input. Do NOT add whitespace */
-"today" = "오늘";
-
 /* Today */
 "Today" = "오늘";
+
+/* today, used for scanning user input. Do NOT add whitespace */
+"today" = "오늘";
 
 /* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tom" = "내일";
@@ -116,10 +113,13 @@
 "years" = "년";
 
 /* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
-"yes" = "어제";
+"yes" = "예";
+
+/* Yesterday */
+"Yesterday" = "어제";
 
 /* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "어제";
 
-/* Yesterday */
-"Yesterday" = "어제";
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"~" = "~";

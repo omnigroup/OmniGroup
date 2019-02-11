@@ -34,10 +34,12 @@ RCS_ID("$Id$")
 {
     [super viewDidLoad];
     
-    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
     self.accessoryAndBackgroundBar = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
     self.accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
 
+    self.navigationBar.barStyle = UIBarStyleDefault;
+    
     [self.view addSubview:_accessoryAndBackgroundBar];
     [self _constrainAccessoryAndBackgroundView];
     self.accessoryAndBackgroundBar.hidden = YES;

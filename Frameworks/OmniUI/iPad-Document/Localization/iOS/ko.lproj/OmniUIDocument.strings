@@ -127,6 +127,12 @@
 /* gear menu item */
 "Copy from…" = "복사 위치...";
 
+/* Create Document From Template Document Shortcut Title */
+"Create New Document" = "새 도큐멘트 생성";
+
+/* Create Document From Template Document Shortcut Title */
+"Create New Document From %@" = "%@에서 새 도큐멘트 생성";
+
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ 사용자 정의";
 
@@ -314,6 +320,9 @@
 
 /* Local Documents device-specific display name (should match the name of the On My iPhone location in the Files app on an iPhone) */
 "On My iPhone" = "나의 iPhone";
+
+/* Open Document Shortcut Title */
+"Open %@" = "%@ 열기";
 
 /* empty picker text for Recent Documents */
 "Open a document to add it to this view." = "이 보기에 추가할 도큐멘트를 여십시오.";

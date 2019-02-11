@@ -5,6 +5,9 @@ framework module OmniFoundation {
     exclude header "OFXMLSignature.h"
     exclude header "OFXMLError.h"
 
+    // Only needed in subclasses of OFBinding
+    exclude header "OFBinding-Subclass.h"
+    
     export *
     module * { export * }
 

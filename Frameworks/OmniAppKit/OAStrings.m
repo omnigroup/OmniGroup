@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 @import OmniFoundation;
 
 RCS_ID("$Id$");
+
+OB_REQUIRE_ARC
 
 NSString *OAOK(void)
 {

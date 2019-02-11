@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -381,7 +381,13 @@ static void _checkSignaturesVsSuperclass(Class cls, Method *methods, unsigned in
         while (methodIndex--) {
             Method method = methods[methodIndex];
             SEL sel = method_getName(method);
-	    
+
+            // Looking up instance methods for destructors (which get registered in the runtime for Swift classes at least) is implicated in heap corruption in Radar 47529318. We don't need to do checks on these private methods.
+            if (sel_getName(sel)[0] == '.') {
+                //fprintf(stderr, "Skipping selector %s on class %s\n", sel_getName(sel), class_getName(cls));
+                continue;
+            }
+
             Method superMethod = class_getInstanceMethod(superClass, sel); // This could be a class method if cls is itself the metaclass, here "instance" just means "the class we passed in"
             if (!superMethod)
                 continue;
@@ -904,6 +910,16 @@ static void _OBPerformRuntimeChecks(void)
 
         for (classIndex = 0; classIndex < classCount; classIndex++) {
             Class cls = classes[classIndex];
+
+            // Skip Swift classes. Swift has stronger type checking at compile time, makes different decisions about Int signedness that can cause spurious reports here, and most importantly in Xcode 10.1 (at least), particular configurations of Swift subclasses of ObjC classes can cause heap corruption. Radar 47529318.
+            {
+                const char *name = class_getName(cls);
+                if (strchr(name, '.') != NULL) {
+                    //fprintf(stderr, "Skipping Swift class %s\n", name);
+                    continue;
+                }
+            }
+
 
             BOOL isSystemClass = _isSystemClass(cls);
 
