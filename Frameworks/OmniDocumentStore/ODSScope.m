@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -541,11 +541,16 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
     BOOL canView;
     NSString *extension;
     BOOL isDirectory;
-    {
+    do {
         // We don't know where the file will end up, but this should be good enough to check if we've be able to view it.
         BOOL fileTypeIsPackage;
         extension = ODSPathExtensionForFileType(fileType, &fileTypeIsPackage);
-        
+        if (!extension) {
+            NSLog(@"Cannot determine path extension for file type \"%@\".", fileType);
+            canView = NO;
+            break;
+        }
+
         // fromURL should exist, so we can ask if it is a directory.
         __autoreleasing NSError *attributError;
         if (!OFGetBoolResourceValue(fromURL, NSURLIsDirectoryKey, &isDirectory, &attributError)) {
@@ -561,7 +566,7 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
         ODSStore *documentStore = self.documentStore;
         canView = ([documentStore fileItemClassForURL:fakeDestinationURL] != Nil);
         canView &= (fileType != nil) && [documentStore canViewFileTypeWithIdentifier:fileType];
-    }
+    } while (0);
     
     if (!canView) {
         NSLog(@"Unable to add document: unsupported file type [%@] for document [%@]", fileType, fromURL);
@@ -1489,6 +1494,15 @@ static void _addChildItem(NSMutableDictionary *folderItemByRelativePath, NSMutab
         if (![NSString isEmptyString:relativePath]) {
             relativePath = [parent.relativePath stringByDeletingLastPathComponent];
             ODSFolderItem *container = folderItemByRelativePath[relativePath];
+            if (!container) {
+                // <bug:///125125> (iOS-OmniOutliner Crasher: [Needs repro] setObjectForKey: key cannot be nil - _addChildItem (ODSScope.m [create new folder])
+                // In the cases where I've hit this, it has been due to renaming a nested folder to only make a change in case. Unfortunately this is hard to reproduce, but it looks like the folder is getting registered under the lowercase variant and then the uppercase variant is looked up here sometimes before being registered.
+                container = folderItemByRelativePath[[relativePath lowercaseString]];
+                if (!container) {
+                    NSLog(@"No folder for relative path \"%@\" found!", relativePath);
+                    return;
+                }
+            }
             _addChildItem(folderItemByRelativePath, folderItemToChildItems, container, parent);
         }
     }

@@ -1,4 +1,4 @@
-// Copyright 2018 Omni Development, Inc. All rights reserved.
+// Copyright 2018-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,7 @@ import Foundation
 
 public extension CFSocket {
     
-    @nonobjc
-    public var socketFlags : CFOptionFlags {
+    var socketFlags : CFOptionFlags {
         get {
             return CFSocketGetSocketFlags(self)
         }
@@ -21,23 +20,19 @@ public extension CFSocket {
         }
     }
     
-    @nonobjc
-    public func enableCallBacks(_ cb: CFSocketCallBackType) {
+    func enableCallBacks(_ cb: CFSocketCallBackType) {
         CFSocketEnableCallBacks(self, cb.rawValue)
     }
     
-    @nonobjc
-    public func disableCallBacks(_ cb: CFSocketCallBackType) {
+    func disableCallBacks(_ cb: CFSocketCallBackType) {
         CFSocketDisableCallBacks(self, cb.rawValue)
     }
     
-    @nonobjc
-    public func invalidate() {
+    func invalidate() {
         CFSocketInvalidate(self)
     }
     
-    @nonobjc
-    public var fileDescriptor : CInt {
+    var fileDescriptor : CInt {
         get {
             return CFSocketGetNative(self)
         }
@@ -52,7 +47,6 @@ fileprivate func fdCallbackToSwift(cfref: CFFileDescriptor?, events: CFOptionFla
 
 public extension CFFileDescriptor {
     
-    public
     struct CallBackReason: OptionSet {
         public typealias RawValue = CFOptionFlags
         public let rawValue: RawValue
@@ -64,10 +58,9 @@ public extension CFFileDescriptor {
         public static let write = CallBackReason(rawValue: kCFFileDescriptorWriteCallBack)
     }
     
-    public typealias CallBack = (CFFileDescriptor, CallBackReason) -> Void;
+    typealias CallBack = (CFFileDescriptor, CallBackReason) -> Void;
     
-    @nonobjc
-    public class func withDescriptor(_ fd: CInt, callBacks: @escaping CFFileDescriptor.CallBack) -> CFFileDescriptor {
+    class func withDescriptor(_ fd: CInt, callBacks: @escaping CFFileDescriptor.CallBack) -> CFFileDescriptor {
         
         let info = Unmanaged.passRetained(callBacks as AnyObject)
         defer {
@@ -83,23 +76,19 @@ public extension CFFileDescriptor {
         return CFFileDescriptorCreate(kCFAllocatorDefault, fd, true, fdCallbackToSwift, &context);
     }
     
-    @nonobjc
-    public func enableCallBacks(_ cb: CallBackReason) {
+    func enableCallBacks(_ cb: CallBackReason) {
         CFFileDescriptorEnableCallBacks(self, cb.rawValue)
     }
     
-    @nonobjc
-    public func disableCallBacks(_ cb: CallBackReason) {
+    func disableCallBacks(_ cb: CallBackReason) {
         CFFileDescriptorDisableCallBacks(self, cb.rawValue)
     }
     
-    @nonobjc
-    public func invalidate() {
+    func invalidate() {
         CFFileDescriptorInvalidate(self)
     }
     
-    @nonobjc
-    public var fileDescriptor : CInt {
+    var fileDescriptor : CInt {
         get {
             return CFFileDescriptorGetNativeDescriptor(self)
         }

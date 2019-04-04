@@ -1696,9 +1696,9 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
-				Japanese,
 				French,
 				German,
+				ja,
 			);
 			mainGroup = 00E5205AFE8AB39F11C9CC38 /* OWF */;
 			projectDirPath = "";

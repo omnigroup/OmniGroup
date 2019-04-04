@@ -1,27 +1,26 @@
 /* font size label format string in points */
 "%@ points" = "%@ punti";
 
-/* title format for color component slider
-   title format for color component slider - alpha component, 0-100 */
+/* title format for color component slider */
 
 "<alpha title+value>" = "Opacità: %d%%";
 
-/* title format for color component slider - blue component in RGB model, 0-255 */
+/* title format for color component slider */
 "<blue title+value>" = "Blu: %d";
 
-/* title format for color component slider - value/brightness component in HSV model, 0-100 */
+/* title format for color component slider */
 "<brightness title+value>" = "Luminosità: %d%%";
 
-/* title format for color component slider - green component in RGB model, 0-255 */
+/* title format for color component slider */
 "<green title+value>" = "Verde: %d";
 
-/* title format for color component slider - hue angle in HSV model, degrees */
+/* title format for color component slider */
 "<hue title+value>" = "Tinta: %d°";
 
-/* title format for color component slider - red component in RGB model, 0-255 */
+/* title format for color component slider */
 "<red title+value>" = "Rosso: %d";
 
-/* title format for color component slider - saturation component in HSV model, 0-100 */
+/* title format for color component slider */
 "<saturation title+value>" = "Saturazione: %d%%";
 
 /* title format for color component slider */
@@ -42,8 +41,7 @@
 /* edit action title */
 "Edit" = "Modifica";
 
-/* Inspector slice title for font family
-   Title for the font family list in the inspector */
+/* Title for the font family list in the inspector */
 
 "Font" = "Font";
 

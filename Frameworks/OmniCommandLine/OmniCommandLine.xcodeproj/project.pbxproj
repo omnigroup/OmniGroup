@@ -403,7 +403,7 @@
 			};
 			buildConfigurationList = 34824A9E1742E3C200253D52 /* Build configuration list for PBXProject "OmniCommandLine" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

@@ -3369,7 +3369,7 @@
 			};
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,

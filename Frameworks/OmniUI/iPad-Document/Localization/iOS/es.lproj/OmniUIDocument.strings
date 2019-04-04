@@ -267,7 +267,7 @@
 "Move to..." = "Mover a…";
 
 /* Move document preview action title. */
-"Move…" = "Trasladar…";
+"Move…" = "Trasladar...";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -385,7 +385,7 @@
 "Report Error" = "Comunicar error";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Restaurar docs. de ejemplo";
+"Restore Sample Documents" = "Restaurar ejemplos";
 
 /* Share menu title */
 "Restore to..." = "Restaurar a…";

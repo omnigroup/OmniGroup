@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,14 +10,6 @@
 import Foundation
 
 public extension Collection {
-    /// Returns `true` if `matcher` returns `true` for every element in the collection.
-    ///
-    /// - parameter matcher: executed O(n) times, where n is the size of the collection
-    @available(*, deprecated:4.2, message: "Use 'allSatisfy(_ predicate:)', SE-0207")
-    func all(where matcher: (Iterator.Element) throws -> Bool) rethrows -> Bool {
-        return try index(where: { try !matcher($0) }) == nil
-    }
-
     /// Returns the item at index `position` in the collection, or `nil` if `position` is out of bounds.
     subscript(safe position: Index) -> Iterator.Element? {
         guard position >= startIndex && position < endIndex else { return nil }
@@ -57,7 +49,7 @@ public extension Collection {
     /// but not including the index N, and is false for all elements
     /// starting with index N.
     /// Behavior is undefined if there is no such N.
-    public func binarySearch(predicate: (Iterator.Element) -> Bool) -> Index {
+    func binarySearch(predicate: (Iterator.Element) -> Bool) -> Index {
         var low = startIndex
         var high = endIndex
         while low != high {

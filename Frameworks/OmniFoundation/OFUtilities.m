@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -270,6 +270,25 @@ BOOL OFIsRunningUnitTests(void)
     });
     
     return _IsRunningUnitTests;
+}
+
+BOOL OFIsRunningInInstruments(void)
+{
+    static BOOL _IsRunningInInstruments = NO;
+
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *var = [[NSProcessInfo processInfo] environment][@"XPC_SERVICE_NAME"];
+
+        // This isn't stable API, of course, so this is a best guess. This function should only be used to do things like make test runs long enough to get good data collected in Instruments.
+        if ([var hasPrefix:@"com.apple.dt.Instruments."]) {
+            _IsRunningInInstruments = YES;
+        } else {
+            OBASSERT(OFIsEmptyString(var) || [var hasPrefix:@"com.apple.dt.Xcode."]);
+        }
+    });
+
+    return _IsRunningInInstruments;
 }
 
 NSString *OFUniqueMachineIdentifier(void)

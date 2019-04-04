@@ -4938,7 +4938,7 @@
 			};
 			buildConfigurationList = 4AD1C16408A9803A00C087FE /* Build configuration list for PBXProject "OmniFoundation" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,

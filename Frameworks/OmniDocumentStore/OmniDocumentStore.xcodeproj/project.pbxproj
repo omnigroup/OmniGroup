@@ -508,10 +508,9 @@
 			};
 			buildConfigurationList = 34896920179D99DD007978EC /* Build configuration list for PBXProject "OmniDocumentStore" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 			);
 			mainGroup = 3489691C179D99DD007978EC;

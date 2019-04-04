@@ -752,7 +752,7 @@
 			};
 			buildConfigurationList = 34DB335E08C62AB500BC2748 /* Build configuration list for PBXProject "OmniQuartz" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,

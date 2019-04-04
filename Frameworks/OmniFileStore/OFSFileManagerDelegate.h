@@ -1,4 +1,4 @@
-// Copyright 2008-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These are called to satisfy NSURLSession's authentication delegate methods. See ODAVConnection's documentation for details.
 - (NSOperation <OFCredentialChallengeDisposition> * _Nullable)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 - (NSURLCredential * _Nullable)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (NSInteger)maximumChallengeRetryCountForFileManager:(OFSFileManager *)manager;
 
 /// This is called to determine whether it's okay to silently accept an encrypted database when we were expecting an unencrypted database. (Defaults to NO if not implemented.)
 - (BOOL)shouldAllowUnexpectedEncryptionForURL:(NSURL *)documentURL;

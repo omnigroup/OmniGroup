@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -600,6 +600,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                         }
 
                         [_documentStore moveNewTemporaryDocumentAtURL:temporaryURL toScope:documentScope folder:folderItem documentType:type documentName:documentName completionHandler:^(ODSFileItem *createdFileItem, NSError *error){
+                            if (!createdFileItem) {
+                                finish(createdFileItem, error);
+                                return;
+                            }
+                            
                             // Add the item and make it visible in the doc picker
                             [self setFilteredItems:[_filteredItems setByAddingObject:createdFileItem]];
                             [self _propagateItems:_filteredItems toScrollView:self.mainScrollView withCompletionHandler:^{

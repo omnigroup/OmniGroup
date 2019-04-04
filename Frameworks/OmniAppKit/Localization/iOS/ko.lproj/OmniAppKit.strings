@@ -10,5 +10,8 @@
 /* button title */
 "OK" = "양호";
 
+/* button title */
+"Retry" = "재시도";
+
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "“%@” 키에 대한 예상치 않은 값";

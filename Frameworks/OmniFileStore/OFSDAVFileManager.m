@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,7 +50,12 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     }
     
     ODAVConnectionConfiguration *configuration = [[ODAVConnectionConfiguration alloc] init];
-    configuration.HTTPShouldUsePipelining = YES;    
+    configuration.HTTPShouldUsePipelining = YES;
+    
+    if ([delegate respondsToSelector:@selector(maximumChallengeRetryCountForFileManager:)]) {
+        // This is a little early to be passing `self` back into a delegate method (since we're not really done with init yet), but we've called super and have initialized all of our public properties.
+        configuration.maximumChallengeRetryCount = [delegate maximumChallengeRetryCountForFileManager:self];
+    }
     
     _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:baseURL];
     

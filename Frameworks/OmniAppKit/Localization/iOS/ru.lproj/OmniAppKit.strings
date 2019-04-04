@@ -8,7 +8,10 @@
 "Learn More" = "Дополнительные сведения";
 
 /* button title */
-"OK" = "ОК";
+"OK" = "OK";
+
+/* button title */
+"Retry" = "Повторить";
 
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "Неожиданное значение ключа «%@»";

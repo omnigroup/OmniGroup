@@ -683,9 +683,9 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
-				Japanese,
-				French,
-				German,
+				de,
+				ja,
+				fr,
 			);
 			mainGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
 			productRefGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;

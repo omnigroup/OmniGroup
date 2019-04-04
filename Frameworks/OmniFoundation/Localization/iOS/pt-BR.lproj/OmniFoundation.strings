@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Senha";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Nenhum(a)";
+"<Encryption: None>" = "Nenhum";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "%u Chaves";

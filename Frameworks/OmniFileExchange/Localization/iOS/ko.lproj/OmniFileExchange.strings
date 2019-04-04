@@ -145,7 +145,7 @@
 "Unable to create temporary items in the proposed location." = "제안된 위치에 임시 항목을 생성할 수 없습니다.";
 
 /* error description */
-"Unable to determine the filesystem properties of the proposed documents folder." = "제안된 도큐멘트 폴더의 파일 시스템 속성을 확인할 수 없습니다.";
+"Unable to determine the filesystem properties of the proposed documents folder." = "제안된 도큐멘트 폴더의 파일 시스템 등록정보를 확인할 수 없습니다.";
 
 /* Error reason */
 "Unable to find synchronized folder for account." = "계정에 대해 동기화된 폴더를 찾을 수 없습니다.";

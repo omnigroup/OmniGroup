@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,8 @@ RCS_ID("$Id$");
 #define DEBUG_INTERACTION_LOCK(format, ...)
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 static const NSTimeInterval kOUIInteractionLockStaleInterval = 10;
 
 @interface OUIInteractionLock ()
@@ -37,8 +39,8 @@ static const NSTimeInterval kOUIInteractionLockStaleInterval = 10;
 
 // Maintain a list of locks that are still locked. We store these as weak references so that +activeLocks isn't racing with the code in -dealloc that tries to remove the lock from the list (otherwise we could use a non-retaining CFMutableArrayRef).
 static dispatch_queue_t LockQueue;
-static NSMutableArray *ActiveLockReferences = nil;
-static NSTimer *ActiveLockWarningTimer = nil;
+static NSMutableArray * _Nullable ActiveLockReferences = nil;
+static NSTimer * _Nullable ActiveLockWarningTimer = nil;
 
 + (void)initialize;
 {
@@ -216,3 +218,5 @@ static void _dumpImageInfo(void)
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

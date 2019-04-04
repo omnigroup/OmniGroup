@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Contraseña";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Ninguna";
+"<Encryption: None>" = "Ninguno";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "%u claves";
@@ -59,7 +59,7 @@
 "Another application has overridden the lock at \"%@\"." = "Otra aplicación ha anulado el bloqueo en “%@”.";
 
 /* invalid bundle reason */
-"Bundle is obsolete" = "Este paquete está obsoleto";
+"Bundle is obsolete" = "Este paquete es obsoleto";
 
 /* invalid bundle reason */
 "Bundle requires additional software" = "Este paquete requiere software adicional";

@@ -35,7 +35,7 @@
 "<Encryption: A password is set>" = "Пароль";
 
 /* summary text - document is not encrypted */
-"<Encryption: None>" = "Отсутствует";
+"<Encryption: None>" = "Нет";
 
 /* summary text - document is encrypted using one or more public keys */
 "<Encryption: using %u key(s)>" = "Ключи %u";

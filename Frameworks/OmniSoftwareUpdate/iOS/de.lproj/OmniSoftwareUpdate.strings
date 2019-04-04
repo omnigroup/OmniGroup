@@ -31,7 +31,8 @@
 /* Software update report entry name */
 "Device" = "Gerät";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
 
 "Device Information" = "Geräteinformationen";
 
@@ -45,7 +46,7 @@
 "Exception raised: %@" = "Ausnahme aufgetreten: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Entscheiden Sie mit, welche Geräte u. iOS-Versionen The Omni Group unterstützen soll.";
+"Help The Omni Group decide which devices and iOS versions to support" = "Entscheiden Sie mit, welche Geräte u. iOS-Versionen The Omni Group unterstützen soll";
 
 /* Settings preferences detail text */
 "If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Wenn Sie uns diese Informationen mitteilen, halten Sie uns auf dem Laufenden darüber, welche Geräte und iOS-Versionen unsere Software unterstützen sollte.\n\nDiese Informationen werden vollkommen anonym aufbewahrt.";

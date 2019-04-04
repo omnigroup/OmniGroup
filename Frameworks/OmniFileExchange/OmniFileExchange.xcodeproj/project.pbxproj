@@ -1416,7 +1416,7 @@
 			};
 			buildConfigurationList = 34AFACDB164B0E70009E39AB /* Build configuration list for PBXProject "OmniFileExchange" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

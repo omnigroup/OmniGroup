@@ -10,5 +10,8 @@
 /* button title */
 "OK" = "OK";
 
+/* button title */
+"Retry" = "Réessayer";
+
 /* style validation error message for {key} */
 "Unexpected value for key “%@”" = "Valeur inattendue pour la clé “%@”";

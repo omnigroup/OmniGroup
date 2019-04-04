@@ -1615,10 +1615,9 @@
 			};
 			buildConfigurationList = 342F48BB167799AC007C5FFB /* Build configuration list for PBXProject "OmniUIDocument" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				de,
 				es,

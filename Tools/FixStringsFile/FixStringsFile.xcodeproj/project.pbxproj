@@ -189,13 +189,13 @@
 			};
 			buildConfigurationList = 34DB3AAD08C7AADC00BC2748 /* Build configuration list for PBXProject "FixStringsFile" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				fr,
+				de,
+				ja,
+				en,
 			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* FixStringsFile */;
 			projectDirPath = "";

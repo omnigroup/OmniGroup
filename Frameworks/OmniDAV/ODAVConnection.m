@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -158,6 +158,7 @@ static NSString *StandardUserAgentString;
         return nil;
     
     _userAgent = [StandardUserAgentString copy];
+    _maximumChallengeRetryCount = 3;
     
     return self;
 }
@@ -1332,7 +1333,7 @@ static void fudgeTrust(SecTrustRef tref)
     }
     
     NSOperation *finish;
-    if (findOp && challenge.previousFailureCount <= 3) {
+    if (findOp && challenge.previousFailureCount <= _configuration.maximumChallengeRetryCount) {
         finish = [NSBlockOperation blockOperationWithBlock:^{
             OBPRECONDITION(findOp.finished);
             

@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,6 +186,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 - (instancetype)initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 {
     DEBUG_DOCUMENT(@"INIT %p with %@ %@", self, [fileItem shortDescription], url);
+    OBRecordBacktraceWithContext("Init", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     OBPRECONDITION(fileItem || url);
     OBPRECONDITION(!fileItem || [fileItem.fileURL isEqual:url]);
@@ -605,6 +606,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(self.documentState & (UIDocumentStateClosed|UIDocumentStateEditingDisabled)); // Revert just has UIDocumentStateEditingDisabled set.
     
     DEBUG_DOCUMENT(@"%@ %@", [self shortDescription], NSStringFromSelector(_cmd));
+    OBRecordBacktraceWithContext("Open started", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
 #ifdef OMNI_ASSERTIONS_ON
     // We don't want opening the document to provoke download -- we should provoke that earlier and only open when it is fully downloaded
@@ -619,6 +621,8 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     __weak OUIDocument *welf = self;
     [super openWithCompletionHandler:^(BOOL success){
+        OBRecordBacktraceWithContext("Open completion", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
         OUIDocument *strelf = welf;
         DEBUG_DOCUMENT(@"%@ %@ success %d", [self shortDescription], NSStringFromSelector(_cmd), success);
         
@@ -673,8 +677,11 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 - (void)closeWithCompletionHandler:(void (^)(BOOL success))completionHandler;
 {
     OBPRECONDITION((self.documentState & UIDocumentStateClosed) == 0);
-    
+    OBRecordBacktraceWithContext("Close started", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
     if (!self.isDefinitelyClosing && (self.documentState & UIDocumentStateClosed) != 0) {
+        OBRecordBacktraceWithContext("Close already closed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
         // we may be being asked to close before we have finished opening.  note that and save the completion handler for when we can actually close.
         // we will close if/when we have successfully opened.
         _savedCloseCompletionBlock = [completionHandler copy];
@@ -736,6 +743,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     void (^closedCompletion)(BOOL success) = ^void(BOOL success) {
         DEBUG_DOCUMENT(@"%@ %@ success %d", [self shortDescription], NSStringFromSelector(_cmd), success);
+        OBRecordBacktraceWithContext("Close completion", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
         [self _updateUndoIndicator];
 
@@ -782,6 +790,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     };
 
     if ((self.documentState & UIDocumentStateClosed) != 0) {
+        OBRecordBacktraceWithContext("Close already closed 2", OBBacktraceBuffer_Generic, (__bridge const void *)self);
         closedCompletion(YES);
     } else {
         [super closeWithCompletionHandler:closedCompletion];
@@ -799,6 +808,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(![self.undoManager isRedoing]);
     
     DEBUG_UNDO(@"Autosave running...");
+    OBRecordBacktraceWithContext("Autosave start", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     if ([self hasUnsavedChanges]) { // If we somehow end up here with unsaved changes, don't call -_willSave.
         [self _willSave];
@@ -806,7 +816,8 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     [super autosaveWithCompletionHandler:^(BOOL success){
         DEBUG_UNDO(@"  Autosave success = %d", success);
-        
+        OBRecordBacktraceWithContext("Autosave completed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
         // Do this *after* our possible preview saving. We may be getting called by the -closeWithCompletionHandler: where the completion block might invalidate some of the document state.
         if (completionHandler)
             completionHandler(success);
@@ -828,6 +839,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION([NSThread isMainThread]); // Needed for the call to -_willSave below since it will tell the view controller, which will muck with views and model state as it saves partial edits.
 
     DEBUG_DOCUMENT(@"Save with operation %ld to %@", saveOperation, [url absoluteString]);
+    OBRecordBacktraceWithContext("Save start", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     if (_accommodatingDeletion) {
         // This will happen when the user has opted to "Keep" a document that was deleted on another device.
@@ -893,6 +905,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     void (^saveBlock)(void (^updateCompletionHandler)(BOOL success, NSURL *destinationURL, NSError *error)) = ^void (void (^updateCompletionHandler)(BOOL success, NSURL *destinationURL, NSError *error)) {
         [super saveToURL:url forSaveOperation:saveOperation completionHandler:^(BOOL success){
             DEBUG_DOCUMENT(@"  save success %d", success);
+            OBRecordBacktraceWithContext("Save completed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
             OBASSERT_NOTNULL(_currentSaveURL);
             _currentSaveURL = nil;
@@ -958,6 +971,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(_editingDisabled == NO);
     
     DEBUG_DOCUMENT(@"Disable editing");
+    OBRecordBacktraceWithContext("Disable editing", OBBacktraceBuffer_Generic, (__bridge const void *)self);
     _editingDisabled = YES;
     
     OUIWithoutAnimating(^{
@@ -986,6 +1000,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(_editingDisabled == YES);
     
     DEBUG_DOCUMENT(@"Enable editing");
+    OBRecordBacktraceWithContext("Enable editing", OBBacktraceBuffer_Generic, (__bridge const void *)self);
     _editingDisabled = NO;
 
     if (_hasDisabledUserInteraction) {
@@ -1023,6 +1038,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 - (void)handleError:(NSError *)error userInteractionPermitted:(BOOL)userInteractionPermitted;
 {
     DEBUG_DOCUMENT(@"Handle error with user interaction:%d: %@", userInteractionPermitted, [error toPropertyList]);
+    OBRecordBacktraceWithContext("Handle error", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     if (_forPreviewGeneration) {
         // Just log it instead of popping up an alert for something the user didn't actually poke to open anyway.
@@ -1053,6 +1069,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 {
     // Since we subclass -handleError:userInteractionPermitted:, we have to implement this too, according to the documentation.
     DEBUG_DOCUMENT(@"%s:%d -- %s", __FILE__, __LINE__, __PRETTY_FUNCTION__);
+    OBRecordBacktraceWithContext("Interaction not allowed for error", OBBacktraceBuffer_Generic, (__bridge const void *)self);
     [super userInteractionNoLongerPermittedForError:error];
 }
 
@@ -1084,10 +1101,12 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(_rebuildingViewControllerState == nil);
 
     DEBUG_DOCUMENT(@"%s:%d -- %s %@", __FILE__, __LINE__, __PRETTY_FUNCTION__, url);
+    OBRecordBacktraceWithContext("Revert started", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     // If an open document is deleted via iCloud or iTunes, we don't get -accommodatePresentedItemDeletionWithCompletionHandler:. We do this before calling super so that we don't get an error about the missing file.
     __autoreleasing NSError *reachableError = nil;
     if (![url checkResourceIsReachableAndReturnError:&reachableError]) {
+        OBRecordBacktraceWithContext("Disable failed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
         [self _failRevertAndCloseAndReturnToDocumentPickerWithCompletionHandler:completionHandler];
         return;
     }
@@ -1108,6 +1127,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
     
     [super revertToContentsOfURL:url completionHandler:^(BOOL success){
+        OBRecordBacktraceWithContext("Revert completed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
         if (!success) {
             __strong OUIDocument *strongDoc = document;
             [[OUIDocumentAppController controller] documentDidFailToRebuildViewController:strongDoc];
@@ -1149,6 +1169,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     OBPRECONDITION(_inRelinquishPresentedItemToWriter == NO);
     
     DEBUG_DOCUMENT("Relinquish to writer");
+    OBRecordBacktraceWithContext("Relinquish to writer", OBBacktraceBuffer_Generic, (__bridge const void *)self);
     _inRelinquishPresentedItemToWriter = YES;
 
     // If a preview is being generated, block the writer until we finish. The writer could try to delete us, move us or change our contents, none of which we want to deal with while in the middle of generating a preview (and we don't have a good way to cancel the preview generation).
@@ -1165,10 +1186,12 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         
         writer(^{
             DEBUG_DOCUMENT("Starting to reacquire after writer");
+            OBRecordBacktraceWithContext("Starting to reacquire after writer", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
             void (^finishReacquiring)(void) = ^{
                 DEBUG_DOCUMENT("Finishing reacquiring after writer");
-                
+                OBRecordBacktraceWithContext("Finishing reacquiring after writer", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
                 OBASSERT(_inRelinquishPresentedItemToWriter == YES);
                 _inRelinquishPresentedItemToWriter = NO;
                 
@@ -1203,12 +1226,14 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     _originalURLPriorToAccomodatingDeletion = [self.fileURL copy];
     
     DEBUG_DOCUMENT(@"Accomodating deletion of %@", _originalURLPriorToAccomodatingDeletion);
+    OBRecordBacktraceWithContext("Accomodate deletion started", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
     completionHandler = [completionHandler copy];
     
     [super accommodatePresentedItemDeletionWithCompletionHandler:^(NSError *errorOrNil){
         
         DEBUG_DOCUMENT(@"Deletion accomodation completion handler started, errorOrNil: %@", errorOrNil);
+        OBRecordBacktraceWithContext("Accomodate deletion completed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
         OBASSERT(![NSThread isMainThread]);
 
         OUIDocumentAppController *appController = [OUIDocumentAppController controller];

@@ -58,7 +58,7 @@
 "Add an Account" = "Adicionar uma Conta";
 
 /* home screen button label */
-"Add OmniPresence Account" = "Adicionar Conta OmniPresence";
+"Add OmniPresence Account" = "Adicionar Conta do OmniPresence";
 
 /* button title
    cancel button title
@@ -287,10 +287,10 @@
 "Nickname" = "Apelido";
 
 /* Export message for empty table view */
-"No accounts are configured for exporting." = "Nenhuma conta está configurada para exportação.";
+"No accounts are configured for exporting." = "Nenhuma conta configurada para exportação.";
 
 /* Import message for empty table view */
-"No accounts are configured for importing." = "Nenhuma conta está configurada para importação.";
+"No accounts are configured for importing." = "Nenhuma conta configurada para importação.";
 
 /* doc picker no items accessibility value */
 "No items" = "Nenhum item";

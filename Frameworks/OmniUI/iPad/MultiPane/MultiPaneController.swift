@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1087,6 +1087,13 @@ extension MultiPaneControllerPaneVisibility {
         } else {
             return false
         }
+    }
+    @objc public func paneIsVisibleAndNonEmbedded(at location: MultiPaneLocation) -> Bool {
+        if (self.paneIsVisible(at: location) == false) {
+            return false
+        }
+        guard let pane = pane(withLocation: location) else { return false }
+        return (pane.presentationMode != .embedded)
     }
 }
 
