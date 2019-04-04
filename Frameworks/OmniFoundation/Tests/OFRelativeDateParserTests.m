@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,6 +201,8 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
 
 - (void)setUp;
 {
+    [super setUp];
+    
     const char *env = getenv("DataGeneratorSeed");
     if (env) {
         uint32_t seed = (uint32_t)strtoul(env, NULL, 0);

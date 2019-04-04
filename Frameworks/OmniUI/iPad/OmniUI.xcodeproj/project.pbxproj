@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -920,6 +920,7 @@
 		3470CE601561718600B84909 /* OUIAbstractTableViewInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIAbstractTableViewInspectorSlice.m; sourceTree = "<group>"; };
 		3478000312B2F1C100CCA504 /* OUIInspectorLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIInspectorLabel.h; sourceTree = "<group>"; };
 		3478000412B2F1C100CCA504 /* OUIInspectorLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIInspectorLabel.m; sourceTree = "<group>"; };
+		3478690922383244001914C2 /* OmniUI-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniUI-iOS.xcfilelist"; sourceTree = "<group>"; };
 		347F630317C01C760011139A /* OUIMenuOptionsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIMenuOptionsController.h; sourceTree = "<group>"; };
 		347F630417C01C760011139A /* OUIMenuOptionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMenuOptionsController.m; sourceTree = "<group>"; };
 		34816ED71332B7230030A6B2 /* OUINoneColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINoneColorPicker.h; sourceTree = "<group>"; };
@@ -1334,6 +1335,7 @@
 				2310604F1EAFE95D008E0647 /* Bundle.swift */,
 				34C782CC1BDEB79B00536364 /* OmniUI.modulemap */,
 				340B1E2C12B17C00004823B3 /* OmniUI.defaults */,
+				3478690922383244001914C2 /* OmniUI-iOS.xcfilelist */,
 				3EDBA0CF21E809C3000CF1DD /* OmniUI.xcassets */,
 				E28341FF1EB9889800FDB90F /* Theming Support */,
 				346C4BAA119327B800BE8C49 /* Main App Controllers */,
@@ -2739,10 +2741,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -3020,7 +3026,11 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
@@ -3036,7 +3046,11 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniUI.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUI;
 				PRODUCT_NAME = OmniUI;
@@ -3095,7 +3109,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "OUIUnitTests-iOS/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
@@ -3150,7 +3168,11 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "OUIUnitTests-iOS/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.omnigroup.OUIUnitTests-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -384,7 +384,9 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
     if (_connection == nil) {
 
         // As of around 09/19/2016, the XPC service needs a bundle identifier registered with the MacAppStore.
-#if MAC_APP_STORE
+#if MAC_APP_STORE_ENTERPRISE
+        static NSString * const ServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUCheckService.enterprise";
+#elif MAC_APP_STORE
         static NSString * const ServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore";
 #else
         static NSString * const ServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUCheckService";

@@ -424,6 +424,7 @@
 		344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVNoCredentialsTestCase.m; sourceTree = "<group>"; };
 		3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVAsynchronousOperation.h; sourceTree = "<group>"; };
 		347661311EC52FA500515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
+		3478688122372CC1001914C2 /* OmniDAV-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDAV-iOS.xcfilelist"; sourceTree = "<group>"; };
 		349369A916B0438200244879 /* ODAVConformanceTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVConformanceTest.h; sourceTree = "<group>"; };
 		349464AB179F283000865885 /* OmniCommandLine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniCommandLine.xcodeproj; path = OmniCommandLine/OmniCommandLine.xcodeproj; sourceTree = "<group>"; };
 		34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
@@ -695,6 +696,7 @@
 			isa = PBXGroup;
 			children = (
 				3420BB8B214C67C000E7A60D /* OmniDAV.xcfilelist */,
+				3478688122372CC1001914C2 /* OmniDAV-iOS.xcfilelist */,
 				32DBCF5E0370ADEE00C91783 /* OmniDAV_Prefix.h */,
 				34C017AE10995295001C110D /* odav */,
 			);
@@ -1055,7 +1057,7 @@
 			buildPhases = (
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF520486A6940098B216 /* Resources */,
-				E23AB61215DAE1F800B86ED1 /* Build Strings From Target */,
+				E23AB61215DAE1F800B86ED1 /* Build Strings */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
@@ -1327,10 +1329,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1352,7 +1358,7 @@
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniDAV\n";
 			showEnvVarsInLog = 0;
 		};
-		E23AB61215DAE1F800B86ED1 /* Build Strings From Target */ = {
+		E23AB61215DAE1F800B86ED1 /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1362,7 +1368,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Build Strings From Target";
+			name = "Build Strings";
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);

@@ -1,4 +1,4 @@
-// Copyright 2013-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -80,6 +80,8 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)setUp;
 {
+    [super setUp];
+
     _helvetica12 = [[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:0];
 }
 
@@ -87,6 +89,8 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 {
     [_helvetica12 release];
     _helvetica12 = nil;
+
+    [super tearDown];
 }
 
 - (void)_assertIsHelvetica12Attributes:(NSDictionary *)attributesFromFoundFont;

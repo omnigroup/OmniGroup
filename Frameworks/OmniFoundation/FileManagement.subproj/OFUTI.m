@@ -1,4 +1,4 @@
-// Copyright 2011-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -264,6 +264,10 @@ static void EnumerateIdentifiersForTagInDictionary(NSDictionary *dictionary, NSS
     
     NSDictionary *classDict = [dictionary objectForKey:tagClass];
     NSArray *mappedIdentifiers = [classDict objectForKey:tagValue];
+    if (mappedIdentifiers == nil && OFISEQUAL(tagClass, (NSString *)kUTTagClassFilenameExtension)) {
+        // File extensions should be case-insensitive
+        mappedIdentifiers = [classDict objectForKey:[tagValue lowercaseString]];
+    }
     
     for (NSString *identifier in mappedIdentifiers) {
         enumerator(identifier, &stopEnumerating);

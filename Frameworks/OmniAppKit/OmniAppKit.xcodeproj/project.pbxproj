@@ -1223,6 +1223,7 @@
 		3475A0A20DE235FE00FB73CC /* OFTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFTestCase.m; path = ../../../OmniFoundation/Tests/OFTestCase.m; sourceTree = "<group>"; };
 		34765FB61EC52EA600515F67 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		34765FE41EC52EAA00515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
+		347868E622381D49001914C2 /* OmniAppKit-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniAppKit-iOS.xcfilelist"; sourceTree = "<group>"; };
 		348293E91B1F842C00812D27 /* NSTextStorage-OAFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTextStorage-OAFixes.m"; sourceTree = "<group>"; };
 		348934C81EC285F300CFB933 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		348934E01EC285F800CFB933 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
@@ -2640,6 +2641,7 @@
 				34275D1C13981621003F28F5 /* OAFeatures.h */,
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				3420BBDF214C696D00E7A60D /* OmniAppKit.xcfilelist */,
+				347868E622381D49001914C2 /* OmniAppKit-iOS.xcfilelist */,
 				BF94281F062222D400B83989 /* Info.plist */,
 				94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */,
 				342F05121B69794C00C7BB34 /* Appearance */,
@@ -3244,10 +3246,10 @@
 			buildConfigurationList = 34C12B15194FF90F005CB70B /* Build configuration list for PBXNativeTarget "OmniAppKit-iOS" */;
 			buildPhases = (
 				34C12AF9194FF90F005CB70B /* Headers */,
-				34C12AF7194FF90F005CB70B /* Sources */,
-				34C12AF8194FF90F005CB70B /* Frameworks */,
 				342F05321B697A8700C7BB34 /* Resources */,
 				4283411119E8405E00C0DEE5 /* Build String Files */,
+				34C12AF7194FF90F005CB70B /* Sources */,
+				34C12AF8194FF90F005CB70B /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -3287,9 +3289,9 @@
 			buildPhases = (
 				4AA1E67B08AA764600E2FF6B /* Headers */,
 				4AA1E70908AA764600E2FF6B /* Resources */,
+				E23AB61815DAE2CA00B86ED1 /* Build String Files */,
 				4AA1E76808AA764600E2FF6B /* Sources */,
 				4AA1E7ED08AA764600E2FF6B /* Frameworks */,
-				E23AB61815DAE2CA00B86ED1 /* Build String Files */,
 			);
 			buildRules = (
 			);
@@ -3894,10 +3896,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

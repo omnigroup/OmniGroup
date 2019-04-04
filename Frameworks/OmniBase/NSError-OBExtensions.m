@@ -1,4 +1,4 @@
-// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -167,6 +167,15 @@ OBPerformPosing(^{
         default:
             return NO;
     }
+}
+
+- (BOOL)causedByAppTransportSecurity;
+{
+    NSError *urlError = [self underlyingErrorWithDomain:NSURLErrorDomain];
+    if (urlError == nil)
+        return NO;
+    
+    return [urlError code] == NSURLErrorAppTransportSecurityRequiresSecureConnection;
 }
 
 #if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH

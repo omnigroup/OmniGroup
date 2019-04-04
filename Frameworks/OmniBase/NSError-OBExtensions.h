@@ -1,4 +1,4 @@
-// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic,readonly) BOOL causedByMissingFile;
 @property(nonatomic,readonly) BOOL causedByExistingFile;
 @property(nonatomic,readonly) BOOL causedByUnreachableHost;
+@property(nonatomic,readonly) BOOL causedByAppTransportSecurity;
 
 #if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
 @property(nonatomic,readonly) BOOL causedByNetworkConnectionLost;

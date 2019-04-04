@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -241,6 +241,11 @@ RCS_ID("$Id$")
         return NO;
 
     return CFEqual(dictionary, (OB_BRIDGE CFDictionaryRef)otherDictionary)? YES : NO;
+}
+
+- (NSString *)debugDescription;
+{
+    return [[self dictionary] debugDescription];
 }
 
 // If we do need to support NSCoding, we'll need to handle 64-bit key counts or at least avoid accidentally updating the archiving to an incompatible format.

@@ -1,0 +1,17 @@
+$(SRCROOT)/OmniSoftwareUpdate.xcodeproj/project.pbxproj
+OSUCheckOperation.m
+OSUCheckService/OSUHardwareInfo.m
+OSUCheckService/OSUOpenGLExtensions.m
+OSUCheckService/OSURunOperation.m
+OSUCheckService/OSURunOperationParameters.m
+OSUChecker.m
+OSUErrors.m
+OSUPartialItem.m
+OSUPreferences-Items.m
+OSUPreferences.m
+OSUProbe.m
+OSURunTime.m
+OSUSettings.m
+OmniSystemInfo/OSUDeviceDetails.m
+iOS/OSUController.m
+iOS/OSUPreferencesViewController.m

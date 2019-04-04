@@ -1,0 +1,15 @@
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common Application settings for building for the Mac App Store
+
+// We currently use IOKit as part of receipt validation in Mac App Store builds.
+OMNI_STORE_OTHER_LDFLAGS = $(value) -framework IOKit $(OMNI_SOFTWARE_UPDATE_LDFLAGS)
+
+OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = .enterprise
+OMNI_STORE_IDENTIFIER_SUFFIX =  $(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)
+IS_USING_MAC_APP_STORE = YES
+
+// We don't want separate bundle ids for variant Mac App Store apps, or we can't test In-App Purchase, etc.
+OMNI_BUILD_IDENTIFIER_SUFFIX = 

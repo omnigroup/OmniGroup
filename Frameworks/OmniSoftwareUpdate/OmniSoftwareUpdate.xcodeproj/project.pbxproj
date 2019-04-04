@@ -745,6 +745,7 @@
 		346F34BF0C627E4600AAEE4D /* OSUInstaller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstaller.h; sourceTree = "<group>"; };
 		346F34C00C627E4600AAEE4D /* OSUInstaller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstaller.m; sourceTree = "<group>"; };
 		34775A231266672800FCDD2D /* InfoPlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InfoPlist.h; sourceTree = "<group>"; };
+		3478696022383922001914C2 /* OmniSoftwareUpdate-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniSoftwareUpdate-iOS.xcfilelist"; sourceTree = "<group>"; };
 		3479A3961AB8D8590077BB01 /* OSURunOperationParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSURunOperationParameters.h; sourceTree = "<group>"; };
 		3479A3971AB8D8590077BB01 /* OSURunOperationParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSURunOperationParameters.m; sourceTree = "<group>"; };
 		3479A39D1AB8D8D20077BB01 /* OSURunOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSURunOperation.h; sourceTree = "<group>"; };
@@ -1358,6 +1359,7 @@
 				32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */,
 				34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */,
 				3420BBFA214C6A1200E7A60D /* OmniSoftwareUpdate.xcfilelist */,
+				3478696022383922001914C2 /* OmniSoftwareUpdate-iOS.xcfilelist */,
 				34821EFD063407360097A113 /* Checking */,
 				08FB77AEFE84172EC02AAC07 /* Mac */,
 				34A2E0DD184F91B9009E0D9F /* iOS */,
@@ -2195,10 +2197,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

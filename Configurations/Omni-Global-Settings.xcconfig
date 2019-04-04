@@ -12,7 +12,7 @@ OMNI_BUILD_STRINGS_INPUT_MISSING=warn
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
 // Can add this when building with custom clang to avoid ARC writeback bugs: -fobjc-arc-disable-writeback
 
-OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\"" NON_OMNI_BUILD_ENVIRONMENT
+OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_STORE_IDENTIFIER_SUFFIX="@\"$(OMNI_STORE_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\"" $(OMNI_COMMAND_LINE_PREPROCESSOR_DEFINITIONS) NON_OMNI_BUILD_ENVIRONMENT
 
 // These are normally set by the build system when doing a demo build, but you can uncomment them here to do one in Xcode.
 // See the build system notes about why we don't append '.RetailDemo' to the bundle identifier.
@@ -182,7 +182,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 GCC_DEBUGGING_SYMBOLS = full
 
 // When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'right' one here.
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -C -I"$(CONFIGURATION_BUILD_DIR)/include" -I"$(SHARED_DERIVED_FILE_DIR)"
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -C -I"$(CONFIGURATION_BUILD_DIR)/include" -I"$(SHARED_DERIVED_FILE_DIR)" $(OMNI_COMMAND_LINE_INFOPLIST_PREPROCESSOR_FLAGS)
 INFOPLIST_PREPROCESS = YES
 
 // Make sure we look for the built SVNVersions.h in the right spot

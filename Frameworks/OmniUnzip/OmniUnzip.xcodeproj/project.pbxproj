@@ -334,6 +334,7 @@
 		32DBCF5E0370ADEE00C91783 /* OmniUnzip_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUnzip_Prefix.pch; sourceTree = "<group>"; };
 		3420BB7B214C677500E7A60D /* OmniUnzip.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniUnzip.xcfilelist; sourceTree = "<group>"; };
 		347660FD1EC52F7A00515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
+		347868BE22381CB0001914C2 /* OmniUnzip-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniUnzip-iOS.xcfilelist"; sourceTree = "<group>"; };
 		34800E121B19233E0008DC9E /* OmniUnzip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniUnzip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34800E2D1B1923870008DC9E /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
 		34800E2E1B1923870008DC9E /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
@@ -596,6 +597,7 @@
 			isa = PBXGroup;
 			children = (
 				3420BB7B214C677500E7A60D /* OmniUnzip.xcfilelist */,
+				347868BE22381CB0001914C2 /* OmniUnzip-iOS.xcfilelist */,
 				32DBCF5E0370ADEE00C91783 /* OmniUnzip_Prefix.pch */,
 				34E104071BD8098D00022255 /* OmniUnzip.h */,
 			);
@@ -1186,14 +1188,18 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget OmniUnzip";
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniUnzip\n";
 			showEnvVarsInLog = 0;
 		};
 		344F383B1B19276200E75A5F /* Build Strings */ = {

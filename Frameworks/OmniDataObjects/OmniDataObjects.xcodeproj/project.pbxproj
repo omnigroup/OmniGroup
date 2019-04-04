@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 47;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -541,6 +541,8 @@
 		3475A0820DE2357400FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		3475A0830DE2357400FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
 		3477F3DB0DA29343001CF280 /* ODOFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOFeatures.h; sourceTree = "<group>"; };
+		347868AA2238176A001914C2 /* OmniDataObjects.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = OmniDataObjects.xcfilelist; sourceTree = "<group>"; };
+		347868BD22381C8B001914C2 /* OmniDataObjects-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDataObjects-iOS.xcfilelist"; sourceTree = "<group>"; };
 		3481A9B30D899C210050FC54 /* OmniDataObjects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects.h; sourceTree = "<group>"; };
 		348409510D89F5EF00E74C9D /* ODOVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOVersion.h; sourceTree = "<group>"; };
 		348409520D89F5EF00E74C9D /* ODOVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOVersion.m; sourceTree = "<group>"; };
@@ -751,6 +753,8 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				347868AA2238176A001914C2 /* OmniDataObjects.xcfilelist */,
+				347868BD22381C8B001914C2 /* OmniDataObjects-iOS.xcfilelist */,
 				5FAA7788193E68CE0017D662 /* Localization */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
 			);
@@ -1186,9 +1190,9 @@
 				34019FB71B62EE17003A5BE4 /* Generate Accessors */,
 				34019F621B62ECB4003A5BE4 /* Headers */,
 				34019F631B62ECB4003A5BE4 /* Resources */,
+				34019FB81B62EE47003A5BE4 /* Build Strings */,
 				34019F601B62ECB4003A5BE4 /* Sources */,
 				34019F611B62ECB4003A5BE4 /* Frameworks */,
-				34019FB81B62EE47003A5BE4 /* Build Strings */,
 			);
 			buildRules = (
 			);
@@ -1285,6 +1289,7 @@
 				348EE2C10EAE3BC100C6998E /* Generate Accessors */,
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF520486A6940098B216 /* Resources */,
+				347868A922381710001914C2 /* Build Strings */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
@@ -1337,6 +1342,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				English,
 				en,
 				ko,
 			);
@@ -1583,14 +1589,18 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget OmniDataObjects";
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniDataObjects\n";
 			showEnvVarsInLog = 0;
 		};
 		343BD2EC1B62F3D6002D09C6 /* Generate Model */ = {
@@ -1626,6 +1636,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "./Tools/odogen Tests/ODOTestCase.odomodel\n";
+			showEnvVarsInLog = 0;
+		};
+		347868A922381710001914C2 /* Build Strings */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "Build Strings";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "../../Scripts/BuildStringsFromTarget OmniDataObjects\n";
 			showEnvVarsInLog = 0;
 		};
 		348EE2C10EAE3BC100C6998E /* Generate Accessors */ = {
@@ -1901,7 +1932,11 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
@@ -1916,7 +1951,11 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
@@ -1944,7 +1983,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
@@ -1958,7 +2001,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
@@ -2080,7 +2127,11 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
@@ -2095,7 +2146,11 @@
 				DEFINES_MODULE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = OmniDataObjects.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;

@@ -470,6 +470,7 @@
 		3474D99F1B5EF25A0084B8AE /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		347661651EC52FDF00515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		347661931EC52FE900515F67 /* OmniDAV.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniDAV.xcodeproj; path = OmniDAV/OmniDAV.xcodeproj; sourceTree = "<group>"; };
+		347868E722381DC4001914C2 /* OmniFileStore-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniFileStore-iOS.xcfilelist"; sourceTree = "<group>"; };
 		34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34973C9E125BCF340057E909 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		34B5E44E12773A810007C4E3 /* OFSFileOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileOperation.h; sourceTree = "<group>"; };
@@ -691,6 +692,7 @@
 			isa = PBXGroup;
 			children = (
 				3420BBA4214C687600E7A60D /* OmniFileStore.xcfilelist */,
+				347868E722381DC4001914C2 /* OmniFileStore-iOS.xcfilelist */,
 				32DBCF5E0370ADEE00C91783 /* OmniFileStore_Prefix.h */,
 				34415DB51BE06A58001EE0F7 /* OmniFileStore.h */,
 				1EE438061C0D404700231058 /* OmniFileStore.modulemap */,
@@ -937,9 +939,9 @@
 			buildPhases = (
 				3474D9851B5EF23E0084B8AE /* Headers */,
 				3474D9861B5EF23E0084B8AE /* Resources */,
+				34FA1FC11B5EF50B00ED0B6F /* Build Strings */,
 				3474D9831B5EF23E0084B8AE /* Sources */,
 				3474D9841B5EF23E0084B8AE /* Frameworks */,
-				34FA1FC11B5EF50B00ED0B6F /* Build Strings */,
 			);
 			buildRules = (
 			);
@@ -957,7 +959,7 @@
 			buildPhases = (
 				8DC2EF500486A6940098B216 /* Headers */,
 				8DC2EF520486A6940098B216 /* Resources */,
-				E23AB61215DAE1F800B86ED1 /* Build Strings From Target */,
+				E23AB61215DAE1F800B86ED1 /* Build Strings */,
 				8DC2EF540486A6940098B216 /* Sources */,
 				8DC2EF560486A6940098B216 /* Frameworks */,
 			);
@@ -1270,17 +1272,21 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniFileStore\n";
 			showEnvVarsInLog = 0;
 		};
-		E23AB61215DAE1F800B86ED1 /* Build Strings From Target */ = {
+		E23AB61215DAE1F800B86ED1 /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1290,7 +1296,7 @@
 			);
 			inputPaths = (
 			);
-			name = "Build Strings From Target";
+			name = "Build Strings";
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);

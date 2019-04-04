@@ -1,0 +1,9 @@
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for building for the Mac App Store
+
+#include "Omni-Global-Common-MacAppStore.xcconfig"
+
+OMNI_STORE_PREPROCESSOR_DEFINITIONS = MAC_APP_STORE=1 MAC_APP_STORE_ENTERPRISE=1

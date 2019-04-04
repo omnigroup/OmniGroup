@@ -997,6 +997,11 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [webViewController invokeJavaScriptBeforeLoad:[self _aboutPanelJSONBindingsString]];
 }
 
+- (void)showAboutScreenInNavigationController:(UINavigationController * _Nullable)navigationController NS_EXTENSION_UNAVAILABLE_IOS("")
+{
+    [self showAboutScreenInNavigationController:navigationController withDoneButton:YES];
+}
+
 - (void)_showAboutScreen:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [self showAboutScreenInNavigationController:nil];

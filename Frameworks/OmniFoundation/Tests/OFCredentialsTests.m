@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,8 +59,10 @@ RCS_ID("$Id$");
     XCTAssertTrue(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, NULL));
 
     NSString *password = OFXMLCreateID();
-    XCTAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password, NULL));
-    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
+    NSError *error;
+    OBShouldNotError(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password, &error));
+    NSURLCredential *credential;
+    OBShouldNotError((credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, &error)));
     XCTAssertEqualObjects(credential.user, @"user");
     XCTAssertEqualObjects(credential.password, password);
 }
@@ -92,10 +94,10 @@ RCS_ID("$Id$");
 
 - (void)testDeleteCredential;
 {
-    XCTAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", @"password", NULL));
-    XCTAssertTrue(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, NULL));
-    
     NSError *error;
+    OBShouldNotError(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", @"password", &error));
+    OBShouldNotError(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, &error));
+    
     NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, &error);
     XCTAssertNil(credential);
     XCTAssertTrue([error hasUnderlyingErrorDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound]);
