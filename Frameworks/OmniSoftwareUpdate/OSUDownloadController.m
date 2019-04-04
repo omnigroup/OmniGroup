@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -330,8 +330,9 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 {
     if (status != _status) {
         _status = [status copy];
-        
-        [[self window] displayIfNeeded];
+        OFMainThreadPerformBlock(^{
+            [[self window] displayIfNeeded];
+        });
     }
 }
 

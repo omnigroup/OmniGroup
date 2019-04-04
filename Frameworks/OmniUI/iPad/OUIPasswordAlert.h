@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,7 @@ typedef NS_OPTIONS(NSUInteger, OUIPasswordAlertOptions) {
     OUIPasswordAlertOptionShowUsername = 1 << 0,
     OUIPasswordAlertOptionAllowsEditingUsername = 1 << 1,
     OUIPasswordAlertOptionRequiresPasswordConfirmation = 1 << 2,
+    OUIPasswordAlertOptionSuppressPasswordAutofill = 1 << 3, // attempt to disable iOS 12-style password autofill & strong password suggestion
 };
 
 // This is the placeholder we use when presenting UI with a previously stored password to obfuscate its length

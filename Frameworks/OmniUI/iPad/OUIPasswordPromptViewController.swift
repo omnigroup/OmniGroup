@@ -1,4 +1,4 @@
-// Copyright 2017-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -135,7 +135,7 @@ open class OUIPasswordPromptViewController: UIViewController, UIViewControllerTr
         cancelButton?.backgroundColor = changedAppearance.tableCellBackgroundColor
         okButton?.backgroundColor = changedAppearance.tableCellBackgroundColor
 
-        let keyboardAppearance = changedAppearance.inspectorBackgroundColor.isLightColor() ? UIKeyboardAppearance.light : UIKeyboardAppearance.dark
+        let keyboardAppearance = changedAppearance.inspectorBackgroundColor.isLightColor ? UIKeyboardAppearance.light : UIKeyboardAppearance.dark
         passwordField?.keyboardAppearance = keyboardAppearance
     }
 

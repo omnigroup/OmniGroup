@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,11 @@
 RCS_ID("$Id$");
 
 @implementation OFErrorRecovery
+{
+@private
+    NSString *_localizedRecoveryOption;
+    id _object;
+}
 
 + (NSError *)errorRecoveryErrorWithError:(NSError *)error;
 {
@@ -35,7 +40,7 @@ RCS_ID("$Id$");
     return [NSError errorWithDomain:[error domain] code:[error code] userInfo:userInfo];
 }
 
-- initWithLocalizedRecoveryOption:(NSString *)localizedRecoveryOption object:(id)object;
+- (id)initWithLocalizedRecoveryOption:(NSString *)localizedRecoveryOption object:(id)object;
 {
     if (!(self = [super init]))
         return nil;

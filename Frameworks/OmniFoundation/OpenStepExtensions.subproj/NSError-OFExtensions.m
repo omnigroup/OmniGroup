@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,11 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation NSError (OFExtensions)
 
-- (NSError *)serverCertificateError;
+- (nullable NSError *)serverCertificateError;
 {
     NSString *domain = self.domain;
     if ([domain isEqualToString:NSURLErrorDomain]) {
@@ -36,4 +38,14 @@ RCS_ID("$Id$")
     return [underlying serverCertificateError];
 }
 
+- (NSError *)errorByAddingUserInfo:(NSDictionary *)userInfo;
+{
+    NSMutableDictionary *updatedUserInfo = [[self.userInfo mutableCopy] autorelease] ?: [NSMutableDictionary dictionary];
+    [updatedUserInfo addEntriesFromDictionary:userInfo];
+    NSError *updatedError = [NSError errorWithDomain:self.domain code:self.code userInfo:updatedUserInfo];
+    return updatedError;
+}
+
 @end
+
+NS_ASSUME_NONNULL_END

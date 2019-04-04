@@ -1,4 +1,4 @@
-// Copyright 2013-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -97,145 +97,156 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     
     reply = [reply copy];
     
-    [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch, NSInteger installedToolVersion) {
-        NSData *authorizationData = nil;
-        BOOL shouldInstallOrUpdateTool = versionMismatch;
-        BOOL requiresPrivilegedInstall = NO;
-        
-        __autoreleasing NSError *installError;
-        if (![self _installUpdateWithOptions:OSUInstallerServiceUpdateOptionDryRun requiresPrivilegedInstall:&requiresPrivilegedInstall error:&installError]) {
-            reply(NO, installError, nil);
-            return;
-        }
-        
-        if (requiresPrivilegedInstall) {
-            // Update the authorization rights db in /etc/authorization if necessary
-            OSUInstallerSetUpAuthorizationRights();
-            
-            // Pre-authorize for all the necessary rights in one pass.
-            // If successful, install/update the tool if necessary.
-            // If install/update is successful (or unnecessary), return success=YES to the caller with the rights.
-            
-            AuthorizationItem environtmentItems[2] = {};
-            AuthorizationEnvironment environment = { .count = 0, .items = environtmentItems };
-            
-            NSString *bundleName = arguments[OSUInstallerBundleNameKey];
-            if (![NSString isEmptyString:bundleName]) {
-                NSString *format = NSLocalizedString(@"An update to %@ is ready to be installed.", @"Format for authorization prompt when installing an update");
-                NSString *string = [NSString stringWithFormat:format, bundleName];
-                const char *prompt = [string UTF8String];
-                
-                int index = environment.count++;
-                AuthorizationItem *item = &environment.items[index];
-                
-                item->name = kAuthorizationEnvironmentPrompt;
-                item->valueLength = strlen(prompt);
-                item->value = (void *)prompt;
-                item->flags = 0;
-            }
-            
-            NSString *iconPath = arguments[OSUInstallerBundleIconPathKey];
-            if (![NSString isEmptyString:bundleName]) {
-                const char *path = [[NSFileManager defaultManager] fileSystemRepresentationWithPath:iconPath];
-                
-                int index = environment.count++;
-                AuthorizationItem *item = &environment.items[index];
-                
-                item->name = kAuthorizationEnvironmentIcon;
-                item->valueLength = strlen(path);
-                item->value = (void *)path;
-                item->flags = 0;
-            }
-            
-            AuthorizationItem items[3] = {};
-            AuthorizationRights rights = { .count = 0, .items = items};
-            int index = 0;
-            AuthorizationItem *item = NULL;
+    BOOL requiresPrivilegedInstall = NO;
 
-            // value is incorrectly marked as non-null by a blanked assume-non-null in Authorization.h in 7.3 beta (7D111g)
-            // rdar://problem/24209238
-            //
-            // Ensure the array is zero filled now, and avoid assigning item->value = NULL
-            memset(items, 0, sizeof(items));
+    __autoreleasing NSError *installError;
+    if (![self _installUpdateWithOptions:OSUInstallerServiceUpdateOptionDryRun requiresPrivilegedInstall:&requiresPrivilegedInstall error:&installError]) {
+        reply(NO, installError, nil);
+        return;
+    }
 
-            if (shouldInstallOrUpdateTool) {
-                index = rights.count++;
-                item = &rights.items[index];
-
-                item->name = kSMRightBlessPrivilegedHelper;
-                item->valueLength = 0;
-//              item->value = NULL;
-                item->flags = 0;
-                
-                index = rights.count++;
-                item = &rights.items[index];
-                
-                item->name = kSMRightModifySystemDaemons;
-                item->valueLength = 0;
-//              item->value = NULL;
-                item->flags = 0;
-            }
-            
-            index = rights.count++;
-            item = &rights.items[index];
-            
-            item->name = [OSUInstallUpdateRightName UTF8String];
-            item->valueLength = 0;
-//          item->value = NULL;
-            item->flags = 0;
-            
-            // We have to ask for the rights in the XPC service. AuthorizationCreate will return errAuthorizationDenied in a sandboxed application.
-            // The downside of doing it here is that the authorization dialog will use the filesystem name of our bundle, which is required to match its bundle identifier.
-            
-            AuthorizationRef authorizationRef = NULL;
-            AuthorizationFlags flags = (kAuthorizationFlagInteractionAllowed | kAuthorizationFlagExtendRights | kAuthorizationFlagPreAuthorize);
-            OSStatus status = AuthorizationCreate(&rights, &environment, flags, &authorizationRef);
-            if (status != errAuthorizationSuccess) {
-                NSDictionary *userInfo = @{
-                                           OBFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
-                                           };
-                NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
-                reply(NO, error, nil);
-                return;
-            }
-            
-            // Create the external authorization data to return to our client (and for internal use)
-            
-            AuthorizationExternalForm externalForm;
-            status = AuthorizationMakeExternalForm(authorizationRef, &externalForm);
-            if (status != errAuthorizationSuccess) {
-                NSDictionary *userInfo = @{
-                                           OBFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
-                                           };
-                NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
-                reply(NO, error, nil);
-                return;
-            }
-            
-            authorizationData = [NSData dataWithBytes:&externalForm length:sizeof(externalForm)];
-            
-            // Hold on to our authorization token for the lifetime of this connection
-            self.authorizationToken = authorizationRef;
-            authorizationRef = NULL;
-            
-            // Install/update the tool if necessary
-            
-            __autoreleasing NSError *updateToolError;
-            if (shouldInstallOrUpdateTool && ![self updatePrivilegedHelperToolWithAuthorizationData:authorizationData installedToolVersion:installedToolVersion error:&updateToolError]) {
-                reply(NO, updateToolError, nil);
-                return;
-            }
-        }
-        
+    __block NSData *authorizationData = nil;
+    void (^prepareTrampolineAndReply)(void) = ^{
         __autoreleasing NSError *prepareError;
         if (![self _prepareTrampolineTool:&prepareError]) {
             reply(NO, prepareError, nil);
+        } else {
+            self.preflightSuccessful = YES;
+            reply(YES, nil, authorizationData);
+        }
+    };
+
+    if (!requiresPrivilegedInstall) {
+        prepareTrampolineAndReply();
+        return;
+    }
+
+    [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch, NSInteger installedToolVersion) {
+        BOOL shouldInstallOrUpdateTool = versionMismatch;
+
+        // Update the authorization rights db in /etc/authorization if necessary
+        OSUInstallerSetUpAuthorizationRights();
+
+        // Pre-authorize for all the necessary rights in one pass.
+        // If successful, install/update the tool if necessary.
+        // If install/update is successful (or unnecessary), return success=YES to the caller with the rights.
+
+        AuthorizationItem environtmentItems[2] = {};
+        AuthorizationEnvironment environment = { .count = 0, .items = environtmentItems };
+
+        NSString *bundleName = arguments[OSUInstallerBundleNameKey];
+        if (![NSString isEmptyString:bundleName]) {
+            NSString *format = NSLocalizedString(@"An update to %@ is ready to be installed.", @"Format for authorization prompt when installing an update");
+            NSString *string = [NSString stringWithFormat:format, bundleName];
+            const char *prompt = [string UTF8String];
+
+            int index = environment.count++;
+            AuthorizationItem *item = &environment.items[index];
+
+            item->name = kAuthorizationEnvironmentPrompt;
+            item->valueLength = strlen(prompt);
+            item->value = (void *)prompt;
+            item->flags = 0;
+        }
+
+        NSString *iconPath = arguments[OSUInstallerBundleIconPathKey];
+        if (![NSString isEmptyString:bundleName]) {
+            const char *path = [[NSFileManager defaultManager] fileSystemRepresentationWithPath:iconPath];
+
+            int index = environment.count++;
+            AuthorizationItem *item = &environment.items[index];
+
+            item->name = kAuthorizationEnvironmentIcon;
+            item->valueLength = strlen(path);
+            item->value = (void *)path;
+            item->flags = 0;
+        }
+
+        AuthorizationItem items[3] = {};
+        AuthorizationRights rights = { .count = 0, .items = items};
+        int index = 0;
+        AuthorizationItem *item = NULL;
+
+        // value is incorrectly marked as non-null by a blanked assume-non-null in Authorization.h in 7.3 beta (7D111g)
+        // rdar://problem/24209238
+        //
+        // Ensure the array is zero filled now, and avoid assigning item->value = NULL
+        memset(items, 0, sizeof(items));
+
+        if (shouldInstallOrUpdateTool) {
+            index = rights.count++;
+            item = &rights.items[index];
+
+            item->name = kSMRightBlessPrivilegedHelper;
+            item->valueLength = 0;
+            //              item->value = NULL;
+            item->flags = 0;
+
+            index = rights.count++;
+            item = &rights.items[index];
+
+            item->name = kSMRightModifySystemDaemons;
+            item->valueLength = 0;
+            //              item->value = NULL;
+            item->flags = 0;
+        }
+
+        index = rights.count++;
+        item = &rights.items[index];
+
+        item->name = [OSUInstallUpdateRightName UTF8String];
+        item->valueLength = 0;
+        //          item->value = NULL;
+        item->flags = 0;
+
+        // We have to ask for the rights in the XPC service. AuthorizationCreate will return errAuthorizationDenied in a sandboxed application.
+        // The downside of doing it here is that the authorization dialog will use the filesystem name of our bundle, which is required to match its bundle identifier.
+
+        AuthorizationRef authorizationRef = NULL;
+        AuthorizationFlags flags = (kAuthorizationFlagInteractionAllowed | kAuthorizationFlagExtendRights | kAuthorizationFlagPreAuthorize);
+        OSStatus status = AuthorizationCreate(&rights, &environment, flags, &authorizationRef);
+        if (status != errAuthorizationSuccess) {
+            NSDictionary *userInfo = @{
+                                       OBFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
+                                       };
+            NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
+            reply(NO, error, nil);
             return;
         }
-        
-        self.preflightSuccessful = YES;
-        reply(YES, nil, authorizationData);
+
+        // Create the external authorization data to return to our client (and for internal use)
+
+        AuthorizationExternalForm externalForm;
+        status = AuthorizationMakeExternalForm(authorizationRef, &externalForm);
+        if (status != errAuthorizationSuccess) {
+            NSDictionary *userInfo = @{
+                                       OBFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
+                                       };
+            NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
+            reply(NO, error, nil);
+            return;
+        }
+
+        authorizationData = [NSData dataWithBytes:&externalForm length:sizeof(externalForm)];
+
+        // Hold on to our authorization token for the lifetime of this connection
+        self.authorizationToken = authorizationRef;
+        authorizationRef = NULL;
+
+        // Install/update the tool if necessary
+
+        __autoreleasing NSError *updateToolError;
+        if (shouldInstallOrUpdateTool && ![self updatePrivilegedHelperToolWithAuthorizationData:authorizationData installedToolVersion:installedToolVersion error:&updateToolError]) {
+            reply(NO, updateToolError, nil);
+            return;
+        }
+
+        prepareTrampolineAndReply();
     }];
+}
+
+- (void)prepareTrampoline
+{
 }
 
 - (void)installUpdate:(NSDictionary *)arguments reply:(void (^)(BOOL success, NSError *error))reply;
@@ -283,13 +294,25 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
 
 #pragma mark Privileged Helper Installer
 
+static void _afterDelayPerformBlockOnMainThread(NSTimeInterval delay, void (^block)(void));
+static void _afterDelayPerformBlockOnMainThread(NSTimeInterval delay, void (^block)(void))
+{
+    block = [block copy];
+    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * 1e9) /* dispatch_time() takes nanoseconds */);
+    dispatch_after(startTime, dispatch_get_main_queue(), block);
+}
+
 - (void)checkPrivilegedHelperToolVersionWithReply:(void (^)(BOOL versionMismatch, NSInteger installedToolVersion))reply;
 {
     // We require that the installed tool have the same version as our embedded tool to ensure we have precisely compatible protocols.
     // SMJobBless automatically takes care of upgrading the tool if necessary (but only does so after forcing you to prompt for credentials.)
     // It doesn't handle the case of wanting to downgrade the tool (which we no longer do -- see -updatePrivilegedHelperToolWithAuthorizationData:installedToolVersion:error:).
     // SMJobCopyDictionary() is deprecated, so we poke the helper tool no matter what. If it isn't installed, we'll get back an error (NSCocoaErrorDomain/NSXPCConnectionInvalid).
-    
+
+#ifdef DEBUG_kc
+        NSLog(@"DEBUG: OSUInstallerService: version check: checking %@", OSUInstallerPrivilegedHelperJobLabel);
+#endif
+
     NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperJobLabel options:NSXPCConnectionPrivileged];
     connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerPrivilegedHelper)];
     [connection resume];
@@ -302,10 +325,29 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         [connection invalidate];
         reply(YES, 0);
     }];
-    
+
+    __block NSConditionLock *hasSentReplyLock = [[NSConditionLock alloc] initWithCondition:NO];
+    __block void (^replyOnce)(BOOL versionMismatch, NSInteger installedToolVersion) = ^(BOOL versionMismatch, NSInteger installedToolVersion) {
+        [hasSentReplyLock lock];
+        if (!hasSentReplyLock.condition) {
+            reply(versionMismatch, installedToolVersion);
+        }
+        [hasSentReplyLock unlockWithCondition:YES];
+    };
+
+    _afterDelayPerformBlockOnMainThread(1.0, ^{
+#ifdef DEBUG_kc
+        NSLog(@"DEBUG: OSUInstallerService: version check: timed out");
+#endif
+        replyOnce(YES, 0); // the old helper tool isn't responding, let's install a new one
+    });
+
     [remoteProxy getVersionWithReply:^(NSUInteger version) {
+#ifdef DEBUG_kc
+        NSLog(@"DEBUG: OSUInstallerService: version check: installed is %@, expected is %@", @(version), @(OSUInstallerPrivilegedHelperVersion));
+#endif
         [connection invalidate];
-        reply(version != OSUInstallerPrivilegedHelperVersion, version);
+        replyOnce(version != OSUInstallerPrivilegedHelperVersion, version);
     }];
 }
 

@@ -29,6 +29,7 @@ OAFindController.m
 OAFindPattern.m
 OAFontCache.m
 OAImages.m
+OAMoreInfoErrorRecovery.m
 OAPasteboardHelper.m
 OARegExFindPattern.m
 OAScriptToolbarHelper.m

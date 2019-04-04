@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -220,6 +220,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }
     
     // Preflight any Authorization Rights we'll need to install/update the privileged helper tool, and install the update
+    UPDATE_STATUS((NSLocalizedStringFromTableInBundle(@"Checking Permissions…", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"status description")));
 
     NSXPCConnection *connection = self.connection;
     id <OSUInstallerService> remoteObjectProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {

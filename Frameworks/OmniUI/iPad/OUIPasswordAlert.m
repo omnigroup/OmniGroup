@@ -92,7 +92,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
             __strong typeof(weakSelf) strongSelf = weakSelf;
             strongSelf.usernameTextField = textField;
             strongSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text - username field of login/password prompt");
-            strongSelf.usernameTextField.textContentType = UITextContentTypeUsername;
+            strongSelf.usernameTextField.textContentType = [strongSelf _usernameFieldTextContentType];
         }];
     }
     
@@ -371,8 +371,21 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:nil];
 }
 
+- (UITextContentType)_usernameFieldTextContentType;
+{
+    if ((_options & OUIPasswordAlertOptionSuppressPasswordAutofill) != 0) {
+        return nil;
+    }
+    
+    return UITextContentTypeUsername;
+}
+
 - (UITextContentType)_passwordFieldTextContentType;
 {
+    if ((_options & OUIPasswordAlertOptionSuppressPasswordAutofill) != 0) {
+        return nil;
+    }
+    
     if ((_options & OUIPasswordAlertOptionRequiresPasswordConfirmation) != 0) {
         if (@available(iOS 12.0, *)) {
             return UITextContentTypeNewPassword;

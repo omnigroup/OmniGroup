@@ -14,7 +14,8 @@ open class RoundRectButton: UIButton {
     }
     
     open class var defaultPadding: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: self.defaultCornerRadius, bottom: 0, right: self.defaultCornerRadius)
+        let horizontalPadding = min(20, defaultCornerRadius)
+        return UIEdgeInsets(top: 0, left: horizontalPadding, bottom: 0, right: horizontalPadding)
     }
     
     // MARK: Instance API
@@ -138,6 +139,18 @@ open class RoundRectButton: UIButton {
             size.width += (padding.left + padding.right)
             size.height += (padding.top + padding.bottom)
             return size
+        }
+    }
+    
+    private var minimumHeightConstraint: NSLayoutConstraint? = nil
+    
+    open override func updateConstraints() {
+        super.updateConstraints()
+        
+        if minimumHeightConstraint == nil {
+            let minimumHeightConstraint = heightAnchor.constraint(greaterThanOrEqualToConstant: 40)
+            NSLayoutConstraint.activate([minimumHeightConstraint])
+            self.minimumHeightConstraint = minimumHeightConstraint
         }
     }
     
