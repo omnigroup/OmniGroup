@@ -10,14 +10,14 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 10.0 for all platforms. You'll probably have the best results if you do too.
+- We currently use Xcode 10.2 for all platforms. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
 Supported Targets
 ----------------------
 
-- We require macOS 10.13, iOS 11.3, and watchOS 4.0, with our deployment builds happening on macOS Mojave 10.14.
+- We require macOS 10.13.2, iOS 11.3, and watchOS 4.0, with our deployment builds happening on macOS Mojave 10.14.4.
 
 Configuring the Source
 ----------------------
