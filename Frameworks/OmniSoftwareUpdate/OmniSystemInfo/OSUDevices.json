@@ -286,6 +286,14 @@
     "name": "iPad mini 4 (LTE)",
     "platform": "iPad5,2"
   },
+  "J210AP": {
+    "name": "iPad mini (5th generation) (Wi-Fi)",
+    "platform": "iPad11,1"
+  },
+  "J211AP": {
+    "name": "iPad mini (5th generation) (LTE)",
+    "platform": "iPad11,2"
+  },
   "J81AP": {
     "name": "iPad Air 2 (Wi-Fi)",
     "platform": "iPad5,3"
@@ -293,6 +301,14 @@
   "J82AP": {
     "name": "iPad Air 2 (LTE)",
     "platform": "iPad5,4"
+  },
+  "J217AP": {
+    "name": "iPad Air (3rd generation) (Wi-Fi)",
+    "platform": "iPad11,3"
+  },
+  "J218AP": {
+    "name": "iPad Air (3rd generation) (LTE)",
+    "platform": "iPad11,4"
   },
   "J127AP": {
     "name": "iPad Pro",

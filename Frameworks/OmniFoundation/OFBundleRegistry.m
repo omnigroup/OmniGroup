@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,7 +71,7 @@ static NSUserDefaults *StandardUserDefaults = nil;
     
 #ifdef OMNI_ASSERTIONS_ON
     do {
-        if ([[NSBundle mainBundle] bundleIdentifier] == nil)
+        if ([[NSBundle mainBundle] bundleIdentifier] == nil || OFIsRunningUnitTests())
             // This *could* possibly be a horribly misconfigured app, but you aren't going to get very far if so. The most likely case is that this is a command line tool which doesn't have a real Info.plist.
             break;
         

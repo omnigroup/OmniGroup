@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ public extension UIViewController {
 
     // This doesn't work when the left pane is displayed as an overlay -- in that case the `parent` of the sidebar navigation controller is nil and instead the multi-pane controller is its presenting view controller.
     
-    @objc public var multiPaneController: MultiPaneController? {
+    @objc var multiPaneController: MultiPaneController? {
         if let mulitPane = self as? MultiPaneController {
             return mulitPane
         }

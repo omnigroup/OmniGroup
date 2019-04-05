@@ -24,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
+/// An error with a @(NO) for this user info key will not get an error reporting option.
+extern NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey;
+
 /// Posted when attention is sought or no longer sought. Notifications user info will have key for the sort of attention, mapping to a boolean value which is YES if attention is sought or NO if attention is no longer sought.
 extern NSNotificationName const OUIAttentionSeekingNotification;
 /// The key for when attention is sought for new "News" from Omni.
@@ -44,10 +47,23 @@ extern NSString * const OUIAttentionSeekingForNewsKey;
 + (nonnull instancetype)sharedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 + (NSString *)applicationName;
-+ (nullable NSString *)applicationEdition;
-+ (nullable NSString *)helpEdition;
-+ (nullable NSString *)helpTitle;
-+ (BOOL)inSandboxStore;
+
+typedef NS_OPTIONS(NSUInteger, OUIApplicationEditionOptions) {
+    OUIApplicationEditionOptionsNone                        = 0,
+    OUIApplicationEditionOptionsIncludeApplicationName      = 1 << 0,
+    OUIApplicationEditionOptionsIncludeMajorVersionNumber   = 1 << 1,
+    OUIApplicationEditionOptionsVerbose                     = (OUIApplicationEditionOptionsIncludeApplicationName | OUIApplicationEditionOptionsIncludeMajorVersionNumber),
+};
+
+@property (class, nonatomic, nullable, readonly) NSString *applicationEdition;
++ (nullable NSString *)applicationEditionWithOptions:(OUIApplicationEditionOptions)options;
+
+@property (class, nonatomic, nullable, readonly) NSString *majorVersionNumberString;
+
+@property (class, nonatomic, nullable, readonly) NSString *helpEdition;
+@property (class, nonatomic, nullable, readonly) NSString *helpTitle;
+
+@property (class, nonatomic, readonly, getter=inSandboxStore) BOOL sandboxStore;
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 + (void)openURL:(NSURL*)url options:(NSDictionary<NSString *, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion NS_AVAILABLE_IOS(10_0) NS_EXTENSION_UNAVAILABLE_IOS("");

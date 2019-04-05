@@ -105,6 +105,8 @@
 		3406EC831D1C8F7A00D41DC9 /* OFFileTypeDescription.h in Headers */ = {isa = PBXBuildFile; fileRef = 3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3406EC841D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		3406EC851D1C8F7A00D41DC9 /* OFFileTypeDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		3409DFAD2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
+		3409DFAE2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */; };
 		340CDBD6098A9E03006270CA /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340CDBD5098A9E03006270CA /* ExceptionHandling.framework */; };
 		341657550FEB31CD00F4CED4 /* CFData-OFCompression.h in Headers */ = {isa = PBXBuildFile; fileRef = 341657510FEB31CD00F4CED4 /* CFData-OFCompression.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341657560FEB31CD00F4CED4 /* CFData-OFCompression.m in Sources */ = {isa = PBXBuildFile; fileRef = 341657520FEB31CD00F4CED4 /* CFData-OFCompression.m */; };
@@ -128,6 +130,8 @@
 		34236ABC1D2C6F0100A079AE /* NSDecimalNumber-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51D42FE8AAEA611C9CC38 /* NSDecimalNumber-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3423F0C116F249900057B9DD /* OFSyncClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3423F0BF16F249900057B9DD /* OFSyncClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3423F0C316F249900057B9DD /* OFSyncClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3423F0C016F249900057B9DD /* OFSyncClient.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		34249B6E2242A4F800C1A988 /* ResourceLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34249B692242A4F800C1A988 /* ResourceLocation.swift */; };
+		34249B6F2242A4F800C1A988 /* ResourceLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34249B692242A4F800C1A988 /* ResourceLocation.swift */; };
 		342535AE128CBB7A009EFAC0 /* OFGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */; };
 		342691D417C578F700B1372F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 349E02551649AE5400E466F5 /* Foundation.framework */; };
 		342691D617C578F700B1372F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 342691D517C578F700B1372F /* CoreGraphics.framework */; };
@@ -760,6 +764,8 @@
 		34A2CDF70D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CDF50D865A6100219E36 /* OFEnumNameTable-OFFlagMask.m */; };
 		34A2CE8B0D865E9200219E36 /* OFCharacterScanner-OFTrie.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2CE8C0D865E9200219E36 /* OFCharacterScanner-OFTrie.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */; };
+		34A4C3F1224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */; };
+		34A4C3F2224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */; };
 		34A6BB7E1BFD3B9E00817661 /* NSBundle-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A6BB7D1BFD3B9E00817661 /* NSBundle-OFExtensions.swift */; };
 		34A6BB7F1BFD3B9E00817661 /* NSBundle-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A6BB7D1BFD3B9E00817661 /* NSBundle-OFExtensions.swift */; };
 		34A8C2AD10532007004244E9 /* OFReadWriteFileBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A8C2AB10532007004244E9 /* OFReadWriteFileBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1986,6 +1992,7 @@
 		34066C751922C019008AC3DB /* OFNetStateMock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFNetStateMock.m; sourceTree = "<group>"; };
 		3406EC801D1C8F7A00D41DC9 /* OFFileTypeDescription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFFileTypeDescription.h; sourceTree = "<group>"; };
 		3406EC811D1C8F7A00D41DC9 /* OFFileTypeDescription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFFileTypeDescription.m; sourceTree = "<group>"; };
+		3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceTypePredicate.swift; sourceTree = "<group>"; };
 		340B4E2B1C1259A6006C40D8 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
 		340B4E2C1C1259A6006C40D8 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
 		340B4E2D1C1259A6006C40D8 /* Touch-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -2024,6 +2031,7 @@
 		34203FB91D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLParserUnparsedElementTests.m; sourceTree = "<group>"; };
 		3423F0BF16F249900057B9DD /* OFSyncClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSyncClient.h; sourceTree = "<group>"; };
 		3423F0C016F249900057B9DD /* OFSyncClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSyncClient.m; sourceTree = "<group>"; };
+		34249B692242A4F800C1A988 /* ResourceLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceLocation.swift; sourceTree = "<group>"; };
 		342535A9128CB9AD009EFAC0 /* OFGeometryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFGeometryTests.m; sourceTree = "<group>"; };
 		342691D317C578F600B1372F /* OFNetStateNotifier.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OFNetStateNotifier.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		342691D517C578F700B1372F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -2264,6 +2272,7 @@
 		34A2CE890D865E9200219E36 /* OFCharacterScanner-OFTrie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OFCharacterScanner-OFTrie.h"; sourceTree = "<group>"; };
 		34A2CE8A0D865E9200219E36 /* OFCharacterScanner-OFTrie.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OFCharacterScanner-OFTrie.m"; sourceTree = "<group>"; };
 		34A4978706498FE80097A113 /* OFStringExtensionsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFStringExtensionsTest.m; sourceTree = "<group>"; };
+		34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceBookmarks.swift; sourceTree = "<group>"; };
 		34A6BB7D1BFD3B9E00817661 /* NSBundle-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSBundle-OFExtensions.swift"; sourceTree = "<group>"; };
 		34A71C3F0663D4F40097A113 /* NSObjectSpecifier-OFFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObjectSpecifier-OFFixes.m"; sourceTree = "<group>"; };
 		34A71C400663D4F40097A113 /* OFAddScriptCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFAddScriptCommand.h; sourceTree = "<group>"; };
@@ -2838,6 +2847,9 @@
 				1E5F988D1D888D2D00A85BC3 /* OFDocumentEncryption-ObjC.h */,
 				1E793E4D1D7F635B00D889B4 /* OFDocumentEncryption.md */,
 				1E3184AF1DADE81B0022430C /* OFDocumentEncryption.rnc */,
+				34249B692242A4F800C1A988 /* ResourceLocation.swift */,
+				34A4C3F0224AD4C4002E5942 /* ResourceBookmarks.swift */,
+				3409DFAC2243FAED006C6019 /* ResourceTypePredicate.swift */,
 			);
 			name = FileManagement;
 			path = FileManagement.subproj;
@@ -4919,7 +4931,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1020;
 				TargetAttributes = {
 					34F16B19194F6C3200AD9C4D = {
 						CreatedOnToolsVersion = 6.0;
@@ -5581,6 +5593,7 @@
 				34F16C3B194F79A200AD9C4D /* OFXMLInternedStringTable.m in Sources */,
 				34F16BD8194F76A600AD9C4D /* NSData-OFEncoding.m in Sources */,
 				34F16C30194F797C00AD9C4D /* OFXMLString.m in Sources */,
+				34249B6F2242A4F800C1A988 /* ResourceLocation.swift in Sources */,
 				34F16BBC194F755C00AD9C4D /* CFData-OFExtensions.m in Sources */,
 				34EE65451DB7CABB00647BC7 /* OFDiagnostics.swift in Sources */,
 				34F16BD2194F768E00AD9C4D /* NSArray-OFExtensions.m in Sources */,
@@ -5613,10 +5626,12 @@
 				34F16B59194F6E4900AD9C4D /* OFErrorRecovery.m in Sources */,
 				42F109771F704375003D3BDD /* OFDocumentEncryption-Inspection.swift in Sources */,
 				34D07D491C90B6FB009438F9 /* OFSelectionSet.swift in Sources */,
+				3409DFAE2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */,
 				34F16B61194F6E6B00AD9C4D /* OFRelativeDateParser-Internal.m in Sources */,
 				34F16B55194F6E3700AD9C4D /* OFNetStateNotifier.m in Sources */,
 				34F16BD6194F76A100AD9C4D /* NSData-OFCompression.m in Sources */,
 				34F16BDE194F76C000AD9C4D /* NSDictionary-OFExtensions.m in Sources */,
+				34A4C3F2224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */,
 				34F16BE2194F76D000AD9C4D /* NSFileManager-OFSimpleExtensions.m in Sources */,
 				1EA896771D651F1D0058942E /* SecItem-OFExtensions.swift in Sources */,
 				34F16BBE194F756200AD9C4D /* CFData-OFFileIO.m in Sources */,
@@ -5775,6 +5790,7 @@
 				347061681BF65666009BC3AB /* OFSelectionSet.m in Sources */,
 				4A4E06BB08AA72B10098FF0F /* OFBTree.m in Sources */,
 				3E378DE51DDCB78E007F6BC4 /* OFSymmetricKeywrap.m in Sources */,
+				34A4C3F1224AD4C4002E5942 /* ResourceBookmarks.swift in Sources */,
 				4A4E06BD08AA72B10098FF0F /* OFBulkBlockPool.m in Sources */,
 				3E5F9983177CAC6600E53E41 /* OFOrderedMutableDictionary.m in Sources */,
 				1E51D9BA1D638C42004A6DED /* OFASN1Utilities-Construction.m in Sources */,
@@ -5866,7 +5882,9 @@
 				4A4E072108AA72B10098FF0F /* NSUndoManager-OFExtensions.m in Sources */,
 				4A4E072208AA72B10098FF0F /* NSUserDefaults-OFExtensions.m in Sources */,
 				347F09171A9D2CCF00B05908 /* OFFileMotionResult.m in Sources */,
+				34249B6E2242A4F800C1A988 /* ResourceLocation.swift in Sources */,
 				4A4E072508AA72B10098FF0F /* OFChildScheduler.m in Sources */,
+				3409DFAD2243FAED006C6019 /* ResourceTypePredicate.swift in Sources */,
 				4A4E072608AA72B10098FF0F /* OFConcreteInvocation.m in Sources */,
 				4A4E072708AA72B10098FF0F /* OFDedicatedThreadScheduler.m in Sources */,
 				4A4E072808AA72B10098FF0F /* OFDelayedEvent.m in Sources */,

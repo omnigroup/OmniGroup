@@ -1,4 +1,4 @@
-// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,9 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 #ifdef OMNI_ASSERTIONS_ON
 
-OBDidLoad(^{
+static void _checkProcessEntitlements(void);
+static void _checkProcessEntitlements(void)
+{
     // Plug-ins don't ask for these entitlements, so don't check for them.
     NSString *pathExtension = NSBundle.mainBundle.bundleURL.pathExtension;
     if ([pathExtension isEqualToString:@"appex"]) {
@@ -29,7 +31,8 @@ OBDidLoad(^{
     
     if ([[NSProcessInfo processInfo] isSandboxed]) {
         NSDictionary *entitlements = [[NSProcessInfo processInfo] effectiveCodeSigningEntitlements:NULL];
-        
+        OBASSERT([entitlements boolForKey:@"com.apple.security.automation.apple-events"], "Sending email requires the com.apple.security.automation.apple-events entitlement under Mojave's hardened runtime.");
+
         NSDictionary *scriptingTargets = entitlements[@"com.apple.security.scripting-targets"];
         NSArray *mailAccessGroups = scriptingTargets[@"com.apple.mail"];
         OBASSERT([mailAccessGroups containsObject:@"com.apple.mail.compose"], "Missing scripting target entitlement needed in order to compose feedback message in Mail on Mountain Lion.");
@@ -40,6 +43,10 @@ OBDidLoad(^{
         OBASSERT([appleEventExceptions containsObject:@"com.barebones.mailsmith"], "Missing temporary exception entitlement needed in order to compose feedback message in Mailsmith.");
         OBASSERT([appleEventExceptions containsObject:@"com.microsoft.entourage"], "Missing temporary exception entitlement needed in order to compose feedback message in Entourage.");
     }
+}
+
+OBDidLoad(^{
+    _checkProcessEntitlements();
 });
 
 #endif

@@ -183,7 +183,7 @@
 		00E51EB7FE8AB1FF11C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
 		00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
+		344B66772255286A000E2CD4 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
 		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
 		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
 		34DC600E1DB92EA8008D7C87 /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
@@ -675,17 +675,17 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1020;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
 				de,
 				ja,
 				fr,
+				en,
 			);
 			mainGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
 			productRefGroup = 00E51E86FE8AB1FF11C9CC38 /* OmniNetworking */;
@@ -853,7 +853,7 @@
 		18EAC01DFFC40E94C697A14E /* OmniNetworking.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				18EAC01EFFC40E94C697A14E /* English */,
+				344B66772255286A000E2CD4 /* en */,
 			);
 			name = OmniNetworking.strings;
 			sourceTree = "<group>";

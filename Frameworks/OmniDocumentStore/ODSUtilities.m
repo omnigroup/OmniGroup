@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,9 +40,9 @@ BOOL ODSIsZipFileType(NSString *uti)
 {
     // Check both of the semi-documented system UTIs for zip (in case one goes away or something else weird happens).
     // Also check for a temporary hack UTI we had, in case the local LaunchServices database hasn't recovered.
-    return OFTypeConformsTo(uti, CFSTR("com.pkware.zip-archive")) ||
-    OFTypeConformsTo(uti, CFSTR("public.zip-archive")) ||
-    OFTypeConformsTo(uti, CFSTR("com.omnigroup.zip"));
+    return ([uti isEqualToString:@"com.pkware.zip-archive"] ||
+            [uti isEqualToString:_OFAsNSString(kUTTypeZipArchive)] ||
+            [uti isEqualToString:@"com.omnigroup.zip"]);
 }
 
 OFScanDirectoryFilter ODSScanDirectoryExcludeSytemFolderItemsFilter(void)

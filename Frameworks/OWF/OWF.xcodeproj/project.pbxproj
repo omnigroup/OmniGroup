@@ -617,7 +617,6 @@
 		0343449D001D106CC697A146 /* OWAuthorizationPassword.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWAuthorizationPassword.m; sourceTree = "<group>"; };
 		0343449E001D106CC697A146 /* OWAuthSchemeHTTPBasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OWAuthSchemeHTTPBasic.h; path = HTTP.subproj/OWAuthSchemeHTTPBasic.h; sourceTree = "<group>"; };
 		0343449F001D106CC697A146 /* OWAuthSchemeHTTPBasic.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OWAuthSchemeHTTPBasic.m; path = HTTP.subproj/OWAuthSchemeHTTPBasic.m; sourceTree = "<group>"; };
-		0440AFAAFFCFB94CC697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OWF.strings; sourceTree = "<group>"; };
 		056C5362FF39EDB4C697A146 /* OWParameterizedContentType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWParameterizedContentType.h; sourceTree = "<group>"; };
 		056C5364FF3A3028C697A146 /* OWParameterizedContentType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWParameterizedContentType.m; sourceTree = "<group>"; };
 		0A8379FFFF6AFE3EC697A10E /* OWCannedHTTPSourceProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWCannedHTTPSourceProcessor.h; sourceTree = "<group>"; };
@@ -632,6 +631,7 @@
 		34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = "<group>"; };
 		34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = ../OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		34D02A06167E5CCB005E680B /* OmniNetworking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniNetworking.xcodeproj; path = ../OmniNetworking/OmniNetworking.xcodeproj; sourceTree = "<group>"; };
+		34E3338C2255345A00744CD6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OWF.strings; sourceTree = "<group>"; };
 		3A19FB10000AA35EC697A146 /* OWAuthorizationRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWAuthorizationRequest.h; sourceTree = "<group>"; };
 		3A19FB12000AA594C697A146 /* OWAuthorizationRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWAuthorizationRequest.m; sourceTree = "<group>"; };
 		3D990C66FF2662CBC697A146 /* OWDataStreamCharacterCursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWDataStreamCharacterCursor.h; sourceTree = "<group>"; };
@@ -1688,17 +1688,17 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1020;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				French,
-				German,
 				ja,
+				en,
+				de,
+				fr,
 			);
 			mainGroup = 00E5205AFE8AB39F11C9CC38 /* OWF */;
 			projectDirPath = "";
@@ -2128,7 +2128,7 @@
 		0440AFA9FFCFB94CC697A14E /* OWF.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				0440AFAAFFCFB94CC697A14E /* English */,
+				34E3338C2255345A00744CD6 /* en */,
 			);
 			name = OWF.strings;
 			sourceTree = "<group>";

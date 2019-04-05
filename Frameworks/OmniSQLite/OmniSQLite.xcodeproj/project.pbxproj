@@ -290,17 +290,17 @@
 		BFF16A5806ECEC1300D38503 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1020;
 			};
 			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
+				ja,
+				de,
+				fr,
 			);
 			mainGroup = BFF16A5406ECEC1300D38503;
 			productRefGroup = BFF16A6706ECEC3500D38503 /* Products */;

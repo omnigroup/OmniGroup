@@ -44,7 +44,7 @@ public extension Diffable {
     }
     
     /// Returns a difference value that can be used to update the table or collection view.
-    public func difference(from old: Self, suppressedMovePositions: (sources: Set<IndexPath>, destinations: Set<IndexPath>)? = nil) -> Difference {
+    func difference(from old: Self, suppressedMovePositions: (sources: Set<IndexPath>, destinations: Set<IndexPath>)? = nil) -> Difference {
         let oldSectionIdentifiers = old.sections.map({ $0.differenceIdentifier })
         let sectionIdentifiers = sections.map({ $0.differenceIdentifier })
         precondition(Set(oldSectionIdentifiers).count == oldSectionIdentifiers.count, "Old sections must have unique section identifiers to compute a difference")
@@ -633,9 +633,9 @@ extension WrappedDifferenceComparable: Hashable {
     static func ==<Element>(lhs: WrappedDifferenceComparable<Index, Element>, rhs: WrappedDifferenceComparable<Index, Element>) -> Bool {
         return lhs.value.differenceIdentifier == rhs.value.differenceIdentifier
     }
-    
-    var hashValue: Int {
-        return value.differenceIdentifier.hashValue
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value.differenceIdentifier)
     }
 }
 

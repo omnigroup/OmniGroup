@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,16 +53,23 @@ void OFXMLBufferAppendString(OFXMLBuffer buf, CFStringRef str)
     
     CFIndex availableSpace = buf->size - buf->used;
     CFIndex usedBufLen = 0;
-    
-    // Does not zero terminate.
-    CFIndex charactersConverted = CFStringGetBytes(str, CFRangeMake(0, characterCount), kCFStringEncodingUTF8, 0/*lossByte; loss not allowed*/, false/*isExternalRepresentation*/,
+
+    // CFStringGetBytes does not zero terminate. The loop here is to avoid invalid surrogate pairs. All characters are representable in UTF-8, but half of a surrogate pair isn't a valid character at all and will cause CFStringGetBytes to terminate conversion early. In that case, we can skip an extra character (in the UTF-16 sense of the source `str`).
+    CFIndex startingCharacter = 0;
+    while (startingCharacter < characterCount) {
+        CFIndex remainingCharacters = characterCount - startingCharacter;
+        CFIndex charactersConverted = CFStringGetBytes(str, CFRangeMake(startingCharacter, remainingCharacters), kCFStringEncodingUTF8, 0/*lossByte; loss not allowed*/, false/*isExternalRepresentation*/,
                                                    &buf->utf8[buf->used], availableSpace, &usedBufLen);
-    if (charactersConverted != characterCount) {
-        OBASSERT_NOT_REACHED("Everything should be representable in UTF-8 and we should have enough space");
-        return;
+        availableSpace -= usedBufLen;
+        buf->used += usedBufLen;
+
+        if (charactersConverted == remainingCharacters) {
+            startingCharacter += charactersConverted;
+        } else {
+            startingCharacter += (charactersConverted + 1);
+            OBASSERT(OFIsRunningUnitTests(), "Unmatched surrogate? If can handle this earlier we should.");
+        }
     }
-    
-    buf->used += usedBufLen;
 }
 
 // TODO: Should probably make callers pass the length (or at least add a variant where they can)

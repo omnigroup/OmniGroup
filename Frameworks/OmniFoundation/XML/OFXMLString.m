@@ -1,4 +1,4 @@
-// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -196,7 +196,7 @@ static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, 
             }
 	} else if (CFCharacterSetIsCharacterMember(entityCharacters, c)) {
 	    // This is a low-ascii, non-whitespace byte and isn't allowed in XML character at all.  Drop it.
-	    OBASSERT(c < 0x20 && c != 0x9 && c != 0xA && c != 0xD);
+	    OBASSERT_IF(!OFIsRunningUnitTests(), c < 0x20 && c != 0x9 && c != 0xA && c != 0xD);
         } else
             // TODO: Might want to have a local buffer of queued characters to append rather than calling this in a loop.  Need to flush the buffer before each append above and after the end of the loop.
             CFStringAppendCharacters(result, &c, 1);
@@ -243,6 +243,10 @@ NSString *OFXMLCreateStringInCFEncoding(NSString *sourceString, CFStringEncoding
                 OFCharacterIsSurrogate(composedCharacters[componentIndex+1]) == OFIsSurrogate_LowSurrogate) {
                 ch = OFCharacterFromSurrogatePair(composedCharacters[componentIndex], composedCharacters[componentIndex+1]);
                 componentIndex ++;
+            } else if (OFCharacterIsSurrogate(composedCharacters[componentIndex]) != OFIsSurrogate_No) {
+                // Unmatched surrogate pair -- continue w/o emitting an entity.
+                componentIndex++;
+                continue;
             } else {
                 ch = composedCharacters[componentIndex];
             }
@@ -271,7 +275,7 @@ NSString *OFXMLCreateStringWithEntityReferencesInCFEncoding(NSString *sourceStri
     if (sourceString == nil)
         return nil;
 
-    OBASSERT(![sourceString containsCharacterInSet:[NSString invalidXMLCharacterSet]]);
+    OBASSERT_IF(!OFIsRunningUnitTests(), ![sourceString containsCharacterInSet:[NSString invalidXMLCharacterSet]]);
     
     str = _OFXMLCreateStringWithEntityReferences(sourceString, entityMask, optionalNewlineString);
     OBASSERT(str);

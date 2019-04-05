@@ -1,4 +1,4 @@
-// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -228,6 +228,53 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
     [preferencesLock unlock];
 }
 
++ (void)registerDefaultValue:(id)value forKey:(NSString *)key options:(OFPreferenceRegistrationOptions)options;
+{
+    NSDictionary *registrationDictionary = @{key: value};
+    [self registerDefaults:registrationDictionary options:options];
+}
+
++ (void)registerDefaults:(NSDictionary<NSString *, id> *)registrationDictionary options:(OFPreferenceRegistrationOptions)options;
+{
+    NSSet<NSString *> *registeredKeys = self.registeredKeys;
+    BOOL shouldOverwriteExistingRegistration = ((options & OFPreferenceRegistrationPreserveExistingRegistrations) == 0);
+
+    BOOL (^shouldRegisterDefaultForKey)(NSString * _Nullable key) = ^BOOL (NSString * _Nullable key) {
+        return (key != nil) && (shouldOverwriteExistingRegistration || ![registeredKeys containsObject:key]);
+    };
+
+    if (registrationDictionary.count == 1) {
+        if (shouldRegisterDefaultForKey(registrationDictionary.allKeys.firstObject)) {
+            [[NSUserDefaults standardUserDefaults] registerDefaults:registrationDictionary];
+            [self recacheRegisteredKeys];
+        }
+    } else {
+        NSMutableArray<NSString *> *filteredKeys = nil;
+
+        for (NSString *key in registrationDictionary) {
+            if (!shouldRegisterDefaultForKey(key)) {
+                if (filteredKeys == nil) {
+                    filteredKeys = [NSMutableArray array];
+                }
+                [filteredKeys addObject:key];
+            }
+        }
+        
+        if (filteredKeys != nil && filteredKeys.count == registrationDictionary.count) {
+            return;
+        }
+        
+        if (filteredKeys != nil) {
+            NSMutableDictionary *filteredRegistrationDictionary = [NSMutableDictionary dictionaryWithDictionary:registrationDictionary];
+            [filteredRegistrationDictionary removeObjectsForKeys:filteredKeys];
+            registrationDictionary = filteredRegistrationDictionary;
+        }
+        
+        [[NSUserDefaults standardUserDefaults] registerDefaults:registrationDictionary];
+        [self recacheRegisteredKeys];
+    }
+}
+
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
 {
     [preferenceNotificationCenter addObserver:anObserver selector:aSelector name:OFPreferenceDidChangeNotification object:aPreference];
@@ -391,10 +438,8 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, _
 
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 {
-    if (![[self registeredKeys] containsObject:key]) {
-        [[NSUserDefaults standardUserDefaults] registerDefaults:@{key: value}];
-        [self recacheRegisteredKeys];
-    }
+    [self registerDefaultValue:value forKey:key options:OFPreferenceRegistrationPreserveExistingRegistrations];
+
     return [self preferenceForKey:key];
 }
 

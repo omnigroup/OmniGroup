@@ -288,7 +288,7 @@ module OmniDataObjects
     def emitSwiftInterface(f)
       return unless needsSwiftInterface?
       accessors = <<EOS
-    public var #{name}: #{swiftValueClass}? {
+    var #{name}: #{swiftValueClass}? {
         get {
             return __#{name}?.#{swiftNSNumberPropertyName}
         }

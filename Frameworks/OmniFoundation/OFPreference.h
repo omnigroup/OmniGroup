@@ -1,4 +1,4 @@
-// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,8 +31,16 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable * _Nullable)enumeration;
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 
-+ (NSSet <NSString *> *)registeredKeys;
+@property(class, nonatomic, readonly) NSSet <NSString *> *registeredKeys;
 + (void)recacheRegisteredKeys;
+
+typedef NS_OPTIONS(NSUInteger, OFPreferenceRegistrationOptions) {
+    OFPreferenceRegistrationOptionNone                      = 0,
+    OFPreferenceRegistrationPreserveExistingRegistrations   = 1 << 0,
+};
+
++ (void)registerDefaultValue:(id)value forKey:(NSString *)key options:(OFPreferenceRegistrationOptions)options;
++ (void)registerDefaults:(NSDictionary<NSString *, id> *)registrationDictionary options:(OFPreferenceRegistrationOptions)options;
 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference * _Nullable)aPreference;
 /** Registers the block to be invoked when the given preference changes.

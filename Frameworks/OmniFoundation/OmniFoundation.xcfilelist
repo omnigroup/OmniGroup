@@ -85,6 +85,9 @@ FileManagement.subproj/OFLockFile.m
 FileManagement.subproj/OFScratchFile.m
 FileManagement.subproj/OFUTI.m
 FileManagement.subproj/OFUTI.swift
+FileManagement.subproj/ResourceBookmarks.swift
+FileManagement.subproj/ResourceLocation.swift
+FileManagement.subproj/ResourceTypePredicate.swift
 Formatters.subproj/OFCapitalizeFormatter.m
 Formatters.subproj/OFDateFormatConversion.m
 Formatters.subproj/OFMetricPrefixFormatter.m

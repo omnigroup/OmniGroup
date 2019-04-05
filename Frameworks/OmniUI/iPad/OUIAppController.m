@@ -235,7 +235,20 @@ static void __iOS7B5CleanConsoleOutput(void)
 
 + (nullable NSString *)applicationEdition;
 {
+    return [self applicationEditionWithOptions:OUIApplicationEditionOptionsNone];
+}
+
++ (nullable NSString *)applicationEditionWithOptions:(OUIApplicationEditionOptions)options;
+{
+    OBRequestConcreteImplementation(self, _cmd);
     return nil;
+}
+
++ (nullable NSString *)majorVersionNumberString;
+{
+    NSString *versionString = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSArray *components = [versionString componentsSeparatedByString:@"."];
+    return components.firstObject;
 }
 
 + (nullable NSString *)helpEdition;
@@ -307,6 +320,8 @@ static void __iOS7B5CleanConsoleOutput(void)
     [sharedApplication openURL:url options:options completionHandler:completion];
 }
 
+NSErrorUserInfoKey const OUIShouldOfferToReportErrorUserInfoKey = @"OUIShouldOfferToReport";
+
 + (BOOL)shouldOfferToReportError:(NSError *)error;
 {
     if (error == nil)
@@ -323,6 +338,11 @@ static void __iOS7B5CleanConsoleOutput(void)
             default:
                 return NO; // But everything else in StoreKit is stuff we have no control over
         }
+    }
+
+    id value = error.userInfo[OUIShouldOfferToReportErrorUserInfoKey];
+    if (value && ![value boolValue]) {
+        return NO;
     }
 
     return YES;

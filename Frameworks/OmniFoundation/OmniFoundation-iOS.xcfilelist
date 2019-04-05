@@ -53,6 +53,9 @@ FileManagement.subproj/OFFileTypeDescription.m
 FileManagement.subproj/OFLockFile.m
 FileManagement.subproj/OFUTI.m
 FileManagement.subproj/OFUTI.swift
+FileManagement.subproj/ResourceBookmarks.swift
+FileManagement.subproj/ResourceLocation.swift
+FileManagement.subproj/ResourceTypePredicate.swift
 Formatters.subproj/OFDateFormatConversion.m
 Formatters.subproj/OFTimeSpan.m
 Formatters.subproj/OFTimeSpanFormatter.m

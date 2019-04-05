@@ -69,12 +69,14 @@ end
 
 module Xcode
   class Target < Object
+    attr_reader :project
     attr_reader :name
     attr_reader :build_phases
     attr_reader :configuration_list
     
     def initialize(project, identifier, dict)
       super
+      @project = project
       @name = dict['name']
       fail unless @name
       
@@ -85,6 +87,11 @@ module Xcode
     def configurations
       @configuration_list.configurations
     end
+    
+    def display_description
+      "Target #{name} of #{project.display_description}"
+    end
+    
   end
   
   class PBXNativeTarget < Target; end
@@ -482,6 +489,10 @@ module Xcode
         end
       }
       return product_name
+    end
+    
+    def display_description
+      "Project #{path}"
     end
     
   end
