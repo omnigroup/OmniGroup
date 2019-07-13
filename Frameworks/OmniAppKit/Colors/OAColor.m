@@ -1136,12 +1136,8 @@ static NSColorSpace *_grayscaleColorSpace(void)
 
 + (OAColor *)colorWithPlatformColor:(NSColor *)color;
 {
-    // Can't call colorSpace on a named color; it will throw.
-    if ([color.colorSpaceName isEqual:NSNamedColorSpace]) {
-        color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-    }
-
-    NSColorSpace *colorSpace = color.colorSpace;
+    // Some colors (e.g. named and pattern colors) will raise an exception when asked for their color space, so the NSColor header suggests this code to get the colorSpace of an arbitrary color whose type you don't know.
+    NSColorSpace *colorSpace = [color colorUsingType:NSColorTypeComponentBased].colorSpace;
     NSColorSpaceModel colorSpaceModel = colorSpace.colorSpaceModel;
 
     if (colorSpaceModel == NSRGBColorSpaceModel) {

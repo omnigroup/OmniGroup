@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -104,13 +104,18 @@ RCS_ID("$Id$")
 
 - (BOOL)shouldAutorotate;
 {
-    NSUInteger rotationLockCount = [OUIRotationLock activeLocks].count;
-    if (rotationLockCount > 0) {
+    UIViewController *wrappedViewController = self.wrappedViewController;
+    
+    if (wrappedViewController != nil && !wrappedViewController.shouldAutorotate) {
         return NO;
     }
-    else {
-        return YES;
+    
+    if (OUIRotationLock.hasActiveLocks) {
+        return NO;
     }
+    
+    return super.shouldAutorotate;
 }
 
 @end
+

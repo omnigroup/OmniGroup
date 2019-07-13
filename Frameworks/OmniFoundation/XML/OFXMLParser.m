@@ -1,4 +1,4 @@
-// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 #import <OmniBase/assertions.h>
 
 #import "OFXMLError.h"
+
+#import <stdatomic.h>
 
 RCS_ID("$Id$");
 
@@ -826,9 +828,11 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 
 @implementation OFXMLParser
 
+static const NSUInteger OFXMLParserDefaultMaximumParseChunkSize = 1024 * 1024 * 4;
+
 + (NSUInteger)defaultMaximumParseChunkSize;
 {
-    return 1024 * 1024 * 4;
+    return OFXMLParserDefaultMaximumParseChunkSize;
 }
 
 - (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject<OFXMLParserTarget> *)target error:(NSError **)outError;
@@ -995,8 +999,17 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     
     NSUInteger maxChunkSize = self.maximumParseChunkSize;
     OBASSERT(maxChunkSize > 0);
-    
-    uint8_t *buffer = malloc(maxChunkSize);
+
+    // Allocating and deallocating our buffer (in particular deallocation) is slow, at least in 10.14.4, spending a bunch of time in free_large -> madvise. Keep around one buffer (of the default size) to reuse.
+    static uint8_t * _Atomic AvailableBuffer = NULL;
+
+    uint8_t *buffer = NULL;
+    if (maxChunkSize == OFXMLParserDefaultMaximumParseChunkSize) {
+        buffer = atomic_exchange(&AvailableBuffer, NULL);
+    }
+    if (buffer == NULL) {
+        buffer = malloc(maxChunkSize);
+    }
     
     do @autoreleasepool {
         NSInteger bytesRead = [inputStream read:buffer maxLength:maxChunkSize];
@@ -1035,8 +1048,17 @@ static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
     if (rc == 0) {
         xmlParseChunk(_state->ctxt, NULL, 0, TRUE);
     }
-    
-    free(buffer);
+
+    if (maxChunkSize == OFXMLParserDefaultMaximumParseChunkSize) {
+        // Try putting the buffer back for another parser to use. If there already was a free buffer, dispose of it.
+        uint8_t *oldBuffer = atomic_exchange(&AvailableBuffer, buffer);
+        if (oldBuffer) {
+            free(oldBuffer);
+        }
+    } else {
+        free(buffer);
+    }
+
     OBASSERT((rc == 0) == (_state->error == nil));
     
     BOOL result = YES;

@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ von %2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "Über %@";
 
 /* MultiPane Back button title, when system is compact */
@@ -26,7 +25,7 @@
 "Cannot Email Diagnostics" = "Diagnose kann nicht per E-Mail gesendet werden";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Text zentriert ausrichten";
+"Center text align" = "Zentriert ausrichten";
 
 /* Certificate trust alert title */
 "Certificate Trust" = "Zertifikatvertrauen";
@@ -91,7 +90,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail wurde auf diesem %@ nicht konfiguriert.";
+"Mail has not been set up on this %@." = "Mail wurde auf diesem %@ nicht eingerichtet.";
 
 /* News menu item
    News view title */
@@ -109,16 +108,13 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni-Newsletter – Anmeldung";
+"Omni Newsletter Signup" = "Omni-Newsletter – Registrierung";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "Kennwort";

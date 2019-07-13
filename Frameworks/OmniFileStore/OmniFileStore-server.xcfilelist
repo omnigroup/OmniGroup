@@ -1,0 +1,14 @@
+$(SRCROOT)/OmniFileStore.xcodeproj/project.pbxproj
+Errors.m
+OFSDAVFileManager.m
+OFSDocumentKey-KeychainStorageSupport-OSX.m
+OFSDocumentKey.m
+OFSEncryptingFileManager.m
+OFSEncryption-Internal.m
+OFSFileByteAcceptor.m
+OFSFileFileManager.m
+OFSFileManager.m
+OFSFileOperation.m
+OFSKeySlots.m
+OFSSegmentedEncryptionProviderAcceptor.m
+OFSSegmentedEncryptionWorker.m

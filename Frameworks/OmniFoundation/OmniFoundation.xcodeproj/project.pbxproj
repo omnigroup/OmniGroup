@@ -1150,6 +1150,8 @@
 		3E9EBCB11CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3E9EBCB81CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
 		3E9EBCB91CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */; };
+		3EA69E522257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */; };
+		3EA69E532257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */; };
 		3EAA8C721DAC4A4F00F61578 /* NSBundle-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342877B108EC788400D89442 /* NSBundle-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EAA8C781DAC4AA000F61578 /* NSBundle-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342877B208EC788400D89442 /* NSBundle-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		420E8D011DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */; };
@@ -2186,6 +2188,7 @@
 		344F2E1B050ABDE60097A113 /* OFXMLWhitespaceBehavior.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLWhitespaceBehavior.m; sourceTree = "<group>"; };
 		344F2EA0050ADFBF0097A113 /* OFXMLString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLString.h; sourceTree = "<group>"; };
 		344F2EA1050ADFBF0097A113 /* OFXMLString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLString.m; sourceTree = "<group>"; };
+		345047002266A2E600A4E922 /* OmniFoundation-server.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniFoundation-server.xcfilelist"; sourceTree = "<group>"; };
 		345069110D747ED4004B40C2 /* OFCrashOnExceptionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFCrashOnExceptionTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		345272C514F092EF003151CA /* OFBindingPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBindingPoint.h; sourceTree = "<group>"; };
 		345272C614F092EF003151CA /* OFBindingPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBindingPoint.m; sourceTree = "<group>"; };
@@ -2395,6 +2398,7 @@
 		3E9EBCAC1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-OFExtendedAttributes.h"; sourceTree = "<group>"; };
 		3E9EBCAD1CAC31C300BB3F24 /* NSFileManager-OFExtendedAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager-OFExtendedAttributes.m"; sourceTree = "<group>"; };
 		3E9EBCB71CAC33A400BB3F24 /* NSFileManagerExtendedAttributesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSFileManagerExtendedAttributesTests.m; sourceTree = "<group>"; };
+		3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OFMultiValueDictionaryTests.m; sourceTree = "<group>"; };
 		3F41140E036614060297A14E /* OFGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFGeometry.h; sourceTree = "<group>"; };
 		3F41140F036614060297A14E /* OFGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFGeometry.m; sourceTree = "<group>"; };
 		420E8D001DF8BE7400F7F774 /* NSProcessInfo-OFExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSProcessInfo-OFExtensions.swift"; sourceTree = "<group>"; };
@@ -3725,6 +3729,7 @@
 				A2C67D890D91AF9100BD7911 /* OFIndexSetTests.m */,
 				34CE1615169DEA0D00219574 /* OFIndexPathTests.m */,
 				06DB16D9FF5DCC3BC697A12F /* OFLowerCaseTest.m */,
+				3EA69E512257E289006D4DCA /* OFMultiValueDictionaryTests.m */,
 				34DC612F06CD08E30097A113 /* OFMutableAttributedStringExtensionsTest.m */,
 				3E4628C1174D671D0032001F /* OFMutableBijectionTests.m */,
 				34E5A2C1192C1975008521AF /* OFMutableKnownKeyDictionaryTests.m */,
@@ -3844,6 +3849,7 @@
 				BF0E642806309CBE0097A147 /* Info.plist */,
 				3439601E214C41D6004E58A5 /* OmniFoundation.xcfilelist */,
 				3478682C223728A2001914C2 /* OmniFoundation-iOS.xcfilelist */,
+				345047002266A2E600A4E922 /* OmniFoundation-server.xcfilelist */,
 				341DDD0F15631D10004DDB5A /* OmniFoundation.defaults */,
 				34A1594705641CC70097A113 /* OmniFoundation.order */,
 				349BD3A515A61FA100AC12AA /* Network */,
@@ -5224,10 +5230,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -5767,6 +5777,7 @@
 				34203FBB1D594A3B005A1496 /* OFXMLParserUnparsedElementTests.m in Sources */,
 				3E40D5961D77554B005E7E38 /* OFTimeSpanFormatterTest.m in Sources */,
 				34DAC7CF194F7E6A00499116 /* OBTestCase.m in Sources */,
+				3EA69E522257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */,
 				1EB9F9FB1A64627E00222BFD /* OFCryptoTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6101,6 +6112,7 @@
 				34BDC53117134B0400F4E9C4 /* OFXMLIdentifierTests.m in Sources */,
 				347CA782192EB43000693624 /* OFXMLMakerTests.m in Sources */,
 				3E4628BA174D39800032001F /* OFBijectionTests.m in Sources */,
+				3EA69E532257E289006D4DCA /* OFMultiValueDictionaryTests.m in Sources */,
 				3E4628D5174D693B0032001F /* OFMutableBijectionTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

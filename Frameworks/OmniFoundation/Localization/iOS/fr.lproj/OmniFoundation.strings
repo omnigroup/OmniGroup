@@ -207,7 +207,7 @@
 "Restore all internal configuration settings to defaults" = "Rétablir les valeurs par défaut de tous les réglages de configuration interne";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
-"s" = "sc";
+"s" = "s";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "second" = "seconde";

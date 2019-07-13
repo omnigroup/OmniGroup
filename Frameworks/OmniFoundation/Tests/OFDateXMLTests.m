@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -463,6 +463,89 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self)
     NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:239687680.999502]; // 2008-08-05 20:54:41 -0700
     NSString *string = [date omnifocusSyncTransactionDateString];
     XCTAssertEqualObjects(string, @"20080806035441");
+}
+
+@end
+
+@interface OFDateXMLMultithreadingTestCase : OFTestCase
+@end
+
+@implementation OFDateXMLMultithreadingTestCase
+
++ (NSUInteger)defaultLimit;
+{
+    return 1000000;
+}
+
+- (NSOperation *)dateFormattingOperationWithSelector:(SEL)formatSelector;
+{
+    return [self dateFormattingOperationWithSelector:formatSelector limit:[[self class] defaultLimit]];
+}
+
+- (NSOperation *)dateFormattingOperationWithSelector:(SEL)formatSelector limit:(NSUInteger)limit;
+{
+    return [NSBlockOperation blockOperationWithBlock:^{
+        for (NSUInteger i = 0; i < limit; i++) {
+            NSString *string = OBSendObjectReturnMessage([NSDate date], formatSelector);
+            OB_UNUSED_VALUE(string);
+        }
+    }];
+}
+
+/// -omnifocusSyncTransactionDateString uses date + time to the second in UTC without separators
+- (void)testOmniFocusSyncTransactionDateStringMultithreaded;
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.maxConcurrentOperationCount = NSOperationQueueDefaultMaxConcurrentOperationCount;
+    
+    queue.suspended = YES;
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(omnifocusSyncTransactionDateString)]];
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(omnifocusSyncTransactionDateString)]];
+    queue.suspended = NO;
+    
+    [queue waitUntilAllOperationsAreFinished];
+}
+
+/// -xmlString uses date + time to the millisecond in UTC with separators
+- (void)testXMLStringMultithreaded;
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.maxConcurrentOperationCount = NSOperationQueueDefaultMaxConcurrentOperationCount;
+    
+    queue.suspended = YES;
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlString)]];
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlString)]];
+    queue.suspended = NO;
+    
+    [queue waitUntilAllOperationsAreFinished];
+}
+
+/// -xmlDateString uses date only in the local time zone
+- (void)testXMLDateStringMultithreaded;
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.maxConcurrentOperationCount = NSOperationQueueDefaultMaxConcurrentOperationCount;
+    
+    queue.suspended = YES;
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlDateString)]];
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlDateString)]];
+    queue.suspended = NO;
+    
+    [queue waitUntilAllOperationsAreFinished];
+}
+
+- (void)testMultipleXMLStringMethodsMultithreaded;
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.maxConcurrentOperationCount = NSOperationQueueDefaultMaxConcurrentOperationCount;
+    
+    queue.suspended = YES;
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlString)]];
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(xmlDateString)]];
+    [queue addOperation:[self dateFormattingOperationWithSelector:@selector(omnifocusSyncTransactionDateString)]];
+    queue.suspended = NO;
+    
+    [queue waitUntilAllOperationsAreFinished];
 }
 
 @end

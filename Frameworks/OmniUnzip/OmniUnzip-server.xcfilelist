@@ -1,0 +1,16 @@
+$(SRCROOT)/OmniUnzip.xcodeproj/project.pbxproj
+NSFileWrapper-Extensions.m
+OUErrors.m
+OUUnzipArchive.m
+OUUnzipEntry.m
+OUUnzipEntryInputStream.m
+OUUtilities.m
+OUZipArchive.m
+OUZipDirectoryMember.m
+OUZipFileMember.m
+OUZipLinkMember.m
+OUZipMember.m
+OUZipRawFileMember.m
+unzip/ioapi.c
+unzip/unzip.c
+unzip/zip.c

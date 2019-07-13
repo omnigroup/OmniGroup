@@ -118,7 +118,7 @@
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Omni ニュースレターの登録";
+"Omni Newsletter Signup" = "Omni ニュースレターのサインアップ";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "パスワード";

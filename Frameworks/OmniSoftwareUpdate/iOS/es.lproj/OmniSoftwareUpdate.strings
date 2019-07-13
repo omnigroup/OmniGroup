@@ -49,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Ayúdanos a decidir compatibilidades con dispositivos y versiones de iOS";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si compartes esta información, nos ayuda con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima.";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous." = "Si compartes esta información, nos ayudas con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\n\nEsta información es totalmente anónima.";
 
 /* Software update report entry name */
 "iOS version" = "Versión de iOS";

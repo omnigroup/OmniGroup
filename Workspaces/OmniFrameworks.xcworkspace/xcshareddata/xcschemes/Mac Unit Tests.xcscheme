@@ -192,6 +192,16 @@
                ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "5FA154BE1D89D1140053543C"
+               BuildableName = "OUUnitTests.xctest"
+               BlueprintName = "OUUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
@@ -243,6 +253,11 @@
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "RunSlowUnitTests"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
          <EnvironmentVariable
             key = "ODAVAccountUsername"
             value = "test"

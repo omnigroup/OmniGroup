@@ -452,6 +452,7 @@
 		3444B0650F71FFFF005CFD59 /* OFSFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSFileManager.m; sourceTree = "<group>"; };
 		3444B0B80F72022C005CFD59 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		3444B0B90F72022C005CFD59 /* Errors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Errors.m; sourceTree = "<group>"; };
+		3450474F2266A3CD00A4E922 /* OmniFileStore-server.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniFileStore-server.xcfilelist"; sourceTree = "<group>"; };
 		3469F2F610FD8F2400FF0307 /* OFSFileManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileManagerDelegate.h; sourceTree = "<group>"; };
 		3474D9881B5EF23E0084B8AE /* OmniFileStore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniFileStore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3474D9901B5EF2590084B8AE /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
@@ -693,6 +694,7 @@
 			children = (
 				3420BBA4214C687600E7A60D /* OmniFileStore.xcfilelist */,
 				347868E722381DC4001914C2 /* OmniFileStore-iOS.xcfilelist */,
+				3450474F2266A3CD00A4E922 /* OmniFileStore-server.xcfilelist */,
 				32DBCF5E0370ADEE00C91783 /* OmniFileStore_Prefix.h */,
 				34415DB51BE06A58001EE0F7 /* OmniFileStore.h */,
 				1EE438061C0D404700231058 /* OmniFileStore.modulemap */,
@@ -1257,10 +1259,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings From Target";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

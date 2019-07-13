@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,6 +52,17 @@ static NSMutableArray *ActiveLockReferences = nil;
     return locks;
 }
 
++ (BOOL)hasActiveLocks;
+{
+    __block BOOL hasActiveLocks = NO;
+    
+    dispatch_sync(LockQueue, ^{
+        hasActiveLocks = (ActiveLockReferences.count != 0);
+    });
+    
+    return hasActiveLocks;
+}
+
 + (instancetype)rotationLock;
 {
     return [[self alloc] _initRotationLock];
@@ -77,15 +88,20 @@ static NSMutableArray *ActiveLockReferences = nil;
         void *ptr = (__bridge void *)self; // don't capture self in the block since we are deallocating.
         dispatch_sync(LockQueue, ^{
             NSUInteger lockIndex = [ActiveLockReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
-                return [ref referencesObject:ptr];
+                return [ref referencesDeallocatingObjectPointer:ptr];
             }];
             
+            if (lockIndex == NSNotFound) {
+                OBASSERT_NOT_REACHED("self not found in ActiveLockReferences.");
+                return;
+            }
+
 #ifdef OMNI_ASSERTIONS_ON
             OFWeakReference *ref = ActiveLockReferences[lockIndex];
-#endif
-            OBASSERT(ref);
+            OBASSERT(ref != nil);
             OBASSERT(ref.object == nil); // We are in -dealloc, so it's weak reference to us should be gone.
-            
+#endif
+
             [ActiveLockReferences removeObjectAtIndex:lockIndex];
         });
     }

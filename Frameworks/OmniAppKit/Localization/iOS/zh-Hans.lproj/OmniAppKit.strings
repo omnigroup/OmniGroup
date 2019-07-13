@@ -7,6 +7,9 @@
 /* button title */
 "Learn More" = "了解更多";
 
+/* error recovery option */
+"More Info <error recovery>" = "更多信息";
+
 /* button title */
 "OK" = "好";
 

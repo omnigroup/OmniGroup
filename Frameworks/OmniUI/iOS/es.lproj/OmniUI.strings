@@ -115,7 +115,7 @@
    Web view error opening URL cancel button. */
 
 
-"OK" = "Aceptar";
+"OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Suscripción al boletín de Omni";
@@ -165,13 +165,13 @@
 "username" = "nombre de usuario";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Has pulsado un enlace que modificará las siguientes preferencias:\n\n“%@”\n\n¿Deseas aceptar estos cambios?";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Has pulsado un enlace que modificará las siguientes preferencias:\n\n“%@”\n\n¿Quieres aceptar estos cambios?";
 
 /* debug setting alert message */
-"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Has pulsado sobre un enlace que ejecutará el siguiente comando de depuración:\n\n“%@”\n\nSi no has recibido instrucciones específicas del equipo de soporte de Omni, no lo hagas.\n¿Deseas ejecutar este comando?";
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Has pulsado sobre un enlace que ejecutará el siguiente comando de depuración:\n\n“%@”\n\nSi no has recibido instrucciones específicas del equipo de soporte de Omni, no lo hagas.\n¿Quieres ejecutar este comando?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Has pulsado una URL especial de Omni:\n\n“%@”\n\n¿Deseas ejecutar este comando?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Has pulsado una URL especial de Omni:\n\n“%@”\n\n¿Quieres ejecutar este comando?";
 
 /* zoom label */
 "Zoom" = "Zoom";

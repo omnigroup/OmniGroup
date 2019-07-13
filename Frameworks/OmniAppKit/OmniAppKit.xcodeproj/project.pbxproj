@@ -1196,6 +1196,7 @@
 		344B4A6D0537177D0097A113 /* ExtendedText.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = ExtendedText.sdef; sourceTree = "<group>"; };
 		344B6E4712A4D3DC00D876CD /* OATextAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachment.h; sourceTree = "<group>"; };
 		344B6E4812A4D3DC00D876CD /* OATextAttachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachment.m; sourceTree = "<group>"; };
+		3450478A2266A42F00A4E922 /* OmniAppKit-server.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniAppKit-server.xcfilelist"; sourceTree = "<group>"; };
 		345057E106F207DD0097A113 /* OAContextPopUpButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAContextPopUpButton.h; sourceTree = "<group>"; };
 		345057E206F207DD0097A113 /* OAContextPopUpButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextPopUpButton.m; sourceTree = "<group>"; };
 		345057E506F209090097A113 /* OAContextControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAContextControl.h; sourceTree = "<group>"; };
@@ -2642,6 +2643,7 @@
 				34A1594805642A810097A113 /* OmniAppKit.order */,
 				3420BBDF214C696D00E7A60D /* OmniAppKit.xcfilelist */,
 				347868E622381D49001914C2 /* OmniAppKit-iOS.xcfilelist */,
+				3450478A2266A42F00A4E922 /* OmniAppKit-server.xcfilelist */,
 				BF94281F062222D400B83989 /* Info.plist */,
 				94B962C920E42F1900F1E3CE /* OmniAppKit.xcassets */,
 				342F05121B69794C00C7BB34 /* Appearance */,
@@ -3881,10 +3883,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build String Files";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

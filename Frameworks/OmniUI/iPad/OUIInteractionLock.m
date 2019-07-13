@@ -65,6 +65,17 @@ static NSTimer * _Nullable ActiveLockWarningTimer = nil;
     return locks;
 }
 
++ (BOOL)hasActiveLocks;
+{
+    __block BOOL hasActiveLocks = NO;
+    
+    dispatch_sync(LockQueue, ^{
+        hasActiveLocks = (ActiveLockReferences.count != 0);
+    });
+    
+    return hasActiveLocks;
+}
+
 + (instancetype)applicationLock;
 {
     OUIInteractionLock *instance = [[self alloc] _initApplicationLock];
@@ -110,18 +121,20 @@ static void _dumpImageInfo(void)
         void *ptr = (__bridge void *)self; // don't capture self in the block since we are deallocating.
         dispatch_sync(LockQueue, ^{
             NSUInteger lockIndex = [ActiveLockReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
-                return [ref referencesObject:ptr];
+                return [ref referencesDeallocatingObjectPointer:ptr];
             }];
 
-            if (lockIndex == NSNotFound)
+            if (lockIndex == NSNotFound) {
+                OBASSERT_NOT_REACHED("self not found in ActiveLockReferences.");
                 return;
+            }
 
 #ifdef OMNI_ASSERTIONS_ON
             OFWeakReference *ref = ActiveLockReferences[lockIndex];
-#endif
-            OBASSERT(ref);
+            OBASSERT(ref != nil);
             OBASSERT(ref.object == nil); // We are in -dealloc, so it's weak reference to us should be gone.
-            
+#endif
+
             [ActiveLockReferences removeObjectAtIndex:lockIndex];
             if ([ActiveLockReferences count] == 0) {
                 // NSRunLoop is not thread-safe; don't assume we are on the main thread here. We can clear it here though.

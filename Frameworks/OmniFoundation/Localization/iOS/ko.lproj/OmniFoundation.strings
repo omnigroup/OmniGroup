@@ -216,25 +216,25 @@
 "seconds" = "초";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "“%1$@”을(를) “%2$@”(으)로 설정";
+"Set \"%@\" to \"%@\"" = "\"%1$@\"을(를) \"%2$@\"(으)로 설정";
 
 /* Document decryption error message - a file within the encrypted file wrapper can't be read */
 "The encrypted item \"%@\" is missing or unreadable." = "암호화된 항목 “%@”이(가) 누락되었거나 판독할 수 없습니다.";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 적합한 것으로 보이지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 적합한 것으로 보이지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하겠습니까?";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "\"%@\"에 대한 인증서에 유효하지 않은 날짜가 있습니다. 만료되었거나 아직 활성 상태가 아닐 수 있습니다. 연결하시겠습니까?";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "\"%@\"에 대한 인증서에 유효하지 않은 날짜가 있습니다. 만료되었거나 아직 활성 상태가 아닐 수 있습니다. 연결하겠습니까?";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 어떠한 루트 서버에서도 서명되지 않았습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 어떠한 루트 서버에서도 서명되지 않았습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하겠습니까?";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 아직 유효하지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 아직 유효하지 않습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하겠습니까?";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 신뢰할 수 없는 서버에서 서명되었습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하시겠습니까?";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "\"%@\"에 대한 서버 인증서가 신뢰할 수 없는 서버에서 서명되었습니다. 이 사이트는 신뢰하지 못할 수 있습니다. 연결하겠습니까?";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "이 구성 링크는 다음 항목을 변경합니다.";

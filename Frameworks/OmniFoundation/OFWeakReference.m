@@ -1,4 +1,4 @@
-// Copyright 2012-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,12 +57,18 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
     return self;
 }
 
-- (BOOL)referencesObject:(void *)objectPointer;
+- (BOOL)referencesObject:(const void *)objectPointer;
 {
     if (_nonretainedObjectPointer != objectPointer) {
         return NO;
     }
+    
     return _weakObject != nil; // In case it got deallocated and a new object created at the same address.
+}
+
+- (BOOL)referencesDeallocatingObjectPointer:(const void *)objectPointer;
+{
+    return _nonretainedObjectPointer == objectPointer && _weakObject == nil;
 }
 
 /// Adds a new OFWeakReference to object. It is an error to add the same object more than once. This will also remove any references to objects that have been deallocated.

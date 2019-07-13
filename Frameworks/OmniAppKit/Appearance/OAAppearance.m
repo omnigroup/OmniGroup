@@ -1568,9 +1568,6 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
 
 - (BOOL)isLightColor;
 {
-    if ([self.colorSpaceName isEqualToString:NSPatternColorSpace]) {
-        return NO;
-    }
     OAColor *aColor = [OAColor colorWithPlatformColor:self];
     CGFloat luma = OAGetRGBAColorLuma([aColor toRGBA]);
 

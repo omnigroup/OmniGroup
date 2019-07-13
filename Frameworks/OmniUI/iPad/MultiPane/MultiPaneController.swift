@@ -357,8 +357,11 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
 // MARK: - Other View Controller overrides
     
     override open var shouldAutorotate: Bool {
-        guard OUIRotationLock.activeLocks().count == 0 else { return false }
-        return super.shouldAutorotate
+        if OUIRotationLock.hasActiveLocks {
+            return false
+        } else {
+            return super.shouldAutorotate
+        }
     }
     
     // MARK: - Public API

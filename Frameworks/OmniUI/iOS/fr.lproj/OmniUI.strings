@@ -3,7 +3,7 @@
 
 /* Default title for the About menu item
    title for in app purchase - placeholder is product title */
-"About %@" = "À propos d’%@";
+"About %@" = "À propos de %@";
 
 /* MultiPane Back button title, when system is compact */
 "Back" = "Précédent";
@@ -91,7 +91,7 @@
 "Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
 
 /* message format */
-"Mail has not been set up on this %@." = "Mail n'a pas été configuré sur cet %@.";
+"Mail has not been set up on this %@." = "Mail n’a pas été configuré sur cet %@.";
 
 /* News menu item
    News view title */
@@ -118,7 +118,7 @@
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonnement au bulletin Omni";
+"Omni Newsletter Signup" = "Abonnement au bulletin d’information Omni";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "mot de passe";

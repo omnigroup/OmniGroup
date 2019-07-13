@@ -422,6 +422,7 @@
 		3444B0B80F72022C005CFD59 /* ODAVErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVErrors.h; sourceTree = "<group>"; };
 		3444B0B90F72022C005CFD59 /* ODAVErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVErrors.m; sourceTree = "<group>"; };
 		344743BE1B34A07700083FE6 /* ODAVNoCredentialsTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODAVNoCredentialsTestCase.m; sourceTree = "<group>"; };
+		345047232266A35900A4E922 /* OmniDAV-server.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDAV-server.xcfilelist"; sourceTree = "<group>"; };
 		3464810D1276674B00E8A9B4 /* ODAVAsynchronousOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODAVAsynchronousOperation.h; sourceTree = "<group>"; };
 		347661311EC52FA500515F67 /* OmniFoundation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFoundation.xcodeproj; path = OmniFoundation/OmniFoundation.xcodeproj; sourceTree = "<group>"; };
 		3478688122372CC1001914C2 /* OmniDAV-iOS.xcfilelist */ = {isa = PBXFileReference; lastKnownFileType = text.xcfilelist; path = "OmniDAV-iOS.xcfilelist"; sourceTree = "<group>"; };
@@ -697,6 +698,7 @@
 			children = (
 				3420BB8B214C67C000E7A60D /* OmniDAV.xcfilelist */,
 				3478688122372CC1001914C2 /* OmniDAV-iOS.xcfilelist */,
+				345047232266A35900A4E922 /* OmniDAV-server.xcfilelist */,
 				32DBCF5E0370ADEE00C91783 /* OmniDAV_Prefix.h */,
 				34C017AE10995295001C110D /* odav */,
 			);
@@ -1348,10 +1350,14 @@
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputFileListPaths = (
+				"$(SRCROOT)/$(TARGET_NAME).xcfilelist",
+			);
 			inputPaths = (
 			);
 			name = "Build Strings From Target";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/$(TARGET_NAME)-BuildStringFiles",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

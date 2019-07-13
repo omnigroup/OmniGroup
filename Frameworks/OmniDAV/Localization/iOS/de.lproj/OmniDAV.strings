@@ -17,7 +17,7 @@
 "Please check that the user name and password you provided are correct." = "Überprüfen Sie, ob Sie den Benutzernamen und das Kennwort richtig eingegeben haben.";
 
 /* error reason */
-"Please make sure that the account information is correct." = "Überprüfen Sie, ob die Account-Informationen richtig sind.";
+"Please make sure that the account information is correct." = "Überprüfen Sie, ob die Accountinformationen richtig sind.";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Überprüfen Sie, ob der Zielordner vorhanden ist.";

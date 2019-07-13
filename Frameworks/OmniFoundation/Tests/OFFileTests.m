@@ -199,20 +199,27 @@ RCS_ID("$Id$");
     OBShouldNotError([@"bacon" writeToFile:[workingDir stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     OBShouldNotError([@"lettuce" writeToFile:[otherworking stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
     
-    ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:NULL];
-    XCTAssertTrue(ok, @"exchangeFileAtPath:...", nil);
+    OBShouldNotError([fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:&error]);
     XCTAssertEqualObjects(([NSArray arrayWithObjects:@"layer1.txt", nil]),
                          [fm directoryContentsAtPath:otherworking havingExtension:@"txt" error:NULL]);
     XCTAssertEqualObjects(([NSArray array]),
                          [fm directoryContentsAtPath:workingDir havingExtension:@"txt" error:NULL]);
     XCTAssertEqualObjects([NSString stringWithContentsOfFile:[otherworking stringByAppendingPathComponent:@"layer1.txt"]
-                                                   encoding:NSASCIIStringEncoding error:NULL],
+                                                    encoding:NSASCIIStringEncoding error:NULL],
                          @"bacon");
     
-    OBShouldNotError([@"tomato" writeToFile:[workingDir stringByAppendingPathComponent:@"vegetable.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
-    ok = [fm replaceFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] error:NULL];
-    XCTAssertTrue(ok, @"exchangeFileAtPath:...", nil);
-    
+    OBShouldNotError([@"bacon" writeToFile:[workingDir stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
+    OBShouldNotError([@"tomato" writeToFile:[otherworking stringByAppendingPathComponent:@"layer1.txt"] atomically:NO encoding:NSUTF8StringEncoding error:&error]);
+
+    OBShouldNotError([fm replaceFileAtPath:[workingDir stringByAppendingPathComponent:@"layer1.txt"] withFileAtPath:[otherworking stringByAppendingPathComponent:@"layer1.txt"] error:&error]);
+    XCTAssertEqualObjects(([NSArray array]),
+                          [fm directoryContentsAtPath:otherworking havingExtension:@"txt" error:NULL]);
+    XCTAssertEqualObjects(([NSArray arrayWithObjects:@"layer1.txt", nil]),
+                          [fm directoryContentsAtPath:workingDir havingExtension:@"txt" error:NULL]);
+    XCTAssertEqualObjects([NSString stringWithContentsOfFile:[workingDir stringByAppendingPathComponent:@"layer1.txt"]
+                                                    encoding:NSASCIIStringEncoding error:NULL],
+                          @"tomato");
+
     sh = [NSString stringWithFormat:@"hdiutil detach '/Volumes/%@' -force", volname];
     rv = system([sh UTF8String]);
     XCTAssertTrue(rv == 0, @"Detaching disk image failed (shell command: %@)", sh);

@@ -218,7 +218,9 @@ RCS_ID("$Id$")
     return (NSMutableDictionary *)dictionary;
 }
 
-- mutableCopyWithZone:(NSZone *)newZone
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)newZone;
 {
     OFMultiValueDictionary *copy = [[[self class] allocWithZone:newZone] init];
     
@@ -228,6 +230,14 @@ RCS_ID("$Id$")
     
     return copy;
 }
+
+- (id)mutableCopyWithZone:(NSZone *)newZone;
+{
+    OBASSERT_NOT_REACHED("OFMultiValueDictionary does not have a mutable/immutable distinction, and therefore only needs conform to NSCopying. NSMutableCopying conformance remains for backwards compatibility, but clients should migrate to calling -copy instead of -mutableCopy. The returned instance will still be mutable.");
+    return [self copyWithZone:newZone];
+}
+
+#pragma mark NSObject
 
 - (BOOL)isEqual:anotherObject
 {
@@ -251,7 +261,6 @@ RCS_ID("$Id$")
 // If we do need to support NSCoding, we'll need to handle 64-bit key counts or at least avoid accidentally updating the archiving to an incompatible format.
 #if 0
 
-#pragma mark -
 #pragma mark NSCoding
 
 - initWithCoder:(NSCoder *)coder

@@ -1,4 +1,4 @@
-// Copyright 1997-2016 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 @class NSArray, NSEnumerator, NSMutableDictionary;
 
-@interface OFMultiValueDictionary <__covariant KeyType, __covariant ObjectType> : NSObject </*NSCoding,*/ NSMutableCopying>
+@interface OFMultiValueDictionary <__covariant KeyType, __covariant ObjectType> : NSObject </*NSCoding,*/ NSCopying>
 
 - init;
 - initWithCaseInsensitiveKeys:(BOOL)caseInsensitivity;

@@ -38,7 +38,7 @@
 "<Encryption: None>" = "Нет";
 
 /* summary text - document is encrypted using one or more public keys */
-"<Encryption: using %u key(s)>" = "Ключи %u";
+"<Encryption: using %u key(s)>" = "Ключи: %u";
 
 /* approximate time interval: more than one hour */
 "about %.1f hours" = "около %.1f часов";
@@ -93,7 +93,7 @@
 "Could not create directory" = "Не удалось создать каталог";
 
 /* Provisioning profile parsing error general description */
-"Could not parse entitlements from embedded provisioning profile" = "Не удалось обработать права из встроенного профиля подготовки";
+"Could not parse entitlements from embedded provisioning profile" = "Не удалось выполнить обработку прав из встроенного профиля подготовки";
 
 /* time span formatter span - DO NOT add leading or trailing whitespace */
 "d" = "дн.";
@@ -198,7 +198,7 @@
 "Override Lock" = "Перезаписать блокировку";
 
 /* Provisioning profile parsing error reason – invalid plist */
-"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое PKCS#7 встроенного профиля подготовки не являются допустимым файлом plist";
+"PKCS#7 contents of embedded provisioning profile were not a valid plist" = "Содержимое архива PKCS#7 встроенного профиля подготовки не является допустимым файлом plist";
 
 /* alert message format when clicking on a configuration value URL */
 "Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";

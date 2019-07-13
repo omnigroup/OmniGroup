@@ -118,7 +118,7 @@
 "OK" = "OK";
 
 /* Menu item to subscribe to Omni's newsletter */
-"Omni Newsletter Signup" = "Abonneren op nieuwsbrief";
+"Omni Newsletter Signup" = "Abonneren op Omni-nieuwsbrief";
 
 /* placeholder text - password/passphrase field of login/password prompt */
 "password" = "wachtwoord";

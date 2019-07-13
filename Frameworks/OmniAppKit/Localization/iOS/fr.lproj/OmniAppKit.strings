@@ -7,6 +7,9 @@
 /* button title */
 "Learn More" = "En savoir plus";
 
+/* error recovery option */
+"More Info <error recovery>" = "En savoir plus";
+
 /* button title */
 "OK" = "OK";
 
