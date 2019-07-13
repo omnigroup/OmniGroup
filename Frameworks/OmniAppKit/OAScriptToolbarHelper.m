@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,7 +129,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         OAToolbarWindowController *windowController = (OAToolbarWindowController *)[toolbar delegate];
         OBASSERT([windowController isKindOfClass:[OAToolbarWindowController class]]);
         NSDictionary *localizedToolbarInfo = [windowController localizedToolbarInfoForItem:@"AutomatorWorkflowTemplate"];
-        OBASSERT_NULL(localizedToolbarInfo);
+        OBASSERT(localizedToolbarInfo != nil);
         NSArray *keys = @[@"label", @"paletteLabel", @"toolTip"];
         for (NSString *key in keys) {
             NSString *format = [localizedToolbarInfo objectForKey:key];

@@ -1488,6 +1488,10 @@
 		A25B740810B200C200195654 /* OFMetricPrefixFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = A25B740610B200C200195654 /* OFMetricPrefixFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A25B740910B200C200195654 /* OFMetricPrefixFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = A25B740710B200C200195654 /* OFMetricPrefixFormatter.m */; };
 		A26BB40E092A42F700ECCDEE /* OFSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A26BB40D092A42F700ECCDEE /* OFSetTests.m */; };
+		A27407452279258200C8A8EB /* xml-stylesheet.b64.bz2 in Resources */ = {isa = PBXBuildFile; fileRef = A27407402279256000C8A8EB /* xml-stylesheet.b64.bz2 */; };
+		A27407462279258300C8A8EB /* xml-stylesheet.b64.bz2 in Resources */ = {isa = PBXBuildFile; fileRef = A27407402279256000C8A8EB /* xml-stylesheet.b64.bz2 */; };
+		A274074B227927FA00C8A8EB /* rfc3161.txt.bz2 in Resources */ = {isa = PBXBuildFile; fileRef = A274074A227927F500C8A8EB /* rfc3161.txt.bz2 */; };
+		A274074C227927FB00C8A8EB /* rfc3161.txt.bz2 in Resources */ = {isa = PBXBuildFile; fileRef = A274074A227927F500C8A8EB /* rfc3161.txt.bz2 */; };
 		A27DAF2514436E2900847F6D /* w3c_microsoft_ecc_p256_sha256_c14n.xml in Resources */ = {isa = PBXBuildFile; fileRef = A27DAF2014436E2900847F6D /* w3c_microsoft_ecc_p256_sha256_c14n.xml */; };
 		A27DAF2614436E2900847F6D /* w3c_microsoft_ecc_p521_sha256_c14n.xml in Resources */ = {isa = PBXBuildFile; fileRef = A27DAF2114436E2900847F6D /* w3c_microsoft_ecc_p521_sha256_c14n.xml */; };
 		A27DAF2714436E2900847F6D /* w3c_microsoft_ecc_p521_sha512_c14n.xml in Resources */ = {isa = PBXBuildFile; fileRef = A27DAF2214436E2900847F6D /* w3c_microsoft_ecc_p521_sha512_c14n.xml */; };
@@ -2508,6 +2512,8 @@
 		A26480751405D38B00B3EDDA /* xz_stream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xz_stream.h; sourceTree = "<group>"; };
 		A26480761405D38B00B3EDDA /* xz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xz.h; sourceTree = "<group>"; };
 		A26BB40D092A42F700ECCDEE /* OFSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSetTests.m; sourceTree = "<group>"; };
+		A27407402279256000C8A8EB /* xml-stylesheet.b64.bz2 */ = {isa = PBXFileReference; lastKnownFileType = file; name = "xml-stylesheet.b64.bz2"; path = "Inputs/xml-stylesheet.b64.bz2"; sourceTree = "<group>"; };
+		A274074A227927F500C8A8EB /* rfc3161.txt.bz2 */ = {isa = PBXFileReference; lastKnownFileType = file; name = rfc3161.txt.bz2; path = Inputs/rfc3161.txt.bz2; sourceTree = "<group>"; };
 		A27DAF2014436E2900847F6D /* w3c_microsoft_ecc_p256_sha256_c14n.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = w3c_microsoft_ecc_p256_sha256_c14n.xml; path = Inputs/XML/w3c_microsoft_ecc_p256_sha256_c14n.xml; sourceTree = "<group>"; };
 		A27DAF2114436E2900847F6D /* w3c_microsoft_ecc_p521_sha256_c14n.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = w3c_microsoft_ecc_p521_sha256_c14n.xml; path = Inputs/XML/w3c_microsoft_ecc_p521_sha256_c14n.xml; sourceTree = "<group>"; };
 		A27DAF2214436E2900847F6D /* w3c_microsoft_ecc_p521_sha512_c14n.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = w3c_microsoft_ecc_p521_sha512_c14n.xml; path = Inputs/XML/w3c_microsoft_ecc_p521_sha512_c14n.xml; sourceTree = "<group>"; };
@@ -3979,9 +3985,11 @@
 				346DF737099BA59B008F5B5F /* OFXMLStringTests.m */,
 				A2AC2EA70F784B72002D9BFB /* OFXMLMakerTests.m */,
 				341714EE0F78399C0062895C /* OFXMLReaderTests.m */,
+				A22D9876101E513F005FF4FF /* OFXMLSignatureTests.m */,
 				A22D987A101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz */,
 				A22D987B101E5851005FF4FF /* phaos-xmldsig-three.zip */,
-				A22D9876101E513F005FF4FF /* OFXMLSignatureTests.m */,
+				A27407402279256000C8A8EB /* xml-stylesheet.b64.bz2 */,
+				A274074A227927F500C8A8EB /* rfc3161.txt.bz2 */,
 				A27DAF2014436E2900847F6D /* w3c_microsoft_ecc_p256_sha256_c14n.xml */,
 				A27DAF2114436E2900847F6D /* w3c_microsoft_ecc_p521_sha256_c14n.xml */,
 				A27DAF2214436E2900847F6D /* w3c_microsoft_ecc_p521_sha512_c14n.xml */,
@@ -5113,10 +5121,12 @@
 				34DAC7D7194F86E900499116 /* 01-merlin-xmldsig-twenty-three.tar.gz in Resources */,
 				34DAC7D2194F86D500499116 /* 0000-CreateDocument.xmloutline in Resources */,
 				34DAC7D0194F86C200499116 /* OFDateTestCase.tests in Resources */,
+				A27407452279258200C8A8EB /* xml-stylesheet.b64.bz2 in Resources */,
 				34DAC7D6194F86DA00499116 /* 0004-utf16.xml in Resources */,
 				34DAC7DE194F86EE00499116 /* OFXMLIdentifierTests in Resources */,
 				34DAC7DB194F86E900499116 /* w3c_microsoft_ecc_p521_sha512_c14n.xml in Resources */,
 				34DAC7D9194F86E900499116 /* w3c_microsoft_ecc_p256_sha256_c14n.xml in Resources */,
+				A274074B227927FA00C8A8EB /* rfc3161.txt.bz2 in Resources */,
 				34DAC7D4194F86DA00499116 /* 0002-abcs.xml in Resources */,
 				34DAC7DD194F86E900499116 /* w3c_oracle_signature-enveloping-p521_sha256.xml in Resources */,
 				34DAC7D1194F86CA00499116 /* OFStringEncodingTests.plist in Resources */,
@@ -5154,10 +5164,12 @@
 				4A4E07AE08AA72B10098FF0F /* OFStringEncodingTests.plist in Resources */,
 				4A4E07AF08AA72B10098FF0F /* 0000-CreateDocument.xmloutline in Resources */,
 				A2D50A6D0F7ACAAB006D5764 /* 0001-Namespaces.svg in Resources */,
+				A27407462279258300C8A8EB /* xml-stylesheet.b64.bz2 in Resources */,
 				A2D50A990F7ACD63006D5764 /* 0002-abcs.xml in Resources */,
 				A20070B70F7ADF63002B76AF /* 0003-attrs.xml in Resources */,
 				A20071570F7AECF0002B76AF /* 0004-utf16.xml in Resources */,
 				A22D987C101E5851005FF4FF /* 01-merlin-xmldsig-twenty-three.tar.gz in Resources */,
+				A274074C227927FB00C8A8EB /* rfc3161.txt.bz2 in Resources */,
 				A22D9A0E101E8B43005FF4FF /* phaos-xmldsig-three.zip in Resources */,
 				A27DAF2514436E2900847F6D /* w3c_microsoft_ecc_p256_sha256_c14n.xml in Resources */,
 				A27DAF2614436E2900847F6D /* w3c_microsoft_ecc_p521_sha256_c14n.xml in Resources */,

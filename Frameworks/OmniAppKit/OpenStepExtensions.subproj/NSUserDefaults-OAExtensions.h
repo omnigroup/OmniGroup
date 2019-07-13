@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,11 +21,8 @@
 @end
 
 @interface OFPreference (OAExtensions)
-- (NSColor *)colorValue;
-- (void)setColorValue:(NSColor *)color;
-
-- (NSFontDescriptor *)fontDescriptorValue;
-- (void)setFontDescriptorValue:(NSFontDescriptor *)fontDescriptor;
+@property (nonatomic, copy) NSColor *colorValue;
+@property (nonatomic, copy) NSFontDescriptor *fontDescriptorValue;
 @end
 
 @interface OFPreferenceWrapper (OAExtensions)

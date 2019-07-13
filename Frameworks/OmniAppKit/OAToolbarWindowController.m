@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -175,8 +175,12 @@ static NSMutableDictionary *helpersByExtension = nil;
     if (stringsFileName == nil) {
         stringsFileName = [NSString stringWithFormat:@"%@Toolbar", [self toolbarConfigurationName]];
     }
-    
+
     [toolbarItemInfo enumerateKeysAndObjectsUsingBlock:^(id key, id object, BOOL *stop) {
+        if ([key isEqualToString:@"hasButton"]) {
+            return;
+        }
+        
         NSString *value = _displayName(bundle, stringsFileName, identifier, key, toolbarItemInfo, NO);
         if (value != nil) {
             [localizedToolbarItemInfo setObject:value forKey:key];

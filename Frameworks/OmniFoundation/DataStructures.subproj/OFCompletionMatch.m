@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,11 @@ static NSInteger OFCompletionMatchScoreCapitalLetter = 0;
 static OFCharacterSet *_WhitespaceOFCharacterSet = nil;
 static OFCharacterSet *_UppercaseLetterOFCharacterSet = nil;
 
+OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions = (OFCompletionMatchingOptionCaseInsensitive | OFCompletionMatchingOptionDiacriticInsensitive);
+
 @interface OFCompletionMatch ()
+
++ (nullable NSString *)_preretainedCanonicalStringForString:(nullable NSString *)string options:(OFCompletionMatchingOptions)options NS_RETURNS_RETAINED;
 
 - (id)initWithString:(NSString *)string;
 - (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(NSInteger)score NS_RETURNS_RETAINED;
@@ -41,23 +45,23 @@ static OFCharacterSet *_UppercaseLetterOFCharacterSet = nil;
 static BOOL calculateIndexesOfLastMatchesInName(
                 NSUInteger filterStartIndex,
                 NSUInteger filterLength,
-                NSString *filter,
+                NSString *filter, // Assumed to be in canonical form, and with transforms appropriate for the current options already to be applied to it
                 NSUInteger nameCharacterStartIndex,
                 NSUInteger nameLength,
-                NSString *nameLowercase,
+                NSString *name, // Assumed to be in canonical form, and with the transforms appropriate for the current options already to be applied to it
                 NSUInteger *lastMatchIndexes);
 
 static void filterIntoResults(
                 NSUInteger filterIndex,
                 NSUInteger filterLength,
-                NSString *filter,
+                NSString *filter, // Assumed to be in canonical form, and with transforms appropriate for the current options already to be applied to it
                 NSUInteger *lastMatchIndexes,
                 BOOL wasInWhitespace,
                 NSUInteger nameWordIndex,
                 NSUInteger nameCharacterIndex,
                 NSUInteger nameLength,
-                NSString *nameLowercase,
-                NSString *nameOriginalCase,
+                NSString *name, // Assumed to be in canonical form, and with the transforms appropriate for the current options already to be applied to it
+                NSString *originalName,
                 OFCompletionMatch *completionMatch,
                 NSMutableArray<OFCompletionMatch *> *results);
 
@@ -76,6 +80,72 @@ static void filterIntoResults(
     OFCompletionMatchScoreConsecutiveWord = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
     OFCompletionMatchScoreWordStart = [preferences integerForKey:@"OFCompletionMatchScoreForWordStart"];
     OFCompletionMatchScoreCapitalLetter = [preferences integerForKey:@"OFCompletionMatchScoreForCapitalLetter"];
+}
+
+static inline BOOL _isASCII(NSString *string)
+{
+    CFStringInlineBuffer buffer;
+    CFIndex length = string.length;
+    
+    CFStringInitInlineBuffer((__bridge CFStringRef)string, &buffer, CFRangeMake(0, length));
+    
+    for (CFIndex i = 0; i < length; i++) {
+        UniChar ch = CFStringGetCharacterFromInlineBuffer(&buffer, i);
+        if (ch > 0x7F) {
+            return NO;
+        }
+    }
+
+    return YES;
+}
+
++ (nullable NSString *)_preretainedCanonicalStringForString:(nullable NSString *)string options:(OFCompletionMatchingOptions)options;
+{
+    if (string == nil) {
+        return nil;
+    }
+    
+    BOOL isASCII = _isASCII(string);
+    if (isASCII && options == 0) {
+        return [string retain];
+    }
+    
+    NSMutableString *canonicalString = nil;
+    
+    if ((options & OFCompletionMatchingOptionCaseInsensitive) != 0) {
+        canonicalString = [[string lowercaseStringWithLocale:nil] mutableCopy];
+    } else {
+        canonicalString = [string mutableCopy];
+    }
+    
+    if (!isASCII && (options & OFCompletionMatchingOptionDiacriticInsensitive) != 0) {
+        CFStringTransform((__bridge CFMutableStringRef)canonicalString, NULL, kCFStringTransformStripDiacritics, NO);
+    }
+    
+    if (!isASCII) {
+        CFStringNormalize((__bridge CFMutableStringRef)canonicalString, kCFStringNormalizationFormC);
+    }
+    
+    return canonicalString;
+}
+
++ (nullable NSString *)canonicalStringForString:(nullable NSString *)string options:(OFCompletionMatchingOptions)options;
+{
+    NSString *canonialString = [self _preretainedCanonicalStringForString:string options:options];
+    return [canonialString autorelease];
+}
+    
++ (NSArray<NSString *> *)canonicalStringsArrayForStringsArray:(NSArray<NSString *> *)strings options:(OFCompletionMatchingOptions)options;
+{
+    NSMutableArray *results = [NSMutableArray array];
+    
+    for (NSString *string in strings) {
+        NSString *canonicalString = [self _preretainedCanonicalStringForString:string options:options];
+        [results addObject:canonicalString];
+        [canonicalString release];
+    }
+    
+    return results;
 }
 
 + (OFCompletionMatch *)bestMatchFromMatches:(NSArray<OFCompletionMatch *> *)matches;
@@ -104,25 +174,27 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
     return [match1.string localizedStandardCompare:match2.string];
 };
 
-+ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
++ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates options:(OFCompletionMatchingOptions)options shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
 {
     NSMutableArray<OFCompletionMatch *> *results = [NSMutableArray array];
     NSMutableArray<OFCompletionMatch *> *matches = shouldUnique ? [[NSMutableArray alloc] init] : nil;
+    NSString *canonicalFilter = [self _preretainedCanonicalStringForString:filter options:options];
 
     for (NSString *candidate in candidates) {
         if (shouldUnique) {
-	    [self addMatchesForFilter:filter inString:candidate toResults:matches];
+            [self _addMatchesForPreCanonicalizedFilter:canonicalFilter inString:candidate options:options toResults:matches];
             OFCompletionMatch *bestMatch = [self bestMatchFromMatches:matches];
             if (bestMatch != nil) {
                 [results addObject:bestMatch];
             }
 	    [matches removeAllObjects];
         } else {
-            [self addMatchesForFilter:filter inString:candidate toResults:results];
+            [self addMatchesForFilter:filter inString:candidate options:options toResults:results];
         }
     }
 
     [matches release];
+    [canonicalFilter release];
     
     if (shouldSort) {
         [results sortUsingComparator:OFDefaultCompletionMatchComparator];
@@ -131,24 +203,36 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
     return results;
 }
 
-+ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name;
++ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name options:(OFCompletionMatchingOptions)options;
 {
     NSMutableArray<OFCompletionMatch *> *results = [NSMutableArray array];
-    [self addMatchesForFilter:filter inString:name toResults:results];
+    [self addMatchesForFilter:filter inString:name options:options toResults:results];
     return results;
 }
 
-+ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray<OFCompletionMatch *> *)results;
++ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name options:(OFCompletionMatchingOptions)options toResults:(NSMutableArray<OFCompletionMatch *> *)results;
 {
-    NSUInteger filterLength = [filter length];
+    NSString *canonicalizedFilter = [self _preretainedCanonicalStringForString:filter options:options];
+    
+    [self _addMatchesForPreCanonicalizedFilter:canonicalizedFilter inString:name options:options toResults:results];
+    
+    [canonicalizedFilter release];
+}
+
++ (void)_addMatchesForPreCanonicalizedFilter:(NSString *)filter inString:(NSString *)name options:(OFCompletionMatchingOptions)options toResults:(NSMutableArray<OFCompletionMatch *> *)results;
+{
+    NSUInteger filterLength = filter.length;
     NSUInteger lastMatchIndexes[filterLength];
-    NSUInteger nameLength = [name length];
-    NSString *nameLowercase = [name lowercaseString];
-    if (calculateIndexesOfLastMatchesInName(0, filterLength, filter, 0, nameLength, nameLowercase, lastMatchIndexes)) {
+    NSUInteger nameLength = name.length;
+    NSString *canonicalName = [self _preretainedCanonicalStringForString:name options:options];
+
+    if (calculateIndexesOfLastMatchesInName(0, filterLength, filter, 0, nameLength, canonicalName, lastMatchIndexes)) {
 	OFCompletionMatch *newMatch = [[OFCompletionMatch alloc] initWithString:name];
-        filterIntoResults(0, filterLength, filter, lastMatchIndexes, YES, 0, 0, nameLength, nameLowercase, name, newMatch, results);
+        filterIntoResults(0, filterLength, filter, lastMatchIndexes, YES, 0, 0, nameLength, canonicalName, name, newMatch, results);
 	[newMatch release];
     }
+    
+    [canonicalName release];
 }
 
 + (OFCompletionMatch *)completionMatchWithString:(NSString *)string;
@@ -318,10 +402,10 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
 static BOOL calculateIndexesOfLastMatchesInName(
                 NSUInteger filterStartIndex,
                 NSUInteger filterLength,
-                NSString *filter,
+                NSString *filter, // Assumed to be in canonical form, and with transforms appropriate for the current options already to be applied to it
                 NSUInteger nameCharacterStartIndex,
                 NSUInteger nameLength,
-                NSString *nameLowercase,
+                NSString *name, // Assumed to be in canonical form, and with the transforms appropriate for the current options already to be applied to it
                 NSUInteger *lastMatchIndexes)
 {
     NSUInteger filterIndex = filterLength;
@@ -337,7 +421,7 @@ checkFilter:
     OBASSERT(filterIndex >= filterStartIndex);
     OBASSERT(nameCharacterIndex >= nameCharacterStartIndex);
     while (filterIndex - filterStartIndex < nameCharacterIndex - nameCharacterStartIndex) { // We're not trying to find more characters than we have left
-        unichar nameChar = [nameLowercase characterAtIndex:--nameCharacterIndex];
+        unichar nameChar = [name characterAtIndex:--nameCharacterIndex];
         if (nameChar == filterChar) {
             lastMatchIndexes[filterIndex] = nameCharacterIndex;
             goto checkFilter;
@@ -354,13 +438,13 @@ checkFilter:
 static void filterIntoResults(
                 NSUInteger filterIndex,
                 NSUInteger filterLength,
-                NSString *filter,
+                NSString *filter, // Assumed to be in canonical form, and with transforms appropriate for the current options already to be applied to it
                 NSUInteger *lastMatchIndexes,
                 BOOL wasInWhitespace,
                 NSUInteger nameWordIndex,
                 NSUInteger nameCharacterIndex,
                 NSUInteger nameLength,
-                NSString *nameLowercase,
+                NSString *nameLowercase, // Assumed to be in canonical form, and with the transforms appropriate for the current options already to be applied to it
                 NSString *nameOriginalCase,
                 OFCompletionMatch *completionMatch,
                 NSMutableArray<OFCompletionMatch *> *results)

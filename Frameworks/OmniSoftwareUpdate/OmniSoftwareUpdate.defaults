@@ -14,10 +14,15 @@
         <false/>
         <key>OSUVisibleTracks</key>
         <array/>
+        <key>OSUMemorableTracks</key>
+        <array>
+            <string>test</string>
+            <string>rc</string>
+        </array>
         <key>OSULastSuccessfulCheckDate</key>
         <string>2001-01-01 00:00:00 +0000</string>
 		
-		<!-- Registered here so that using setting URLs can edit/reset them -->
+                <!-- Registered here so that using setting URLs can edit/reset them -->
         <key>OSUDebug</key>
         <integer>0</integer>
         <key>OSUDebugDownload</key>
@@ -31,11 +36,11 @@
         <key>OSURuntimeDebug</key>
         <integer>0</integer>
 
-				<key>OSUCurrentNewsURL</key>
-				<string/>
-				<key>OSUUnreadNews</key>
-				<false/>
-				<key>OSUNewsPublishDate</key>
-				<date>0000-12-30T00:00:00Z</date> <!-- +distantPast -->
+        <key>OSUCurrentNewsURL</key>
+        <string/>
+        <key>OSUUnreadNews</key>
+        <false/>
+        <key>OSUNewsPublishDate</key>
+        <date>0000-12-30T00:00:00Z</date> <!-- +distantPast -->
     </dict>
 </plist>

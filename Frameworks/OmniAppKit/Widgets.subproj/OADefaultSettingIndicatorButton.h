@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id)delegate;
 - (void)setDelegate:(id)newDelegate;
 
-// Make sure no one calls this one, which is now object by NSUserInterfaceItemIdentification
+// Make sure no one calls this one, which is now provided by NSUserInterfaceItemIdentification
 @property (nullable, copy) NSString *identifier NS_UNAVAILABLE;
 
 @property(nonatomic,copy) id <NSCopying> settingIdentifier;

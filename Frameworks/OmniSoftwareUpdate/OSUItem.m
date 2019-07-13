@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -662,20 +662,19 @@ STATIC_FOR_RELEASE BOOL trackOrderingsAreCurrent = NO;
 STATIC_FOR_RELEASE NSDictionary *knownTrackOrderings = nil;
 NSDictionary *trackLocalizedStrings = nil;
 
-static void loadFallbackTrackInfoIfNeeded()
+static void loadFallbackTrackInfoIfNeeded(void)
 {
-    if (!knownTrackOrderings) {
+    if (knownTrackOrderings == nil) {
         // Fallback track orderings. Normally we'll have gotten an up-to-date ordering graph from our OSU query.
-        NSString *names[7] = { @"sneakypeek", @"alpha", @"beta", @"internal-test", @"private-test", @"test", @"rc" };
-        id sets[7];
-        sets[0] = [NSSet setWithObjects:@"beta", @"rc", nil]; // sneakypeek
-        sets[1] = sets[0]; // alpha
-        sets[2] = [NSSet setWithObject:@"rc"]; // beta
-        sets[3] = [NSSet setWithObjects:@"private-test", @"test", @"rc", nil]; // internal-test
-        sets[4] = [NSSet setWithObjects:@"test", @"rc", nil]; // private-test
-        sets[5] = [NSSet setWithObject:@"rc"]; // test
-        sets[6] = [NSSet set]; // rc
-        knownTrackOrderings = [[NSDictionary alloc] initWithObjects:sets forKeys:names count:7];
+        knownTrackOrderings = @{
+            @"sneakypeek": [NSSet setWithArray:@[@"beta", @"rc"]],
+            @"alpha": [NSSet setWithArray:@[@"beta", @"rc"]],
+            @"beta": [NSSet setWithArray:@[@"rc"]],
+            @"internal-test": [NSSet setWithArray:@[@"private-test", @"test", @"rc"]],
+            @"private-test": [NSSet setWithArray:@[@"test", @"rc"]],
+            @"test": [NSSet setWithArray:@[@"rc"]],
+            @"rc": [NSSet set],
+        };
         trackOrderingsAreCurrent = NO;
     }
 }
@@ -776,13 +775,12 @@ static void loadFallbackTrackInfoIfNeeded()
     return result;
 }
 
-+ (NSArray *)elaboratedTracks:(id)someTracks;
++ (NSArray *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
 {
     NSMutableArray *result = [NSMutableArray array];
 
     loadFallbackTrackInfoIfNeeded();
-    
-    OFForEachObject([someTracks objectEnumerator], NSString *, aTrack) {
+    for (NSString *aTrack in someTracks) {
         [result addObjectIfAbsent:aTrack];
         NSSet *more = [knownTrackOrderings objectForKey:aTrack];
         if (more) {

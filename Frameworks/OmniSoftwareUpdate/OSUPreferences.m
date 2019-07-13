@@ -1,4 +1,4 @@
-// Copyright 2001-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,20 +7,26 @@
 
 #import <OmniSoftwareUpdate/OSUPreferences.h>
 
-#import <OmniFoundation/OFPreference.h>
+@import OmniFoundation;
+
+#if OSU_FULL
+#import "OSUItem.h"
+#endif
 
 RCS_ID("$Id$");
 
 typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 
-static OFPreference *automaticSoftwareUpdateCheckEnabled = nil;
-static OFPreference *checkInterval = nil;
-static OFPreference *includeHardwareDetails = nil;
-static OFPreference *updatesToIgnore = nil;
-static OFPreference *visibleTracks = nil;
+static OFPreference *automaticSoftwareUpdateCheckEnabled;
+static OFPreference *checkInterval;
+static OFPreference *includeHardwareDetails;
+static OFPreference *updatesToIgnore;
+static OFPreference *visibleTracksPreference;
+static OFPreference *memorableTracksPreference;
 static OFPreference *unreadNews;
 static OFPreference *currentNewsURL;
 static OFPreference *newsPublishDate;
+static NSArray <NSString *> *_visibleTracks;
 
 @implementation OSUPreferences
 
@@ -32,7 +38,8 @@ static OFPreference *newsPublishDate;
     checkInterval = [OFPreference preferenceForKey:@"OSUCheckInterval"];
     includeHardwareDetails = [OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"];
     updatesToIgnore = [OFPreference preferenceForKey:@"OSUIgnoredUpdates"];
-    visibleTracks = [OFPreference preferenceForKey:@"OSUVisibleTracks"];
+    visibleTracksPreference = [OFPreference preferenceForKey:@"OSUVisibleTracks"];
+    memorableTracksPreference = [OFPreference preferenceForKey:@"OSUMemorableTracks"];
     unreadNews = [OFPreference preferenceForKey:@"OSUUnreadNews"];
     currentNewsURL = [OFPreference preferenceForKey:@"OSUCurrentNewsURL"];
     newsPublishDate = [OFPreference preferenceForKey:@"OSUNewsPublishDate"];
@@ -80,26 +87,50 @@ static OFPreference *newsPublishDate;
     return updatesToIgnore;
 }
 
-+ (NSArray *)visibleTracks;
+static NSArray <NSString *> *_memorableTracksFromTracks(NSArray <NSString *> *orderedTracks);
+static NSArray <NSString *> *_memorableTracksFromTracks(NSArray <NSString *> *orderedTracks)
 {
-    return [visibleTracks stringArrayValue];
+#if OSU_FULL
+    NSSet <NSString *> *allMemorableTracks = [NSSet setWithArray:[memorableTracksPreference stringArrayValue]];
+    NSArray <NSString *> *elaboratedTracks = [OSUItem elaboratedTracks:orderedTracks];
+    NSArray <NSString *> *filteredTracks = [elaboratedTracks select:^BOOL(NSString *track) {
+        return [allMemorableTracks containsObject:track];
+    }];
+    return [OSUItem dominantTracks:filteredTracks];
+#else
+    // App Store builds don't actually pay attention to the software update feed, so this can be a no-op
+    return orderedTracks;
+#endif
 }
 
-+ (void)setVisibleTracks:(NSArray *)orderedTrackList;
++ (NSArray <NSString *> *)visibleTracks;
+{
+    if (_visibleTracks != nil)
+        return _visibleTracks;
+
+    NSArray <NSString *> *savedTracks = [visibleTracksPreference stringArrayValue];
+    _visibleTracks = _memorableTracksFromTracks(savedTracks);
+    return _visibleTracks;
+}
+
++ (void)setVisibleTracks:(NSArray <NSString *> *)orderedTrackList;
 {
     OBASSERT(orderedTrackList != nil);
         
-    if ([orderedTrackList isEqual:[visibleTracks stringArrayValue]])
+    if ([orderedTrackList isEqual:[self visibleTracks]])
         return;
     
 #ifdef DEBUG
-    NSLog(@"OSU tracks %@ -> %@", [[visibleTracks stringArrayValue] description], [orderedTrackList description]);
+    NSLog(@"OSU tracks %@ -> %@", [[visibleTracksPreference stringArrayValue] description], [orderedTrackList description]);
 #endif
-    
-    if (![orderedTrackList count] && [orderedTrackList isEqual:[visibleTracks defaultObjectValue]])
-        [visibleTracks restoreDefaultValue];
+
+    _visibleTracks = orderedTrackList;
+    NSArray <NSString *> *saveTracks = _memorableTracksFromTracks(orderedTrackList);
+
+    if ([saveTracks isEqual:[visibleTracksPreference defaultObjectValue]])
+        [visibleTracksPreference restoreDefaultValue];
     else 
-        [visibleTracks setArrayValue:orderedTrackList];
+        [visibleTracksPreference setArrayValue:saveTracks];
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OSUTrackVisibilityChangedNotification object:self];
 }

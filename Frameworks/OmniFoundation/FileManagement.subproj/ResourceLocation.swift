@@ -14,9 +14,9 @@ import Foundation
     func resourceLocationDidMove(_ location: ResourceLocation)
 }
 
-// A KVO observable object for the URLs for a given type in a location.
+// A KVO observable object for a set of OFFileEdits representing the current versions of resources for a given type in a location.
 @objc(OFResourceLocationContents) public class ResourceLocationContents : NSObject {
-    @objc dynamic public var fileURLs = Set<URL>()
+    @objc dynamic public var fileEdits = Set<OFFileEdit>()
 }
 
 #if os(iOS)
@@ -95,8 +95,8 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
         NSFileCoordinator.addFilePresenter(self)
 
         if synchronousInitialScan {
-            let scannedURLs = peformScan(folderURL: folderURL, synchronousInitialScan: true)
-            finishScan(scannedFolderURL: folderURL, scannedURLs: scannedURLs)
+            let scannedFileEdits = peformScan(folderURL: folderURL, synchronousInitialScan: true)
+            finishScan(scannedFolderURL: folderURL, scannedFileEdits: scannedFileEdits)
         } else {
             handleScanRequest()
         }
@@ -294,26 +294,26 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
         ResourceLocation.FileScanQueue.addOperation {
             // TODO: Add cancellation so that if the user adds a large folder they can cancel while the scan is going on (by removing the link to said folder).
 
-            let scannedURLs = self.peformScan(folderURL: folderURL)
+            let scannedFileEdits = self.peformScan(folderURL: folderURL)
 
             OperationQueue.main.addOperation {
-                self.finishScan(scannedFolderURL: folderURL, scannedURLs: scannedURLs)
+                self.finishScan(scannedFolderURL: folderURL, scannedFileEdits: scannedFileEdits)
                 completionHandler()
             }
         }
     }
 
-    private func finishScan(scannedFolderURL: URL, scannedURLs: [String:ScannedURLs]) {
+    private func finishScan(scannedFolderURL: URL, scannedFileEdits: [String:ScannedFileEdits]) {
         assert(OperationQueue.current == OperationQueue.main)
 
         var didChange = false
-        scannedURLs.forEach { pair in
+        scannedFileEdits.forEach { pair in
             guard let type = resourceTypes[pair.key] else {
                 assertionFailure("Should have a resource type entry")
                 return
             }
-            if type.contents.fileURLs != pair.value.urls {
-                type.contents.fileURLs = pair.value.urls
+            if type.contents.fileEdits != pair.value.fileEdits {
+                type.contents.fileEdits = pair.value.fileEdits
                 didChange = true
             }
         }
@@ -323,15 +323,15 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
         NotificationCenter.default.post(name: ResourceLocation.DidFinishScanning, object: self)
     }
 
-    private class ScannedURLs {
-        var urls: Set<URL>
+    private class ScannedFileEdits {
+        var fileEdits: Set<OFFileEdit>
 
         init() {
-            urls = []
+            fileEdits = []
         }
     }
 
-    private func peformScan(folderURL: URL, synchronousInitialScan: Bool = false) -> [String:ScannedURLs] {
+    private func peformScan(folderURL: URL, synchronousInitialScan: Bool = false) -> [String:ScannedFileEdits] {
         assert(synchronousInitialScan || OperationQueue.current == ResourceLocation.FileScanQueue)
 
         let keys: Set<URLResourceKey> = [.isDirectoryKey, .isPackageKey]
@@ -342,7 +342,7 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
             return [:]
         }
 
-        let scannedURLs = resourceTypes.mapValues { _ in return ScannedURLs() }
+        let scannedFileEdits = resourceTypes.mapValues { _ in return ScannedFileEdits() }
 
         // DirectoryEnumerator is a NSEnumerator, which isn't generic and can't declare that it yields NSURLs.
         for item in topLevelEnumerator {
@@ -369,7 +369,23 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
             if let resourceType = resourceTypes.first(where: { pair -> Bool in
                 return pair.value.predicate.matchesFileType(fileType.rawFileType)
             }) {
-                scannedURLs[resourceType.0]!.urls.insert(fileURL)
+                let coordinator = NSFileCoordinator(filePresenter: nil)
+
+                // Don't force saving plug-ins that are being edited elsewhere.
+                do {
+                    try coordinator.readItem(at: fileURL, withChanges: false) { (newURL, outError) -> Bool in
+                        do {
+                            let fileEdit = try OFFileEdit(fileURL: newURL)
+                            scannedFileEdits[resourceType.0]!.fileEdits.insert(fileEdit)
+                            return true
+                        } catch let editError {
+                            outError?.pointee = editError as NSError
+                            return false
+                        }
+                    }
+                } catch let err {
+                    print("Error reading \(fileURL): \(err)")
+                }
 
                 // Is this a resource that is a directory too (*hopefully* would be registered as a bundle too, but not always).
                 if (values.isDirectory ?? false) {
@@ -386,7 +402,7 @@ private let bookmarkCreationOptions: URL.BookmarkCreationOptions = [.withSecurit
 
         }
 
-        return scannedURLs
+        return scannedFileEdits
     }
 
     private func update(folderURL: URL, bookmark: Data) {

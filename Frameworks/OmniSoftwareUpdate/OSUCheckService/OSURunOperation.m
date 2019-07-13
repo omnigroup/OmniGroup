@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -273,8 +273,7 @@ didCompleteWithError:(nullable NSError *)error;
     OBPRECONDITION([NSOperationQueue currentQueue] == _delegateQueue);
 
     OBPRECONDITION(completionHandler != nil, "We aren't using the challenge -sender methods now");
-    //OBPRECONDITION([challenge sender], "NSURLConnection-based challenged need the old 'sender' calls.");
-    
+
     NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
     NSString *challengeMethod = [protectionSpace authenticationMethod];
     
@@ -296,11 +295,9 @@ didCompleteWithError:(nullable NSError *)error;
         }
 #endif
 
-        // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
         if (completionHandler) {
             completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
         }
-        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
         return;
     }
     

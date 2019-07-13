@@ -15,9 +15,9 @@ set -x
 
 if [[ -z "${HTTPD:+foo}" ]]; then
     if [ -x /usr/local/apache2/bin/httpd ]; then
-	HTTPD=/usr/local/apache2/bin/httpd
+        HTTPD=/usr/local/apache2/bin/httpd
     else
-	HTTPD=`which httpd`
+        HTTPD=`which httpd`
     fi
 fi
 
@@ -75,12 +75,23 @@ else
    MODULES='modules'
 fi
 
+HTTPD_STATIC_MPM=`$HTTPD -l | egrep '(prefork|worker|event)' || true`
+if [[ -z "$HTTPD_STATIC_MPM" ]]; then
+    echo "No static MPM detected; loading prefork"
+    HTTPD_MPM_LOADMODULE="LoadModule mpm_prefork_module modules/mod_mpm_prefork.so"
+else
+    echo "Detected static MPM"
+    HTTPD_MPM_LOADMODULE="# Apache was compiled with static MPM module: $HTTPD_STATIC_MPM"
+fi
+
 < template-httpd.conf sed \
+    -e "s|HTTPD_ROOT|$HTTPD_ROOT|g;" \
 	-e "s|RUN_DIR|$RUN_DIR|g;" \
 	-e "s|DOC_DIR|$DOC_DIR|g;" \
 	-e "s|CONFIG_DIR|$CONFIG_DIR|g;" \
 	-e "s|LOG_DIR|$LOG_DIR|g;" \
 	-e "s|SERVER_NAME|$HOST|g;" \
+    -e "s|MPM_LOADMODULE|$HTTPD_MPM_LOADMODULE|g;" \
 	-e "s|LoadModule \([^ ]*\) modules/|LoadModule \1 $MODULES/|g;" \
 	-e "s|LOCAL_PORT|8001|g;" > "$CONFIG_DIR/httpd.conf"
 

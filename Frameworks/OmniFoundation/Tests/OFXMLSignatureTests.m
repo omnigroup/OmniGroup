@@ -290,9 +290,29 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
     
     NSLog(@"   Retrieving external reference <%@>", [refURL absoluteString]);
     
-    NSData *remoteData = [NSData dataWithContentsOfURL:refURL options:0 error:outError];
-    if (!remoteData)  // -dataWithContentsOfURL: will have filled *outError for us
+    NSData *remoteData;
+    if ([externalReference isEqualToString:@"http://www.w3.org/Signature/2002/04/xml-stylesheet.b64"] ||
+        [externalReference isEqualToString:@"http://www.w3.org/TR/xml-stylesheet"]) {
+        remoteData = [NSData dataWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"xml-stylesheet.b64.bz2" ofType:nil]];
+        remoteData = [remoteData decompressedBzip2Data:outError];
+        if (!remoteData)
+            return NO;
+        if (![externalReference isEqualToString:@"http://www.w3.org/Signature/2002/04/xml-stylesheet.b64"])
+            remoteData = [[NSData alloc] initWithBase64EncodedData:remoteData options:NSDataBase64DecodingIgnoreUnknownCharacters];
+    } else if ([externalReference isEqualToString:@"http://www.ietf.org/rfc/rfc3161.txt"]) {
+        remoteData = [NSData dataWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"rfc3161.txt" ofType:nil]];
+        remoteData = [remoteData decompressedBzip2Data:outError];
+        if (!remoteData)
+            return NO;
+    } else {
+        /* We used to fetch external resources here, but then our tests started failing because people (unsurprisingly) made changes to their web sites after fifteen years. So we only "retrieve" the set of resources we expect. */
+        // NSData *remoteData = [NSData dataWithContentsOfURL:refURL options:0 error:outError];
+        // if (!remoteData)  // -dataWithContentsOfURL: will have filled *outError for us
+        //     return NO;
+        if (outError)
+            *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain code:OFXMLSignatureValidationFailure userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Unexpected external resource in unit test: \"%@\"", externalReference] forKey:NSLocalizedDescriptionKey]];
         return NO;
+   }
     
 #ifdef DEBUG_XMLSIG_TESTS
     NSLog(@"Retrieved %u bytes from %@", (unsigned int)[remoteData length], refURL);
@@ -517,8 +537,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      [self checkReferences:sig];);
 }
 
-#ifdef DEBUG_wiml
-#warning Set RunSlowUnitTests=1 to see the failure <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 - (void)testExternalVarious;
 {
     NSArray *sigs;
@@ -538,10 +556,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);    
 }
-#endif
 
-#ifdef DEBUG_wiml
-#warning Set RunSlowUnitTests=1 to see the failure <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 - (void)testCertReferences;
 {
     NSArray *sigs;
@@ -557,10 +572,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     
     
 }
-#endif
 
-#ifdef DEBUG_wiml
-#warning Set RunSlowUnitTests=1 to see the failure <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 - (void)testCertEmbedded;
 {
     NSArray *sigs;
@@ -581,7 +593,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
 }
-#endif
 
 /*
  The following cases from this test suite aren't checked:
@@ -674,8 +685,8 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      [self checkReferences:sig];);
 }
 
+// <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 #ifdef DEBUG_wiml
-#warning Set RunSlowUnitTests=1 to see the failure <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 - (void)testRSADetached;
 {
     /*
@@ -762,8 +773,8 @@ after the signature value was computed.  Verification should FAIL.
     }
 }
 
+// <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 #ifdef DEBUG_wiml
-#warning Set RunSlowUnitTests=1 to see the failure <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
 - (void)testDSADetached;
 {
     /*

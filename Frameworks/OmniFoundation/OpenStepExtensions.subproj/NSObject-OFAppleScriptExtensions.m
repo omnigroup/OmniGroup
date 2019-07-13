@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -207,14 +207,10 @@ RCS_ID("$Id$")
 
 - (NSString *)_attributeNameForKey:(NSString *)key;
 {
-    NSDictionary *terminology;
-    NSScriptClassDescription *classDescription;
-    NSString *attributeName;
-    
-    classDescription = [self getApplicableClassDescription];
+    NSScriptClassDescription *classDescription = [self getApplicableClassDescription];
     while (classDescription) {
-        terminology = [[self _appleScriptTerminologyForSuite:[classDescription suiteName]] objectForKey:@"Classes"];
-        attributeName = [[[[terminology objectForKey:[classDescription className]] objectForKey:@"Attributes"] objectForKey:key] objectForKey:@"Name"];
+        NSDictionary *terminology = [[self _appleScriptTerminologyForSuite:[classDescription suiteName]] objectForKey:@"Classes"];
+        NSString *attributeName = [[[[terminology objectForKey:[classDescription className]] objectForKey:@"Attributes"] objectForKey:key] objectForKey:@"Name"];
         if (![NSString isEmptyString:attributeName])
             return attributeName;
         
@@ -370,6 +366,9 @@ RCS_ID("$Id$")
         else
             [result appendString:@", "];
         NSString *attributeName = isExtraKey ? key : [self _attributeNameForKey:key];
+        if (attributeName == nil)
+            continue;
+
         [result appendFormat:@"%@: %@", attributeName, value];
     }
     return [NSString stringWithFormat:@"{%@}", result];

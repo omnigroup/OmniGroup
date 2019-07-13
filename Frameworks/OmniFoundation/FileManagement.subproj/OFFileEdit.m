@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,12 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OFFileEdit
 
 // Here we assume the caller is either looking at a file that shouldn't be edited by anyone else while we are looking (in a tmp directory), or that the caller is in the midst of file coordination on this fileURL.
-- (instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
+- (nullable instancetype)initWithFileURL:(NSURL *)fileURL error:(NSError **)outError;
 {
 #ifdef DEBUG_bungi0
     OBPRECONDITION([NSThread isMainThread] == NO, "Are we inside file coordination?");
@@ -65,9 +67,25 @@ RCS_ID("$Id$");
 #pragma mark - NSCopying
 
 // We (and our subclass) are immutable.
-- (id)copyWithZone:(NSZone *)zone;
+- (id)copyWithZone:(NSZone * _Nullable)zone;
 {
     return self;
+}
+
+#pragma mark - Comparison
+
+- (NSUInteger)hash;
+{
+    return [_originalFileURL hash] ^ [_fileModificationDate hash] ^ _inode ^ _directory;
+}
+
+- (BOOL)isEqual:(id)otherObject;
+{
+    if (![otherObject isKindOfClass:[OFFileEdit class]]) {
+        return NO;
+    }
+    OFFileEdit *otherEdit = otherObject;
+    return [_originalFileURL isEqual:otherEdit->_originalFileURL] && [_fileModificationDate isEqual:otherEdit->_fileModificationDate] && _inode == otherEdit->_inode && _directory == otherEdit->_directory;
 }
 
 #pragma mark - Debugging
@@ -79,3 +97,4 @@ RCS_ID("$Id$");
 
 @end
 
+NS_ASSUME_NONNULL_END

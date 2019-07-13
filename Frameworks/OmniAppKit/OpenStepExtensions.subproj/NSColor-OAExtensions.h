@@ -1,4 +1,4 @@
-// Copyright 2000-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,5 +54,5 @@ extern NSString * const OANegateBooleanToControlColorTransformerName;
 // Takes rgba in 0..1.  Doubles so that we don't get warnings when using constants about 64->32 implicit casts.
 static inline NSColor *OARGBA(double r, double g, double b, double a)
 {
-    return [NSColor colorWithRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b alpha:(CGFloat)a];
+    return [NSColor colorWithSRGBRed:(CGFloat)r green:(CGFloat)g blue:(CGFloat)b alpha:(CGFloat)a];
 }

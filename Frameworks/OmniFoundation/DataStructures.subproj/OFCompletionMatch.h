@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,12 +22,26 @@ typedef NSComparisonResult (^OFCompletionMatchComparator)(OFCompletionMatch *mat
 
 extern const OFCompletionMatchComparator OFDefaultCompletionMatchComparator;
 
+typedef NS_ENUM(NSUInteger, OFCompletionMatchingOptions) {
+    OFCompletionMatchingOptionNone                     = 0,
+    OFCompletionMatchingOptionCaseInsensitive          = (1 << 0),
+    OFCompletionMatchingOptionDiacriticInsensitive     = (1 << 1),
+};
+
+extern OFCompletionMatchingOptions OFCompletionMatchingDefaultOptions;
+
+
 @interface OFCompletionMatch : NSObject
 
++ (nullable NSString *)canonicalStringForString:(nullable NSString *)string options:(OFCompletionMatchingOptions)options;
++ (NSArray<NSString *> *)canonicalStringsArrayForStringsArray:(NSArray<NSString *> *)strings options:(OFCompletionMatchingOptions)options;
+
 + (nullable OFCompletionMatch *)bestMatchFromMatches:(NSArray<OFCompletionMatch *> *)matches;
-+ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
-+ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name;
-+ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray<OFCompletionMatch *> *)results;
+
++ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inArray:(NSArray<NSString *> *)candidates options:(OFCompletionMatchingOptions)options shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
++ (NSArray<OFCompletionMatch *> *)matchesForFilter:(NSString *)filter inString:(NSString *)name options:(OFCompletionMatchingOptions)options;
++ (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name options:(OFCompletionMatchingOptions)options toResults:(NSMutableArray<OFCompletionMatch *> *)results;
+
 + (OFCompletionMatch *)completionMatchWithString:(NSString *)string;
 
 - (id)init NS_UNAVAILABLE;
