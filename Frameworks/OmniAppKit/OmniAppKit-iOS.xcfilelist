@@ -18,3 +18,4 @@ OpenStepExtensions.subproj/OATextAttachment.m
 OpenStepExtensions.subproj/OATextAttachmentCell.m
 OpenStepExtensions.subproj/OATextAttributes.m
 OpenStepExtensions.subproj/OATextStorage.m
+Tools/OASignificantTimeChangeObserver.m

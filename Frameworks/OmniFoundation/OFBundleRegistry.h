@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,9 +29,11 @@ extern NSString * const OFBundleRegistryDisabledBundlesDefaultsKey;
 + (void)registerKnownBundles;
     // Called automatically via OBInvokeRegisteredLoadActions()
 
-+ (NSDictionary<NSString *, NSString *> *)softwareVersionDictionary;
+@property (nonatomic, class, readonly) NSDictionary <NSString *, NSString *> *softwareVersionDictionary;
     // Returns a dictionary of the registered software versions
-+ (NSArray *)knownBundles;
+@property (nonatomic, class, readonly) NSArray <NSMutableDictionary <NSString *, id> *> *knownBundles;
+    // Returns the known bundle descriptions (see comments in the implementation for details)
+@property (nonatomic, class, readonly) NSArray <NSBundle *> *knownNSBundles;
     // Returns the known bundle descriptions (see comments in the implementation for details)
 
 + (void)noteAdditionalBundles:(nullable NSArray *)additionalBundles owner:(id)bundleOwner;

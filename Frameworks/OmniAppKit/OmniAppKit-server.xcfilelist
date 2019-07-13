@@ -9,3 +9,4 @@ OpenStepExtensions.subproj/OAParagraphStyle.m
 OpenStepExtensions.subproj/OATextAttachment.m
 OpenStepExtensions.subproj/OATextAttributes.m
 OpenStepExtensions.subproj/OATextStorage.m
+Tools/OASignificantTimeChangeObserver.m

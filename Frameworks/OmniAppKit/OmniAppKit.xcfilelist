@@ -99,6 +99,7 @@ Preferences.subproj/OAPreferenceController.m
 Preferences.subproj/OAPreferencesIconView.m
 Preferences.subproj/OAPreferencesToolbar.m
 Preferences.subproj/OAPreferencesWindow.m
+Tools/OASignificantTimeChangeObserver.m
 Widgets.subproj/Base.lproj/OAPopupDatePicker.xib
 Widgets.subproj/OAAquaButton.m
 Widgets.subproj/OAAutosizingHorizontalRule.m
@@ -107,6 +108,7 @@ Widgets.subproj/OABackgroundImageControl.m
 Widgets.subproj/OABoxSeparator.m
 Widgets.subproj/OABrowserCell.m
 Widgets.subproj/OACalendarView.m
+Widgets.subproj/OACardView.swift
 Widgets.subproj/OACertificateTrustPrompt.m
 Widgets.subproj/OAChasingArrowsProgressIndicator.m
 Widgets.subproj/OACloseButtonOverlay.m
@@ -141,7 +143,10 @@ Widgets.subproj/OAPassphrasePrompt.xib
 Widgets.subproj/OAPopUpButton.m
 Widgets.subproj/OAPopupDatePicker.m
 Widgets.subproj/OAResizingByteFormatter.m
+Widgets.subproj/OARoundRectButton.swift
 Widgets.subproj/OAScrollView.m
+Widgets.subproj/OAScrollingCardView.swift
+Widgets.subproj/OAScrollingStackedCardView.swift
 Widgets.subproj/OASearchField.m
 Widgets.subproj/OASecCertificateProxy.m
 Widgets.subproj/OAShrinkingTextDisplayer.m
@@ -149,6 +154,7 @@ Widgets.subproj/OAShrinkyTextField.m
 Widgets.subproj/OASplitView.m
 Widgets.subproj/OASpringLoadHelper.m
 Widgets.subproj/OAStackView.m
+Widgets.subproj/OAStackedCardView.swift
 Widgets.subproj/OASteppableTextField.m
 Widgets.subproj/OAStepperTextField.m
 Widgets.subproj/OASubtleScroller.m

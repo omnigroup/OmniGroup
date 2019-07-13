@@ -189,7 +189,7 @@ static unsigned UserDefaultsContext;
     return softwareVersionDictionary;
 }
 
-+ (NSArray *)knownBundles;
++ (NSArray <NSMutableDictionary <NSString *, id> *> *)knownBundles;
 {
     // If there aren't any additional registrations, just return our known bundles
     NSArray *knownBundles = [registeredBundleDescriptions allObjects];
@@ -206,6 +206,13 @@ static unsigned UserDefaultsContext;
     }
     
     return knownBundles;
+}
+
++ (NSArray <NSBundle *> *)knownNSBundles;
+{
+    return [[self knownBundles] arrayByPerformingBlock:^(NSMutableDictionary <NSString *, id> *bundleInfo) {
+        return bundleInfo[@"bundle"];
+    }];
 }
 
 #if 0

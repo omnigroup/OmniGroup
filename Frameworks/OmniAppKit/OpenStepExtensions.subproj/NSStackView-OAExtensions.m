@@ -1,4 +1,4 @@
-// Copyright 2016 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,6 +38,20 @@ typedef enum {
 @interface NSStackView (OAAnimatedViewHidingSupportPrivate)
 // Seems like exposing this outside of OAAnimatedViewHidingSupport is noise / exposing an implementation detail that is unnecessary since nothing other than NSStackView(OAAnimatedSubviewHiding) needs it. OAConstraintBasedStackView doesn't need it and I don't really expect any other clients of OAAnimatedViewHidingSupport to materialize (indeed, eventually I would expect OAConstraintBasedStackView to disappear and OAAnimatedViewHidingSupport with it as it gets collapsed into OAAnimatedSubviewHiding), but if any do materialize and they need this, we can expose it at that time.
 + (NSLayoutConstraint *)_collapseConstraintForView:(NSView *)view orientation:(NSUserInterfaceLayoutOrientation)orientation constant:(CGFloat)constant;
+@end
+
+
+@implementation NSStackView (OAExtentions)
+
+- (void)removeAllArrangedSubviews;
+{
+    NSArray *arrangedSubviews = [NSArray arrayWithArray:self.arrangedSubviews];
+    for (NSView *view in arrangedSubviews) {
+        [self removeArrangedSubview:view];
+        [view removeFromSuperview];
+    }
+}
+
 @end
 
 

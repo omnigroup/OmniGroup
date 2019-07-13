@@ -13,6 +13,13 @@
 		008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */ = {isa = PBXBuildFile; fileRef = 008AB54B14032D67001F29CD /* OADropDownTriangle.png */; };
 		0AE262141AD48E4700C449C4 /* OAColorSpaceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AE262121AD48E4700C449C4 /* OAColorSpaceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		0AE262161AD49B3800C449C4 /* OAColorSpaceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AE262131AD48E4700C449C4 /* OAColorSpaceManager.m */; };
+		10262A192285F80D006576D9 /* OASignificantTimeChangeObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 102629F02285F80D006576D9 /* OASignificantTimeChangeObserver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		10262A1A2285F80D006576D9 /* OASignificantTimeChangeObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 102629F02285F80D006576D9 /* OASignificantTimeChangeObserver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		10262A1B2285F80D006576D9 /* OASignificantTimeChangeObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 10262A182285F80D006576D9 /* OASignificantTimeChangeObserver.m */; };
+		10262A1C2285F80D006576D9 /* OASignificantTimeChangeObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 10262A182285F80D006576D9 /* OASignificantTimeChangeObserver.m */; };
+		1063AFAA2286000B000C95C2 /* OASignificantTimeChangeObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 10262A182285F80D006576D9 /* OASignificantTimeChangeObserver.m */; };
+		1063B24322862018000C95C2 /* OASignificantTimeChangeObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 102629F02285F80D006576D9 /* OASignificantTimeChangeObserver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1063E217227CE0240081D66F /* OARoundRectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1063E216227CE0240081D66F /* OARoundRectButton.swift */; };
 		159F5E491CE503DA003EF102 /* OmniAppKit.strings in Resources */ = {isa = PBXBuildFile; fileRef = 159F5E401CE503DA003EF102 /* OmniAppKit.strings */; };
 		1E2573661CB5AF8A00049669 /* OACertificateTrustPrompt.h in Headers */ = {isa = PBXBuildFile; fileRef = 1E2573641CB5AF8A00049669 /* OACertificateTrustPrompt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1E2573671CB5AF8A00049669 /* OACertificateTrustPrompt.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E2573651CB5AF8A00049669 /* OACertificateTrustPrompt.m */; };
@@ -513,8 +520,12 @@
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
+		5F84BAAF2283835A002DDD8C /* OACardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F84BAAE2283835A002DDD8C /* OACardView.swift */; };
+		5F84BB182285ED55002DDD8C /* OAScrollingCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F84BB172285ED55002DDD8C /* OAScrollingCardView.swift */; };
 		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
 		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
+		5FFF5172228C7FFE00D7BB28 /* OAStackedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFF514A228C7FFE00D7BB28 /* OAStackedCardView.swift */; };
+		5FFF5174228C800600D7BB28 /* OAScrollingStackedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFF5173228C800600D7BB28 /* OAScrollingStackedCardView.swift */; };
 		843878731AB20BD80069E467 /* OADefaultSettingIndicatorOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorOff.png */; };
 		843878741AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878701AB20BD80069E467 /* OADefaultSettingIndicatorOff@2x.png */; };
 		843878751AB20BD80069E467 /* OADefaultSettingIndicatorOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878711AB20BD80069E467 /* OADefaultSettingIndicatorOn.png */; };
@@ -1057,6 +1068,9 @@
 		0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAWindowCascade.m; sourceTree = "<group>"; };
 		0DA2DC69FFC5E9A8C697A15C /* OASplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASplitView.h; sourceTree = "<group>"; };
 		0DA2DC6AFFC5E9A8C697A15C /* OASplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASplitView.m; sourceTree = "<group>"; };
+		102629F02285F80D006576D9 /* OASignificantTimeChangeObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASignificantTimeChangeObserver.h; sourceTree = "<group>"; };
+		10262A182285F80D006576D9 /* OASignificantTimeChangeObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASignificantTimeChangeObserver.m; sourceTree = "<group>"; };
+		1063E216227CE0240081D66F /* OARoundRectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OARoundRectButton.swift; sourceTree = "<group>"; };
 		114343E10066D6B4C697A12D /* OACalendarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACalendarView.h; sourceTree = "<group>"; };
 		114343E20066D6B4C697A12D /* OACalendarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACalendarView.m; sourceTree = "<group>"; };
 		137CBE6F011899AF7F000001 /* OAFindPattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFindPattern.h; sourceTree = "<group>"; };
@@ -1356,8 +1370,12 @@
 		5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentPositioningView.h; sourceTree = "<group>"; };
 		5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocumentPositioningView.m; sourceTree = "<group>"; };
 		5F25681A1606CBE5008265EA /* Automator.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Automator.framework; path = System/Library/Frameworks/Automator.framework; sourceTree = SDKROOT; };
+		5F84BAAE2283835A002DDD8C /* OACardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OACardView.swift; sourceTree = "<group>"; };
+		5F84BB172285ED55002DDD8C /* OAScrollingCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAScrollingCardView.swift; sourceTree = "<group>"; };
 		5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppleEventManager-OAExtensions.h"; sourceTree = "<group>"; };
 		5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppleEventManager-OAExtensions.m"; sourceTree = "<group>"; };
+		5FFF514A228C7FFE00D7BB28 /* OAStackedCardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAStackedCardView.swift; sourceTree = "<group>"; };
+		5FFF5173228C800600D7BB28 /* OAScrollingStackedCardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAScrollingStackedCardView.swift; sourceTree = "<group>"; };
 		6389AAF4FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OAChasingArrowsProgressIndicator.h; path = Widgets.subproj/OAChasingArrowsProgressIndicator.h; sourceTree = "<group>"; };
 		6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OAChasingArrowsProgressIndicator.m; path = Widgets.subproj/OAChasingArrowsProgressIndicator.m; sourceTree = "<group>"; };
 		6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OAChasingArrows.png; path = Widgets.subproj/OAChasingArrows.png; sourceTree = "<group>"; };
@@ -2021,6 +2039,8 @@
 		34DBC8C105979AB00097A113 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				102629F02285F80D006576D9 /* OASignificantTimeChangeObserver.h */,
+				10262A182285F80D006576D9 /* OASignificantTimeChangeObserver.m */,
 				34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */,
 			);
 			path = Tools;
@@ -2234,6 +2254,10 @@
 				3FDA4139020970130297A14E /* NSControl */,
 				3FDA4141020970CB0297A14E /* NSScrollView */,
 				3FDA41420209714E0297A14E /* NSSplitView */,
+				5F84BAAE2283835A002DDD8C /* OACardView.swift */,
+				5F84BB172285ED55002DDD8C /* OAScrollingCardView.swift */,
+				5FFF514A228C7FFE00D7BB28 /* OAStackedCardView.swift */,
+				5FFF5173228C800600D7BB28 /* OAScrollingStackedCardView.swift */,
 			);
 			name = NSView;
 			sourceTree = "<group>";
@@ -2258,6 +2282,7 @@
 				3FDA413F020970820297A14E /* NSPopUpButton */,
 				E235B69D15CC836000E162D6 /* OAToolbarButton.h */,
 				E235B69E15CC836000E162D6 /* OAToolbarButton.m */,
+				1063E216227CE0240081D66F /* OARoundRectButton.swift */,
 			);
 			name = NSButton;
 			sourceTree = "<group>";
@@ -2974,6 +2999,7 @@
 			files = (
 				3E06092F221C5FAA00C1612A /* OAMoreInfoErrorRecovery.h in Headers */,
 				34BF52CA1EC135E70028AE7E /* OAFontDescriptor.h in Headers */,
+				1063B24322862018000C95C2 /* OASignificantTimeChangeObserver.h in Headers */,
 				340D87031EC1303100261434 /* OAColor.h in Headers */,
 				34BF52CC1EC136EE0028AE7E /* OmniAppKit.h in Headers */,
 				341876E61EC2578B00954EF3 /* OATextStorage.h in Headers */,
@@ -3012,6 +3038,7 @@
 				4A2ED8991F454F9D000F2513 /* OAColorPalette.h in Headers */,
 				3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */,
 				3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */,
+				10262A1A2285F80D006576D9 /* OASignificantTimeChangeObserver.h in Headers */,
 				3459EE361B694A8400D4F085 /* OAColor-Archiving.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3061,6 +3088,7 @@
 				4AA1E6B008AA764600E2FF6B /* NSFont-OAExtensions.h in Headers */,
 				4DA2ED421C51B70700CCEE3C /* OAAppearancePropertyListCoder.h in Headers */,
 				4AA1E6B108AA764600E2FF6B /* NSFontManager-OAExtensions.h in Headers */,
+				10262A192285F80D006576D9 /* OASignificantTimeChangeObserver.h in Headers */,
 				4A4BAB5C1E64C1780007DCE3 /* NSAppearance-OAExtensions.h in Headers */,
 				4AA1E6B208AA764600E2FF6B /* NSImage-OAExtensions.h in Headers */,
 				4AA1E6B308AA764600E2FF6B /* NSMenu-OAExtensions.h in Headers */,
@@ -3951,6 +3979,7 @@
 				34A8966A1EC282B4003260FC /* OAParagraphStyle.m in Sources */,
 				341877141EC25D3C00954EF3 /* NSAttributedString-OAExtensions.m in Sources */,
 				34F0F3951EC26BCE00A970FF /* OATextAttachment.m in Sources */,
+				1063AFAA2286000B000C95C2 /* OASignificantTimeChangeObserver.m in Sources */,
 				341877171EC260DD00954EF3 /* OATextAttributes.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3967,6 +3996,7 @@
 				3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */,
 				3425ABDB1ECA27E800E56839 /* OATextStorage.m in Sources */,
 				4D9E9C7D1C52C1F300BAE4A3 /* OAAppearancePropertyListCoder.m in Sources */,
+				10262A1C2285F80D006576D9 /* OASignificantTimeChangeObserver.m in Sources */,
 				3E060931221C5FAA00C1612A /* OAMoreInfoErrorRecovery.m in Sources */,
 				3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */,
 				348293ED1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */,
@@ -4028,6 +4058,7 @@
 				341F021A21BEE55700C78CF9 /* OADocumentFileTypes.swift in Sources */,
 				4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */,
 				4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */,
+				5F84BB182285ED55002DDD8C /* OAScrollingCardView.swift in Sources */,
 				4AA1E79108AA764600E2FF6B /* NSControl-OAExtensions.m in Sources */,
 				4AA1E79308AA764600E2FF6B /* NSDocument-OAExtensions.m in Sources */,
 				4AA1E79508AA764600E2FF6B /* NSFileManager-OAExtensions.m in Sources */,
@@ -4039,10 +4070,12 @@
 				4AA1E79B08AA764600E2FF6B /* NSOutlineView-OAExtensions.m in Sources */,
 				4AA1E79C08AA764600E2FF6B /* NSPasteboard-OAExtensions.m in Sources */,
 				4AA1E79D08AA764600E2FF6B /* NSPopUpButton-OAExtensions.m in Sources */,
+				1063E217227CE0240081D66F /* OARoundRectButton.swift in Sources */,
 				342F051A1B69795900C7BB34 /* OAAppearance.m in Sources */,
 				1E70DCA61DAC704F00FD7872 /* OAViewStackConstraints.m in Sources */,
 				4AA1E79E08AA764600E2FF6B /* NSScrollView-OAExtensions.m in Sources */,
 				4AA1E79F08AA764600E2FF6B /* NSSliderCell-OAExtensions.m in Sources */,
+				5F84BAAF2283835A002DDD8C /* OACardView.swift in Sources */,
 				4AA1E7A008AA764600E2FF6B /* NSSplitView-OAExtensions.m in Sources */,
 				4AA1E7A108AA764600E2FF6B /* NSString-OAExtensions.m in Sources */,
 				348DC6DE1A0828EC002C2CD8 /* OAChangeConfigurationValue.m in Sources */,
@@ -4053,6 +4086,7 @@
 				3459EE3B1B694A8400D4F085 /* OAColor.m in Sources */,
 				4AA1E7A608AA764600E2FF6B /* NSTextStorage-OAExtensions.m in Sources */,
 				4AA1E7A708AA764600E2FF6B /* NSToolbar-OAExtensions.m in Sources */,
+				5FFF5172228C7FFE00D7BB28 /* OAStackedCardView.swift in Sources */,
 				493FE0D61C224F9E00C029B5 /* NSStackView-OAExtensions.m in Sources */,
 				4AA1E7A808AA764600E2FF6B /* NSToolbarItem-OAExtensions.m in Sources */,
 				4AA1E7A908AA764600E2FF6B /* NSUserDefaults-OAExtensions.m in Sources */,
@@ -4111,6 +4145,8 @@
 				4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */,
 				4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */,
 				4AA1E7E808AA764600E2FF6B /* OASpringLoadHelper.m in Sources */,
+				10262A1B2285F80D006576D9 /* OASignificantTimeChangeObserver.m in Sources */,
+				5FFF5174228C800600D7BB28 /* OAScrollingStackedCardView.swift in Sources */,
 				4AA1E7E908AA764600E2FF6B /* OAContextPopUpButton.m in Sources */,
 				4DA2ED431C51B70700CCEE3C /* OAAppearancePropertyListCoder.m in Sources */,
 				4AA1E7EA08AA764600E2FF6B /* OAContextControl.m in Sources */,

@@ -1,4 +1,4 @@
-// Copyright 2009-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2016,2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -991,35 +991,6 @@ struct algorithmParameter {
         return result; // We are NS_RETURNS_RETAINED
     }
     
-#if OF_ENABLE_CDSA
-    /* If SecTransformEtc. isn't available, we can create a CSSM key from the KeyRef and use it with the CDSA APIs (since KeyRefs are wrappers around CDSA stuff underneath in the first place). */
-    if (keyRef != NULL) {
-        OFCSSMKey *cssmKey = [OFCSSMKey keyFromKeyRef:keyRef error:outError];
-        if (!cssmKey) {
-            CFRelease(keyRef);
-            return nil;
-        }
-        
-        if (op == OFXMLSignature_Sign) {
-            const CSSM_ACCESS_CREDENTIALS *creds;
-            OSStatus oserr = SecKeyGetCredentials(keyRef, CSSM_ACL_AUTHORIZATION_SIGN, kSecCredentialTypeDefault, &creds);
-            if (oserr != noErr) {
-                OFErrorFromCSSMReturn(outError, oserr, @"SecKeyGetCredentials");
-                CFRelease(keyRef);
-                return nil;
-            }
-            [cssmKey setCredentials:creds];
-        }
-        
-        CFRelease(keyRef);
-        
-        if (sigorder < 0)
-            sigorder = [cssmKey groupOrder];
-        
-        return [cssmKey newVerificationContextForAlgorithm:cursor->pk_signature_alg packDigest:sigorder error:outError];
-    }
-#endif
-    
     OBASSERT(keyRef == NULL); // We get here if -copySecKeyForMethod: failed w/o a hard error.
     
     if (keyRef)
@@ -1066,40 +1037,7 @@ static NSData *padInteger(NSData *i, unsigned toLength, NSError **outError)
     }
 }
 
-#if 0  // Not using SecAsn1Coder - can't get it to reject certain kinds of corrupt data
-
-/* Apple's SecAsn1Coder is not very well documented, but it turns out to be Netscape's NSS coder with the serial numbers filed off and a few tweaks (eg, SecItem -> CSSM_DATA) */
-
-struct OFXMLSignatureDSASig {
-    CSSM_DATA r;
-    CSSM_DATA s;
-};
-
-static const SecAsn1Template dsaSignatureTemplate[] =
-{
-    {
-    /* The ASN.1 decoder seems to reuse the CONSTRUCTED bit for some internal purpose. Technically we need to set it, since SEQUENCEs are CONSTRUCTED, right? But if we do, it parses the sequence as a blob, and not its contents. If we don't set it, then the decoder goes ahead and decodes the contained fields. Inspecting the source reveals that the decoder goes ahead and adds CONSTRUCTED to SEQUENCEs after making other decisions based on that flag. (This kind of thing is why I'm not sure I should be using the NSS API instead of rolling my own...) */
-        .kind = SEC_ASN1_SEQUENCE /* | SEC_ASN1_CONSTRUCTED */ | SEC_ASN1_UNIVERSAL,
-        .offset = 0,
-        .sub = NULL, // SEC_ASN1_GROUP not specified, so this is inline
-        .size = 0 // sizeof(struct OFXMLSignatureDSASig)
-    },
-    {
-        .kind = SEC_ASN1_INTEGER | SEC_ASN1_UNIVERSAL,
-        .offset = offsetof(struct OFXMLSignatureDSASig, r),
-        .sub = NULL,
-        .size = sizeof(CSSM_DATA) // not actually used
-    },
-    {
-        .kind = SEC_ASN1_INTEGER | SEC_ASN1_UNIVERSAL,
-        .offset = offsetof(struct OFXMLSignatureDSASig, s),
-        .sub = NULL,
-        .size = sizeof(CSSM_DATA) // not actually used
-    },
-    { .kind = 0 } // sentinel
-};
-
-#endif
+// Not using SecAsn1Coder - can't get it to reject certain kinds of corrupt data
 
 #pragma mark Discrete-log signature format conversions
 
@@ -1818,6 +1756,11 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
     } else if (xmlStrcmp(algid, XMLDigestSHA256) == 0) {
         xmlFree(algid);
         return [[OFSHA256DigestContext alloc] init];
+    } else if (xmlStrcmp(algid, XMLDigestSHA384) == 0) {
+        xmlFree(algid);
+        OFCCDigestContext *ctxt = [[OFSHA512DigestContext alloc] init];
+        ctxt.outputLength = ( 384 / 8 );
+        return ctxt;
     } else if (xmlStrcmp(algid, XMLDigestSHA512) == 0) {
         xmlFree(algid);
         return [[OFSHA512DigestContext alloc] init];
@@ -1825,42 +1768,6 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         xmlFree(algid);
         return [[OFMD5DigestContext alloc] init];
     }
-    
-#if OF_ENABLE_CDSA
-    id <OFDigestionContext, NSObject> result;
-    CSSM_ALGORITHMS cssm_algid;
-    
-    if (xmlStrcmp(algid, XMLDigestSHA1) == 0) {
-        cssm_algid = CSSM_ALGID_SHA1;
-    } else if (xmlStrcmp(algid, XMLDigestSHA224) == 0) {
-        cssm_algid = CSSM_ALGID_SHA224;
-    } else if (xmlStrcmp(algid, XMLDigestSHA256) == 0) {
-        cssm_algid = CSSM_ALGID_SHA256;
-    } else if (xmlStrcmp(algid, XMLDigestSHA384) == 0) {
-        cssm_algid = CSSM_ALGID_SHA384;
-    } else if (xmlStrcmp(algid, XMLDigestSHA512) == 0) {
-        cssm_algid = CSSM_ALGID_SHA512;
-    } else if (xmlStrcmp(algid, XMLDigestMD5) == 0) {
-        cssm_algid = CSSM_ALGID_MD5;
-    } else {
-        cssm_algid = CSSM_ALGID_NONE;
-    }
-    
-    if (cssm_algid != CSSM_ALGID_NONE) {
-        OFCDSAModule *csp = [OFCDSAModule appleCSP];
-        CSSM_CC_HANDLE context = CSSM_INVALID_HANDLE;
-        CSSM_RETURN err = CSSM_CSP_CreateDigestContext([csp handle], cssm_algid, &context);
-        if (err != CSSM_OK || context == CSSM_INVALID_HANDLE) {
-            OFErrorFromCSSMReturn(outError, err, [NSString stringWithFormat:@"CSSM_CSP_CreateDigestContext(algid=%u for <%s>)", (unsigned)cssm_algid, algid]);
-            result = nil;
-        } else {
-            result = [[OFCSSMDigestContext alloc] initWithCSP:csp cc:context];
-        }
-        
-        xmlFree(algid);
-        return result;
-    }
-#endif
     
     signatureValidationFailure(outError, @"Unimplemented digest algorithm <%s>", algid);
     xmlFree(algid);

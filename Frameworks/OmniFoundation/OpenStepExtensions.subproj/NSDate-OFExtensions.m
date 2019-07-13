@@ -532,6 +532,15 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, OFXMLDate
     }
 
     NSTimeInterval timeInterval = self.timeIntervalSinceReferenceDate;
+
+    // Figure out the fractional seconds portion. To simplify rounding (particularly in the case of a fractional millisecond that ends in 0.5 like -testRoundingBeforeReferenceDate4), if we have a negative time and non-zero fractional seconds, adjust the base time interval to the beginning of the previous second and adjust the fractional seconds to a positive value to make up for it.
+    double dummy;
+    NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
+    if (timeInterval < 0 && fractionalSeconds != -0.0) {
+        timeInterval = floor(timeInterval);
+        fractionalSeconds = 1.0 + fractionalSeconds;
+    }
+
     int year, month, day, hour, minute, second; // CFCalendarDecomposeAbsoluteTime is documented to require int arguments.
     Boolean ok;
     ok = CFCalendarDecomposeAbsoluteTime(calendar, timeInterval, "yMdHms", &year, &month, &day, &hour, &minute, &second);
@@ -539,22 +548,11 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, OFXMLDate
 
     DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%d", year, month, day, hour, minute, second);
     
-    // Figure out the fractional seconds portion.
-    unsigned milliseconds;
-    double dummy;
-    NSTimeInterval fractionalSeconds = modf(timeInterval, &dummy);
 
-    if (timeInterval < 0 && fractionalSeconds != -0.0) { // Don't step negative integral second time intervals by one second. See -test1970.
-        OBASSERT(fractionalSeconds < 0.0);
-        DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
+    OBASSERT(fractionalSeconds >= 0.0);
+    DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
 
-        milliseconds = 1000 + (unsigned)round(fractionalSeconds * 1000.0);
-    } else {
-        OBASSERT(fractionalSeconds >= 0.0);
-        DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
-
-        milliseconds = (unsigned)round(fractionalSeconds * 1000.0);
-    }
+    unsigned milliseconds = (int)round(fractionalSeconds * 1000.0);
 
     // If the milliseconds rolled over to the next second due to rounding, deal with it.
     if (milliseconds >= 1000) {

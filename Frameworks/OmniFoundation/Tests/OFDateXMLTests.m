@@ -425,6 +425,30 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self)
     NSString *newString = [date xmlString];
     XCTAssertEqualObjects(oldString, newString);
 }
+- (void)testRoundingBeforeReferenceDate4;
+{
+    NSTimeInterval ti = -7396826.312500;
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+    
+    NSString *oldString = _xmlStyleDateStringWithFormat(date); // 2000-10-07T09:19:33.688Z
+    NSString *newString = [date xmlString];
+    XCTAssertEqualObjects(oldString, newString);
+}
+
+// Playing off -testRoundingBeforeReferenceDate4, test what happens with a -0.NNN5 fractional seconds value in the first second of a day.
+
+- (void)testRoundingBeforeReferenceDate5;
+{
+    NSDate *day = [[NSDate alloc] initWithXMLString:@"1999-01-01T00:00:00Z"];
+    NSTimeInterval ti = day.timeIntervalSinceReferenceDate + 0.6875; // This gives a negative time interval where the fractional part ends in 0.NNN5 instead of 0.NNN49999 or the like.
+
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:ti];
+
+    NSString *oldString = _xmlStyleDateStringWithFormat(date);
+    NSString *newString = [date xmlString];
+    XCTAssertEqualObjects(oldString, newString);
+    XCTAssertEqualObjects(oldString, @"1999-01-01T00:00:00.688Z");
+}
 
 - (void)testXMLStringVsPreviousImplementation;
 {

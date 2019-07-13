@@ -295,15 +295,19 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
         [externalReference isEqualToString:@"http://www.w3.org/TR/xml-stylesheet"]) {
         remoteData = [NSData dataWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"xml-stylesheet.b64.bz2" ofType:nil]];
         remoteData = [remoteData decompressedBzip2Data:outError];
-        if (!remoteData)
+        if (!remoteData) {
+            NSLog(@"Unable to read unit-test sample data??");
             return NO;
+        }
         if (![externalReference isEqualToString:@"http://www.w3.org/Signature/2002/04/xml-stylesheet.b64"])
             remoteData = [[NSData alloc] initWithBase64EncodedData:remoteData options:NSDataBase64DecodingIgnoreUnknownCharacters];
     } else if ([externalReference isEqualToString:@"http://www.ietf.org/rfc/rfc3161.txt"]) {
-        remoteData = [NSData dataWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"rfc3161.txt" ofType:nil]];
+        remoteData = [NSData dataWithContentsOfFile:[[NSBundle bundleForClass:[self class]] pathForResource:@"rfc3161.txt.bz2" ofType:nil]];
         remoteData = [remoteData decompressedBzip2Data:outError];
-        if (!remoteData)
+        if (!remoteData) {
+            NSLog(@"Unable to read unit-test sample data??");
             return NO;
+        }
     } else {
         /* We used to fetch external resources here, but then our tests started failing because people (unsurprisingly) made changes to their web sites after fifteen years. So we only "retrieve" the set of resources we expect. */
         // NSData *remoteData = [NSData dataWithContentsOfURL:refURL options:0 error:outError];
@@ -685,8 +689,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      [self checkReferences:sig];);
 }
 
-// <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
-#ifdef DEBUG_wiml
 - (void)testRSADetached;
 {
     /*
@@ -715,7 +717,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
                      [self checkReferences:sig];);
     
 }
-#endif
 
 /*
  signature-dsa-enveloping.xml
@@ -773,8 +774,6 @@ after the signature value was computed.  Verification should FAIL.
     }
 }
 
-// <bug:///173188> (Frameworks-Mac Regression: Some XML signature unit tests failing when slow unit tests enabled)
-#ifdef DEBUG_wiml
 - (void)testDSADetached;
 {
     /*
@@ -802,7 +801,6 @@ after the signature value was computed.  Verification should FAIL.
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
 }
-#endif
 
 - (void)testHMACVarious;
 {
