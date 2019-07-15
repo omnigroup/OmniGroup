@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,7 +74,7 @@ static NSString *_doneActionButtonTitle;
 
 + (UIColor *)headerTextColor;
 {
-    return [UIColor colorWithWhite:0.42f alpha:1];
+    return [UIColor labelColor];
 }
 
 + (UILabel *)headerLabelWithText:(NSString *)labelString;
@@ -129,7 +129,7 @@ static NSString *_doneActionButtonTitle;
     if ([OUIInspectorAppearance inspectorAppearanceEnabled]) {
         [headerView themedAppearanceDidChange:OUIInspectorAppearance.appearance];
     } else {
-        headerView.backgroundColor = UIColor.whiteColor;
+        headerView.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
     }
     OBASSERT(headerView.backgroundColor != nil, "Clear backgrounds cause the header view's text to overlap the font names, and that looks bad.");
     
@@ -235,7 +235,8 @@ static NSString *_doneActionButtonTitle;
     // Subclasses must implement these protocols -- this class just does the UIViewController and OUIInspectorSlice glue code dealing with the view property being a UITableView.
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDataSource)]);
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDelegate)]);
-    
+
+    _tableView.backgroundColor = [UIColor systemGroupedBackgroundColor];
     _tableView.delegate = (id <UITableViewDelegate>)self;
     _tableView.dataSource = (id <UITableViewDataSource>)self;
     
@@ -288,11 +289,11 @@ static NSString *_doneActionButtonTitle;
     [_tableView setEditing:editing animated:animated];
 }
 
--(UIColor *)sliceBackgroundColor;
-{
-    return [UIColor clearColor];
-}
-
+//-(UIColor *)sliceBackgroundColor;
+//{
+//    return [UIColor clearColor];
+//}
+//
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
     OUIInspectorTableViewHeaderFooterView *view = [[OUIInspectorTableViewHeaderFooterView alloc] init];

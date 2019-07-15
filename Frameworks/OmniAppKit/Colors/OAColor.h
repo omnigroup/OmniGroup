@@ -117,7 +117,7 @@ extern NSColor * __nullable OAColorFromColorRef(CGColorRef c);
 extern CGColorRef __nullable OACreateGrayColorRefFromColor(NSColor *c) CF_RETURNS_RETAINED;
 #endif
 
-typedef NS_ENUM(NSInteger, OAColorSpace) {
+typedef NS_CLOSED_ENUM(NSInteger, OAColorSpace) {
     OAColorSpaceRGB,
     OAColorSpaceWhite, // 0=black, 1=white
     OAColorSpaceCMYK,

@@ -1,4 +1,4 @@
-// Copyright 2016-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,61 +17,65 @@ class PaneDividerView: UIView {
     }
     
     // non-editing divider width
-    @objc /**REVIEW**/ var width: CGFloat = 0.5 {
+    var width: CGFloat = 0.5 {
         didSet {
-            self.widthConstraint?.constant = width
+            widthConstraint?.constant = width
         }
     }
     
+    static var defaultColor = UIColor.lightGray
+    static var defaultEditingColor = UIColor.darkGray
+
     // divider width when editing, chanages take effect when editing state changes
-    @objc /**REVIEW**/ var editingWidth: CGFloat = 6.0
+    var editingWidth: CGFloat = 6.0
     
     // non-editing divider color
-    @objc /**REVIEW**/ var color: UIColor = UIColor.lightGray {
+    var color: UIColor = PaneDividerView.defaultColor {
         didSet {
-            self.backgroundColor = color
+            backgroundColor = color
         }
     }
     
     // divider color when editing, changes take effect when editing state changes
-    @objc /**REVIEW**/ var editingColor: UIColor = UIColor.darkGray
+    var editingColor: UIColor = PaneDividerView.defaultEditingColor
     
     var editStateChanged: (EditState) -> () = { _ in } {
         didSet {
             // only setup a gesture recongnizer if client wants state events.
             let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
             longPress.debugIdentifier = "MultiPane resize"
-            self.addGestureRecognizer(longPress)
-            self.longPressGesture = longPress
+            addGestureRecognizer(longPress)
+            longPressGesture = longPress
         }
     }
     
     private var longPressGesture: UILongPressGestureRecognizer?
     private var widthConstraint: NSLayoutConstraint?
     
-    @objc /**REVIEW**/ private(set) var isEditing = false {
+    private(set) var isEditing = false {
         didSet {
-            self.editStateChanged((isEditing ? .Started : .Ended))
+            editStateChanged((isEditing ? .Started : .Ended))
         }
     }
     
-    lazy private var dragHandle: UIView = { [unowned self] in
+    lazy private var dragHandle: UIView = makeDragHandle()
+        
+    private func makeDragHandle() -> UIView {
         let view = UIView()
-        self.addSubview(view)
+        addSubview(view)
         view.layer.cornerRadius = 2.0
         view.backgroundColor = UIColor.white
         view.isHidden = true
         
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
-        view.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        view.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         // make the handle width slightly less than the view's editingWidth
-        view.widthAnchor.constraint(equalToConstant: self.editingWidth - 1).isActive = true
+        view.widthAnchor.constraint(equalToConstant: editingWidth - 1).isActive = true
         view.heightAnchor.constraint(equalToConstant: 40.0).isActive = true
         return view
-        }()
-    
-    
+    }
+
     override init(frame: CGRect) {
         super.init(frame: CGRect.zero)
         self.backgroundColor = self.color
@@ -94,7 +98,7 @@ class PaneDividerView: UIView {
     // adjust the tap target for this view to allow for touches that are slightly off to either side
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         let offset:CGFloat = 7
-        if point.x >= -offset && point.x <= self.bounds.width + offset {
+        if point.x >= -offset && point.x <= bounds.width + offset {
             return true
         }
         return false
@@ -103,32 +107,35 @@ class PaneDividerView: UIView {
     @objc private func handleLongPress(gesture: UIGestureRecognizer) {
         switch gesture.state {
         case .began:
-            self.update(forEditingState: true)
+            update(forEditingState: true)
             break
+
         case .changed:
-            self.editStateChanged(.Changed(gesture.location(in: self).x))
+            editStateChanged(.Changed(gesture.location(in: self).x))
             break
+
         case .ended:
-            self.update(forEditingState: false)
+            update(forEditingState: false)
             break
+
         default:
             // cancelled/failed should just end editing and cleanup.
-            self.update(forEditingState: false)
+            update(forEditingState: false)
             break
         }
     }
     
     private func update(forEditingState editing: Bool) {
         if editing {
-            self.widthConstraint?.constant = self.editingWidth
-            self.backgroundColor = self.editingColor
-            self.dragHandle.isHidden = false
-            self.isEditing = true
+            widthConstraint?.constant = editingWidth
+            backgroundColor = editingColor
+            dragHandle.isHidden = false
+            isEditing = true
         } else {
-            self.widthConstraint?.constant = self.width
-            self.backgroundColor = self.color
-            self.dragHandle.isHidden = true
-            self.isEditing = false
+            widthConstraint?.constant = width
+            backgroundColor = color
+            dragHandle.isHidden = true
+            isEditing = false
         }
     }
 }

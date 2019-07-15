@@ -295,7 +295,7 @@ static id _ODOObjectAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotI
 
     // As noted above, we could be looking up an optional scalar, so call the boxing getter.
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetObjectValue(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetObjectValue(entity, self->_valueStorage, storageKey);
 }
 
 static BOOL _ODOObjectBoolAttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -304,7 +304,7 @@ static BOOL _ODOObjectBoolAttributeGetterAtIndex(ODOObject *self, NSUInteger sna
     ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
 
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetBoolean(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetBoolean(entity, self->_valueStorage, storageKey);
 }
 
 static int16_t _ODOObjectInt16AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -322,7 +322,7 @@ static int32_t _ODOObjectInt32AttributeGetterAtIndex(ODOObject *self, NSUInteger
     ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
 
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetInt32(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetInt32(entity, self->_valueStorage, storageKey);
 }
 
 static int64_t _ODOObjectInt64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -331,7 +331,7 @@ static int64_t _ODOObjectInt64AttributeGetterAtIndex(ODOObject *self, NSUInteger
     ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
 
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetInt64(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetInt64(entity, self->_valueStorage, storageKey);
 }
 
 static float _ODOObjectFloat32AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -340,7 +340,7 @@ static float _ODOObjectFloat32AttributeGetterAtIndex(ODOObject *self, NSUInteger
     ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
 
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetFloat32(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetFloat32(entity, self->_valueStorage, storageKey);
 }
 
 static double _ODOObjectFloat64AttributeGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -349,7 +349,7 @@ static double _ODOObjectFloat64AttributeGetterAtIndex(ODOObject *self, NSUIntege
     ODOStorageKey storageKey = ODOEntityStorageKeyForSnapshotIndex(entity, snapshotIndex);
 
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return ODOStorageGetFloat64(self->_objectID.entity, self->_valueStorage, storageKey);
+    return ODOStorageGetFloat64(entity, self->_valueStorage, storageKey);
 }
 
 static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -383,7 +383,7 @@ static _Nullable id _ODOObjectToOneRelationshipGetterAtIndex(ODOObject *self, NS
     }
     
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectCheckForLazyToOneFaultCreation(self, ODOStorageGetObject(self->_objectID.entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
+    return _ODOObjectCheckForLazyToOneFaultCreation(self, ODOStorageGetObject(entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
 }
 
 static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger snapshotIndex)
@@ -403,7 +403,7 @@ static id _ODOObjectToManyRelationshipGetterAtIndex(ODOObject *self, NSUInteger 
 #endif
     
     __inline_ODOObjectWillAccessValueForKey(self, nil/*we know it isn't the pk in this case*/);
-    return _ODOObjectCheckForLazyToManyFaultCreation(self, ODOStorageGetObject(self->_objectID.entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
+    return _ODOObjectCheckForLazyToManyFaultCreation(self, ODOStorageGetObject(entity, self->_valueStorage, storageKey), snapshotIndex, nil/*relationship == we has it not!*/);
 }
 
 // Generic property setter; for now we aren't doing specific-index setters (we are already a little faster than CoreData here, but we could still add them if it ends up showing up on a profile).

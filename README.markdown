@@ -10,7 +10,7 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 10.2 for all platforms. You'll probably have the best results if you do too.
+- We currently use Xcode 10.11 for all platforms. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 

@@ -10,4 +10,4 @@
 
 extern CFDataRef OFDataCreateSHA1Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;
 extern CFDataRef OFDataCreateSHA256Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;
-extern CFDataRef OFDataCreateMD5Digest(CFAllocatorRef allocator, CFDataRef data) CF_RETURNS_RETAINED;
+extern CFDataRef OFDataCreateMD5Digest(CFAllocatorRef allocator, CFDataRef data) OB_DEPRECATED_ATTRIBUTE CF_RETURNS_RETAINED;

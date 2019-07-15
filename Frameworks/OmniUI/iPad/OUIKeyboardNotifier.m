@@ -283,6 +283,12 @@ static CGFloat _bottomHeightToAvoidForKeyboardFrameValue(OUIKeyboardNotifier *se
     CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardFrame);
     if (!CGRectIsNull(intersectionRect)) {
         heightToAvoid = CGRectGetHeight(intersectionRect);
+        
+        // maxY of the keyboard frame is maxY of its host window, which may not be equal to maxY of superview. We have to assume that the frame of the keyboard view's window is equal to superview.frame
+        UIView *accessoryToolbarView = self.accessoryToolbarView;
+        UIView *superview = accessoryToolbarView.superview;
+        CGRect convertedFrame = [superview.window convertRect:superview.frame toView:superview];
+        heightToAvoid -= CGRectGetMaxY(superview.window.frame) - CGRectGetMaxY(convertedFrame);
     }
     DEBUG_KEYBOARD("heightToAvoid: %f", heightToAvoid);
     

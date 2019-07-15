@@ -146,22 +146,6 @@ open class ScrollingCardView: CardView {
         }
     }
     
-    open override func layout() {
-        super.layout()
-        
-        // Update vertical elasticity
-        let contentHeight = scrollView.documentView?.frame.height ?? 0
-        let footerHeight = footerView != nil ? footerViewHeight : 0
-        if contentHeight > frame.height - footerHeight {
-            scrollView.verticalScrollElasticity = .automatic
-            scrollView.canScroll = true
-        } else {
-            scrollView.verticalScrollElasticity = .none
-            // We've determined that we have enough room in our scroll view to display all of our content without scrolling. But, without this, we hit <bug:///175242>, which looks like it's roughly a 16 point math discrepency. Potentially because of the hidden horizontal scroller?
-            scrollView.canScroll = false
-        }
-    }
-    
     // MARK: Layout Hooks
 
     fileprivate func scrollViewDidTile() {
@@ -175,13 +159,17 @@ open class ScrollingCardView: CardView {
         }
         
         documentViewWidthConstraint?.constant = -scrollerWidth
+        
+        updateScrollability()
     }
 
-    fileprivate func scrollViewDidLayout() {
+    // MARK: Private
+    
+    private func updateScrollability() {
         // Update vertical elasticity
         let contentHeight = scrollView.documentView?.frame.height ?? 0
-        let footerHeight = footerView != nil ? footerViewHeight : 0
-        if contentHeight > frame.height - footerHeight {
+        // The document view already includes the footer view's height via its contentViewBottomConstraint
+        if contentHeight > frame.height {
             scrollView.verticalScrollElasticity = .automatic
             scrollView.canScroll = true
         } else {
@@ -190,8 +178,6 @@ open class ScrollingCardView: CardView {
             scrollView.canScroll = false
         }
     }
-
-    // MARK: Private
     
     private var scrollView: CardScrollView!
     private var documentViewWidthConstraint: NSLayoutConstraint? = nil
@@ -253,14 +239,6 @@ private class CardScrollView: NSScrollView {
             verticalScroller.wantsLayer = true
             verticalScroller.layer?.cornerRadius = cornerRadius
             verticalScroller.layer?.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner]
-        }
-    }
-    
-    override func layout() {
-        super.layout()
-        
-        if let scrollingCardView = enclosingView(of: ScrollingCardView.self) {
-            scrollingCardView.scrollViewDidLayout()
         }
     }
     

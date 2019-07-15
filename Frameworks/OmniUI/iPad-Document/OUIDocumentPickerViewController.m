@@ -585,7 +585,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             // Save the document to our temporary location
-            [document saveToURL:temporaryURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
+            [document saveToURL:document.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
                 // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                     [document closeWithCompletionHandler:^(BOOL closeSuccess){

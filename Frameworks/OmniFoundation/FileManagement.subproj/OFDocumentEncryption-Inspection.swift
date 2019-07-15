@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,11 +72,11 @@ extension OFDocumentEncryptionSettings {
         
         #if os(OSX)
         if (passwords) {
-            into[kMDItemSecurityMethod] = "Password Encrypted"; // Magic string from MDItem.h
+            into[kMDItemSecurityMethod!] = "Password Encrypted"; // Magic string from MDItem.h
         } else if (pki) {
-            into[kMDItemSecurityMethod] = "Public-Key Encrypted";
+            into[kMDItemSecurityMethod!] = "Public-Key Encrypted";
         } else {
-            into[kMDItemSecurityMethod] = "Encrypted";
+            into[kMDItemSecurityMethod!] = "Encrypted";
         }
         #endif
 

@@ -31,7 +31,11 @@ RCS_ID("$Id$")
 
 - (NSData *)md5Signature;
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return CFBridgingRelease(OFDataCreateMD5Digest(kCFAllocatorDefault, (CFDataRef)self));
+#pragma clang diagnostic pop
+
 }
 
 - (NSData *)signatureWithAlgorithm:(NSString *)algName;
@@ -42,7 +46,13 @@ RCS_ID("$Id$")
         case NSOrderedAscending:
             switch ([algName caseInsensitiveCompare:@"md5"]) {
                 case NSOrderedSame:
+#if DEBUG
+                    NSLog(@"md5 has been deprecated; move to another digest.");
+#endif
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                     return [self md5Signature];
+#pragma clang diagnostic pop
                 default:
                     break;
             }

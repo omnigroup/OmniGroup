@@ -181,28 +181,36 @@ NSURL *OFURLWithTrailingSlash(NSURL *baseURL)
 
 BOOL OFURLEqualsURL(NSURL *URL1, NSURL *URL2)
 {
-    if (URL1 == URL2)
+    if (URL1 == URL2) {
         return YES;
-    if (!URL1 || !URL2)
+    }
+    
+    if (URL1 == nil || URL2 == nil) {
         return NO;
+    }
     
     URL1 = [URL1 absoluteURL];
     URL2 = [URL2 absoluteURL];
     
     // This assumes that -path keeps the trailing slash and that we want slash differences to be significant (might want to change that).
-    if (OFNOTEQUAL([URL1 path], [URL2 path]))
+    if (OFNOTEQUAL([URL1 path], [URL2 path])) {
         return NO;
+    }
     
     // Some other bits should maybe be URL-decoded before comparison too. Also, we should maybe just assert that all the goofy stuff is nil for OFX-used URLs.
-    return
-    OFISEQUAL(URL1.scheme, URL2.scheme) &&
-    OFISEQUAL(URL1.host, URL2.host) &&
-    OFISEQUAL(URL1.port, URL2.port) &&
-    OFISEQUAL(URL1.user, URL2.user) &&
-    OFISEQUAL(URL1.password, URL2.password) &&
-    OFISEQUAL(URL1.fragment, URL2.fragment) &&
-    OFISEQUAL(URL1.parameterString, URL2.parameterString) &&
-    OFISEQUAL(URL1.query, URL2.query);
+    return (
+        OFISEQUAL(URL1.scheme, URL2.scheme) &&
+        OFISEQUAL(URL1.host, URL2.host) &&
+        OFISEQUAL(URL1.port, URL2.port) &&
+        OFISEQUAL(URL1.user, URL2.user) &&
+        OFISEQUAL(URL1.password, URL2.password) &&
+        OFISEQUAL(URL1.fragment, URL2.fragment) &&
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        OFISEQUAL(URL1.parameterString, URL2.parameterString) &&
+#pragma clang diagnostic pop
+        OFISEQUAL(URL1.query, URL2.query)
+    );
 }
 
 BOOL OFURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
@@ -215,8 +223,12 @@ BOOL OFURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
 static void _assertPlainURL(NSURL *url)
 {
     OBPRECONDITION([NSString isEmptyString:[url fragment]]);
-    OBPRECONDITION([NSString isEmptyString:[url parameterString]]);
     OBPRECONDITION([NSString isEmptyString:[url query]]);
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    OBPRECONDITION([NSString isEmptyString:[url parameterString]]);
+#pragma clang diagnostic pop
 }
 
 NSString *OFStandardizedPathForFileURL(NSURL *url, BOOL followFinalSymlink)

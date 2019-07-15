@@ -176,9 +176,13 @@ extension MultiPaneNavigationTransitionContext: UIViewControllerTransitionCoordi
         case .cubic:
             let cubic = parameters.cubicTimingParameters!
             return cubic.animationCurve
+
         case .spring: fallthrough
         case .composed:
             // TODO: can we do better than linear here?
+            return defaultCurve
+            
+        @unknown default:
             return defaultCurve
         }
     }
@@ -244,6 +248,7 @@ extension UINavigationController.Operation {
         case .push: return CGAffineTransform(translationX: width * -1, y: 0.0)
         case .pop: return CGAffineTransform(translationX: width, y: 0.0)
         case .none: return CGAffineTransform.identity
+        @unknown default: return CGAffineTransform.identity
         }
     }
 }

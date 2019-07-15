@@ -1,4 +1,4 @@
-// Copyright 2017 Omni Development, Inc. All rights reserved.
+// Copyright 2017-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,7 +60,7 @@ open class DisclosableMultiSegmentInspectorPane : OUIMultiSegmentStackedSlicesIn
 
 extension DisclosableMultiSegmentInspectorPane : DisclosableSliceGroupDelegate {
     open func didTapSliceGroupButton(_ disclosableSliceGroup: DisclosableSliceGroup) {
-        if let index = excludedDisclosableSliceGroups.index(of: disclosableSliceGroup) {
+        if let index = excludedDisclosableSliceGroups.firstIndex(of: disclosableSliceGroup) {
             excludedDisclosableSliceGroups.remove(at: index)
             setGroup(disclosableSliceGroup, disclosed: true)
         }

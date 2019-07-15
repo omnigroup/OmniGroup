@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
     } else {
         self.valueImageView.hidden = YES;
     }
+
 #ifdef DEBUG_rachael0
     self.detailTextLabel.backgroundColor = [UIColor redColor];
 #endif
@@ -259,6 +260,8 @@ NS_ASSUME_NONNULL_BEGIN
         cell.textLabel.textColor = self.placeholderTextColor;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
     cell.textLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+
+    cell.backgroundColor = [self sliceBackgroundColor];
 
     NSString *value = item.value;
     UIImage *valueImage = item.valueImage;

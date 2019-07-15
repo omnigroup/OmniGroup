@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,28 @@ import UIKit
         return configuration.canBePinned
     }
     
+    public var dividerColor: UIColor? {
+        get {
+            guard let configuration = configuration as? Sidebar else { return nil }
+            return configuration.divider?.color
+        }
+        set {
+            guard let configuration = configuration as? Sidebar else { return }
+            configuration.divider?.color = newValue ?? PaneDividerView.defaultColor
+        }
+    }
+
+    public var editingDividerColor: UIColor? {
+        get {
+            guard let configuration = configuration as? Sidebar else { return nil }
+            return configuration.divider?.editingColor
+        }
+        set {
+            guard let configuration = configuration as? Sidebar else { return }
+            configuration.divider?.editingColor = newValue ?? PaneDividerView.defaultEditingColor
+        }
+    }
+
     /// The width of the center pane to use when deciding what style of pinning can be used.
     /// If pinning a pane would cause this threshold to be exceeded, then the pinning system will push the other sidebar pane out of the way.
     /// Otherwise, it will try to pin in place without changing the other pane.

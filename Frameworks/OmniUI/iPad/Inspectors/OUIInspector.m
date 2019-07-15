@@ -107,7 +107,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)labelTextColor;
 {
-    return [UIColor blackColor];
+    return [UIColor labelColor];
 }
 
 + (UIFont *)labelFont;
@@ -117,12 +117,12 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)valueTextColor;
 {
-    return [UIColor blackColor];
+    return [UIColor labelColor];
 }
 
 + (UIColor *)indirectValueTextColor;
 {
-    return [UIColor grayColor];
+    return [UIColor systemGrayColor];
 }
 
 - init;

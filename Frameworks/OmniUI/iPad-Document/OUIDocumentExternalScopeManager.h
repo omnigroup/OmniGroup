@@ -17,7 +17,8 @@
 - (void)importExternalDocumentFromURL:(NSURL *)url;
 - (ODSFileItem *)fileItemFromExternalDocumentURL:(NSURL *)url;
 
-- (BOOL)addRecentlyOpenedDocumentURL:(NSURL *)url;
+- (void)addRecentlyOpenedDocumentURL:(NSURL *)url completionHandler:(void (^)(BOOL success))completionHandler;
+
 - (NSArray <ODSFileItem *> *)recentlyOpenedFileItems;
 
 @end

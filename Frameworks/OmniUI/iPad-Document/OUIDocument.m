@@ -474,9 +474,7 @@ static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigro
 
 - (void)didWriteToURL:(NSURL *)url;
 {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [OUIDocumentAppController.controller addRecentlyOpenedDocumentURL:url];
-    }];
+    [OUIDocumentAppController.controller addRecentlyOpenedDocumentURL:url];
 
     __autoreleasing NSError *error;
     OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:url error:&error];
@@ -903,12 +901,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     _currentSaveURL = [url copy];
 
     void (^saveBlock)(void (^updateCompletionHandler)(BOOL success, NSURL *destinationURL, NSError *error)) = ^void (void (^updateCompletionHandler)(BOOL success, NSURL *destinationURL, NSError *error)) {
-        [super saveToURL:url forSaveOperation:saveOperation completionHandler:^(BOOL success){
+        [super saveToURL:url forSaveOperation:saveOperation completionHandler:^(BOOL success) {
             DEBUG_DOCUMENT(@"  save success %d", success);
             OBRecordBacktraceWithContext("Save completed", OBBacktraceBuffer_Generic, (__bridge const void *)self);
 
             OBASSERT_NOTNULL(_currentSaveURL);
             _currentSaveURL = nil;
+
+            // To avoid possible races with mulitple saves being queued up, we could maybe enqueue this on the main queue so that it is stored before the -closeWithCompletionHandler: completion handler is called. But, UIDocument doesn't make any guarantees about how that's scheduled (they may have added it to the NSOperationQueue already but with a dependency). Instead, we'll try to be careful (and this is going to be a very rare problem hopefully).
+            @synchronized(self) {
+                if (_lastWrittenFileEdit) {
+                    _lastWrittenFileEdit = [[OFFileEdit alloc] initWithFileURL:url fileModificationDate:_lastWrittenFileEdit.fileModificationDate inode:_lastWrittenFileEdit.inode isDirectory:_lastWrittenFileEdit.isDirectory];
+                }
+            }
 
             if (success) {
                 // Subclasses must call -didWriteToURL: from their file saving path.

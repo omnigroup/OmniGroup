@@ -91,7 +91,7 @@ NSArray <NSString *> *OAFixRequestedPasteboardTypes(NSArray <NSString *> *types)
         NSArray *components = [type componentsSeparatedByString:@"."];
         for (NSString *component in components) {
             OBASSERT([component length] > 0);
-            OBASSERT([component rangeOfCharacterFromSet:NonUTICharacterSet].location == NSNotFound);
+            OBASSERT([component rangeOfCharacterFromSet:NonUTICharacterSet].location == NSNotFound, "type is \"%@\"", type);
         }
     }
 #endif

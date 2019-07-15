@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1120,8 +1120,15 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)addRecentlyOpenedDocumentURL:(NSURL *)url;
 {
-    if ([_externalScopeManager addRecentlyOpenedDocumentURL:url])
-        [self _updateShortcutItems];
+    __weak OUIDocumentAppController *weakSelf = self;
+    [_externalScopeManager addRecentlyOpenedDocumentURL:url completionHandler:^(BOOL success) {
+        if (success) {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                __strong OUIDocumentAppController *strongSelf = weakSelf;
+                [strongSelf _updateShortcutItems];
+            }];
+        }
+    }];
 }
 
 - (NSArray <ODSFileItem *> *)recentlyOpenedFileItems;

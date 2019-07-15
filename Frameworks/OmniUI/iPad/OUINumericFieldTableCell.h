@@ -16,7 +16,7 @@ extern NSString *const OUINumericFieldTableCellValueKey;
 
 @interface OUINumericFieldTableCell : OUIThemedTableViewCell
 
-+ (instancetype)numericFieldTableCell NS_SWIFT_NAME(numericFieldTableCell());
++ (instancetype)numericFieldTableCell NS_SWIFT_NAME(makeNumericFieldTableCell());
 
 /// Opt-in support for dynamic type. (Defaults to NO until all/most of the places we use this want to opt in.)
 @property (nonatomic) BOOL supportsDynamicType;

@@ -76,7 +76,7 @@ struct MultiPaneLayout {
     
     static private func verticalConstraints(pane: Pane) -> [NSLayoutConstraint] {
         let topAndBottom = "V:|[view]|"
-        return NSLayoutConstraint.constraints(withVisualFormat: topAndBottom, options: [], metrics: nil, views: ["view" : pane.viewController.view])
+        return NSLayoutConstraint.constraints(withVisualFormat: topAndBottom, options: [], metrics: nil, views: ["view" : pane.viewController.view!])
     }
     
     /// The leading constraint between the given view and its superview

@@ -84,6 +84,8 @@ RCS_ID("$Id$");
     cell.textLabel.font = [UIFont systemFontOfSize:17.0];
     cell.detailTextLabel.font = [UIFont systemFontOfSize:13.0];
 
+    cell.backgroundColor = [self sliceBackgroundColor];
+    
     id valueForRow = [_titlesSubtitlesAndObjectValues objectAtIndex:3*row + 2];
     id valueForObject = [[self.appropriateObjectsForInspection lastObject] valueForKeyPath:_keyPath];
     

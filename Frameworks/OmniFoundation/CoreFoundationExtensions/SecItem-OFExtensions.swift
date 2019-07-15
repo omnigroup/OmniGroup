@@ -100,6 +100,39 @@ public enum Keypair {
     }
 }
 
+ public struct OFKeyUsage: OptionSet {
+    public let rawValue: Int32
+    public init(rawValue: Int32) {
+        self.rawValue = rawValue
+    }
+    
+    static let sign      = OFKeyUsage(rawValue: kOFKeyUsageSign)     /// compute digital signature or MAC
+    static let verify    = OFKeyUsage(rawValue: kOFKeyUsageVerify)   /// verify digital signature or MAC
+    static let encrypt   = OFKeyUsage(rawValue: kOFKeyUsageEncrypt)  /// encrypt content
+    static let decrypt   = OFKeyUsage(rawValue: kOFKeyUsageDecrypt)  /// decrypt content and validate decryption, if applicable
+    static let wrapKey   = OFKeyUsage(rawValue: kOFKeyUsageWrap)     /// encrypt key
+    static let unwrapKey = OFKeyUsage(rawValue: kOFKeyUsageUnwrap)   /// decrypt key and validate decryption, if applicable
+    static let derive    = OFKeyUsage(rawValue: kOFKeyUsageDerive)   /// perform key agreement or shared-secret derivation
+    
+    static let integrity : OFKeyUsage = [ .sign, .verify ]
+    static let confidentiality : OFKeyUsage = [ .encrypt, .decrypt, .wrapKey, .unwrapKey ]
+    static let publicOperations : OFKeyUsage = [ .verify, .encrypt, .wrapKey ]
+    
+    public func asSecKeyUsage() -> NSMutableArray {
+        let attrs = NSMutableArray()
+        
+        if self.contains(.sign)      { attrs.add(kSecAttrCanSign) }
+        if self.contains(.verify)    { attrs.add(kSecAttrCanVerify) }
+        if self.contains(.encrypt)   { attrs.add(kSecAttrCanEncrypt) }
+        if self.contains(.decrypt)   { attrs.add(kSecAttrCanDecrypt) }
+        if self.contains(.wrapKey)   { attrs.add(kSecAttrCanWrap) }
+        if self.contains(.unwrapKey) { attrs.add(kSecAttrCanUnwrap) }
+        if self.contains(.derive)    { attrs.add(kSecAttrCanDerive) }
+
+        return attrs
+    }
+}
+
 private func makeError(_ oserr: OSStatus, inFunction fnname: String) -> NSError {
     return NSError(domain: NSOSStatusErrorDomain, code:Int(oserr), userInfo: [ "function": fnname ]);
 }

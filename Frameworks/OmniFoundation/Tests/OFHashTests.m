@@ -120,13 +120,19 @@ static NSData *repeatedBytes(int bytevalue, unsigned int count)
 
 static NSString *md5string(NSString *input)
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return [[[input dataUsingEncoding:NSASCIIStringEncoding allowLossyConversion:NO] md5Signature] unadornedLowercaseHexString];
+#pragma clang diagnostic pop
 }
 
 - (void)testRFC1321
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     XCTAssertEqualObjects([[[NSData data] md5Signature] unadornedLowercaseHexString],
                   @"d41d8cd98f00b204e9800998ecf8427e");
+#pragma clang diagnostic pop
 
     XCTAssertEqualObjects(md5string(@"a"),
                   @"0cc175b9c0f1b6a831c399e269772661");

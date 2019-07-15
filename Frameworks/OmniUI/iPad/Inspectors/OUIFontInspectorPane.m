@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -161,7 +161,7 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     // If we go down into a font family that isn't selected and select one of its faces, then when we come back we need to update selection
     UITableView *tableView = (UITableView *)self.view;
     if (tableView.style == UITableViewStylePlain) {
-        tableView.backgroundColor = [UIColor whiteColor];
+        tableView.backgroundColor = [UIColor systemGroupedBackgroundColor];
     } else {
         tableView.backgroundColor = nil;
     }
@@ -239,7 +239,7 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     NSDictionary *item = _itemAtIndexPath(self, indexPath);
     if (!item) {
         OUIThemedTableViewCell *cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
-        cell.backgroundColor = [UIColor whiteColor];
+        cell.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
         return cell;
     }
     
@@ -248,15 +248,15 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     if (!cell) {
         cell = [[OUIThemedTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         
-        cell.backgroundColor = [UIColor whiteColor];
+        cell.backgroundColor = [UIColor secondarySystemGroupedBackgroundColor];
         cell.opaque = YES;
         
         UILabel *label = cell.textLabel;
         label.text = [item objectForKey:ItemDisplayName];
         label.font = [item objectForKey:ItemFont];
         label.opaque = YES;
-        label.backgroundColor = [UIColor whiteColor];
-        label.textColor = [UIColor blackColor];
+        label.backgroundColor = cell.backgroundColor;
+        label.textColor = [UIColor labelColor];
         
         [cell sizeToFit];
     }

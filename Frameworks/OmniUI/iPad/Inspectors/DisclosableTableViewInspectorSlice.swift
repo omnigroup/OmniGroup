@@ -111,6 +111,7 @@ open class DisclosableTableViewInspectorSlice: OUIAbstractTableViewInspectorSlic
             cell.textLabel?.textColor = tableView.tintColor
             cell.textLabel?.font = OUIInspector.labelFont()
             cell.selectionStyle = .none
+            cell.backgroundColor = self.sliceBackgroundColor()
             cell.showsReorderControl = false
             return cell
         } else if (indexPath.row < self.numberOfStaticRows()) {

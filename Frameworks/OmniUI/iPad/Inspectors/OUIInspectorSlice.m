@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,7 +86,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 - (UIColor *)sliceBackgroundColor;
 {
-    return [UIColor whiteColor];
+    return [UIColor secondarySystemGroupedBackgroundColor];
 }
 
 + (UIColor *)sliceSeparatorColor;
@@ -94,7 +94,7 @@ OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 #if 1
     // iOS 7 GM bug: Table views in popovers draw their separators in very light gray the second time the popover is displayed. This is to match what they end up drawing on subsequent displays, so at least we'll be consistent.
     // RADAR 14969546 : <bug:///94533> (UITableViews in popovers lose their separator color after they are first presented)
-    return [UIColor colorWithWhite:0.9f alpha:1.0f];
+    return [UIColor separatorColor];
 #else
     // Use UITableView's default separator color as our default separator color.
     static dispatch_once_t predicate;

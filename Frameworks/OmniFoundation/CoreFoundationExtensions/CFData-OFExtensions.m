@@ -33,7 +33,11 @@ CFDataRef OFDataCreate ## ALG ## Digest(CFAllocatorRef allocator, CFDataRef data
 
 OFDataCreateDigest(SHA1)
 OFDataCreateDigest(SHA256)
-OFDataCreateDigest(MD5)
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    OFDataCreateDigest(MD5)
+#pragma clang diagnostic pop
 
 
 // TODO: SHA512, RIPEMD160 ... ?

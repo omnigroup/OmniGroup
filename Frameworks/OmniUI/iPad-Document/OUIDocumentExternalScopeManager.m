@@ -1,4 +1,4 @@
-// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,6 +147,7 @@ RCS_ID("$Id$")
         fileItem.isDownloaded = NO;
         fileItem.isDownloading = YES;
         OBASSERT(_externalQueue != nil);
+        __weak ODSStore *weakDocStore = _documentStore;
         [_externalQueue addOperationWithBlock:^{
             NSFileCoordinator *fileCoordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
             [fileCoordinator coordinateReadingItemAtURL:url options:0 error:NULL byAccessor:^(NSURL *newURL) {
@@ -162,8 +163,12 @@ RCS_ID("$Id$")
                     fileItem.userModificationDate = fileEdit.fileModificationDate;
                     // Saving bookmark data for files fails before they're downloaded, so we need to do it again now.
                     [self _queueSaveExternalScopes];
-                    [self addRecentlyOpenedDocumentURL:url];
-                    [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:_documentStore userInfo:@{ODSFileItemInfoKey:fileItem}];
+                    [self addRecentlyOpenedDocumentURL:url completionHandler:^(BOOL success) {
+                        if (success) {
+                            ODSStore *strongDocStore = weakDocStore;
+                            [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:strongDocStore userInfo:@{ODSFileItemInfoKey:fileItem}];
+                        }
+                    }];
                 }];
             }];
         }];
@@ -470,7 +475,7 @@ static NSMutableArray *_arrayByUpdatingBookmarksForRemovedURLs(NSArray <NSData *
         return nil;
     }
 
-    [self addRecentlyOpenedDocumentURL:url];
+    [self addRecentlyOpenedDocumentURL:url completionHandler:nil];
     ODSFileItem *fileItem = [self _fileItemFromExternalURL:url inExternalScope:[self _recentDocumentsExternalScope]];
     return fileItem;
 }
@@ -482,34 +487,46 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     });
 }
 
-- (BOOL)addRecentlyOpenedDocumentURL:(NSURL *)url;
+- (void)addRecentlyOpenedDocumentURL:(NSURL *)url completionHandler:(void (^)(BOOL success))completionHandler;
 {
-    if (url == nil)
-        return NO;
+    if (url == nil) {
+        if (completionHandler != nil) {
+            completionHandler(NO);
+        }
+        return;
+    }
 
     NSURL *securedURL = nil;
     if ([url startAccessingSecurityScopedResource])
         securedURL = url;
 
-    NSError *bookmarkError = nil;
-    NSData *bookmarkData = [url bookmarkDataWithOptions:0 /* docs say to use NSURLBookmarkCreationWithSecurityScope, but SDK says not available on iOS */ includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
-    [securedURL stopAccessingSecurityScopedResource];
-    if (bookmarkData != nil) {
-        NSArray *filteredBookmarks = _arrayByRemovingBookmarksMatchingURL([_recentlyOpenedBookmarksPreference arrayValue], url); // We're replacing any existing bookmarks to this URL
-        NSMutableArray <NSData *> *recentlyOpenedBookmarks = [[NSMutableArray alloc] initWithArray:filteredBookmarks];
-        [recentlyOpenedBookmarks insertObject:bookmarkData atIndex:0];
-        NSUInteger archiveBookmarkLimit = MAX(20, [_recentItemLimitPreference integerValue] + 10); // We don't display all of these items, but we always track some extras in case some have gone missing
-        if (recentlyOpenedBookmarks.count > archiveBookmarkLimit)
-            [recentlyOpenedBookmarks removeObjectsInRange:NSMakeRange(archiveBookmarkLimit, recentlyOpenedBookmarks.count - archiveBookmarkLimit)];
-        [_recentlyOpenedBookmarksPreference setArrayValue:recentlyOpenedBookmarks];
-        [self _updateRecentFileItems];
-        return YES;
-    } else {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        NSError *bookmarkError = nil;
+        NSData *bookmarkData = [url bookmarkDataWithOptions:0 /* docs say to use NSURLBookmarkCreationWithSecurityScope, but SDK says not available on iOS */ includingResourceValuesForKeys:nil relativeToURL:nil error:&bookmarkError];
+        [securedURL stopAccessingSecurityScopedResource];
+        if (bookmarkData != nil) {
+            NSArray *filteredBookmarks = _arrayByRemovingBookmarksMatchingURL([_recentlyOpenedBookmarksPreference arrayValue], url); // We're replacing any existing bookmarks to this URL
+            NSMutableArray <NSData *> *recentlyOpenedBookmarks = [[NSMutableArray alloc] initWithArray:filteredBookmarks];
+            [recentlyOpenedBookmarks insertObject:bookmarkData atIndex:0];
+            NSUInteger archiveBookmarkLimit = MAX(20, [_recentItemLimitPreference integerValue] + 10); // We don't display all of these items, but we always track some extras in case some have gone missing
+            if (recentlyOpenedBookmarks.count > archiveBookmarkLimit)
+                [recentlyOpenedBookmarks removeObjectsInRange:NSMakeRange(archiveBookmarkLimit, recentlyOpenedBookmarks.count - archiveBookmarkLimit)];
+            [_recentlyOpenedBookmarksPreference setArrayValue:recentlyOpenedBookmarks];
+            [self _updateRecentFileItems];
+            if (completionHandler != nil) {
+                completionHandler(YES);
+            }
+            return;
+        }  else {
 #ifdef DEBUG
-        NSLog(@"Unable to create bookmark for %@: %@", url, [bookmarkError toPropertyList]);
+            NSLog(@"Unable to create bookmark for %@: %@", url, [bookmarkError toPropertyList]);
 #endif
+        }
+    }];
+    if (completionHandler != nil) {
+        completionHandler(NO);
     }
-    return NO;
+    return;
 }
 
 - (NSArray <NSURL *> *)_recentlyOpenedURLs;
@@ -646,7 +663,7 @@ static NSOperationQueue *presentedItemOperationQueue;
 {
     self.fileURL = newURL;
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_fileItem.scope completedMoveOfFileItem:_fileItem toURL:newURL];
+        [_fileItem.scope completedMoveOfFileItem:_fileItem toURL:self.fileURL];
     }];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -187,7 +187,7 @@ enum CMSRecipientIdentifier {
         } else if oserr != errSecSuccess {
             throw NSError(domain: NSOSStatusErrorDomain, code: Int(oserr), userInfo: [ "function": "SecItemCopyMatching" ] );
         } else if CFGetTypeID(found) != CFArrayGetTypeID() { // Protecting against the utter bogosity of SecItemCopyMatching()
-            throw NSError(domain: NSOSStatusErrorDomain, code: Int(errSecUnimplemented), userInfo: [ "rettype": CFCopyTypeIDDescription(CFGetTypeID(found)),
+            throw NSError(domain: NSOSStatusErrorDomain, code: Int(errSecUnimplemented), userInfo: [ "rettype": CFCopyTypeIDDescription(CFGetTypeID(found))!,
                 "function": "SecItemCopyMatching" ] );
         } else {
             return (found as! NSArray) as [CFTypeRef];
@@ -722,7 +722,7 @@ class OFCMSUnwrapper {
                 var idents = try recip.rid.findIdentities(allowInteraction: allowInteraction);
                 
                 for kp in auxiliaryAsymmetricKeys {
-                    if let cert_ = try? kp.certificate(), let cert = cert_ {
+                    if let cert = try? kp.certificate() {
                         if recip.rid.matches(certificate: cert) {
                             idents.insert(kp, at: 0);
                         }

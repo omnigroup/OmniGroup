@@ -1,4 +1,4 @@
-// Copyright 2016-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2016-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -222,7 +222,7 @@ class MultiPanePresenter: NSObject {
         if self.delegate?.willPresent?(viewController: pane.viewController) == nil {
             // Setup reasonable defaults if the delegate is nil or the optional `willPresent` method is not implemented.
             pane.viewController.transitioningDelegate = nil
-            pane.viewController.modalPresentationStyle = .fullScreen
+            pane.viewController.modalPresentationStyle = .automatic
         }
         
         presentingController.present(pane.viewController, animated: animated, completion: {

@@ -1,4 +1,4 @@
-// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,7 +83,7 @@ RCS_ID("$Id$");
     }
     
     // Draw the border
-    [[UIColor colorWithWhite:0.3f alpha:0.6f] set];
+    [[UIColor systemGrayColor] set];
     [path stroke];
     
     // If necessary, draw the slash (same color as the border)

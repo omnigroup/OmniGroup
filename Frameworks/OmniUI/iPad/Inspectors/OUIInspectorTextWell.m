@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -367,7 +367,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     
     // Use a default based on our background style.
     if (self.backgroundType == OUIInspectorWellBackgroundTypeButton)
-        return [UIColor blackColor]; // Match UITableView
+        return [UIColor labelColor];
     
     return self.textColor;
 }

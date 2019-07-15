@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSData *)sha256Signature;
 
 /// Computes an MD5 digest of the receiver and returns it. (Derived from the RSA Data Security, Inc. MD5 Message-Digest Algorithm.)
-- (NSData *)md5Signature;
+- (NSData *)md5Signature OB_DEPRECATED_ATTRIBUTE;
 
 - (nullable NSData *)signatureWithAlgorithm:(NSString *)algName;
 

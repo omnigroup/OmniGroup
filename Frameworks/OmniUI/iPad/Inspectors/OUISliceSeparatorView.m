@@ -1,4 +1,4 @@
-// Copyright 2015-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,8 +18,8 @@ RCS_ID("$Id$")
 
 static id _commonInit(OUISliceSeparatorView *self)
 {
-    self.backgroundColor = [UIColor whiteColor];
-    self.strokeColor = [UIColor colorWithWhite:0.9 alpha:1.0];
+    self.backgroundColor = [UIColor systemBackgroundColor];
+    self.strokeColor = [UIColor separatorColor];
     return self;
 }
 

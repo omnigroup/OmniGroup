@@ -43,7 +43,7 @@ RCS_ID("$Id$");
 
     [self reloadAvailableSegments];
 
-    self.selectedTabTintColor = [UIColor blackColor];
+    self.selectedTabTintColor = [UIColor labelColor];
     self.horizontalTabBottomStrokeColor = [UIColor colorWithWhite:0.80 alpha:1.0];
     self.horizontalTabSeparatorTopColor = [UIColor colorWithWhite:0.96 alpha:1.0];
     
