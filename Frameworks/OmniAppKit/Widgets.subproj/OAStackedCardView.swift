@@ -32,6 +32,7 @@ open class StackedCardView: CardView {
     public var contentViews: [NSView] = [] {
         didSet {
             needsReconfigureViews = true
+            reconfigureViewsIfNeeded()
         }
     }
     
@@ -49,6 +50,7 @@ open class StackedCardView: CardView {
     }
     
     public func setCustomSpacing(_ spacing: CGFloat, after contentView: NSView) {
+        reconfigureViewsIfNeeded()
         stackView.setCustomSpacing(spacing, after: contentView)
     }
     

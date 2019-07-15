@@ -166,7 +166,8 @@ static NSTimer *WarningTimer = nil;
     if (!(self = [super init]))
         return nil;
 
-    _data = [[_OBExpectedDeallocationData alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
+    _OBExpectedDeallocationData *data = [[_OBExpectedDeallocationData alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
+    _data = data;
 
     dispatch_async(WarningQueue, ^{
         if (!WarningTimer) {
@@ -178,8 +179,8 @@ static NSTimer *WarningTimer = nil;
         }
 
         // Don't start the clock until we actually make it onto the serial queue, in case it gets backed up with lots of objects.
-        _data->_originalTime = CFAbsoluteTimeGetCurrent();
-        [PendingDeallocations addObject:_data];
+        data->_originalTime = CFAbsoluteTimeGetCurrent();
+        [PendingDeallocations addObject:data];
     });
 
     return self;

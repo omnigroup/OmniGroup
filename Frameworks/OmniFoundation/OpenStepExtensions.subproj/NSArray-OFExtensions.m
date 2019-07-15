@@ -325,7 +325,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+- (NSDictionary *)indexByBlock:(NS_NOESCAPE OFObjectToObjectBlock)blk;
 {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] initWithCapacity:[self count]];
     
@@ -392,7 +392,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         return [NSSet set];
 }
 
-- (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSArray *)arrayByPerformingBlock:(NS_NOESCAPE OFObjectToObjectBlock)blk;
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:[self count]];
     
@@ -405,7 +405,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (NSArray *)flattenedArrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSArray *)flattenedArrayByPerformingBlock:(NS_NOESCAPE OFObjectToObjectBlock)blk;
 {
     NSMutableArray *result = [[NSMutableArray new] autorelease];
     for (id singleObject in self) {
@@ -424,7 +424,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSSet *)setByPerformingBlock:(NS_NOESCAPE OFObjectToObjectBlock)blk;
 {
     id singleResult = nil;
     NSMutableSet *result = nil;
@@ -470,7 +470,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (id)min:(NSComparator)comparator;
+- (id)min:(NS_NOESCAPE NSComparator)comparator;
 {
     id minimumValue = nil;
     for (id value in self) {
@@ -480,7 +480,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return minimumValue;
 }
 
-- (id)max:(NSComparator)comparator;
+- (id)max:(NS_NOESCAPE NSComparator)comparator;
 {
     id maximumValue = nil;
     for (id value in self) {
@@ -490,7 +490,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return maximumValue;
 }
 
-- (NSArray *)select:(OFPredicateBlock)predicate;
+- (NSArray *)select:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     NSMutableArray *result = [NSMutableArray array];
     
@@ -501,7 +501,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (NSArray *)reject:(OFPredicateBlock)predicate;
+- (NSArray *)reject:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     NSMutableArray *result = [NSMutableArray array];
     
@@ -512,7 +512,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
-- (id)first:(OFPredicateBlock)predicate;
+- (id)first:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     for (id object in self)
         if (predicate(object))
@@ -520,7 +520,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
-- (id)firstInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+- (id)firstInRange:(NSRange)range that:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
     NSUInteger objectIndex;
@@ -532,7 +532,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
-- (id)last:(OFPredicateBlock)predicate;
+- (id)last:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
     for (id object in [self reverseObjectEnumerator])
@@ -541,7 +541,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
-- (id)lastInRange:(NSRange)range that:(OFPredicateBlock)predicate;
+- (id)lastInRange:(NSRange)range that:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     // If performance ever matters, could try using the NSFastEnumeration protocol, or even just doing getObjects:range: for batches.
     if (range.length > 0) {
@@ -556,7 +556,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return nil;
 }
 
-- (BOOL)any:(OFPredicateBlock)predicate;
+- (BOOL)any:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     for (id object in self) {
         if (predicate(object)) {
@@ -566,7 +566,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return NO;
 }
 
-- (BOOL)all:(OFPredicateBlock)predicate;
+- (BOOL)all:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     for (id object in self)
         if (!predicate(object))
@@ -607,7 +607,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return NO;
 }
 
-- (BOOL)anyObjectSatisfiesPredicate:(OFPredicateBlock)pred;
+- (BOOL)anyObjectSatisfiesPredicate:(NS_NOESCAPE OFPredicateBlock)pred;
 {
     for (id element in self) {
         if (pred(element))
@@ -616,7 +616,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return NO;
 }
 
-- (BOOL)allObjectsSatisfyPredicate:(OFPredicateBlock)pred;
+- (BOOL)allObjectsSatisfyPredicate:(NS_NOESCAPE OFPredicateBlock)pred;
 {
     for (id element in self) {
         if (!pred(element))

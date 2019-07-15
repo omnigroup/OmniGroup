@@ -390,21 +390,21 @@ static NSString *windowFrameSaveName = @"Preferences";
         animation.completionHandler = ^{
             // Don't remove the view if we've switched away from a pane and back quickly (switching back will enqueue an animation with its own completion handler to remove the temporarily added view).
             // Attempt to only call the completion block if the client is still current at the time of dispatch
-            if (targetClient == _currentClient) {
-                if (oldView != _currentClient.controlBox)
+            if (targetClient == self->_currentClient) {
+                if (oldView != self->_currentClient.controlBox)
                     [oldView removeFromSuperview];
-                [showAllIconsView removeFromSuperview];
+                [self->showAllIconsView removeFromSuperview];
 
                 if (completion) {
                     completion(targetClient);
                 }
 
                 // Highlight the initial first responder, and also tell the window what it should be because I think there is some voodoo with nextKeyView not working unless the window has an initial first responder.
-                [_window setInitialFirstResponder:[_currentClient initialFirstResponder]];
-                NSView *initialKeyView = [_currentClient initialFirstResponder];
+                [self->_window setInitialFirstResponder:[self->_currentClient initialFirstResponder]];
+                NSView *initialKeyView = [self->_currentClient initialFirstResponder];
                 if (initialKeyView != nil && ![initialKeyView canBecomeKeyView])
                     initialKeyView = [initialKeyView nextValidKeyView];
-                [_window makeFirstResponder:initialKeyView];
+                [self->_window makeFirstResponder:initialKeyView];
             }
         };
 
@@ -551,7 +551,7 @@ static NSString *windowFrameSaveName = @"Preferences";
                 return;
             [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
             [[NSUserDefaults standardUserDefaults] synchronize];
-            [_currentClient valuesHaveChanged];
+            [self->_currentClient valuesHaveChanged];
         }];
     } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSEventModifierFlagOption) {
         // warn & wipe all prefs shown in the panel
@@ -572,7 +572,7 @@ static NSString *windowFrameSaveName = @"Preferences";
                 for (NSString *aKey in preferenceKeys)
                     [[OFPreference preferenceForKey:aKey] restoreDefaultValue];
             }
-            [_currentClient valuesHaveChanged];
+            [self->_currentClient valuesHaveChanged];
         }];
     } else {
         // OAPreferenceClient will handle warning & reverting
@@ -848,7 +848,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     return [[_clientRecords sortedArrayUsingSelector:@selector(compareOrdering:)] arrayByPerformingBlock:^id(OAPreferenceClientRecord *record) {
         NSString *identifier = record.identifier;
-        if ([_hiddenPreferenceIdentifiers containsObject:identifier])
+        if ([self->_hiddenPreferenceIdentifiers containsObject:identifier])
             return nil;
         else
             return identifier;

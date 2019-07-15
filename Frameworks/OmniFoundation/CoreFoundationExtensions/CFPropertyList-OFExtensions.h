@@ -46,3 +46,8 @@ static inline id OFCreatePropertyListFromNSData(NSData *data, NSError **outError
 
 extern id OFReadNSPropertyListFromURL(NSURL *fileURL, NSError **outError);
 extern BOOL OFWriteNSPropertyListToURL(id plist, NSURL *fileURL, NSError **outError);
+
+#ifdef DEBUG
+extern void OFReportDuplicatePropertyListEntries(id plist);
+extern void OFReportPointerCountInPropertyList(id plist);
+#endif

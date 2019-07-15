@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,8 +225,6 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
 
             ]];
     } else {
-        [tabBackground.heightAnchor constraintEqualToConstant:VERTICAL_SPACING_FOR_NON_TABS];
-        [tabBackground.widthAnchor constraintEqualToAnchor:container.widthAnchor];
         [constraints addObject:[_contentView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:VERTICAL_SPACING_FOR_NON_TABS]];
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2009-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -459,6 +459,8 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFS
     
     if (compareattr(keyAlg, kSecAttrKeyTypeRSA)) {
         keyType = ka_RSA;
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeECSECPrimeRandom)) {
+        keyType = ka_EC;
     } else if (compareattr(keyAlg, kSecAttrKeyTypeEC)) {
         keyType = ka_EC;
 #if !TARGET_OS_IPHONE /* iOS has a really impoverished crypto subsystem */

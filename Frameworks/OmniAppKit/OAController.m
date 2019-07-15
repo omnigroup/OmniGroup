@@ -1,4 +1,4 @@
-// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -97,9 +97,23 @@ RCS_ID("$Id$")
 
 - (NSString *)appName;
 {
-    // make sure that any name returned here doesn't include the path extension.
-    // <bug:///129671> (Bug: Suppress '.app' from the announcement string in titlebar [news])
-    return [NSBundle mainBundle].displayName.stringByDeletingPathExtension;
+    return [self applicationName];
+}
+
+- (NSString *)applicationName;
+{
+    static NSString *appName = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        appName = NSBundle.mainBundle.infoDictionary[(id)kCFBundleNameKey];
+        
+        NSString *buildSuffix = @"" OMNI_BUILD_FILE_SUFFIX;
+        if ([appName hasSuffix:buildSuffix]) {
+            appName = [appName stringByRemovingSuffix:buildSuffix];
+        }
+    });
+    
+    return appName;
 }
 
 - (NSString *)fullReleaseString;

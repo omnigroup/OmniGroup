@@ -154,12 +154,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     [self showWindow:nil];
     
     void (^startDownload)(void) = ^{
-        // This starts the download and retains its delegate (us).
-        [_session invalidateAndCancel];
-        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
-
-        _downloadTask = [_session downloadTaskWithRequest:_request];
-        [_downloadTask resume];
+        [self _startDownload];
     };
 
     __autoreleasing NSError *validateError = nil;
@@ -178,6 +173,16 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     }
 
     return self;
+}
+
+- (void)_startDownload;
+{
+    // This starts the download and retains its delegate (us).
+    [_session invalidateAndCancel];
+    _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+
+    _downloadTask = [_session downloadTaskWithRequest:_request];
+    [_downloadTask resume];
 }
 
 - (void)dealloc;

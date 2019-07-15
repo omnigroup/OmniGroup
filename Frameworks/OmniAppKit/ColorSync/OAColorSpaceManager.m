@@ -1,4 +1,4 @@
-// Copyright 2015 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,24 @@ RCS_ID("$Id$")
 
 #import <OmniAppKit/OAColorSpaceManager.h>
 
-@implementation OAColorSpaceHelper
+@interface _OAColorSpaceHelper : NSObject
+@property (readonly, nonatomic, copy) NSString *sha1;
+@property (readonly, nonatomic, retain) NSColorSpace *colorSpace;
+
+- init NS_UNAVAILABLE;
+- initWithSHA1:(NSString *)sha1 colorSpace:(NSColorSpace *)colorSpace NS_DESIGNATED_INITIALIZER;
+
+@end
+
+@implementation _OAColorSpaceHelper
+
+- initWithSHA1:(NSString *)sha1 colorSpace:(NSColorSpace *)colorSpace;
+{
+    _sha1 = [sha1 copy];
+    _colorSpace = colorSpace;
+    return self;
+}
+
 @end
 
 // Looked into using [colorSpace localizedName] as the identifier.
@@ -18,11 +35,14 @@ RCS_ID("$Id$")
 // The newer spec also has a profileID, which is an md5 of the profile data.  Seems like md5 or something similar is the intended way to compare specs.
 
 @implementation OAColorSpaceManager
+{
+    NSMutableArray <_OAColorSpaceHelper *> *_colorSpaceList;
+}
 
 - (id)init;
 {
     if (self = [super init]) {
-        self.colorSpaceList = [NSMutableArray array];
+        _colorSpaceList = [NSMutableArray array];
     }
     
     return self;
@@ -30,17 +50,22 @@ RCS_ID("$Id$")
 
 - (void)loadPropertyListRepresentations:(NSArray *)array;
 {
-    [self.colorSpaceList removeAllObjects];
-    for(NSDictionary *dict in array) {
+    NSMutableSet <NSString *> *seenSHA1s = [NSMutableSet set];
+
+    [_colorSpaceList removeAllObjects];
+
+    for (NSDictionary *dict in array) {
         NSString *sha1 = [dict objectForKey:@"space"];
+        if (!sha1 || [seenSHA1s member:sha1]) {
+            continue;
+        }
+
         NSData *data = [dict objectForKey:@"data"];
-        if (sha1 && data) {
+        if (data) {
             NSColorSpace *colorSpace = [[NSColorSpace alloc] initWithICCProfileData:data];
             if (colorSpace) {
-                OAColorSpaceHelper *helper = [[OAColorSpaceHelper alloc] init];
-                helper.sha1 = sha1;
-                helper.colorSpace = colorSpace;
-                [self.colorSpaceList addObject:helper];
+                _OAColorSpaceHelper *helper = [[_OAColorSpaceHelper alloc] initWithSHA1:sha1 colorSpace:colorSpace];
+                [_colorSpaceList addObject:helper];
             }
         }
     }
@@ -48,13 +73,19 @@ RCS_ID("$Id$")
 
 - (NSArray *)propertyListRepresentations;
 {
-    NSMutableArray *array = [NSMutableArray array];
-    for(OAColorSpaceHelper *helper in self.colorSpaceList) {
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-        [dict setObject:helper.sha1 forKey:@"space"];
-        [dict setObject:[helper.colorSpace ICCProfileData] forKey:@"data"];
-        [array addObject:dict];
+    NSMutableSet <NSString *> *seenSHA1s = [NSMutableSet set];
+    NSMutableArray <NSDictionary *> *array = [NSMutableArray array];
+
+    for (_OAColorSpaceHelper *helper in _colorSpaceList) {
+        NSString *sha1 = helper.sha1;
+        if ([seenSHA1s member:sha1]) {
+            continue;
+        }
+
+        [seenSHA1s addObject:sha1];
+        [array addObject:@{@"space": sha1, @"data": [helper.colorSpace ICCProfileData]}];
     }
+
     return array;
 }
 
@@ -91,15 +122,16 @@ RCS_ID("$Id$")
     if (name)
         return name;
     
-    for(OAColorSpaceHelper *helper in self.colorSpaceList) {
+    for (_OAColorSpaceHelper *helper in _colorSpaceList) {
         if (helper.colorSpace == colorSpace)
             return helper.sha1;
     }
-    
-    OAColorSpaceHelper *helper = [OAColorSpaceHelper new];
-    helper.colorSpace = colorSpace;
-    helper.sha1 = [[[colorSpace ICCProfileData] sha1Signature] unadornedLowercaseHexString];
-    [self.colorSpaceList addObject:helper];
+
+    // If we somehow get multiple instances of NSColorSpace with the same profile data, this will avoid repeated calls invoking the signature. But, -propertyListRepresentations and -loadPropertyListRepresentations: take care to unique based on the hash.
+    NSString *sha1 = [[[colorSpace ICCProfileData] sha1Signature] unadornedLowercaseHexString];
+    _OAColorSpaceHelper *helper = [[_OAColorSpaceHelper alloc] initWithSHA1:sha1 colorSpace:colorSpace];
+    [_colorSpaceList addObject:helper];
+
     return helper.sha1;
 }
 
@@ -139,7 +171,7 @@ RCS_ID("$Id$")
         return space;
     // TODO: If this list ends up getting large, consider merging it with the class 'defaultSpaces' dictionary.
     // The expectation is that this will be short/empty for normal usage.
-    for (OAColorSpaceHelper *helper in self.colorSpaceList) {
+    for (_OAColorSpaceHelper *helper in _colorSpaceList) {
         if ([helper.sha1 isEqualToString:name])
             return helper.colorSpace;
     }

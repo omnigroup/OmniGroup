@@ -305,8 +305,14 @@ didCompleteWithError:(nullable NSError *)error;
         __block BOOL done = NO;
         
         // Since we are not on the XPC queue here, we can send a XPC message back to the app and block (this is the whole reason we use a separate queue for the NSURL operation).
+        __weak OSUFetchOperation *weakSelf = self;
         [_lookupCredential lookupCredentialForProtectionSpace:protectionSpace withReply:^(NSURLCredential *foundCredential){
-            _credential = foundCredential;
+            OSUFetchOperation *strongSelf = weakSelf;
+            if (strongSelf == nil) {
+                // Timed out, presumably.
+                return;
+            }
+            strongSelf->_credential = foundCredential;
             done = YES;
         }];
 

@@ -42,7 +42,7 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 - (nullable __kindof UIView *)containingViewMatching:(OFPredicateBlock)predicate DEPRECATED_MSG_ATTRIBUTE("Renamed to -enclosingViewMatching:.");
 
 - (nullable __kindof UIView *)enclosingViewOfClass:(Class)cls NS_REFINED_FOR_SWIFT; // can return self
-- (nullable __kindof UIView *)enclosingViewMatching:(OFPredicateBlock)predicate;
+- (nullable __kindof UIView *)enclosingViewMatching:(NS_NOESCAPE OFPredicateBlock)predicate;
 - (OUIViewVisitorResult)applyToViewTree:(OUIViewVisitorBlock)block; // in-order traversal
 
 // Defaults to zeros, but subclasses can return spacing offsets for where their border appears to be relative to where their actual view edge is.

@@ -415,12 +415,12 @@ static void OUIViewPerformPosingForThreading(void)
     }];
 }
 
-- (id)containingViewMatching:(OFPredicateBlock)predicate;
+- (id)containingViewMatching:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     return [self enclosingViewMatching:predicate];
 }
 
-- (id)enclosingViewMatching:(OFPredicateBlock)predicate;
+- (id)enclosingViewMatching:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     if (!predicate) {
         OBASSERT_NOT_REACHED("Treating nil predicate as true... probably not that useful");

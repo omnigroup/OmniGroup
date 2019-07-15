@@ -1,4 +1,4 @@
-// Copyright 2001-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -169,7 +169,7 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
     }
     
     
-    NSString *appName = [[OAController sharedController] appName];
+    NSString *appName = [[OAController sharedController] applicationName];
     OSUSystemHTMLReport *html = [[OSUSystemHTMLReport alloc] init];
 
     void (^infoRow_b)(NSString *title, NSString *(^value)(void)) = ^(NSString *title, NSString *(^value)(void)){

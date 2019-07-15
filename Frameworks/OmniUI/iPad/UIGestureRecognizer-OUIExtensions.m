@@ -1,4 +1,4 @@
-// Copyright 2010-2017 The Omni Group. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,7 @@ static void _logRecognizer(UIGestureRecognizer *self, NSString *message) {
 
 static void _replacement_setState(UIGestureRecognizer *self, SEL _cmd, UIGestureRecognizerState state)
 {
-    NSUInteger nameCount = sizeof(stateNames)/sizeof(stateNames[0]);    
+    NSInteger nameCount = sizeof(stateNames)/sizeof(stateNames[0]); // always positive, but we use NSInteger to match UIGestureRecognizerState's underlying value type
     NSString *stateName = @"????";
     if (state < nameCount) {
         stateName = stateNames[state];

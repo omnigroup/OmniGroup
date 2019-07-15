@@ -167,7 +167,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
                 return OFXMLSigCopyKeyFromDSAKeyValue(keyvalue, outError);
             if ([keytype isEqual:(id)kSecAttrKeyTypeRSA])
                 return OFXMLSigCopyKeyFromRSAKeyValue(keyvalue, outError);
-            if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
+            if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA] || [keytype isEqual:(id)kSecAttrKeyTypeECSECPrimeRandom]) {
                 int sigorder = -1;
                 SecKeyRef retval = OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
                 OBASSERT(sigorder > 0);
@@ -1781,7 +1781,7 @@ static SecKeyRef copyMatchingKeyFromKeychain(SecKeychainRef keychain, NSDictiona
         ADDATTR(kSecKeyKeyType, CSSM_ALGID_RSA);
     } else if ([secKeytype isEqual:(id)kSecAttrKeyTypeDSA]) {
         ADDATTR(kSecKeyKeyType, CSSM_ALGID_DSA);
-    } else if ([secKeytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
+    } else if ([secKeytype isEqual:(id)kSecAttrKeyTypeECDSA] || [secKeytype isEqual:(id)kSecAttrKeyTypeECSECPrimeRandom]) {
         ADDATTR(kSecKeyKeyType, CSSM_ALGID_ECDSA);
     }
     

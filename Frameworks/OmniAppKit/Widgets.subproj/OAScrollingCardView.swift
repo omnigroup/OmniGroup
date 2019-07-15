@@ -151,7 +151,8 @@ open class ScrollingCardView: CardView {
     fileprivate func scrollViewDidTile() {
         // Update vertical elasticity
         let contentHeight = scrollView.documentView?.frame.height ?? 0
-        if contentHeight > frame.height {
+        let footerHeight = footerView?.frame.height ?? 0
+        if contentHeight > frame.height - footerHeight {
             scrollView.verticalScrollElasticity = .automatic
         } else {
             scrollView.verticalScrollElasticity = .none

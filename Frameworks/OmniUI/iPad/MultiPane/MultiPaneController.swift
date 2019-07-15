@@ -541,7 +541,9 @@ extension MultiPaneDisplayMode: CustomStringConvertible {
     // Called when a view controller size/trait transition occurs.
     fileprivate func updateDisplayMode(forSize size: CGSize, traitCollection: UITraitCollection) {
         guard pane(withLocation: .center) != nil else {
-            fatalError("Expected a multiPaneController configured with at least a .center pane")
+            // <bug:///174861> (iOS-OmniFocus Crasher: Has repro: iPadOS 13, specialized MultiPaneController.updateDisplayMode(forSize:traitCollection:) (MultiPaneController.swift:0), AppCoordinator.initialSetup() (AppCoordinator.swift:641))
+            // In iOS 13, this started getting called from transitions very early in the window setup; don't crash, but return early
+            return
         }
         guard canUpdateDisplayMode() else { return }
         

@@ -1656,7 +1656,7 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
 {
     // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_weak_owner invalidateCachedValues];
+        [self->_weak_owner invalidateCachedValues];
     }];
 }
 
@@ -1666,7 +1666,7 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
     // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_weak_owner invalidateCachedValues];
+        [self->_weak_owner invalidateCachedValues];
     }];
 }
 
@@ -1676,7 +1676,7 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
     // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_weak_owner invalidateCachedValues];
+        [self->_weak_owner invalidateCachedValues];
     }];
     
     completionHandler(nil);

@@ -7,15 +7,7 @@
 
 #import <Foundation/NSObject.h>
 
-@interface OAColorSpaceHelper : NSObject
-@property (readwrite, nonatomic, retain) NSString *sha1;
-@property (readwrite, nonatomic, retain) NSColorSpace *colorSpace;
-@end
-
 @interface OAColorSpaceManager : NSObject
-
-@property (readwrite, nonatomic, retain) NSMutableArray *colorSpaceList;
-// A list of OAColorSpaceHelpers
 
 - (NSArray *)propertyListRepresentations;
 - (void)loadPropertyListRepresentations:(NSArray *)array;

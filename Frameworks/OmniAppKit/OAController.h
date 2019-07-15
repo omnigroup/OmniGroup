@@ -27,8 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)openApplicationScriptsFolder:(nullable id)sender;
 
 /// returns the the display name of the application without file extension.
-- (NSString *)appName;
-- (NSString *)fullReleaseString;
+- (NSString *)appName NS_DEPRECATED_MAC(10_0, 10_13, "Use the applicationName property instead.");
+@property (nonatomic, readonly) NSString *applicationName;
+@property (nonatomic, readonly) NSString *fullReleaseString;
+
 - (void)getFeedbackAddress:(NSString * _Nullable * _Nonnull)feedbackAddress andSubject:(NSString * _Nullable * _Nonnull)subjectLine;
 - (void)sendFeedbackEmailTo:(nullable NSString *)feedbackAddress subject:(nullable NSString *)subjectLine body:(nullable NSString *)body;
 - (void)sendFeedbackEmailWithBody:(nullable NSString *)body;

@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, readonly) NSArray *allObjects;
 
-- (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
+- (NSArray *)copyObjectsSatisfyingPredicateBlock:(NS_NOESCAPE OFPredicateBlock)predicate;
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 - (void)removeObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 

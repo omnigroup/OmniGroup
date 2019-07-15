@@ -244,7 +244,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             // Ask NSApplication to terminate. During the termination sequence, replace ourselves and relaunch
             void (^willTerminate)(NSNotification *notification) = ^(NSNotification *notification){
                 [[OFController sharedController] removeStatusObserver:self];
-                [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
+                [[NSNotificationCenter defaultCenter] removeObserver:self.terminationObserver];
                 self.terminationObserver = nil;
                 
                 __autoreleasing NSError *error = nil;

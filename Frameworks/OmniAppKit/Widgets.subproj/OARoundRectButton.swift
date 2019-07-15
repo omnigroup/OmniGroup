@@ -9,225 +9,253 @@
 
 import Foundation
 
-@objc(OARoundRectButton) public final class RoundRectButton: NSButton {
-    
+public final class RoundRectButton: NSButton {
     public override init(frame: NSRect) {
+        RoundRectButton.registerCellClassIfNeeded()
         super.init(frame: frame)
-        
-        // Closest in frame/alignment geometry to what we're doing here
-        buttonCell.bezelStyle = .smallSquare
+        commonInit()
     }
     
     public required init?(coder: NSCoder) {
+        RoundRectButton.registerCellClassIfNeeded()
         super.init(coder: coder)
+        commonInit()
+        
+        if backgroundColor == nil {
+            backgroundColor = NSColor.lightGray
+        }
+        
+        if textColor == nil {
+            textColor = NSColor.controlTextColor
+        }
+    }
+    
+    private static func registerCellClassIfNeeded() {
+        let isRegistered = cellClass is RoundRectButtonCell.Type
+        if !isRegistered {
+            cellClass = RoundRectButtonCell.self
+        }
+    }
+    
+    private func commonInit() {
+        // Match the configuration of +[NSButton _buttonWithTitle:image:target:action:], overriding bad attributes configured in IB…
+        //
+        //    [r14 setImagePosition:rbx];
+        //    [r14 setImageScaling:0x0];
+        //    [r14 setBezelStyle:0x1];
+        //    [r14 setButtonType:0x7];
+        //    [r14 setLineBreakMode:0x4];
 
-        // Closest in frame/alignment geometry to what we're doing here
-        buttonCell.bezelStyle = .smallSquare
+        imagePosition = .noImage
+        imageScaling = .scaleNone
+        bezelStyle = .rounded
+        setButtonType(.momentaryPushIn)
+        lineBreakMode = .byTruncatingTail
     }
-    
-    // MARK: - Class Properties
-    override public static var cellClass: AnyClass? {
-        get {
-            return OARoundRectButtonCell.self
-        }
-        set {}
+
+    private var buttonCell: RoundRectButtonCell {
+        return cell as! RoundRectButtonCell
     }
-    
-    // MARK: - NSButton Subclass
-    override public var allowsMixedState: Bool {
-        get {
-            return false
-        }
-        set {}
-    }
-    
-    override public var isBordered: Bool {
-        didSet {
-            updateCell(buttonCell)
-        }
-    }
-    
-    override public func mouseDown(with event: NSEvent) {
-        super.mouseDown(with: event)
-    }
-    
-    private var minHeightConstraint: NSLayoutConstraint! {
-        didSet {
-            if minHeightConstraint == nil && oldValue != nil {
-                NSLayoutConstraint.deactivate([oldValue])
-            }
-        }
-    }
-    public override func updateConstraints() {
-        super.updateConstraints()
-        if minHeightConstraint == nil {
-            minHeightConstraint = heightAnchor.constraint(greaterThanOrEqualToConstant: 30)
-        }
-        NSLayoutConstraint.activate([minHeightConstraint])
-    }
-    
-    override public var intrinsicContentSize: NSSize {
-        get {
-            // We want a minimum of 20 points of padding around our button's title on each side
-            var size = super.intrinsicContentSize
-            size.width = size.width + 40
-            return size
-        }
-    }
-    
+
     public override var alignmentRectInsets: NSEdgeInsets {
         get {
             // We take over the entire frame for drawing; align to the frame not an inset portion of it.
             return NSEdgeInsetsZero
         }
     }
-    
-    // MARK: - Implementation
-    
-    private var buttonCell: OARoundRectButtonCell! {
-        return cell as? OARoundRectButtonCell
-    }
-    
-    
-    @IBInspectable public var textColor: NSColor! {
+
+    @objc public var cornerRadius: CGFloat {
+        get {
+            return buttonCell.cornerRadius
+        }
         set {
-            let newFontColor = newValue ?? NSColor.black
-            
-            if font == nil || font?.pointSize != 14 {
-                let fontOfSize14: NSFont
-                if let font = font {
-                    fontOfSize14 = NSFont(descriptor: font.fontDescriptor, size: 14)!
-                } else {
-                    fontOfSize14 = NSFont.systemFont(ofSize: 14)
-                }
-                font = fontOfSize14
-            }
-            
-            let currentAttributes = NSMutableAttributedString(attributedString: attributedTitle)
-            let range = NSMakeRange(0, currentAttributes.length)
-            currentAttributes.addAttributes([.foregroundColor : newFontColor], range: range)
-            self.attributedTitle = currentAttributes
-            
+            buttonCell.cornerRadius = newValue
             needsDisplay = true
         }
+    }
+    
+    @objc public var borderWidth: CGFloat {
         get {
-            return attributedTitle.attributes(at: 0, effectiveRange: nil)[.foregroundColor] as? NSColor ?? NSColor.black
+            return buttonCell.borderWidth
+        }
+        set {
+            buttonCell.borderWidth = newValue
+            needsDisplay = true
+        }
+    }
+
+    @objc public var textColor: NSColor? {
+        get {
+            return buttonCell.textColor
+        }
+        set {
+            buttonCell.textColor = newValue
+            needsDisplay = true
         }
     }
     
-    @IBInspectable public var borderColor: NSColor! {
+    @objc public var borderColor: NSColor? {
         set {
             buttonCell.borderColor = newValue
-            updateCell(buttonCell)
+            needsDisplay = true
         }
         get {
             return buttonCell.borderColor
         }
     }
     
-    @IBInspectable public var pressedBorderColor: NSColor! {
+    @objc public var backgroundColor: NSColor? {
         get {
-            return buttonCell.pressedBorderColor
+            return buttonCell.backgroundColor
         }
         set {
-            buttonCell.pressedBorderColor = newValue
-            updateCell(buttonCell)
+            buttonCell.backgroundColor = newValue
+            needsDisplay = true
         }
     }
-    
-    @IBInspectable public var backgroundColor: NSColor! {
+
+    @objc public var highlightColor: NSColor? {
         get {
-            return buttonCell.unpressedBackgroundColor
+            return buttonCell.highlightColor
         }
         set {
-            buttonCell.unpressedBackgroundColor = newValue
-            updateCell(buttonCell)
-        }
-    }
-    
-    @IBInspectable public var pressedBackgroundColor: NSColor! {
-        get {
-            return buttonCell.pressedBackgroundColor
-        }
-        set {
-            buttonCell.pressedBackgroundColor = newValue
-            updateCell(buttonCell)
-        }
-    }
-    
-    @IBInspectable public var borderWidth: CGFloat {
-        get {
-            return buttonCell.borderWidth
-        }
-        set {
-            buttonCell.borderWidth = newValue
-            updateCell(buttonCell)
-        }
-    }
-    
-    @IBInspectable var cornerRadius: CGFloat {
-        get {
-            return buttonCell.cornerRadius
-        }
-        set {
-            buttonCell.cornerRadius = newValue
-            updateCell(buttonCell)
+            buttonCell.highlightColor = newValue
+            needsDisplay = true
         }
     }
 }
 
-public final class OARoundRectButtonCell: NSButtonCell {
-    
-    fileprivate var borderColor: NSColor = NSColor.gray
-    fileprivate var pressedBorderColor: NSColor = NSColor.darkGray
-    fileprivate var unpressedBackgroundColor: NSColor = NSColor.white
-    fileprivate var pressedBackgroundColor: NSColor = NSColor.white
-    fileprivate var borderWidth: CGFloat = 5
-    fileprivate var cornerRadius: CGFloat = 5
-    private var usesAlternateColor: Bool = false
-    
-    override public func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
-        if usesAlternateColor {
-            backgroundColor = pressedBackgroundColor
-        } else {
-            backgroundColor = unpressedBackgroundColor
+// MARK: -
+
+public final class RoundRectButtonCell: NSButtonCell {
+    public var cornerRadius: CGFloat = 6
+    public var borderWidth: CGFloat = 0
+    public var borderColor: NSColor? = nil
+    public var textColor: NSColor? = nil
+    public var highlightColor: NSColor? = nil
+
+    public override var isBordered: Bool {
+        get {
+            return super.isBordered
         }
-        context.saveGState()
-        OACGAddRoundedRect(context, cellFrame, cornerRadius, cornerRadius, cornerRadius, cornerRadius)
-        context.clip()
-        if isBordered, let backgroundColor = backgroundColor {
-            // Default interior drawing for bordered cell does not draw background color
-            backgroundColor.set()
-            context.fill(cellFrame)
+        set {
+            assert(newValue == false, "To suppress the border, set borderColor to nil or clear.")
+            super.isBordered = newValue
         }
-        super.drawInterior(withFrame: cellFrame, in: controlView)
-        context.restoreGState()
     }
     
-    override public func draw(withFrame cellFrame: NSRect, in controlView: NSView) {
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
-        if isBordered {
-            let paddedCellFrame = cellFrame.insetBy(dx: borderWidth/2.0, dy: borderWidth/2.0)
-            drawInterior(withFrame: paddedCellFrame, in: controlView)
-            context.saveGState()
-            OACGAddRoundedRect(context, paddedCellFrame, cornerRadius, cornerRadius, cornerRadius, cornerRadius)
-            context.setLineWidth(borderWidth)
-            if usesAlternateColor {
-                pressedBorderColor.set()
-            } else {
-                borderColor.set()
+    public override var cellSize: NSSize {
+        var cellSize = super.cellSize
+        
+        if isBordered && borderWidth > 0 {
+            cellSize.height += 2 * borderWidth
+            cellSize.width += 2 * borderWidth
+        }
+        
+        // Add required padding around the title if needed
+        if !isBordered {
+            cellSize.width += 2 * 15
+            cellSize.height += 2 * 6
+        }
+        
+        // Enforce a minimum height
+        cellSize.height = max(cellSize.height, 30)
+        
+        return cellSize
+    }
+    
+    override public func drawBezel(withFrame frame: NSRect, in controlView: NSView) {
+        let bezelPath = self.bezelPath(forBounds: frame, insetForBorderIfNeeded: true)
+
+        if let backgroundColor = backgroundColor {
+            backgroundColor.setFill()
+            bezelPath.fill()
+            
+            if isHighlighted {
+                effectiveHighlightColor.setFill()
+                bezelPath.fill()
             }
-            context.strokePath()
-            context.restoreGState()
-        } else {
-            drawInterior(withFrame: cellFrame, in: controlView)
         }
-    }
-    
-    override public func highlight(_ flag: Bool, withFrame cellFrame: NSRect, in controlView: NSView) {
-        usesAlternateColor = flag
-        super.highlight(flag, withFrame: cellFrame, in: controlView)
+        
+        if isBordered, borderWidth > 0, let borderColor = borderColor {
+            borderColor.setStroke()
+            bezelPath.lineWidth = borderWidth
+            bezelPath.stroke()
+        }
     }
 
+    override public func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
+        let verticalOffset: CGFloat = isBordered ? 1 : -1
+        let titleRect = self.titleRect(forBounds: cellFrame).offsetBy(dx: 0, dy: verticalOffset)
+        drawTitle(effectiveAttributedTitle, withFrame: titleRect, in: controlView)
+    }
+
+    override public func draw(withFrame cellFrame: NSRect, in controlView: NSView) {
+        drawBezel(withFrame: cellFrame, in: controlView)
+        drawInterior(withFrame: cellFrame, in: controlView)
+    }
+    
+    // MARK: Private
+    
+    private func bezelPath(forBounds cellFrame: NSRect, insetForBorderIfNeeded: Bool) -> NSBezierPath {
+        var pathRect = cellFrame
+
+        if insetForBorderIfNeeded && isBordered && borderWidth > 0 && borderColor != nil {
+            let halfBorder = (borderWidth / 2.0)
+            pathRect = pathRect.insetBy(dx: halfBorder, dy: halfBorder)
+        }
+        
+        return NSBezierPath(roundedRect: pathRect, xRadius: cornerRadius, yRadius: cornerRadius)
+    }
+    
+    private var effectiveHighlightColor: NSColor {
+        if let highlightColor = highlightColor {
+            return highlightColor
+        } else {
+            return NSColor(white: 0.0, alpha: 0.125)
+        }
+    }
+    
+    private var effectiveTextColor: NSColor {
+        if isEnabled {
+            if let textColor = textColor {
+                return textColor
+            } else if let backgroundColor = backgroundColor {
+                return backgroundColor.isLightColor ? NSColor.black : NSColor.white
+            } else {
+                return NSColor.black
+            }
+        } else {
+            return textColor?.withAlphaComponent(0.4) ?? NSColor.disabledControlTextColor
+        }
+    }
+    
+    /// The attributed title used for drawing. This would be slightly nicer if we could override/augment _textAttributes.
+    private var effectiveAttributedTitle: NSAttributedString {
+        let attributedTitle = super.attributedTitle.mutableCopy() as! NSMutableAttributedString
+        let textColor = effectiveTextColor
+        
+        attributedTitle.enumerateAttributes(in: NSMakeRange(0, attributedTitle.length), options: []) { (attributes, range, outStop) in
+            guard attributes[.backgroundColor] == nil else { return }
+            let foregroundColor = attributes[.foregroundColor] as? NSColor
+            let shouldReplaceForegroundColor: Bool
+            
+            switch foregroundColor {
+            case NSColor.controlTextColor, NSColor.selectedControlTextColor, NSColor.alternateSelectedControlTextColor, NSColor.disabledControlTextColor:
+                shouldReplaceForegroundColor = true
+                
+            case nil:
+                shouldReplaceForegroundColor = true
+                
+            default:
+                shouldReplaceForegroundColor = false
+            }
+            
+            if shouldReplaceForegroundColor {
+                attributedTitle.addAttribute(.foregroundColor, value: textColor, range: range)
+            }
+        }
+        
+        return attributedTitle
+    }
 }

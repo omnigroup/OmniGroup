@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OFVersionNumber : NSObject <NSCopying>
 
 + (OFVersionNumber *)mainBundleVersionNumber;
++ (OFVersionNumber *)mainBundleShortVersionNumber;
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
 
 + (OFVersionNumber *)versionForBundle:(NSBundle *)bundle;

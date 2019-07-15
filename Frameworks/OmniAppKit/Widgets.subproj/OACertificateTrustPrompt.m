@@ -78,26 +78,32 @@ static OFCertificateTrustDuration _currentTrustDuration(SecTrustRef serverTrust)
         [self finish];
         return;
     }
-    
+
+    __weak OACertificateTrustPrompt *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
-        SFCertificateTrustPanel *trustPanel = [[SFCertificateTrustPanel alloc] init];
-        SecTrustRef trust = self.serverTrust;
-        
-        NSWindow *presentingWindow;
-        
-        if (_findParentWindowBlock) {
-            presentingWindow = _findParentWindowBlock();
-            _findParentWindowBlock = NULL;
-        } else {
-            presentingWindow = nil;
-        }
-        
-        NSString *prompt = _challenge != nil ? OFCertificateTrustPromptForChallenge(_challenge) : OFCertificateTrustPromptForError(_error);
-        [trustPanel setDefaultButtonTitle:NSLocalizedStringFromTableInBundle(@"Continue", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - continue with operation despite certificate problem")];
-        [trustPanel setAlternateButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - cancel the operation")];
-        [trustPanel setShowsHelp:YES];
-        [trustPanel beginSheetForWindow:presentingWindow modalDelegate:self didEndSelector:@selector(_certPanelSheetDidEnd:returnCode:contextInfo:) contextInfo:NULL trust:trust message:prompt];
+        [weakSelf _beginTrustSheet];
     });
+}
+
+- (void)_beginTrustSheet;
+{
+    SFCertificateTrustPanel *trustPanel = [[SFCertificateTrustPanel alloc] init];
+    SecTrustRef trust = self.serverTrust;
+
+    NSWindow *presentingWindow;
+
+    if (_findParentWindowBlock) {
+        presentingWindow = _findParentWindowBlock();
+        _findParentWindowBlock = NULL;
+    } else {
+        presentingWindow = nil;
+    }
+
+    NSString *prompt = _challenge != nil ? OFCertificateTrustPromptForChallenge(_challenge) : OFCertificateTrustPromptForError(_error);
+    [trustPanel setDefaultButtonTitle:NSLocalizedStringFromTableInBundle(@"Continue", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - continue with operation despite certificate problem")];
+    [trustPanel setAlternateButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", OMNI_BUNDLE, @"button title for certificate trust warning/prompt - cancel the operation")];
+    [trustPanel setShowsHelp:YES];
+    [trustPanel beginSheetForWindow:presentingWindow modalDelegate:self didEndSelector:@selector(_certPanelSheetDidEnd:returnCode:contextInfo:) contextInfo:NULL trust:trust message:prompt];
 }
 
 - (void)_certPanelSheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)userChoice contextInfo:(void *)contextInfo

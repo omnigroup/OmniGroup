@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13771" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13771"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -18,7 +18,7 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HXT-Ox-RWt" customClass="OIDisclosureButton">
-                    <rect key="frame" x="10" y="11" width="13" height="13"/>
+                    <rect key="frame" x="10" y="12" width="13" height="13"/>
                     <buttonCell key="cell" type="disclosureTriangle" bezelStyle="disclosure" imagePosition="above" alignment="left" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="KrV-PV-DN0" customClass="OIDisclosureButtonCell">
                         <behavior key="behavior" pushIn="YES" changeBackground="YES" changeGray="YES" lightByContents="YES"/>
                         <font key="font" metaFont="smallSystem"/>
@@ -44,15 +44,15 @@
             </subviews>
             <constraints>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="l1N-o3-NPs" secondAttribute="trailing" constant="10" id="0MB-nF-weh"/>
-                <constraint firstAttribute="centerY" secondItem="HXT-Ox-RWt" secondAttribute="centerY" id="4Cz-10-R47"/>
                 <constraint firstItem="HXT-Ox-RWt" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" constant="10" id="AA6-Cw-xm6"/>
                 <constraint firstItem="l1N-o3-NPs" firstAttribute="leading" secondItem="HXT-Ox-RWt" secondAttribute="trailing" constant="4" id="DgE-7M-eVY"/>
+                <constraint firstAttribute="bottom" secondItem="l1N-o3-NPs" secondAttribute="bottom" constant="11" id="EJz-q6-jkk"/>
                 <constraint firstItem="HXT-Ox-RWt" firstAttribute="centerY" secondItem="l1N-o3-NPs" secondAttribute="centerY" id="eoX-Ov-taS"/>
+                <constraint firstItem="l1N-o3-NPs" firstAttribute="top" secondItem="c22-O7-iKe" secondAttribute="top" constant="10" id="zPu-0p-OUM"/>
             </constraints>
             <connections>
                 <outlet property="disclosureButton" destination="HXT-Ox-RWt" id="kqm-sv-r1c"/>
                 <outlet property="titleLabel" destination="l1N-o3-NPs" id="LMe-Ag-ifs"/>
-                <outlet property="verticalCenteringConstraint" destination="4Cz-10-R47" id="hIT-cp-QV3"/>
             </connections>
         </customView>
     </objects>

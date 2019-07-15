@@ -1,4 +1,4 @@
-// Copyright 2004-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,17 @@ NS_ASSUME_NONNULL_BEGIN
         mainBundleVersionNumber = [[self versionForBundle:[NSBundle mainBundle]] retain];
     });
     return mainBundleVersionNumber;
+}
+
++ (OFVersionNumber *)mainBundleShortVersionNumber;
+{
+    static OFVersionNumber *mainBundleShortVersionNumber = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *versionString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+        mainBundleShortVersionNumber = [[[OFVersionNumber alloc] initWithVersionString:versionString] retain];
+    });
+    return mainBundleShortVersionNumber;
 }
 
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;

@@ -449,6 +449,10 @@
     "name": "iPod Touch 6G",
     "platform": "iPod7,1"
   },
+  "N112AP": {
+    "name": "iPod Touch 7G",
+    "platform": "iPod9,1"
+  },
   "K66AP": {
     "name": "Apple TV 2G"
   },
@@ -786,10 +790,14 @@
   },
   "MacBookPro15,1": {
     "name": "MacBook Pro",
-    "comment": "15-inch, 2018"
+    "comment": "15-inch, 2018/2019"
   },
   "MacBookPro15,2": {
     "name": "MacBook Pro",
-    "comment": "13-inch, 2018, Touch Bar, four TB3 ports"
+    "comment": "13-inch, 2018/2019, Touch Bar, four TB3 ports"
+  },
+  "MacBookPro15,3": {
+    "name": "MacBook Pro",
+    "comment": "15-inch, 2019, Touch Bar, four TB3 ports"
   }
 }

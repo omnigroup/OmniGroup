@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSData *)decompressedBzip2Data:(NSError **)outError;
 #endif
 
-- (nullable NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
+- (nullable NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError NS_SWIFT_NAME(compressedDataWithGzipHeader(_:compressionLevel:));
 - (nullable NSData *)decompressedGzipData:(NSError **)outError;
 
 @end

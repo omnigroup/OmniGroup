@@ -1,4 +1,4 @@
-// Copyright 2001-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,12 @@ static NSMutableParagraphStyle *OATextWithIconCellParagraphStyle = nil;
 NSString * const OATextWithIconCellStringKey = @"string";
 NSString * const OATextWithIconCellImageKey = @"image";
 
+@interface OATextWithIconCell ()
+
+@property (readwrite,nonatomic,strong) NSMutableParagraphStyle *paragraphStyle;
+
+@end
+
 @implementation OATextWithIconCell
 
 + (void)initialize;
@@ -46,6 +52,8 @@ NSString * const OATextWithIconCellImageKey = @"image";
     [self setDrawsHighlight:YES];
     [self setScrollable:YES];
     
+    _paragraphStyle = [OATextWithIconCellParagraphStyle mutableCopy];
+    
     return self;
 }
 
@@ -57,6 +65,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
     
     copy->icon = icon;
     copy->_oaFlags.drawsHighlight = _oaFlags.drawsHighlight;
+    copy->_paragraphStyle = [_paragraphStyle mutableCopy];
     
     return copy;
 }
@@ -68,6 +77,12 @@ NSString * const OATextWithIconCellImageKey = @"image";
 #define BORDER_BETWEEN_EDGE_AND_IMAGE (2.0f)
 #define BORDER_BETWEEN_IMAGE_AND_TEXT (3.0f)
 #define SIZE_OF_TEXT_FIELD_BORDER (1.0f)
+
+- (void)setLineBreakMode:(NSLineBreakMode)lineBreakMode
+{
+    [super setLineBreakMode:lineBreakMode];
+    _paragraphStyle.lineBreakMode = lineBreakMode;
+}
 
 - (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 {
@@ -157,7 +172,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
         }
     }
     
-    [label addAttribute:NSParagraphStyleAttributeName value:OATextWithIconCellParagraphStyle range:labelRange];
+    [label addAttribute:NSParagraphStyleAttributeName value:_paragraphStyle range:labelRange];
     [label drawInRect:textRect];
 
     // Draw the image

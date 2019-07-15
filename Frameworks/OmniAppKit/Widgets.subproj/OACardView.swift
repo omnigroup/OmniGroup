@@ -41,7 +41,7 @@ open class CardView: NSView {
     
     // MARK: Appearance
 
-    @objc public var backgroundColor: NSColor {
+    @objc open var backgroundColor: NSColor {
         get {
             return backgroundView.backgroundColor
         }

@@ -294,7 +294,7 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
             }];
             
             BOOL done = OFRunLoopRunUntil(60.0/*timeout*/, OFRunLoopRunTypePolling, ^BOOL{
-                return hasReceivedResponseOrError || _connectionFlags.interrupted || _connectionFlags.invalid;
+                return hasReceivedResponseOrError || self->_connectionFlags.interrupted || self->_connectionFlags.invalid;
             });
             if (done == NO) {
                 OBASSERT_NULL(dict);

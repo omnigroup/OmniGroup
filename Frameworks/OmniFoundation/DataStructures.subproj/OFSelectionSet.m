@@ -136,7 +136,7 @@ static void _addIfMatchesPredicate(const void *value, const void *sequence, void
     [ctx addObjectIfMatchesPredicate:object];
 }
 
-- (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
+- (NSArray *)copyObjectsSatisfyingPredicateBlock:(NS_NOESCAPE OFPredicateBlock)predicate;
 {
     OBPRECONDITION(predicate);
     

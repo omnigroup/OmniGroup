@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ RCS_ID("$Id$");
     _enableHardwareCollectionButton.title = NSLocalizedStringFromTableInBundle(@"Send anonymous system information to The Omni Group", @"OmniSystemInfo", OMNI_BUNDLE, "MAS-only: label for switch in privacy alert to specify whether to send system info");
 #endif
 
-    NSString *appName = [[OAController sharedController] appName];
+    NSString *appName = [[OAController sharedController] applicationName];
     [_privacyNoticeTitleTextField setStringValue:[NSString stringWithFormat:titleFormat, appName]];
     [_privacyNoticeMessageTextField setStringValue:[NSString stringWithFormat:[_privacyNoticeMessageTextField stringValue], appName]];
     [_privacyNoticeAppIconImageView setImage:[[NSApplication sharedApplication] applicationIconImage]];

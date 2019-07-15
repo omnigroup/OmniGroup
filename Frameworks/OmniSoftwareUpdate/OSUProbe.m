@@ -115,7 +115,7 @@ static NSMutableDictionary *ProbeByKey;
     __block id value;
     
     dispatch_sync(ProbeQueue, ^{
-        value = _value;
+        value = self->_value;
     });
     
     return value;
@@ -136,7 +136,7 @@ static NSMutableDictionary *ProbeByKey;
 - (void)increment;
 {
     dispatch_async(ProbeQueue, ^{
-        NSInteger value = [_value integerValue] + 1;
+        NSInteger value = [self->_value integerValue] + 1;
         [self _setValue:[NSNumber numberWithInteger:value] action:@"Increment"];
     });
 }
@@ -204,13 +204,14 @@ static NSString *_defaultsKey(NSString *key)
     DEBUG_PROBE(1, "%@ to %@", action, value);
 
     _value = value;
-    
+
+    NSString *key = _defaultsKey(_key);
     // We cannot poke NSUserDefaults here. It posts a notification which could have an observer on the main thread (NSNC seems to do some operation queuing/waiting) where the main thread is blocked looking up a probe. Deadlock.
     dispatch_async(dispatch_get_main_queue(), ^{
         if (value)
-            [[NSUserDefaults standardUserDefaults] setObject:value forKey:_defaultsKey(_key)];
+            [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
         else
-            [[NSUserDefaults standardUserDefaults] removeObjectForKey:_defaultsKey(_key)];
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
     });
 }
 

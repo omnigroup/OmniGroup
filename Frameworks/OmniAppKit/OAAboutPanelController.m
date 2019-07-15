@@ -1,4 +1,4 @@
-// Copyright 2005-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
 
 - (void)_updateFieldsAndWindowSize;
 {
-    NSString *appName = [[OAController sharedController] appName];
+    NSString *appName = [[OAController sharedController] applicationName];
     [applicationNameTextField setStringValue:appName];
     [applicationNameTextField sizeToFit];
     
@@ -188,7 +188,7 @@ static NSString * const OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMa
 
 - (void)willShowAboutPanel;
 {
-    NSString *appName = [[OAController sharedController] appName];
+    NSString *appName = [[OAController sharedController] applicationName];
     [applicationNameTextField setStringValue:appName];
     [applicationNameTextField sizeToFit];
 }

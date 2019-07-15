@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,6 +56,19 @@ const char * const ODOComparisonPredicateContainsFunctionName = ODO_CONTAINS;
 @interface NSCompoundPredicate (ODO_SQL)
 @end
 @implementation NSCompoundPredicate (ODO_SQL)
+
+#ifdef DEBUG
+- (NSString *)description;
+{
+    NSString *operator = @"";
+    switch (self.compoundPredicateType) {
+        case NSNotPredicateType: operator = @"not"; break;
+        case NSAndPredicateType: operator = @"and"; break;
+        case NSOrPredicateType: operator = @"or"; break;
+    }
+    return [NSString stringWithFormat:@"%@ %@", operator, self.subpredicates];
+}
+#endif
 
 static BOOL _appendCompound(NSArray *predicates, NSString *conj, NSMutableString *sql, ODOEntity *entity, NSMutableArray *constants, NSError **outError)
 {

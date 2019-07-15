@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -267,6 +267,7 @@ OBDidLoad(^{
 - (void)deleteForward:(nullable id)sender;
 {
     id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    id<NSTableViewDelegate> delegate = self.delegate;
     if ([dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
         NSInteger selectedRow = [self selectedRow]; // last selected row if there's a multiple selection -- that's ok.
         if (selectedRow == -1)
@@ -283,12 +284,15 @@ OBDidLoad(^{
 
         if (numberOfRows > 0)
             [self selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
+    } else if ([delegate respondsToSelector:@selector(deleteForward:)]) {
+        [(id)delegate deleteForward:sender];
     }
 }
 
 - (void)deleteBackward:(nullable id)sender;
 {
     id <OAExtendedTableViewDataSource> dataSource = (id)self.dataSource;
+    id<NSTableViewDelegate> delegate = self.delegate;
     if ([dataSource respondsToSelector:@selector(tableView:deleteRowsAtIndexes:)]) {
         if ([self numberOfSelectedRows] == 0)
             return;
@@ -302,7 +306,6 @@ OBDidLoad(^{
         
         // Maintain an appropriate selection after deletions
         if (originalNumberOfRows != newNumberOfRows) {
-            id <NSTableViewDelegate> delegate = self.delegate;
             if (selectedRow == 0) {
                 if ([delegate respondsToSelector:@selector(tableView:shouldSelectRow:)]) {
                     if ([delegate tableView:self shouldSelectRow:0])
@@ -329,6 +332,8 @@ OBDidLoad(^{
                     [self selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow] byExtendingSelection:NO];
             }
         }
+    } else if ([delegate respondsToSelector:@selector(deleteBackward:)]) {
+        [(id)delegate deleteBackward:sender];
     }
 }
 
@@ -655,7 +660,7 @@ OBDidLoad(^{
         }
         if ([dataSource respondsToSelector:@selector(outlineView:pasteboardWriterForItem:)]) {
             NSMutableArray *items = [NSMutableArray array];
-            [[outlineView selectedItems] enumerateObjectsUsingBlock:^(id  item, NSUInteger idx, BOOL * _Nonnull stop) {
+            [[outlineView selectedItems] enumerateObjectsUsingBlock:^(id item, NSUInteger idx, BOOL * _Nonnull stop) {
                 id <NSPasteboardWriting> writing = [dataSource outlineView:outlineView pasteboardWriterForItem:item];
                 if (writing) {
                     [items addObject:writing];
