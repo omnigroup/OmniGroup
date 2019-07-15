@@ -823,7 +823,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     
     _appMenuController.tintColor = UIColor.blackColor; // The icons are many colors for iOS 11 flavor, so menu text looks better untinted.
     _appMenuController.menuOptionBackgroundColor = UIColor.whiteColor; // White menu option backgrounds
-    _appMenuController.menuBackgroundColor = UIColor.groupTableViewBackgroundColor; // Gray separator and scroll-bounce region
+    _appMenuController.menuBackgroundColor = UIColor.systemGroupedBackgroundColor; // Gray separator and scroll-bounce region
     
     [_appMenuController setSizesToOptionWidth:YES];
     

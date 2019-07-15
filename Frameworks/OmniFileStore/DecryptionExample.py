@@ -468,6 +468,11 @@ class EncryptedFileHelper (object):
 def decrypt_directory(indir, outdir, re_encrypt=False):
     '''Decrypt the OmniFocus data in indir, writing the result to outdir. Prompts for a passphrase.'''
     files = posix.listdir(indir)
+    indir = os.path.abspath(indir)
+
+    if outdir:
+        outdir = os.path.abspath(outdir)
+        
     if metadata_filename not in files:
         raise EnvironmentError('Expected to find %r in %r' %
                                ( metadata_filename, indir))

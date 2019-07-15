@@ -8,6 +8,5 @@
 #import <CoreImage/CIContext.h>
 
 @interface CIContext (OQExtensions)
-- (void)fillRect:(CGRect)rect withColor:(CIColor *)color;
 - (BOOL)writePNGImage:(CIImage *)image fromRect:(CGRect)rect toURL:(NSURL *)url;
 @end

@@ -423,9 +423,13 @@ BOOL OFHasTrustExceptionForTrust(CFTypeRef trust_)
     }
 
     SecTrustResultType evaluationResult = kSecTrustResultOtherError;
-    OSStatus err = SecTrustEvaluate(trust, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
-    if (err == errSecSuccess && evaluationResult == kSecTrustResultProceed)
-        return YES;
-    NSLog(@"err:%ld, evaluationResult:%lu", (long)err, (unsigned long)evaluationResult);
+    CFErrorRef err;
+    if (SecTrustEvaluateWithError(trust, &err)) { // NB: May block for long periods (eg OCSP verification, etc)
+        SecTrustGetTrustResult(trust, &evaluationResult);
+        if (evaluationResult == kSecTrustResultProceed)
+            return YES;
+    }
+
+    NSLog(@"err:%@, evaluationResult:%lu",CFAutorelease(CFErrorCopyDescription(err)), (unsigned long)evaluationResult);
     return NO;
 }

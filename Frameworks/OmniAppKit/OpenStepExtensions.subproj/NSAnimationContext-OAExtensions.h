@@ -13,3 +13,4 @@ typedef void (^OAAnimationGroup)(NSAnimationContext *context);
 + (void)runAnimationGroups:(OAAnimationGroup)group, ... NS_REQUIRES_NIL_TERMINATION;
 @end
 
+extern void OAWithoutAnimation(void (NS_NOESCAPE ^action)(void));

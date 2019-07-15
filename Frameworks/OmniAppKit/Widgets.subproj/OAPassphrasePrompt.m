@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -222,7 +222,7 @@ OB_REQUIRE_ARC;
     if (options & OAPassphrasePromptShowKeychainOption) {
         NSButton *field = [[NSButton alloc] init];
         [self _stackField:field stack:stack left:YES right:YES];
-        [field setButtonType:NSSwitchButton];
+        [field setButtonType:NSButtonTypeSwitch];
         field.title = NSLocalizedStringFromTableInBundle(@"Remember in Keychain", @"OmniAppKit", bundle, @"checkbox label - password prompt dialog - whether to store this passphrase in the user's keychain");
         [field setContentHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
 
@@ -331,7 +331,7 @@ OB_REQUIRE_ARC;
         return NO;
     }
     
-    return self.rememberInKeychainCheckbox.state == NSOnState;
+    return self.rememberInKeychainCheckbox.state == NSControlStateValueOn;
 }
 
 - (void)setRememberInKeychain:(BOOL)rememberInKeychain;
@@ -339,7 +339,7 @@ OB_REQUIRE_ARC;
     if (!self.rememberInKeychainCheckbox)
         OBRejectInvalidCall(self, _cmd, @"Keychain option not set");
 
-    self.rememberInKeychainCheckbox.state = rememberInKeychain ? NSOnState : NSOffState;
+    self.rememberInKeychainCheckbox.state = rememberInKeychain ? NSControlStateValueOn : NSControlStateValueOff;
 }
 
 - (NSString *)password;

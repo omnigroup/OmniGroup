@@ -17,7 +17,7 @@ Xcode
 Supported Targets
 ----------------------
 
-- We require macOS 10.13.2, iOS 11.3, and watchOS 4.0, with our deployment builds happening on macOS Mojave 10.14.4.
+- We require macOS 10.14, iOS 13, and watchOS 6.0, with our deployment builds happening on macOS Mojave 10.14.4.
 
 Configuring the Source
 ----------------------

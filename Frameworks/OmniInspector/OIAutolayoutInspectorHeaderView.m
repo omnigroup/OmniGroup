@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -117,7 +117,7 @@ RCS_ID("$Id$");
         desiredHeight += [[self class] separatorTopPadding] + [[self class] separatorHeight];
     
     return (NSSize){
-        .width = NSViewNoInstrinsicMetric,
+        .width = NSViewNoIntrinsicMetric,
         .height = desiredHeight,
     };
 }

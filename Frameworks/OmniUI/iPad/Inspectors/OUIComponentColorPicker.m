@@ -78,12 +78,19 @@ RCS_ID("$Id$");
     [super setSelectionValue:selectionValue];
     
     BOOL animate = [self isViewLoaded];
-    if (animate)
-        [UIView beginAnimations:@"color slider" context:NULL];
+
+    if (animate) {
+        [UIView animateWithDuration:0.2 animations:^{
+            [self update];
+        }];
+    } else {
+        [self update];
+    }
+}
+
+- (void)update {
     [self _updateSliderValuesFromColor];
     [self.view layoutIfNeeded];
-    if (animate)
-        [UIView commitAnimations];
 }
 
 #pragma mark -

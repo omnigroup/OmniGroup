@@ -47,7 +47,7 @@ RCS_ID("$Id$");
 
     [self setImagePosition:NSImageOnly];
     [self setBordered:NO];
-    [self setButtonType:NSMomentaryPushInButton];
+    [self setButtonType:NSButtonTypeMomentaryPushIn];
     [self setImage:[OAContextButton actionImage]];
     [self setToolTip:OAContextControlToolTip()];
     
@@ -220,7 +220,7 @@ RCS_ID("$Id$");
     NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
     
     // If we post a matching up, the menu hides immediately.
-    [[NSApplication sharedApplication] postEvent:[NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
+    [[NSApplication sharedApplication] postEvent:[NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:nil eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
     
     return YES;
 }

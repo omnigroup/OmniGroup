@@ -10,6 +10,7 @@
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIInspectorAppearance.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -56,10 +57,7 @@ RCS_ID("$Id$")
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
     UIEdgeInsets insets = self.textView.contentInset;
     insets.bottom = notifier.lastKnownKeyboardHeight;
-    
-    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:0 animations:^{
-        [UIView setAnimationCurve:notifier.lastAnimationCurve];
-        
+    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:OUIAnimationOptionFromCurve(notifier.lastAnimationCurve) animations:^{
         self.textView.contentInset = insets;
     } completion:nil];
 }

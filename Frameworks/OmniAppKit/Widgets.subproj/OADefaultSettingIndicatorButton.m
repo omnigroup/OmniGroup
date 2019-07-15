@@ -129,7 +129,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
     if (displaysEvenInDefaultState == displays)
         return;
     _flags.displaysEvenInDefaultState = displays ? 1 : 0;
-    [self setNeedsDisplay];
+    [self setNeedsDisplay:YES];
     [self _showOrHide];
 }
 
@@ -233,7 +233,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
 - (void)_setupButton;
 {
-    [self setButtonType:NSToggleButton];
+    [self setButtonType:NSButtonTypeToggle];
     [[self cell] setType:NSImageCellType];
     [[self cell] setBordered:NO];
     [self setImagePosition:NSImageOnly];

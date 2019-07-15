@@ -1688,7 +1688,27 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
+				TargetAttributes = {
+					4AA5358208B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AA5364E08B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AA5366808B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AA5368408B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AA5369D08B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AA536B308B27DE600F0872D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+				};
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";

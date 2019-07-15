@@ -54,7 +54,7 @@ public final class OUILanguagePicker: UITableViewController {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "header")
         cell.textLabel?.text = NSLocalizedString("ouiLanguagePicker.language", tableName: "OmniUIDocument", bundle: OmniUIDocumentBundle, value: "Language", comment: "Language section title")
         cell.textLabel?.textAlignment = .center
-        cell.backgroundColor = UIColor.groupTableViewBackground
+        cell.backgroundColor = UIColor.systemGroupedBackground
         return cell
     }
 

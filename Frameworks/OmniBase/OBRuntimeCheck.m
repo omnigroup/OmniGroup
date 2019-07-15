@@ -807,7 +807,7 @@ static void _checkCopyWithZoneImplementationForClass(Class cls, SEL copySel)
     if (copySel == @selector(copyWithZone:) &&
         (_classIsKindOfClassNamed(cls, "NSTextAttachment") ||
          _classIsKindOfClassNamed(cls, "ODOProperty") ||
-         _classIsKindOfClassNamed(cls, "ContentOptionDescription") ||
+         _classIsKindOfClassNamed(cls, "OFMContentOptionDescription") ||
          _classIsKindOfClassNamed(cls, "OSStyleAttribute")))
         return;
     

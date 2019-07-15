@@ -68,6 +68,8 @@ extern UIResponder *OUIWindowFindFirstResponder(UIWindow *window);
 extern void OUILogViewTree(UIView *root);
 #endif
 
+extern UIViewAnimationOptions OUIAnimationOptionFromCurve(UIViewAnimationCurve curve);
+
 // Fiddles the UIView animation enabledness
 extern void OUIWithAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void));
 extern void OUIWithoutAnimating(void (NS_NOESCAPE ^actions)(void));

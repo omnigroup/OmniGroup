@@ -223,15 +223,17 @@ const OFCompletionMatchComparator OFDefaultCompletionMatchComparator = ^(OFCompl
 {
     NSUInteger filterLength = filter.length;
     NSUInteger lastMatchIndexes[filterLength];
-    NSUInteger nameLength = name.length;
+    NSString *normalizedName = [self _preretainedCanonicalStringForString:name options:0]; // just normalization
     NSString *canonicalName = [self _preretainedCanonicalStringForString:name options:options];
+    NSUInteger canonicalNameLength = canonicalName.length;
 
-    if (calculateIndexesOfLastMatchesInName(0, filterLength, filter, 0, nameLength, canonicalName, lastMatchIndexes)) {
-	OFCompletionMatch *newMatch = [[OFCompletionMatch alloc] initWithString:name];
-        filterIntoResults(0, filterLength, filter, lastMatchIndexes, YES, 0, 0, nameLength, canonicalName, name, newMatch, results);
+    if (calculateIndexesOfLastMatchesInName(0, filterLength, filter, 0, canonicalNameLength, canonicalName, lastMatchIndexes)) {
+	OFCompletionMatch *newMatch = [[OFCompletionMatch alloc] initWithString:normalizedName];
+        filterIntoResults(0, filterLength, filter, lastMatchIndexes, YES, 0, 0, canonicalNameLength, canonicalName, normalizedName, newMatch, results);
 	[newMatch release];
     }
     
+    [normalizedName release];
     [canonicalName release];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,7 +111,7 @@ static void _DisplayWindow(NSWindow *window)
     _progressIndicator.controlSize = controlSize;
     _progressIndicator.usesThreadedAnimation = YES;
     _progressIndicator.style = progressStyle;
-    _progressIndicator.indeterminate = (progressStyle == NSProgressIndicatorSpinningStyle);
+    _progressIndicator.indeterminate = (progressStyle == NSProgressIndicatorStyleSpinning);
     _progressIndicator.displayedWhenStopped = YES;
     
     _backgroundColor = [[NSColor colorWithCalibratedWhite:0.95 alpha:1.0] copy];
@@ -145,7 +145,7 @@ static void _DisplayWindow(NSWindow *window)
     const CGFloat standardSpacing = 10;
     // Note that we also specify a minimum width for both styles so that the window looks reasonable.
     
-    if (progressStyle == NSProgressIndicatorSpinningStyle) {
+    if (progressStyle == NSProgressIndicatorStyleSpinning) {
         NSArray<NSLayoutConstraint *> *constraints = @[
             // Horizontal
             [_progressIndicator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:standardSpacing],
@@ -186,7 +186,7 @@ static void _DisplayWindow(NSWindow *window)
     }
     
     // If threaded animation is known to be broken, display a static representation of the progress indicator instead.
-    if (progressStyle == NSProgressIndicatorSpinningStyle && _progressIndicator.omni_threadedAnimationIsBroken) {
+    if (progressStyle == NSProgressIndicatorStyleSpinning && _progressIndicator.omni_threadedAnimationIsBroken) {
         _progressIndicatorImageView = [[NSImageView alloc] initWithFrame:NSZeroRect];
         _progressIndicatorImageView.translatesAutoresizingMaskIntoConstraints = NO;
         _progressIndicatorImageView.image = _progressIndicator.omni_imageRepresentation;
@@ -536,12 +536,12 @@ static void _AutosizeLongOperationWindow(NSWindow *documentWindow)
 
 + (nullable NSWindow *)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize;
 {
-    return [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:NSProgressIndicatorSpinningStyle automaticallyEnds:YES];
+    return [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:NSProgressIndicatorStyleSpinning automaticallyEnds:YES];
 }
 
 + (void)startingLongOperation:(NSString *)operationDescription controlSize:(NSControlSize)controlSize inWindow:(NSWindow *)documentWindow automaticallyEnds:(BOOL)shouldAutomaticallyEnd;
 {
-    [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:NSProgressIndicatorSpinningStyle inWindow:documentWindow automaticallyEnds:shouldAutomaticallyEnd];
+    [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:NSProgressIndicatorStyleSpinning inWindow:documentWindow automaticallyEnds:shouldAutomaticallyEnd];
 }
 
 + (void)continuingLongOperation:(NSString *)operationStatus;

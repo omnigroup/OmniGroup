@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -721,7 +721,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             OBASSERT([[controller inspector] conformsToProtocol:@protocol(OIInspectorTabContainer)]);
             id <OIInspectorTabContainer> tabbedInspector = (id <OIInspectorTabContainer>)[controller inspector];
             OIInspectorTabController *inspectorTab = [tabbedInspector tabWithIdentifier:identifier];
-            [item setState:[inspectorTab isVisible] ? NSOnState : NSOffState];
+            [item setState:[inspectorTab isVisible] ? NSControlStateValueOn : NSControlStateValueOff];
             return YES;
         }
     }

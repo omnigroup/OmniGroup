@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,10 @@
 
 RCS_ID("$Id$")
 
-@interface OAWebPageViewer () <OAFindControllerTarget, NSWindowDelegate>
+// <bug:///175663> (Frameworks-Mac Unassigned: Convert OAWebPageViewer to WKWebView)
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+@interface OAWebPageViewer () <OAFindControllerTarget, NSWindowDelegate, WebPolicyDelegate>
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, strong) NSView <WebDocumentView> *webDocumentView;
 @property (nonatomic, copy) void (^loadCompletion)(BOOL success, NSURL *url, NSError *error);

@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -224,7 +224,7 @@ OBPerformPosing(^{
 
 + (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(nonnull NSColor *)color isFilled:(BOOL)isFilled;
 {
-    CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
     [color set];
 
     CGContextBeginPath(context);

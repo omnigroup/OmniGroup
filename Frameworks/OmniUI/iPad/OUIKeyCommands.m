@@ -124,7 +124,8 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
                 
                 [dynamicInputIndexSet enumerateIndexesUsingBlock:^(NSUInteger idx, BOOL *stop) {
                     NSString *input = [[NSNumber numberWithUnsignedInteger:idx] stringValue];
-                    UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:input modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
+                    UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:input modifierFlags:flags action:NSSelectorFromString(selectorName)];
+                    command.discoverabilityTitle = discoverabilityTitle;
                     
                     OBASSERT(command != nil);
                     if (command != nil) {
@@ -150,12 +151,10 @@ static void _parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString *tab
                 OBASSERT([inputString length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
             }
             
-            UIKeyCommand *command = nil;
+            UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName)];
             
             if (discoverabilityTitle != nil && discoverabilityTitle.length > 0) {
-                command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
-            } else {
-                command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName)];
+                command.discoverabilityTitle = discoverabilityTitle;
             }
             
             OBASSERT(command != nil);

@@ -65,8 +65,8 @@ NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
 - (void)setIsPinned:(BOOL)newValue;
 {
     // If we get pinned, make sure we are turned on
-    if (newValue && ([self state] != NSOnState)) {
-        [self setState:NSOnState];
+    if (newValue && ([self state] != NSControlStateValueOn)) {
+        [self setState:NSControlStateValueOn];
     }
     
     isPinned = newValue;    // Set our state to On before turning on pinning, so that we're always in a consistent state (can't be pinned and not on)

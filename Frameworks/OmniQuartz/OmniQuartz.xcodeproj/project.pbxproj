@@ -7,17 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3402396009F83B8700AEE000 /* OQSimpleFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 3402395E09F83B8700AEE000 /* OQSimpleFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3402396109F83B8700AEE000 /* OQSimpleFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 3402395F09F83B8700AEE000 /* OQSimpleFilter.m */; };
 		3403FDB00A25117800395CC8 /* CIColor-OQExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3403FDAE0A25117800395CC8 /* CIColor-OQExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3403FDB10A25117800395CC8 /* CIColor-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3403FDAF0A25117800395CC8 /* CIColor-OQExtensions.m */; };
 		3428501D107E5B720065B283 /* OQGradient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3428501B107E5B720065B283 /* OQGradient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3428501E107E5B720065B283 /* OQGradient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3428501C107E5B720065B283 /* OQGradient.m */; };
 		343E50701046EF2F003EF9CD /* OQContentAnimatingLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343E50711046EF2F003EF9CD /* OQContentAnimatingLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */; };
-		344EEC180A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = 344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */; };
-		344EEC190A06ABF500AC6AA0 /* OQAlphaScaleFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 344EEC160A06ABF500AC6AA0 /* OQAlphaScaleFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		344EEC1A0A06ABF500AC6AA0 /* OQAlphaScaleFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 344EEC170A06ABF500AC6AA0 /* OQAlphaScaleFilter.m */; };
 		34514CE009E33740002B007F /* CIImage-OQExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34514CDE09E33740002B007F /* CIImage-OQExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34514CE109E33740002B007F /* CIImage-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34514CDF09E33740002B007F /* CIImage-OQExtensions.m */; };
 		34737814104666670065876F /* OQFadeOutLayerRemovalAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473780E104666670065876F /* OQFadeOutLayerRemovalAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -70,6 +65,8 @@
 			compilerSpec = com.apple.compilers.proxy.script;
 			filePatterns = "*.rl";
 			fileType = pattern.proxy;
+			inputFiles = (
+			);
 			isEditable = 1;
 			outputFiles = (
 				"$(DERIVED_FILES_DIR)/$(INPUT_FILE_BASE).m",
@@ -283,8 +280,6 @@
 		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniQuartz_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniQuartz_Prefix.h; sourceTree = "<group>"; };
-		3402395E09F83B8700AEE000 /* OQSimpleFilter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OQSimpleFilter.h; sourceTree = "<group>"; };
-		3402395F09F83B8700AEE000 /* OQSimpleFilter.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OQSimpleFilter.m; sourceTree = "<group>"; };
 		3403FDAE0A25117800395CC8 /* CIColor-OQExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CIColor-OQExtensions.h"; sourceTree = "<group>"; };
 		3403FDAF0A25117800395CC8 /* CIColor-OQExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CIColor-OQExtensions.m"; sourceTree = "<group>"; };
 		34218E3319C23EB900899C9A /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
@@ -305,9 +300,6 @@
 		3428501C107E5B720065B283 /* OQGradient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQGradient.m; sourceTree = "<group>"; };
 		343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQContentAnimatingLayer.h; sourceTree = "<group>"; };
 		343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQContentAnimatingLayer.m; sourceTree = "<group>"; };
-		344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = OQAlphaScaleFilter.cikernel; sourceTree = "<group>"; };
-		344EEC160A06ABF500AC6AA0 /* OQAlphaScaleFilter.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OQAlphaScaleFilter.h; sourceTree = "<group>"; };
-		344EEC170A06ABF500AC6AA0 /* OQAlphaScaleFilter.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OQAlphaScaleFilter.m; sourceTree = "<group>"; };
 		34514CDE09E33740002B007F /* CIImage-OQExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CIImage-OQExtensions.h"; sourceTree = "<group>"; };
 		34514CDF09E33740002B007F /* CIImage-OQExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CIImage-OQExtensions.m"; sourceTree = "<group>"; };
 		345613B61193195A00E7D187 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -595,11 +587,6 @@
 		34CEA13C10465F380016EC37 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */,
-				344EEC160A06ABF500AC6AA0 /* OQAlphaScaleFilter.h */,
-				344EEC170A06ABF500AC6AA0 /* OQAlphaScaleFilter.m */,
-				3402395E09F83B8700AEE000 /* OQSimpleFilter.h */,
-				3402395F09F83B8700AEE000 /* OQSimpleFilter.m */,
 				34DB37EB08C77BDC00BC2748 /* OQTargetAnimation.h */,
 				34DB37EC08C77BDC00BC2748 /* OQTargetAnimation.m */,
 				343E50721046EF3B003EF9CD /* Layers */,
@@ -679,8 +666,6 @@
 				34DB361408C6589F00BC2748 /* CIContext-OQExtensions.h in Headers */,
 				34DB37ED08C77BDC00BC2748 /* OQTargetAnimation.h in Headers */,
 				34514CE009E33740002B007F /* CIImage-OQExtensions.h in Headers */,
-				3402396009F83B8700AEE000 /* OQSimpleFilter.h in Headers */,
-				344EEC190A06ABF500AC6AA0 /* OQAlphaScaleFilter.h in Headers */,
 				3403FDB00A25117800395CC8 /* CIColor-OQExtensions.h in Headers */,
 				34CEA14B10465F710016EC37 /* CALayer-OQExtensions.h in Headers */,
 				34737814104666670065876F /* OQFadeOutLayerRemovalAnimation.h in Headers */,
@@ -743,10 +728,13 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
 				TargetAttributes = {
 					34218E4919C23ECE00899C9A = {
 						CreatedOnToolsVersion = 6.1;
+					};
+					8DC2EF4F0486A6940098B216 = {
+						DevelopmentTeam = 34YW5XSRB7;
 					};
 				};
 			};
@@ -973,7 +961,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
-				344EEC180A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -998,8 +985,6 @@
 				34DB361508C6589F00BC2748 /* CIContext-OQExtensions.m in Sources */,
 				34DB37EE08C77BDC00BC2748 /* OQTargetAnimation.m in Sources */,
 				34514CE109E33740002B007F /* CIImage-OQExtensions.m in Sources */,
-				3402396109F83B8700AEE000 /* OQSimpleFilter.m in Sources */,
-				344EEC1A0A06ABF500AC6AA0 /* OQAlphaScaleFilter.m in Sources */,
 				3403FDB10A25117800395CC8 /* CIColor-OQExtensions.m in Sources */,
 				34CEA14C10465F710016EC37 /* CALayer-OQExtensions.m in Sources */,
 				34737815104666670065876F /* OQFadeOutLayerRemovalAnimation.m in Sources */,

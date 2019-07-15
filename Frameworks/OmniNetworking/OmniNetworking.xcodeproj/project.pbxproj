@@ -675,7 +675,21 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
+				TargetAttributes = {
+					4AFE726808A02E9D00ED9F2D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AFE72AA08A02E9D00ED9F2D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AFE72C208A02E9D00ED9F2D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					4AFE72D408A02E9D00ED9F2D = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+				};
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";

@@ -385,9 +385,9 @@ static void copyProperty(NSToolbarItem *anItem,
         // Yosemite-style toolbar buttons
         NSSize buttonSize = NSMakeSize(44, 32); //Matches Apple's size in Numbers and Pages as of 14 Nov. 2014
         OAToolbarItemButton *button = [[buttonClass alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.width, buttonSize.height)];
-        button.buttonType = NSMomentaryChangeButton;
-        button.bezelStyle = NSTexturedRoundedBezelStyle;
-        button.buttonType = NSMomentaryLightButton;
+        button.buttonType = NSButtonTypeMomentaryChange;
+        button.bezelStyle = NSBezelStyleTexturedRounded;
+        button.buttonType = NSButtonTypeMomentaryLight;
         button.imagePosition = NSImageOnly;
         
         button.toolbarItem = newItem;

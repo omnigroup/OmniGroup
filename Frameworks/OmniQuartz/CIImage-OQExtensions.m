@@ -1,4 +1,4 @@
-// Copyright 2006-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,6 @@
 #import <OmniQuartz/CIImage-OQExtensions.h>
 
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
-
-#import <OmniQuartz/OQAlphaScaleFilter.h>
 
 RCS_ID("$Id$");
 
@@ -59,21 +57,6 @@ const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping = -1.0f;
     [flipFilter setValue:self forKey:@"inputImage"];
     
     return [flipFilter valueForKey:@"outputImage"];
-}
-
-- (CIImage *)imageByScalingAlphaBy:(CGFloat)alphaScale;
-{
-    NSLog(@"filters = %@", [CIFilter filterNamesInCategories:[NSArray array]]);
-	  
-    OQAlphaScaleFilter *filter = [[OQAlphaScaleFilter alloc] init];
-    
-    [filter setValue:self forKey:@"inputImage"];
-    [filter setValue:[NSNumber numberWithCGFloat:alphaScale] forKey:@"inputScale"];
-    
-    CIImage *outputImage = [filter valueForKey:@"outputImage"];
-    [filter release];
-    
-    return outputImage;
 }
 
 - (CIImage *)imageBySourceOverCompositingWithBackgroundImage:(CIImage *)backgroundImage;

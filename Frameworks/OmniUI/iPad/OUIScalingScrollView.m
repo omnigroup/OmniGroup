@@ -221,14 +221,11 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
         return;
     
     if (animated) {
-        [UIView beginAnimations:@"OUIAdjustContentInsetAnimation" context:NULL];
-        [UIView setAnimationDuration:0.4];
-    }
-    
-    self.contentInset = totalInsets;
-    
-    if (animated) {
-        [UIView commitAnimations];
+        [UIView animateWithDuration:0.4 animations:^{
+            self.contentInset = totalInsets;
+        }];
+    } else {
+        self.contentInset = totalInsets;
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -617,7 +617,7 @@ static NSFont *smallSystemFont;
 - (void)drawRect:(NSRect)rect;
 {
     BOOL drawsBackground = [self drawsBackground];
-    CGContextRef context = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
     CGFloat border;
 
     switch ([self borderType]) {

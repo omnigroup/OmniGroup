@@ -181,12 +181,9 @@ public final class RoundRectButtonCell: NSButtonCell {
             cellSize.width += 2 * borderWidth
         }
         
-        // Add required padding around the title if needed
-        if !isBordered {
-            cellSize.width += 2 * 15
-            cellSize.height += 2 * 6
-        }
-        
+        // Add padding around the title
+        cellSize.width += 2 * 10
+
         // Enforce a minimum height
         cellSize.height = max(cellSize.height, 30)
         
@@ -217,7 +214,7 @@ public final class RoundRectButtonCell: NSButtonCell {
         let verticalOffset: CGFloat
         
         if #available(macOS 10.14, *) {
-            verticalOffset = isBordered ? 1 : -1
+            verticalOffset = isBordered ? 1 : 0
         } else {
             verticalOffset = isBordered ? -1 : 0
         }

@@ -107,8 +107,16 @@ static BOOL isConstant(id object) {
         return 0;
     }
 
-    if (isConstant(existing) && isConstant(self)) {
-        // Don't complain about constant-string vs tagged-pointer string, tagged pointer numbers vs shared boolean numbers, and the like.
+    if (isConstant(existing)) {
+        if (isConstant(self)) {
+            // Don't complain about constant-string vs tagged-pointer string, tagged pointer numbers vs shared boolean numbers, and the like.
+            return 0;
+        } else {
+            // Put the non-constant object in the table (and complain once here).
+            [table addObject:self];
+        }
+    } else if (isConstant(self)) {
+        // Don't complain about constant vs a non-constant in the table.
         return 0;
     } else if (existing == self) {
         // Repeated reference to the same object.

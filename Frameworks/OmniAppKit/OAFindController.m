@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -265,8 +265,8 @@ RCS_ID("$Id$")
     
     @try {
 	NSPasteboard *findPasteboard = [NSPasteboard pasteboardWithName:NSPasteboardNameFind];
-	[findPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-	[findPasteboard setString:string forType:NSStringPboardType];
+	[findPasteboard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:nil];
+	[findPasteboard setString:string forType:NSPasteboardTypeString];
     } @catch (NSException *exc) {
         OB_UNUSED_VALUE(exc);
     }
@@ -278,8 +278,8 @@ RCS_ID("$Id$")
     
     @try {
 	NSPasteboard *findPasteboard = [NSPasteboard pasteboardWithName:NSPasteboardNameFind];
-	if ([findPasteboard availableTypeFromArray:[NSArray arrayWithObject:NSStringPboardType]])
-	    findText = [findPasteboard stringForType:NSStringPboardType];
+	if ([findPasteboard availableTypeFromArray:[NSArray arrayWithObject:NSPasteboardTypeString]])
+	    findText = [findPasteboard stringForType:NSPasteboardTypeString];
     } @catch (NSException *exc) {
         OB_UNUSED_VALUE(exc);
     }
@@ -393,8 +393,8 @@ RCS_ID("$Id$")
     (void)[self window]; // Load interface if needed
     if ([[_findTypeMatrix selectedCell] tag] == 0) {
         pattern = [[OAFindPattern alloc] initWithString:findString
-                                             ignoreCase:([_ignoreCaseButton state] != NSOffState)
-                                              wholeWord:([_wholeWordButton state] != NSOffState)
+                                             ignoreCase:([_ignoreCaseButton state] != NSControlStateValueOff)
+                                              wholeWord:([_wholeWordButton state] != NSControlStateValueOff)
                                               backwards:backwardsFlag];
     } else {
         [self _updateCaptureGroupsPopUp];

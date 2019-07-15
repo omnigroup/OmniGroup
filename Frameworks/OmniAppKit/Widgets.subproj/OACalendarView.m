@@ -587,7 +587,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     NSButton *button;
     
     button = [[NSButton alloc] initWithFrame:buttonFrame];
-    [button setBezelStyle:NSShadowlessSquareBezelStyle];
+    [button setBezelStyle:NSBezelStyleShadowlessSquare];
     [button setBordered:NO];
     [button setImagePosition:NSImageOnly];
     [button setTarget:self];

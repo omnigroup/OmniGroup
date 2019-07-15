@@ -1,4 +1,4 @@
-// Copyright 2010-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -122,8 +122,10 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     NSData *data = getters.data(container, @"archive");
     if (data) {
         if ([data isKindOfClass:[NSData class]] && [data length] > 0) {
-            NSColor *unarchived = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-            if ([unarchived isKindOfClass:[NSColor class]]) {
+            __autoreleasing NSError *error = nil;
+            NSColor *unarchived = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSColor class] fromData:data error:&error];
+            if (!unarchived) {
+                [error log:@"Error unarchiving color"];
                 OBASSERT_NOT_REACHED("<bug://bugs/60464> (Deal with custom (NSKeyedArchiver) color archive/unarchive in OAColor on iPad)");
                 return [OAColor colorWithPlatformColor:unarchived];
             }

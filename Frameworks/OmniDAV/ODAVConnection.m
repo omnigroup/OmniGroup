@@ -1252,7 +1252,8 @@ static void fudgeTrust(SecTrustRef tref)
         SecTrustRef trustRef;
         if ((trustRef = [protectionSpace serverTrust]) != NULL) {
             SecTrustResultType evaluationResult = kSecTrustResultOtherError;
-            OSStatus oserr = SecTrustEvaluate(trustRef, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
+            (void)SecTrustEvaluateWithError(trustRef, NULL); // NB: May block for long periods (eg OCSP verification, etc)
+            OSStatus oserr = SecTrustGetTrustResult(trustRef, &evaluationResult);
             if (ODAVConnectionDebug > 2) {
                 NSString *result; // TODO: Use OFSummarizeTrustResult() instead.
                 if (oserr != noErr) {

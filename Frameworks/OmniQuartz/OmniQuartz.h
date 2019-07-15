@@ -14,12 +14,10 @@
 #import <OmniQuartz/CIContext-OQExtensions.h>
 #import <OmniQuartz/CIImage-OQExtensions.h>
 #import <OmniQuartz/NSView-OQExtensions.h>
-#import <OmniQuartz/OQAlphaScaleFilter.h>
 #import <OmniQuartz/OQFadeOutLayerRemovalAnimation.h>
 #import <OmniQuartz/OQFlipSwapViewAnimation.h>
 #import <OmniQuartz/OQGradient.h>
 #import <OmniQuartz/OQHoleLayer.h>
-#import <OmniQuartz/OQSimpleFilter.h>
 #import <OmniQuartz/OQSlideOutLayerRemovalAnimation.h>
 #import <OmniQuartz/OQTargetAnimation.h>
 #endif

@@ -434,9 +434,8 @@ RCS_ID("$Id$");
         // animate the frame changes
         [UIView animateWithDuration:notifier.lastAnimationDuration
                               delay:0
-                            options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionOverrideInheritedOptions
+                            options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionOverrideInheritedOptions | UIViewAnimationOptionCurveEaseIn
                          animations:^{
-                             [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
                              dimmingView.alpha = 0;
                              _itemView.frame = self.origItemFrame;
                              self.origMetadataFrame = CGRectInset(self.origMetadataFrame, 1, 1);

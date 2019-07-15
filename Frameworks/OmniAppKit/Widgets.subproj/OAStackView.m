@@ -14,6 +14,7 @@
 #import <Foundation/NSInvocation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
+#import <OmniAppKit/NSAnimationContext-OAExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -154,12 +155,7 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
     flags.needsReload = NO;
     flags.needsLayout = YES;
     
-    NSWindow *window = [self window];    
-    BOOL oldAutodisplay = [window isAutodisplay];
-    [window setAutodisplay: NO];
-    [window disableFlushWindow];
-    
-    NS_DURING {
+    OAWithoutAnimation(^{
         NSArray *subviews = [dataSource subviewsForStackView: self];
         if (subviews == nil) {
             subviews = [self _visibleAvailableSubviews];
@@ -202,14 +198,7 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
                 [super addSubview: view];
         }
         [self sortSubviewsUsingFunction:compareBasedOnArray context:subviews];
-    } NS_HANDLER {
-        NSLog(@"Exception ignored during -[OAStackView _loadSubviews]: %@", localException);
-    } NS_ENDHANDLER;
-    
-    [window setAutodisplay: oldAutodisplay];
-    if (oldAutodisplay)
-        [window setViewsNeedDisplay: YES];
-    [window enableFlushWindow];
+    });
 }
 
 /*"
@@ -217,8 +206,6 @@ Goes through the subviews and finds the first subview that is willing to stretch
 "*/
 - (void)_layoutSubviews;
 {
-    NSRect subviewFrame;
-
     if (flags.layoutDisabled)
         return;
         
@@ -226,15 +213,12 @@ Goes through the subviews and finds the first subview that is willing to stretch
         [self _loadSubviews];
 
     flags.needsLayout = NO;
-    NSWindow *window = [self window];    
-    NSRect spaceLeft = [self bounds];
-    //NSLog(@"total bounds = %@", NSStringFromRect(spaceLeft));
-    
-    BOOL oldAutodisplay = [window isAutodisplay];
-    [window setAutodisplay: NO];
-    [window disableFlushWindow];
-    
-    NS_DURING {
+
+    OAWithoutAnimation(^{
+        NSRect subviewFrame;
+        NSRect spaceLeft = [self bounds];
+        //NSLog(@"total bounds = %@", NSStringFromRect(spaceLeft));
+
         NSArray *currentSubviews = [self subviews];
 
         NSUInteger viewCount = [currentSubviews count];
@@ -285,17 +269,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
         }
 
         [[NSNotificationCenter defaultCenter] postNotificationName:OAStackViewDidLayoutSubviews object:self];
-        
-    } NS_HANDLER {
-        NSLog(@"Exception ignored during -[OAStackView _layoutSubviews]: %@", localException);
-    } NS_ENDHANDLER;
-    
-    [window setAutodisplay: oldAutodisplay];
-    if (oldAutodisplay)
-        [window setViewsNeedDisplay: YES];
-
-    [self setNeedsDisplay:YES];
-    [window enableFlushWindow];
+    });
 }
 
 - (void)layout;

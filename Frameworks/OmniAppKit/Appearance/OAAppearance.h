@@ -15,6 +15,7 @@
 #import <UIKit/UIColor.h>
 #import <UIKit/UIGeometry.h>
 
+#define OA_SYSTEM_IMAGE_CLASS UIImage
 #define OA_SYSTEM_COLOR_CLASS UIColor
 #define OA_SYSTEM_EDGE_INSETS_STRUCT UIEdgeInsets
 
@@ -24,6 +25,7 @@
 #import <AppKit/NSGradient.h>
 #import <AppKit/NSLayoutConstraint.h>
 
+#define OA_SYSTEM_IMAGE_CLASS NSImage
 #define OA_SYSTEM_COLOR_CLASS NSColor
 #define OA_SYSTEM_EDGE_INSETS_STRUCT NSEdgeInsets
 
@@ -60,6 +62,13 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
     OAAppearanceValueEncodingCustom, // call back to -customEncodingForKeyPath: on instance to get encoding
 };
 
+typedef NS_ENUM(NSUInteger, OAAppearanceLookupPolicy) {
+    OAAppearanceLookupPolicyPlistOnly,
+    OAAppearanceLookupPolicyPreferPlist,
+    OAAppearanceLookupPolicyAssetCatalogOnly,
+    OAAppearanceLookupPolicyPreferAssetCatalog,
+};
+
 /*! Reads values from a plist in a bundle and converts those values into usable constants for implementing user interfaces. +appearance searches in the bundle of the receiver for a plist with a name derived from that of the receiver. (See +appearance for details.)
  *
  * Subclasses can inherit and override appearance attributes from their superclass. If an appearance object is asked for a value that is not in its plist, it will consult its superclass. Thus, it is recommended that each application or framework create a subclass of OAAppearance and use it consitently.
@@ -76,6 +85,12 @@ typedef NS_ENUM(NSUInteger, OAAppearanceValueEncoding) {
 
 /// Synonym for +appearance.
 + (instancetype)sharedAppearance;
+
+/// The default value is .plistOnly. Subclasses may override this class property as needed.
+@property (class, nonatomic, readonly) OAAppearanceLookupPolicy colorLookupPolicy;
+
+/// The default value is .plistOnly. Subclasses may override this class property as needed.
+@property (class, nonatomic, readonly) OAAppearanceLookupPolicy imageLookupPolicy;
 
 // These methods provide conformance to OAAppearancePropertyListCodeable. We don't declare conformance, leaving that decision to subclasses. Providing default implementations here allows subclasses to declare conformance but inherited the implementations. The keyPath extraction behavior in OAAppearancePropertyListCoder uses declared conformance to decide how far up the inheritance hierachy to walk when collecting the set of keyPaths.
 - (OAAppearanceValueEncoding)valueEncodingForKeyPath:(NSString *)keyPath;

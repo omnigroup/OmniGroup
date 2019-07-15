@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -115,20 +115,26 @@ static BOOL _isDarkAppearance(NSAppearance *appearance)
     [self._currentColor setStroke];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (NSString *)colorSpaceName;
 {
+    OBASSERT_NOT_REACHED("Should not be calling deprecated API");
     return NSStringFromClass([self class]);
 }
 
 - (nullable NSColor *)colorUsingColorSpaceName:(NSString *)colorSpace;
 {
+    OBASSERT_NOT_REACHED("Should not be calling deprecated API");
     return [self._currentColor colorUsingColorSpaceName:colorSpace];
 }
 
 - (nullable NSColor *)colorUsingColorSpaceName:(nullable NSString *)colorSpace device:(nullable NSDictionary<NSString *, id> *)deviceDescription;
 {
+    OBASSERT_NOT_REACHED("Should not be calling deprecated API");
     return [self._currentColor colorUsingColorSpaceName:colorSpace device:deviceDescription];
 }
+#pragma clang diagnostic pop
 
 - (nullable NSColor *)colorUsingColorSpace:(NSColorSpace *)space;
 {

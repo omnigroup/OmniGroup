@@ -63,7 +63,7 @@ RCS_ID("$Id$");
         .size.height = 32
     }];
     
-    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
     _connectingProgress.frame = (CGRect){
         .origin.x = 2,
         .origin.y = 6,
@@ -270,15 +270,12 @@ RCS_ID("$Id$");
 {
     for (UITableViewCell *cell in [(UITableView *)self.view visibleCells]) {
         if (cell.accessoryView == downloader.view) {
-            
-            [UIView beginAnimations:@"OUIWebDAVSyncListController_cancel_download" context:(OB_BRIDGE void *)cell];
-            {
+
+            [UIView animateWithDuration:0.2 animations:^{
                 cell.accessoryView.alpha = 0;
-                
-                [UIView setAnimationDelegate:self];
-                [UIView setAnimationDidStopSelector:@selector(_cancelDownloadEffectDidStop:finished:context:)];
-            }
-            [UIView commitAnimations];
+            } completion:^(BOOL finished) {
+                [self _cancelDownloadEffectDidStop:@"OUIWebDAVSyncListController_cancel_download" finished:@1 context:(OB_BRIDGE void *)cell];
+            }];
             break;
         }
     }

@@ -581,6 +581,26 @@ void OUILogViewTree(UIView *root)
 
 #endif
 
+UIViewAnimationOptions OUIAnimationOptionFromCurve(UIViewAnimationCurve curve) {
+    switch (curve) {
+        case UIViewAnimationCurveEaseIn:
+            return UIViewAnimationOptionCurveEaseIn;
+            break;
+        case UIViewAnimationCurveLinear:
+            return UIViewAnimationOptionCurveLinear;
+            break;
+        case UIViewAnimationCurveEaseOut:
+            return UIViewAnimationOptionCurveEaseOut;
+            break;
+        case UIViewAnimationCurveEaseInOut:
+            return UIViewAnimationOptionCurveEaseInOut;
+            break;
+        default:
+            return kNilOptions;
+    }
+    return curve;
+}
+
 // Allows the caller to conditionally leave animations as they were or disable them. Won't ever force animations on.
 void OUIWithAnimationsDisabled(BOOL disabled, void (NS_NOESCAPE ^actions)(void))
 {

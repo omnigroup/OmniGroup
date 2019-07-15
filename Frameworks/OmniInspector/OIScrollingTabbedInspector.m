@@ -1,4 +1,4 @@
-// Copyright 2015-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,6 +225,15 @@ RCS_ID("$Id$")
 // While the code doesn't currently strictly require it, the expectation is that pinnedIdentifiers is a subset of selectedIdentifiers. Pass in nil for the pinnedIdentifiers if you wish to keep the currently-pinned selection (in which case selectedIdentifiers need not include the
 - (void)setSelectedTabIdentifiers:(NSArray *)selectedIdentifiers pinnedTabIdentifiers:(NSArray *)pinnedIdentifiers;
 {
+    NSWindow *inspectorPanel = [self.view window];
+    NSResponder *firstResponder = [inspectorPanel firstResponder];
+    if ([firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:self.contentView]) {
+        // before potentially switching tabs, make sure any edits are commmitted. If they fail to commit, don't switch – they likely presented an error
+        if (![inspectorPanel makeFirstResponder:inspectorPanel]) {
+            return;
+        }
+    }
+
     if (pinnedIdentifiers == nil) {
         pinnedIdentifiers = [self pinnedTabIdentifiers];
         NSMutableSet *selectionSet = [NSMutableSet setWithArray:selectedIdentifiers];
@@ -248,15 +257,6 @@ RCS_ID("$Id$")
             visibilityState = OIHiddenVisibilityState;
         }
         if ([tab visibilityState] != visibilityState) {
-            if (![tab isVisible]) {
-                NSWindow *inspectorPanel = [self.view window];
-                NSResponder *firstResponder = [inspectorPanel firstResponder];
-                if ([firstResponder isKindOfClass:[NSView class]] && [(NSView *)firstResponder isDescendantOf:self.contentView]) {
-                    BOOL result __attribute__((unused));
-                    result = [inspectorPanel makeFirstResponder:inspectorPanel];   // make sure that switching to a new tab causes any edits to commit
-                    OBASSERT(result);
-                }
-            }
             [tab setVisibilityState:visibilityState];
             needsLayout = YES;
         }
@@ -569,7 +569,7 @@ RCS_ID("$Id$")
     BOOL isVisible = [inspectorController isExpanded] && [inspectorController isVisible];
     
     if  (!isVisible) {
-        [item setState:NSOffState];
+        [item setState:NSControlStateValueOff];
     }
     return YES;
 }

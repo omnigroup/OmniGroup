@@ -1,4 +1,4 @@
-// Copyright 2013-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -67,7 +67,6 @@ static OAViewPicker *ActivePicker;
     
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
-    [self setOneShot:YES];
     [self setReleasedWhenClosed:NO];
     [self setAcceptsMouseMovedEvents:YES];
     [self setIgnoresMouseEvents:NO];

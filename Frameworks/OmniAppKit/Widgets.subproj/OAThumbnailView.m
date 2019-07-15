@@ -1,4 +1,4 @@
-// Copyright 1997-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -211,14 +211,12 @@ static NSFont *labelFont = nil;
 
 - (void)drawMissingThumbnailRect:(NSRect)rect;
 {
-    CGContextRef context;
-
     [[NSColor whiteColor] set];
     NSRectFill(rect);
     [[NSColor darkGrayColor] set];
     NSFrameRect(rect);
 
-    context = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, NSMinX(rect), NSMinY(rect));

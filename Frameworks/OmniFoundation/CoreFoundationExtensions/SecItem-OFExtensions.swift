@@ -14,29 +14,11 @@ public extension SecCertificate {
     
     @nonobjc final
     func publicKey() throws -> SecKey {
-        #if os(OSX)
-            var publicKey : SecKey? = nil;
-            let oserr = SecCertificateCopyPublicKey(self, &publicKey);
-            if let result = publicKey {
-                return result;
-            } else {
-                throw makeError(oserr, inFunction: "SecCertificateCopyPublicKey");
+        guard let pubkey = SecCertificateCopyKey(self) else {
+            // The new API no longer has any kind of error indication (I no longer bother to file RADARs against these APIs). The documentation says "The return reference is NULL if the public key has an encoding issue or uses an unsupported algorithm.", so we'll report this as an unsupported key format.
+            throw makeError(errSecUnsupportedKeyFormat, inFunction: "SecCertificateCopyKey")
             }
-        #else
-        if #available(iOS 12.0, *) {
-            guard let pubkey = SecCertificateCopyKey(self) else {
-                // The new API no longer has any kind of error indication (I no longer bother to file RADARs against these APIs). The documentation says "The return reference is NULL if the public key has an encoding issue or uses an unsupported algorithm.", so we'll report this as an unsupported key format.
-                throw makeError(errSecUnsupportedKeyFormat, inFunction: "SecCertificateCopyKey")
-            }
-            return pubkey
-        } else {
-            var errbuf : NSError? = nil;
-            guard let publicKey = OFSecCertificateCopyPublicKey(self, &errbuf) else {
-                throw errbuf!;
-            }
-            return publicKey;
-        }
-        #endif
+        return pubkey
     }
     
 }

@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,22 +27,15 @@
 #import <AppKit/AppKit.h>
 #import <IOKit/IOCFBundle.h>
 #import <IOKit/graphics/IOGraphicsLib.h>
-#import <OpenGL/OpenGL.h>
-#import <OpenGL/gl.h>
 #import <mach/mach_error.h>
 #endif
 
 #if OSU_IPHONE
-#import <OpenGLES/EAGL.h>
 #import <sys/mount.h>
 #endif
 
 #import <mach-o/arch.h>
 #import <sys/sysctl.h>
-
-#if OSU_MAC
-#import <OpenCL/opencl.h>
-#endif
 
 OB_REQUIRE_ARC
 
@@ -236,11 +229,6 @@ static void setStringValue(CFMutableDictionaryRef info, CFStringRef key, CFStrin
     }
 }
 
-#ifdef CL_VERSION_1_0
-static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info what);
-static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what);
-#endif /* CL_VERSION_1_0 */
-
 CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSString *uuidString, NSDictionary *runtimeStats, NSDictionary *probes, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
 {
     CFMutableDictionaryRef info = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
@@ -419,15 +407,9 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
                 //CFShow(properties);
                 
                 
-                CFStringRef glBundle = CFDictionaryGetValue(properties, CFSTR("IOGLBundleName"));
                 CFStringRef version  = CFDictionaryGetValue(properties, CFSTR("IOSourceVersion"));
                 CFStringRef bundleID = CFDictionaryGetValue(properties, kIOBundleIdentifierKey);
                 
-                if (glBundle) {
-                    CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("accel%d_gl"), acceleratorIndex);
-                    setStringValue(info, key, glBundle);
-                    CFRelease(key);
-                }
                 if (version) {
                     CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("accel%d_ver"), acceleratorIndex);
                     setStringValue(info, key, version);
@@ -469,8 +451,7 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
                     CFRelease(device);
                 
                 // We can't get the device memory from IOKit since all IOKit knows are the PCI address ranges (in the IODeviceMemory key for the accelerator's IOPCIDevice owner).  This may be bigger than the actual amount of memory on the hardware (since one card may support different amounts of memory and its easiest for the PCI glue to report the max).
-                // Instead we'll get the info from the CGLRenderer API below (since we have no good way of associating IOKit devices with CGL renderers).
-                
+
                 acceleratorIndex++;
                 
             accelerator_object_error:
@@ -490,60 +471,6 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
         
         if (CGGetActiveDisplayList(4, displays, &displayCount) == CGDisplayNoErr) {
         
-            // CGL video memory size for all accelerated renders.  As noted above, we don't have a good way of associating this with the actual hardware above, but really what we mostly care about is the actual sizes across the cards, not which card has how much.
-            // The display mask given to CGLQueryRendererInfo means "make sure the renderer applies to ALL these displays".  We'll only worry about up to four displays.
-            {
-                CFMutableStringRef rendererMem = CFStringCreateMutable(kCFAllocatorDefault, 0);
-                
-                for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
-                    CGDirectDisplayID dispID = displays[displayIndex];
-                    GLuint displayMask = CGDisplayIDToOpenGLDisplayMask(dispID);
-                    
-                    CGLError err;
-                    CGLRendererInfoObj rendererInfo;
-                    GLint rendererIndex, rendererCount;
-                    
-                    // Don't bail on a kCGLBadDisplay here.  This can happen if you have a PCI video card plugged in but w/o a monitor attached.  We'll only look at a limited number of displays due to the enclosing 'for' loop anyway.
-                    
-                    err = CGLQueryRendererInfo(displayMask, &rendererInfo, &rendererCount);
-                    if (err == kCGLBadDisplay)
-                        continue;
-                    if (err) {
-                        fprintf(stderr, "CGLQueryRendererInfo -> %d %s\n", err, CGLErrorString(err));
-                    } else {
-                        for (rendererIndex = 0; rendererIndex < rendererCount; rendererIndex++) {
-                            GLint accelerated;
-                            
-                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPAccelerated, &accelerated);
-                            if (err) {
-                                fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPAccelerated) -> %d\n", (long)rendererIndex, err);
-                                continue;
-                            }
-                            if (!accelerated) {
-                                // Software renderer; skip
-                                continue;
-                            }
-                            
-                            GLint videoMemory;
-                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPVideoMemoryMegabytes, &videoMemory);
-                            if (err) {
-                                fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPVideoMemory) -> %d\n", (long)rendererIndex, err);
-                                continue;
-                            }
-                            
-                            if (CFStringGetLength(rendererMem))
-                                CFStringAppend(rendererMem, CFSTR(","));
-                            CFStringAppendFormat(rendererMem, NULL, CFSTR("%d"), videoMemory);
-                        }
-                        
-                        CGLDestroyRendererInfo(rendererInfo);
-                    }
-                }
-                
-                CFDictionarySetValue(info, CFSTR("accel_mem"), rendererMem);
-                CFRelease(rendererMem);
-            }
-            
             // Display mode for up to 4 displays
             for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
                 CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
@@ -601,70 +528,6 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
         // The display type/resolution and GPU info is implicit in the hardware model, at least for now.
 #endif
     }
-    
-    // OpenGL extensions for the main display adaptor.
-    {
-#if OSU_MAC
-	NSOpenGLPixelFormatAttribute attributes[] = {
-	    // NSOpenGLPFAFullScreen, // Deprecated since 10.6
-	    NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()),
-	    NSOpenGLPFAAccelerated,
-	    NSOpenGLPFANoRecovery,
-            kCGLPFASupportsAutomaticGraphicsSwitching, // Don't force use of the discrete GPU forever
-	    0
-	};
-	
-	NSString *vendor     = @"";
-	NSString *version    = @"";
-	NSString *renderer   = @"";
-	NSString *extensions = @"";
-	NSOpenGLPixelFormat *pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	if (!pixelFormat) {
-#ifdef DEBUG
-	    NSLog(@"Unable to create pixel format");
-#endif
-	} else {
-	    NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
-	    if (!context) {
-#ifdef DEBUG
-		NSLog(@"Unable to create gl context");
-#endif
-	    } else {
-		[context makeCurrentContext];
-		if ([NSOpenGLContext currentContext] != context) {
-#ifdef DEBUG
-		    NSLog(@"Unable to make gl context current");
-#endif
-		} else {
-		    const GLubyte *glStr;
-		    
-		    if ((glStr = glGetString(GL_VENDOR)))
-			vendor = [[NSString alloc] initWithUTF8String:(const char *)glStr];
-		    if ((glStr = glGetString(GL_VERSION)))
-			version = [[NSString alloc] initWithUTF8String:(const char *)glStr];
-		    if ((glStr = glGetString(GL_RENDERER)))
-			renderer = [[NSString alloc] initWithUTF8String:(const char *)glStr];
-		    if ((glStr = glGetString(GL_EXTENSIONS)))
-			extensions = [[NSString alloc] initWithUTF8String:(const char *)glStr];
-		    
-		    [NSOpenGLContext clearCurrentContext];
-		}
-	    }
-	}
-        
-	CFDictionarySetValue(info, CFSTR("gl_vendor0"), (CFStringRef)vendor);
-        
-	CFDictionarySetValue(info, CFSTR("gl_version0"), (CFStringRef)version);
-        
-	CFDictionarySetValue(info, CFSTR("gl_renderer0"), (CFStringRef)renderer);
-        
-	CFDictionarySetValue(info, CFSTR("gl_extensions0"), (CFStringRef)extensions);
-#endif // OSU_MAC
-        
-#if OSU_IPHONE
-        // The GL info is implicit in the hardware model, but it might be useful for us to collect that instead of having to have one of every device and manually collect it.
-#endif
-    }
 
     // More info on the general hardware from system_profiler
     {
@@ -695,152 +558,6 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
     }
     
     // Number of audio output channels on the default output device (i.e., are they supporting 5.1 audio)
-    
-    // OpenCL information
-#ifdef CL_VERSION_1_0
-    {
-        cl_uint platformCount = 0;
-        cl_platform_id *platforms = NULL;
-        cl_int clErr;
-        
-        clErr = clGetPlatformIDs(0, NULL, &platformCount);
-        if (clErr == CL_SUCCESS) {
-            platforms = calloc(platformCount, sizeof(*platforms));
-            clErr = clGetPlatformIDs(platformCount, platforms, &platformCount);
-        }
-        if (clErr == CL_SUCCESS) {
-            for (cl_uint platformIndex = 0; platformIndex < platformCount; platformIndex ++) {
-                NSString *platNameString = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_NAME);
-                NSString *platVersString = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_VERSION);
-                NSString *platInfo = [NSString stringWithFormat:@"%@ %@", platNameString, platVersString];
-                setStringValue(info, (__bridge CFStringRef)[NSString stringWithFormat:@"cl%u", platformIndex], (__bridge CFStringRef)platInfo);
-                
-                NSString *extensions = clGetPlatformInfoString(platforms[platformIndex], CL_PLATFORM_EXTENSIONS);
-                if (extensions && [extensions length])
-                    setStringValue(info, (__bridge CFStringRef)[NSString stringWithFormat:@"cl%u_ext", platformIndex], (__bridge CFStringRef)extensions);
-                
-                cl_uint deviceCount = 0;
-                cl_device_id *devices = NULL;
-                
-                clErr = clGetDeviceIDs(platforms[platformIndex], CL_DEVICE_TYPE_ALL, 0, NULL, &deviceCount);
-                if (clErr == CL_SUCCESS && deviceCount > 0) {
-                    devices = calloc(deviceCount, sizeof(*devices));
-                    clErr = clGetDeviceIDs(platforms[platformIndex], CL_DEVICE_TYPE_ALL, deviceCount, devices, &deviceCount);
-                }
-                if (clErr == CL_SUCCESS) {
-                    for(cl_uint deviceIndex = 0; deviceIndex < deviceCount; deviceIndex ++) {
-                        NSMutableString *devInfo = [NSMutableString string];
-                        cl_device_type devType = 0;
-                        cl_uint cores;
-                        cl_uint mhz;
-                        cl_ulong globalmem, localmem, maxalloc;
-                        
-                        if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_TYPE, sizeof(devType), &devType, NULL)) {
-                            if (devType & CL_DEVICE_TYPE_DEFAULT) [devInfo appendString:@"d"];
-                            if (devType & CL_DEVICE_TYPE_CPU) [devInfo appendString:@"c"];
-                            if (devType & CL_DEVICE_TYPE_GPU) [devInfo appendString:@"g"];
-                            if (devType & CL_DEVICE_TYPE_ACCELERATOR) [devInfo appendString:@"a"];
-                            if (devType & ~(CL_DEVICE_TYPE_DEFAULT|CL_DEVICE_TYPE_CPU|CL_DEVICE_TYPE_GPU|CL_DEVICE_TYPE_ACCELERATOR)) [devInfo appendString:@"?"];
-                        } else {
-                            [devInfo appendString:@"-"];
-                        }
-                        
-                        if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cores), &cores, NULL)) {
-                            [devInfo appendFormat:@" %u", (unsigned)cores];
-                        } else {
-                            [devInfo appendFormat:@" -"];
-                        }
-                        
-                        if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(mhz), &mhz, NULL)) {
-                            [devInfo appendFormat:@" %u", (unsigned)mhz];
-                        } else {
-                            [devInfo appendFormat:@" -"];
-                        }
-                        
-                        if (CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(localmem), &localmem, NULL) &&
-                            CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(globalmem), &globalmem, NULL) &&
-                            CL_SUCCESS == clGetDeviceInfo(devices[deviceIndex], CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(maxalloc), &maxalloc, NULL)) {
-                            [devInfo appendFormat:@" %lu/%lu/%lu ", (unsigned long)(globalmem/1024), (unsigned long)(localmem/1024), (unsigned long)(maxalloc/1024)];
-                        } else {
-                            [devInfo appendFormat:@" - "];
-                        }
-                        
-                        NSString *deviceExtensions = clGetDeviceInfoString(devices[deviceIndex], CL_DEVICE_EXTENSIONS);
-                        if (![NSString isEmptyString:deviceExtensions])
-                            [devInfo appendString:deviceExtensions];
-                        
-                        setStringValue(info,
-                                       (__bridge CFStringRef)[NSString stringWithFormat:@"cl%u.%u_dev", platformIndex, deviceIndex],
-                                       (__bridge CFStringRef)devInfo);
-                    }
-                }
-                
-                
-                if (devices)
-                    free(devices);
-            }
-        }
-        
-        if (platforms)
-            free(platforms);
-    }
-#endif /* CL_VERSION_1_0 */
-    
+
     return info;
 }
-
-#ifdef CL_VERSION_1_0
-
-#define MAX_CL_STRING_LEN 64*1024  /* Arbitrary limit; longer strings than this are assumed to be a bug somehow */
-
-static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info what)
-{
-    size_t param_value_size;
-    cl_int clErr;
-    
-    param_value_size = 0;
-    clErr = clGetPlatformInfo(plat, what, 0, NULL, &param_value_size);
-    if (clErr == CL_SUCCESS) {
-        if (param_value_size > MAX_CL_STRING_LEN)
-            return [NSString stringWithFormat:@"<%lu bytes>", (unsigned long)param_value_size];
-        char *buf = malloc(param_value_size);
-        size_t buf_used = 0;
-        clErr = clGetPlatformInfo(plat, what, param_value_size, buf, &buf_used);
-        if (clErr == CL_SUCCESS && buf_used <= param_value_size) {
-            if (buf_used > 0 && buf[buf_used - 1] == 0)
-                buf_used --;
-            NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];
-            return str;
-        }
-        free(buf);
-    }
-    
-    return [NSString stringWithFormat:@"<err %d>", (int)clErr];
-}
-
-static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what)
-{
-    size_t param_value_size;
-    cl_int clErr;
-    
-    param_value_size = 0;
-    clErr = clGetDeviceInfo(device, what, 0, NULL, &param_value_size);
-    if (clErr == CL_SUCCESS) {
-        if (param_value_size > MAX_CL_STRING_LEN)
-            return [NSString stringWithFormat:@"<%lu bytes>", (unsigned long)param_value_size];
-        char *buf = malloc(param_value_size);
-        size_t buf_used = 0;
-        clErr = clGetDeviceInfo(device, what, param_value_size, buf, &buf_used);
-        if (clErr == CL_SUCCESS && buf_used < param_value_size) {
-            if (buf_used > 0 && buf[buf_used] == 0)
-                buf_used --;
-            NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];
-            return str;
-        }
-        free(buf);
-    }
-    
-    return [NSString stringWithFormat:@"<err %d>", (int)clErr];
-}
-
-#endif /* CL_VERSION_1_0 */

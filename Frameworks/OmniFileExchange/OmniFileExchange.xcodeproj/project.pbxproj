@@ -1406,11 +1406,20 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					343682781B58284500BC25E6 = {
 						CreatedOnToolsVersion = 7.0;
+					};
+					34824AF81742E55600253D52 = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					34AFACE1164B0E70009E39AB = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+					34AFADA7164B1401009E39AB = {
+						DevelopmentTeam = 34YW5XSRB7;
 					};
 				};
 			};

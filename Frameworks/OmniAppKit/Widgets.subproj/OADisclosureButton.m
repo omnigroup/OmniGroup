@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,8 +49,8 @@ RCS_ID("$Id$");
 #endif
 
     [self setImagePosition:NSImageOnly];
-    [self setBezelStyle:NSShadowlessSquareBezelStyle];
-    [self setButtonType:NSMomentaryPushInButton];
+    [self setBezelStyle:NSBezelStyleShadowlessSquare];
+    [self setButtonType:NSButtonTypeMomentaryPushIn];
     [self setBordered:NO];
 
     [[self cell] setImageDimsWhenDisabled:NO];

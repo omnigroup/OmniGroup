@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -599,9 +599,9 @@ static void _writeString(NSString *str)
     return NO;
 }
 
-- (void)renderInContextIgnoringCache:(CGContextRef)ctx;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx;
 {
-    [self renderInContextIgnoringCache:ctx useAnimatedValues:YES];
+    [self renderRect:rect inContextIgnoringCache:ctx useAnimatedValues:YES];
 }
 
 #if 0 && defined(DEBUG)
@@ -612,16 +612,22 @@ static void _writeString(NSString *str)
 #define DEBUG_RENDER_ON 0
 #endif
 // Assumes the caller has set up our transform as it wants.
-- (void)renderInContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
 {
     if (self.hidden)
         return;
-    [self renderInContextIgnoringHiddenIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
+    [self renderRect:rect inContextIgnoringHiddenIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
 }
 
-- (void)renderInContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
 {
-    [self layoutIfNeeded];
+    id delegate = self.delegate;
+    if (delegate && [delegate respondsToSelector:@selector(layoutLayer:inRect:)]) {
+        DEBUG_RENDER(@"  force layout %@ in rect %@ if needed via delegate %@", [self shortDescription], NSStringFromRect(rect), [delegate shortDescription]);
+        [delegate layoutLayer:self inRect:rect];
+    } else {
+        [self layoutIfNeeded];
+    }
     
 #define GET_VALUE(x) (useAnimatedValues ? OQCurrentAnimationValue(x) : self.x)
     
@@ -722,7 +728,6 @@ static void _writeString(NSString *str)
         }
         
         // We require that the delegate implement the CGContextRef path, not just -displayLayer:.
-        id delegate = self.delegate;
         BOOL didVectorDrawing = NO;
         if (delegate && [delegate respondsToSelector:@selector(drawLayer:inVectorContext:)]) {
             DEBUG_RENDER(@"  rendering %@ via vector delegate %@", [self shortDescription], [delegate shortDescription]);
@@ -816,7 +821,8 @@ static void _writeString(NSString *str)
                 
                 CGContextTranslateCTM(ctx, -(subBounds.origin.x + subAnchorPoint.x * subBounds.size.width), -(subBounds.origin.y + subAnchorPoint.y * subBounds.size.height));
                 
-                [sublayer renderInContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues]; // Will push/pop its own gsave
+                CGRect sublayerRect = [self convertRect:rect toLayer:sublayer];
+                [sublayer renderRect:sublayerRect inContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues]; // Will push/pop its own gsave
                 CGContextRestoreGState(ctx);
             }
         }
@@ -835,11 +841,11 @@ static void _writeString(NSString *str)
     NSImage *image = [[[NSImage alloc] initWithSize:rect.size] autorelease];
     [image lockFocus];
     {
-        CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
+        CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
         CGContextSaveGState(ctx);
         {
             CGContextTranslateCTM(ctx, -rect.origin.x, -rect.origin.y);
-            [self renderInContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
+            [self renderRect:rect inContextIgnoringCache:ctx useAnimatedValues:useAnimatedValues];
         }
         CGContextRestoreGState(ctx);
     }

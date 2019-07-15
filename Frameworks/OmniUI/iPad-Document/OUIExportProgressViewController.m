@@ -35,7 +35,7 @@ RCS_ID("$Id$")
     view.backgroundColor = backgroundColor;
     self.view = view;
 
-    _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
 
     [view addSubview:_activityIndicator];
     [_activityIndicator startAnimating];

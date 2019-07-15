@@ -380,15 +380,13 @@ static NSDictionary *titleFontAttributes;
 
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 {
-    CGContextRef context;
-
     /*
      There are two reasons for this method.
      One, to invert the Y-axis so we can draw the image flipped.
      Two, to deal with the crackheaded behavior of NSCachedImageRep (RADAR #4985046) where it snaps its drawing bounds to integer coordinates *in the current user space*. This means that if your coordinate system is scaled from the default you get screwy results (OBS #35894).
      */
         
-    context = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef context = [[NSGraphicsContext currentContext] CGContext];
     CGContextSaveGState(context); {
         CGContextTranslateCTM(context, NSMinX(rect), NSMaxY(rect));
         if (sourceRect.size.width == 0 && sourceRect.size.height == 0)
@@ -434,48 +432,6 @@ static NSDictionary *titleFontAttributes;
     [self drawFlippedInRect:rect operation:op fraction:1.0f];
 }
 
-- (int)addDataToPasteboard:(NSPasteboard *)aPasteboard exceptTypes:(NSMutableSet *)notThese
-{
-    int count = 0;
-
-    if (!notThese)
-        notThese = [NSMutableSet set];
-
-#define IF_ADD(typename, dataOwner) if( ![notThese containsObject:(typename)] && [aPasteboard addTypes:[NSArray arrayWithObject:(typename)] owner:(dataOwner)] > 0 )
-
-#define ADD_CHEAP_DATA(typename, expr) IF_ADD(typename, nil) { [aPasteboard setData:(expr) forType:(typename)]; [notThese addObject:(typename)]; count ++; }
-        
-    /* If we have image representations lying around that already have data in some concrete format, add that data to the pasteboard. */
-    for (NSImageRep *rep in self.representations) {
-        if ([rep respondsToSelector:@selector(PDFRepresentation)]) {
-            NSData *pdfRepresentation = [(NSPDFImageRep *)rep PDFRepresentation];
-            ADD_CHEAP_DATA(NSPasteboardTypePDF, pdfRepresentation);
-            ADD_CHEAP_DATA(NSPDFPboardType, pdfRepresentation); // As of 10.9 DP3, Mail and Preview and -[NSImage initWithPasteboard:] still don't accept NSPasteboardTypePDF ("com.adobe.pdf") but do accept NSPDFPboardType ("Apple PDF pasteboard type")
-        }
-    }
-    
-    /* Always offer to convert to PNG and TIFF. Do this lazily, though, since we probably have to extract it from a bitmap image rep. */
-    IF_ADD(NSPasteboardTypePNG, self) {
-        count ++;
-    }
-
-    IF_ADD(NSPasteboardTypeTIFF, self) {
-        count ++;
-    }
-
-    return count;
-}
-
-- (void)pasteboard:(NSPasteboard *)aPasteboard provideDataForType:(NSString *)wanted
-{
-    if (OFTypeConformsTo(wanted, NSPasteboardTypePNG))
-        [aPasteboard setData:[self pngData] forType:wanted];
-    else if (OFTypeConformsTo(wanted, NSPasteboardTypeTIFF))
-        [aPasteboard setData:[self TIFFRepresentation] forType:wanted];
-}
-
-//
-
 - (NSImageRep *)imageRepOfClass:(Class)imageRepClass;
 {
     for (NSImageRep *rep in [self representations])
@@ -506,169 +462,28 @@ static NSDictionary *titleFontAttributes;
     return scaledImage;
 }
 
-- (NSData *)bmpData;
-{
-    return [self bmpDataWithBackgroundColor:nil];
-}
-
-- (NSData *)bmpDataWithBackgroundColor:(NSColor *)backgroundColor;
-{
-    /* 	This is a Unix port of the bitmap.c code that writes .bmp files to disk.
-    It also runs on Win32, and should be easy to get to run on other platforms.
-    Please visit my web page, http://www.ece.gatech.edu/~slabaugh and click on "c" and "Writing Windows Bitmaps" for a further explanation.  This code has been tested and works on HP-UX 11.00 using the cc compiler.  To compile, just type "cc -Ae bitmapUnix.c" at the command prompt.
-
-    The Windows .bmp format is little endian, so if you're running this code on a big endian system it will be necessary to swap bytes to write out a little endian file.
-
-    Thanks to Robin Pitrat for testing on the Linux platform.
-
-    Greg Slabaugh, 11/05/01
-    */
-
-
-    // This pragma is necessary so that the data in the structures is aligned to 2-byte boundaries.  Some different compilers have a different syntax for this line.  For example, if you're using cc on Solaris, the line should be #pragma pack(2).
-#pragma pack(2)
-
-    // Default data types.  Here, uint16 is an unsigned integer that has size 2 bytes (16 bits), and uint32 is datatype that has size 4 bytes (32 bits).  You may need to change these depending on your compiler.
-#define uint16 unsigned short
-#define uint32 unsigned int
-
-#define BI_RGB 0
-#define BM 19778
-
-    typedef struct {
-        uint16 bfType;
-        uint32 bfSize;
-        uint16 bfReserved1;
-        uint16 bfReserved2;
-        uint32 bfOffBits;
-    } BITMAPFILEHEADER;
-
-    typedef struct {
-        uint32 biSize;
-        uint32 biWidth;
-        uint32 biHeight;
-        uint16 biPlanes;
-        uint16 biBitCount;
-        uint32 biCompression;
-        uint32 biSizeImage;
-        uint32 biXPelsPerMeter;
-        uint32 biYPelsPerMeter;
-        uint32 biClrUsed;
-        uint32 biClrImportant;
-    } BITMAPINFOHEADER;
-
-    NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
-    if (bitmapImageRep == nil || backgroundColor != nil) {
-        NSRect imageBounds = {NSZeroPoint, [self size]};
-        NSImage *newImage = [[NSImage alloc] initWithSize:imageBounds.size];
-        [newImage lockFocus]; {
-            [backgroundColor ? backgroundColor : [NSColor clearColor] set];
-            NSRectFill(imageBounds);
-            [self drawInRect:imageBounds fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f];
-            bitmapImageRep = [[NSBitmapImageRep alloc] initWithFocusedViewRect:imageBounds];
-        } [newImage unlockFocus];
-    }
-
-    // Can't export huge images; these are NSInteger
-    OBASSERT([bitmapImageRep pixelsWide] < INT32_MAX);
-    OBASSERT([bitmapImageRep pixelsHigh] < INT32_MAX);
-    
-    uint32 width = (uint32)[bitmapImageRep pixelsWide];
-    uint32 height = (uint32)[bitmapImageRep pixelsHigh];
-    unsigned char *image = [bitmapImageRep bitmapData];
-    uint32 samplesPerPixel = (uint32)[bitmapImageRep samplesPerPixel];
-
-    /*
-     This function writes out a 24-bit Windows bitmap file that is readable by Microsoft Paint.
-     The image data is a 1D array of (r, g, b) triples, where individual (r, g, b) values can
-     each take on values between 0 and 255, inclusive.
-
-     The input to the function is:
-     uint32 width:					The width, in pixels, of the bitmap
-     uint32 height:					The height, in pixels, of the bitmap
-     unsigned char *image:				The image data, where each pixel is 3 unsigned chars (r, g, b)
-
-     Written by Greg Slabaugh (slabaugh@ece.gatech.edu), 10/19/00
-     */
-    uint32 extrabytes = (4 - (width * 3) % 4) % 4;
-
-    /* This is the size of the padded bitmap */
-    uint32 bytesize = (width * 3 + extrabytes) * height;
-
-    NSMutableData *mutableBMPData = [NSMutableData data];
-
-    /* Fill the bitmap file header structure */
-    BITMAPFILEHEADER bmpFileHeader;
-    bmpFileHeader.bfType = NSSwapHostShortToLittle(BM);   /* Bitmap header */
-    bmpFileHeader.bfSize = NSSwapHostIntToLittle(0);      /* This can be 0 for BI_RGB bitmaps */
-    bmpFileHeader.bfReserved1 = NSSwapHostShortToLittle(0);
-    bmpFileHeader.bfReserved2 = NSSwapHostShortToLittle(0);
-    bmpFileHeader.bfOffBits = NSSwapHostIntToLittle(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER));
-    [mutableBMPData appendBytes:&bmpFileHeader length:sizeof(BITMAPFILEHEADER)];
-
-    /* Fill the bitmap info structure */
-    BITMAPINFOHEADER bmpInfoHeader;
-    bmpInfoHeader.biSize = NSSwapHostIntToLittle(sizeof(BITMAPINFOHEADER));
-    bmpInfoHeader.biWidth = NSSwapHostIntToLittle(width);
-    bmpInfoHeader.biHeight = NSSwapHostIntToLittle(height);
-    bmpInfoHeader.biPlanes = NSSwapHostShortToLittle(1);
-    bmpInfoHeader.biBitCount = NSSwapHostShortToLittle(24);            /* 24 - bit bitmap */
-    bmpInfoHeader.biCompression = NSSwapHostIntToLittle(BI_RGB);
-    bmpInfoHeader.biSizeImage = NSSwapHostIntToLittle(bytesize);     /* includes padding for 4 byte alignment */
-    bmpInfoHeader.biXPelsPerMeter = NSSwapHostIntToLittle(0);
-    bmpInfoHeader.biYPelsPerMeter = NSSwapHostIntToLittle(0);
-    bmpInfoHeader.biClrUsed = NSSwapHostIntToLittle(0);
-    bmpInfoHeader.biClrImportant = NSSwapHostIntToLittle(0);
-    [mutableBMPData appendBytes:&bmpInfoHeader length:sizeof(BITMAPINFOHEADER)];
-
-    /* Allocate memory for some temporary storage */
-    unsigned char *paddedImage = (unsigned char *)calloc(sizeof(unsigned char), bytesize);
-
-    // This code does three things.  First, it flips the image data upside down, as the .bmp format requires an upside down image.  Second, it pads the image data with extrabytes number of bytes so that the width in bytes of the image data that is written to the file is a multiple of 4.  Finally, it swaps (r, g, b) for (b, g, r).  This is another quirk of the .bmp file format.
-
-    uint32 row, column;
-    for (row = 0; row < height; row++) {
-        unsigned char *imagePtr = image + (height - 1 - row) * width * samplesPerPixel;
-        unsigned char *paddedImagePtr = paddedImage + row * (width * 3 + extrabytes);
-        for (column = 0; column < width; column++) {
-            *paddedImagePtr = *(imagePtr + 2);
-            *(paddedImagePtr + 1) = *(imagePtr + 1);
-            *(paddedImagePtr + 2) = *imagePtr;
-            imagePtr += samplesPerPixel;
-            paddedImagePtr += 3;
-        }
-    }
-
-    /* Write bmp data */
-    [mutableBMPData appendBytes:paddedImage length:bytesize];
-
-    free(paddedImage);
-
-    return mutableBMPData;
-}
-
-- (NSData *)pngData;
+static NSData *_imageDataWithFileType(NSImage *self, NSBitmapImageFileType imageType, CFStringRef imageFileType)
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
     if (bitmapImageRep != nil) {
-        NSData *pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:@{}];
-        if (pngData != nil) // On Yosemite, this can fail with "ImageIO: PNG gamma value does not match sRGB"
-            return pngData;
+        NSData *data = [bitmapImageRep representationUsingType:imageType properties:@{}];
+        if (data != nil) // On Yosemite, this can fail with "ImageIO: PNG gamma value does not match sRGB"
+            return data;
     }
 
     // This will log CG errors if there is just a "NSCGImageSnapshotRep", which is what you get if you've drawn into an image via -lockFocus.
 #if 0
     // Not sure what this does with there are multiples.  Does it write multi-resolution TIFF? What does it do for PNG?
-    NSData *result = [NSBitmapImageRep representationOfImageRepsInArray:[self representations] usingType:NSPNGFileType properties:nil];
+    NSData *result = [NSBitmapImageRep representationOfImageRepsInArray:[self representations] usingType:imageType properties:nil];
     if (result)
         return result;
 #endif
-    
+
     CGImageRef imageRef = [self CGImageForProposedRect:NULL context:nil hints:nil];
     if (imageRef) {
         do {
             NSMutableData *data = [NSMutableData data];
-            CGImageDestinationRef destination = CGImageDestinationCreateWithData((OB_BRIDGE CFMutableDataRef)data, kUTTypePNG, 1, NULL);
+            CGImageDestinationRef destination = CGImageDestinationCreateWithData((OB_BRIDGE CFMutableDataRef)data, imageFileType, 1, NULL);
             if (!destination) {
                 OBASSERT(destination);
                 break;
@@ -679,13 +494,41 @@ static NSDictionary *titleFontAttributes;
                 OBASSERT_NOT_REACHED("Failed to archive image");
                 break;
             }
-            
+
             CFRelease(destination);
             return data;
         } while (0);
     }
-    
+
     return nil;
+}
+- (NSData *)bmpData;
+{
+    return [self bmpDataWithBackgroundColor:nil];
+}
+
+- (NSData *)bmpDataWithBackgroundColor:(NSColor *)backgroundColor;
+{
+    NSImage *image;
+    if (backgroundColor != nil) {
+        image = [NSImage imageWithSize:self.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+            [backgroundColor set];
+            NSRectFill(dstRect);
+
+            [self drawInRect:dstRect fromRect:NSZeroRect operation:NSCompositingOperationSourceOver fraction:1.0f];
+            return YES;
+        }];
+    } else {
+        image = self;
+    }
+
+    return _imageDataWithFileType(image, NSBitmapImageFileTypeBMP, kUTTypeBMP);
+}
+
+
+- (NSData *)pngData;
+{
+    return _imageDataWithFileType(self, NSBitmapImageFileTypePNG, kUTTypePNG);
 }
 
 + (NSImage *)documentIconWithContent:(NSImage *)contentImage;

@@ -1,4 +1,4 @@
-// Copyright 2000-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -144,7 +144,11 @@ static NSColorSpace *_defaultGrayColorSpace(void)
         if ([data isKindOfClass:[NSData class]] && [data length] > 0) {
             NSColor *unarchived = nil;
             @try {
-                unarchived = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+                __autoreleasing NSError *error = nil;
+                unarchived = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSColor class] fromData:data error:&error];
+                if (!unarchived) {
+                    [error log:@"Error unarchiving color"];
+                }
             } @catch (NSException *exc) {
                 // possible that a subclass of NSColor has produced this archive and is not present
                 NSLog(@"Exception unarchiving NSColor: %@", exc);
@@ -183,7 +187,7 @@ static NSColorSpace *_defaultGrayColorSpace(void)
         BOOL isDefault = colorSpace == nil;
         if (isDefault)
             colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericGrayColorSpace] : _defaultGrayColorSpace();
-        else if (colorSpace.colorSpaceModel != NSGrayColorSpaceModel)
+        else if (colorSpace.colorSpaceModel != NSColorSpaceModelGray)
             colorSpace = _defaultGrayColorSpace();
 
         NSColor *archivedColor = [NSColor colorWithColorSpace:colorSpace components:components count:2];
@@ -223,7 +227,7 @@ static NSColorSpace *_defaultGrayColorSpace(void)
         BOOL isDefault = colorSpace == nil;
         if (isDefault)
             colorSpace = shouldDefaultToGenericSpace ? [NSColorSpace genericRGBColorSpace] : [NSColorSpace extendedSRGBColorSpace];
-        else if (colorSpace.colorSpaceModel != NSRGBColorSpaceModel)
+        else if (colorSpace.colorSpaceModel != NSColorSpaceModelRGB)
             colorSpace = [NSColorSpace extendedSRGBColorSpace];
 
         // Using sSRGB here results in corruption if we are reading a 'generic' blue (0 0 1), since sRGB can't represent this color in the 0..1 range for the components. If we use extended sRGB, we get (0.0168042 0.198351 1.00141), but sRGB clamps the blue to 1.0. Then, if we save the color back out as 'generic' (for older file formats that expect it), we get (0.000110865 0.00176024 0.998218). If we use extended sRGB, our round-tripped color has components (2.16067e-07 0 1), which is close enough.
@@ -256,7 +260,7 @@ static NSColorSpace *_defaultGrayColorSpace(void)
     if (CMYK) {
         CGFloat components[5] = {v0, v1, v2, v3, alpha};
         // No global name for the generic CMYK color space
-        if (!colorSpace || [colorSpace colorSpaceModel] != NSCMYKColorSpaceModel)
+        if (!colorSpace || [colorSpace colorSpaceModel] != NSColorSpaceModelCMYK)
             return [NSColor colorWithColorSpace:[NSColorSpace genericCMYKColorSpace] components:components count:5];
         return [NSColor colorWithColorSpace:colorSpace components:components count:5];
     }
@@ -359,12 +363,13 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
 {
     BOOL hasAlpha = NO;
     
-    NSString *colorSpaceName = [self colorSpaceName];
+    NSColorType colorType = self.type;
     NSColorSpace *colorSpace = nil;
     BOOL archiveConvertedColor = NO;
-    
-    if (OFNOTEQUAL(colorSpaceName, NSPatternColorSpace) && OFNOTEQUAL(colorSpaceName, NSNamedColorSpace)) // This will raise if it is a pattern or catalog
-        colorSpace = [self colorSpace];
+
+    if (colorType == NSColorTypeComponentBased) {
+        colorSpace = [self colorSpace]; // This will raise if it is a pattern or catalog
+    }
 
     if (colorSpace) {
         // NOTE: we used to convert device colors to generic colors, but now that the user can explicitly pick color spaces in the color picker we preserve them
@@ -379,15 +384,15 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         }
 
         NSColorSpaceModel colorSpaceModel = [colorSpace colorSpaceModel];
-        if (colorSpaceModel == NSGrayColorSpaceModel) {
+        if (colorSpaceModel == NSColorSpaceModelGray) {
             adders.component(container, @"w", [self whiteComponent]);
             hasAlpha = YES;
-        } else if (colorSpaceModel == NSRGBColorSpaceModel) {
+        } else if (colorSpaceModel == NSColorSpaceModelRGB) {
             adders.component(container, @"r", [self redComponent]);
             adders.component(container, @"g", [self greenComponent]);
             adders.component(container, @"b", [self blueComponent]);
             hasAlpha = YES;
-        } else if (colorSpaceModel == NSCMYKColorSpaceModel) {
+        } else if (colorSpaceModel == NSColorSpaceModelCMYK) {
             CGFloat components[5]; // Assuming that it'll write out alpha too.
             [self getComponents:components];
             
@@ -404,14 +409,18 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         }
         
         if (archiveCustomSpace) {
-            NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
-            if (archive != nil && [archive length] > 0)
+            __autoreleasing NSError *error;
+            NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:YES error:&error];
+            if (!archive) {
+                [error log:@"Error archiving color"];
+            } else {
                 adders.data(container, @"archive", archive);
+            }
         }
-    } else if ([colorSpaceName isEqualToString:NSNamedColorSpace]) {
+    } else if (colorType == NSColorTypeCatalog) {
         adders.string(container, @"catalog", [self catalogNameComponent]);
         adders.string(container, @"name", [self colorNameComponent]);
-    } else if ([colorSpaceName isEqualToString:NSPatternColorSpace]) {
+    } else if (colorType == NSColorTypePattern) {
         adders.data(container, @"tiff", [[self patternImage] TIFFRepresentation]);
     } else {
         // No colorspace, not a pattern or named color.
@@ -481,89 +490,38 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     if (self == color)
         return YES;
 
-    if (@available(macOS 10.13, *)) {
-        NSColor *selfAsComponentBased = [self colorUsingType:NSColorTypeComponentBased];
-        NSColor *colorAsComponentBased = [color colorUsingType:NSColorTypeComponentBased];
+    NSColor *selfAsComponentBased = [self colorUsingType:NSColorTypeComponentBased];
+    NSColor *colorAsComponentBased = [color colorUsingType:NSColorTypeComponentBased];
 
-        if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
-            // perhaps we can convert colorspaces between colors & have the same color, but only if both colors actually convert to colors that HAVE colorspaces.
-            if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
-                colorAsComponentBased = [colorAsComponentBased colorUsingColorSpace:selfAsComponentBased.colorSpace];
-                if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
-                    return NO;
-                }
-            } else {
+    if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
+        // perhaps we can convert colorspaces between colors & have the same color, but only if both colors actually convert to colors that HAVE colorspaces.
+        if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
+            colorAsComponentBased = [colorAsComponentBased colorUsingColorSpace:selfAsComponentBased.colorSpace];
+            if (selfAsComponentBased.colorSpace != colorAsComponentBased.colorSpace) {
                 return NO;
             }
-        }
-
-        if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
-            switch (selfAsComponentBased.colorSpace.colorSpaceModel) {
-                case NSColorSpaceModelRGB:
-                    return (fabs([selfAsComponentBased redComponent]-[colorAsComponentBased redComponent]) < 0.001) && (fabs([selfAsComponentBased greenComponent]-[colorAsComponentBased greenComponent]) < 0.001) && (fabs([selfAsComponentBased blueComponent]-[colorAsComponentBased blueComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
-                case NSColorSpaceModelGray:
-                    return (fabs([selfAsComponentBased whiteComponent]-[colorAsComponentBased whiteComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
-                case NSColorSpaceModelCMYK:
-                    return (fabs([selfAsComponentBased cyanComponent]-[colorAsComponentBased cyanComponent]) < 0.001) && (fabs([selfAsComponentBased magentaComponent]-[colorAsComponentBased magentaComponent]) < 0.001) && (fabs([selfAsComponentBased yellowComponent]-[colorAsComponentBased yellowComponent]) < 0.001) && (fabs([selfAsComponentBased blackComponent]-[colorAsComponentBased blackComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
-                default:
-                    return [color isEqual:self];
-            }
-        }
-
-         if (self.type == NSColorTypePattern && color.type == NSColorTypePattern) {
-            return [[[self patternImage] TIFFRepresentation] isEqualToData:[[color patternImage] TIFFRepresentation]];
-         } else if (self.type == NSColorTypeCatalog && color.type == NSColorTypeCatalog) {
-             return [[self catalogNameComponent] isEqualToString:[color catalogNameComponent]] && [[self colorNameComponent] isEqualToString:[color colorNameComponent]];
-         }
-    } else { // 10.12 and below from here down.
-        // from the NSColor header documentation: "NSCustomColorSpace corresponds to NSColorTypeComponentBased" since type isn't valid on 10.12 or before. We should not ask for colorspaces on colors that aren't component based.
-        NSString *colorSpaceName = [self colorSpaceName];
-
-        if ([colorSpaceName isEqualToString:NSCustomColorSpace] && [colorSpaceName isEqualToString:color.colorSpaceName] && self.colorSpace.colorSpaceModel != color.colorSpace.colorSpaceModel) {
+        } else {
             return NO;
         }
+    }
 
-        if ([colorSpaceName isEqualToString:NSCustomColorSpace] && [color.colorSpaceName isEqualToString:NSCustomColorSpace]) {
-            NSColorSpace *colorSpace = self.colorSpace;
-            NSColorSpace *otherColorSpace = color.colorSpace;
-            if (!OFISEQUAL(colorSpace, otherColorSpace)) {
-                if (self.colorSpace.colorSpaceModel != color.colorSpace.colorSpaceModel) {
-                    return NO;
-                }
-            }
-
-            switch (colorSpace.colorSpaceModel) {
-                case NSColorSpaceModelRGB:
-                    return (fabs([self redComponent]-[color redComponent]) < 0.001) && (fabs([self greenComponent]-[color greenComponent]) < 0.001) && (fabs([self blueComponent]-[color blueComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
-                case NSColorSpaceModelGray:
-                    return (fabs([self whiteComponent]-[color whiteComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
-                case NSColorSpaceModelCMYK:
-                    return (fabs([self cyanComponent]-[color cyanComponent]) < 0.001) && (fabs([self magentaComponent]-[color magentaComponent]) < 0.001) && (fabs([self yellowComponent]-[color yellowComponent]) < 0.001) && (fabs([self blackComponent]-[color blackComponent]) < 0.001) && (fabs([self alphaComponent]-[color alphaComponent]) < 0.001);
-                default:
-                    return [color isEqual:self];
-            }
+    if (selfAsComponentBased != nil && colorAsComponentBased != nil) {
+        switch (selfAsComponentBased.colorSpace.colorSpaceModel) {
+            case NSColorSpaceModelRGB:
+                return (fabs([selfAsComponentBased redComponent]-[colorAsComponentBased redComponent]) < 0.001) && (fabs([selfAsComponentBased greenComponent]-[colorAsComponentBased greenComponent]) < 0.001) && (fabs([selfAsComponentBased blueComponent]-[colorAsComponentBased blueComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
+            case NSColorSpaceModelGray:
+                return (fabs([selfAsComponentBased whiteComponent]-[colorAsComponentBased whiteComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
+            case NSColorSpaceModelCMYK:
+                return (fabs([selfAsComponentBased cyanComponent]-[colorAsComponentBased cyanComponent]) < 0.001) && (fabs([selfAsComponentBased magentaComponent]-[colorAsComponentBased magentaComponent]) < 0.001) && (fabs([selfAsComponentBased yellowComponent]-[colorAsComponentBased yellowComponent]) < 0.001) && (fabs([selfAsComponentBased blackComponent]-[colorAsComponentBased blackComponent]) < 0.001) && (fabs([selfAsComponentBased alphaComponent]-[colorAsComponentBased alphaComponent]) < 0.001);
+            default:
+                return [color isEqual:self];
         }
+    }
 
-        NSColor *convertedColor = [color colorUsingColorSpaceName:colorSpaceName];
-        if (!convertedColor) {
-            return NO;
-        }
-
-        if ([colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] || [colorSpaceName isEqualToString:NSDeviceWhiteColorSpace]) {
-            return (fabs([self whiteComponent]-[convertedColor whiteComponent]) < 0.001) && (fabs([self alphaComponent]-[convertedColor alphaComponent]) < 0.001);
-
-        } else if ([colorSpaceName isEqualToString:NSCalibratedRGBColorSpace] || [colorSpaceName isEqualToString:NSDeviceRGBColorSpace]) {
-            return (fabs([self redComponent]-[convertedColor redComponent]) < 0.001) && (fabs([self greenComponent]-[convertedColor greenComponent]) < 0.001) && (fabs([self blueComponent]-[convertedColor blueComponent]) < 0.001) && (fabs([self alphaComponent]-[convertedColor alphaComponent]) < 0.001);
-
-        } else if ([colorSpaceName isEqualToString:NSNamedColorSpace]) {
-            return [[self catalogNameComponent] isEqualToString:[convertedColor catalogNameComponent]] && [[self colorNameComponent] isEqualToString:[convertedColor colorNameComponent]];
-
-        } else if ([colorSpaceName isEqualToString:NSDeviceCMYKColorSpace]) {
-            return (fabs([self cyanComponent]-[convertedColor cyanComponent]) < 0.001) && (fabs([self magentaComponent]-[convertedColor magentaComponent]) < 0.001) && (fabs([self yellowComponent]-[convertedColor yellowComponent]) < 0.001) && (fabs([self blackComponent]-[convertedColor blackComponent]) < 0.001) && (fabs([self alphaComponent]-[convertedColor alphaComponent]) < 0.001);
-
-        } else if ([colorSpaceName isEqualToString:NSPatternColorSpace]) {
-            return [[[self patternImage] TIFFRepresentation] isEqualToData:[[convertedColor patternImage] TIFFRepresentation]];
-        }
+    if (self.type == NSColorTypePattern && color.type == NSColorTypePattern) {
+        return [[[self patternImage] TIFFRepresentation] isEqualToData:[[color patternImage] TIFFRepresentation]];
+    } else if (self.type == NSColorTypeCatalog && color.type == NSColorTypeCatalog) {
+        return [[self catalogNameComponent] isEqualToString:[color catalogNameComponent]] && [[self colorNameComponent] isEqualToString:[color colorNameComponent]];
     }
 
     if ([color isEqual:self])  // works for CMYK colors, which have a NSCustomColorSpace
@@ -572,45 +530,11 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     return NO;
 }
 
-- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
-{
-    NSImage *patternImage = [self patternImage];  
-    if (!patternImage)
-        return NO;
-    
-    [patternImage lockFocus];
-    NSBitmapImageRep *firstPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
-    [patternImage unlockFocus];
-    
-    patternImage = [color patternImage];
-    if (!patternImage)
-        return NO;
-    
-    [patternImage lockFocus];
-    NSBitmapImageRep *secondPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
-    [patternImage unlockFocus];
-    
-    if ([firstPatternBitmapImageRep pixelsWide] != [secondPatternBitmapImageRep pixelsWide] || [firstPatternBitmapImageRep pixelsHigh] != [secondPatternBitmapImageRep pixelsHigh])
-        return NO;
-    
-    for (NSInteger widthIndex = 0; widthIndex < [firstPatternBitmapImageRep pixelsWide]; widthIndex++) {
-        for (NSInteger heightIndex = 0; heightIndex < [firstPatternBitmapImageRep pixelsHigh]; heightIndex++) {
-            NSColor *firstPatternColor = [firstPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
-            NSColor *secondPatternColor = [secondPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
-            
-            if (![firstPatternColor isSimilarToColor:secondPatternColor])
-                return NO;
-        }
-    }  
-    
-    return YES;
-}
-
 - (NSData *)patternImagePNGData;
 {
-    NSString *colorSpace = [self colorSpaceName];
-    if (!([colorSpace isEqualToString:NSPatternColorSpace]))
+    if (self.type != NSColorTypePattern) {
         return nil;
+    }
 
     return [[self patternImage] pngData];
 }
@@ -712,22 +636,16 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
         
 - (NSString *)similarColorNameFromColorLists;
 {
-    if ([[self colorSpaceName] isEqualToString:NSNamedColorSpace]) {
-        return [self localizedColorNameComponent];
-    } else if ([[self colorSpaceName] isEqualToString:NSPatternColorSpace]) {
-        return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
+    switch (self.type) {
+        case NSColorTypeCatalog:
+            return [self localizedColorNameComponent];
+        case NSColorTypePattern:
+            return NSLocalizedStringFromTableInBundle(@"Image", @"OmniAppKit", OMNI_BUNDLE, "generic color name for pattern colors");
+        case NSColorTypeComponentBased:
+            break;
     }
 
     NSColorSpace *sRGBColorSpace = [NSColorSpace extendedSRGBColorSpace];
-    if ([[self colorSpaceName] isEqualToString:NSCustomColorSpace]) {
-        NSColorSpace *myColorSpace = self.colorSpace;
-        if (OFNOTEQUAL(myColorSpace, sRGBColorSpace)) {
-            BOOL colorSpaceIsSafeSubset = OFISEQUAL(myColorSpace, [NSColorSpace sRGBColorSpace]) && OFISEQUAL(sRGBColorSpace, [NSColorSpace extendedSRGBColorSpace]);
-            if (!colorSpaceIsSafeSubset) {
-                return NSLocalizedStringFromTableInBundle(@"Custom", @"OmniAppKit", OMNI_BUNDLE, "generic color name for custom colors");
-            }
-        }
-    }
 
     NSUInteger entryCount;
     const OANamedColorEntry *entries = _combinedColorEntries(&entryCount);

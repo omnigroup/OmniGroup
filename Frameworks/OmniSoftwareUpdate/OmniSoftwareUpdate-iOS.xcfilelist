@@ -1,7 +1,6 @@
 $(SRCROOT)/OmniSoftwareUpdate.xcodeproj/project.pbxproj
 OSUCheckOperation.m
 OSUCheckService/OSUHardwareInfo.m
-OSUCheckService/OSUOpenGLExtensions.m
 OSUCheckService/OSURunOperation.m
 OSUCheckService/OSURunOperationParameters.m
 OSUChecker.m

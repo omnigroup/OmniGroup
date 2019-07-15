@@ -154,8 +154,11 @@ open class ScrollingCardView: CardView {
         let footerHeight = footerView != nil ? footerViewHeight : 0
         if contentHeight > frame.height - footerHeight {
             scrollView.verticalScrollElasticity = .automatic
+            scrollView.canScroll = true
         } else {
             scrollView.verticalScrollElasticity = .none
+            // We've determined that we have enough room in our scroll view to display all of our content without scrolling. But, without this, we hit <bug:///175242>, which looks like it's roughly a 16 point math discrepency. Potentially because of the hidden horizontal scroller?
+            scrollView.canScroll = false
         }
     }
     
@@ -180,8 +183,11 @@ open class ScrollingCardView: CardView {
         let footerHeight = footerView != nil ? footerViewHeight : 0
         if contentHeight > frame.height - footerHeight {
             scrollView.verticalScrollElasticity = .automatic
+            scrollView.canScroll = true
         } else {
             scrollView.verticalScrollElasticity = .none
+            // We've determined that we have enough room in our scroll view to display all of our content without scrolling. But, without this, we hit <bug:///175242>, which looks like it's roughly a 16 point math discrepency. Potentially because of the hidden horizontal scroller?
+            scrollView.canScroll = false
         }
     }
 
@@ -214,6 +220,12 @@ open class ScrollingCardView: CardView {
 // MARK: -
 
 private class CardScrollView: NSScrollView {
+    var canScroll: Bool = true {
+        didSet {
+            hasVerticalScroller = canScroll
+        }
+    }
+    
     override init(frame: NSRect) {
         super.init(frame: frame)
         commonInit()
@@ -249,6 +261,14 @@ private class CardScrollView: NSScrollView {
         
         if let scrollingCardView = enclosingView(of: ScrollingCardView.self) {
             scrollingCardView.scrollViewDidLayout()
+        }
+    }
+    
+    override func scrollWheel(with event: NSEvent) {
+        if canScroll {
+            super.scrollWheel(with: event)
+        } else {
+            nextResponder?.scrollWheel(with: event)
         }
     }
     

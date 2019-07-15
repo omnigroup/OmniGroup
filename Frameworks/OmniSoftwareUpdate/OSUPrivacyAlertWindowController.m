@@ -72,7 +72,7 @@ RCS_ID("$Id$");
     
     [privacyNoticePanel orderOut:nil];
     
-    BOOL sendHardwareInfo = ([_enableHardwareCollectionButton state] == NSOnState);
+    BOOL sendHardwareInfo = ([_enableHardwareCollectionButton state] == NSControlStateValueOn);
 #if !OSU_FULL
     // In the normal version, returning OSUPrivacyNoticeResultShowPreferences leaves the default set to YES, but delays the check. In the MAS version, the checkbox controls whether we send info at all, so we need to poke the default here too (since we expect the two preferences to be in sync for the MAS version).
     [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:sendHardwareInfo];

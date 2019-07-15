@@ -377,9 +377,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)scrollTopControlsToVisibleWithCompletion:(void (^_Nullable)(BOOL))completion
 {
-    [UIView animateWithDuration:0.25
+    [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut
                      animations:^{
-                         [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
                          [self.mainScrollView setContentOffset:CGPointMake(self.mainScrollView.contentOffset.x, [self.mainScrollView contentOffsetYToShowTopControls])];
                      } completion:completion];
 }
@@ -1514,9 +1513,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 - (void)setUpActivityIndicator
 {
-    _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
     
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    UIWindow *window = [[UIApplication sharedApplication] windows].firstObject;
     UIColor *tintColor = window.tintColor;
     if (tintColor) {
         _activityIndicator.color = tintColor;

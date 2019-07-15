@@ -158,13 +158,10 @@ RCS_ID("$Id$");
         self.alpha = 0;
         [view addSubview:self];
     }
-    
-    [UIView beginAnimations:@"RSTemporaryOverlayAnimation" context:NULL];
-    {
-        //[UIView setAnimationDuration:SELECTION_DELAY];
+
+    [UIView animateWithDuration:0.2 animations:^{
         self.alpha = 1;
-    }
-    [UIView commitAnimations];
+    }];
 }
 
 - (void)hide;
@@ -192,15 +189,11 @@ RCS_ID("$Id$");
     
     shouldHide = YES;
     
-    [UIView beginAnimations:@"RSTemporaryOverlayAnimation" context:NULL];
-    {
-        //[UIView setAnimationDuration:SELECTION_DELAY];
+    [UIView animateWithDuration:0.2 animations:^{
         self.alpha = 0;
-        
-        [UIView setAnimationDelegate:self];
-        [UIView setAnimationDidStopSelector:@selector(_hideOverlayEffectDidStop:finished:context:)];
-    }
-    [UIView commitAnimations];
+    } completion:^(BOOL finished) {
+        [self _hideOverlayEffectDidStop:@"RSTemporaryOverlayAnimation" finished:[NSNumber numberWithBool:finished] context:NULL];
+    }];
 }
 
 - (void)_hideOverlayEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;

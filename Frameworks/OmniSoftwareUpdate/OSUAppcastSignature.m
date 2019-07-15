@@ -1,4 +1,4 @@
-// Copyright 2009-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,10 +138,10 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
          */
         
         if (trustResult == kSecTrustResultProceed || trustResult == kSecTrustResultUnspecified) {
-            SecKeyRef trustedSigningKey = NULL;
-            err = SecCertificateCopyPublicKey(testCert, &trustedSigningKey);
-            if (err != noErr) {
-                stashError(errorInfo, err, @"SecCertificateCopyPublicKey");
+            SecKeyRef trustedSigningKey = SecCertificateCopyKey(testCert);
+            if (trustedSigningKey == NULL) {
+                // See SecItem-OFExtensions.swift for a note on this.
+                stashError(errorInfo, errSecUnsupportedKeyFormat, @"SecCertificateCopyKey");
                 // Keep going, in case another key works
             } else {
                 errorInfo = nil; // Suppress overwrite of *outError

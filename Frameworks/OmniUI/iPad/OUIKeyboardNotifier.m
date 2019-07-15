@@ -7,6 +7,7 @@
 //
 
 #import <OmniUI/OUIKeyboardNotifier.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 @import OmniFoundation;
 
@@ -354,11 +355,9 @@ static void _updateAccessoryToolbarViewFrame(OUIKeyboardNotifier *self)
         CGRect startFrame = _targetFrameForHeight(superview, accessoryToolbarView, startHeight);
         accessoryToolbarView.frame = startFrame;
     }];
-    [UIView animateWithDuration:[durationNumber doubleValue] animations:^{
-        [UIView setAnimationCurve:[curveNumber intValue]];
-        [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView animateWithDuration:[durationNumber doubleValue] delay:0 options: OUIAnimationOptionFromCurve([curveNumber intValue]) | UIViewAnimationOptionBeginFromCurrentState animations:^{
         accessoryToolbarView.frame = endFrame;
-    }];
+    } completion:nil];
 }
 
 @end

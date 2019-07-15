@@ -10,7 +10,6 @@
 #import "OSUCheckServiceProtocol.h"
 #import "OSUHardwareInfo.h" // Non-framework import intentional
 #import "OSULookupCredentialProtocol.h"
-#import "OSUOpenGLExtensions.h"
 #import "OSURunOperationParameters.h"
 
 #import <OmniFoundation/OmniFoundation.h>
@@ -25,30 +24,6 @@ static OFDeclareDebugLogLevel(OSUDebugQuery);
 } while (0)
 
 
-static BOOL isGLExtensionsKey(NSString *keyString)
-{
-    if ([keyString hasPrefix:@"gl_extensions"]) {
-        // Assume no more than 10 GL adapters for now... where's my CFRegExp?
-        
-        if ([keyString length] == 14) {
-            unichar ch = [keyString characterAtIndex:13];
-            if (ch >= '0' && ch <= '9')
-                return YES;
-        }
-    }
-    
-    // We handle OpenCL the same way now too. These are of the form clN_ext
-    if ([keyString length] == 7 && [keyString hasPrefix:@"cl"] && [keyString hasSuffix:@"_ext"]) {
-        // Assume no more than 10 GL adapters for now... where's my CFRegExp?
-        
-        unichar ch = [keyString characterAtIndex:2];
-        if (ch >= '0' && ch <= '9')
-            return YES;
-    }
-    
-    return NO;
-}
-
 static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, NSString *appVersionString, NSString *track, NSString *osuVersionString, NSDictionary *info)
 {
     OBPRECONDITION(baseURLString);
@@ -62,7 +37,7 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     
     [queryString appendFormat:@"OSU=%@", osuVersionString]; // Adding this first means we don't need to check before adding a ';' between key/value pairs below.
     
-    // An encoding/bug-fix version. The "OSU" key above encodes a version that we use to decide whether to re-ask the user whether we are permitted to send info, while this version number specifies how we gathered the information and lets the interpreters of the logs better understand how to reason about the reports. Our OpenGL extension keys have embedded encoding versions already (which is fine -- we might pick multiple alternate encodings for them to get the smallest one for any particular system's report). This can serve as an overall encoding version.
+    // An encoding/bug-fix version. The "OSU" key above encodes a version that we use to decide whether to re-ask the user whether we are permitted to send info, while this version number specifies how we gathered the information and lets the interpreters of the logs better understand how to reason about the reports.
     
     // v=1; Fixed run time calculations to not use NSDate. Added this encoding and the 'end' marker to detect truncated reports
     [queryString appendString:@";v=1"];
@@ -72,14 +47,7 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
         OBASSERT([keyString isEqualToString:@"end"] == NO, "We use this as a terminator below");
 
         NSString *escapedKey = [keyString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        NSString *escapedValue;
-        
-        if (isGLExtensionsKey(keyString)) {
-            NSString *compactedValue = OSUCopyCompactedOpenGLExtensionsList(valueString);
-            escapedValue = [compactedValue stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        } else {
-            escapedValue = [valueString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        }
+        NSString *escapedValue = [valueString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 
         [queryString appendString:@";"];
         [queryString appendString:escapedKey];

@@ -1140,7 +1140,7 @@ static NSColorSpace *_grayscaleColorSpace(void)
     NSColorSpace *colorSpace = [color colorUsingType:NSColorTypeComponentBased].colorSpace;
     NSColorSpaceModel colorSpaceModel = colorSpace.colorSpaceModel;
 
-    if (colorSpaceModel == NSRGBColorSpaceModel) {
+    if (colorSpaceModel == NSColorSpaceModelRGB) {
         NSColor *toConvert = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
 
         OALinearRGBA rgba;
@@ -1148,7 +1148,7 @@ static NSColorSpace *_grayscaleColorSpace(void)
         return OARGBAColorCreate(rgba); // TODO: Could reuse the input color here for the platform color.
     }
 
-    if (colorSpaceModel == NSGrayColorSpaceModel) {
+    if (colorSpaceModel == NSColorSpaceModelGray) {
         NSColor *toConvert = [color colorUsingColorSpace:_grayscaleColorSpace()];
 
         CGFloat white, alpha;

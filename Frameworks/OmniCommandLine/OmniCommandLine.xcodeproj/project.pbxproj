@@ -398,8 +398,13 @@
 		34824A9B1742E3C200253D52 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
 				ORGANIZATIONNAME = "The Omni Group";
+				TargetAttributes = {
+					34824AA31742E3C200253D52 = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+				};
 			};
 			buildConfigurationList = 34824A9E1742E3C200253D52 /* Build configuration list for PBXProject "OmniCommandLine" */;
 			compatibilityVersion = "Xcode 3.2";

@@ -55,9 +55,6 @@ extern NSImage *OAImageNamed(NSString *name, NSBundle *bundle);
 - (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 - (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op;
 
-    // Puts the image on the pasteboard as TIFF, and also supplies data from any PDF, EPS, or PICT representations available. Returns the number of types added to the pasteboard and adds their names to notThese. This routine uses -addTypes:owner:, so the pasteboard must have previously been set up using -declareTypes:owner.
-- (int)addDataToPasteboard:(NSPasteboard *)aPasteboard exceptTypes:(NSMutableSet *)notThese;
-
 //
 
 - (NSImageRep *)imageRepOfClass:(Class)imageRepClass;

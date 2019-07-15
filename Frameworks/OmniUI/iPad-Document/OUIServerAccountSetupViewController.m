@@ -23,6 +23,7 @@
 #import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUI/OUICustomSubclass.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import "OUIServerAccountValidationViewController.h"
 
@@ -802,10 +803,8 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
     UIEdgeInsets insets = _tableView.contentInset;
     insets.bottom = notifier.lastKnownKeyboardHeight;
-    
-    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:0 animations:^{
-        [UIView setAnimationCurve:notifier.lastAnimationCurve];
-        
+    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:OUIAnimationOptionFromCurve(notifier.lastAnimationCurve)
+                     animations:^{
         _tableView.contentInset = insets;
     } completion:nil];
 }

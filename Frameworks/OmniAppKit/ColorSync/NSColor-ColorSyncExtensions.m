@@ -1,4 +1,4 @@
-// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,7 @@ OBPerformPosing(^{
     components[2] = [self blueComponent];
     components[3] = [self alphaComponent];
         
-    contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    contextRef = [[NSGraphicsContext currentContext] CGContext];
     CGContextSetFillColor(contextRef, components);
     CGContextSetStrokeColor(contextRef, components);
 }
@@ -60,7 +60,7 @@ OBPerformPosing(^{
     components[3] = [self blackComponent];
     components[4] = [self alphaComponent];
         
-    contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    contextRef = [[NSGraphicsContext currentContext] CGContext];
     CGContextSetFillColor(contextRef, components);
     CGContextSetStrokeColor(contextRef, components);
 }
@@ -73,7 +73,7 @@ OBPerformPosing(^{
     components[0] = [self whiteComponent];
     components[1] = [self alphaComponent];
         
-    contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    contextRef = [[NSGraphicsContext currentContext] CGContext];
     CGContextSetFillColor(contextRef, components);
     CGContextSetStrokeColor(contextRef, components);
 }

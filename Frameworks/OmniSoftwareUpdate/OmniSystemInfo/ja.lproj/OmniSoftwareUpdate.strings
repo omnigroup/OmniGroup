@@ -61,15 +61,6 @@
 /* error reason */
 "Exception raised: %@" = "例外処理：%@";
 
-/* details panel string - list of OpenCL platform extensions */
-"Extensions" = "拡張子";
-
-/* details panel string - column header for OpenCL device extensions */
-"Exts" = "Ext";
-
-/* details panel string - column header for OpenCL device core frequency */
-"Freq." = "周波数";
-
 /* system preferences hardware description page title */
 "Hardware Description" = "ハードウェアの説明";
 
@@ -89,7 +80,6 @@
 "License Type" = "ライセンスタイプ";
 
 /* details panel string - amount of video memory installed
-   details panel string - column header for OpenCL device memory sizes
    Title for the memory row in the info table. */
 
 
@@ -115,27 +105,6 @@
 
 /* Title for framework version in info table, when using the mini framework. */
 "OmniSystemInfo version" = "OmniSystemInfo バージョン";
-
-/* Title for the OpenCL information row in the info table. */
-"OpenCL Information" = "OpenCL 情報";
-
-/* details panel string - name of the OpenGL driver */
-"OpenGL Driver" = "OpenGL ドライバ";
-
-/* details panel string */
-"OpenGL Extensions" = "OpenGL 機能拡張";
-
-/* Title for the OpenGL information row in the info table. */
-"OpenGL Information" = "OpenGL 情報";
-
-/* details panel string */
-"OpenGL Renderer" = "OpenGL レンダラ";
-
-/* details panel string */
-"OpenGL Vendor" = "OpenGL 製造元";
-
-/* details panel string */
-"OpenGL Version" = "OpenGL バージョン";
 
 /* Title for the OS version row in the info table. */
 "OS Version" = "OS バージョン";
@@ -179,9 +148,6 @@
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "ツールからデータが返されませんでした";
 
-/* details panel string - column header for OpenCL device type */
-"Type" = "タイプ";
-
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "ソフトウェアアップデートサーバからの応答を認証できません。";
 
@@ -190,9 +156,6 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "ソフトウェアアップデートサーバからの応答を解析できません。";
-
-/* details panel string - column header for OpenCL device processing-unit count */
-"Units" = "単位";
 
 /* Title for application current update track in the info table. */
 "Update Track" = "アップデート追跡";

@@ -18,7 +18,6 @@ extern const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping;
 
 - (CIImage *)imageByCroppingToExtent:(CGRect)extent;
 - (CIImage *)flippedImage;
-- (CIImage *)imageByScalingAlphaBy:(CGFloat)alphaScale;
 - (CIImage *)imageBySourceOverCompositingWithBackgroundImage:(CIImage *)backgroundImage;
 - (CIImage *)imageBySourceAtopCompositingWithBackgroundImage:(CIImage *)backgroundImage;
 - (CIImage *)imageByScalingToSize:(CGSize)size;

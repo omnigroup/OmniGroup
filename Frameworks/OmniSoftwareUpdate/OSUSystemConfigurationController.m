@@ -29,7 +29,7 @@
 
 RCS_ID("$Id$");
 
-@interface OSUSystemHTMLReport ()
+@interface OSUSystemHTMLReport () <WKNavigationDelegate>
 @property (nonatomic, strong) NSMutableString *body;
 @end
 
@@ -110,7 +110,7 @@ RCS_ID("$Id$");
 @end
 
 @interface OSUSystemConfigurationController ()
-@property(nonatomic,strong) IBOutlet WebView *systemConfigurationWebView;
+@property(nonatomic,strong) IBOutlet WKWebView *systemConfigurationWebView;
 @property(assign) IBOutlet NSButton *okButton;
 @end
 
@@ -379,17 +379,15 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
             unsigned int adaptorIndex = 0;
             while (YES) {
                 NSString *pciKey   = [NSString stringWithFormat:@"accel%d_pci", adaptorIndex];
-                NSString *glKey    = [NSString stringWithFormat:@"accel%d_gl", adaptorIndex];
                 NSString *identKey = [NSString stringWithFormat:@"accel%d_id", adaptorIndex];
                 NSString *verKey   = [NSString stringWithFormat:@"accel%d_ver", adaptorIndex];
                 
-                NSString *pci, *gl, *ident, *ver;
+                NSString *pci, *ident, *ver;
                 pci   = [report objectForKey:pciKey];
-                gl    = [report objectForKey:glKey];
                 ident = [report objectForKey:identKey];
                 ver   = [report objectForKey:verKey];
                 
-                if (!pci && !gl && !ident && !ver)
+                if (!pci && !ident && !ver)
                     break;
                 
                 if ([adaptors length])
@@ -397,15 +395,12 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
                 
                 [adaptors appendString:NSLocalizedStringFromTableInBundle(@"PCI ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - PCI bus ID of video card")];
                 [adaptors appendFormat:@": %@<br>", pci ?: @""];
-                [adaptors appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - name of the OpenGL driver")];
-                [adaptors appendFormat:@": %@<br>", gl ?: @""];
                 [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Hardware Driver", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - name of video card driver")];
                 [adaptors appendFormat:@": %@<br>", ident ?: @""];
                 [adaptors appendString:NSLocalizedStringFromTableInBundle(@"Driver Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - version of video card driver")];
                 [adaptors appendFormat:@": %@", ver ?: @""];
                 
                 [report removeObjectForKey:pciKey];
-                [report removeObjectForKey:glKey];
                 [report removeObjectForKey:identKey];
                 [report removeObjectForKey:verKey];
                 adaptorIndex++;
@@ -431,116 +426,6 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
             }
             
             return adaptors;
-        });
-
-        infoRow_b(NSLocalizedStringFromTableInBundle(@"OpenGL Information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the OpenGL information row in the info table."), ^{
-            NSMutableString *glInfo = [NSMutableString string];
-            
-            unsigned int adaptorIndex = 0;
-            while (YES) {
-                NSString *vendorKey     = [NSString stringWithFormat:@"gl_vendor%d", adaptorIndex];
-                NSString *rendererKey   = [NSString stringWithFormat:@"gl_renderer%d", adaptorIndex];
-                NSString *versionKey    = [NSString stringWithFormat:@"gl_version%d", adaptorIndex];
-                NSString *extensionsKey = [NSString stringWithFormat:@"gl_extensions%d", adaptorIndex];
-                
-                NSString *vendor, *renderer, *version, *extensions;
-                vendor     = [report objectForKey:vendorKey];
-                renderer   = [report objectForKey:rendererKey];
-                version    = [report objectForKey:versionKey];
-                extensions = [report objectForKey:extensionsKey];
-                
-                if (!vendor && !renderer && !version && !extensions)
-                    break;
-                
-                if ([glInfo length])
-                    [glInfo appendString:@"<br><br>"];
-                
-                [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Vendor", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
-                [glInfo appendFormat:@": %@<br>", vendor ?: @""];
-                [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Renderer", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
-                [glInfo appendFormat:@": %@<br>", renderer ?: @""];
-                [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
-                [glInfo appendFormat:@": %@<br>", version ?: @""];
-                [glInfo appendString:NSLocalizedStringFromTableInBundle(@"OpenGL Extensions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string")];
-                [glInfo appendFormat:@": %@<br>", extensions ?: @""];
-                
-                [report removeObjectForKey:vendorKey];
-                [report removeObjectForKey:rendererKey];
-                [report removeObjectForKey:versionKey];
-                [report removeObjectForKey:extensionsKey];
-                adaptorIndex++;
-            }
-            
-            return glInfo;
-        });
-        
-        infoRow_b(NSLocalizedStringFromTableInBundle(@"OpenCL Information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Title for the OpenCL information row in the info table."), ^{
-            NSMutableString *clInfo = [NSMutableString string];
-            
-            unsigned int clPlatformIndex = 0;
-            for(;;) {
-                NSString *platInfoKey = [NSString stringWithFormat:@"cl%u", clPlatformIndex];
-                NSString *platExtKey = [platInfoKey stringByAppendingString:@"_ext"];
-                NSString *platInfo = [report objectForKey:platInfoKey];
-                NSString *platExt = [report objectForKey:platExtKey];
-                
-                if (!platInfo && !platExt)
-                    break;
-                
-                [report removeObjectForKey:platInfoKey];
-                [report removeObjectForKey:platExtKey];
-                
-                [clInfo appendString:@"<tr><td colspan=\"8\">"];
-
-                if (platInfo)
-                    [clInfo appendString:platInfo];
-                if (![NSString isEmptyString:platExt]) {
-                    NSString *extLabel = NSLocalizedStringFromTableInBundle(@"Extensions", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - list of OpenCL platform extensions");
-                    [clInfo appendFormat:@"<br>%@: %@", extLabel, platExt];
-                }
-                [clInfo appendString:@"</td></tr>"];
-                
-                NSMutableString *clDeviceInfo = [NSMutableString string];
-                
-                unsigned int clDeviceIndex = 0;
-                for(;;) {
-                    NSString *devInfoKey = [NSString stringWithFormat:@"cl%u.%u_dev", clPlatformIndex, clDeviceIndex];
-                    NSString *devInfo = [report objectForKey:devInfoKey];
-                    if (!devInfo)
-                        break;
-                    [report removeObjectForKey:devInfoKey];
-                    NSArray *parts = [devInfo componentsSeparatedByString:@" " maximum:5];
-                    
-                    [clDeviceInfo appendFormat:@"<tr><td>%@</td><td>%@</td><td>%@</td>",
-                     [parts objectAtIndex:0],  // Device type
-                     [parts objectAtIndex:1],  // Number of cores
-                     [NSString abbreviatedStringForHertz:1048576*[[parts objectAtIndex:2] unsignedLongLongValue]] // Freq
-                     ];
-                    OFForEachInArray([[parts objectAtIndex:3] componentsSeparatedByString:@"/"], NSString *, mem, {
-                        ([clDeviceInfo appendFormat:@"<td>%@</td>", [NSString abbreviatedStringForBytes:1024*[mem unsignedLongLongValue]]]);
-                    });
-                    [clDeviceInfo appendFormat:@"<td>%@</td></tr>", [parts objectAtIndex:4]];
-                    
-                    clDeviceIndex ++;
-                }
-                if (clDeviceIndex != 0) {
-                    NSString *typeHeader = NSLocalizedStringFromTableInBundle(@"Type", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device type");
-                    NSString *unitsHeader = NSLocalizedStringFromTableInBundle(@"Units", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device processing-unit count");
-                    NSString *freqHeader = NSLocalizedStringFromTableInBundle(@"Freq.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device core frequency");
-                    NSString *memHeader = NSLocalizedStringFromTableInBundle(@"Memory", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device memory sizes");
-                    NSString *extHeader = NSLocalizedStringFromTableInBundle(@"Exts", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"details panel string - column header for OpenCL device extensions");
-                    [clInfo appendFormat:@"<tr><td rowspan=\"%u\">&nbsp;&nbsp;</td><th>%@</th><th>%@</th><th>%@</th><th colspan=\"3\">%@</th><th>%@</th></tr>%@",
-                     1 + clDeviceIndex,
-                     typeHeader, unitsHeader, freqHeader, memHeader, extHeader,
-                     clDeviceInfo];
-                }
-                
-                clPlatformIndex ++;
-            }
-            
-            [clInfo insertString:@"<table class=\"subtable\">" atIndex:0];
-            [clInfo appendString:@"</table>"];
-            return clInfo;
         });
 
     });
@@ -696,11 +581,7 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
         return;
     }
     
-#if OSU_FULL
-    _systemConfigurationWebView.mediaStyle = @"osu-full";
-#endif
-
-    [[_systemConfigurationWebView mainFrame] loadHTMLString:htmlString baseURL:nil];
+    [_systemConfigurationWebView loadHTMLString:htmlString baseURL:nil];
     
     OBStrongRetain(self); // stay alive while we are on screen.
     
@@ -737,34 +618,34 @@ static NSMapTable<NSString *, id<OSUProbeDataFormatter>> *OSUProbeDataFormatters
     self.okButton.title = OAOK();
 }
 
+// MARK:- WKNavigationDelegate
+
+
 #pragma mark - WebPolicyDelegate
 
-- (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation
-	request:(NSURLRequest *)request
-	  frame:(WebFrame *)frame
-decisionListener:(id<WebPolicyDecisionListener>)listener;
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler;
 {
-    NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
-    
+    NSURL *url = navigationAction.request.URL;
+
     // about:blank is passed when loading the initial content
     if ([[url absoluteString] isEqualToString:@"about:blank"]) {
-	[listener use];
+        decisionHandler(WKNavigationActionPolicyAllow);
 	return;
     }
     
     // when a link is clicked reject it locally and open it in an external browser
-    if ([[actionInformation objectForKey:WebActionNavigationTypeKey] intValue] == WebNavigationTypeLinkClicked) {
+    if (navigationAction.navigationType == WKNavigationTypeLinkActivated) {
 	[[NSWorkspace sharedWorkspace] openURL:url];
-	[listener ignore];
+        decisionHandler(WKNavigationActionPolicyCancel);
 	return;
     }
     
 #ifdef DEBUG
-    NSLog(@"action %@, request %@", actionInformation, request);
+    NSLog(@"action %@, request %@", navigationAction, navigationAction.request);
 #endif
 }
 
-- (void)webView:(WebView *)webView unableToImplementPolicyWithError:(NSError *)error frame:(WebFrame *)frame;
+- (void)webView:(WKWebView *)webView didFailNavigation:(null_unspecified WKNavigation *)navigation withError:(NSError *)error;
 {
 #ifdef DEBUG
     NSLog(@"error %@", error);

@@ -38,9 +38,9 @@
 
 - (BOOL)isModelLayer;
 
-- (void)renderInContextIgnoringCache:(CGContextRef)ctx;
-- (void)renderInContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
-- (void)renderInContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx;
+- (void)renderRect:(CGRect)rect inContextIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
+- (void)renderRect:(CGRect)rect inContextIgnoringHiddenIgnoringCache:(CGContextRef)ctx useAnimatedValues:(BOOL)useAnimatedValues;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSImage *)imageForRect:(NSRect)rect useAnimatedValues:(BOOL)useAnimatedValues;
 - (void)writeImagesAndOpen;
@@ -60,6 +60,7 @@
 
 @interface NSObject (CALayerOQDelegate)
 
+- (void)layoutLayer:(CALayer *)layer inRect:(CGRect)rect;
 - (void)drawLayer:(CALayer *)layer inVectorContext:(CGContextRef)ctx;
 
 @end

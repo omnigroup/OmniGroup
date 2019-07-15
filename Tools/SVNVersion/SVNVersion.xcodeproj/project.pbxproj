@@ -231,15 +231,17 @@
 		34DBCD0E190709E100968086 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1100;
 				TargetAttributes = {
 					3440203D19072DAD0002120F = {
 						LastSwiftMigration = "";
 					};
 					3440204119072DB60002120F = {
+						DevelopmentTeam = 34YW5XSRB7;
 						LastSwiftMigration = "";
 					};
 					344BDE9C1EC0F54C0006B0C1 = {
+						DevelopmentTeam = 34YW5XSRB7;
 						LastSwiftMigration = "";
 					};
 					34DBCD14190709F400968086 = {

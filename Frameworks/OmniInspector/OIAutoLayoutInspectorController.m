@@ -154,7 +154,7 @@ RCS_ID("$Id$");
 - (void)_updateVisibilityState;
 {
     self.inspectorContentView.hidden = !self.isExpanded;
-    self.headerView.disclosureButton.state = (self.isExpanded ? NSOnState : NSOffState);
+    self.headerView.disclosureButton.state = (self.isExpanded ? NSControlStateValueOn : NSControlStateValueOff);
     [self updateTitle];
 }
 

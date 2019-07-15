@@ -164,15 +164,13 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 - (void)setEnterFullScreenButtonAlpha:(CGFloat)alpha animated:(BOOL)animated;
 {
     if (animated) {
-        [UIView beginAnimations:@"AdjustEnterFullScreenButtonAlpha" context:NULL];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-    }
-    
-    self.enterFullScreenButton.alpha = alpha;
-    self.enterFullScreenBackground.alpha = alpha;
-    
-    if (animated) {
-        [UIView commitAnimations];
+        [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            self.enterFullScreenButton.alpha = alpha;
+            self.enterFullScreenBackground.alpha = alpha;
+        } completion:nil];
+    } else {
+        self.enterFullScreenButton.alpha = alpha;
+        self.enterFullScreenBackground.alpha = alpha;
     }
 }
 

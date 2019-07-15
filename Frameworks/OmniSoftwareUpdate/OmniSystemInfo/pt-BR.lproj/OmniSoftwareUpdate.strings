@@ -61,15 +61,6 @@
 /* error reason */
 "Exception raised: %@" = "Exceção identificada: %@";
 
-/* details panel string - list of OpenCL platform extensions */
-"Extensions" = "Extensões";
-
-/* details panel string - column header for OpenCL device extensions */
-"Exts" = "Ext.";
-
-/* details panel string - column header for OpenCL device core frequency */
-"Freq." = "Freq.";
-
 /* system preferences hardware description page title */
 "Hardware Description" = "Descrição do Hardware";
 
@@ -89,7 +80,6 @@
 "License Type" = "Tipo de Licença";
 
 /* details panel string - amount of video memory installed
-   details panel string - column header for OpenCL device memory sizes
    Title for the memory row in the info table. */
 
 
@@ -112,27 +102,6 @@
 
 /* Title for framework version in info table, when using the mini framework. */
 "OmniSystemInfo version" = "Versão do OmniSystemInfo";
-
-/* Title for the OpenCL information row in the info table. */
-"OpenCL Information" = "Informações do OpenCL";
-
-/* details panel string - name of the OpenGL driver */
-"OpenGL Driver" = "Driver OpenGL";
-
-/* details panel string */
-"OpenGL Extensions" = "Extensões OpenGL";
-
-/* Title for the OpenGL information row in the info table. */
-"OpenGL Information" = "Informações do OpenGL";
-
-/* details panel string */
-"OpenGL Renderer" = "Processador OpenGL";
-
-/* details panel string */
-"OpenGL Vendor" = "Fornecedor OpenGL";
-
-/* details panel string */
-"OpenGL Version" = "Versão do OpenGL";
 
 /* Title for the OS version row in the info table. */
 "OS Version" = "Versão de Sist. Operacional";
@@ -176,9 +145,6 @@
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "A ferramenta não retornou nenhum dado";
 
-/* details panel string - column header for OpenCL device type */
-"Type" = "Tipo";
-
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "Não foi possível autenticar a resposta do servidor de atualizações de software.";
 
@@ -187,9 +153,6 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "Não foi possível analisar a resposta do servidor de atualizações de software.";
-
-/* details panel string - column header for OpenCL device processing-unit count */
-"Units" = "Unidades";
 
 /* Title for application current update track in the info table. */
 "Update Track" = "Faixa de Atualização";

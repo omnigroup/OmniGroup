@@ -252,7 +252,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     
     if (_image != nil) {
         NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
-        CGContextRef cgContext = [currentContext graphicsPort];
+        CGContextRef cgContext = [currentContext CGContext];
 
         CGContextSaveGState(cgContext);
         CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(bounds)-2.0f);

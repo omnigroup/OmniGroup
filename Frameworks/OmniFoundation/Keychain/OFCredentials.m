@@ -189,19 +189,27 @@ NSURLCredential *OFTryApplyingTrustExceptions(NSURLAuthenticationChallenge *chal
     
     SecTrustRef trustRef = challenge.protectionSpace.serverTrust;
     SecTrustResultType trustEvaluationResult = -1;
-    if (SecTrustEvaluate(trustRef, &trustEvaluationResult) != noErr) {
-        // We can't even evaluate the trust ref. Something deeper is wrong than just an untrusted certificate.
+    if (SecTrustEvaluateWithError(trustRef, NULL)) {
+        return [NSURLCredential credentialForTrust:trustRef];
+    }
+
+    if (SecTrustGetTrustResult(trustRef, &trustEvaluationResult) != noErr) {
         return nil;
     }
-    
+
     // Check whether the trust status is one which we can't store exceptions for.
     if (trustEvaluationResult == kSecTrustResultProceed || trustEvaluationResult == kSecTrustResultUnspecified || trustEvaluationResult == kSecTrustResultFatalTrustFailure)
         return nil;
     
     // Give each of the exceptions a try.
     for (NSUInteger trustExceptionIndex = 0; trustExceptionIndex < trustExceptionCount; trustExceptionIndex ++) {
-        if (SecTrustSetExceptions(trustRef, (__bridge CFDataRef)[storedExceptions objectAtIndex:trustExceptionIndex]) &&
-            SecTrustEvaluate(trustRef, &trustEvaluationResult) == noErr) {
+        if (SecTrustSetExceptions(trustRef, (__bridge CFDataRef)[storedExceptions objectAtIndex:trustExceptionIndex])) {// &&
+            (void)SecTrustEvaluateWithError(trustRef, NULL);
+
+            if (SecTrustGetTrustResult(trustRef, &trustEvaluationResult) != noErr) {
+                return nil;
+            }
+
             // Did this work?
             if (trustEvaluationResult == kSecTrustResultProceed || trustEvaluationResult == kSecTrustResultDeny || trustEvaluationResult == kSecTrustResultUnspecified || trustEvaluationResult == kSecTrustResultFatalTrustFailure)
                 return [NSURLCredential credentialForTrust:trustRef];

@@ -1,4 +1,4 @@
-// Copyright 2006-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,7 +58,7 @@ static void * _OAConstructionTimeViewTabbedWindowsObservationContext = &_OAConst
     const CGFloat stripeWidth = 10.0f;
     CGFloat height = bounds.size.height;
     
-    CGContextRef ctx = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
     CGContextSaveGState(ctx);
     {
 	CGContextSetBlendMode(ctx, kCGBlendModeDarken);
@@ -104,7 +104,7 @@ static void * _OAConstructionTimeViewTabbedWindowsObservationContext = &_OAConst
 
 - (CGSize)intrinsicContentSize;
 {
-    return CGSizeMake(NSViewNoInstrinsicMetric, CONSTRUCTION_WARNING_HEIGHT);
+    return CGSizeMake(NSViewNoIntrinsicMetric, CONSTRUCTION_WARNING_HEIGHT);
 }
 
 - (BOOL)wantsBorder;

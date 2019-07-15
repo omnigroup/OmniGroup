@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     if (!(self = [super initWithFrame:frameRect]))
         return nil;
 
-    [self setButtonType:NSMomentaryLightButton];
+    [self setButtonType:NSButtonTypeMomentaryLight];
     [self setImagePosition:NSImageOnly];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_controlTintChanged:) name:NSControlTintDidChangeNotification object:nil];

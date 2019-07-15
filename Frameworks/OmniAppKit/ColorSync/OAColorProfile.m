@@ -1,4 +1,4 @@
-// Copyright 2002-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -503,7 +503,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
 - (void)_setRGBColor:(NSColor *)aColor;
 {
     static CGColorSpaceRef deviceRGBColorSpace = NULL;
-    CGContextRef contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    CGContextRef contextRef = [[NSGraphicsContext currentContext] CGContext];
     OAColorProfile *destination = [NSGraphicsContext currentContextDrawingToScreen] ? [OAColorProfile defaultDisplayProfile] : [OAColorProfile defaultDocumentProfile];
     NSColor *newColor = [aColor convertFromProfile:self toProfile:destination];
     
@@ -532,7 +532,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
         deviceCMYKColorSpace = CGColorSpaceCreateDeviceCMYK();
         CGColorSpaceRetain(deviceCMYKColorSpace);
     }
-    contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    contextRef = [[NSGraphicsContext currentContext] CGContext];
     CGContextSetFillColorSpace(contextRef, deviceCMYKColorSpace);
     CGContextSetStrokeColorSpace(contextRef, deviceCMYKColorSpace);
     newColor = [aColor convertFromProfile:self toProfile:[OAColorProfile defaultDocumentProfile]];
@@ -555,7 +555,7 @@ static BOOL loadProfileData(ColorSyncProfileRef *cmProfilePointer, NSData *data,
         deviceGrayColorSpace = CGColorSpaceCreateDeviceGray();
         CGColorSpaceRetain(deviceGrayColorSpace);
     }
-    contextRef = [[NSGraphicsContext currentContext] graphicsPort];
+    contextRef = [[NSGraphicsContext currentContext] CGContext];
     CGContextSetFillColorSpace(contextRef, deviceGrayColorSpace);
     CGContextSetStrokeColorSpace(contextRef, deviceGrayColorSpace);
     newColor = [aColor convertFromProfile:self toProfile:[OAColorProfile defaultDocumentProfile]];

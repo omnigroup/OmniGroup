@@ -113,7 +113,7 @@ static NSImage *ChasingArrows = nil;
     NSRect bounds = [self bounds];
 
     NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
-    CGContextRef graphicsContext = [currentContext graphicsPort];
+    CGContextRef graphicsContext = [currentContext CGContext];
     if (angle != 0) {
         CGContextTranslateCTM(graphicsContext, NSWidth(bounds) / 2, NSHeight(bounds) / 2);
         CGContextRotateCTM(graphicsContext, -angle);

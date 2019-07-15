@@ -321,18 +321,15 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     
     // Now fade in the views (at least the ones that have their hidden flag cleared on the next layout).
     if (shouldCrossFade) {
-        [UIView beginAnimations:nil context:NULL];
-        {
-            if (_rotationDuration > 0)
-                [UIView setAnimationDuration:_rotationDuration];
+        CGFloat duration = _rotationDuration > 0 ? _rotationDuration : 0.2;
+        [UIView animateWithDuration:duration animations:^{
             for (OUIDocumentPickerItemView *itemView in _fileItemViews) {
                 itemView.alpha = 1;
             }
             for (OUIDocumentPickerItemView *itemView in _groupItemViews) {
                 itemView.alpha = 1;
             }
-        }
-        [UIView commitAnimations];
+        }];
     }
     
     _shouldHideTopControlsOnNextLayout = YES;

@@ -61,15 +61,6 @@
 /* error reason */
 "Exception raised: %@" = "Uitzondering opgetreden: %@";
 
-/* details panel string - list of OpenCL platform extensions */
-"Extensions" = "Extensies";
-
-/* details panel string - column header for OpenCL device extensions */
-"Exts" = "Exts";
-
-/* details panel string - column header for OpenCL device core frequency */
-"Freq." = "Freq.";
-
 /* system preferences hardware description page title */
 "Hardware Description" = "Hardwarebeschrijving";
 
@@ -89,7 +80,6 @@
 "License Type" = "Licentietype";
 
 /* details panel string - amount of video memory installed
-   details panel string - column header for OpenCL device memory sizes
    Title for the memory row in the info table. */
 
 
@@ -115,27 +105,6 @@
 
 /* Title for framework version in info table, when using the mini framework. */
 "OmniSystemInfo version" = "OmniSystemInfo-versie";
-
-/* Title for the OpenCL information row in the info table. */
-"OpenCL Information" = "OpenCL-informatie";
-
-/* details panel string - name of the OpenGL driver */
-"OpenGL Driver" = "OpenGL-besturingsbestand";
-
-/* details panel string */
-"OpenGL Extensions" = "OpenGL-extensies";
-
-/* Title for the OpenGL information row in the info table. */
-"OpenGL Information" = "OpenGL-informatie";
-
-/* details panel string */
-"OpenGL Renderer" = "OpenGL-renderer";
-
-/* details panel string */
-"OpenGL Vendor" = "OpenGL-leverancier";
-
-/* details panel string */
-"OpenGL Version" = "OpenGL-versie";
 
 /* Title for the OS version row in the info table. */
 "OS Version" = "OS-versie";
@@ -179,9 +148,6 @@
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Het hulpprogramma heeft geen gegevens geretourneerd";
 
-/* details panel string - column header for OpenCL device type */
-"Type" = "Type";
-
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "Reactie van de server voor software-updates kan niet worden gecontroleerd.";
 
@@ -190,9 +156,6 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "Reactie van de software-updateserver kan niet worden ontleed.";
-
-/* details panel string - column header for OpenCL device processing-unit count */
-"Units" = "Eenheden";
 
 /* Title for application current update track in the info table. */
 "Update Track" = "Overzicht nieuwe versies";

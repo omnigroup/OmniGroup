@@ -1,4 +1,4 @@
-// Copyright 2007-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,6 +79,8 @@ RCS_ID("$Id$");
 
 @end
 
+// <bug:///175713> (Frameworks-Mac Engineering: Switch OmniSoftwareUpdate from WebView to WKWebView)
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 @interface OSUAvailableUpdateController ()
 

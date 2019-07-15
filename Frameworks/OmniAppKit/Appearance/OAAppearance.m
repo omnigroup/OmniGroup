@@ -159,6 +159,16 @@ static NSMutableSet *InvalidatedClassesForSwitchedPlistURLDirectories = nil;
     return [self appearance];
 }
 
++ (OAAppearanceLookupPolicy)colorLookupPolicy;
+{
+    return OAAppearanceLookupPolicyPlistOnly;
+}
+
++ (OAAppearanceLookupPolicy)imageLookupPolicy;
+{
+    return OAAppearanceLookupPolicyPlistOnly;
+}
+
 static NSString *_OUIAppearanceUserOverrideFolder = nil;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -704,12 +714,84 @@ static NSURL *urlIfExists(NSURL *url)
 
 - (OA_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
 {
-    NSDictionary *archiveDictionary = [self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath];
+    OAAppearanceLookupPolicy policy = [[self class] colorLookupPolicy];
+    OA_SYSTEM_COLOR_CLASS *color = nil;
+    
+    switch (policy) {
+        case OAAppearanceLookupPolicyPlistOnly:
+        case OAAppearanceLookupPolicyPreferPlist: {
+            color = [self colorFromPlistForKeyPath:keyPath];
+
+            BOOL allowFallbackLookup = (policy == OAAppearanceLookupPolicyPreferPlist);
+            if (color == nil && allowFallbackLookup) {
+                color = [self colorFromAssetCatalogForKeyPath:keyPath];
+            }
+
+            break;
+        }
+
+        case OAAppearanceLookupPolicyAssetCatalogOnly:
+        case OAAppearanceLookupPolicyPreferAssetCatalog: {
+            color = [self colorFromAssetCatalogForKeyPath:keyPath];
+
+            BOOL allowFallbackLookup = (policy == OAAppearanceLookupPolicyPreferAssetCatalog);
+            if (color == nil && allowFallbackLookup) {
+                color = [self colorFromPlistForKeyPath:keyPath];
+            }
+
+            break;
+        }
+    }
+    
+    if (color == nil) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Could not resolve color for keyPath '%@' in appearance '%@'", keyPath, NSStringFromClass([self class])] userInfo:nil];
+    }
+
+    return color;
+}
+
+- (nullable OA_SYSTEM_COLOR_CLASS *)colorFromPlistForKeyPath:(NSString *)keyPath;
+{
+    NSArray<NSString *> *keyPathComponents = OFKeysForKeyPath(keyPath);
+
+    NSError *error = nil;
+    id value = [self _valueForPlistKeyPathComponents:keyPathComponents error:&error];
+    if (value == nil) {
+        return nil;
+    }
+    
+    if (![value isKindOfClass:[NSDictionary class]]) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Object for keyPath '%@' in appearance '%@' is not an instance of expected class '%@'", keyPath, NSStringFromClass([self class]), NSStringFromClass([NSDictionary class])] userInfo:nil];
+    }
+
+    NSDictionary *archiveDictionary = OB_CHECKED_CAST(NSDictionary, value);
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     return [UIColor colorFromPropertyListRepresentation:archiveDictionary];
 #else
     return [NSColor colorFromPropertyListRepresentation:archiveDictionary withColorSpaceManager:nil shouldDefaultToGenericSpace:NO];
 #endif
+}
+
+- (nullable OA_SYSTEM_COLOR_CLASS *)colorFromAssetCatalogForKeyPath:(NSString *)keyPath;
+{
+    NSBundle *bundle = [[self class] bundleForPlist];
+    OA_SYSTEM_COLOR_CLASS *color = nil;
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    color = [UIColor colorNamed:keyPath inBundle:bundle compatibleWithTraitCollection:nil];
+#else
+    color = [NSColor colorNamed:keyPath bundle:bundle];
+#endif
+    
+    // If we couldn't resolve a color, fall back to the superclass if we are not at the root
+    if (color == nil && [self class] != [OAAppearance class]) {
+        // Recurse into the actual hierarchy, where the plists live
+        OAAppearance *superApperance = [[self class] _appearanceForClass:[self superclass] reifyingInstance:NO];
+        color = [superApperance colorFromAssetCatalogForKeyPath:keyPath];
+    }
+
+    return color;
 }
 
 - (OAColor *)OAColorForKeyPath:(NSString *)keyPath;
@@ -778,11 +860,55 @@ static NSURL *urlIfExists(NSURL *url)
     return result;
 }
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (UIImage *)imageForKeyPath:(NSString *)keyPath;
+- (OA_SYSTEM_IMAGE_CLASS *)imageForKeyPath:(NSString *)keyPath;
 {
-    id value = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+    OAAppearanceLookupPolicy policy = [[self class] imageLookupPolicy];
+    OA_SYSTEM_IMAGE_CLASS *image = nil;
     
+    switch (policy) {
+        case OAAppearanceLookupPolicyPlistOnly:
+        case OAAppearanceLookupPolicyPreferPlist: {
+            image = [self platformImageFromPlistForKeyPath:keyPath];
+
+            BOOL allowFallbackLookup = (policy == OAAppearanceLookupPolicyPreferPlist);
+            if (image == nil && allowFallbackLookup) {
+                image = [self platformImageFromAssetCatalogForKeyPath:keyPath];
+            }
+
+            break;
+        }
+            
+        case OAAppearanceLookupPolicyAssetCatalogOnly:
+        case OAAppearanceLookupPolicyPreferAssetCatalog: {
+            image = [self platformImageFromAssetCatalogForKeyPath:keyPath];
+
+            BOOL allowFallbackLookup = (policy == OAAppearanceLookupPolicyPreferAssetCatalog);
+            if (image == nil && allowFallbackLookup) {
+                image = [self platformImageFromPlistForKeyPath:keyPath];
+            }
+
+            break;
+        }
+    }
+    
+    if (image == nil) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Could not resolve image for keyPath '%@' in appearance '%@'", keyPath, NSStringFromClass([self class])] userInfo:nil];
+    }
+    
+    return image;
+}
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (nullable UIImage *)platformImageFromPlistForKeyPath:(NSString *)keyPath;
+{
+    NSArray<NSString *> *keyPathComponents = OFKeysForKeyPath(keyPath);
+
+    NSError *error = nil;
+    id value = [self _valueForPlistKeyPathComponents:keyPathComponents error:&error];
+    if (value == nil) {
+        return nil;
+    }
+
     // Not going to define unique exception format strings for every problem; just 'break' out to a common failure.
     do {
         if ([value isKindOfClass:[NSString class]]) {
@@ -793,16 +919,17 @@ static NSURL *urlIfExists(NSURL *url)
             NSDictionary *plist = value;
             
             NSString *name = plist[@"name"];
-            if (!name) {
+            if (name == nil) {
                 break;
             }
             
             NSBundle *bundle = nil;
             NSString *bundleIdentifier = plist[@"bundle"];
-            if (bundleIdentifier) {
+            if (bundleIdentifier != nil) {
                 if (![bundleIdentifier isKindOfClass:[NSString class]]) {
                     break;
                 }
+
                 if ([bundleIdentifier isEqual:@"self"]) {
                     Class classForBundleLookup = [self class];
                     if ([OAAppearance isReifyingClass:classForBundleLookup]) {
@@ -814,19 +941,21 @@ static NSURL *urlIfExists(NSURL *url)
                 } else {
                     bundle = [NSBundle bundleWithIdentifier:bundleIdentifier];
                 }
-                if (!bundle) {
+
+                if (bundle == nil) {
                     // Bundle specified, but not found
                     break;
                 }
             }
             
-            UIImage *image;
-            if (bundle) {
+            UIImage *image = nil;
+            if (bundle != nil) {
                 image = [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
             } else {
                 image = [UIImage imageNamed:name];
             }
-            if (!image) {
+
+            if (image == nil) {
                 break;
             }
             
@@ -838,9 +967,16 @@ static NSURL *urlIfExists(NSURL *url)
 }
 
 #else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSImage *)imageForKeyPath:(NSString *)keyPath;
+
+- (nullable NSImage *)platformImageFromPlistForKeyPath:(NSString *)keyPath;
 {
-    id value = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+    NSArray<NSString *> *keyPathComponents = OFKeysForKeyPath(keyPath);
+
+    NSError *error = nil;
+    id value = [self _valueForPlistKeyPathComponents:keyPathComponents error:&error];
+    if (value == nil) {
+        return nil;
+    }
 
     // Not going to define unique exception format strings for every problem; just 'break' out to a common failure.
     do {
@@ -852,8 +988,9 @@ static NSURL *urlIfExists(NSURL *url)
             NSDictionary *plist = value;
             
             NSString *name = plist[@"name"];
-            if (!name)
+            if (name == nil) {
                 break;
+            }
 
             NSBundle *bundle = nil;
             NSString *bundleIdentifier = plist[@"bundle"];
@@ -871,19 +1008,23 @@ static NSURL *urlIfExists(NSURL *url)
                 } else {
                     bundle = [NSBundle bundleWithIdentifier:bundleIdentifier];
                 }
-                if (!bundle) {
+
+                if (bundle == nil) {
                     // Bundle specified, but not found
                     break;
                 }
             }
             
-            NSImage *image;
-            if (bundle)
+            NSImage *image = nil;
+            if (bundle != nil) {
                 image = [bundle imageForResource:name];
-            else
+            } else {
                 image = [NSImage imageNamed:name];
-            if (!image)
+            }
+            
+            if (image == nil) {
                 break;
+            }
             
             id colorValue = plist[@"color"];
             if (colorValue) {
@@ -895,8 +1036,9 @@ static NSURL *urlIfExists(NSURL *url)
                     color = [[OAColor colorFromPropertyListRepresentation:colorValue] toColor];
                 }
                 
-                if (!color)
+                if (color == nil) {
                     break;
+                }
                 
                 return [image imageByTintingWithColor:color];
             }
@@ -907,7 +1049,34 @@ static NSURL *urlIfExists(NSURL *url)
     
     @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unexpected value for image at key path component '%@' in appearance '%@': %@", keyPath, NSStringFromClass([self class]), value] userInfo:nil];
 }
+
 #endif
+
+- (nullable OA_SYSTEM_IMAGE_CLASS *)platformImageFromAssetCatalogForKeyPath:(NSString *)keyPath;
+{
+    NSBundle *bundle = [[self class] bundleForPlist];
+    NSString *name = keyPath;
+    OA_SYSTEM_IMAGE_CLASS *image = nil;
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    image = [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
+#else
+    if (bundle != nil && bundle != [NSBundle mainBundle]) {
+        image = [bundle imageForResource:name];
+    } else {
+        image = [NSImage imageNamed:name];
+    }
+#endif
+    
+    // If we couldn't resolve the image, fall back to the superclass if we are not at the root
+    if (image == nil && [self class] != [OAAppearance class]) {
+        // Recurse into the actual hierarchy, where the plists live
+        OAAppearance *superApperance = [[self class] _appearanceForClass:[self superclass] reifyingInstance:NO];
+        image = [superApperance platformImageFromPlistForKeyPath:keyPath];
+    }
+    
+    return image;
+}
 
 #pragma mark - Dynamic accessors
 

@@ -149,123 +149,120 @@ RCS_ID("$Id$");
         [self.superview bringSubviewToFront:self];
         
         // And make sure it animates from the current location, instead of the previous location
-        [animatorClass beginAnimations:@"OUILoupeOverlay" context:NULL];
         [animatorClass setAnimationsEnabled:NO];
-        CGPoint centerPoint = _touchPoint;
-        if (subjectView)
-            centerPoint = [(OUIScalingView *)subjectView convertPoint:centerPoint toView:[self superview]];
-        self.center = centerPoint;
-        self.transform = OUILoupeDismissedTransform;
-        self.alpha = 1;
-        [animatorClass commitAnimations];
+        [animatorClass animateWithDuration:0.2 animations:^{
+            CGPoint centerPoint = _touchPoint;
+            if (subjectView)
+                centerPoint = [(OUIScalingView *)subjectView convertPoint:centerPoint toView:[self superview]];
+            self.center = centerPoint;
+            self.transform = OUILoupeDismissedTransform;
+            self.alpha = 1;
+        }];
     }
-    
-    [animatorClass beginAnimations:@"OUILoupeOverlay" context:NULL];
-    [animatorClass setAnimationBeginsFromCurrentState: (_mode == OUILoupeOverlayNone)? NO : YES];
-    [animatorClass setAnimationsEnabled:YES];
-    _mode = newMode;
-    
-    if (newMode == OUILoupeOverlayNone) {
-        /* Okay, we actually leave our various mode settings alone when going to mode=none, because we want to keep displaying the last mode's contents as we animate out of existence. */
-        
-        /* Shrink and fade the loupe */
-        self.transform = OUILoupeDismissedTransform;
-        
-        self.alpha = 0;
-    } else {
-        if (loupeClipPath) {
-            CFRelease(loupeClipPath);
-            loupeClipPath = NULL;
-        }
-        if (loupeFrameImage) {
-            loupeFrameImage = nil;
-        }
-        if (loupeTabImage) {
-            loupeTabImage = nil;
-        }
-        
-        // Reset any transform applied when we dismissed it
-        self.transform = (CGAffineTransform){ 1, 0, 0, 1, 0, 0 };
-        
-        switch (newMode) {
-            case OUILoupeOverlayNone:
-            default:
-                loupeFramePosition.origin.x = 0;
-                loupeFramePosition.origin.y = 0;
-                loupeFramePosition.size.width = 0;
-                loupeFramePosition.size.height = 0;
-                loupeTouchPoint.x = 0;
-                loupeTouchPoint.y = 0;
-                self.alpha = 0;
-                break;
-            case OUILoupeOverlayCircle:
-            {
-                loupeFrameImage = [UIImage imageNamed:@"OUITextSelectionOverlay.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-                CGSize loupeImageSize = [loupeFrameImage size];
 
-                CGMutablePathRef ring = CGPathCreateMutable();
-                CGPathAddEllipseInRect(ring, NULL, CGRectInset((CGRect){{0, 0}, loupeImageSize}, 6, 6));
-                loupeClipPath = CGPathCreateCopy(ring);
-                CFRelease(ring);
-                
-                loupeFramePosition.size = loupeImageSize;
-                loupeFramePosition.origin.x = loupeImageSize.width / 2;
-                loupeFramePosition.origin.y = loupeImageSize.height;  // + 30;
-                loupeTouchPoint.x = loupeImageSize.width / 2;
-                loupeTouchPoint.y = loupeImageSize.height / 2;
-                break;
-            }
-            case OUILoupeOverlayRectangle:
-            {
-                UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-                loupeFrameImage = [plainImage stretchableImageWithLeftCapWidth:RectLoupeSideCapWidth
-                                                                   topCapHeight:RectLoupeTopCapHeight];
-                if (!loupeTabImage)
-                    loupeTabImage = [UIImage imageNamed:@"OUIRectangularOverlayArrow.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-                CGSize loupeImageSize;
-                loupeImageSize = [plainImage size];
-                loupeImageSize.width = 207;
-#if 0
-                // We can make the loupe taller or wider by stretching it here
-                loupeImageSize.height += 78.0f;
-#endif
-                CGRect contour = (CGRect){ {RectLoupeSideInset, RectLoupeTopInset},
-                                           { loupeImageSize.width - 2*RectLoupeSideInset,
-                                             loupeImageSize.height - (RectLoupeTopInset+RectLoupeBottomInset) } };
-                // This should form a rounded rect within the image
-                CGMutablePathRef ring = CGPathCreateMutable();
-                OQAddRoundedRect(ring, contour, 6.0f);
-                loupeClipPath = CGPathCreateCopy(ring);
-                CFRelease(ring);
-                loupeTouchPoint.x = CGRectGetMidX(contour);
-                loupeTouchPoint.y = CGRectGetMidY(contour);
-                loupeFramePosition.size = loupeImageSize;
-                loupeFramePosition.origin.x = loupeTouchPoint.x;
-                loupeFramePosition.origin.y = loupeImageSize.height + 20;
-                if (loupeTabImage) {
-                    CGSize tabSize = [loupeTabImage size];
-                    loupeTabPosition.x = loupeTouchPoint.x - floor(tabSize.width / 2);
-                    loupeTabPosition.y = loupeImageSize.height - tabSize.height;
-                }
-                break;
-            }
-        }
-        
-        self.alpha = 1;
-        
-        if (oldMode == OUILoupeOverlayNone)
-            [animatorClass setAnimationsEnabled:NO];
-        self.bounds = (CGRect){ .origin = { 0,0 }, .size = loupeFramePosition.size };
-        [animatorClass setAnimationsEnabled:YES];
-    }
-    
+    _mode = newMode;
+    [self didChangeValueForKey:@"mode"];
+
     // Adjust location for new size, touch point, whatever might have changed
     [self setTouchPoint:_touchPoint];
-    
-    [animatorClass commitAnimations];
-    [animatorClass setAnimationsEnabled:wereAnimationsEnabled];
-    
-    [self didChangeValueForKey:@"mode"];
+
+    [animatorClass setAnimationsEnabled:YES];
+    [animatorClass animateWithDuration:0.2 delay:0 options:(_mode == OUILoupeOverlayNone)? UIViewAnimationOptionBeginFromCurrentState : kNilOptions animations:^{
+        if (newMode == OUILoupeOverlayNone) {
+            /* Okay, we actually leave our various mode settings alone when going to mode=none, because we want to keep displaying the last mode's contents as we animate out of existence. */
+
+            /* Shrink and fade the loupe */
+            self.transform = OUILoupeDismissedTransform;
+
+            self.alpha = 0;
+        } else {
+            if (loupeClipPath) {
+                CFRelease(loupeClipPath);
+                loupeClipPath = NULL;
+            }
+            if (loupeFrameImage) {
+                loupeFrameImage = nil;
+            }
+            if (loupeTabImage) {
+                loupeTabImage = nil;
+            }
+
+            // Reset any transform applied when we dismissed it
+            self.transform = (CGAffineTransform){ 1, 0, 0, 1, 0, 0 };
+
+            switch (newMode) {
+                case OUILoupeOverlayNone:
+                default:
+                    loupeFramePosition.origin.x = 0;
+                    loupeFramePosition.origin.y = 0;
+                    loupeFramePosition.size.width = 0;
+                    loupeFramePosition.size.height = 0;
+                    loupeTouchPoint.x = 0;
+                    loupeTouchPoint.y = 0;
+                    self.alpha = 0;
+                    break;
+                case OUILoupeOverlayCircle:
+                {
+                    loupeFrameImage = [UIImage imageNamed:@"OUITextSelectionOverlay.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                    CGSize loupeImageSize = [loupeFrameImage size];
+
+                    CGMutablePathRef ring = CGPathCreateMutable();
+                    CGPathAddEllipseInRect(ring, NULL, CGRectInset((CGRect){{0, 0}, loupeImageSize}, 6, 6));
+                    loupeClipPath = CGPathCreateCopy(ring);
+                    CFRelease(ring);
+
+                    loupeFramePosition.size = loupeImageSize;
+                    loupeFramePosition.origin.x = loupeImageSize.width / 2;
+                    loupeFramePosition.origin.y = loupeImageSize.height;  // + 30;
+                    loupeTouchPoint.x = loupeImageSize.width / 2;
+                    loupeTouchPoint.y = loupeImageSize.height / 2;
+                    break;
+                }
+                case OUILoupeOverlayRectangle:
+                {
+                    UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                    loupeFrameImage = [plainImage stretchableImageWithLeftCapWidth:RectLoupeSideCapWidth
+                                                                      topCapHeight:RectLoupeTopCapHeight];
+                    if (!loupeTabImage)
+                        loupeTabImage = [UIImage imageNamed:@"OUIRectangularOverlayArrow.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+                    CGSize loupeImageSize;
+                    loupeImageSize = [plainImage size];
+                    loupeImageSize.width = 207;
+#if 0
+                    // We can make the loupe taller or wider by stretching it here
+                    loupeImageSize.height += 78.0f;
+#endif
+                    CGRect contour = (CGRect){ {RectLoupeSideInset, RectLoupeTopInset},
+                        { loupeImageSize.width - 2*RectLoupeSideInset,
+                            loupeImageSize.height - (RectLoupeTopInset+RectLoupeBottomInset) } };
+                    // This should form a rounded rect within the image
+                    CGMutablePathRef ring = CGPathCreateMutable();
+                    OQAddRoundedRect(ring, contour, 6.0f);
+                    loupeClipPath = CGPathCreateCopy(ring);
+                    CFRelease(ring);
+                    loupeTouchPoint.x = CGRectGetMidX(contour);
+                    loupeTouchPoint.y = CGRectGetMidY(contour);
+                    loupeFramePosition.size = loupeImageSize;
+                    loupeFramePosition.origin.x = loupeTouchPoint.x;
+                    loupeFramePosition.origin.y = loupeImageSize.height + 20;
+                    if (loupeTabImage) {
+                        CGSize tabSize = [loupeTabImage size];
+                        loupeTabPosition.x = loupeTouchPoint.x - floor(tabSize.width / 2);
+                        loupeTabPosition.y = loupeImageSize.height - tabSize.height;
+                    }
+                    break;
+                }
+            }
+
+            self.alpha = 1;
+
+            if (oldMode == OUILoupeOverlayNone)
+                [animatorClass setAnimationsEnabled:NO];
+            self.bounds = (CGRect){ .origin = { 0,0 }, .size = loupeFramePosition.size };
+        }
+    } completion:^(BOOL finished) {
+        [animatorClass setAnimationsEnabled:wereAnimationsEnabled];
+    }];
 }
 
 @synthesize mode = _mode;

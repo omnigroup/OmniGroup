@@ -104,7 +104,7 @@ static NSSize calendarImageSize;
 + (NSButton *)newCalendarButton;
 { 
     NSButton *button = [[OADatePickerButton alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, calendarImageSize.width, calendarImageSize.height)];
-    [button setButtonType:NSMomentaryPushInButton];
+    [button setButtonType:NSButtonTypeMomentaryPushIn];
     [button setBordered:NO];
     [button setImage:calendarImage];
     [button setImagePosition:NSImageOnly];

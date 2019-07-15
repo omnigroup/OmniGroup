@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -109,7 +109,7 @@ BOOL OAHandleChangeConfigurationValueURL(NSURL *url, NSError * __autoreleasing *
     NSURL *url = [OFConfigurationValue URLForConfigurationValues:[OFConfigurationValue configurationValues]];
     
     NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSPasteboardNameGeneral];
-    [pboard declareTypes:@[NSURLPboardType] owner:nil];
+    [pboard declareTypes:@[NSPasteboardTypeURL] owner:nil];
     [url writeToPasteboard:pboard];
 }
 
