@@ -1,6 +1,7 @@
 $(SRCROOT)/OmniAppKit.xcodeproj/project.pbxproj
 Appearance/OAAppearance.m
 Appearance/OAAppearancePropertyListCoder.m
+Appearance/OAColorCatalog.m
 Base.lproj/OAFindPanel.xib
 Bindings/OAControlTextColorTransformer.m
 Carbon/OAInternetConfig.m

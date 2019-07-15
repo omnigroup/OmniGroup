@@ -64,9 +64,9 @@ RCS_ID("$Id$");
 - (void)OADisclosureButtonCell_commonInit;
 {
     if (_collapsedImage == nil)
-        _collapsedImage = [NSImage imageNamed:@"OADisclosureButtonCollapsed" inBundle:OMNI_BUNDLE];
+        _collapsedImage = OAImageNamed(@"OADisclosureButtonCollapsed", OMNI_BUNDLE);
     if (_expandedImage == nil)
-        _expandedImage = [NSImage imageNamed:@"OADisclosureButtonExpanded" inBundle:OMNI_BUNDLE];
+        _expandedImage = OAImageNamed(@"OADisclosureButtonExpanded", OMNI_BUNDLE);
     [self _updateImageForCurrentState];
 }
 

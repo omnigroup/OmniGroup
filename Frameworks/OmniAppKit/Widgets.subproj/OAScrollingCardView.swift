@@ -31,7 +31,7 @@ open class ScrollingCardView: CardView {
     }
     
     /// ScrollingCardView takes over the content insets so that the scrollview can be positioned appropriately.
-    override public var contentInsets: NSEdgeInsets! {
+    override public var contentInsets: NSEdgeInsets {
         get {
             return super.contentInsets
         }
@@ -42,7 +42,7 @@ open class ScrollingCardView: CardView {
     }
     
     /// The inset between the scroll view and the scrolling content view. If unset, automatically computed from the corner radius.
-    public var scrollingContentInsets: NSEdgeInsets! {
+    @objc public var scrollingContentInsets: NSEdgeInsets {
         get {
             if let scrollingContentInsets = _scrollingContentInsets {
                 return scrollingContentInsets
@@ -61,7 +61,7 @@ open class ScrollingCardView: CardView {
     // MARK: Content View
 
     /// ScrollingCardView owns the superclass's content view.
-    /// Clients of OAScrollingCardView should instead set `scrollingContentView` instead.
+    /// Clients of ScrollingCardView should instead set `scrollingContentView` instead.
     override public var contentView: NSView? {
         willSet {
             assert(newValue is NSScrollView && contentView == nil)
@@ -183,7 +183,10 @@ open class ScrollingCardView: CardView {
     private func commonInit() {
         contentInsets = NSEdgeInsetsZero
 
-        scrollView = CardScrollView(frame: .zero)
+        // Use an arbitrary non-zero frame so that the initial constraints system passes
+        let initialFrame = NSRect(x: 0, y: 0, width: 640, height: 480)
+        
+        scrollView = CardScrollView(frame: initialFrame)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.cornerRadius = cornerRadius
         

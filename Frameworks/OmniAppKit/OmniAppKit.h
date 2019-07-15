@@ -12,6 +12,7 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OAColor-Archiving.h>
 #import <OmniAppKit/OAColor.h>
+#import <OmniAppKit/OAColorCatalog.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniAppKit/OAMoreInfoErrorRecovery.h>
 #import <OmniAppKit/OAParagraphStyle.h>

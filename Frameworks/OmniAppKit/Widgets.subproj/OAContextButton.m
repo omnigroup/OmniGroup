@@ -32,12 +32,12 @@ RCS_ID("$Id$");
 
 + (NSImage *)actionImage;
 {
-    return [NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAAction", OMNI_BUNDLE);
 }
 
 + (NSImage *)miniActionImage;
 {
-    return [NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAMiniAction", OMNI_BUNDLE);
 }
 
 - (id)initWithFrame:(NSRect)frameRect;

@@ -41,7 +41,7 @@ open class CardView: NSView {
     
     // MARK: Appearance
 
-    public var backgroundColor: NSColor {
+    @objc public var backgroundColor: NSColor {
         get {
             return backgroundView.backgroundColor
         }
@@ -50,7 +50,7 @@ open class CardView: NSView {
         }
     }
 
-    public var shadowStyle: CardViewShadowStyle {
+    @objc public var shadowStyle: CardViewShadowStyle {
         get {
             return backgroundView.shadowStyle
         }
@@ -59,7 +59,7 @@ open class CardView: NSView {
         }
     }
 
-    public var cornerRadius: CGFloat {
+    @objc public var cornerRadius: CGFloat {
         get {
             return backgroundView.cornerRadius
         }
@@ -69,14 +69,14 @@ open class CardView: NSView {
     }
     
     /// The insets between the edge of the view and the background view.
-    public var edgeInsets: NSEdgeInsets = CardView.defaultEdgeInsets {
+    @objc public var edgeInsets: NSEdgeInsets = CardView.defaultEdgeInsets {
         didSet {
             needsUpdateConstraints = true
         }
     }
     
     /// The inset between the background view and the content view. If unset, automatically computed from the corner radius.
-    public var contentInsets: NSEdgeInsets! {
+    @objc public var contentInsets: NSEdgeInsets {
         get {
             if let contentInset = _contentInsets {
                 return contentInset

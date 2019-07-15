@@ -11,6 +11,20 @@ import Foundation
 
 @objc(OARoundRectButton) public final class RoundRectButton: NSButton {
     
+    public override init(frame: NSRect) {
+        super.init(frame: frame)
+        
+        // Closest in frame/alignment geometry to what we're doing here
+        buttonCell.bezelStyle = .smallSquare
+    }
+    
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+
+        // Closest in frame/alignment geometry to what we're doing here
+        buttonCell.bezelStyle = .smallSquare
+    }
+    
     // MARK: - Class Properties
     override public static var cellClass: AnyClass? {
         get {
@@ -58,6 +72,13 @@ import Foundation
             var size = super.intrinsicContentSize
             size.width = size.width + 40
             return size
+        }
+    }
+    
+    public override var alignmentRectInsets: NSEdgeInsets {
+        get {
+            // We take over the entire frame for drawing; align to the frame not an inset portion of it.
+            return NSEdgeInsetsZero
         }
     }
     

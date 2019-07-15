@@ -13,30 +13,30 @@ RCS_ID("$Id$")
 
 NSImage *OAActionImage(void)
 {
-    return [NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAAction", OMNI_BUNDLE);
 }
 
 NSImage *OAActionNoBezelImage(void)
 {
-    return [NSImage imageNamed:@"OAActionNoBezel" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAActionNoBezel", OMNI_BUNDLE);
 }
 
 NSImage *OAGearTemplateImage(void)
 {
-    return [NSImage imageNamed:@"OAGearTemplate" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAGearTemplate", OMNI_BUNDLE);
 }
 
 NSImage *OAInfoTemplateImage(void)
 {
-    return [NSImage imageNamed:@"OAInfoTemplateImage" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAInfoTemplateImage", OMNI_BUNDLE);
 }
 
 NSImage *OAMiniAction(void)
 {
-    return [NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAMiniAction", OMNI_BUNDLE);
 }
 
 NSImage *OAMiniRemove(void)
 {
-    return [NSImage imageNamed:@"OAMiniRemove" inBundle:OMNI_BUNDLE];
+    return OAImageNamed(@"OAMiniRemove", OMNI_BUNDLE);
 }

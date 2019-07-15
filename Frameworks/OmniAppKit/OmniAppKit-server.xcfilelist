@@ -1,4 +1,5 @@
 $(SRCROOT)/OmniAppKit.xcodeproj/project.pbxproj
+Appearance/OAColorCatalog.m
 Colors/OAColor-Archiving.m
 Colors/OAColor.m
 OAMoreInfoErrorRecovery.m

@@ -55,7 +55,7 @@ RCS_ID("$Id$");
     }
     if ([self isEnabled]) {
         // Draw image near top center of its view
-        NSImage *dropDownImage = [NSImage imageNamed:@"OADropDownTriangle" inBundle:OMNI_BUNDLE];
+        NSImage *dropDownImage = OAImageNamed(@"OADropDownTriangle", OMNI_BUNDLE);
         NSSize imageSize = [dropDownImage size];
         CGRect bounds = [self bounds];
         CGRect imageRect;

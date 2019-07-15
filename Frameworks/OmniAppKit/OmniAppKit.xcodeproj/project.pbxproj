@@ -520,8 +520,14 @@
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
+		5F705733229613B9008141BE /* OAColorCatalog.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F705731229613B9008141BE /* OAColorCatalog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F705734229613B9008141BE /* OAColorCatalog.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F705732229613B9008141BE /* OAColorCatalog.m */; };
+		5F7F1C4322963DBB007B8B29 /* OAColorCatalog.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F705731229613B9008141BE /* OAColorCatalog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F7F1C4422963DBB007B8B29 /* OAColorCatalog.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F705732229613B9008141BE /* OAColorCatalog.m */; };
 		5F84BAAF2283835A002DDD8C /* OACardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F84BAAE2283835A002DDD8C /* OACardView.swift */; };
 		5F84BB182285ED55002DDD8C /* OAScrollingCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F84BB172285ED55002DDD8C /* OAScrollingCardView.swift */; };
+		5F85E9DE2296304200EF91F3 /* OAColorCatalog.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F705731229613B9008141BE /* OAColorCatalog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5F85EA062296304800EF91F3 /* OAColorCatalog.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F705732229613B9008141BE /* OAColorCatalog.m */; };
 		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
 		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
 		5FFF5172228C7FFE00D7BB28 /* OAStackedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFF514A228C7FFE00D7BB28 /* OAStackedCardView.swift */; };
@@ -1370,6 +1376,8 @@
 		5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentPositioningView.h; sourceTree = "<group>"; };
 		5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocumentPositioningView.m; sourceTree = "<group>"; };
 		5F25681A1606CBE5008265EA /* Automator.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Automator.framework; path = System/Library/Frameworks/Automator.framework; sourceTree = SDKROOT; };
+		5F705731229613B9008141BE /* OAColorCatalog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorCatalog.h; sourceTree = "<group>"; };
+		5F705732229613B9008141BE /* OAColorCatalog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorCatalog.m; sourceTree = "<group>"; };
 		5F84BAAE2283835A002DDD8C /* OACardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OACardView.swift; sourceTree = "<group>"; };
 		5F84BB172285ED55002DDD8C /* OAScrollingCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAScrollingCardView.swift; sourceTree = "<group>"; };
 		5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppleEventManager-OAExtensions.h"; sourceTree = "<group>"; };
@@ -1833,6 +1841,8 @@
 				4DA2ED401C51B70700CCEE3C /* OAAppearancePropertyListCoder.h */,
 				4D46F8511C5842C600FB8A91 /* OAAppearancePropertyListCoder-Internal.h */,
 				4DA2ED411C51B70700CCEE3C /* OAAppearancePropertyListCoder.m */,
+				5F705731229613B9008141BE /* OAColorCatalog.h */,
+				5F705732229613B9008141BE /* OAColorCatalog.m */,
 			);
 			path = Appearance;
 			sourceTree = "<group>";
@@ -3001,6 +3011,7 @@
 				34BF52CA1EC135E70028AE7E /* OAFontDescriptor.h in Headers */,
 				1063B24322862018000C95C2 /* OASignificantTimeChangeObserver.h in Headers */,
 				340D87031EC1303100261434 /* OAColor.h in Headers */,
+				5F7F1C4322963DBB007B8B29 /* OAColorCatalog.h in Headers */,
 				34BF52CC1EC136EE0028AE7E /* OmniAppKit.h in Headers */,
 				341876E61EC2578B00954EF3 /* OATextStorage.h in Headers */,
 				341877161EC260DD00954EF3 /* OATextAttributes.h in Headers */,
@@ -3025,6 +3036,7 @@
 				4D9E9C7C1C52C1EB00BAE4A3 /* OAAppearancePropertyListCoder.h in Headers */,
 				3484DD9A194FFCB100D83731 /* NSFileWrapper-OAExtensions.h in Headers */,
 				4D8B6F581C56E3E700C05FA2 /* OAAppearance-Internal.h in Headers */,
+				5F85E9DE2296304200EF91F3 /* OAColorCatalog.h in Headers */,
 				3459EE3A1B694A8400D4F085 /* OAColor.h in Headers */,
 				3484DD97194FFC8700D83731 /* OATextAttachmentCell.h in Headers */,
 				3484DD9C194FFCC800D83731 /* OAFontDescriptor.h in Headers */,
@@ -3063,6 +3075,7 @@
 				4AA1E69508AA764600E2FF6B /* OAFindController.h in Headers */,
 				4AA1E69608AA764600E2FF6B /* OAFindControllerTargetProtocol.h in Headers */,
 				4AA1E69708AA764600E2FF6B /* OAFindPattern.h in Headers */,
+				5F705733229613B9008141BE /* OAColorCatalog.h in Headers */,
 				4AA1E69808AA764600E2FF6B /* OAFontCache.h in Headers */,
 				4AA1E69908AA764600E2FF6B /* OAPasteboardHelper.h in Headers */,
 				4AA1E69A08AA764600E2FF6B /* OARegExFindPattern.h in Headers */,
@@ -3979,6 +3992,7 @@
 				34A8966A1EC282B4003260FC /* OAParagraphStyle.m in Sources */,
 				341877141EC25D3C00954EF3 /* NSAttributedString-OAExtensions.m in Sources */,
 				34F0F3951EC26BCE00A970FF /* OATextAttachment.m in Sources */,
+				5F7F1C4422963DBB007B8B29 /* OAColorCatalog.m in Sources */,
 				1063AFAA2286000B000C95C2 /* OASignificantTimeChangeObserver.m in Sources */,
 				341877171EC260DD00954EF3 /* OATextAttributes.m in Sources */,
 			);
@@ -4000,6 +4014,7 @@
 				3E060931221C5FAA00C1612A /* OAMoreInfoErrorRecovery.m in Sources */,
 				3435EF8B1DEE4CFE002CB3F9 /* OAStrings.m in Sources */,
 				348293ED1B1F842C00812D27 /* NSTextStorage-OAFixes.m in Sources */,
+				5F85EA062296304800EF91F3 /* OAColorCatalog.m in Sources */,
 				3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */,
 				3484DD9D194FFCCD00D83731 /* OAFontDescriptor.m in Sources */,
 				342F05311B697A6100C7BB34 /* OAAppearanceColors.m in Sources */,
@@ -4149,6 +4164,7 @@
 				5FFF5174228C800600D7BB28 /* OAScrollingStackedCardView.swift in Sources */,
 				4AA1E7E908AA764600E2FF6B /* OAContextPopUpButton.m in Sources */,
 				4DA2ED431C51B70700CCEE3C /* OAAppearancePropertyListCoder.m in Sources */,
+				5F705734229613B9008141BE /* OAColorCatalog.m in Sources */,
 				4AA1E7EA08AA764600E2FF6B /* OAContextControl.m in Sources */,
 				4AA1E7EC08AA764600E2FF6B /* OAAutosizingHorizontalRule.m in Sources */,
 				1EF6651D1D908DD600B207AA /* OAPassphrasePrompt.m in Sources */,

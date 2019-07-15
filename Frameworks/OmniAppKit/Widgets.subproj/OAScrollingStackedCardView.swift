@@ -36,7 +36,7 @@ open class ScrollingStackedCardView: ScrollingCardView {
         }
     }
     
-    public var contentViewSpacing: CGFloat {
+    @objc public var contentViewSpacing: CGFloat {
         get {
             return stackView.spacing
         }

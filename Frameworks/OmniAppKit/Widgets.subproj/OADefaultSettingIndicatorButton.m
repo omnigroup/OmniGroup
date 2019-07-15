@@ -35,8 +35,8 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 {
     OBINITIALIZE;
     
-    OnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE];
-    OffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE];
+    OnImage = OAImageNamed(@"OADefaultSettingIndicatorOn", OMNI_BUNDLE);
+    OffImage = OAImageNamed(@"OADefaultSettingIndicatorOff", OMNI_BUNDLE);
 }
 
 + (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id <NSCopying>)settingIdentifier forView:(NSView *)view delegate:(id)delegate;

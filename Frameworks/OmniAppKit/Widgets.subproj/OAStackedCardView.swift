@@ -27,13 +27,15 @@ open class StackedCardView: CardView {
         }
     }
     
+    // MARK: Appearance
+    
     public var contentViews: [NSView] = [] {
         didSet {
             needsReconfigureViews = true
         }
     }
     
-    public var contentViewSpacing: CGFloat {
+    @objc public var contentViewSpacing: CGFloat {
         get {
             return stackView.spacing
         }

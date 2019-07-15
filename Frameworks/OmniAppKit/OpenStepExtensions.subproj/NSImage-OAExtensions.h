@@ -19,17 +19,21 @@
 extern NSString * const OADropDownTriangleImageName;
 extern NSString * const OAInfoTemplateImageName;
 
+// Returns an image with the specified name from the specified bundle or nil
+extern NSImage *OAImageNamed(NSString *name, NSBundle *bundle);
+
 @class /* Foundation     */ NSMutableSet;
 @class /* OmniFoundation */ OFEnumNameTable;
 
 #define OARequireImageNamed(name) ({NSImage *image = [NSImage imageNamed:name]; OBASSERT(image, @"Image \"%@\" is missing!", name); image;})
-#define OARequireImageNamedInBundle(name,bundle) ({NSImage *image = [NSImage imageNamed:name inBundle:bundle]; OBASSERT(image, @"Image \"%@\" is missing from bundle %@", name, bundle); image;})
+#define OARequireImageNamedInBundle(name,bundle) ({NSImage *image = OAImageNamed(name, bundle); OBASSERT(image, @"Image \"%@\" is missing from bundle %@", name, bundle); image;})
+
 
 @interface NSImage (OAExtensions)
 
    // Returns an image with the specified name from the specified bundle
-+ (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)aBundle;
-   // Returns an image with the specified control tint if one is available, otherwise returns the image with the specified name. Tinted images are searched for by appending the name of the tint ("Graphite", "Aqua", "Clear") to the image, with an optional hyphen separating the name from the tint.
++ (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)aBundle NS_DEPRECATED_MAC(10_0, 10_13, "Use OAImageNamed(NSString *name, NSBundle *bundle)");
+//   // Returns an image with the specified control tint if one is available, otherwise returns the image with the specified name. Tinted images are searched for by appending the name of the tint ("Graphite", "Aqua", "Clear") to the image, with an optional hyphen separating the name from the tint.
 + (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 + (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
    // Calls imageNamed:withTint:inBundle:, using the current control tint.

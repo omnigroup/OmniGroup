@@ -996,7 +996,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
     // make these images available to client nibs and whatnot (retaining them so they stick around in cache).
     // Store them in ivars to avoid clang scan-build warnings.
-    CautionIcon = [[NSImage imageNamed:@"OACautionIcon" inBundle:OMNI_BUNDLE] retain];
+    CautionIcon = [OAImageNamed(@"OACautionIcon", OMNI_BUNDLE) retain];
 }
 
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;

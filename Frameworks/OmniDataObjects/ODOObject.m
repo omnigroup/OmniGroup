@@ -1,4 +1,4 @@
-// Copyright 2008-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -856,7 +856,12 @@ static void _validateRelatedObjectClass(const void *value, void *context)
         // Check for required values in attributes and to-one relationships.  A nil in a to-many (currently) means it is an lazy to-many.  We aren't supporting required to-many relationships right now.
         if (!value && (!flags.relationship || !flags.toMany)) {
             if (!flags.optional) {
-                ODOError(outError, ODORequiredValueNotPresentValidationError, @"Cannot save.", ([NSString stringWithFormat:@"Required property '%@' not set on '%@'.", [prop name], [self shortDescription]]));
+                NSError *error = nil;
+                ODOError(&error, ODORequiredValueNotPresentValidationError, @"Cannot save.", ([NSString stringWithFormat:@"Required property '%@' not set on '%@'.", [prop name], [self shortDescription]]));
+                OBRecordBacktraceWithContext(error.localizedFailureReason.UTF8String, OBBacktraceBuffer_Generic, self);
+                assert(value != nil || flags.optional);
+                if (outError != NULL)
+                    *outError = error;
                 return NO;
             }
             

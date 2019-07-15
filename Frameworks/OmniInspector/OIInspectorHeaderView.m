@@ -77,7 +77,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
                 OIInspectorHeaderImageState stateIndex;
                 for (stateIndex = 0; stateIndex < OIInspectorHeaderImageStateCount; stateIndex++) {
                     NSString *imageName = [NSString stringWithFormat:@"OI%@Titlebar%@%@", OIInspectorHeaderImageHeightNames[heightIndex], OIInspectorHeaderImageKeyStatusNames[keyStatusIndex], OIInspectorHeaderImageStateNames[stateIndex]];
-                    _headerImages[heightIndex][keyStatusIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
+                    _headerImages[heightIndex][keyStatusIndex][stateIndex] = OAImageNamed(imageName, [OIInspectorHeaderView bundle]);
                     OBASSERT(_headerImages[heightIndex][keyStatusIndex][stateIndex]);
                 }
             }
@@ -90,15 +90,15 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
             OIInspectorCloseButtonState stateIndex;
             for (stateIndex = 0; stateIndex < OIInspectorCloseButtonStateCount; stateIndex++) {
                 NSString *imageName = [NSString stringWithFormat:@"OIWindowSmallCloseBox%@%@", OIInspectorCloseButtonStateNames[stateIndex], OIInspectorHeaderImageTintNames[tintIndex]];
-                _closeButtonImages[tintIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
+                _closeButtonImages[tintIndex][stateIndex] = OAImageNamed(imageName, [OIInspectorHeaderView bundle]);
 		OBASSERT(_closeButtonImages[tintIndex][stateIndex]);
             }
         }
     }
 
-    _expandedImage = [NSImage imageNamed:@"OIExpanded" inBundle:[OIInspectorHeaderView bundle]];
+    _expandedImage = OAImageNamed(@"OIExpanded", [OIInspectorHeaderView bundle]);
     OBASSERT(_expandedImage);
-    _collapsedImage = [NSImage imageNamed:@"OICollapsed" inBundle:[OIInspectorHeaderView bundle]];
+    _collapsedImage = OAImageNamed(@"OICollapsed", [OIInspectorHeaderView bundle]);
     OBASSERT(_collapsedImage);
 
     _textAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, nil];

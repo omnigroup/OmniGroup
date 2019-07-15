@@ -140,7 +140,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [dayOfMonthCell setFont:[NSFont systemFontOfSize:12.0f]];
 
     buttons = [[NSMutableArray alloc] initWithCapacity:2];
-    NSImage *leftImage = [NSImage imageNamed:@"OALeftArrow" inBundle:thisBundle];
+    NSImage *leftImage = OAImageNamed(@"OALeftArrow", thisBundle);
     NSSize imageSize = [leftImage size];
 
     NSRect _monthAndYearViewRect = NSMakeRect(frameRect.origin.x, frameRect.origin.y + 1.0f, frameRect.size.width, imageSize.height);
@@ -152,15 +152,15 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     buttonFrame = NSMakeRect(_monthAndYearViewRect.origin.x + 1.0f, _monthAndYearViewRect.origin.y, imageSize.width, imageSize.height);
     button = [self _createButtonWithFrame:buttonFrame];
     [button setImage:leftImage];
-    [button setAlternateImage:[NSImage imageNamed:@"OALeftArrowPressed" inBundle:thisBundle]];
+    [button setAlternateImage:OAImageNamed(@"OALeftArrowPressed", thisBundle)];
     [button setAction:@selector(previousMonth:)];
     [button setAutoresizingMask:NSViewMaxXMargin];
     [monthAndYearView addSubview:button];
 
     buttonFrame = NSMakeRect(NSMaxX(_monthAndYearViewRect) - 1.0f - imageSize.width, _monthAndYearViewRect.origin.y, imageSize.width, imageSize.height);
     button = [self _createButtonWithFrame:buttonFrame];
-    [button setImage:[NSImage imageNamed:@"OARightArrow" inBundle:thisBundle]];
-    [button setAlternateImage:[NSImage imageNamed:@"OARightArrowPressed" inBundle:thisBundle]];
+    [button setImage:OAImageNamed(@"OARightArrow", thisBundle)];
+    [button setAlternateImage:OAImageNamed(@"OARightArrowPressed", thisBundle)];
     [button setAction:@selector(nextMonth:)];
     [button setAutoresizingMask:NSViewMinXMargin];
     [monthAndYearView addSubview:button];

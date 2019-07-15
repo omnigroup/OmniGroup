@@ -28,6 +28,38 @@ NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 @interface _OATintedImage : NSImage
 @end
 
+NSImage *OAImageNamed(NSString *name, NSBundle *bundle)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(![NSString isEmptyString:name]);
+    
+    // If we get asked for an image in the app wrapper (or unspecified bundle, which we take to mean the app wrapper), just let +imageNamed: do its thing.
+    if ((bundle == nil) || (bundle == [NSBundle mainBundle])) {
+        return [NSImage imageNamed:name];
+    }
+    
+    // +imageForResource: is documented to not cache. We used to use the +imageNamed: cache by setting our cache key as the name of the image so that future lookups would work. But, this makes xib loading unable to find the image. <bug:///86682> (Unassigned: Could not find image named 'OACautionIcon')
+    static NSCache *imageCache;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        imageCache = [[NSCache alloc] init];
+        imageCache.name = @"com.omnigroup.OmniAppKit.imageNamed_inBundle";
+    });
+    
+    NSString *imageNameInCache = [NSString stringWithFormat:@"%@.%@", [bundle bundleIdentifier], name];
+    NSImage *image = [imageCache objectForKey:imageNameInCache];
+    if (![image isValid]) {
+        // If we didn't find the image in the cache, actually try to load it from the bundle (using the original, unmangled name, which is the actual name of the resource), then name it, using our bundle-specific mangled name so that it will be cached without conflicting with any identically-named images in the app wrapper (or in other bundles).
+        image = [bundle imageForResource:name];
+        if (image) {
+            [imageCache setObject:image forKey:imageNameInCache];
+        }
+    }
+
+    return image;
+}
+
+
 @implementation NSImage (OAExtensions)
 
 #ifdef DEBUG
@@ -117,31 +149,7 @@ OBPerformPosing(^{
 
 + (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)bundle;
 {
-    OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(![NSString isEmptyString:imageName]);
-    
-    // If we get asked for an image in the app wrapper (or unspecified bundle, which we take to mean the app wrapper), just let +imageNamed: do its thing.
-    if ((bundle == nil) || (bundle == [NSBundle mainBundle])) {
-        return [self imageNamed:imageName];
-    }
-
-    // +imageForResource: is documented to not cache. We used to use the +imageNamed: cache by setting our cache key as the name of the image so that future lookups would work. But, this makes xib loading unable to find the image. <bug:///86682> (Unassigned: Could not find image named 'OACautionIcon')
-    static NSCache *imageCache;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        imageCache = [[NSCache alloc] init];
-        imageCache.name = @"com.omnigroup.OmniAppKit.imageNamed_inBundle";
-    });
-
-    NSString *imageNameInCache = [NSString stringWithFormat:@"%@.%@", [bundle bundleIdentifier], imageName];
-    NSImage *image = [imageCache objectForKey:imageNameInCache];
-    if (![image isValid]) {
-        // If we didn't find the image in the cache, actually try to load it from the bundle (using the original, unmangled name, which is the actual name of the resource), then name it, using our bundle-specific mangled name so that it will be cached without conflicting with any identically-named images in the app wrapper (or in other bundles).
-        image = [bundle imageForResource:imageName];
-        if (image)
-            [imageCache setObject:image forKey:imageNameInCache];
-    }
-    return image;
+    return OAImageNamed(imageName, bundle);
 }
 
 + (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
@@ -166,15 +174,15 @@ OBPerformPosing(^{
     if (tintSuffix) {
         NSImage *tinted;
         
-        tinted = [self imageNamed:[NSString stringWithStrings:imageStem, @"-", tintSuffix, nil] inBundle:aBundle];
+        tinted = OAImageNamed([NSString stringWithStrings:imageStem, @"-", tintSuffix, nil], aBundle);
         if (tinted)
             return tinted;
-        tinted = [self imageNamed:[imageStem stringByAppendingString:tintSuffix] inBundle:aBundle];
+        tinted = OAImageNamed([imageStem stringByAppendingString:tintSuffix], aBundle);
         if (tinted)
             return tinted;
     }
     
-    NSImage *baseImage = [self imageNamed:imageStem inBundle:aBundle];
+    NSImage *baseImage = OAImageNamed(imageStem, aBundle);
 
     if (baseImage == nil && !allowNil)
         [NSException raise:NSInvalidArgumentException format:@"Internal error: Unable to find image named '%@' in bundle %@", imageStem, aBundle];

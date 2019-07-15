@@ -54,7 +54,7 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
         }
     } else {
         NSBundle *bundle = [OFBundledClass bundleForClassNamed:self.className];
-        _iconImage = [NSImage imageNamed:self.iconName inBundle:bundle];
+        _iconImage = OAImageNamed(self.iconName, bundle);
     }
 
 #ifdef DEBUG

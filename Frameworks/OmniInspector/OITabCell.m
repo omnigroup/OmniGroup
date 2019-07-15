@@ -103,7 +103,7 @@ NSString * const TabTitleDidChangeNotification = @"TabTitleDidChange";
     [self _drawImageInRect:imageRect inView:controlView];
 
     if (isPinned) {
-        NSImage *image = [NSImage imageNamed:@"OITabLock.pdf" inBundle:OMNI_BUNDLE];
+        NSImage *image = OAImageNamed(@"OITabLock.pdf", OMNI_BUNDLE);
         NSSize imageSize = image.size;
         NSPoint point = NSMakePoint(NSMaxX(cellFrame) - imageSize.width - 3.0f, NSMaxY(cellFrame) - imageSize.height - 2.0f);
         [image drawFlippedInRect:(NSRect){point, imageSize} operation:NSCompositingOperationSourceOver];

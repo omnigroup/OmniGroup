@@ -48,9 +48,9 @@ RCS_ID("$Id$")
 
 - (void)setImageName:(NSString *)anImageName inBundle:(NSBundle *)aBundle;
 {
-    clearImage = [NSImage imageNamed:anImageName inBundle:aBundle];
-    aquaImage = [NSImage imageNamed:[anImageName stringByAppendingString:OAAquaImageTintSuffix] inBundle:aBundle];
-    graphiteImage = [NSImage imageNamed:[anImageName stringByAppendingString:OAGraphiteImageTintSuffix] inBundle:aBundle];
+    clearImage = OAImageNamed(anImageName, aBundle);
+    aquaImage = OAImageNamed([anImageName stringByAppendingString:OAAquaImageTintSuffix], aBundle);
+    graphiteImage = OAImageNamed([anImageName stringByAppendingString:OAGraphiteImageTintSuffix], aBundle);
     
     [self _setButtonImages];
 }

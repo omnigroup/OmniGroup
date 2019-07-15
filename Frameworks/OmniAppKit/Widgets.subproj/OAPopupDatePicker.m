@@ -83,7 +83,7 @@ static NSSize calendarImageSize;
 + (void)initialize;
 {
     OBINITIALIZE;
-    calendarImage = [[NSImage imageNamed:@"calendar" inBundle:OMNI_BUNDLE] retain];
+    calendarImage = [OAImageNamed(@"calendar", OMNI_BUNDLE) retain];
     calendarImageSize = [calendarImage size];
 }
 

@@ -26,7 +26,7 @@ static NSImage *ChasingArrows = nil;
 {
     OBINITIALIZE;
     
-    ChasingArrows = [NSImage imageNamed:@"OAChasingArrows" inBundle:OMNI_BUNDLE];
+    ChasingArrows = OAImageNamed(@"OAChasingArrows", OMNI_BUNDLE);
 }
 
 // Init and dealloc

@@ -223,7 +223,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         image = [NSImage imageNamed:imageName];
     }
     if (image == nil) {
-        image = [NSImage imageNamed:imageName inBundle:_resourceBundle];
+        image = OAImageNamed(imageName, _resourceBundle);
     }
     return image;
 }

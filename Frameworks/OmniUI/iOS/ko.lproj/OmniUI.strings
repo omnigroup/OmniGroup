@@ -1,8 +1,7 @@
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* Default title for the About menu item
-   title for in app purchase - placeholder is product title */
+/* Default title for the About menu item */
 "About %@" = "%@ 정보";
 
 /* MultiPane Back button title, when system is compact */
@@ -109,13 +108,10 @@
 
 /* button title
    button title - password/passphrase prompt
-   Dismiss alert
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
    Web view error opening URL cancel button. */
 
 
-"OK" = "양호";
+"OK" = "승인";
 
 /* Menu item to subscribe to Omni's newsletter */
 "Omni Newsletter Signup" = "Omni 뉴스레터 등록";
