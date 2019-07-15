@@ -1,8 +1,5 @@
-/*
-     xz_config.h - hand-generated config file to include XZ-Embedded into OmniFoundation.
- 
-     $Id$
-*/
+// xz_config.h - hand-generated config file to include XZ-Embedded into OmniFoundation.
+
 #define XZ_DEC_BCJ
 #define XZ_DEC_X86
 #define XZ_EXTERN OB_HIDDEN

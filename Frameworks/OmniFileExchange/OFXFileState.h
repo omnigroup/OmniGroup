@@ -1,11 +1,9 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 /*
  These edits are relative to the local snapshot of a document. We cannot stop incoming user edits in all cases and we cannot stop incoming server edits in all cases, but we can and must serialize how we update our database of snapshots. For example, we might have a document open with unsaved local changes when we notice that the server has a newer copy. We might also go offline before we get a chance to fully download that update, so we may want to persist that our local published document is newer than our snapshot AND that the server version is newer. In this case, we probably have an impending conflict. There maybe be some cases of this that we can resolve automatically (for example, if we download the new version from the server and see that it was just a rename while our local changes were content edits).

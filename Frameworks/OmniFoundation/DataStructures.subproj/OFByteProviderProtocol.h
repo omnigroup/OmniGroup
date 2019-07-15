@@ -1,11 +1,9 @@
-// Copyright 2014-2017 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 /*
  OFByteProvider / OFByteAcceptor describes an abstract interface for things that look a bit like buffers and can accept chunks of data at arbitrary offsets. If NSStream/CFStream is analogous to a pipe or socket, then OFByteProvider/Acceptor is equivalent to a file or a block device.

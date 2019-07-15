@@ -1,11 +1,9 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 /*
  A scroll notifier is a class that agrees to send notifications when an associated scroll view starts and stops scrolling. This is useful for deep subviews that need to change their display while scrolling. The subview can implement OUIScrollNotifierDelegate and register to receive callbacks for all UIScrollViews above it in the view hierarchy using:

@@ -1,11 +1,9 @@
-// Copyright 2005-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 
 // This contains the non ObjC extensions to NSError, useful for including them in Spotlight/QuickLook plugins w/o poluting the global ObjC namespace.

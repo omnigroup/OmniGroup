@@ -1,11 +1,9 @@
-// Copyright 1997-2017 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
-//
-// $Id$
 
 //
 // This class was not part of the original design, and it clearly suffers as a result.  For example, it doesn't handle multiple host addresses at all.  I'm tempted to remove it altogether, but it does serve a useful purpose and while I don't have time to fix it right now it might be useful to some.
