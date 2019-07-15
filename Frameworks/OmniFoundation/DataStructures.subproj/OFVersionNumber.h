@@ -21,8 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 + (BOOL)isOperatingSystem114OrLater;
 + (BOOL)isOperatingSystem120OrLater;
++ (BOOL)isOperatingSystem130OrLater;
 #else
 + (BOOL)isOperatingSystemMojaveOrLater; // 10.14
++ (BOOL)isOperatingSystemCatalinaOrLater; // 10.15
 + (BOOL)isOperatingSystemLikelyToPanicWithCrayonColorPicker;  // 10.13.6, RADAR# 42359231 <bug:///163187> (Mac-OmniGraffle Crasher: [radar and tsi] System hangs when making changes in Pencil Color Picker [10.13.6] (crayon))
 #endif
 

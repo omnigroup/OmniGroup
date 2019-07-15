@@ -254,7 +254,7 @@ public enum CardViewShadowStyle: Int {
 
     private func makeShadow(for appearance: NSAppearance.Name) -> NSShadow? {
         func _shadowColor(for appearance: NSAppearance.Name) -> NSColor? {
-            let alphaValue: CGFloat = 0.40
+            let alphaValue: CGFloat = 0.20
             if case .aqua = appearance {
                 return NSColor.black.withAlphaComponent(alphaValue)
             }

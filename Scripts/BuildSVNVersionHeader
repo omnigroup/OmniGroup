@@ -105,7 +105,7 @@ elif [ -d "../.git" ]; then
         INPUT_XCCONFIG="Omni-Version-Info.xcconfig"
         if [ -f "${INPUT_XCCONFIG}" ]; then
             $GIT blame -l "${INPUT_XCCONFIG}" | while read line; do
-                if [[ ! "$line" =~ "^OMNI_[^ ]+_VERSION" ]]; then
+                if [[ ! "$line" =~ "OMNI_[^ ]+_VERSION" ]]; then
                     continue
                 fi
 

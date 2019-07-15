@@ -19,7 +19,7 @@
 - (NSString *)relativePathToFilename:(NSString *)otherFilename;
     // Given absolute file paths like "/applications/omniweb/screenshots/index.html" and "/applications/omniweb/faq/content.html", returns a relative path, "../../faq/content.html". If no relative path is possible (i.e. the paths have no common root), returns otherFilename.
 
-- (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
+- (void)splitName:(NSString * OB_AUTORELEASING *)outName andCounter:(NSUInteger *)outCounter;
 
 // Utility routine also used by -[NSFileManager(OFExtensions) path:isAncestorOfPath:relativePath:]. You can call this directly, but you can also just call -commonRootPathOfFilename:andFilename:.
 NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename, NSArray **componentsLeft, NSArray **componentsRight);

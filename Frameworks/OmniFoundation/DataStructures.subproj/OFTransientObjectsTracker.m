@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,13 +60,13 @@ NSMutableDictionary *TrackerByClass = nil;
     return tracker;
 }
 
-- initWithTrackedClass:(Class)cls addInitializers:(void (^)(OFTransientObjectsTracker *tracker))addInitializers;
+- initWithTrackedClass:(Class)trackedClass addInitializers:(void (^)(OFTransientObjectsTracker *tracker))addInitializers;
 {
     if (!(self = [super init]))
         return nil;
     
-    _trackedClass = cls;
-    _queue = dispatch_queue_create([[NSString stringWithFormat:@"com.omnigroup.OmniAppKit.OFTransientObjectsTracker.%@", NSStringFromClass(cls)] UTF8String], DISPATCH_QUEUE_SERIAL);
+    _trackedClass = trackedClass;
+    _queue = dispatch_queue_create([[NSString stringWithFormat:@"com.omnigroup.OmniAppKit.OFTransientObjectsTracker.%@", NSStringFromClass(trackedClass)] UTF8String], DISPATCH_QUEUE_SERIAL);
 
     _originalImpBySelector = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, NULL);
     
@@ -76,7 +76,7 @@ NSMutableDictionary *TrackerByClass = nil;
         // No SEL parameter is passed to the block
         IMP replacment_dealloc = imp_implementationWithBlock(^(id object){
             const void *ptr = object;
-            Class cls = object_getClass(object);
+            Class objectClass = object_getClass(object);
             
             dispatch_async(_queue, ^{
                 if (_liveInstanceToAllocationBacktrace == NULL)
@@ -85,10 +85,10 @@ NSMutableDictionary *TrackerByClass = nil;
                 // If this pointer was allocated during this tracking session, then it is transient.
                 NSString *backtrace = CFDictionaryGetValue(_liveInstanceToAllocationBacktrace, ptr);
                 if (backtrace) {
-                    NSMutableArray *backtraces = _transientInstanceAllocationBacktracesByClass[cls];
+                    NSMutableArray *backtraces = _transientInstanceAllocationBacktracesByClass[objectClass];
                     if (!backtraces) {
                         backtraces = [[NSMutableArray alloc] init];
-                        _transientInstanceAllocationBacktracesByClass[(id)cls] = backtraces;
+                        _transientInstanceAllocationBacktracesByClass[(id)objectClass] = backtraces;
                         [backtraces release];
                     }
                     [backtraces addObject:backtrace];
@@ -99,7 +99,7 @@ NSMutableDictionary *TrackerByClass = nil;
             _original_dealloc(object, @selector(dealloc));
         });
         
-        _original_dealloc = (typeof(_original_dealloc))OBReplaceMethodImplementation(cls, @selector(dealloc), replacment_dealloc);
+        _original_dealloc = (typeof(_original_dealloc))OBReplaceMethodImplementation(_trackedClass, @selector(dealloc), replacment_dealloc);
 
         // Add initializers
         addInitializers(self);

@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) id object;
 @property(nonatomic, readonly) NSString *keyPath;
 
+- (OFBindingPoint *)bindingPointByAppendingKey:(NSString *)key;
+
 @end
 
 static inline OFBindingPoint * OFBindingPointMake(id object, NSString *keyPath)

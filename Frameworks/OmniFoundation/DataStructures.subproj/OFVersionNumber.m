@@ -121,6 +121,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     return isLater;
 }
 
++ (BOOL)isOperatingSystem130OrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"13.0");
+    });
+    
+    return isLater;
+}
+
 #else
 
 + (BOOL)isOperatingSystemMojaveOrLater;
@@ -129,6 +140,17 @@ static BOOL isOperatingSystemAtLeastVersionString(NSString *versionString)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         isLater = isOperatingSystemAtLeastVersionString(@"10.14");
+    });
+    
+    return isLater;
+}
+
++ (BOOL)isOperatingSystemCatalinaOrLater;
+{
+    static BOOL isLater;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemAtLeastVersionString(@"10.15");
     });
     
     return isLater;

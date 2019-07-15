@@ -1,4 +1,4 @@
-// Copyright 2015-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2015-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,9 +172,15 @@ RCS_ID("$Id$")
         [inspectorContainerView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [self.containerStackView addView:inspectorContainerView inGravity:NSStackViewGravityTop];
         [self.containerStackView setVisibilityPriority:newPriority forView:inspectorContainerView];
-        [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+        OIAutolayoutInspectorHeaderView *headerView = inspectorController.headerView;
+        if (headerView != nil) {
+            [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+            [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+        } else {
+            [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:[[inspectorController inspector] view] attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+            [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:[[inspectorController inspector] view] attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+        }
         [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:[[inspectorController inspector] view] attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-        [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
         
         [inspectorContainerView setContentHuggingPriority:NSLayoutPriorityDefaultHigh forOrientation:NSLayoutConstraintOrientationVertical];
         

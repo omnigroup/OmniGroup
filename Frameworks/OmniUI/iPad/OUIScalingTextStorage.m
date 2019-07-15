@@ -1,4 +1,4 @@
-// Copyright 2010-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -63,6 +63,10 @@ static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary
     
     if (font) // just in case the fallback path's scaling doesn't work. We'll get the wrong size text, but won't explode
         scaledAttributes[NSFontAttributeName] = font;
+
+    if (originalAttributes[NSKernAttributeName]) {
+        scaledAttributes[NSKernAttributeName] = [NSNumber numberWithFloat:(((NSNumber *)originalAttributes[NSKernAttributeName]).floatValue / scale)];
+    }
 }
 
 NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat scale)

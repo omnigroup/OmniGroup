@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -215,7 +215,7 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
 /*"
 Goes through the subviews and finds the first subview that is willing to stretch vertically.  This view is then given all of the height that is not taken by the other subviews.
 "*/
-- (void) _layoutSubviews;
+- (void)_layoutSubviews;
 {
     NSRect subviewFrame;
 
@@ -224,8 +224,6 @@ Goes through the subviews and finds the first subview that is willing to stretch
         
     if (flags.needsReload)
         [self _loadSubviews];
-
-    [self layoutSubtreeIfNeeded];
 
     flags.needsLayout = NO;
     NSWindow *window = [self window];    
@@ -308,7 +306,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize;
 {
-    [self _layoutSubviews];
+    [self layout];
 }
 
 #pragma mark - NSObject (NSKeyValueObserving)

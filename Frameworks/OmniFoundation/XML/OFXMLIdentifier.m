@@ -89,10 +89,9 @@ NSString *OFXMLCreateID(void)
 /*
  A more generic base-64 encoding than OFXMLCreateID (w/o all the cruft from RFC-1521 that would make invalid XML identifiers). This doesn't guarantee different output for different datas in all cases. In particular, if <00 00 00>
  */
-NSString *OFXMLCreateIDFromData(NSData *data)
+static NSString *_OFXMLCreateIDFromBuffer(const uint8_t *input, NSUInteger inputSize) NS_RETURNS_RETAINED;
+static NSString *_OFXMLCreateIDFromBuffer(const uint8_t *input, NSUInteger inputSize)
 {
-    const uint8_t *input = [data bytes];
-    NSUInteger inputSize = [data length];
     NSUInteger inputIndex = 0;
     
     if (inputSize == 0)
@@ -130,3 +129,26 @@ NSString *OFXMLCreateIDFromData(NSData *data)
     OBASSERT(outputIndex <= outputSize); // No trailing NUL
     return [[NSString alloc] initWithBytesNoCopy:output length:outputIndex encoding:NSASCIIStringEncoding freeWhenDone:YES];
 }
+
+NSString *OFXMLCreateIDFromData(NSData *data)
+{
+    return _OFXMLCreateIDFromBuffer(data.bytes, data.length);
+}
+
+// Skips leading zero bytes (in the big-endian representation). For a all zero buffer, though, one zero byte will be used.
+NSString *OFXMLCreateIDFromInteger(NSInteger value)
+{
+    OBASSERT(sizeof(value) == sizeof(int64_t));
+    value = OSSwapHostToBigInt64(value);
+
+    const uint8_t *buffer = (const uint8_t *)&value;
+    NSUInteger inputSize = sizeof(value);
+
+    while (inputSize > 1 && buffer[0] == 0) {
+        buffer++;
+        inputSize--;
+    }
+
+    return _OFXMLCreateIDFromBuffer(buffer, inputSize);
+}
+

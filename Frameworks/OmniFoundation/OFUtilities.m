@@ -284,7 +284,7 @@ BOOL OFIsRunningInInstruments(void)
         if ([var hasPrefix:@"com.apple.dt.Instruments."]) {
             _IsRunningInInstruments = YES;
         } else {
-            OBASSERT(OFIsEmptyString(var) || [var hasPrefix:@"com.apple.dt.Xcode."]);
+            //OBASSERT(OFIsEmptyString(var) || [var hasPrefix:@"com.apple.dt.Xcode."]);
         }
     });
 

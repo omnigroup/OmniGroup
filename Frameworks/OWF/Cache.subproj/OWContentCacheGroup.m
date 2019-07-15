@@ -1,4 +1,4 @@
-// Copyright 2003-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,14 +86,14 @@ static os_unfair_lock observersLock = OS_UNFAIR_LOCK_INIT;
     return [OFPreference preferenceForKey:OWCacheValidationBehaviorPreferenceKey];
 }
 
-+ (void)addObserver:(id)anObject;
++ (void)addContentCacheObserver:(id)anObject;
 {
     os_unfair_lock_lock(&observersLock);
     CFArrayAppendValue(observers, (__bridge const void *)(anObject));
     os_unfair_lock_unlock(&observersLock);
 }
 
-+ (void)removeObserver:(id)anObject;
++ (void)removeContentCacheObserver:(id)anObject;
 {
     os_unfair_lock_lock(&observersLock);
     CFIndex where = CFArrayGetLastIndexOfValue(observers, (CFRange){0, CFArrayGetCount(observers)}, (__bridge const void *)(anObject));

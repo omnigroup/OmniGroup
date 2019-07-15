@@ -9,6 +9,6 @@
 
 @interface NSBundle (OAExtensions)
 
-+ (NSBundle *)OmniAppKit;
+@property(class,nonatomic,readonly) NSBundle *OmniAppKit NS_SWIFT_NAME(OmniAppKit);
 
 @end

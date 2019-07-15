@@ -7,6 +7,8 @@
 
 #import <OmniFoundation/OFBindingPoint.h>
 
+#import <OmniFoundation/OFBinding.h>
+
 RCS_ID("$Id$");
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,6 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
     [_object release];
     [_keyPath release];
     [super dealloc];
+}
+
+- (OFBindingPoint *)bindingPointByAppendingKey:(NSString *)key;
+{
+    return OFBindingPointMake(_object, OFKeyPathForKeys(_keyPath, key, nil));
 }
 
 - (BOOL)isEqual:(id)object;

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -193,7 +193,7 @@ static NSString *CorruptDatabaseException = @"CorruptDatabaseException";
 
 - (void)close
 {
-    [OWContentCacheGroup removeObserver:self];
+    [OWContentCacheGroup removeContentCacheObserver:self];
     
     if (databaseController != nil) {
         [dbLock lock];
@@ -766,7 +766,7 @@ static NSString *CorruptDatabaseException = @"CorruptDatabaseException";
     preenEvent = [[OFDelayedEvent alloc] initWithInvocation:[[[OFInvocation alloc] initForObject:self selector:@selector(_preenCache)] autorelease] delayInterval:0.5 scheduler:[OWContentCacheGroup scheduler] fireOnTermination:NO];
 
     [[OFController sharedController] addObserver:(id)self];
-    [OWContentCacheGroup addObserver:self];
+    [OWContentCacheGroup addContentCacheObserver:self];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_flushCache:) name:OWContentCacheFlushNotification object:nil];
 
     return self;

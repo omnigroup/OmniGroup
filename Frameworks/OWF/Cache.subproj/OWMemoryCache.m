@@ -1,4 +1,4 @@
-// Copyright 2003-2016 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -135,14 +135,14 @@ RCS_ID("$Id$");
     lock = [[NSLock alloc] init];
     arcsBySubject = CFBridgingRelease(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
     knownOtherContent = [[NSMutableSet alloc] init];
-    [OWContentCacheGroup addObserver:self];
+    [OWContentCacheGroup addContentCacheObserver:self];
 
     return self;
 }
 
 - (void)dealloc;
 {
-    [OWContentCacheGroup removeObserver:self];
+    [OWContentCacheGroup removeContentCacheObserver:self];
 }
 
 // API

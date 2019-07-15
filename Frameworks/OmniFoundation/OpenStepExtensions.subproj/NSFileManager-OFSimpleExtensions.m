@@ -1,4 +1,4 @@
-// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -349,7 +349,9 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
     
     NSURL *containerURL = [self containerURLForSecurityApplicationGroupIdentifier:groupContainerIdentifier];
     if (!containerURL) {
-        OBASSERT_NOT_REACHED("Unable to determine shared container location for identifier \"%@\"", groupContainerIdentifier);
+        if (!OFIsRunningUnitTests()) {
+            OBASSERT_NOT_REACHED("Unable to determine shared container location for identifier \"%@\"", groupContainerIdentifier);
+        }
         return nil;
     }
     

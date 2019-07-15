@@ -146,20 +146,25 @@ open class ScrollingCardView: CardView {
         }
     }
     
-    // MARK: Layout Hooks
-
-    fileprivate func scrollViewDidTile() {
+    open override func layout() {
+        super.layout()
+        
         // Update vertical elasticity
         let contentHeight = scrollView.documentView?.frame.height ?? 0
-        let footerHeight = footerView?.frame.height ?? 0
+        let footerHeight = footerView != nil ? footerViewHeight : 0
         if contentHeight > frame.height - footerHeight {
             scrollView.verticalScrollElasticity = .automatic
         } else {
             scrollView.verticalScrollElasticity = .none
         }
+    }
+    
+    // MARK: Layout Hooks
 
+    fileprivate func scrollViewDidTile() {
         // Update the document view's width
         let scrollerWidth: CGFloat
+        let contentHeight = scrollView.documentView?.frame.height ?? 0
         if scrollView.scrollerStyle == .overlay || contentHeight < scrollView.frame.height {
             scrollerWidth = 0
         } else {
@@ -168,7 +173,18 @@ open class ScrollingCardView: CardView {
         
         documentViewWidthConstraint?.constant = -scrollerWidth
     }
-    
+
+    fileprivate func scrollViewDidLayout() {
+        // Update vertical elasticity
+        let contentHeight = scrollView.documentView?.frame.height ?? 0
+        let footerHeight = footerView != nil ? footerViewHeight : 0
+        if contentHeight > frame.height - footerHeight {
+            scrollView.verticalScrollElasticity = .automatic
+        } else {
+            scrollView.verticalScrollElasticity = .none
+        }
+    }
+
     // MARK: Private
     
     private var scrollView: CardScrollView!
@@ -225,6 +241,14 @@ private class CardScrollView: NSScrollView {
             verticalScroller.wantsLayer = true
             verticalScroller.layer?.cornerRadius = cornerRadius
             verticalScroller.layer?.maskedCorners = [.layerMaxXMinYCorner, .layerMaxXMaxYCorner]
+        }
+    }
+    
+    override func layout() {
+        super.layout()
+        
+        if let scrollingCardView = enclosingView(of: ScrollingCardView.self) {
+            scrollingCardView.scrollViewDidLayout()
         }
     }
     

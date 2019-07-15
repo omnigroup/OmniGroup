@@ -10,6 +10,28 @@
 import Foundation
 
 public final class RoundRectButton: NSButton {
+    @objc public convenience init(title: String, image: NSImage, target: AnyObject?, action: Selector?) {
+        self.init(title: title, image: image, target: target, action: action)
+    }
+
+    @objc public convenience init(title: String, target: AnyObject?, action: Selector?) {
+        self.init(title: title, image: nil, target: target, action: action)
+    }
+    
+    private init(title: String, image: NSImage?, target: AnyObject?, action: Selector?) {
+        super.init(frame: .zero)
+
+        self.title = title
+        self.target = target
+        self.action = action
+        
+        if let image = image {
+            self.image = image
+        }
+
+        self.applyStandardAttributes()
+    }
+
     public override init(frame: NSRect) {
         RoundRectButton.registerCellClassIfNeeded()
         super.init(frame: frame)
@@ -20,14 +42,6 @@ public final class RoundRectButton: NSButton {
         RoundRectButton.registerCellClassIfNeeded()
         super.init(coder: coder)
         commonInit()
-        
-        if backgroundColor == nil {
-            backgroundColor = NSColor.lightGray
-        }
-        
-        if textColor == nil {
-            textColor = NSColor.controlTextColor
-        }
     }
     
     private static func registerCellClassIfNeeded() {
@@ -38,19 +52,34 @@ public final class RoundRectButton: NSButton {
     }
     
     private func commonInit() {
+        applyStandardAttributes()
+    }
+    
+    private func applyStandardAttributes() {
         // Match the configuration of +[NSButton _buttonWithTitle:image:target:action:], overriding bad attributes configured in IB…
+        //
+        // However, use .texturedRounded since it's frame/content geometry is closer to ours.
+        // See comment at hitTest(for:in:of:) for why we can't better influence mouse tracking without doing so.
         //
         //    [r14 setImagePosition:rbx];
         //    [r14 setImageScaling:0x0];
         //    [r14 setBezelStyle:0x1];
         //    [r14 setButtonType:0x7];
         //    [r14 setLineBreakMode:0x4];
-
+        
         imagePosition = .noImage
         imageScaling = .scaleNone
-        bezelStyle = .rounded
+        bezelStyle = .texturedRounded
         setButtonType(.momentaryPushIn)
         lineBreakMode = .byTruncatingTail
+
+        if backgroundColor == nil {
+            backgroundColor = NSColor.lightGray
+        }
+        
+        if textColor == nil {
+            textColor = NSColor.controlTextColor
+        }
     }
 
     private var buttonCell: RoundRectButtonCell {
@@ -167,7 +196,7 @@ public final class RoundRectButtonCell: NSButtonCell {
     override public func drawBezel(withFrame frame: NSRect, in controlView: NSView) {
         let bezelPath = self.bezelPath(forBounds: frame, insetForBorderIfNeeded: true)
 
-        if let backgroundColor = backgroundColor {
+        if let backgroundColor = effectiveBackgroundColor {
             backgroundColor.setFill()
             bezelPath.fill()
             
@@ -177,7 +206,7 @@ public final class RoundRectButtonCell: NSButtonCell {
             }
         }
         
-        if isBordered, borderWidth > 0, let borderColor = borderColor {
+        if isBordered, borderWidth > 0, let borderColor = effectiveBorderColor {
             borderColor.setStroke()
             bezelPath.lineWidth = borderWidth
             bezelPath.stroke()
@@ -185,7 +214,14 @@ public final class RoundRectButtonCell: NSButtonCell {
     }
 
     override public func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
-        let verticalOffset: CGFloat = isBordered ? 1 : -1
+        let verticalOffset: CGFloat
+        
+        if #available(macOS 10.14, *) {
+            verticalOffset = isBordered ? 1 : -1
+        } else {
+            verticalOffset = isBordered ? -1 : 0
+        }
+        
         let titleRect = self.titleRect(forBounds: cellFrame).offsetBy(dx: 0, dy: verticalOffset)
         drawTitle(effectiveAttributedTitle, withFrame: titleRect, in: controlView)
     }
@@ -195,7 +231,21 @@ public final class RoundRectButtonCell: NSButtonCell {
         drawInterior(withFrame: cellFrame, in: controlView)
     }
     
+    // This is apparently not used for mouse tracking, and we can't easily make it so without overriding SPI.
+    override public func hitTest(for event: NSEvent, in cellFrame: NSRect, of controlView: NSView) -> NSCell.HitResult {
+        let point = controlView.convert(event.locationInWindow, from: nil)
+        let bezelPath = self.bezelPath(forBounds: cellFrame, insetForBorderIfNeeded: false)
+
+        if bezelPath.contains(point) {
+            return [.contentArea, .trackableArea]
+        } else {
+            return []
+        }
+    }
+
     // MARK: Private
+    
+    private let disabledAlphaValue: CGFloat = 0.5
     
     private func bezelPath(forBounds cellFrame: NSRect, insetForBorderIfNeeded: Bool) -> NSBezierPath {
         var pathRect = cellFrame
@@ -208,6 +258,24 @@ public final class RoundRectButtonCell: NSButtonCell {
         return NSBezierPath(roundedRect: pathRect, xRadius: cornerRadius, yRadius: cornerRadius)
     }
     
+    private var effectiveBackgroundColor: NSColor? {
+        guard let backgroundColor = backgroundColor else { return nil }
+        if isEnabled {
+            return backgroundColor
+        } else {
+            return backgroundColor.withAlphaComponent(disabledAlphaValue)
+        }
+    }
+
+    private var effectiveBorderColor: NSColor? {
+        guard let borderColor = borderColor else { return nil }
+        if isEnabled {
+            return borderColor
+        } else {
+            return borderColor.withAlphaComponent(disabledAlphaValue)
+        }
+    }
+
     private var effectiveHighlightColor: NSColor {
         if let highlightColor = highlightColor {
             return highlightColor
@@ -226,7 +294,7 @@ public final class RoundRectButtonCell: NSButtonCell {
                 return NSColor.black
             }
         } else {
-            return textColor?.withAlphaComponent(0.4) ?? NSColor.disabledControlTextColor
+            return textColor?.withAlphaComponent(disabledAlphaValue) ?? NSColor.disabledControlTextColor
         }
     }
     

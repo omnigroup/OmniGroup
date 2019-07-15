@@ -1,4 +1,4 @@
-// Copyright 1998-2018 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -239,10 +239,10 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     [self _runQueues];
 }
 
-- (NSUInteger)_locked_indexOfObserver:(id)observer;
+- (NSUInteger)_locked_indexOfObserver:(id)observer possiblyDealloced:(BOOL)isPossiblyDealloced;
 {
     return [_observerReferences indexOfObjectPassingTest:^BOOL(OFControllerStatusObserverReference ref, NSUInteger idx, BOOL *stop) {
-        return [ref referencesObject:(OB_BRIDGE void *)observer];
+        return [ref referencesObject:(OB_BRIDGE void *)observer] || (isPossiblyDealloced && [ref referencesDeallocatingObjectPointer:observer]);
     }];
 }
 
@@ -253,7 +253,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     
     [observerLock lock];
     
-    OBASSERT([self _locked_indexOfObserver:observer] == NSNotFound, "Adding the same observer twice is very likely a bug");
+    OBASSERT([self _locked_indexOfObserver:observer possiblyDealloced:NO] == NSNotFound, "Adding the same observer twice is very likely a bug");
     
     OFControllerStatusObserverReference ref = [[OFWeakReference alloc] initWithObject:observer];
     [_observerReferences addObject:ref];
@@ -268,8 +268,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 {
     [observerLock lock];
     
-    NSUInteger observerIndex = [self _locked_indexOfObserver:observer];
-    
+    NSUInteger observerIndex = [self _locked_indexOfObserver:observer possiblyDealloced:YES];
     OBASSERT(observerIndex != NSNotFound, "Removing an observer that wasn't added is very likely a bug");
     if (observerIndex != NSNotFound)
         [_observerReferences removeObjectAtIndex:observerIndex];

@@ -1,4 +1,4 @@
-// Copyright 2014-2018 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,6 +24,9 @@ RCS_ID("$Id$");
 
 - (OIAutolayoutInspectorHeaderView *)headerView;
 {
+    if (!self.inspector.wantsHeader)
+        return nil;
+
     if (!_headerView) {
         NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OIAutolayoutInspectorHeaderView" bundle:OMNI_BUNDLE];
         if (!nib || ![nib instantiateWithOwner:self topLevelObjects:NULL]) {
@@ -53,19 +56,26 @@ RCS_ID("$Id$");
     OBPRECONDITION([[self.containerView subviews] count] == 0);
     OBPRECONDITION([self.inspector conformsToProtocol:@protocol(OIConcreteInspector)]);
     
-    [self.containerView addSubview:self.headerView];
-    
     NSView *inspectorView = [self.inspector view];
     [self.containerView addSubview:inspectorView];
     self.inspectorContentView = inspectorView;
     
-    self.headerView.translatesAutoresizingMaskIntoConstraints = NO;
     self.inspectorContentView.translatesAutoresizingMaskIntoConstraints = NO;
     
-    NSDictionary *views = NSDictionaryOfVariableBindings(_headerView, inspectorView);
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_headerView]|" options:0 metrics:nil views:views]];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[inspectorView]|" options:0 metrics:nil views:views]];
-    [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_headerView][inspectorView]" options:0 metrics:nil views:views]];
+    if (self.inspector.wantsHeader) {
+        [self.containerView addSubview:self.headerView];
+        self.headerView.translatesAutoresizingMaskIntoConstraints = NO;
+
+        NSDictionary *views = NSDictionaryOfVariableBindings(_headerView, inspectorView);
+        [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_headerView]|" options:0 metrics:nil views:views]];
+        [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[inspectorView]|" options:0 metrics:nil views:views]];
+        [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[_headerView][inspectorView]" options:0 metrics:nil views:views]];
+    } else {
+        NSDictionary *views = NSDictionaryOfVariableBindings(inspectorView);
+        [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[inspectorView]|" options:0 metrics:nil views:views]];
+        [self.containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[inspectorView]" options:0 metrics:nil views:views]];
+    }
+    
     
     [self _updateVisibilityState];
     
@@ -105,7 +115,10 @@ RCS_ID("$Id$");
 
 - (CGFloat)headingHeight;
 {
-    return [self.headerView fittingSize].height;
+    if (self.inspector.wantsHeader)
+        return [self.headerView fittingSize].height;
+    
+    return 0;
 }
 
 - (CGFloat)desiredHeightWhenExpanded;

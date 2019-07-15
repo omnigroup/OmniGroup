@@ -36,8 +36,8 @@
 		341605ED0C693324002839DF /* OSUItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 341605EB0C693324002839DF /* OSUItem.m */; };
 		341607700C6A27AA002839DF /* OSUFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416076E0C6A27AA002839DF /* OSUFlippedView.h */; };
 		341607710C6A27AA002839DF /* OSUFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416076F0C6A27AA002839DF /* OSUFlippedView.m */; };
-		3424EE371AB79B2C005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		3424EE391AB79C76005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3424EE371AB79B2C005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3424EE391AB79C76005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3433C1F91A12BB920021318A /* OSUSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433C1F71A12BB920021318A /* OSUSettings.h */; };
 		3433C1FB1A12BB920021318A /* OSUSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 3433C1F71A12BB920021318A /* OSUSettings.h */; };
 		3433C1FC1A12BB920021318A /* OSUSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 3433C1F81A12BB920021318A /* OSUSettings.m */; };
@@ -111,7 +111,7 @@
 		348CDD5A1A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html in Resources */ = {isa = PBXBuildFile; fileRef = 348CDD581A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html */; };
 		348D92E91AB798A40093AD35 /* OSUCheckService.m in Sources */ = {isa = PBXBuildFile; fileRef = 348D92E81AB798A40093AD35 /* OSUCheckService.m */; };
 		348D92EB1AB798A40093AD35 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 348D92EA1AB798A40093AD35 /* main.m */; };
-		348D92EE1AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		348D92EE1AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Embed XPC Services */ = {isa = PBXBuildFile; fileRef = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		34972BBD1AC1C77D00D2DC2D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
 		34972BC81AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */; };
 		34972BC91AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */; };
@@ -602,7 +602,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
 			dstSubfolderSpec = 16;
 			files = (
-				3424EE391AB79C76005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Copy XPC Services */,
+				3424EE391AB79C76005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Copy XPC Services */,
 			);
 			name = "Copy XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -613,7 +613,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
 			dstSubfolderSpec = 16;
 			files = (
-				348D92EE1AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Embed XPC Services */,
+				348D92EE1AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Embed XPC Services */,
 			);
 			name = "Embed XPC Services";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -635,7 +635,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
 			dstSubfolderSpec = 16;
 			files = (
-				3424EE371AB79B2C005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc in Copy XPC Services */,
+				3424EE371AB79B2C005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Copy XPC Services */,
 				5F1C024F16DC8FC2006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc in Copy XPC Services */,
 			);
 			name = "Copy XPC Services";
@@ -785,7 +785,7 @@
 		348A78871B583C830082D55D /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		348A78881B583C830082D55D /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		348CDD581A37BB9D000342D7 /* OSUHardwareDescriptionTemplate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OSUHardwareDescriptionTemplate.html; sourceTree = "<group>"; };
-		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; name = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		348D92E51AB798A40093AD35 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		348D92E61AB798A40093AD35 /* OSUCheckServiceProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckServiceProtocol.h; sourceTree = "<group>"; };
 		348D92E71AB798A40093AD35 /* OSUCheckService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OSUCheckService.h; sourceTree = "<group>"; };
@@ -1038,7 +1038,7 @@
 				5F049AEC16DE74C5004F398B /* OSULaunchTrampoline */,
 				5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.7 */,
 				34A5F504184E474C00E8BA9A /* OmniSystemInfo.framework */,
-				348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */,
+				348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */,
 				348A78681B583C390082D55D /* OmniSoftwareUpdate.framework */,
 			);
 			name = Products;
@@ -1655,7 +1655,7 @@
 			);
 			name = OSUCheckService;
 			productName = OSUCheckService;
-			productReference = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.MacAppStore.xpc */;
+			productReference = 348D92E21AB798A40093AD35 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc */;
 			productType = "com.apple.product-type.xpc-service";
 		};
 		34A5F503184E474C00E8BA9A /* OmniSystemInfo */ = {

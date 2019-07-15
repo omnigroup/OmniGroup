@@ -227,6 +227,16 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     };
     
     NSString *itemPath = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
+    if (!itemPath) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = NSLocalizedStringFromTableInBundle(@"Script Not Found", @"OmniAppKit", OMNI_BUNDLE, @"error title when a script is missing");
+
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No script found for the toolbar item with identifier \"%@\".", @"OmniAppKit", OMNI_BUNDLE, @"error message when a script is missing"), toolbarItem.itemIdentifier];
+
+        [alert beginSheetModalForWindow:windowController.window completionHandler:nil];
+        return;
+    }
+
     NSString *typename = [[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:NULL];
 
     // This code only supports 10.8 and later so we always use the sandbox savvy APIs, since they also support unsandboxed applications.

@@ -1,4 +1,4 @@
-// Copyright 1999-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2019 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,9 +103,9 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
     return [[NSString pathWithComponents:stepsUpArray] stringByStandardizingPath];
 }
 
-- (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
+- (void)splitName:(NSString * OB_AUTORELEASING *)outName andCounter:(NSUInteger *)outCounter;
 {
-    NSString *name = self;
+    NSString *name = nil;
     NSUInteger counter = 0;
     NSRange notNumberRange = [name rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet] options:NSBackwardsSearch];
     
@@ -116,6 +116,10 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
             counter = [[name substringFromIndex:NSMaxRange(notNumberRange)] intValue];
             name = [name substringToIndex:NSMaxRange(notNumberRange) - 1];
         }
+    }
+    
+    if (name == nil) {
+        name = [[self copy] autorelease];
     }
     
     *outName = name;

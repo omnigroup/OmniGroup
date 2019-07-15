@@ -23,8 +23,8 @@
 + (OFScheduler *)scheduler;
 + (OFPreference *)cacheValidationPreference;
 
-+ (void)addObserver:anObject;
-+ (void)removeObserver:anObject;
++ (void)addContentCacheObserver:(id)anObject;
++ (void)removeContentCacheObserver:(id)anObject;
 + (void)invalidateResource:(OWURL *)resource beforeDate:(NSDate *)invalidationDate;
 
 - (void)addCache:(id <OWCacheArcProvider>)aCache atStart:(BOOL)before;
